@@ -57,7 +57,7 @@ public class ClusterConfigurationDUnitTest {
 
   @Parameterized.Parameters
   public static Collection<Boolean> data() {
-    return Arrays.asList(true, false);
+    return Arrays.asList(false);
   }
 
   // TODO mark GEODE-1606 resolved after

@@ -57,9 +57,7 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -135,10 +133,8 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
   }
 
   @Test
@@ -156,10 +152,8 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
   }
 
   @Test
@@ -174,10 +168,8 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
   }
 
   @Test
@@ -195,10 +187,8 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__SECURITY_PROPERTIES, missingSecurityPropertiesPath)
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
   }
 
   @Test
@@ -219,10 +209,8 @@ public class StartServerCommandDUnitTest implements Serializable {
           .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
           .getCommandString();
 
-      CommandResult result = gfsh.executeCommand(command);
-
-      assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-      assertThat(result.getMessageFromContent()).contains(expectedError).contains(expectedCause);
+      gfsh.executeAndAssertThat(command).statusIsError()
+          .hasOutput().contains(expectedError, expectedCause);
     }
   }
 
@@ -238,10 +226,8 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage).contains(expectedMessage2);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasOutput().contains(expectedMessage, expectedMessage2);
   }
 
   @Test
@@ -266,16 +252,14 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, pidFile.getParentFile().getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
     String expectedError = "A PID file already exists and a Server may be running in "
         + pidFile.getParentFile().getCanonicalPath();
     String expectedCause = "Caused by: "
         + "org.apache.geode.internal.process.FileAlreadyExistsException: Pid file already exists: "
         + pidFile.getCanonicalPath();
 
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError).contains(expectedCause);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .hasOutput().contains(expectedError, expectedCause);
   }
 
   @Test
@@ -301,12 +285,10 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__FORCE, "true")
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
     String expectedMessage = "Server in " + pidFile.getParentFile().getCanonicalPath();
 
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .containsOutput(expectedMessage);
   }
 
   @Test
@@ -321,14 +303,11 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMessageFromContent()).contains(expectedMessage);
-
-    // verify GEODE-2138 (Geode commands do not contain GemFire in output)
-    assertThat(result.getMessageFromContent()).doesNotContainPattern("Gem[Ff]ire Version");
-    assertThat(result.getMessageFromContent()).containsPattern(expectedVersionPattern);
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasOutput()
+        .contains(expectedMessage)
+        .doesNotContainPattern("Gem[Ff]ire Version")
+        .containsPattern(expectedVersionPattern);
   }
 
   @Test
@@ -348,8 +327,7 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    CommandResult result = gfsh.executeCommand(command);
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
 
     command = new CommandStringBuilder(CREATE_REGION)
         .addOption(CREATE_REGION__REGIONSHORTCUT, "PARTITION")

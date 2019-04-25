@@ -22,14 +22,12 @@ import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.SystemUtils;
 import org.springframework.shell.event.ParseResult;
 
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
@@ -68,7 +66,7 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
       return model;
     }
 
-    writeResultTableToFile(outputFile, new ModelCommandResult(model));
+    writeResultTableToFile(outputFile, model);
     ResultModel newModel = new ResultModel();
     DataResultModel data = newModel.addData(DataCommandResult.DATA_INFO_SECTION);
 
@@ -87,15 +85,10 @@ public class QueryInterceptor extends AbstractCliAroundInterceptor {
     return (File) parseResult.getArguments()[1];
   }
 
-  private void writeResultTableToFile(File file, CommandResult commandResult) throws IOException {
+  private void writeResultTableToFile(File file, ResultModel resultModel) throws IOException {
+    CommandResult commandResult = new CommandResult(resultModel);
     try (FileWriter fileWriter = new FileWriter(file)) {
-      while (commandResult.hasNextLine()) {
-        fileWriter.write(commandResult.nextLine());
-
-        if (commandResult.hasNextLine()) {
-          fileWriter.write(SystemUtils.LINE_SEPARATOR);
-        }
-      }
+      fileWriter.write(commandResult.asString());
     }
   }
 }

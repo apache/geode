@@ -66,8 +66,6 @@ import org.apache.geode.management.cli.Result.Status;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
-import org.apache.geode.management.internal.cli.result.TabularResultData;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
@@ -563,18 +561,15 @@ public class LuceneIndexCommandsJUnitTest {
   }
 
   private String getPage(final LuceneSearchResults[] expectedResults, int[] indexList) {
-    final TabularResultData data = ResultBuilder.createTabularResultData();
+    ResultModel resultModel = new ResultModel();
+    TabularResultModel data = resultModel.addTable("table");
     for (int i : indexList) {
       data.accumulate("key", expectedResults[i].getKey());
       data.accumulate("value", expectedResults[i].getValue());
-      data.accumulate("score", expectedResults[i].getScore());
+      data.accumulate("score", expectedResults[i].getScore() + "");
     }
-    CommandResult commandResult = ResultBuilder.buildResult(data);
-    StringBuilder buffer = new StringBuilder();
-    while (commandResult.hasNextLine()) {
-      buffer.append(commandResult.nextLine());
-    }
-    return buffer.toString();
+
+    return new CommandResult(resultModel).asString();
   }
 
   private List<Set<LuceneSearchResults>> getSearchResults(LuceneSearchResults... results) {

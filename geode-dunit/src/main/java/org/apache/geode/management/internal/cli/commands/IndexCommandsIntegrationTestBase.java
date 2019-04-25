@@ -18,8 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.GROUPS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,10 +33,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.Index;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
@@ -139,8 +135,7 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
   }
 
   @Test
@@ -165,9 +160,8 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/InvalidRegionName");
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("Region not found : \"/InvalidRegionName\"");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("Region not found : \"/InvalidRegionName\"");
   }
 
   @Test
@@ -187,8 +181,7 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.CREATE_INDEX__REGION, "/" + regionName);
     csb.addOption(CliStrings.CREATE_INDEX__TYPE, "hash");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError();
   }
 
   @Test
@@ -196,9 +189,7 @@ public class IndexCommandsIntegrationTestBase {
     // Destroy index with incorrect indexName
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, "IncorrectIndexName");
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains(
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError().containsOutput(
         CliStrings.format(CliStrings.DESTROY_INDEX__INDEX__NOT__FOUND, "IncorrectIndexName"));
   }
 
@@ -208,9 +199,8 @@ public class IndexCommandsIntegrationTestBase {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "IncorrectRegion");
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("ERROR", "Region \"IncorrectRegion\" not found");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError().containsOutput("ERROR",
+        "Region \"IncorrectRegion\" not found");
   }
 
   @Test
@@ -220,18 +210,15 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.DESTROY_INDEX__NAME, indexName);
     csb.addOption(CliStrings.DESTROY_INDEX__REGION, "Region");
     csb.addOption(CliStrings.MEMBER, "InvalidMemberName");
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("No Members Found");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError().containsOutput("No Members Found");
   }
 
   @Test
   public void testCannotDestroyIndexWithNoOptions() throws Exception {
     // Destroy index with no option
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.DESTROY_INDEX);
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("requires that one or more parameters be provided.");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("requires that one or more parameters be provided.");
   }
 
   @Test
@@ -289,13 +276,10 @@ public class IndexCommandsIntegrationTestBase {
     csb.addOption(CliStrings.IFEXISTS);
     gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
         .containsOutput("Destroyed index " + indexName);
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    Map<String, List<String>> table =
-        result.getMapFromTableContent(ResultModel.MEMBER_STATUS_SECTION);
-    assertThat(table.get("Status")).containsExactly("IGNORED");
-    assertThat(table.get("Message")).containsExactly("Index named \"" + indexName + "\" not found");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess()
+        .hasTableSection(ResultModel.MEMBER_STATUS_SECTION)
+        .hasRowSize(1).hasRow(0)
+        .contains("IGNORED", "Index named \"" + indexName + "\" not found");
   }
 
   private void createSimpleIndexA() throws Exception {

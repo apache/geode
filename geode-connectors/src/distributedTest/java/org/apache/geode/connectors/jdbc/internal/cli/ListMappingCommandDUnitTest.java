@@ -147,7 +147,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
       CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
       commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasRowCount(1);
       commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
     } finally {
       dropTable();
@@ -174,14 +174,13 @@ public class ListMappingCommandDUnitTest implements Serializable {
           new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP1);
       CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
-      commandResultAssert.statusIsError();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+      commandResultAssert.statusIsError().hasNoTableSection();
 
       csb = new CommandStringBuilder(LIST_MAPPING);
       commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
       commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasRowCount(1);
       commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
     } finally {
       dropTable();
@@ -213,13 +212,12 @@ public class ListMappingCommandDUnitTest implements Serializable {
       CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
       commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasRowCount(1);
       commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
 
       csb = new CommandStringBuilder(LIST_MAPPING);
       commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-      commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+      commandResultAssert.statusIsSuccess().hasNoTableSection();
     } finally {
       dropTable();
     }
@@ -281,7 +279,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
         commandResultAssert.statusIsSuccess();
-        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+        commandResultAssert.tableHasRowCount(1);
         commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
       }
 
@@ -291,7 +289,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
         commandResultAssert.statusIsSuccess();
-        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
+        commandResultAssert.tableHasRowCount(2);
         commandResultAssert
             .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP1_GROUP2_REGION);
       }
@@ -302,7 +300,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
         commandResultAssert.statusIsSuccess();
-        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 2);
+        commandResultAssert.tableHasRowCount(2);
         commandResultAssert
             .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP2_REGION, GROUP1_GROUP2_REGION);
       }
@@ -314,7 +312,7 @@ public class ListMappingCommandDUnitTest implements Serializable {
         commandResultAssert.statusIsSuccess();
         // There will be 4 items: testRegion1 for testGroup1, testRegion2 for testGroup2,
         // group1Group2Region for testGroup1, group1Group2Region for testGroup2
-        commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 4);
+        commandResultAssert.tableHasRowCount(4);
         commandResultAssert
             .tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, GROUP1_REGION, GROUP2_REGION,
                 GROUP1_GROUP2_REGION);
@@ -348,13 +346,12 @@ public class ListMappingCommandDUnitTest implements Serializable {
       CommandResultAssert commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
 
       commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 1);
+      commandResultAssert.tableHasRowCount(1);
       commandResultAssert.tableHasColumnOnlyWithValues(LIST_OF_MAPPINGS, regionName);
 
       csb = new CommandStringBuilder(LIST_MAPPING);
       commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-      commandResultAssert.statusIsSuccess();
-      commandResultAssert.tableHasRowCount(LIST_OF_MAPPINGS, 0);
+      commandResultAssert.statusIsSuccess().hasNoTableSection();
     } finally {
       dropTable();
     }

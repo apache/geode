@@ -145,7 +145,8 @@ public class LuceneIndexCommandsIntegrationTest {
         .getCommandResult();
 
     // the document count could be greater than 2
-    List<String> documents = result.getTableColumnValues("Documents");
+    List<String> documents =
+        result.getResultData().getTableSections().get(0).getValuesInColumn("Documents");
     assertThat(documents).hasSize(1);
     assertThat(Integer.parseInt(documents.get(0))).isGreaterThanOrEqualTo(2);
   }
@@ -463,10 +464,10 @@ public class LuceneIndexCommandsIntegrationTest {
     CommandResultAssert assertion = gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
 
     try {
-      assertion.tableHasColumnWithExactValuesInExactOrder("key", "A", "B", "C", "D");
+      assertion.hasTableSection().hasColumn("key").containsExactly("A", "B", "C", "D");
     } catch (AssertionError e) {
       // Since B and C have the same score, we can expect them to appear in either order
-      assertion.tableHasColumnWithExactValuesInExactOrder("key", "A", "C", "B", "D");
+      assertion.hasTableSection().hasColumn("key").containsExactly("A", "C", "B", "D");
     }
   }
 

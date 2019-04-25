@@ -58,12 +58,12 @@ public class FunctionDynamicByArgsSecurityTest {
   public void functionDynamicRequireExpectedPermission() throws Exception {
     gfsh.executeAndAssertThat(
         "execute function --id=" + function.getId() + " --arguments=testRegion1")
-        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasRowCount(1)
         .tableHasRowWithValues(RESULT_HEADER, "[successfully invoked with argument:testRegion1]")
         .statusIsSuccess();
     gfsh.executeAndAssertThat(
         "execute function --id=" + function.getId() + " --arguments=testRegion1,testRegion2")
-        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasRowCount(1)
         .tableHasRowWithValues(RESULT_HEADER,
             "Exception: DATAREADtestRegion1 not authorized for DATA:READ:testRegion2")
         .statusIsError();

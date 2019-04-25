@@ -280,7 +280,7 @@ public class PauseGatewaySenderCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.PAUSE_GATEWAYSENDER);
     List<String> status = resultData.getValuesInColumn("Result");
     assertThat(status).containsExactlyInAnyOrder("OK", "OK", "OK", "OK");

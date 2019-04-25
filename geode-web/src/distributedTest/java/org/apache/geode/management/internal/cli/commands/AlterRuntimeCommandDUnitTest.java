@@ -33,9 +33,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -113,15 +111,12 @@ public class AlterRuntimeCommandDUnitTest {
       assertThat(config.getLogDiskSpaceLimit()).isEqualTo(10);
     });
 
-    CommandResult result = gfsh.executeCommand("alter runtime");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+    gfsh.executeAndAssertThat("alter runtime").statusIsError()
+        .containsOutput(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
-    result = gfsh.executeCommand("alter runtime  --log-disk-space-limit=2000000000");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-disk-space-limit\" to \"2000000000\"");
+    gfsh.executeAndAssertThat("alter runtime  --log-disk-space-limit=2000000000")
+        .statusIsError()
+        .containsOutput("Could not set \"log-disk-space-limit\" to \"2000000000\"");
   }
 
   @Test
@@ -365,9 +360,9 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__LOG__FILE__SIZE__LIMIT, "-1");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("Could not set \"log-file-size-limit\" to \"-1\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"log-file-size-limit\" to \"-1\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -398,21 +393,17 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csbGroup = new CommandStringBuilder(csb.toString());
     csbGroup.addOption(GROUPS, "G1");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"log-file-size-limit\" to \"1000001\"");
 
     csb.addOption(CliStrings.MEMBER, server2.getName());
-    result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("Could not set \"log-file-size-limit\" to \"1000001\"");
 
-    result = gfsh.executeCommand(csbGroup.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"log-file-size-limit\" to \"1000001\"");
+    gfsh.executeAndAssertThat(csbGroup.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"log-file-size-limit\" to \"1000001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -699,17 +690,16 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "99");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput()).contains("Could not set \"statistic-sample-rate\" to \"99\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"statistic-sample-rate\" to \"99\"");
 
     csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__STATISTIC__SAMPLE__RATE, "60001");
 
-    result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"statistic-sample-rate\" to \"60001\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"statistic-sample-rate\" to \"60001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -872,18 +862,15 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "-1");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-disk-space-limit\" to \"-1\"");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput("Could not set \"archive-disk-space-limit\" to \"-1\"");
 
     csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__DISK__SPACE__LIMIT, "1000001");
 
-    result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-disk-space-limit\" to \"1000001\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"archive-disk-space-limit\" to \"1000001\"");
 
     for (MemberVM server : new MemberVM[] {server1, server2}) {
       server.invoke(() -> {
@@ -1058,18 +1045,16 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "-1");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-file-size-limit\" to \"-1\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"archive-file-size-limit\" to \"-1\"");
 
     csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.ALTER_RUNTIME_CONFIG__ARCHIVE__FILE__SIZE__LIMIT, "1000001");
 
-    result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains("Could not set \"archive-file-size-limit\" to \"1000001\"");
+    gfsh.executeAndAssertThat(csb.toString())
+        .statusIsError()
+        .containsOutput("Could not set \"archive-file-size-limit\" to \"1000001\"");
 
     verifyDefaultConfig(new MemberVM[] {server1, server2});
   }
@@ -1142,10 +1127,8 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.GROUPS, "G1");
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();
@@ -1183,10 +1166,8 @@ public class AlterRuntimeCommandDUnitTest {
     CommandStringBuilder csb = new CommandStringBuilder(CliStrings.ALTER_RUNTIME_CONFIG);
     csb.addOption(CliStrings.MEMBERS, server1.getName());
 
-    CommandResult result = gfsh.executeCommand(csb.toString());
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(gfsh.getGfshOutput())
-        .contains(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
+    gfsh.executeAndAssertThat(csb.toString()).statusIsError()
+        .containsOutput(CliStrings.ALTER_RUNTIME_CONFIG__RELEVANT__OPTION__MESSAGE);
 
     server1.invoke(() -> {
       InternalCache cache = ClusterStartupRule.getCache();

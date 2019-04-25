@@ -33,7 +33,7 @@ import jline.console.ConsoleReader;
 import org.springframework.shell.core.ExitShellRequest;
 import org.springframework.shell.event.ShellStatus.Status;
 
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 import org.apache.geode.management.internal.cli.shell.GfshConfig;
 import org.apache.geode.management.internal.cli.shell.jline.GfshUnsupportedTerminal;
@@ -120,21 +120,23 @@ public class HeadlessGfsh implements ResultHandler {
     outputString = sysout;
   }
 
-  public Object getResult() throws InterruptedException {
+  public CommandResult getResult() throws InterruptedException {
     // Don't wait for when some command calls gfsh.stop();
     if (shell.stopCalledThroughAPI)
       return null;
     try {
       Object result = queue.poll(timeout, TimeUnit.SECONDS);
       queue.clear();
-      if (!(result instanceof org.apache.geode.management.internal.cli.result.CommandResult)) {
-        if (result == null) {
-          return ResultBuilder.createBadResponseErrorResult("command response was null");
-        } else {
-          return ResultBuilder.createBadResponseErrorResult(result.toString());
-        }
+      if (result instanceof CommandResult) {
+        return (CommandResult) result;
       }
-      return result;
+
+      if (result == null) {
+        return CommandResult.createError(outputString);
+      } else {
+        return CommandResult.createError(result.toString());
+      }
+
     } catch (InterruptedException e) {
       e.printStackTrace();
       throw e;

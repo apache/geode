@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.security;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 import java.util.List;
 
@@ -27,10 +25,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.cli.Result.Status;
-import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ErrorResultData;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
@@ -84,24 +78,8 @@ public class MultiGfshDUnitTest {
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-
-        CommandResult result = gfsh.executeCommand(command.getCommand());
-
-        if (!(result.getResultData() instanceof ErrorResultData)) {
-          break;
-        }
-        int errorCode = ((ErrorResultData) result.getResultData()).getErrorCode();
-
-        // for some commands there are pre execution checks to check for user input error, will skip
-        // those commands
-        if (errorCode == ResultBuilder.ERRORCODE_USER_ERROR) {
-          LogService.getLogger().info("Skip user error: " + result.getMessageFromContent());
-          continue;
-        }
-
-        assertEquals("Not an expected result: " + result.toString(),
-            ResultBuilder.ERRORCODE_UNAUTHORIZED,
-            ((ErrorResultData) result.getResultData()).getErrorCode());
+        gfsh.executeAndAssertThat(command.getCommand()).statusIsError()
+            .containsOutput("Unauthorized");
       }
 
       gfsh.close();
@@ -123,20 +101,7 @@ public class MultiGfshDUnitTest {
       List<TestCommand> allCommands = TestCommand.getOnlineCommands();
       for (TestCommand command : allCommands) {
         LogService.getLogger().info("executing: " + command.getCommand());
-
-        CommandResult result = gfsh.executeCommand(command.getCommand());
-        if (result.getStatus() == Status.OK) {
-          continue;
-        }
-
-        int errorResultCode;
-        if (result.getResultData() instanceof ErrorResultData) {
-          errorResultCode = ((ErrorResultData) result.getResultData()).getErrorCode();
-        } else {
-          errorResultCode = 9999; // ((ResultModel) result.getResultData()).getErrorCode();
-        }
-        assertNotEquals("Did not expect an Unauthorized exception: " + result.toString(),
-            ResultBuilder.ERRORCODE_UNAUTHORIZED, errorResultCode);
+        gfsh.executeAndAssertThat(command.getCommand()).doesNotContainOutput("Unauthorized");
       }
       gfsh.close();
       LogService.getLogger().info("vm 3 done!");

@@ -64,7 +64,7 @@ public class ListAsyncEventQueuesCommandDUnitTest {
     locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue2", 1);
 
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .tableHasRowCount("Member", 2).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
+        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue2");
 
     // create another async event queue on the entire cluster, verify that the command will list all
@@ -73,7 +73,7 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .tableHasRowCount("Member", 4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
+        .tableHasRowCount(4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue2")
         .tableHasRowWithValues("Member", "ID", "server-1", "queue")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue");

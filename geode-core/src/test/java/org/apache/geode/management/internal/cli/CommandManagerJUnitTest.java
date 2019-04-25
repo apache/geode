@@ -33,7 +33,7 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.Disabled;
 import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.ResultBuilder;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
@@ -111,8 +111,6 @@ public class CommandManagerJUnitTest {
   }
 
   /**
-   * Tests {@link CommandManager#loadPluginCommands()}.
-   *
    * @since GemFire 8.1
    */
   @Test
@@ -230,7 +228,7 @@ public class CommandManagerJUnitTest {
   class AccessibleCommand implements CommandMarker {
     @CliCommand(value = "test-command")
     public Result ping() {
-      return ResultBuilder.createInfoResult("pong");
+      return CommandResult.createInfo("pong");
     }
 
     @CliAvailabilityIndicator("test-command")

@@ -66,7 +66,7 @@ public class ListJndiBindingCommandDUnitTest {
     // cluster configuration table
     commandResultAssert.tableHasRowWithValues("Group Name", "JNDI Name", "JDBC Driver Class",
         "cluster", "jndi1", "org.apache.derby.jdbc.EmbeddedDriver")
-        .tableHasRowCount("Group Name", 1);
+        .tableHasRowCount(1);
 
     // member table
     List<String> jndiNames = commandResultAssert.getCommandResult()

@@ -111,7 +111,7 @@ public class ExportClusterConfigurationCommandTest {
     configuration.addJarNames(new String[] {"jar1.jar", "jar2.jar"});
     gfsh.executeAndAssertThat(command, EXPORT_SHARED_CONFIG).statusIsSuccess()
         .containsOutput("cluster.xml:").containsOutput("Properties:").containsOutput("Jars:")
-        .containsOutput("jar1.jar, jar2.jar").containsOutput("<?xml version=\\\"1.0\\\"")
+        .containsOutput("jar1.jar, jar2.jar").containsOutput("<?xml version=\"1.0\"")
         .containsOutput("</cache>");
   }
 }

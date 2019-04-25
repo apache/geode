@@ -148,7 +148,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
     Map<String, List<String>> table =
         result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
     assertThat(table.get("Member").size()).isEqualTo(6);
-    assertThat(result.getMessageFromContent())
+    assertThat(gfsh.getGfshOutput())
         .contains("Changes to configuration for group 'cluster' are persisted");
 
     VMProvider.invokeInEveryMember(() -> {

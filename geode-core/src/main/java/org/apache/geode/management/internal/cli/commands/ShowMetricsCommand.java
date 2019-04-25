@@ -45,7 +45,6 @@ import org.apache.geode.management.cli.GfshCommand;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.result.ResultDataException;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -183,11 +182,10 @@ public class ShowMetricsCommand extends GfshCommand {
    *
    * @return ResultData with required Member statistics or ErrorResultData if MemberMbean is not
    *         found to gather metrics
-   * @throws ResultDataException if building result fails
    */
   private ResultModel getMemberMetrics(DistributedMember distributedMember,
       String export_to_report_to, String[] categoriesArr, int cacheServerPort,
-      StringBuilder csvBuilder) throws ResultDataException {
+      StringBuilder csvBuilder) {
     final SystemManagementService managementService =
         (SystemManagementService) getManagementService();
 
@@ -242,10 +240,9 @@ public class ShowMetricsCommand extends GfshCommand {
    * Gets the Cluster-wide metrics for a region
    *
    * @return ResultData containing the table
-   * @throws ResultDataException if building result fails
    */
   private ResultModel getDistributedRegionMetrics(String regionName, String export_to_report_to,
-      String[] categoriesArr, StringBuilder csvBuilder) throws ResultDataException {
+      String[] categoriesArr, StringBuilder csvBuilder) {
 
     final ManagementService managementService = getManagementService();
 
@@ -278,11 +275,10 @@ public class ShowMetricsCommand extends GfshCommand {
    *
    * @return ResultData with required Region statistics or ErrorResultData if Region MBean is not
    *         found to gather metrics
-   * @throws ResultDataException if building result fails
    */
   private ResultModel getRegionMetricsFromMember(String regionName,
       DistributedMember distributedMember, String export_to_report_to, String[] categoriesArr,
-      StringBuilder csvBuilder) throws ResultDataException {
+      StringBuilder csvBuilder) {
 
     final SystemManagementService managementService = getManagementService();
 

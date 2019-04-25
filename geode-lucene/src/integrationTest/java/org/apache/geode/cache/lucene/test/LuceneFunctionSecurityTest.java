@@ -80,7 +80,7 @@ public class LuceneFunctionSecurityTest {
       Function function = entry.getKey();
       String permission = entry.getValue();
       gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + function.getId())
-          .tableHasRowCount(RESULT_HEADER, 1)
+          .tableHasRowCount(1)
           .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
           .statusIsError();
     });
@@ -92,7 +92,7 @@ public class LuceneFunctionSecurityTest {
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
   public void dumpDirectoryFileRequiresAll_insufficientUser() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1)
+        .tableHasRowCount(1)
         .tableHasRowWithValues(RESULT_HEADER, "Exception: clusterManage not authorized for *")
         .statusIsError();
   }
@@ -101,6 +101,6 @@ public class LuceneFunctionSecurityTest {
   @ConnectionConfiguration(user = "*", password = "*")
   public void dumpDirectoryFileRequiresAll_validUser() {
     gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(RESULT_HEADER, 1).doesNotContainOutput("not authorized").statusIsError();
+        .tableHasRowCount(1).doesNotContainOutput("not authorized").statusIsError();
   }
 }

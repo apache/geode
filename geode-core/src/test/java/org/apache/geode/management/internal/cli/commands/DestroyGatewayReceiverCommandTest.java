@@ -66,7 +66,7 @@ public class DestroyGatewayReceiverCommandTest {
     doThrow(new UserErrorException(CliStrings.PROVIDE_EITHER_MEMBER_OR_GROUP_MESSAGE)).when(command)
         .findMembers(null, null);
     gfsh.executeAndAssertThat(command, "destroy gateway-receiver").statusIsError()
-        .containsOutput("provide either \\\"member\\\" or \\\"group\\\" option");
+        .containsOutput("provide either \"member\" or \"group\" option");
   }
 
   @Test

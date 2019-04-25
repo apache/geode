@@ -83,14 +83,6 @@ public class ResultModel {
     return configObject;
   }
 
-  public boolean getLegacy() {
-    return false;
-  }
-
-  public void setLegacy(boolean legacy) {
-    // no-op
-  }
-
   public void setConfigObject(Object configObject) {
     this.configObject = configObject;
   }

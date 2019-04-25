@@ -76,29 +76,25 @@ public class NetstatDUnitTest {
 
   @Test
   public void testOutputToConsoleForAllMembers() throws Exception {
-    CommandResult result = gfsh.executeCommand("netstat");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("netstat").statusIsSuccess()
+        .doesNotContainOutput("Could not execute");
 
-    // verify that the OS commands executed
-    assertThat(result.toString()).doesNotContain("Could not execute");
-
-    String rawOutput = result.getMessageFromContent();
+    String rawOutput = gfsh.getGfshOutput();
     String[] lines = rawOutput.split("\n");
 
     assertThat(lines.length).isGreaterThan(5);
-    assertThat(lines[4].trim().split("[,\\s]+")).containsExactlyInAnyOrder("locator-0", "server-1",
+    assertThat(lines[4].trim().split("[,\\s]+")).containsExactlyInAnyOrder("locator-0",
+        "server-1",
         "server-2");
   }
 
   @Test
   public void testOutputToConsoleForOneMember() throws Exception {
-    CommandResult result = gfsh.executeCommand("netstat --member=server-1");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("netstat --member=server-1")
+        .statusIsSuccess()
+        .doesNotContainOutput("Could not execute");
 
-    // verify that the OS commands executed
-    assertThat(result.toString()).doesNotContain("Could not execute");
-
-    String rawOutput = result.getMessageFromContent();
+    String rawOutput = gfsh.getGfshOutput();
     String[] lines = rawOutput.split("\n");
 
     assertThat(lines.length).isGreaterThan(5);
@@ -108,13 +104,10 @@ public class NetstatDUnitTest {
   @Ignore("GEODE-6228")
   @Test
   public void testOutputToConsoleWithLsofForOneMember() throws Exception {
-    CommandResult result = gfsh.executeCommand("netstat --member=server-1 --with-lsof");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("netstat --member=server-1 --with-lsof")
+        .statusIsSuccess().doesNotContainOutput("Could not execute");
 
-    // verify that the OS commands executed
-    assertThat(result.toString()).doesNotContain("Could not execute");
-
-    String rawOutput = result.getMessageFromContent();
+    String rawOutput = gfsh.getGfshOutput();
     String[] lines = rawOutput.split("\n");
 
     assertThat(lines.length).isGreaterThan(5);

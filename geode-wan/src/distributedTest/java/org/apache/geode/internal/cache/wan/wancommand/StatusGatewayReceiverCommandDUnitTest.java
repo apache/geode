@@ -35,7 +35,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -104,7 +103,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(3);
@@ -126,7 +125,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    resultData = ((ResultModel) cmdResult.getResultData())
+    resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(3);
@@ -165,7 +164,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(1);
@@ -187,7 +186,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     cmdResult = gfsh.executeCommand(command);
     assertThat(cmdResult).isNotNull();
 
-    resultData = ((ResultModel) cmdResult.getResultData())
+    resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(1);
@@ -227,7 +226,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    TabularResultModel resultData = ((ResultModel) cmdResult.getResultData())
+    TabularResultModel resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     List<String> status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(3);
@@ -249,7 +248,7 @@ public class StatusGatewayReceiverCommandDUnitTest implements Serializable {
     assertThat(cmdResult).isNotNull();
     assertThat(cmdResult.getStatus()).isSameAs(Result.Status.OK);
 
-    resultData = ((ResultModel) cmdResult.getResultData())
+    resultData = cmdResult.getResultData()
         .getTableSection(CliStrings.SECTION_GATEWAY_RECEIVER_AVAILABLE);
     status = resultData.getValuesInColumn(CliStrings.RESULT_STATUS);
     assertThat(status).hasSize(3);

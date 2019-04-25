@@ -19,37 +19,33 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.AbstractStringAssert;
 import org.assertj.core.api.Assertions;
-import org.junit.Assert;
 
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 
 public class CommandResultAssert
-    extends AbstractAssert<CommandResultAssert, CommandResultExecution> {
+    extends AbstractAssert<CommandResultAssert, CommandResult> {
+
+  private String commandOutput;
 
   public CommandResultAssert(CommandResult commandResult) {
-    super(new CommandResultExecution(commandResult.toJson(), commandResult),
-        CommandResultAssert.class);
-  }
-
-  public CommandResultAssert(String output, CommandResult commandResult) {
-    super(new CommandResultExecution(output, commandResult), CommandResultAssert.class);
+    super(commandResult, CommandResultAssert.class);
+    this.commandOutput = commandResult.asString();
   }
 
   public CommandResult getCommandResult() {
-    return actual.getCommandResult();
+    return actual;
   }
 
   /**
@@ -75,48 +71,20 @@ public class CommandResultAssert
    * @deprecated use hasDataSection methods to verify the table contents
    */
   public CommandResultAssert containsKeyValuePair(String key, String value) {
-    assertThat(actual.getOutput()).containsPattern("\\Q" + key + "\\E\\s+: \\Q" + value + "\\E");
+    assertThat(commandOutput).containsPattern("\\Q" + key + "\\E\\s+: \\Q" + value + "\\E");
 
     return this;
+  }
+
+  public AbstractStringAssert<?> hasOutput() {
+    return assertThat(commandOutput);
   }
 
   /**
    * Verifies the gfsh output contains the given output
    */
   public CommandResultAssert containsOutput(String... expectedOutputs) {
-    for (String expectedOutput : expectedOutputs) {
-      assertThat(actual.getOutput()).contains(expectedOutput);
-    }
-
-    return this;
-  }
-
-  /**
-   * @deprecated use hasDataSection methods to verify the table contents
-   */
-  public CommandResultAssert containsOrderedOutput(String dataSectionName,
-      String... expectedOutputs) {
-
-    LinkedHashMap<String, String> outputMap;
-    try {
-      outputMap =
-          ((LinkedHashMap) actual.getCommandResult().getMapFromSection(dataSectionName));
-    } catch (NullPointerException ex) {
-      Assert.fail("No section found for \"" + dataSectionName + "\"");
-      return this;
-    }
-    String outputString = outputMap.toString();
-    int outputIndex = 0;
-
-    for (int i = 0; i < expectedOutputs.length; i++) {
-      outputIndex = outputString.indexOf(expectedOutputs[i]);
-      if (outputIndex == -1) {
-        Assert.fail("Expected output " + expectedOutputs[i]
-            + " was not found, or isn't in the specified order.");
-      }
-      outputString = outputString.substring(outputIndex);
-    }
-
+    assertThat(commandOutput).contains(expectedOutputs);
     return this;
   }
 
@@ -124,10 +92,7 @@ public class CommandResultAssert
    * Verifies the gfsh output does not contain the given output
    */
   public CommandResultAssert doesNotContainOutput(String... expectedOutputs) {
-    for (String expectedOutput : expectedOutputs) {
-      assertThat(actual.getOutput()).doesNotContain(expectedOutput);
-    }
-
+    assertThat(commandOutput).doesNotContain(expectedOutputs);
     return this;
   }
 
@@ -135,20 +100,9 @@ public class CommandResultAssert
    * Verifies that gfsh executed with status OK
    */
   public CommandResultAssert statusIsSuccess() {
-    CommandResult result = actual.getCommandResult();
-    Assertions.assertThat(result.getStatus()).describedAs(actual.getOutput())
+    Assertions.assertThat(actual.getStatus()).describedAs(commandOutput)
         .isEqualTo(Result.Status.OK);
 
-    return this;
-  }
-
-  public CommandResultAssert hasFailToPersistError() {
-    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isTrue();
-    return this;
-  }
-
-  public CommandResultAssert hasNoFailToPersistError() {
-    Assertions.assertThat(actual.getCommandResult().failedToPersist()).isFalse();
     return this;
   }
 
@@ -156,39 +110,8 @@ public class CommandResultAssert
    * Verifies that gfsh executed with status ERROR
    */
   public CommandResultAssert statusIsError() {
-    CommandResult result = actual.getCommandResult();
-    Assertions.assertThat(result.getStatus()).describedAs(actual.getOutput())
+    Assertions.assertThat(actual.getStatus()).describedAs(commandOutput)
         .isEqualTo(Result.Status.ERROR);
-
-    return this;
-  }
-
-  /**
-   * Verifies that the gfsh output contains a table that has a column with the specified header and
-   * the specified values in the specified order.
-   *
-   * For example, given the following gfsh output:
-   *
-   * <pre>
-   * Index Name | Region Path | Server Name |      Indexed Fields      |
-   * ---------- | ----------- | ----------- | ------------------------ |
-   * index1      | /region1     | server-0    | [field1, field3, field2] |
-   * index2      | /region2     | server-0    | [field1, field3, field2] |
-   * </pre>
-   *
-   * We might assert that:
-   *
-   * <pre>
-   * <code> tableHasColumnWithExactValuesInExactOrder("Region Path", "/region1", "/region2");
-   * </code>
-   * </pre>
-   *
-   * @deprecated use hasTableSection methods to verify the table contents
-   */
-  public CommandResultAssert tableHasColumnWithExactValuesInExactOrder(String header,
-      String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
-    assertThat(actualValues).containsExactly(expectedValues);
 
     return this;
   }
@@ -217,9 +140,7 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithExactValuesInAnyOrder(String header,
       String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
-    assertThat(actualValues).containsExactlyInAnyOrder(expectedValues);
-
+    hasTableSection().hasColumn(header).containsExactlyInAnyOrder(expectedValues);
     return this;
   }
 
@@ -239,7 +160,8 @@ public class CommandResultAssert
     Map<String, List<String>> allValues = new HashMap<>();
     int numberOfRows = -1;
     for (String header : headers) {
-      List<String> columnValues = actual.getCommandResult().getTableColumnValues(header);
+      List<String> columnValues =
+          actual.getResultData().getTableSections().get(0).getValuesInColumn(header);
       if (numberOfRows > 0) {
         assertThat(columnValues.size()).isEqualTo(numberOfRows);
       }
@@ -267,9 +189,8 @@ public class CommandResultAssert
     return this;
   }
 
-  public CommandResultAssert tableHasRowCount(String anyColumnHeader, int rowSize) {
-    assertThat(actual.getCommandResult().getTableColumnValues(anyColumnHeader).size())
-        .isEqualTo(rowSize);
+  public CommandResultAssert tableHasRowCount(int rowSize) {
+    hasTableSection().hasRowSize(rowSize);
     return this;
   }
 
@@ -281,7 +202,8 @@ public class CommandResultAssert
    */
   public CommandResultAssert tableHasColumnWithValuesContaining(String header,
       String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
+    TabularResultModel actual = hasTableSection().getActual();
+    List<String> actualValues = actual.getValuesInColumn(header);
 
     for (Object actualValue : actualValues) {
       String actualValueString = (String) actualValue;
@@ -304,8 +226,7 @@ public class CommandResultAssert
    * @deprecated use hasTableSection methods to verify the table contents
    */
   public CommandResultAssert tableHasColumnOnlyWithValues(String header, String... expectedValues) {
-    List<String> actualValues = actual.getCommandResult().getTableColumnValues(header);
-    assertThat(actualValues).containsOnly(expectedValues);
+    hasTableSection().hasColumn(header).containsOnly(expectedValues);
 
     return this;
   }
@@ -323,13 +244,12 @@ public class CommandResultAssert
   }
 
   /*
-   * methods that are only applicable to ModelCommandResult
+   * methods that are only applicable to CommandResult
    */
 
   // Will throw error unless this is a ModelCommand Result
   public ResultModel getResultModel() {
-    ModelCommandResult modelCommandResult = (ModelCommandResult) actual.getCommandResult();
-    return modelCommandResult.getResultData();
+    return actual.getResultData();
   }
 
   public CommandResultAssert hasSection(String... sectionName) {
@@ -371,6 +291,11 @@ public class CommandResultAssert
       fail(sectionName + " section not found");
     }
     return new TabularResultModelAssert(section);
+  }
+
+  public CommandResultAssert hasNoTableSection() {
+    assertThat(actual.getResultData().getTableSections().size()).isEqualTo(0);
+    return this;
   }
 
   // convenience method to get the first data section. if more than one data section

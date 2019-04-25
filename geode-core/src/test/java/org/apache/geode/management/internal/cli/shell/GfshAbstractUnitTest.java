@@ -27,10 +27,8 @@ import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.shell.core.CommandResult;
 
-import org.apache.geode.management.internal.cli.result.ModelCommandResult;
-
+import org.apache.geode.management.internal.cli.result.CommandResult;
 
 
 public class GfshAbstractUnitTest {
@@ -94,20 +92,20 @@ public class GfshAbstractUnitTest {
   @Test
   public void executeCommandShouldSubstituteVariablesWhenNeededAndDelegateToDefaultImplementation() {
     gfsh = spy(Gfsh.class);
-    CommandResult commandResult;
+    org.springframework.shell.core.CommandResult commandResult;
 
     // No '$' character, should only delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=ApacheGeode!");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(0)).expandProperties("echo --string=ApacheGeode!");
-    assertThat(((ModelCommandResult) commandResult.getResult()).getMessageFromContent())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("ApacheGeode!");
 
     // '$' character present, should expand properties and delegate to default implementation.
     commandResult = gfsh.executeCommand("echo --string=SYS_USER:${SYS_USER}");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(1)).expandProperties("echo --string=SYS_USER:${SYS_USER}");
-    assertThat(((ModelCommandResult) commandResult.getResult()).getMessageFromContent())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("SYS_USER:" + System.getProperty("user.name"));
 
     // '$' character present but not variable referenced, should try to expand, find nothing (no
@@ -115,7 +113,7 @@ public class GfshAbstractUnitTest {
     commandResult = gfsh.executeCommand("echo --string=MyNameIs:$USER_NAME");
     assertThat(commandResult.isSuccess()).isTrue();
     verify(gfsh, times(1)).expandProperties("echo --string=MyNameIs:$USER_NAME");
-    assertThat(((ModelCommandResult) commandResult.getResult()).getMessageFromContent())
+    assertThat(((CommandResult) commandResult.getResult()).asString().trim())
         .isEqualTo("MyNameIs:$USER_NAME");
   }
 }

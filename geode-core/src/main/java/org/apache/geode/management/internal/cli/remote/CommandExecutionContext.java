@@ -18,8 +18,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.management.internal.cli.CommandResponseWriter;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.shell.Gfsh;
 
@@ -32,15 +30,6 @@ public class CommandExecutionContext {
   private static final ThreadLocal<Map<String, String>> ENV = new ThreadLocal<>();
   private static final ThreadLocal<Boolean> FROM_SHELL = new ThreadLocal<>();
   private static final ThreadLocal<List<String>> SHELL_FILEPATH = new ThreadLocal<>();
-
-  @MakeNotStatic
-  private static final WrapperThreadLocal<CommandResponseWriter> WRITER_WRAPPER =
-      new WrapperThreadLocal<CommandResponseWriter>() {
-        @Override
-        protected CommandResponseWriter createWrapped() {
-          return new CommandResponseWriter();
-        }
-      };
 
   public static String getShellEnvProperty(String propertyName, String defaultValue) {
     String propertyValue = null;
@@ -93,18 +82,6 @@ public class CommandExecutionContext {
     FROM_SHELL.set(true);
   }
 
-  public static boolean isSetWrapperThreadLocal() {
-    return WRITER_WRAPPER.isSet();
-  }
-
-  public static CommandResponseWriter getCommandResponseWriter() {
-    return WRITER_WRAPPER.get();
-  }
-
-  public static CommandResponseWriter getAndCreateIfAbsentCommandResponseWriter() {
-    return WRITER_WRAPPER.getAndCreateIfAbsent();
-  }
-
   public static void clear() {
     Map<String, String> map = ENV.get();
     if (map != null) {
@@ -114,6 +91,5 @@ public class CommandExecutionContext {
 
     FROM_SHELL.set(false);
     SHELL_FILEPATH.set(null);
-    WRITER_WRAPPER.set(null);
   }
 }

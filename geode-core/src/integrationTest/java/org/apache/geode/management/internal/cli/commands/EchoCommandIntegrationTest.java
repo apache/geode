@@ -67,26 +67,27 @@ public class EchoCommandIntegrationTest {
     String command = "echo --string=\"$*\"";
     CommandResult commandResult = gfsh.executeAndAssertThat(command).statusIsSuccess()
         .getCommandResult();
-    assertThat(commandResult.getTableColumnValues("Property"))
-        .containsExactlyInAnyOrder("APP_COLLECTION_LIMIT",
-            "APP_FETCH_SIZE",
-            "APP_LAST_EXIT_STATUS",
-            "APP_LOGGING_ENABLED",
-            "APP_LOG_FILE",
-            "APP_NAME",
-            "APP_PWD",
-            "APP_QUERY_RESULTS_DISPLAY_MODE",
-            "APP_QUIET_EXECUTION",
-            "APP_RESULT_VIEWER",
-            "SYS_CLASSPATH",
-            "SYS_GEODE_HOME_DIR",
-            "SYS_HOST_NAME",
-            "SYS_JAVA_VERSION",
-            "SYS_OS",
-            "SYS_OS_LINE_SEPARATOR",
-            "SYS_USER",
-            "SYS_USER_HOME",
-            "TESTSYS");
+    assertThat(
+        commandResult.getResultData().getTableSections().get(0).getValuesInColumn("Property"))
+            .containsExactlyInAnyOrder("APP_COLLECTION_LIMIT",
+                "APP_FETCH_SIZE",
+                "APP_LAST_EXIT_STATUS",
+                "APP_LOGGING_ENABLED",
+                "APP_LOG_FILE",
+                "APP_NAME",
+                "APP_PWD",
+                "APP_QUERY_RESULTS_DISPLAY_MODE",
+                "APP_QUIET_EXECUTION",
+                "APP_RESULT_VIEWER",
+                "SYS_CLASSPATH",
+                "SYS_GEODE_HOME_DIR",
+                "SYS_HOST_NAME",
+                "SYS_JAVA_VERSION",
+                "SYS_OS",
+                "SYS_OS_LINE_SEPARATOR",
+                "SYS_USER",
+                "SYS_USER_HOME",
+                "TESTSYS");
   }
 
   @Test

@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.cli.Result.Status.ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -66,52 +65,51 @@ public class CreateIndexCommandTest {
 
   @Test
   public void missingExpression() throws Exception {
-    result = gfshParser.executeCommandWithInstance(command, "create index --name=abc --region=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    gfshParser.executeAndAssertThat(command, "create index --name=abc --region=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test
   public void missingRegion() throws Exception {
-    result =
-        gfshParser.executeCommandWithInstance(command, "create index --name=abc --expression=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    gfshParser.executeAndAssertThat(command, "create index --name=abc --expression=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test
   public void invalidIndexType() throws Exception {
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --name=abc --expression=abc --region=abc --type=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("Invalid command");
+    gfshParser.executeAndAssertThat(command,
+        "create index --name=abc --expression=abc --region=abc --type=abc")
+        .statusIsError()
+        .containsOutput("Invalid command");
   }
 
   @Test
   public void validIndexType() throws Exception {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --name=abc --expression=abc --region=abc --type=range");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("No Members Found");
+    gfshParser.executeAndAssertThat(command,
+        "create index --name=abc --expression=abc --region=abc --type=range")
+        .statusIsError()
+        .containsOutput("No Members Found");
   }
 
   @Test
   public void validIndexType2() throws Exception {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --name=abc --expression=abc --region=abc --type=hash");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("No Members Found");
+    gfshParser.executeAndAssertThat(command,
+        "create index --name=abc --expression=abc --region=abc --type=hash")
+        .statusIsError()
+        .containsOutput("No Members Found");
   }
 
   @Test
   public void noMemberFound() throws Exception {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
-    result = gfshParser.executeCommandWithInstance(command,
-        "create index --name=abc --expression=abc --region=abc");
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains("No Members Found");
+    gfshParser.executeAndAssertThat(command,
+        "create index --name=abc --expression=abc --region=abc")
+        .statusIsError()
+        .containsOutput("No Members Found");
   }
 
   @Test

@@ -552,7 +552,6 @@ org/apache/geode/management/internal/cli/functions/UpdateCacheFunction$CacheElem
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/json/GfJsonException,true,36449998984143318
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
-org/apache/geode/management/internal/cli/result/ResultDataException,true,3851919811942980944
 org/apache/geode/management/internal/cli/result/TableBuilder$Align,false
 org/apache/geode/management/internal/cli/result/TableBuilderHelper$TooManyColumnsException,false
 org/apache/geode/management/internal/cli/shell/JMXConnectionException,true,3872374016604940917,exceptionType:int

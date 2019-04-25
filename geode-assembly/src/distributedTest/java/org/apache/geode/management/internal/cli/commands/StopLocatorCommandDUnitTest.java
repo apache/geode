@@ -141,12 +141,10 @@ public class StopLocatorCommandDUnitTest {
       gfsh.disconnect();
     }
 
-    CommandResult result = gfsh.executeCommand(command);
+    gfsh.executeAndAssertThat(command).statusIsError()
+        .containsOutput(expectedError);
 
     gfsh.connectAndVerify(locator);
-
-    assertThat(result.getStatus()).isEqualTo(ERROR);
-    assertThat(result.getMessageFromContent()).contains(expectedError);
   }
 
   @Test

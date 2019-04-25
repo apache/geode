@@ -45,7 +45,6 @@ import org.apache.geode.management.internal.cli.domain.DataCommandResult;
 import org.apache.geode.management.internal.cli.dto.Value1;
 import org.apache.geode.management.internal.cli.dto.Value2;
 import org.apache.geode.management.internal.cli.result.CommandResult;
-import org.apache.geode.management.internal.cli.result.ResultData;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -321,12 +320,10 @@ public class GemfireDataCommandsDUnitTestBase {
   }
 
   private void validateResult(CommandResult cmdResult, Boolean expected) {
-    if (ResultData.TYPE_MODEL.equals(cmdResult.getType())) {
-      ResultModel rd = (ResultModel) cmdResult.getResultData();
-      DataResultModel result = rd.getDataSection(DataCommandResult.DATA_INFO_SECTION);
-      assertThat(result.getContent().get("Result")).isEqualTo(expected.toString());
-    } else
-      fail("Expected CompositeResult Returned Result Type " + cmdResult.getType());
+    ResultModel rd = cmdResult.getResultData();
+    DataResultModel result = rd.getDataSection(DataCommandResult.DATA_INFO_SECTION);
+    assertThat(result.getContent().get("Result")).isEqualTo(expected.toString());
+
   }
 
   private Properties locatorProperties() {

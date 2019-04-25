@@ -66,8 +66,10 @@ public class DescribeJndiBindingCommandTest {
   public void describeJndiBinding() {
     bindings.add(binding);
     gfsh.executeAndAssertThat(command, COMMAND + " --name=jndi-name").statusIsSuccess()
-        .containsOutput(
-            "\"SIMPLE\",\"jndi-name\",\"org.postgresql.Driver\",\"MyUser\",\"jdbc:postgresql://localhost:5432/my_db\",\"\",\"\",\"\",\"\",\"\"");
+        .hasTableSection()
+        .hasColumn("Value")
+        .containsExactlyInAnyOrder("SIMPLE", "jndi-name", "org.postgresql.Driver", "MyUser",
+            "jdbc:postgresql://localhost:5432/my_db", "", "", "", "", "");
   }
 
   @Test

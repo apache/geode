@@ -90,8 +90,11 @@ public interface Result {
    * Returns whether this Result has a file as a part of the command output.
    *
    * @return True if there is a file, false otherwise.
+   * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
-  boolean hasIncomingFiles();
+  default boolean hasIncomingFiles() {
+    return false;
+  }
 
   /**
    * Save the file(s) from this Result. {@link #hasIncomingFiles()} should be used before calling
@@ -100,22 +103,40 @@ public interface Result {
    * @param directory Directory to which the file(s) should be saved.
    * @throws IOException If an error occurs while saving the file.
    * @throws RuntimeException If there is no file in the Result to save.
+   * @deprecated since 1.10. file transfer in plugin commands is never supported
    */
-  void saveIncomingFiles(String directory) throws IOException;
+  default void saveIncomingFiles(String directory) throws IOException {}
 
   /****
    * Return whether the configuration changes due to command have been persisted to cluster
    * configuration or not.
    *
    * @return True if the command has failed to persist configuration changes , false otherwise.
+   * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
-  boolean failedToPersist();
+  default boolean failedToPersist() {
+    return false;
+  }
 
   /*****
    * Sets whether the command changes have not been persisted to the cluster configuration
    *
    * @param commandPersisted true if the command changes are persisted to the cluster configuration,
    *        false otherwise.
+   *
+   * @deprecated since 1.10. This only affect the gfsh output line which is not api bound
    */
-  void setCommandPersisted(boolean commandPersisted);
+  default void setCommandPersisted(boolean commandPersisted) {}
+
+  /**
+   * @return the string representation of the result with the specified line separator.
+   */
+  default String asString() {
+    StringBuilder builder = new StringBuilder();
+    while (this.hasNextLine()) {
+      builder.append(this.nextLine());
+    }
+    this.resetToFirstLine();
+    return builder.toString();
+  }
 }

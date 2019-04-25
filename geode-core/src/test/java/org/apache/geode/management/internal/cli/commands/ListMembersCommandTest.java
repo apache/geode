@@ -32,7 +32,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 
@@ -75,9 +74,8 @@ public class ListMembersCommandTest {
   public void basicListMembers() {
     members.add(member1);
 
-    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table =
-        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
+    Map<String, List<String>> table = gfsh.executeAndAssertThat(command, "list members")
+        .hasTableSection().getActual().getContent();
 
     assertThat(table.get("Name")).contains("name");
     assertThat(table.get("Id")).contains("id [Coordinator]");
@@ -88,9 +86,8 @@ public class ListMembersCommandTest {
     members.add(member1);
     doReturn(null).when(command).getCoordinator();
 
-    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table =
-        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
+    Map<String, List<String>> table = gfsh.executeAndAssertThat(command, "list members")
+        .hasTableSection().getActual().getContent();
 
     assertThat(table.get("Name")).contains("name");
     assertThat(table.get("Id")).contains("id");
@@ -101,9 +98,8 @@ public class ListMembersCommandTest {
     members.add(member1);
     members.add(member2);
 
-    CommandResult result = gfsh.executeCommandWithInstance(command, "list members");
-    Map<String, List<String>> table =
-        result.getMapFromTableContent(ListMembersCommand.MEMBERS_SECTION);
+    Map<String, List<String>> table = gfsh.executeAndAssertThat(command, "list members")
+        .hasTableSection().getActual().getContent();
 
     assertThat(table.get("Name")).contains("name", "name2");
     assertThat(table.get("Id")).contains("id [Coordinator]", "id2");

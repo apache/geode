@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands.lifecycle;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.File;
 
 import org.junit.Before;
@@ -23,7 +21,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -46,31 +43,30 @@ public class GfshStatusCommandsIntegrationTest {
 
   @Test
   public void statusLocatorWithBadPortReportsNotResponding() throws Exception {
-    CommandResult result = gfsh.executeCommand("status locator --host=localhost --port="
-        + String.valueOf(locator.getLocator().getPort() - 1));
-    assertThat(result.getMessageFromContent()).contains("not responding");
+    gfsh.executeAndAssertThat("status locator --host=localhost --port="
+        + String.valueOf(locator.getLocator().getPort() - 1))
+        .containsOutput("not responding");
   }
 
   @Test
   public void statusLocatorWithActivePortReportsOnline() throws Exception {
-    CommandResult result = gfsh.executeCommand(
-        "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()));
-    assertThat(result.getMessageFromContent()).contains("is currently online");
+    gfsh.executeAndAssertThat(
+        "status locator --host=localhost --port=" + String.valueOf(locator.getLocator().getPort()))
+        .containsOutput("is currently online");
   }
 
   @Test
   public void statusServerWithWithNoOptions() throws Exception {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
-    CommandResult result = gfsh.executeCommand("status server");
-    assertThat(result.getMessageFromContent()).contains("not responding");
+    gfsh.executeAndAssertThat("status server").containsOutput("not responding");
   }
 
   @Test
   public void statusServerWithInvalidDirReturnsMeangingfulMessage() throws Exception {
     File serverDir = new File(temporaryFolder.getRoot(), "serverDir");
     serverDir.mkdirs();
-    CommandResult result = gfsh.executeCommand("status server --dir=" + serverDir.toString());
-    assertThat(result.getMessageFromContent()).contains("not responding");
+    gfsh.executeAndAssertThat("status server --dir=" + serverDir.toString())
+        .containsOutput("not responding");
   }
 }

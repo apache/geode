@@ -27,8 +27,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -67,11 +65,11 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
 
-    CommandResult result = gfshConnector
-        .executeCommand("import cluster-configuration --zip-file-name=" + clusterConfigZipPath);
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getMessageFromContent()).contains("existing regions: " + regionName);
+    gfshConnector
+        .executeAndAssertThat(
+            "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
+        .statusIsError()
+        .containsOutput("existing regions: " + regionName);
   }
 
   @Test

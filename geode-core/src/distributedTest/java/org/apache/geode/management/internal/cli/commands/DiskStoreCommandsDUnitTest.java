@@ -383,12 +383,10 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
       r.put("A", "B");
     });
 
-    CommandResult result = gfsh.executeCommand(
-        String.format("describe disk-store --member=%s --name=%s", server1.getName(), "UNKNOWN"));
-
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(result.getErrorMessage())
-        .isEqualTo("A disk store with name 'UNKNOWN' was not found on member 'server-0'.");
+    gfsh.executeAndAssertThat(
+        String.format("describe disk-store --member=%s --name=%s", server1.getName(), "UNKNOWN"))
+        .statusIsError()
+        .containsOutput("A disk store with name 'UNKNOWN' was not found on member 'server-0'.");
   }
 
   @Test

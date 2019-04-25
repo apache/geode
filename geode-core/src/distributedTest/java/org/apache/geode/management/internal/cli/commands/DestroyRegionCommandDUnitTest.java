@@ -71,14 +71,14 @@ public class DestroyRegionCommandDUnitTest {
 
     // Test unable to destroy with co-location
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
-        .tableHasRowCount("Member", 3)
+        .tableHasRowCount(3)
         .containsOutput("The parent region [/Customer] in colocation chain cannot be destroyed");
 
     // Test success
     gfsh.executeAndAssertThat("destroy region --name=/Order").statusIsSuccess()
-        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
+        .tableHasRowCount(3).containsOutput("destroyed successfully");
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsSuccess()
-        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
+        .tableHasRowCount(3).containsOutput("destroyed successfully");
 
     // destroy something that's not exist anymore
     gfsh.executeAndAssertThat("destroy region --name=/Customer").statusIsError()
@@ -94,7 +94,7 @@ public class DestroyRegionCommandDUnitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/region1", 3);
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
-        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
+        .tableHasRowCount(3).containsOutput("destroyed successfully");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -128,7 +128,7 @@ public class DestroyRegionCommandDUnitTest {
     });
 
     gfsh.executeAndAssertThat("destroy region --name=region1").statusIsSuccess()
-        .tableHasRowCount("Member", 3).containsOutput("destroyed successfully");
+        .tableHasRowCount(3).containsOutput("destroyed successfully");
 
     // verify that all cc entries are deleted, no matter what the scope is
     locator.invoke(() -> {

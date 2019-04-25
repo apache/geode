@@ -134,7 +134,7 @@ public class DestroyDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsError()
         .containsOutput(
-            "Data source named \\\"name\\\" does not exist. A jndi-binding was found with that name.");
+            "Data source named \"name\" does not exist. A jndi-binding was found with that name.");
   }
 
   @Test
@@ -149,8 +149,8 @@ public class DestroyDataSourceCommandTest {
     setupRegionConfigToUseDataSource(DATA_SOURCE_NAME);
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=" + DATA_SOURCE_NAME).statusIsError()
-        .containsOutput("Data source named \\\"" + DATA_SOURCE_NAME
-            + "\\\" is still being used by region \\\"regionUsingDataSource\\\"."
+        .containsOutput("Data source named \"" + DATA_SOURCE_NAME
+            + "\" is still being used by region \"regionUsingDataSource\"."
             + " Use destroy jdbc-mapping --region=regionUsingDataSource and then try again.");
   }
 
@@ -234,7 +234,7 @@ public class DestroyDataSourceCommandTest {
     doReturn(results).when(command).executeAndGetFunctionResult(any(), any(), any());
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name --if-exists=false").statusIsError()
-        .containsOutput("Data source named \\\"name\\\" does not exist.");
+        .containsOutput("Data source named \"name\" does not exist.");
   }
 
   @Test
