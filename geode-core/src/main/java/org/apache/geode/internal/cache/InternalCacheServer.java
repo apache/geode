@@ -37,19 +37,19 @@ public interface InternalCacheServer extends CacheServer {
 
   InternalCache getCache();
 
-  ConnectionListener connectionListener();
+  ConnectionListener getConnectionListener();
 
-  ServerConnectionFactory serverConnectionFactory();
+  ServerConnectionFactory getServerConnectionFactory();
 
-  long timeLimitMillis();
+  long getTimeLimitMillis();
 
-  SecurityService securityService();
+  SecurityService getSecurityService();
 
-  Supplier<SocketCreator> socketCreatorSupplier();
+  Supplier<SocketCreator> getSocketCreatorSupplier();
 
-  CacheClientNotifierProvider cacheClientNotifierProvider();
+  CacheClientNotifierProvider getCacheClientNotifierProvider();
 
-  ClientHealthMonitorProvider clientHealthMonitorProvider();
+  ClientHealthMonitorProvider getClientHealthMonitorProvider();
 
   String[] getCombinedGroups();
 }

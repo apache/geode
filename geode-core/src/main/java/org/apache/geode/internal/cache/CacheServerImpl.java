@@ -69,8 +69,6 @@ import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorFactory;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
@@ -100,7 +98,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final SecurityService securityService;
 
-  private final AcceptorFactory acceptorFactory;
+  private final AcceptorBuilder acceptorBuilder;
 
   private final boolean sendResourceEvents;
 
@@ -165,14 +163,14 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider,
       final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
-    this(cache, securityService, new CacheServerAcceptorFactory(), true, true,
+    this(cache, securityService, new AcceptorBuilder(), true, true,
         socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider,
         cacheServerAdvisorProvider);
   }
 
   public CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
-      final AcceptorFactory acceptorFactory,
+      final AcceptorBuilder acceptorBuilder,
       final boolean sendResourceEvents,
       final boolean includeMembershipGroups,
       final Supplier<SocketCreator> socketCreatorSupplier,
@@ -181,7 +179,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     super(cache);
     this.securityService = securityService;
-    this.acceptorFactory = acceptorFactory;
+    this.acceptorBuilder = acceptorBuilder;
     this.sendResourceEvents = sendResourceEvents;
     this.includeMembershipGroups = includeMembershipGroups;
     this.socketCreatorSupplier = socketCreatorSupplier;
@@ -444,8 +442,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   @Override
   public Acceptor createAcceptor(OverflowAttributes overflowAttributes) throws IOException {
-    acceptorFactory.accept(this);
-    return acceptorFactory.create(overflowAttributes);
+    acceptorBuilder.forServer(this);
+    return acceptorBuilder.create(overflowAttributes);
   }
 
   /**
@@ -853,62 +851,37 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   }
 
   @Override
-  public ConnectionListener connectionListener() {
+  public ConnectionListener getConnectionListener() {
     return loadMonitor;
   }
 
   @Override
-  public ServerConnectionFactory serverConnectionFactory() {
+  public ServerConnectionFactory getServerConnectionFactory() {
     return serverConnectionFactory;
   }
 
   @Override
-  public SecurityService securityService() {
+  public SecurityService getSecurityService() {
     return securityService;
   }
 
   @Override
-  public long timeLimitMillis() {
+  public long getTimeLimitMillis() {
     return 120_000;
   }
 
   @Override
-  public Supplier<SocketCreator> socketCreatorSupplier() {
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
     return socketCreatorSupplier;
   }
 
   @Override
-  public CacheClientNotifierProvider cacheClientNotifierProvider() {
+  public CacheClientNotifierProvider getCacheClientNotifierProvider() {
     return cacheClientNotifierProvider;
   }
 
   @Override
-  public ClientHealthMonitorProvider clientHealthMonitorProvider() {
+  public ClientHealthMonitorProvider getClientHealthMonitorProvider() {
     return clientHealthMonitorProvider;
-  }
-
-  private static class CacheServerAcceptorFactory implements AcceptorFactory {
-
-    private InternalCacheServer internalCacheServer;
-
-    @Override
-    public void accept(InternalCacheServer internalCacheServer) {
-      this.internalCacheServer = internalCacheServer;
-    }
-
-    @Override
-    public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
-      return new AcceptorImpl(internalCacheServer.getPort(), internalCacheServer.getBindAddress(),
-          internalCacheServer.getNotifyBySubscription(), internalCacheServer.getSocketBufferSize(),
-          internalCacheServer.getMaximumTimeBetweenPings(), internalCacheServer.getCache(),
-          internalCacheServer.getMaxConnections(), internalCacheServer.getMaxThreads(),
-          internalCacheServer.getMaximumMessageCount(), internalCacheServer.getMessageTimeToLive(),
-          internalCacheServer.connectionListener(), overflowAttributes,
-          internalCacheServer.getTcpNoDelay(), internalCacheServer.serverConnectionFactory(),
-          internalCacheServer.timeLimitMillis(), internalCacheServer.securityService(),
-          internalCacheServer.socketCreatorSupplier(),
-          internalCacheServer.cacheClientNotifierProvider(),
-          internalCacheServer.clientHealthMonitorProvider());
-    }
   }
 }

@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
@@ -138,7 +139,7 @@ public class CacheClientNotifier {
       boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
       ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount,
-          messageTimeToLive, listener, overflowAttributes, isGatewayReceiver);
+          messageTimeToLive, listener, isGatewayReceiver);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -1842,11 +1843,10 @@ public class CacheClientNotifier {
   /**
    * @param cache The GemFire <code>InternalCache</code>
    * @param listener a listener which should receive notifications abouts queues being added or
-   *        removed.
    */
   private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
       int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-      OverflowAttributes overflowAttributes, boolean isGatewayReceiver) {
+      boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
     this.acceptorStats = acceptorStats;
@@ -2240,12 +2240,12 @@ public class CacheClientNotifier {
   }
 
   public static CacheClientNotifierProvider singletonProvider() {
-    return new SingletonCacheClientNotifier();
+    return CacheClientNotifier::getInstance;
   }
 
   @SuppressWarnings("unused")
-  public static CacheClientNotifierProvider singletonGetter() {
-    return new SingletonCacheClientNotifier();
+  public static Supplier<CacheClientNotifier> singletonGetter() {
+    return CacheClientNotifier::getInstance;
   }
 
   @FunctionalInterface
@@ -2253,27 +2253,5 @@ public class CacheClientNotifier {
     CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
         int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
         OverflowAttributes overflowAttributes, boolean isGatewayReceiver);
-  }
-
-  @FunctionalInterface
-  public interface CacheClientNotifierGetter {
-    CacheClientNotifier get();
-  }
-
-  private static class SingletonCacheClientNotifier
-      implements CacheClientNotifierProvider, CacheClientNotifierGetter {
-
-    @Override
-    public CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
-        int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-        OverflowAttributes overflowAttributes, boolean isGatewayReceiver) {
-      return getInstance(cache, acceptorStats, maximumMessageCount, messageTimeToLive, listener,
-          overflowAttributes, isGatewayReceiver);
-    }
-
-    @Override
-    public CacheClientNotifier get() {
-      return getInstance();
-    }
   }
 }

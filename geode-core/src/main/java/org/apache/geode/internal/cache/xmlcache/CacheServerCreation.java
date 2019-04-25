@@ -271,37 +271,37 @@ public class CacheServerCreation extends AbstractCacheServer {
   }
 
   @Override
-  public ConnectionListener connectionListener() {
+  public ConnectionListener getConnectionListener() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public ServerConnectionFactory serverConnectionFactory() {
+  public ServerConnectionFactory getServerConnectionFactory() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public long timeLimitMillis() {
+  public long getTimeLimitMillis() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public SecurityService securityService() {
+  public SecurityService getSecurityService() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public Supplier<SocketCreator> socketCreatorSupplier() {
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public CacheClientNotifierProvider cacheClientNotifierProvider() {
+  public CacheClientNotifierProvider getCacheClientNotifierProvider() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 
   @Override
-  public ClientHealthMonitorProvider clientHealthMonitorProvider() {
+  public ClientHealthMonitorProvider getClientHealthMonitorProvider() {
     throw new UnsupportedOperationException("Shouldn't be invoked");
   }
 

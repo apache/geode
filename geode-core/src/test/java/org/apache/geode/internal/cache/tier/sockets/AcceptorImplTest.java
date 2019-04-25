@@ -43,7 +43,6 @@ import org.mockito.junit.MockitoRule;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
@@ -65,7 +64,6 @@ public class AcceptorImplTest {
   private CacheClientNotifier cacheClientNotifier;
   private ClientHealthMonitor clientHealthMonitor;
   private ServerConnectionFactory serverConnectionFactory;
-  private GatewayReceiver gatewayReceiver;
   private GatewayReceiverMetrics gatewayReceiverMetrics;
   private SecurityService securityService;
   private SocketCreator socketCreator;
@@ -78,7 +76,6 @@ public class AcceptorImplTest {
     cacheClientNotifier = mock(CacheClientNotifier.class);
     clientHealthMonitor = mock(ClientHealthMonitor.class);
     serverConnectionFactory = mock(ServerConnectionFactory.class);
-    gatewayReceiver = mock(GatewayReceiver.class);
     gatewayReceiverMetrics = new GatewayReceiverMetrics(new SimpleMeterRegistry());
     socketCreator = mock(SocketCreator.class);
     securityService = mock(SecurityService.class);
@@ -104,7 +101,7 @@ public class AcceptorImplTest {
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
         null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
         () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, null, null,
+        (a, b, c) -> clientHealthMonitor, false, null,
         Collections.emptyList());
 
     assertThat(acceptor.isGatewayReceiver()).isFalse();
@@ -122,8 +119,7 @@ public class AcceptorImplTest {
         CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT, CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null,
         null, DEFAULT_TCP_NO_DELAY, serverConnectionFactory, 1000, securityService,
         () -> socketCreator, (a, b, c, d, e, f, g) -> cacheClientNotifier,
-        (a, b, c) -> clientHealthMonitor, gatewayReceiver,
-        gatewayReceiverMetrics, Collections.emptyList());
+        (a, b, c) -> clientHealthMonitor, true, gatewayReceiverMetrics, Collections.emptyList());
 
     assertThat(acceptor.isGatewayReceiver()).isTrue();
   }

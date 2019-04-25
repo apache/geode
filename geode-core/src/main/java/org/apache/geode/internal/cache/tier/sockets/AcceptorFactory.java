@@ -15,13 +15,11 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
-import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 
-public interface AcceptorFactory extends Consumer<InternalCacheServer> {
+public interface AcceptorFactory {
 
   Acceptor create(OverflowAttributes overflowAttributes) throws IOException;
 }

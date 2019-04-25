@@ -17,21 +17,17 @@ package org.apache.geode.internal.cache.wan;
 import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.GATEWAY;
 
-import java.io.IOException;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.internal.DistributionAdvisee;
+import org.apache.geode.internal.cache.AcceptorBuilder;
 import org.apache.geode.internal.cache.CacheServerAdvisor;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.OverflowAttributes;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorFactory;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
@@ -43,7 +39,6 @@ public class GatewayReceiverServerFactory {
 
   private final InternalCache cache;
   private final SecurityService securityService;
-  private final GatewayReceiverAcceptorFactory acceptorFactory;
   private final GatewayReceiver gatewayReceiver;
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
   private final Supplier<SocketCreator> socketCreatorSupplier;
@@ -71,7 +66,6 @@ public class GatewayReceiverServerFactory {
       final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     this.cache = cache;
     this.securityService = securityService;
-    acceptorFactory = new GatewayReceiverAcceptorFactory();
     this.gatewayReceiver = gatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.socketCreatorSupplier = socketCreatorSupplier;
@@ -81,42 +75,12 @@ public class GatewayReceiverServerFactory {
   }
 
   public InternalCacheServer createServer() {
-    acceptorFactory.setGatewayReceiverEndpoint(this);
-    return new CacheServerImpl(cache, securityService, acceptorFactory, false, false,
+    AcceptorBuilder acceptorBuilder = new AcceptorBuilder();
+    acceptorBuilder.setGatewayReceiverMetrics(gatewayReceiverMetrics);
+    acceptorBuilder.setGatewayTransportFilters(gatewayReceiver.getGatewayTransportFilters());
+
+    return new CacheServerImpl(cache, securityService, acceptorBuilder, false, false,
         socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider,
         cacheServerAdvisorProvider);
-  }
-
-  private static class GatewayReceiverAcceptorFactory implements AcceptorFactory {
-
-    private InternalCacheServer internalCacheServer;
-    private GatewayReceiverServerFactory gatewayReceiverEndpoint;
-
-    @Override
-    public void accept(InternalCacheServer internalCacheServer) {
-      this.internalCacheServer = internalCacheServer;
-    }
-
-    void setGatewayReceiverEndpoint(GatewayReceiverServerFactory gatewayReceiverEndpoint) {
-      this.gatewayReceiverEndpoint = gatewayReceiverEndpoint;
-    }
-
-    @Override
-    public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
-      return new AcceptorImpl(internalCacheServer.getPort(), internalCacheServer.getBindAddress(),
-          internalCacheServer.getNotifyBySubscription(), internalCacheServer.getSocketBufferSize(),
-          internalCacheServer.getMaximumTimeBetweenPings(), internalCacheServer.getCache(),
-          internalCacheServer.getMaxConnections(), internalCacheServer.getMaxThreads(),
-          internalCacheServer.getMaximumMessageCount(), internalCacheServer.getMessageTimeToLive(),
-          internalCacheServer.connectionListener(), overflowAttributes,
-          internalCacheServer.getTcpNoDelay(), internalCacheServer.serverConnectionFactory(),
-          internalCacheServer.timeLimitMillis(), internalCacheServer.securityService(),
-          internalCacheServer.socketCreatorSupplier(),
-          internalCacheServer.cacheClientNotifierProvider(),
-          internalCacheServer.clientHealthMonitorProvider(),
-          gatewayReceiverEndpoint.gatewayReceiver,
-          gatewayReceiverEndpoint.gatewayReceiverMetrics,
-          gatewayReceiverEndpoint.gatewayReceiver.getGatewayTransportFilters());
-    }
   }
 }

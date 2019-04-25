@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -829,37 +830,17 @@ public class ClientHealthMonitor {
   } // ClientHealthMonitorThread
 
   public static ClientHealthMonitorProvider singletonProvider() {
-    return new ClientHealthMonitorSingleton();
+    return ClientHealthMonitor::getInstance;
   }
 
   @SuppressWarnings("unused")
-  public static ClientHealthMonitorGetter singletonGetter() {
-    return new ClientHealthMonitorSingleton();
+  public static Supplier<ClientHealthMonitor> singletonGetter() {
+    return ClientHealthMonitor::getInstance;
   }
 
   @FunctionalInterface
   public interface ClientHealthMonitorProvider {
     ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
         CacheClientNotifierStats stats);
-  }
-
-  @FunctionalInterface
-  public interface ClientHealthMonitorGetter {
-    ClientHealthMonitor get();
-  }
-
-  private static class ClientHealthMonitorSingleton
-      implements ClientHealthMonitorProvider, ClientHealthMonitorGetter {
-
-    @Override
-    public ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
-        CacheClientNotifierStats stats) {
-      return getInstance(cache, maximumTimeBetweenPings, stats);
-    }
-
-    @Override
-    public ClientHealthMonitor get() {
-      return getInstance();
-    }
   }
 }

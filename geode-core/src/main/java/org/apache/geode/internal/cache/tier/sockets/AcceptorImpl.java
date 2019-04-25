@@ -68,7 +68,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -335,7 +334,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
   @MakeNotStatic
   private static boolean isPostAuthzCallbackPresent;
 
-  private final GatewayReceiver gatewayReceiver;
+  private final boolean isGatewayReceiver;
 
   private final GatewayReceiverMetrics gatewayReceiverMetrics;
 
@@ -384,7 +383,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
         internalCache, maxConnections, maxThreads, maximumMessageCount, messageTimeToLive,
         connectionListener, overflowAttributes, tcpNoDelay, serverConnectionFactory,
         timeLimitMillis, securityService, socketCreatorSupplier, cacheClientNotifierProvider,
-        clientHealthMonitorProvider, null, null, Collections.emptyList());
+        clientHealthMonitorProvider, false, null, Collections.emptyList());
   }
 
   /**
@@ -418,11 +417,11 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
       final Supplier<SocketCreator> socketCreatorSupplier,
       final CacheClientNotifierProvider cacheClientNotifierProvider,
       final ClientHealthMonitorProvider clientHealthMonitorProvider,
-      final GatewayReceiver gatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
+      final boolean isGatewayReceiver, final GatewayReceiverMetrics gatewayReceiverMetrics,
       final List<GatewayTransportFilter> gatewayTransportFilters) throws IOException {
     this.securityService = securityService;
 
-    this.gatewayReceiver = gatewayReceiver;
+    this.isGatewayReceiver = isGatewayReceiver;
     this.gatewayReceiverMetrics = gatewayReceiverMetrics;
     this.gatewayTransportFilters = gatewayTransportFilters;
 
@@ -612,7 +611,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     cache = internalCache;
     crHelper = new CachedRegionHelper(cache);
 
-    clientNotifier = cacheClientNotifierProvider.get(cache, stats, maximumMessageCount,
+    clientNotifier = cacheClientNotifierProvider.get(internalCache, stats, maximumMessageCount,
         messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
 
     this.socketBufferSize = socketBufferSize;
@@ -1811,7 +1810,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
 
   @Override
   public boolean isGatewayReceiver() {
-    return gatewayReceiver != null;
+    return isGatewayReceiver;
   }
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {

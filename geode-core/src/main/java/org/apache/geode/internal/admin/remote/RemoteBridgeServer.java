@@ -153,37 +153,37 @@ public class RemoteBridgeServer extends AbstractCacheServer
   }
 
   @Override
-  public ConnectionListener connectionListener() {
+  public ConnectionListener getConnectionListener() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public ServerConnectionFactory serverConnectionFactory() {
+  public ServerConnectionFactory getServerConnectionFactory() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public long timeLimitMillis() {
+  public long getTimeLimitMillis() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public SecurityService securityService() {
+  public SecurityService getSecurityService() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public Supplier<SocketCreator> socketCreatorSupplier() {
+  public Supplier<SocketCreator> getSocketCreatorSupplier() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public CacheClientNotifier.CacheClientNotifierProvider cacheClientNotifierProvider() {
+  public CacheClientNotifier.CacheClientNotifierProvider getCacheClientNotifierProvider() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
   @Override
-  public ClientHealthMonitor.ClientHealthMonitorProvider clientHealthMonitorProvider() {
+  public ClientHealthMonitor.ClientHealthMonitorProvider getClientHealthMonitorProvider() {
     throw new UnsupportedOperationException("Unsupported in RemoteBridgeServer");
   }
 
