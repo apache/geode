@@ -845,7 +845,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       assertEquals(0, queryExecution.getResult());
     } catch (Throwable e) {
       e.printStackTrace();
-      fail("queryExecution.getResultData() threw Exception " + e.toString());
+      fail("queryExecution.getResult() threw Exception " + e.toString());
     }
   }
 
@@ -877,7 +877,7 @@ public class ResourceManagerWithQueryMonitorDUnitTest extends ClientServerTestCa
       assertEquals(0, queryExecution.getResult());
     } catch (Throwable e) {
       e.printStackTrace();
-      fail("queryExecution.getResultData() threw Exception " + e.toString());
+      fail("queryExecution.getResult() threw Exception " + e.toString());
     }
   }
 
