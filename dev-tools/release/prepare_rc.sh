@@ -124,7 +124,7 @@ echo "============================================================"
 cd ${GEODE_NATIVE}
 mkdir build
 cd build
-cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=/usr/local/Cellar/openssl/1.0.2q/ -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
+cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$(brew --prefix openssl) -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
 gpg --armor -u ${SIGNING_KEY} -b apache-geode-native-${VERSION}-src.tar.gz
 set +x
