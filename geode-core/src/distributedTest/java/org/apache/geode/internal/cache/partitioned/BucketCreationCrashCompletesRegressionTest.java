@@ -20,11 +20,11 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.DistributedTestUtils.crashDistributedSystem;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getAllDistributedSystemProperties;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -95,13 +95,62 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
    */
   @Test
   public void testCrashWhileCreatingABucket() {
-    vm1.invoke(() -> createPartitionedRegionWithObserver());
-    vm2.invoke(() -> createPartitionedRegionWithObserver());
+    for (VM vm : toArray(vm1, vm2)) {
+      vm.invoke(() -> {
+        DistributionMessageObserver.setInstance(new CrashMemberBeforeManageBucketMessage(vm0));
 
-    vm0.invoke(() -> createAccessorAndCrash());
+        PartitionAttributesFactory<?, ?> partitionAttributesFactory =
+            new PartitionAttributesFactory();
+        partitionAttributesFactory.setRedundantCopies(1);
+        partitionAttributesFactory.setRecoveryDelay(0);
 
-    vm1.invoke(() -> verifyBucketsAfterAccessorCrashes());
-    vm2.invoke(() -> verifyBucketsAfterAccessorCrashes());
+        RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION);
+        regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+        regionFactory.create(regionName);
+      });
+    }
+
+    vm0.invoke(() -> {
+      PartitionAttributesFactory<?, ?> partitionAttributesFactory =
+          new PartitionAttributesFactory<>();
+      partitionAttributesFactory.setRedundantCopies(1);
+      partitionAttributesFactory.setLocalMaxMemory(0);
+
+      RegionFactory<String, String> regionFactory = getCache().createRegionFactory(PARTITION);
+      regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
+
+      Region<String, String> region = regionFactory.create(regionName);
+
+      // trigger the creation of a bucket, which should trigger the destruction of this VM.
+      assertThatThrownBy(() -> region.put("ping", "pong")).isInstanceOf(CancelException.class);
+    });
+
+    for (VM vm : toArray(vm1, vm2)) {
+      vm.invoke(() -> {
+        PartitionedRegion pr = (PartitionedRegion) getCache().getRegion(regionName);
+        int totalNumBuckets = pr.getAttributes().getPartitionAttributes().getTotalNumBuckets();
+        for (int i = 0; i < totalNumBuckets; i++) {
+          int bucketId = i;
+
+          await().until(() -> {
+            try {
+              return pr.getBucketOwnersForValidation(bucketId) != null;
+            } catch (ForceReattemptException e) {
+              return false;
+            }
+          });
+
+          if (pr.getBucketOwnersForValidation(bucketId).isEmpty()) {
+            continue;
+          }
+
+          await().untilAsserted(() -> {
+            assertThat(pr.getBucketOwnersForValidation(bucketId)).hasSize(2);
+          });
+        }
+      });
+    }
   }
 
   /**
@@ -110,12 +159,13 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
    */
   @Test
   public void testMoveBucketToHostThatHasTheBucketAlready() {
-    vm0.invoke(() -> createPartitionedRegion());
-    vm1.invoke(() -> createPartitionedRegion());
+    vm0.invoke(() -> createPartitionedRegionWithoutRedundancyRecovery());
+    vm1.invoke(() -> createPartitionedRegionWithoutRedundancyRecovery());
 
     // Create a bucket
     vm0.invoke(() -> {
-      createBucket();
+      Region<Integer, String> region = getCache().getRegion(regionName);
+      region.put(0, "A");
     });
 
     InternalDistributedMember member1 = vm1.invoke(() -> getCache().getMyId());
@@ -126,60 +176,7 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
     });
   }
 
-  private void createPartitionedRegionWithObserver() {
-    DistributionMessageObserver.setInstance(new MyRegionObserver());
-
-    PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
-    partitionAttributesFactory.setRedundantCopies(1);
-    partitionAttributesFactory.setRecoveryDelay(0);
-
-    RegionFactory<?, ?> regionFactory = getCache().createRegionFactory(PARTITION);
-    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
-
-    regionFactory.create(regionName);
-  }
-
-  private void createAccessorAndCrash() {
-    PartitionAttributesFactory<String, String> partitionAttributesFactory =
-        new PartitionAttributesFactory<>();
-    partitionAttributesFactory.setRedundantCopies(1);
-    partitionAttributesFactory.setLocalMaxMemory(0);
-
-    RegionFactory<String, String> regionFactory = getCache().createRegionFactory(PARTITION);
-    regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
-
-    Region<String, String> region = regionFactory.create(regionName);
-
-    // trigger the creation of a bucket, which should trigger the destruction of this VM.
-    assertThatThrownBy(() -> region.put("ping", "pong")).isInstanceOf(CancelException.class);
-  }
-
-  private boolean hasBucketOwners(PartitionedRegion partitionedRegion, int bucketId) {
-    try {
-      return partitionedRegion.getBucketOwnersForValidation(bucketId) != null;
-    } catch (ForceReattemptException e) {
-      return false;
-    }
-  }
-
-  private void verifyBucketsAfterAccessorCrashes() throws ForceReattemptException {
-    PartitionedRegion partitionedRegion = (PartitionedRegion) getCache().getRegion(regionName);
-    for (int i = 0; i < partitionedRegion.getAttributes().getPartitionAttributes()
-        .getTotalNumBuckets(); i++) {
-      int bucketId = i;
-
-      await().until(() -> hasBucketOwners(partitionedRegion, bucketId));
-
-      List owners = partitionedRegion.getBucketOwnersForValidation(bucketId);
-      assertThat(owners).isNotNull();
-      if (owners.isEmpty()) {
-        continue;
-      }
-      assertThat(owners).hasSize(2);
-    }
-  }
-
-  private void createPartitionedRegion() {
+  private void createPartitionedRegionWithoutRedundancyRecovery() {
     PartitionAttributesFactory<?, ?> partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(1);
     partitionAttributesFactory.setRecoveryDelay(-1);
@@ -189,11 +186,6 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
     regionFactory.setPartitionAttributes(partitionAttributesFactory.create());
 
     regionFactory.create(regionName);
-  }
-
-  private void createBucket() {
-    Region<Integer, String> region = getCache().getRegion(regionName);
-    region.put(0, "A");
   }
 
   private void verifyCannotMoveBucketToExistingHost(InternalDistributedMember member1) {
@@ -212,10 +204,6 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
     assertThat(partitionedRegion.getRegionAdvisor().getBucketOwners(0)).isEqualTo(bucketOwners);
   }
 
-  private void crashServer() {
-    crashDistributedSystem(cacheRule.getSystem());
-  }
-
   private InternalCache getCache() {
     return cacheRule.getCache();
   }
@@ -226,18 +214,23 @@ public class BucketCreationCrashCompletesRegressionTest implements Serializable 
 
   public Properties getDistributedSystemProperties() {
     Properties config = new Properties();
-    config.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    config.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
     return getAllDistributedSystemProperties(config);
   }
 
-  private class MyRegionObserver extends DistributionMessageObserver implements Serializable {
+  private class CrashMemberBeforeManageBucketMessage extends DistributionMessageObserver
+      implements Serializable {
+
+    private final VM vm;
+
+    CrashMemberBeforeManageBucketMessage(VM vm) {
+      this.vm = vm;
+    }
 
     @Override
     public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
       if (message instanceof ManageBucketMessage) {
-        vm0.invoke(() -> {
-          crashServer();
-        });
+        vm.invoke(() -> crashDistributedSystem(cacheRule.getSystem()));
       }
     }
   }
