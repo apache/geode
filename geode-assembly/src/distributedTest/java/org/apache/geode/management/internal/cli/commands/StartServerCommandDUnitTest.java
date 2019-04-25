@@ -226,7 +226,7 @@ public class StartServerCommandDUnitTest implements Serializable {
         .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
         .getCommandString();
 
-    gfsh.executeAndAssertThat(command).statusIsError()
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
         .hasOutput().contains(expectedMessage, expectedMessage2);
   }
 
@@ -287,7 +287,7 @@ public class StartServerCommandDUnitTest implements Serializable {
 
     String expectedMessage = "Server in " + pidFile.getParentFile().getCanonicalPath();
 
-    gfsh.executeAndAssertThat(command).statusIsError()
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
         .containsOutput(expectedMessage);
   }
 

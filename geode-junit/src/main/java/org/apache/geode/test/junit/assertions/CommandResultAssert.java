@@ -293,6 +293,11 @@ public class CommandResultAssert
     return new TabularResultModelAssert(section);
   }
 
+  public CommandResultAssert hasNoTableSection() {
+    assertThat(actual.getResultData().getTableSections().size()).isEqualTo(0);
+    return this;
+  }
+
   // convenience method to get the first data section. if more than one data section
   // use the sectionName to get it
   public DataResultModelAssert hasDataSection() {

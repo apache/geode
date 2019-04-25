@@ -382,8 +382,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     // do list mapping for TEST_GROUP2
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(0);
+    commandResultAssert.statusIsSuccess().hasNoTableSection();
 
     // do destroy mapping for for TEST_GROUP2
     csb = new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP2);
@@ -486,8 +485,7 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
     // do list mapping for TEST_GROUP2
     csb = new CommandStringBuilder(LIST_MAPPING + " --groups=" + TEST_GROUP2);
     commandResultAssert = gfsh.executeAndAssertThat(csb.toString());
-    commandResultAssert.statusIsSuccess();
-    commandResultAssert.tableHasRowCount(0);
+    commandResultAssert.statusIsSuccess().hasNoTableSection();
 
     // do destroy mapping for for TEST_GROUP2
     csb = new CommandStringBuilder(DESTROY_MAPPING + " --groups=" + TEST_GROUP2);

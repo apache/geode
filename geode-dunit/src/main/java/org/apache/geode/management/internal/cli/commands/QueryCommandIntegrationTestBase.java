@@ -155,9 +155,9 @@ public class QueryCommandIntegrationTestBase {
 
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(7)).isEqualTo("Result");
-    assertThat(lines.get(8)).isEqualTo("--------");
-    lines.subList(9, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
+    assertThat(lines.get(4)).isEqualTo("Result");
+    assertThat(lines.get(5)).isEqualTo("--------");
+    lines.subList(6, lines.size()).forEach(line -> assertThat(line).matches("value\\d+"));
   }
 
   @Test
@@ -173,8 +173,8 @@ public class QueryCommandIntegrationTestBase {
     assertThat(outputFile).exists();
     List<String> lines = Files.readLines(outputFile, StandardCharsets.UTF_8);
 
-    assertThat(lines.get(7)).containsPattern("name\\s+\\|\\s+address");
-    lines.subList(9, lines.size())
+    assertThat(lines.get(4)).containsPattern("name\\s+\\|\\s+address");
+    lines.subList(6, lines.size())
         .forEach(line -> assertThat(line).matches("name\\d+.*\"city\":\"Hometown\".*"));
   }
 
@@ -216,7 +216,8 @@ public class QueryCommandIntegrationTestBase {
         .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
         .hasContent()
         .containsEntry("Result", "false")
-        .containsEntry("Message", "Query is invalid due to error : <Syntax error in query:");
+        .containsEntry("Message",
+            "Query is invalid due to error : <Syntax error in query: unexpected token: is>");
   }
 
   @Test
@@ -239,8 +240,8 @@ public class QueryCommandIntegrationTestBase {
         "query --query=\"(select c.address from /complexRegion c where c.name = 'name1' limit 1).size\"");
     commandResultAssert.hasDataSection(DataCommandResult.DATA_INFO_SECTION).hasContent()
         .containsEntry("Rows", "1");
-    commandResultAssert.hasTableSection(DataCommandResult.QUERY_SECTION).hasAnyRow()
-        .contains("Result", "1");
+    commandResultAssert.hasTableSection(DataCommandResult.QUERY_SECTION).hasRowSize(1)
+        .hasRow(0).contains("1");
   }
 
   private String[] splitOnLineBreaks(String multilineString) {
