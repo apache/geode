@@ -58,8 +58,8 @@ java_test_versions:
 
 benchmarks:
   # set one or the other but not both
-  baseline_branch: "release/1.9.0"
-  baseline_version: ""
+  baseline_branch: ""
+  baseline_version: "1.9.0"
 
 java_build_version:
   name: OpenJDK8
