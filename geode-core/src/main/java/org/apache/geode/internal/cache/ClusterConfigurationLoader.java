@@ -133,7 +133,7 @@ public class ClusterConfigurationLoader {
     return results;
   }
 
-  public File downloadJar(DistributedMember locator, String groupName, String jarName)
+  public static File downloadJar(DistributedMember locator, String groupName, String jarName)
       throws IOException {
     ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
         (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
@@ -141,6 +141,9 @@ public class ClusterConfigurationLoader {
             Collections.singleton(locator));
 
     List<RemoteInputStream> result = rc.getResult();
+    if (result.get(0) instanceof Throwable) {
+      throw new IllegalStateException(((Throwable) result.get(0)).getMessage());
+    }
 
     Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
     Path tempJar = Paths.get(tempDir.toString(), jarName);

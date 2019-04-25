@@ -1254,10 +1254,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
-  private boolean isNotJmxManager() {
-    return !this.system.getConfig().getJmxManagerStart();
-  }
-
   private boolean isServerNode() {
     return this.system.getDistributedMember()
         .getVmKind() != ClusterDistributionManager.LOCATOR_DM_TYPE
