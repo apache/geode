@@ -23,14 +23,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
+import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -404,30 +405,29 @@ public class JarDeployer implements Serializable {
   private String getJdbcDriverName(DeployedJar jar) {
     File jarFile = jar.getFile();
     try {
-      FileInputStream fis = new FileInputStream(jarFile.getAbsolutePath());
-      BufferedInputStream bis = new BufferedInputStream(fis);
-      ZipInputStream zis = new ZipInputStream(bis);
-      ZipEntry ze = null;
-      String driverClassName = null;
-      while ((ze = zis.getNextEntry()) != null) {
+      FileInputStream fileInputStream = new FileInputStream(jarFile.getAbsolutePath());
+      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+      ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream);
+      ZipEntry zipEntry = null;
+      while ((zipEntry = zipInputStream.getNextEntry()) != null) {
         // JDBC 4.0 Drivers must include the file META-INF/services/java.sql.Driver. This file
         // contains the name of the JDBC drivers implementation of java.sql.Driver
         // See https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html
-        if (!ze.getName().equals("META-INF/services/java.sql.Driver")) {
+        if (!zipEntry.getName().equals("META-INF/services/java.sql.Driver")) {
           continue;
         }
-        int size = (int) ze.getSize();
-        byte[] b = new byte[(int) size];
-        int rb = 0;
+        int size = (int) zipEntry.getSize();
+        byte[] bytes = new byte[size];
+        int offset = 0;
         int chunk = 0;
-        while (((int) size - rb) > 0) {
-          chunk = zis.read(b, rb, (int) size - rb);
+        while ((size - offset) > 0) {
+          chunk = zipInputStream.read(bytes, offset, (int) size - offset);
           if (chunk == -1) {
             break;
           }
-          rb += chunk;
+          offset += chunk;
         }
-        return new String(b);
+        return new String(bytes);
       }
       return null;
     } catch (IOException ex) {
@@ -435,17 +435,55 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  private static void addToSystemClasspathAndRegisterDriver(DeployedJar jar,
+  // DriverManager only uses a driver loaded by system ClassLoader
+  class DriverWrapper implements Driver {
+
+    private Driver jdbcDriver;
+
+    DriverWrapper(Driver jdbcDriver) {
+      this.jdbcDriver = jdbcDriver;
+    }
+
+    public Connection connect(String url, java.util.Properties info)
+        throws SQLException {
+      return this.jdbcDriver.connect(url, info);
+    }
+
+    public boolean acceptsURL(String url) throws SQLException {
+      return this.jdbcDriver.acceptsURL(url);
+    }
+
+    public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info)
+        throws SQLException {
+      return this.getPropertyInfo(url, info);
+    }
+
+    public int getMajorVersion() {
+      return this.getMajorVersion();
+    }
+
+    public int getMinorVersion() {
+      return this.jdbcDriver.getMinorVersion();
+    }
+
+    public boolean jdbcCompliant() {
+      return this.jdbcDriver.jdbcCompliant();
+    }
+
+    public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+      return this.jdbcDriver.getParentLogger();
+    }
+  }
+
+
+  private void addToSystemClasspathAndRegisterDriver(DeployedJar jar,
       String driverClassName) {
     File jarFile = jar.getFile();
-    Method method = null;
     try {
-      method = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] {URL.class});
-      method.setAccessible(true);
-      method.invoke(ClassLoader.getSystemClassLoader(), new Object[] {jarFile.toURI().toURL()});
-      Class driver = ClassLoader.getSystemClassLoader().loadClass(driverClassName);
-      DriverManager.registerDriver((Driver) driver.newInstance());
-    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException
+      URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
+      Driver driver = (Driver) Class.forName(driverClassName, true, urlClassLoader).newInstance();
+      DriverManager.registerDriver(new DriverWrapper(driver));
+    } catch (IllegalAccessException
         | ClassNotFoundException | InstantiationException | SQLException | IOException e) {
       e.printStackTrace();
     }
