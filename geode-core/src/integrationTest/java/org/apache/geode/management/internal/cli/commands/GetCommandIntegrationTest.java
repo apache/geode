@@ -115,20 +115,21 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=Users --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
 
     result = gfsh.executeCommand("get --region=Users --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
 
     result = gfsh.executeCommand("get --region=Users --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(User.class.getCanonicalName());
 
@@ -136,7 +137,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=Users --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }
@@ -146,20 +147,21 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=UsersPdx --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
 
     result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
 
     result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(PdxInstanceImpl.class.getCanonicalName());
 
@@ -167,7 +169,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersPdx --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }
@@ -177,7 +179,8 @@ public class GetCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand("get --region=UsersString --key=jonbloom");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value")).isEqualTo("\"6a6f6e626c6f6f6d\"");
 
@@ -185,7 +188,7 @@ public class GetCommandIntegrationTest {
         gfsh.executeCommand("get --region=UsersString --key=jondoe --load-on-cache-miss=false");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
     assertThat(data.get("Value")).isEqualTo("null");
@@ -193,7 +196,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersString --key=jondoe");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
     assertThat(data.get("Value Class")).isEqualTo(String.class.getName());
     assertThat(data.get("Value")).isEqualTo("\"6a6f6e646f65\"");
@@ -202,7 +205,7 @@ public class GetCommandIntegrationTest {
     result = gfsh.executeCommand("get --region=UsersString --key=missingUser --load-on-cache-miss");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("false");
     assertThat(data.get("Value")).isEqualTo("null");
   }

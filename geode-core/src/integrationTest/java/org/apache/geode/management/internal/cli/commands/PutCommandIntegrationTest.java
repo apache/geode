@@ -115,7 +115,8 @@ public class PutCommandIntegrationTest {
     CommandResult result =
         gfsh.executeCommand("put --region=/testRegion --key=key1 --value=value1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
 
     // if unspecified then override
@@ -141,7 +142,8 @@ public class PutCommandIntegrationTest {
         "put --region=testRegion --key=('key':'1') --value=('value':'1') " + "--key-class="
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
   }
 
@@ -151,7 +153,8 @@ public class PutCommandIntegrationTest {
         "put --region=testRegion --key={\"key\":\"1\"} --value={\"value\":\"1\"} " + "--key-class="
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
   }
 
@@ -178,7 +181,8 @@ public class PutCommandIntegrationTest {
     CommandResult result = gfsh.executeCommand(command);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
 
     // put the car json
@@ -193,7 +197,7 @@ public class PutCommandIntegrationTest {
     result = gfsh.executeCommand(command);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
 
     // put with json with single character field
@@ -202,7 +206,7 @@ public class PutCommandIntegrationTest {
     result = gfsh.executeCommand(command);
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Result")).isEqualTo("true");
   }
 }

@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -142,10 +143,12 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, 1);
 
-    gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
-        .containsOutput("Missing Disk Stores", "No missing colocated region found");
+    TabularResultModel table =
+        gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
+            .containsOutput("Missing Disk Stores", "No missing colocated region found")
+            .hasTableSection().getActual();
 
-    List<String> diskstoreIDs = gfsh.getCommandResult().getTableColumnValues("Disk Store ID");
+    List<String> diskstoreIDs = table.getValuesInColumn("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
@@ -333,9 +336,11 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         .statusIsSuccess();
 
     CommandResult cmdResult = gfsh.getCommandResult();
-    assertThat(cmdResult.getMapFromSection("server-1").keySet()).contains("UUID", "Host",
+    assertThat(cmdResult.getResultData().getDataSection("server-1").getContent().keySet()).contains(
+        "UUID", "Host",
         "Directory");
-    assertThat(cmdResult.getMapFromSection("server-2").keySet()).contains("UUID", "Host",
+    assertThat(cmdResult.getResultData().getDataSection("server-2").getContent().keySet()).contains(
+        "UUID", "Host",
         "Directory");
   }
 
@@ -354,18 +359,21 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
     Map<String, String> data =
-        result.getMapFromSection(DescribeDiskStoreCommand.DISK_STORE_SECTION);
+        result.getResultData().getDataSection(DescribeDiskStoreCommand.DISK_STORE_SECTION)
+            .getContent();
     assertThat(data.keySet()).contains("Disk Store Name", "Member ID", "Member Name",
         "Allow Force Compaction", "Auto Compaction", "Compaction Threshold", "Max Oplog Size",
         "Queue Size", "Time Interval", "Write Buffer Size", "Disk Usage Warning Percentage",
         "Disk Usage Critical Percentage", "PDX Serialization Meta-Data Stored");
 
     Map<String, List<String>> directories =
-        result.getMapFromTableContent(DescribeDiskStoreCommand.DISK_DIR_SECTION);
+        result.getResultData().getTableSection(DescribeDiskStoreCommand.DISK_DIR_SECTION)
+            .getContent();
     assertThat(directories.get("Disk Directory").size()).isEqualTo(1);
 
     Map<String, List<String>> regions =
-        result.getMapFromTableContent(DescribeDiskStoreCommand.REGION_SECTION);
+        result.getResultData().getTableSection(DescribeDiskStoreCommand.REGION_SECTION)
+            .getContent();
     assertThat(regions.get("Region Path").size()).isEqualTo(1);
   }
 

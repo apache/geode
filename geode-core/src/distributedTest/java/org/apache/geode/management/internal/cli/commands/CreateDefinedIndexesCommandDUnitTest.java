@@ -99,7 +99,9 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh.executeCommand("create defined indexes");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     Map<String, List<String>> table =
-        result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
+        result.getResultData()
+            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+            .getContent();
     assertThat(table.get("Status")).contains("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {
@@ -146,7 +148,9 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh.executeCommand("create defined indexes");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
     Map<String, List<String>> table =
-        result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
+        result.getResultData()
+            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+            .getContent();
     assertThat(table.get("Member").size()).isEqualTo(6);
     assertThat(gfsh.getGfshOutput())
         .contains("Changes to configuration for group 'cluster' are persisted");
@@ -189,16 +193,20 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh
         .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
-        "server-1",
-        "server-2");
+    assertThat(
+        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
+            .contains(
+                "server-1",
+                "server-2");
 
     result = gfsh
         .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
-        "server-1",
-        "server-2");
+    assertThat(
+        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
+            .contains(
+                "server-1",
+                "server-2");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -254,15 +262,18 @@ public class CreateDefinedIndexesCommandDUnitTest {
     CommandResult result = gfsh
         .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member")).contains(
-        "server-1",
-        "server-2");
+    assertThat(
+        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
+            .contains(
+                "server-1",
+                "server-2");
 
     result = gfsh
         .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group2");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(result.getMapFromTableContent(MEMBER_STATUS_SECTION).get("Member"))
-        .contains("server-3");
+    assertThat(
+        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
+            .contains("server-3");
 
     gfsh.executeAndAssertThat(
         "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name)
@@ -275,7 +286,9 @@ public class CreateDefinedIndexesCommandDUnitTest {
     result = gfsh.executeCommand("create defined indexes --group=group1,group2");
     assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
     assertThat(
-        result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+        result.getResultData()
+            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+            .getContent()
             .get("Status")).contains("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {

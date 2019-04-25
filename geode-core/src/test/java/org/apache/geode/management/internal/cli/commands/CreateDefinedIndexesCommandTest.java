@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -28,7 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -41,7 +39,6 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class CreateDefinedIndexesCommandTest {
@@ -133,12 +130,9 @@ public class CreateDefinedIndexesCommandTest {
     IndexDefinition.addIndex("index1", "value1", "TestRegion1", IndexType.FUNCTIONAL);
     IndexDefinition.addIndex("index2", "value2", "TestRegion2", IndexType.FUNCTIONAL);
 
-    CommandResult result =
-        gfshParser.executeAndAssertThat(command, "create defined indexes").statusIsSuccess()
-            .getCommandResult();
-
-    Map<String, List<String>> table =
-        result.getMapFromTableContent(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION);
-    assertThat(table.get("Status")).contains("OK", "OK", "OK", "OK");
+    gfshParser.executeAndAssertThat(command, "create defined indexes").statusIsSuccess()
+        .hasTableSection()
+        .hasColumn("Status")
+        .containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
   }
 }

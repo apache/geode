@@ -15,9 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
 import java.util.Properties;
 
 import org.junit.BeforeClass;
@@ -62,17 +59,16 @@ public class ListJndiBindingCommandDUnitTest {
 
     CommandResultAssert commandResultAssert =
         gfsh.executeAndAssertThat("list jndi-binding").statusIsSuccess();
-
-    // cluster configuration table
-    commandResultAssert.tableHasRowWithValues("Group Name", "JNDI Name", "JDBC Driver Class",
-        "cluster", "jndi1", "org.apache.derby.jdbc.EmbeddedDriver")
-        .tableHasRowCount(1);
+    commandResultAssert
+        .hasTableSection("clusterConfiguration")
+        .hasRowSize(1)
+        .hasRow(0)
+        .containsExactly("cluster", "jndi1", "org.apache.derby.jdbc.EmbeddedDriver");
 
     // member table
-    List<String> jndiNames = commandResultAssert.getCommandResult()
-        .getColumnFromTableContent("JNDI Name", "memberConfiguration");
-    assertThat(jndiNames.size()).isEqualTo(3);
-    assertThat(jndiNames).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
-        "java:TransactionManager");
+    commandResultAssert.hasTableSection("memberConfiguration")
+        .hasRowSize(3)
+        .hasColumn("JNDI Name").containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
+            "java:TransactionManager");
   }
 }

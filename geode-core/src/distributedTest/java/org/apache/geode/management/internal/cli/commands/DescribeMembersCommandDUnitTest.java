@@ -68,7 +68,8 @@ public class DescribeMembersCommandDUnitTest {
         .statusIsSuccess()
         .getCommandResult();
 
-    Map<String, String> memberInfo = result.getMapFromSection("memberInfo");
+    Map<String, String> memberInfo =
+        result.getResultData().getDataSection("memberInfo").getContent();
     assertThat(memberInfo.get("Name")).isEqualTo("locator-0");
     assertThat(memberInfo.get("Id")).contains("locator-0");
     assertThat(memberInfo.get("Host")).as("Host").isNotBlank();

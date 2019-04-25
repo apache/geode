@@ -82,7 +82,8 @@ public class LocateEntryDUnitTest {
     CommandResult result = gfsh.executeCommand("locate entry --region=regionA --key=key");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 
@@ -91,7 +92,8 @@ public class LocateEntryDUnitTest {
     CommandResult result = gfsh.executeCommand("locate entry --region=regionB --key=key");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Locations Found")).isEqualTo("2");
   }
 
@@ -101,7 +103,8 @@ public class LocateEntryDUnitTest {
         gfsh.executeCommand("locate entry --region=regionB --key=key --recursive=true");
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Locations Found")).isEqualTo("4");
   }
 
@@ -116,7 +119,8 @@ public class LocateEntryDUnitTest {
             + Key.class.getCanonicalName() + " --value-class=" + Value.class.getCanonicalName());
     assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
 
-    Map<String, String> data = result.getMapFromSection(DataCommandResult.DATA_INFO_SECTION);
+    Map<String, String> data =
+        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
     assertThat(data.get("Locations Found")).isEqualTo("1");
   }
 }
