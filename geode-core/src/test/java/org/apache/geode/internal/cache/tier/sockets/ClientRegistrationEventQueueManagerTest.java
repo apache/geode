@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -180,7 +181,7 @@ public class ClientRegistrationEventQueueManagerTest {
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
 
     CompletableFuture<Void> addEventsToQueueTask = CompletableFuture.runAsync(() -> {
-      for (int i = 0; i < 100000; ++i) {
+      for (int numAdds = 0; numAdds < 100000; ++numAdds) {
         // In thread one, we add events to the queue
         clientRegistrationEventQueueManager
             .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
@@ -195,5 +196,50 @@ public class ClientRegistrationEventQueueManagerTest {
     CompletableFuture.allOf(addEventsToQueueTask, drainEventsFromQueueTask).get();
 
     assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
+  }
+
+  @Test
+  public void twoThreadsRegisteringSameClientNoEventsLost()
+      throws ExecutionException, InterruptedException {
+    ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
+        new ClientRegistrationEventQueueManager();
+
+    InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+    when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock());
+
+    for (int registrationIterations = 0; registrationIterations < 1000; ++registrationIterations) {
+      Runnable clientRegistrationSimulation = () -> {
+        for (int numAdds = 0; numAdds < getRandomNumberOfAdds(); ++numAdds) {
+          // In thread one, we add events to the queue
+          clientRegistrationEventQueueManager
+              .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
+        }
+        // In thread two, we drain events from the queue
+        clientRegistrationEventQueueManager.drain(clientProxyMembershipID, cacheClientNotifier);
+      };
+
+      CompletableFuture<Void> registrationFutureOne =
+          CompletableFuture.runAsync(clientRegistrationSimulation);
+      CompletableFuture<Void> registrationFutureTwo =
+          CompletableFuture.runAsync(clientRegistrationSimulation);
+
+      CompletableFuture.allOf(registrationFutureOne, registrationFutureTwo).get();
+    }
+  }
+
+  /*
+   * This helps to create contention between registration threads during the drain phase
+   */
+  private static int getRandomNumberOfAdds() {
+    return new Random().nextInt(((10000 - 50000) + 1) + 50000);
   }
 }
