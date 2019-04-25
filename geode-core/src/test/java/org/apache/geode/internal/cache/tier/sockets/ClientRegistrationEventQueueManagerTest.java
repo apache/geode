@@ -233,6 +233,8 @@ public class ClientRegistrationEventQueueManagerTest {
           CompletableFuture.runAsync(clientRegistrationSimulation);
 
       CompletableFuture.allOf(registrationFutureOne, registrationFutureTwo).get();
+
+      assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
     }
   }
 
