@@ -267,7 +267,7 @@ public class Version implements Comparable<Version> {
 
   @Immutable
   public static final Version GEODE_1_10_0 =
-      new Version("GEODE", "1.10.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_10_0_ORDINAL);
+      new Version("GEODE", "1.10.0", (byte) 1, (byte) 10, (byte) 0, (byte) 0, GEODE_1_10_0_ORDINAL);
 
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
