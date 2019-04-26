@@ -40,6 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
@@ -171,15 +172,15 @@ public class CacheClientNotifier {
     try {
       if (isClientPermitted(clientRegistrationMetadata, clientProxyMembershipID)) {
         registrationQueueManager.create(clientProxyMembershipID, new ConcurrentLinkedQueue<>(),
-            new ReentrantReadWriteLock());
+            new ReentrantReadWriteLock(), new ReentrantLock());
 
         try {
           registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
               notifyBySubscription);
         } finally {
-          registrationQueueManager.drain(
-              clientProxyMembershipID,
-              this);
+          if (isProxyInitialized(clientProxyMembershipID)) {
+            registrationQueueManager.drain(clientProxyMembershipID, this);
+          }
         }
       }
     } catch (final AuthenticationRequiredException ex) {
@@ -1217,6 +1218,16 @@ public class CacheClientNotifier {
       proxy.setKeepAlive(keepalive);
       proxy.unregisterClientInterest(regionName, keysOfInterest, isClosing);
     }
+  }
+
+  /**
+   * Determines whether a client proxy has been initialized
+   *
+   * @param clientProxyMembershipID The client proxy membership ID
+   * @return Whether the client proxy is initialized
+   */
+  private boolean isProxyInitialized(final ClientProxyMembershipID clientProxyMembershipID) {
+    return getClientProxy(clientProxyMembershipID) != null;
   }
 
   /**
