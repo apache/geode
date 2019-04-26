@@ -149,8 +149,6 @@ public class DataSerializerRecoveryListener extends EndpointManager.EndpointList
             }
 
           }
-        } finally {
-          pool.releaseThreadLocalConnection();
         }
       }
     }

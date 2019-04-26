@@ -519,11 +519,6 @@ public class AutoConnectionSourceImplJUnitTest {
     }
 
     @Override
-    public boolean getThreadLocalConnections() {
-      return false;
-    }
-
-    @Override
     public boolean getSubscriptionEnabled() {
       return false;
     }
@@ -562,9 +557,6 @@ public class AutoConnectionSourceImplJUnitTest {
     public List<InetSocketAddress> getServers() {
       return new ArrayList<>();
     }
-
-    @Override
-    public void releaseThreadLocalConnection() {}
 
     @Override
     public boolean getMultiuserAuthentication() {

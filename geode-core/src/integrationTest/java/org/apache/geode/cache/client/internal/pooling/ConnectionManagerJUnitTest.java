@@ -269,7 +269,7 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(0, poolStats.getIdleExpire());
 
     {
-      // make sure a thread local connection that has been passivated can idle-expire
+      // make sure a connection that has been passivated can idle-expire
       conn1.passivate(true);
 
       long elapsedMillis = factory.waitWhile(() -> factory.destroys < 1);
@@ -383,7 +383,7 @@ public class ConnectionManagerJUnitTest {
     UpdaterThread[] updaters = new UpdaterThread[updaterCount];
 
     for (int i = 0; i < updaterCount; i++) {
-      updaters[i] = new UpdaterThread(null, exception, i, (lifetimeTimeout / 10) * 2, true);
+      updaters[i] = new UpdaterThread(null, exception, i, (lifetimeTimeout / 10) * 2);
     }
 
     for (int i = 0; i < updaterCount; i++) {
@@ -716,22 +716,17 @@ public class ConnectionManagerJUnitTest {
 
     private int id;
     private final int iterations;
-    /**
-     * If true then obtain the connection as if it is a thread local one
-     */
-    private final boolean threadLocal;
 
     public UpdaterThread(AtomicBoolean haveConnection, AtomicReference exception, int id) {
-      this(haveConnection, exception, id, 10, false);
+      this(haveConnection, exception, id, 10);
     }
 
     public UpdaterThread(AtomicBoolean haveConnection, AtomicReference exception, int id,
-        int iterations, boolean threadLocal) {
+        int iterations) {
       this.haveConnection = haveConnection;
       this.exception = exception;
       this.id = id;
       this.iterations = iterations;
-      this.threadLocal = threadLocal;
     }
 
     private Connection borrow(int i) {
@@ -753,17 +748,8 @@ public class ConnectionManagerJUnitTest {
       int i = 0;
       Connection conn = null;
       try {
-        if (threadLocal) {
-          conn = borrow(-1);
-        }
         for (i = 0; i < iterations; i++) {
-          if (!threadLocal) {
-            conn = borrow(i);
-          } else {
-            if (i != 0) {
-              conn.activate();
-            }
-          }
+          conn = borrow(i);
           try {
             Thread.sleep(10);
             if (haveConnection != null) {
@@ -772,20 +758,12 @@ public class ConnectionManagerJUnitTest {
                   haveConnection.compareAndSet(true, false));
             }
           } finally {
-            if (!threadLocal) {
-              manager.returnConnection(conn);
-            } else {
-              conn.passivate(true);
-            }
+            manager.returnConnection(conn);
           }
         }
       } catch (Throwable t) {
         this.exception.compareAndSet(null,
             new Exception("ERROR Updater[" + id + "] loop[" + i + "]", t));
-      } finally {
-        if (threadLocal && conn != null) {
-          manager.returnConnection(conn);
-        }
       }
 
     }

@@ -132,7 +132,6 @@ public class CQPostProcessorDunitTest extends JUnit4DistributedTestCase {
       ClientCacheFactory factory = new ClientCacheFactory(props);
 
       factory.addPoolServer("localhost", server.getPort());
-      factory.setPoolThreadLocalConnections(false);
       factory.setPoolMinConnections(5);
       factory.setPoolSubscriptionEnabled(true);
       factory.setPoolMultiuserAuthentication(true);

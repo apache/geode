@@ -107,7 +107,6 @@ public class CacheServerTestUtil extends JUnit4DistributedTestCase {
           .setPoolPingInterval(poolAttr.getPingInterval())
           .setPoolStatisticInterval(poolAttr.getStatisticInterval())
           .setPoolRetryAttempts(poolAttr.getRetryAttempts())
-          .setPoolThreadLocalConnections(poolAttr.getThreadLocalConnections())
           .setPoolReadTimeout(poolAttr.getReadTimeout())
           .setPoolSubscriptionEnabled(poolAttr.getSubscriptionEnabled())
           .setPoolPRSingleHopEnabled(poolAttr.getPRSingleHopEnabled())

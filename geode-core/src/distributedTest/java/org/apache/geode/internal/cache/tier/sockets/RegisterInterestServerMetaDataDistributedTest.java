@@ -188,7 +188,7 @@ public class RegisterInterestServerMetaDataDistributedTest implements Serializab
   }
 
   private PoolFactory createPoolFactory() {
-    return PoolManager.createFactory().setThreadLocalConnections(true).setMinConnections(3)
+    return PoolManager.createFactory().setMinConnections(3)
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setReadTimeout(10000)
         .setSocketBufferSize(32768);
   }

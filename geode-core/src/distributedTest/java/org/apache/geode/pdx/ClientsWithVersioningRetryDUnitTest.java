@@ -500,13 +500,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
     return (Integer) vm.invoke(createRegion);
   }
 
-
   private void createClientRegion(final VM vm, final int port1, final int port2) {
-    createClientRegion(vm, port1, port2, false);
-  }
-
-  private void createClientRegion(final VM vm, final int port1, final int port2,
-      final boolean threadLocalConnections) {
     SerializableCallable createRegion = new SerializableCallable("create client region in " + vm) {
       @Override
       public Object call() throws Exception {
@@ -514,7 +508,6 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port1);
         cf.addPoolServer(NetworkUtils.getServerHostName(vm.getHost()), port2);
         cf.setPoolPRSingleHopEnabled(false);
-        cf.setPoolThreadLocalConnections(threadLocalConnections);
         cf.setPoolReadTimeout(10 * 60 * 1000);
         ClientCache cache = getClientCache(cf);
         cache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY).create("region");

@@ -136,7 +136,7 @@ public class ListClientCommandDUnitTest {
       String poolName = "new_pool_" + System.currentTimeMillis();
       try {
         PoolImpl p = (PoolImpl) PoolManager.createFactory()
-            .addServer("localhost", server2port).setThreadLocalConnections(true)
+            .addServer("localhost", server2port)
             .setMinConnections(1).setSubscriptionEnabled(true).setPingInterval(1)
             .setStatisticInterval(1).setMinConnections(1).setSubscriptionRedundancy(1)
             .create(poolName);

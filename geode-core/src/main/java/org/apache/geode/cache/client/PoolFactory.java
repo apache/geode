@@ -141,7 +141,11 @@ public interface PoolFactory {
    * them.
    * <p>
    * Current value: <code>false</code>.
+   *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   boolean DEFAULT_THREAD_LOCAL_CONNECTIONS = false;
 
   /**
@@ -273,7 +277,10 @@ public interface PoolFactory {
    *
    * @param threadLocalConnections if <code>true</code> then enable thread local connections.
    * @return a reference to <code>this</code>
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   PoolFactory setThreadLocalConnections(boolean threadLocalConnections);
 
   /**

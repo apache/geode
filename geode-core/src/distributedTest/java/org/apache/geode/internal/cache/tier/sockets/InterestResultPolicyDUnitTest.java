@@ -275,7 +275,7 @@ public class InterestResultPolicyDUnitTest extends JUnit4DistributedTestCase {
     cache = test.createCache(props);
     Pool p = PoolManager.createFactory().addServer(host, port.intValue())
         .setSubscriptionEnabled(true).setSubscriptionRedundancy(-1).setReadTimeout(10000)
-        .setThreadLocalConnections(true).setSocketBufferSize(32768).setMinConnections(3)
+        .setSocketBufferSize(32768).setMinConnections(3)
         // .setRetryAttempts(5)
         // .setRetryInterval(10000)
         .create("InterestResultPolicyDUnitTestPool");

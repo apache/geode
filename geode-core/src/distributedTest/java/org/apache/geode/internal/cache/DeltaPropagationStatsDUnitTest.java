@@ -512,10 +512,9 @@ public class DeltaPropagationStatsDUnitTest extends JUnit4DistributedTestCase {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     cache = new DeltaPropagationStatsDUnitTest().createCache(props);
-    pool = PoolManager.createFactory().addServer(host, port).setThreadLocalConnections(true)
-        .setMinConnections(1).setSubscriptionEnabled(true).setSubscriptionRedundancy(0)
-        .setReadTimeout(10000).setSocketBufferSize(32768)
-        .create("DeltaPropagationStatsDunitTestPool");
+    pool = PoolManager.createFactory().addServer(host, port).setMinConnections(1)
+        .setSubscriptionEnabled(true).setSubscriptionRedundancy(0).setReadTimeout(10000)
+        .setSocketBufferSize(32768).create("DeltaPropagationStatsDunitTestPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.NORMAL);

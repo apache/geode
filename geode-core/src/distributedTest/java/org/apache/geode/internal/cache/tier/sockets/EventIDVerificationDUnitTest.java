@@ -177,7 +177,7 @@ public class EventIDVerificationDUnitTest extends JUnit4DistributedTestCase {
     factory.setMirrorType(MirrorType.NONE);
 
     ClientServerTestCase.configureConnectionPool(factory, host, new int[] {PORT1, PORT2}, true, -1,
-        2, null, -1, -1, false, -2);
+        2, null, -1, -1, -2);
 
 
     CacheWriter writer = new CacheWriterAdapter() {

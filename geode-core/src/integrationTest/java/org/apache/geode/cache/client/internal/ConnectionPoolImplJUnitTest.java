@@ -202,11 +202,6 @@ public class ConnectionPoolImplJUnitTest {
         }
 
       }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
-      }
     };
 
     // TODO - set retry attempts, and throw in some assertions
@@ -220,11 +215,6 @@ public class ConnectionPoolImplJUnitTest {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         throw new SocketTimeoutException();
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     };
 
@@ -256,11 +246,6 @@ public class ConnectionPoolImplJUnitTest {
       @Override
       public Object attempt(Connection cnx) throws Exception {
         return cnx.getServer();
-      }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return true;
       }
     };
 

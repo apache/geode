@@ -141,6 +141,7 @@ public class PoolType {
   protected String subscriptionRedundancy;
   @XmlAttribute(name = "statistic-interval")
   protected String statisticInterval;
+  @Deprecated
   @XmlAttribute(name = "thread-local-connections")
   protected Boolean threadLocalConnections;
   @XmlAttribute(name = "pr-single-hop-enabled")
@@ -610,7 +611,10 @@ public class PoolType {
    * possible object is
    * {@link Boolean }
    *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   public Boolean isThreadLocalConnections() {
     return threadLocalConnections;
   }
@@ -621,7 +625,10 @@ public class PoolType {
    * allowed object is
    * {@link Boolean }
    *
+   * @deprecated Since Geode 1.10.0. Thread local connections are ignored. Will be removed in future
+   *             major release.
    */
+  @Deprecated
   public void setThreadLocalConnections(Boolean value) {
     this.threadLocalConnections = value;
   }

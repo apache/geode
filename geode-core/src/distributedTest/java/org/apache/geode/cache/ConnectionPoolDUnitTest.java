@@ -1291,25 +1291,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
     vm1.invoke(stopCacheServer);
   }
 
-  /**
-   * Make sure cnx lifetime expiration working on thread local cnxs.
-   *
-   * @author darrel
-   */
-  @Test
-  public void test009LifetimeExpireOnTL() throws CacheException {
-    basicTestLifetimeExpire(true);
-  }
-
-  /**
-   * Make sure cnx lifetime expiration working on thread local cnxs.
-   *
-   * @author darrel
-   */
-  @Test
-  public void test010LifetimeExpireOnPoolCnx() throws CacheException {
-    basicTestLifetimeExpire(false);
-  }
 
   protected static volatile boolean stopTestLifetimeExpire = false;
 
@@ -1318,7 +1299,8 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   protected static volatile int baselineLifetimeConnect;
   protected static volatile int baselineLifetimeDisconnect;
 
-  private void basicTestLifetimeExpire(final boolean threadLocal) throws CacheException {
+  @Test
+  public void basicTestLifetimeExpire() throws CacheException {
     final String name = this.getName();
     final Host host = Host.getHost(0);
     VM vm0 = host.getVM(0);
@@ -1374,7 +1356,7 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
           factory.setScope(Scope.LOCAL);
           factory.setConcurrencyChecksEnabled(false);
           ClientServerTestCase.configureConnectionPool(factory, host0, port0, port1,
-              false/* queue */, -1, 0, null, 100, 500, threadLocal, 500);
+              false/* queue */, -1, 0, null, 100, 500, 500);
 
           Region region = createRegion(name, factory.create());
 
@@ -3323,103 +3305,6 @@ public class ConnectionPoolDUnitTest extends JUnit4CacheTestCase {
   protected static long getNumberOfAfterInvalidates() {
     return numberOfAfterInvalidates;
   }
-
-  // private class GetKey extends TestRunnable {
-  //
-  // private String key;
-  // private Object result;
-  // private String name;
-  // ConnectionPoolDUnitTest test;
-  // int repCount;
-  // private AtomicBoolean timeToStop; // if non-null then ignroe repCount
-  //
-  // protected GetKey(String objectName, ConnectionPoolDUnitTest t, String name, AtomicBoolean
-  // timeToStop) {
-  // this.key = objectName;
-  // this.test = t;
-  // this.name = name;
-  // this.timeToStop = timeToStop;
-  // }
-  //
-  // protected GetKey(String objectName, ConnectionPoolDUnitTest t, String name, int repCount) {
-  // this.key = objectName;
-  // this.test = t;
-  // this.name = name;
-  // this.repCount=repCount;
-  // }
-  // public void runTest() throws Throwable {
-  // if (this.timeToStop != null) {
-  // getUntilStopped();
-  // } else {
-  // getForRepCount();
-  // }
-  // //test.close();
-  // }
-  //
-  // private void getForRepCount() throws Throwable {
-  //// boolean killed = false;
-  // final Region r = test.getRootRegion().getSubregion(this.name);
-  // final PoolImpl pi = (PoolImpl)PoolManager.find(r.getAttributes().getPoolName());
-  // try {
-  // for (int i=0;i<repCount;i++) {
-  // try {
-  // String key = this.key + i;
-  // if (r.getEntry(key) != null) {
-  // r.localInvalidate(key);
-  // }
-  // result = r.get(key);
-  // assertTrue("GetKey after get " + key + " result=" + result, pi.getConnectedServerCount() >= 1);
-  // Thread.sleep(10);
-  // }
-  // catch(InterruptedException ie) {
-  // fail("interrupted");
-  // }
-  // catch(ServerConnectivityException sce) {
-  // fail("While getting value for ACK region", sce);
-  // }
-  // catch(TimeoutException te) {
-  // fail("While getting value for ACK region", te);
-  // }
-  // }
-  // assertTrue(pi.getConnectedServerCount() >= 1);
-  // } finally {
-  // pi.releaseThreadLocalConnection();
-  // }
-  // }
-
-  // private void getUntilStopped() throws Throwable {
-  //// boolean killed = false;
-  // final Region r = test.getRootRegion().getSubregion(this.name);
-  // final PoolImpl pi = (PoolImpl)PoolManager.find(r.getAttributes().getPoolName());
-  // try {
-  // int i=0;
-  // while (!timeToStop.get()) {
-  // i++;
-  // try {
-  // String key = this.key + i;
-  // if (r.getEntry(key) != null) {
-  // r.localInvalidate(key);
-  // }
-  // result = r.get(key);
-  // assertTrue("GetKey after get " + key + " result=" + result, pi.getConnectedServerCount() >= 1);
-  // Thread.sleep(10);
-  // }
-  // catch(InterruptedException ie) {
-  // fail("interrupted");
-  // }
-  // catch(ServerConnectivityException sce) {
-  // fail("While getting value for ACK region", sce);
-  // }
-  // catch(TimeoutException te) {
-  // fail("While getting value for ACK region", te);
-  // }
-  // }
-  // assertTrue(pi.getConnectedServerCount() >= 1);
-  // } finally {
-  // pi.releaseThreadLocalConnection();
-  // }
-  // }
-  // }
 
   /**
    * Creates a "loner" distributed system that has dynamic region creation enabled.

@@ -370,8 +370,7 @@ public class GatewaySenderEventRemoteDispatcher implements GatewaySenderEventDis
            * TODO - The use of acquireConnection should be removed from the gateway code. This
            * method is fine for tests, but these connections should really be managed inside the
            * pool code. If the gateway needs to persistent connection to a single server, which
-           * should create have the OpExecutor that holds a reference to the connection (similar to
-           * the way we do with thread local connections). Use {@link
+           * should create have the OpExecutor that holds a reference to the connection. Use {@link
            * ExecutablePool#setupServerAffinity(boolean)} for gateway code
            */
           con = this.sender.getProxy().acquireConnection();

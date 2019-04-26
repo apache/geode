@@ -52,7 +52,6 @@ import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.logging.InternalLogWriter;
@@ -1075,7 +1074,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
         int conCount = connectionAccounting.getCount();
         toClose = new ArrayList<>(conCount - connectionAccounting.getMinimum());
 
-        // because we expire thread local connections we need to scan allConnections
         for (Iterator<PooledConnection> it = allConnections.iterator(); it.hasNext()
             && conCount > connectionAccounting.getMinimum();) {
           PooledConnection pc = it.next();
@@ -1199,14 +1197,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     } else {
       logger.info(String.format("%s : %s",
           message, t), t);
-    }
-  }
-
-  private void logError(StringId message, Throwable t) {
-    if (t instanceof GemFireSecurityException) {
-      securityLogWriter.error(message, t);
-    } else {
-      logger.error(message, t);
     }
   }
 

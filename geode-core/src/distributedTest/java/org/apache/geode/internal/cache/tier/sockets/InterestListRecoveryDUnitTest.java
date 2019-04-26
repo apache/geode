@@ -207,7 +207,7 @@ public class InterestListRecoveryDUnitTest extends JUnit4DistributedTestCase {
     cache = test.createCache(props);
     PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, port1.intValue())
         .addServer(host, port2.intValue()).setSubscriptionEnabled(true)
-        .setSubscriptionRedundancy(-1).setReadTimeout(250).setThreadLocalConnections(true)
+        .setSubscriptionRedundancy(-1).setReadTimeout(250)
         .setSocketBufferSize(32768).setMinConnections(4)
         // .setRetryAttempts(5)
         // .setRetryInterval(1000)

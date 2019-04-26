@@ -101,6 +101,7 @@ public class PoolImpl implements InternalPool {
   private final int freeConnectionTimeout;
   private final int loadConditioningInterval;
   private final int socketBufferSize;
+  @Deprecated
   private final boolean threadLocalConnections;
   private final int readTimeout;
   private final boolean subscriptionEnabled;
@@ -265,7 +266,7 @@ public class PoolImpl implements InternalPool {
     // Fix for 43468 - make sure we check the cache cancel criterion if we get
     // an exception, by passing in the poolOrCache stopper
     executor = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, retryAttempts,
-        freeConnectionTimeout, threadLocalConnections, new PoolOrCacheStopper(), this);
+        freeConnectionTimeout, new PoolOrCacheStopper(), this);
     if (this.multiuserSecureModeEnabled) {
       this.proxyCacheList = new ArrayList<ProxyCache>();
     } else {
@@ -361,11 +362,6 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public void releaseThreadLocalConnection() {
-    executor.releaseThreadLocalConnection();
-  }
-
-  @Override
   public void setupServerAffinity(boolean allowFailover) {
     executor.setupServerAffinity(allowFailover);
   }
@@ -375,11 +371,6 @@ public class PoolImpl implements InternalPool {
     executor.releaseServerAffinity();
   }
 
-  /*
-   * (non-Javadoc)
-   *
-   * @see org.apache.geode.cache.Pool#getName()
-   */
   @Override
   public String getName() {
     return this.name;
@@ -1184,17 +1175,6 @@ public class PoolImpl implements InternalPool {
   }
 
   /**
-   * Get the connection held by this thread if we're using thread local connections
-   *
-   * This is a a hook for hydra code to pass thread local connections between threads.
-   *
-   * @return the connection from the thread local, or null if there is no thread local connection.
-   */
-  public Connection getThreadLocalConnection() {
-    return executor.getThreadLocalConnection();
-  }
-
-  /**
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
   public List<ServerLocation> getCurrentServers() {
@@ -1275,15 +1255,6 @@ public class PoolImpl implements InternalPool {
    */
   public int getInvalidateCount() {
     return ((QueueStateImpl) this.queueManager.getState()).getInvalidateCount();
-  }
-
-  /**
-   * Set the connection held by this thread if we're using thread local connections
-   *
-   * This is a a hook for hydra code to pass thread local connections between threads.
-   */
-  public void setThreadLocalConnection(Connection conn) {
-    executor.setThreadLocalConnection(conn);
   }
 
   @Override

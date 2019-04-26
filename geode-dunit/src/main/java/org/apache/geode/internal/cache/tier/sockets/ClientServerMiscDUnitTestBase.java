@@ -215,7 +215,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       createCache(props);
 
       pool = (PoolImpl) PoolManager.createFactory().addServer(host, port)
-          .setSubscriptionEnabled(true).setThreadLocalConnections(false).setReadTimeout(1000)
+          .setSubscriptionEnabled(true).setReadTimeout(1000)
           .setSocketBufferSize(32768).setMinConnections(1).setSubscriptionRedundancy(-1)
           .setPingInterval(2000).create("test pool");
 
@@ -610,11 +610,6 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
       public Object attempt(Connection cnx) throws Exception {
         throw new MessageTooLargeException("message is too big");
       }
-
-      @Override
-      public boolean useThreadLocalConnection() {
-        return false;
-      }
     };
     try {
       ((LocalRegion) region).getServerProxy().getPool().execute(operation);
@@ -641,7 +636,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     String host = NetworkUtils.getServerHostName();
     PoolImpl p =
         (PoolImpl) PoolManager.createFactory().addServer(host, PORT1).setSubscriptionEnabled(true)
-            .setThreadLocalConnections(true).setReadTimeout(1000).setSocketBufferSize(32768)
+            .setReadTimeout(1000).setSocketBufferSize(32768)
             .setMinConnections(3).setSubscriptionRedundancy(-1).setPingInterval(2000)
             // .setRetryAttempts(5)
             // .setRetryInterval(2000)
@@ -854,7 +849,7 @@ public class ClientServerMiscDUnitTestBase extends JUnit4CacheTestCase {
     PoolImpl p;
     try {
       PoolFactory poolFactory = PoolManager.createFactory();
-      addServers(poolFactory, h, ports).setSubscriptionEnabled(true).setThreadLocalConnections(true)
+      addServers(poolFactory, h, ports).setSubscriptionEnabled(true)
           .setReadTimeout(5000).setSocketBufferSize(32768).setMinConnections(3)
           .setSubscriptionRedundancy(1).setPingInterval(2000);
       // .setRetryAttempts(5)

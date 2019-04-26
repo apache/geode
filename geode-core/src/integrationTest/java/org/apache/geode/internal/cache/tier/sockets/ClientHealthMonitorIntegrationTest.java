@@ -104,7 +104,7 @@ public class ClientHealthMonitorIntegrationTest {
    */
   private void createProxyAndRegionForClient() throws Exception {
     PoolFactory pf = PoolManager.createFactory();
-    proxy = (PoolImpl) pf.addServer("localhost", PORT).setThreadLocalConnections(true)
+    proxy = (PoolImpl) pf.addServer("localhost", PORT)
         .setReadTimeout(10000).setPingInterval(10000).setMinConnections(0).create("junitPool");
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

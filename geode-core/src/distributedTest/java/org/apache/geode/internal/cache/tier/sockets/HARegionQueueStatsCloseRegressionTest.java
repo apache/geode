@@ -133,7 +133,7 @@ public class HARegionQueueStatsCloseRegressionTest implements Serializable {
     clientCacheRule.createClientCache();
 
     Pool pool = PoolManager.createFactory().addServer(hostName, port).setSubscriptionEnabled(true)
-        .setThreadLocalConnections(true).setReadTimeout(10000).setSocketBufferSize(32768)
+        .setReadTimeout(10000).setSocketBufferSize(32768)
         .setMinConnections(3).setSubscriptionRedundancy(-1).create(uniqueName);
 
     ClientRegionFactory<Object, ?> clientRegionFactory =

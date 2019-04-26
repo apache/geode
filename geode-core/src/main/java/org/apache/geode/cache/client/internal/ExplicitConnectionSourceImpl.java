@@ -167,11 +167,6 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
       ServerQueueStatus status = cnx.getQueueStatus();
       return status.isNonRedundant() ? Boolean.FALSE : Boolean.TRUE;
     }
-
-    @Override
-    public boolean useThreadLocalConnection() {
-      return false;
-    }
   }
 
   private List<ServerLocation> findDurableQueues(Set<ServerLocation> excludedServers,

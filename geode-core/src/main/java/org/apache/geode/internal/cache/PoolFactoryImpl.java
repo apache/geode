@@ -104,7 +104,9 @@ public class PoolFactoryImpl implements PoolFactory {
   }
 
   @Override
+  @Deprecated
   public PoolFactory setThreadLocalConnections(boolean threadLocalConnections) {
+    logger.warn("Use of PoolFactory.setThreadLocalConnections is deprecated and ignored.");
     this.attributes.threadLocalConnections = threadLocalConnections;
     return this;
   }
@@ -344,7 +346,6 @@ public class PoolFactoryImpl implements PoolFactory {
     setLoadConditioningInterval(-1); // never time out
     setMaxConnections(-1);
     setMinConnections(0);
-    setThreadLocalConnections(true);
   }
 
   /**
@@ -409,7 +410,8 @@ public class PoolFactoryImpl implements PoolFactory {
     public int connectionTimeout = DEFAULT_FREE_CONNECTION_TIMEOUT;
     public int connectionLifetime = DEFAULT_LOAD_CONDITIONING_INTERVAL;
     public int socketBufferSize = DEFAULT_SOCKET_BUFFER_SIZE;
-    public boolean threadLocalConnections = DEFAULT_THREAD_LOCAL_CONNECTIONS;
+    @Deprecated
+    private boolean threadLocalConnections = DEFAULT_THREAD_LOCAL_CONNECTIONS;
     public int readTimeout = DEFAULT_READ_TIMEOUT;
     public int minConnections = DEFAULT_MIN_CONNECTIONS;
     public int maxConnections = DEFAULT_MAX_CONNECTIONS;
@@ -486,6 +488,7 @@ public class PoolFactoryImpl implements PoolFactory {
     }
 
     @Override
+    @Deprecated
     public boolean getThreadLocalConnections() {
       return this.threadLocalConnections;
     }
@@ -601,11 +604,6 @@ public class PoolFactoryImpl implements PoolFactory {
     }
 
     @Override
-    public void releaseThreadLocalConnection() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override
     public QueryService getQueryService() {
       throw new UnsupportedOperationException();
     }
@@ -670,8 +668,7 @@ public class PoolFactoryImpl implements PoolFactory {
               retryAttempts, pingInterval, statisticInterval, queueEnabled, prSingleHopEnabled,
               queueRedundancyLevel, queueMessageTrackingTimeout, queueAckInterval,
               subscriptionTimeoutMultipler, serverGroup, multiuserSecureModeEnabled, locators,
-              servers,
-              startDisabled, locatorCallback, gatewaySender, gateway);
+              servers, startDisabled, locatorCallback, gatewaySender, gateway);
     }
 
     @Override
