@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tier;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.util.Set;
 
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
@@ -84,4 +85,8 @@ public interface Acceptor {
   boolean isGatewayReceiver();
 
   boolean isSelector();
+
+  InetAddress getServerInetAddress();
+
+  void notifyCacheMembersOfClose();
 }

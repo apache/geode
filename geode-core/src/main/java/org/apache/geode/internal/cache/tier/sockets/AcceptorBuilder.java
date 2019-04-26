@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -21,20 +21,18 @@ import java.util.function.Supplier;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorFactory;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
-import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
- * Builds instances of {@link Acceptor}.
+ * Builds an instance of {@link Acceptor}.
  */
 public class AcceptorBuilder implements AcceptorFactory {
 
@@ -116,12 +114,102 @@ public class AcceptorBuilder implements AcceptorFactory {
   }
 
   /**
+   * Sets {@code port}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setPort(int port) {
+    this.port = port;
+    return this;
+  }
+
+  /**
+   * Sets {@code bindAddress}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setBindAddress(String bindAddress) {
+    this.bindAddress = bindAddress;
+    return this;
+  }
+
+  /**
+   * Sets {@code port}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setNotifyBySubscription(boolean notifyBySubscription) {
+    this.notifyBySubscription = notifyBySubscription;
+    return this;
+  }
+
+  /**
+   * Sets {@code port}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setSocketBufferSize(int socketBufferSize) {
+    this.socketBufferSize = socketBufferSize;
+    return this;
+  }
+
+  /**
    * Sets {@code cache}. Must be invoked after or instead of
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setCache(InternalCache cache) {
+  AcceptorBuilder setCache(InternalCache cache) {
     this.cache = cache;
+    return this;
+  }
+
+  /**
+   * Sets {@code maximumTimeBetweenPings}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setMaximumTimeBetweenPings(int maximumTimeBetweenPings) {
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
+    return this;
+  }
+
+  /**
+   * Sets {@code maxConnections}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setMaxConnections(int maxConnections) {
+    this.maxConnections = maxConnections;
+    return this;
+  }
+
+  /**
+   * Sets {@code maxThreads}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setMaxThreads(int maxThreads) {
+    this.maxThreads = maxThreads;
+    return this;
+  }
+
+  /**
+   * Sets {@code maximumMessageCount}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setMaximumMessageCount(int maximumMessageCount) {
+    this.maximumMessageCount = maximumMessageCount;
+    return this;
+  }
+
+  /**
+   * Sets {@code messageTimeToLive}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setMessageTimeToLive(int messageTimeToLive) {
+    this.messageTimeToLive = messageTimeToLive;
     return this;
   }
 
@@ -130,8 +218,38 @@ public class AcceptorBuilder implements AcceptorFactory {
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setConnectionListener(ConnectionListener connectionListener) {
+  AcceptorBuilder setConnectionListener(ConnectionListener connectionListener) {
     this.connectionListener = connectionListener;
+    return this;
+  }
+
+  /**
+   * Sets {@code tcpNoDelay}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setTcpNoDelay(boolean tcpNoDelay) {
+    this.tcpNoDelay = tcpNoDelay;
+    return this;
+  }
+
+  /**
+   * Sets {@code serverConnectionFactory}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setServerConnectionFactory(ServerConnectionFactory serverConnectionFactory) {
+    this.serverConnectionFactory = serverConnectionFactory;
+    return this;
+  }
+
+  /**
+   * Sets {@code timeLimitMillis}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setTimeLimitMillis(long timeLimitMillis) {
+    this.timeLimitMillis = timeLimitMillis;
     return this;
   }
 
@@ -140,7 +258,7 @@ public class AcceptorBuilder implements AcceptorFactory {
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setSecurityService(SecurityService securityService) {
+  AcceptorBuilder setSecurityService(SecurityService securityService) {
     this.securityService = securityService;
     return this;
   }
@@ -150,7 +268,7 @@ public class AcceptorBuilder implements AcceptorFactory {
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setSocketCreatorSupplier(Supplier<SocketCreator> socketCreatorSupplier) {
+  AcceptorBuilder setSocketCreatorSupplier(Supplier<SocketCreator> socketCreatorSupplier) {
     this.socketCreatorSupplier = socketCreatorSupplier;
     return this;
   }
@@ -160,7 +278,7 @@ public class AcceptorBuilder implements AcceptorFactory {
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setCacheClientNotifierProvider(
+  AcceptorBuilder setCacheClientNotifierProvider(
       CacheClientNotifierProvider cacheClientNotifierProvider) {
     this.cacheClientNotifierProvider = cacheClientNotifierProvider;
     return this;
@@ -171,15 +289,12 @@ public class AcceptorBuilder implements AcceptorFactory {
    * {@link #forServer(InternalCacheServer)}.
    */
   @VisibleForTesting
-  public AcceptorBuilder setClientHealthMonitorProvider(
+  AcceptorBuilder setClientHealthMonitorProvider(
       ClientHealthMonitorProvider clientHealthMonitorProvider) {
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
     return this;
   }
 
-  /**
-   * Creates a new instance of {@link Acceptor}.
-   */
   @Override
   public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
     return new AcceptorImpl(port, bindAddress, notifyBySubscription, socketBufferSize,

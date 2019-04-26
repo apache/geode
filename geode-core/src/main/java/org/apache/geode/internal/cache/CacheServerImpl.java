@@ -16,8 +16,6 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.Integer.MAX_VALUE;
 import static java.lang.Integer.getInteger;
-import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
-import static org.apache.geode.internal.security.SecurableCommunicationChannel.SERVER;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,7 +33,6 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidValueException;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.ClientSession;
@@ -69,9 +66,9 @@ import org.apache.geode.internal.cache.CacheServerAdvisor.CacheServerProfile;
 import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
+import org.apache.geode.internal.cache.tier.sockets.AcceptorBuilder;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
-import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
@@ -144,31 +141,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public static final boolean ENABLE_NOTIFY_BY_SUBSCRIPTION_FALSE = Boolean.getBoolean(
       DistributionConfig.GEMFIRE_PREFIX + "cache-server.enable-notify-by-subscription-false");
 
-  // ////////////////////// Constructors //////////////////////
-
-  /**
-   * Creates a new {@code CacheServerImpl} that serves the contents of the give {@code Cache}. It
-   * has the default configuration.
-   */
-  public CacheServerImpl(final InternalCache cache, final SecurityService securityService) {
-    this(cache, securityService, () -> getSocketCreatorForComponent(SERVER),
-        CacheClientNotifier.singletonProvider(), ClientHealthMonitor.singletonProvider(),
-        CacheServerAdvisor::createCacheServerAdvisor);
-  }
-
-  @VisibleForTesting
   CacheServerImpl(final InternalCache cache,
-      final SecurityService securityService,
-      final Supplier<SocketCreator> socketCreatorSupplier,
-      final CacheClientNotifierProvider cacheClientNotifierProvider,
-      final ClientHealthMonitorProvider clientHealthMonitorProvider,
-      final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
-    this(cache, securityService, new AcceptorBuilder(), true, true,
-        socketCreatorSupplier, cacheClientNotifierProvider, clientHealthMonitorProvider,
-        cacheServerAdvisorProvider);
-  }
-
-  public CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
       final AcceptorBuilder acceptorBuilder,
       final boolean sendResourceEvents,
@@ -187,8 +160,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
     this.clientHealthMonitorProvider = clientHealthMonitorProvider;
     this.cacheServerAdvisorProvider = cacheServerAdvisorProvider;
   }
-
-  // //////////////////// Instance Methods ///////////////////
 
   @Override
   public CancelCriterion getCancelCriterion() {

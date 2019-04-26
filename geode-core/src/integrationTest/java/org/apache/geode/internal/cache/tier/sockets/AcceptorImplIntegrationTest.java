@@ -14,6 +14,13 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT;
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS;
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_MAX_THREADS;
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE;
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_SOCKET_BUFFER_SIZE;
+import static org.apache.geode.cache.server.CacheServer.DEFAULT_TCP_NO_DELAY;
+import static org.apache.geode.internal.cache.tier.sockets.AcceptorImpl.MINIMUM_MAX_CONNECTIONS;
 import static org.apache.geode.internal.net.SocketCreatorFactory.getSocketCreatorForComponent;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.SERVER;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,21 +38,20 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 @Category(ClientServerTest.class)
 public class AcceptorImplIntegrationTest {
 
   private InternalCache cache;
-  private AcceptorImpl acceptor1;
-  private AcceptorImpl acceptor2;
+  private Acceptor acceptor1;
+  private Acceptor acceptor2;
   private ServerConnectionFactory serverConnectionFactory;
 
   @Before
   public void setUp() throws Exception {
-
     cache = (InternalCache) new CacheFactory().create();
     serverConnectionFactory = new ServerConnectionFactory();
   }
@@ -63,18 +69,18 @@ public class AcceptorImplIntegrationTest {
 
   @Test
   public void constructorThrowsBindExceptionIfPortIsInUse() throws Exception {
-    acceptor1 = createAcceptorImpl();
+    acceptor1 = createAcceptor();
 
-    Throwable thrown = catchThrowable(() -> acceptor2 = createAcceptorImpl(acceptor1.getPort()));
+    Throwable thrown = catchThrowable(() -> acceptor2 = createAcceptor(acceptor1.getPort()));
 
     assertThat(thrown).isInstanceOf(BindException.class);
   }
 
   @Test
   public void acceptorBindsToLocalAddress() throws Exception {
-    acceptor1 = createAcceptorImpl();
+    acceptor1 = createAcceptor();
 
-    assertThat(acceptor1.getServerInetAddr().isAnyLocalAddress()).isTrue();
+    assertThat(acceptor1.getServerInetAddress().isAnyLocalAddress()).isTrue();
   }
 
   /**
@@ -84,7 +90,7 @@ public class AcceptorImplIntegrationTest {
    */
   @Test
   public void acceptorCloseInformsOtherServersIfCacheIsNotClosed() throws Exception {
-    acceptor1 = spy(createAcceptorImpl());
+    acceptor1 = spy(createAcceptor());
 
     acceptor1.close();
 
@@ -97,7 +103,7 @@ public class AcceptorImplIntegrationTest {
    */
   @Test
   public void acceptorCloseDoesNotInformOtherServersIfCacheIsClosed() throws Exception {
-    acceptor1 = spy(createAcceptorImpl());
+    acceptor1 = spy(createAcceptor());
     cache.close();
 
     acceptor1.close();
@@ -105,17 +111,25 @@ public class AcceptorImplIntegrationTest {
     verify(acceptor1, never()).notifyCacheMembersOfClose();
   }
 
-  private AcceptorImpl createAcceptorImpl() throws IOException {
-    return createAcceptorImpl(0);
+  private Acceptor createAcceptor() throws IOException {
+    return createAcceptor(0);
   }
 
-  private AcceptorImpl createAcceptorImpl(int port) throws IOException {
-    return new AcceptorImpl(port, null, false, CacheServer.DEFAULT_SOCKET_BUFFER_SIZE,
-        CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, AcceptorImpl.MINIMUM_MAX_CONNECTIONS,
-        CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
-        CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE, null, null, CacheServer.DEFAULT_TCP_NO_DELAY,
-        serverConnectionFactory, 1000, cache.getSecurityService(),
-        () -> getSocketCreatorForComponent(SERVER), CacheClientNotifier.singletonProvider(),
-        ClientHealthMonitor.singletonProvider());
+  private Acceptor createAcceptor(int port) throws IOException {
+    return new AcceptorBuilder().setPort(port).setBindAddress(null).setNotifyBySubscription(false)
+        .setSocketBufferSize(DEFAULT_SOCKET_BUFFER_SIZE)
+        .setMaximumTimeBetweenPings(DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS).setCache(cache)
+        .setMaxConnections(MINIMUM_MAX_CONNECTIONS)
+        .setMaxThreads(DEFAULT_MAX_THREADS).setMaximumMessageCount(DEFAULT_MAXIMUM_MESSAGE_COUNT)
+        .setMessageTimeToLive(DEFAULT_MESSAGE_TIME_TO_LIVE)
+        .setConnectionListener(null)
+        .setTcpNoDelay(DEFAULT_TCP_NO_DELAY)
+        .setServerConnectionFactory(serverConnectionFactory)
+        .setTimeLimitMillis(1000)
+        .setSecurityService(cache.getSecurityService())
+        .setSocketCreatorSupplier(() -> getSocketCreatorForComponent(SERVER))
+        .setCacheClientNotifierProvider(CacheClientNotifier.singletonProvider())
+        .setClientHealthMonitorProvider(ClientHealthMonitor.singletonProvider())
+        .create(null);
   }
 }

@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.cache.tier.sockets;
 
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,16 +23,19 @@ import java.util.List;
 import java.util.function.Supplier;
 
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayTransportFilter;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
-import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
-import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.test.junit.categories.ClientServerTest;
 
+@Category(ClientServerTest.class)
 public class AcceptorBuilderTest {
 
   @Test

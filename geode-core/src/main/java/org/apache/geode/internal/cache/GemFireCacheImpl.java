@@ -206,7 +206,6 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.GatewayReceiverMetrics;
-import org.apache.geode.internal.cache.wan.GatewayReceiverServerFactory;
 import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
@@ -3737,7 +3736,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     throwIfClient();
     stopper.checkCancelInProgress(null);
 
-    InternalCacheServer server = new CacheServerImpl(this, securityService);
+    InternalCacheServer server = new ServerBuilder(this, securityService).createServer();
     allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
@@ -3832,9 +3831,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     requireNonNull(metrics,
         "GatewayReceiverMetrics must be added before adding a server endpoint.");
 
-    InternalCacheServer receiverServer =
-        new GatewayReceiverServerFactory(this, securityService, receiver, metrics)
-            .createServer();
+    InternalCacheServer receiverServer = new ServerBuilder(this, securityService)
+        .forGatewayReceiver(receiver, metrics).createServer();
     gatewayReceiverServer.set(receiverServer);
 
     sendAddCacheServerProfileMessage();

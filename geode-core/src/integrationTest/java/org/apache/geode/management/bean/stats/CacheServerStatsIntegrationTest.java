@@ -25,11 +25,10 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.management.internal.beans.CacheServerBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
 
-@Category({JMXTest.class})
-public class CacheServerStatsJUnitTest extends MBeanStatsTestCase {
+@Category(JMXTest.class)
+public class CacheServerStatsIntegrationTest extends MBeanStatsTestCase {
 
   private CacheServerBridge bridge;
-
   private CacheServerStats cacheServerStats;
 
   @Override

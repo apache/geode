@@ -12,20 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.tier.sockets;
-
-import java.io.IOException;
-
-import org.apache.geode.internal.cache.tier.Acceptor;
-import org.apache.geode.internal.cache.tier.OverflowAttributes;
+package org.apache.geode.internal.cache;
 
 /**
- * Creates an instance of {@link Acceptor}.
+ * Creates an instance of {@link InternalCacheServer}.
  */
-public interface AcceptorFactory {
+public interface ServerFactory {
 
   /**
-   * Creates a new instance of {@link Acceptor}.
+   * Creates a new instance of {@link InternalCacheServer}.
    */
-  Acceptor create(OverflowAttributes overflowAttributes) throws IOException;
+  InternalCacheServer createServer();
 }

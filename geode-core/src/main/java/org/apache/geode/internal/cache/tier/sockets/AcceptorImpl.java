@@ -369,7 +369,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    *
    * @since GemFire 5.7
    */
-  public AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
+  AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
       final int socketBufferSize, final int maximumTimeBetweenPings,
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
@@ -407,7 +407,7 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
    * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param gatewayTransportFilters List of GatewayTransportFilters
    */
-  public AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
+  AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
       final int socketBufferSize, final int maximumTimeBetweenPings,
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
@@ -1196,8 +1196,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     return name;
   }
 
-
-  InetAddress getServerInetAddr() {
+  @Override
+  public InetAddress getServerInetAddress() {
     return serverSock.getInetAddress();
   }
 
@@ -1633,7 +1633,8 @@ public class AcceptorImpl implements Acceptor, Runnable, CommBufferPool {
     }
   }
 
-  void notifyCacheMembersOfClose() {
+  @Override
+  public void notifyCacheMembersOfClose() {
     if (logger.isDebugEnabled()) {
       logger.debug("sending messages to all peers for removing this server..");
     }
