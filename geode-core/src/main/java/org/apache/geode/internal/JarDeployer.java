@@ -408,7 +408,7 @@ public class JarDeployer implements Serializable {
       FileInputStream fileInputStream = new FileInputStream(jarFile.getAbsolutePath());
       BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
       ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream);
-      ZipEntry zipEntry = null;
+      ZipEntry zipEntry;
       while ((zipEntry = zipInputStream.getNextEntry()) != null) {
         // JDBC 4.0 Drivers must include the file META-INF/services/java.sql.Driver. This file
         // contains the name of the JDBC drivers implementation of java.sql.Driver
@@ -417,11 +417,16 @@ public class JarDeployer implements Serializable {
           continue;
         }
         int size = (int) zipEntry.getSize();
+        if (size == -1) {
+          logger.warn("Invalid zip entry found for META-INF/services/java.sql.Driver within jar "
+              + jarFile.getName());
+          return null;
+        }
         byte[] bytes = new byte[size];
         int offset = 0;
-        int chunk = 0;
+        int chunk;
         while ((size - offset) > 0) {
-          chunk = zipInputStream.read(bytes, offset, (int) size - offset);
+          chunk = zipInputStream.read(bytes, offset, size - offset);
           if (chunk == -1) {
             break;
           }
