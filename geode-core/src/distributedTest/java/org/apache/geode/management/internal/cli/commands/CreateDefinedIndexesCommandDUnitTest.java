@@ -19,7 +19,6 @@ import static org.apache.geode.management.internal.cli.result.model.ResultModel.
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -38,8 +37,6 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
@@ -96,13 +93,10 @@ public class CreateDefinedIndexesCommandDUnitTest {
         + " --expression=value1 --region=" + regionName + "1").statusIsSuccess()
         .containsOutput("Index successfully defined");
 
-    CommandResult result = gfsh.executeCommand("create defined indexes");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    Map<String, List<String>> table =
-        result.getResultData()
-            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
-            .getContent();
-    assertThat(table.get("Status")).contains("ERROR", "ERROR", "ERROR");
+    gfsh.executeAndAssertThat("create defined indexes")
+        .statusIsError()
+        .hasTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+        .hasColumn("Status").containsExactly("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -145,13 +139,10 @@ public class CreateDefinedIndexesCommandDUnitTest {
         "define index --name=" + index2Name + " --expression=value2 --region=" + region2Name)
         .statusIsSuccess().containsOutput("Index successfully defined");
 
-    CommandResult result = gfsh.executeCommand("create defined indexes");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    Map<String, List<String>> table =
-        result.getResultData()
-            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
-            .getContent();
-    assertThat(table.get("Member").size()).isEqualTo(6);
+    gfsh.executeAndAssertThat("create defined indexes")
+        .statusIsSuccess()
+        .hasTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+        .hasRowSize(6);
     assertThat(gfsh.getGfshOutput())
         .contains("Changes to configuration for group 'cluster' are persisted");
 
@@ -190,23 +181,18 @@ public class CreateDefinedIndexesCommandDUnitTest {
     String index1Name = "index_" + region1Name;
     String index2Name = "index_" + region2Name;
 
-    CommandResult result = gfsh
-        .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(
-        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
-            .contains(
-                "server-1",
-                "server-2");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region1Name + " --type=REPLICATE --group=group1")
+        .statusIsSuccess()
+        .hasTableSection(MEMBER_STATUS_SECTION)
+        .hasColumn("Member")
+        .containsExactly("server-1", "server-2");
 
-    result = gfsh
-        .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group1");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(
-        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
-            .contains(
-                "server-1",
-                "server-2");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region2Name + " --type=REPLICATE --group=group1")
+        .statusIsSuccess()
+        .hasTableSection(MEMBER_STATUS_SECTION).hasColumn("Member")
+        .containsExactly("server-1", "server-2");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -259,21 +245,17 @@ public class CreateDefinedIndexesCommandDUnitTest {
     String index1Name = "index_" + region1Name;
     String index2Name = "index_" + region2Name;
 
-    CommandResult result = gfsh
-        .executeCommand("create region --name=" + region1Name + " --type=REPLICATE --group=group1");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(
-        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
-            .contains(
-                "server-1",
-                "server-2");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region1Name + " --type=REPLICATE --group=group1")
+        .statusIsSuccess()
+        .hasTableSection(MEMBER_STATUS_SECTION).hasColumn("Member")
+        .containsExactly("server-1", "server-2");
 
-    result = gfsh
-        .executeCommand("create region --name=" + region2Name + " --type=REPLICATE --group=group2");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-    assertThat(
-        result.getResultData().getTableSection(MEMBER_STATUS_SECTION).getContent().get("Member"))
-            .contains("server-3");
+    gfsh.executeAndAssertThat(
+        "create region --name=" + region2Name + " --type=REPLICATE --group=group2")
+        .statusIsSuccess()
+        .hasTableSection(MEMBER_STATUS_SECTION).hasColumn("Member")
+        .containsExactly("server-3");
 
     gfsh.executeAndAssertThat(
         "define index --name=" + index1Name + " --expression=value1 --region=" + region1Name)
@@ -283,13 +265,10 @@ public class CreateDefinedIndexesCommandDUnitTest {
         "define index --name=" + index2Name + " --expression=value1 --region=" + region2Name)
         .statusIsSuccess().containsOutput("Index successfully defined");
 
-    result = gfsh.executeCommand("create defined indexes --group=group1,group2");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
-    assertThat(
-        result.getResultData()
-            .getTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
-            .getContent()
-            .get("Status")).contains("ERROR", "ERROR", "ERROR");
+    gfsh.executeAndAssertThat("create defined indexes --group=group1,group2")
+        .statusIsError()
+        .hasTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
+        .hasColumn("Status").containsExactly("ERROR", "ERROR", "ERROR");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();

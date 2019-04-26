@@ -133,6 +133,6 @@ public class CreateDefinedIndexesCommandTest {
     gfshParser.executeAndAssertThat(command, "create defined indexes").statusIsSuccess()
         .hasTableSection()
         .hasColumn("Status")
-        .containsExactlyInAnyOrder("OK", "OK", "OK", "OK");
+        .containsExactly("OK", "OK");
   }
 }

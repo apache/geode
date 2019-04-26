@@ -55,7 +55,9 @@ public class ListJndiBindingCommandDUnitTest {
   public void listJndiBinding() {
     gfsh.executeAndAssertThat(
         "create jndi-binding --name=jndi1 --type=SIMPLE --jdbc-driver-class=org.apache.derby.jdbc.EmbeddedDriver --connection-url=\"jdbc:derby:newDB;create=true\"")
-        .statusIsSuccess().tableHasColumnOnlyWithValues("Member", "server-1");
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasColumn("Member").containsExactly("server-1");
 
     CommandResultAssert commandResultAssert =
         gfsh.executeAndAssertThat("list jndi-binding").statusIsSuccess();

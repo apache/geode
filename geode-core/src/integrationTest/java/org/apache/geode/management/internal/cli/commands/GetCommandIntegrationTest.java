@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -36,9 +35,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.domain.DataCommandResult;
-import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -112,102 +109,96 @@ public class GetCommandIntegrationTest {
 
   @Test
   public void getOnCacheMissForRegularRegion() throws Exception {
-    CommandResult result = gfsh.executeCommand("get --region=Users --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("get --region=Users --key=jonbloom")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "true");
 
-    Map<String, String> data =
-        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe --load-on-cache-miss=false")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Message", "Key is not present in the region");
 
-    result = gfsh.executeCommand("get --region=Users --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-
-    result = gfsh.executeCommand("get --region=Users --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(User.class.getCanonicalName());
+    gfsh.executeAndAssertThat("get --region=Users --key=jondoe")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION).hasContent()
+        .containsEntry("Result", "true")
+        .containsEntry("Value Class", User.class.getCanonicalName());
 
     // get something that does not exist
-    result = gfsh.executeCommand("get --region=Users --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
+    gfsh.executeAndAssertThat("get --region=Users --key=missingUser --load-on-cache-miss")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION).hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Value", "null");
   }
 
   @Test
   public void getOnCacheMissForPdxRegion() {
-    CommandResult result = gfsh.executeCommand("get --region=UsersPdx --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("get --region=UsersPdx --key=jonbloom")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "true");
 
-    Map<String, String> data =
-        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
+    gfsh.executeAndAssertThat("get --region=UsersPdx --key=jondoe --load-on-cache-miss=false")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Message", "Key is not present in the region");
 
-    result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-
-    result = gfsh.executeCommand("get --region=UsersPdx --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(PdxInstanceImpl.class.getCanonicalName());
+    gfsh.executeAndAssertThat("get --region=UsersPdx --key=jondoe")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "true")
+        .containsEntry("Value Class", PdxInstanceImpl.class.getCanonicalName());
 
     // get something that does not exist
-    result = gfsh.executeCommand("get --region=UsersPdx --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
+    gfsh.executeAndAssertThat("get --region=UsersPdx --key=missingUser --load-on-cache-miss")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Value", "null");
   }
 
   @Test
   public void getOnCacheMissForStringRegion() throws Exception {
-    CommandResult result = gfsh.executeCommand("get --region=UsersString --key=jonbloom");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    gfsh.executeAndAssertThat("get --region=UsersString --key=jonbloom")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "true")
+        .containsEntry("Value", "\"6a6f6e626c6f6f6d\"");
 
-    Map<String, String> data =
-        result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value")).isEqualTo("\"6a6f6e626c6f6f6d\"");
+    gfsh.executeAndAssertThat("get --region=UsersString --key=jondoe --load-on-cache-miss=false")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Message", "Key is not present in the region")
+        .containsEntry("Value", "null");
 
-    result =
-        gfsh.executeCommand("get --region=UsersString --key=jondoe --load-on-cache-miss=false");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Message")).isEqualTo("Key is not present in the region");
-    assertThat(data.get("Value")).isEqualTo("null");
-
-    result = gfsh.executeCommand("get --region=UsersString --key=jondoe");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("true");
-    assertThat(data.get("Value Class")).isEqualTo(String.class.getName());
-    assertThat(data.get("Value")).isEqualTo("\"6a6f6e646f65\"");
+    gfsh.executeAndAssertThat("get --region=UsersString --key=jondoe")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "true")
+        .containsEntry("Value Class", String.class.getName())
+        .containsEntry("Value", "\"6a6f6e646f65\"");
 
     // get something that does not exist
-    result = gfsh.executeCommand("get --region=UsersString --key=missingUser --load-on-cache-miss");
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
-
-    data = result.getResultData().getDataSection(DataCommandResult.DATA_INFO_SECTION).getContent();
-    assertThat(data.get("Result")).isEqualTo("false");
-    assertThat(data.get("Value")).isEqualTo("null");
+    gfsh.executeAndAssertThat("get --region=UsersString --key=missingUser --load-on-cache-miss")
+        .statusIsSuccess()
+        .hasDataSection(DataCommandResult.DATA_INFO_SECTION)
+        .hasContent()
+        .containsEntry("Result", "false")
+        .containsEntry("Value", "null");
   }
 
   private static class User implements Serializable {
