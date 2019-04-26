@@ -51,11 +51,11 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.SnapshotTestUtil;
-import org.apache.geode.management.cli.Result;
-import org.apache.geode.management.internal.cli.result.CommandResult;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.PersistenceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -142,10 +142,12 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, 1);
 
-    gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
-        .containsOutput("Missing Disk Stores", "No missing colocated region found");
+    TabularResultModel table =
+        gfsh.executeAndAssertThat("show missing-disk-stores").statusIsSuccess()
+            .containsOutput("Missing Disk Stores", "No missing colocated region found")
+            .hasTableSection().getActual();
 
-    List<String> diskstoreIDs = gfsh.getCommandResult().getTableColumnValues("Disk Store ID");
+    List<String> diskstoreIDs = table.getValuesInColumn("Disk Store ID");
     assertThat(diskstoreIDs.size()).isEqualTo(1);
 
     gfsh.executeAndAssertThat("revoke missing-disk-store --id=" + diskstoreIDs.get(0))
@@ -328,15 +330,12 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
       }
     });
 
-    gfsh.executeAndAssertThat(
+    CommandResultAssert resultAssert = gfsh.executeAndAssertThat(
         String.format("compact disk-store --name=%s --group=%s", DISKSTORE, GROUP))
         .statusIsSuccess();
 
-    CommandResult cmdResult = gfsh.getCommandResult();
-    assertThat(cmdResult.getMapFromSection("server-1").keySet()).contains("UUID", "Host",
-        "Directory");
-    assertThat(cmdResult.getMapFromSection("server-2").keySet()).contains("UUID", "Host",
-        "Directory");
+    resultAssert.hasDataSection("server-1").hasContent().containsKeys("UUID", "Host", "Directory");
+    resultAssert.hasDataSection("server-2").hasContent().containsKeys("UUID", "Host", "Directory");
   }
 
   @Test
@@ -349,24 +348,21 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     server1.invoke(dataProducer());
 
-    CommandResult result = gfsh.executeCommand(
-        String.format("describe disk-store --member=%s --name=%s", server1.getName(), DISKSTORE));
-    assertThat(result.getStatus()).isEqualTo(Result.Status.OK);
+    CommandResultAssert resultAssert = gfsh.executeAndAssertThat(
+        String.format("describe disk-store --member=%s --name=%s", server1.getName(), DISKSTORE))
+        .statusIsSuccess();
+    resultAssert.hasDataSection(DescribeDiskStoreCommand.DISK_STORE_SECTION)
+        .hasContent()
+        .containsKeys("Disk Store Name", "Member ID", "Member Name",
+            "Allow Force Compaction", "Auto Compaction", "Compaction Threshold", "Max Oplog Size",
+            "Queue Size", "Time Interval", "Write Buffer Size", "Disk Usage Warning Percentage",
+            "Disk Usage Critical Percentage", "PDX Serialization Meta-Data Stored");
 
-    Map<String, String> data =
-        result.getMapFromSection(DescribeDiskStoreCommand.DISK_STORE_SECTION);
-    assertThat(data.keySet()).contains("Disk Store Name", "Member ID", "Member Name",
-        "Allow Force Compaction", "Auto Compaction", "Compaction Threshold", "Max Oplog Size",
-        "Queue Size", "Time Interval", "Write Buffer Size", "Disk Usage Warning Percentage",
-        "Disk Usage Critical Percentage", "PDX Serialization Meta-Data Stored");
+    resultAssert.hasTableSection(DescribeDiskStoreCommand.DISK_DIR_SECTION)
+        .hasColumn("Disk Directory").hasSize(1);
 
-    Map<String, List<String>> directories =
-        result.getMapFromTableContent(DescribeDiskStoreCommand.DISK_DIR_SECTION);
-    assertThat(directories.get("Disk Directory").size()).isEqualTo(1);
-
-    Map<String, List<String>> regions =
-        result.getMapFromTableContent(DescribeDiskStoreCommand.REGION_SECTION);
-    assertThat(regions.get("Region Path").size()).isEqualTo(1);
+    resultAssert.hasTableSection(DescribeDiskStoreCommand.REGION_SECTION)
+        .hasColumn("Region Path").hasSize(1);
   }
 
   @Test

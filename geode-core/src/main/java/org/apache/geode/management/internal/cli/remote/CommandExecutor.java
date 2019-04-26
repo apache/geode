@@ -34,6 +34,7 @@ import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
+import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -77,7 +78,11 @@ public class CommandExecutor {
     try {
       Object result = invokeCommand(command, parseResult);
 
-      if (result instanceof Result) {
+      // if some custom command returns Result instead of ResultModel, we need to turn that
+      // into ResultModel in order to be processed later on.
+      if (result instanceof CommandResult) {
+        result = ((CommandResult) result).getResultData();
+      } else if (result instanceof Result) {
         Result customResult = (Result) result;
         result = new ResultModel();
         InfoResultModel info = ((ResultModel) result).addInfo();

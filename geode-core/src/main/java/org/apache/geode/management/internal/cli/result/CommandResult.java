@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
@@ -109,45 +108,6 @@ public class CommandResult implements Result {
     commandOutput.addAll(resultTable.buildTableList());
   }
 
-  @VisibleForTesting
-  public Map<String, String> getMapFromSection(String sectionID) {
-    return result.getDataSection(sectionID).getContent();
-  }
-
-  @VisibleForTesting
-  public List<String> getTableColumnValues(String columnName) {
-    List<TabularResultModel> tables = result.getTableSections();
-    if (tables.size() == 0) {
-      return EMPTY_LIST;
-    }
-
-    return tables.get(0).getContent().get(columnName);
-  }
-
-  @VisibleForTesting
-  public Map<String, List<String>> getMapFromTableContent(String tableId) {
-    TabularResultModel table = result.getTableSection(tableId);
-    if (table == null) {
-      return EMPTY_TABLE_MAP;
-    }
-
-    return table.getContent();
-  }
-
-  @VisibleForTesting
-  public List<String> getColumnFromTableContent(String column, String tableId) {
-    TabularResultModel table = result.getTableSection(tableId);
-    if (table == null) {
-      return EMPTY_LIST;
-    }
-
-    return table.getContent().get(column);
-  }
-
-  @VisibleForTesting
-  public List<String> getCommandOutput() {
-    return commandOutput;
-  }
 
   private void addSpacedRowInTable(TableBuilder.Table resultTable, String row) {
     if (row != null && !row.isEmpty()) {
@@ -209,7 +169,6 @@ public class CommandResult implements Result {
     for (Map.Entry<String, String> entry : section.getContent().entrySet()) {
       TableBuilder.Row newRow = rowGroup.newRow();
       String key = entry.getKey();
-      String value = entry.getValue();
       String[] values = entry.getValue().split(GfshParser.LINE_SEPARATOR);
       if (values.length == 1) {
         newRow.newLeftCol(key).newLeftCol(values[0]);
