@@ -21,10 +21,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_POST
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -33,7 +31,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,12 +46,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import com.healthmarketscience.rmiio.RemoteInputStream;
-import com.healthmarketscience.rmiio.RemoteInputStreamClient;
 import joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -74,12 +68,12 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.XSDRootElement;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
+import org.apache.geode.internal.cache.ClusterConfigurationLoader;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
@@ -89,14 +83,11 @@ import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.beans.FileUploader;
-import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 import org.apache.geode.management.internal.configuration.callbacks.ConfigurationChangeListener;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.domain.SharedConfigurationStatus;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
-import org.apache.geode.management.internal.configuration.functions.DownloadJarFunction;
 import org.apache.geode.management.internal.configuration.messages.ConfigurationResponse;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
@@ -479,25 +470,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    */
   public File downloadJar(DistributedMember locator, String groupName, String jarName)
       throws IOException {
-    ResultCollector<RemoteInputStream, List<RemoteInputStream>> rc =
-        (ResultCollector<RemoteInputStream, List<RemoteInputStream>>) CliUtil.executeFunction(
-            new DownloadJarFunction(), new Object[] {groupName, jarName},
-            Collections.singleton(locator));
-
-    List<RemoteInputStream> result = rc.getResult();
-    RemoteInputStream jarStream = result.get(0);
-
-    Path tempDir = FileUploader.createSecuredTempDirectory("deploy-");
-    Path tempJar = Paths.get(tempDir.toString(), jarName);
-    FileOutputStream fos = new FileOutputStream(tempJar.toString());
-    InputStream input = RemoteInputStreamClient.wrap(jarStream);
-
-    IOUtils.copy(input, fos);
-
-    fos.close();
-    input.close();
-
-    return tempJar.toFile();
+    ClusterConfigurationLoader loader = new ClusterConfigurationLoader();
+    return loader.downloadJar(locator, groupName, jarName);
   }
 
   /**

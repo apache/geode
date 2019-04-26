@@ -1431,11 +1431,17 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   private void startConfigurationPersistenceService() {
+
     installRequestHandlers();
 
     if (!config.getEnableClusterConfiguration()) {
       logger.info("Cluster configuration service is disabled");
       return;
+    }
+
+    if (!config.getJmxManager()) {
+      throw new IllegalStateException(
+          "Cannot start cluster configuration without jmx-manager=true");
     }
 
     if (isSharedConfigurationStarted) {
