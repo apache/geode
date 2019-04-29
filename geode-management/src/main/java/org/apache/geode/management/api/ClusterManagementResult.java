@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -111,6 +112,10 @@ public class ClusterManagementResult {
 
   public List<RuntimeCacheElement> getResult() {
     return result;
+  }
+
+  public <R extends RuntimeCacheElement> List<R> getResult(Class<R> clazz) {
+    return result.stream().map(clazz::cast).collect(Collectors.toList());
   }
 
   public void setResult(List<RuntimeCacheElement> result) {

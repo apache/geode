@@ -22,6 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -82,7 +84,9 @@ public class MemberManagementServiceDUnitTest {
     ClusterManagementResult result = client.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(1);
+
+    List<MemberConfig> memberConfig = result.getResult(MemberConfig.class);
+    assertThat(memberConfig.size()).isEqualTo(1);
   }
 
   @Test
