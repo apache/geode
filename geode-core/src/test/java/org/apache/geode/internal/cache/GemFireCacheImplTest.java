@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.NotSerializableException;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -345,6 +346,50 @@ public class GemFireCacheImplTest {
     gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThat(gemFireCacheImpl.getMeterRegistry()).isInstanceOf(MeterRegistry.class);
+  }
+
+  @Test
+  public void getCacheServersResultContainsNonGatewayCacheServer() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+    CacheServer addedNonGatewayServer = gemFireCacheImpl.addCacheServer(false);
+
+    List<CacheServer> result = gemFireCacheImpl.getCacheServers();
+
+    assertThat(result).contains(addedNonGatewayServer);
+  }
+
+  @Test
+  public void getCacheServersUnchangedAfterAddRemoveOfNonGatewayCacheServer() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+    List<CacheServer> original = gemFireCacheImpl.getCacheServers();
+    CacheServer addedNonGatewayServer = gemFireCacheImpl.addCacheServer(false);
+
+    gemFireCacheImpl.removeCacheServer(addedNonGatewayServer);
+    List<CacheServer> result = gemFireCacheImpl.getCacheServers();
+
+    assertThat(result).isEqualTo(original);
+  }
+
+  @Test
+  public void getCacheServersUnchangedAfterAddRemoveOfGatewayCacheServer() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+    List<CacheServer> original = gemFireCacheImpl.getCacheServers();
+    CacheServer addedGatewayServer = gemFireCacheImpl.addCacheServer(true);
+
+    gemFireCacheImpl.removeCacheServer(addedGatewayServer);
+    List<CacheServer> result = gemFireCacheImpl.getCacheServers();
+
+    assertThat(result).isEqualTo(original);
+  }
+
+  @Test
+  public void getCacheServersResultDoesNotContainGatewayCacheServer() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+    CacheServer addedGatewayServer = gemFireCacheImpl.addCacheServer(true);
+
+    List<CacheServer> result = gemFireCacheImpl.getCacheServers();
+
+    assertThat(result).doesNotContain(addedGatewayServer);
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {
