@@ -16,7 +16,6 @@
 package org.apache.geode.management;
 
 import static java.util.stream.Collectors.toList;
-import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.management.ManagementService.getExistingManagementService;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase.getBlackboard;
@@ -25,23 +24,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
-import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -53,14 +48,9 @@ import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 
 @Category({JMXTest.class})
 public class JMXMBeanReconnectDUnitTest {
-  private static final String LOCATOR_1_NAME = "locator-one";
-  private static final String LOCATOR_2_NAME = "locator-two";
   private static final String REGION_PATH = "/test-region-1";
   private static final String RECONNECT_MAILBOX = "reconnectReady";
-  private static final int LOCATOR_1_VM_INDEX = 0;
-  private static final int LOCATOR_2_VM_INDEX = 1;
   private static final int SERVER_1_VM_INDEX = 2;
-  private static final int SERVER_2_VM_INDEX = 3;
   private static final int SERVER_COUNT = 2;
   private static final int NUM_REMOTE_BEANS = 19;
   private static final int NUM_LOCATOR_BEANS = 8;
@@ -69,35 +59,26 @@ public class JMXMBeanReconnectDUnitTest {
 
   private MemberVM locator1, locator2, server1;
 
-  private MBeanServerConnection locator1Connection;
-  private MBeanServerConnection locator2Connection;
-
   @Rule
   public ClusterStartupRule lsRule = new ClusterStartupRule();
 
   @Rule
   public GfshCommandRule gfsh = new GfshCommandRule();
 
-  @Rule
-  public MBeanServerConnectionRule jmxConnectionRule = new MBeanServerConnectionRule();
+  private MBeanServerConnectionRule jmxConToLocator1;
+  private MBeanServerConnectionRule jmxConToLocator2;
 
   @Rule
   public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
 
   @Before
   public void before() throws Exception {
-    Properties properties = new Properties();
-    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
+    locator1 = lsRule.startLocatorVM(0);
+    locator2 = lsRule.startLocatorVM(1, locator1.getPort());
 
-    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
-    locator1.waitTilFullyReconnected();
-
-    locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
-    locator2.waitTilFullyReconnected();
-
-    server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, properties, locator1.getPort());
+    server1 = lsRule.startServerVM(2, locator1.getPort());
     // start an extra server to have more MBeans, but we don't need to use it in these tests
-    lsRule.startServerVM(SERVER_2_VM_INDEX, properties, locator1.getPort());
+    lsRule.startServerVM(3, locator1.getPort());
 
     gfsh.connectAndVerify(locator1);
     gfsh.executeAndAssertThat("create region --type=REPLICATE --name=" + REGION_PATH
@@ -105,13 +86,21 @@ public class JMXMBeanReconnectDUnitTest {
 
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
-    locator1Connection = connectToMBeanServerFor(locator1.getJmxPort());
-    locator2Connection = connectToMBeanServerFor(locator2.getJmxPort());
+    jmxConToLocator1 = new MBeanServerConnectionRule();
+    jmxConToLocator1.connect(locator1.getJmxPort());
+    jmxConToLocator2 = new MBeanServerConnectionRule();
+    jmxConToLocator2.connect(locator2.getJmxPort());
 
     await("Locators must agree on the state of the system")
-        .untilAsserted(() -> assertThat(getFederatedGemfireBeansFrom(locator1Connection))
-            .containsExactlyElementsOf(getFederatedGemfireBeansFrom(locator2Connection))
+        .untilAsserted(() -> assertThat(jmxConToLocator1.getGemfireFederatedBeans())
+            .containsExactlyElementsOf(jmxConToLocator2.getGemfireFederatedBeans())
             .hasSize(NUM_REMOTE_BEANS));
+  }
+
+  @After
+  public void after() throws Exception {
+    jmxConToLocator1.disconnect();
+    jmxConToLocator2.disconnect();
   }
 
   /**
@@ -170,13 +159,13 @@ public class JMXMBeanReconnectDUnitTest {
   @Test
   public void testRemoteBeanKnowledge_MaintainServerAndCrashLocator() throws IOException {
     // check that the initial state is good
-    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
-    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
+    List<ObjectName> initialL1Beans = jmxConToLocator1.getGemfireFederatedBeans();
+    List<ObjectName> initialL2Beans = jmxConToLocator2.getGemfireFederatedBeans();
     assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_REMOTE_BEANS);
 
     // calculate the expected list for use once the locator has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
-        .filter(excludingBeansFor(LOCATOR_1_NAME)).collect(toList());
+        .filter(excludingBeansFor("locator-0")).collect(toList());
 
     // crash the locator
     locator1.forceDisconnect(TIMEOUT, TimeUnit.MILLISECONDS, RECONNECT_MAILBOX);
@@ -185,7 +174,7 @@ public class JMXMBeanReconnectDUnitTest {
     List<ObjectName> intermediateL2Beans = new ArrayList<>();
     await().untilAsserted(() -> {
       intermediateL2Beans.clear();
-      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
+      intermediateL2Beans.addAll(jmxConToLocator2.getGemfireFederatedBeans());
 
       assertThat(intermediateL2Beans)
           .containsExactlyElementsOf(expectedIntermediateBeanList)
@@ -199,13 +188,13 @@ public class JMXMBeanReconnectDUnitTest {
     List<ObjectName> finalL2Beans = new ArrayList<>();
     await().untilAsserted(() -> {
       finalL2Beans.clear();
-      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
+      finalL2Beans.addAll(jmxConToLocator2.getGemfireFederatedBeans());
 
       assertThat(finalL2Beans).hasSize(NUM_REMOTE_BEANS);
     });
 
     // check that the final state is the same as the initial state
-    assertThat(getFederatedGemfireBeansFrom(locator1Connection))
+    assertThat(jmxConToLocator1.getGemfireFederatedBeans())
         .containsExactlyElementsOf(finalL2Beans)
         .containsExactlyElementsOf(initialL1Beans)
         .hasSize(NUM_REMOTE_BEANS);
@@ -220,8 +209,8 @@ public class JMXMBeanReconnectDUnitTest {
   @Test
   public void testRemoteBeanKnowledge_MaintainLocatorAndCrashServer() throws IOException {
     // check that the initial state is correct
-    List<ObjectName> initialL1Beans = getFederatedGemfireBeansFrom(locator1Connection);
-    List<ObjectName> initialL2Beans = getFederatedGemfireBeansFrom(locator2Connection);
+    List<ObjectName> initialL1Beans = jmxConToLocator1.getGemfireFederatedBeans();
+    List<ObjectName> initialL2Beans = jmxConToLocator2.getGemfireFederatedBeans();
     assertThat(initialL1Beans).containsExactlyElementsOf(initialL2Beans).hasSize(NUM_REMOTE_BEANS);
 
     // calculate the expected list of MBeans when the server has crashed
@@ -239,8 +228,8 @@ public class JMXMBeanReconnectDUnitTest {
       intermediateL1Beans.clear();
       intermediateL2Beans.clear();
 
-      intermediateL1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
-      intermediateL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
+      intermediateL1Beans.addAll(jmxConToLocator1.getGemfireFederatedBeans());
+      intermediateL2Beans.addAll(jmxConToLocator2.getGemfireFederatedBeans());
 
       assertThat(intermediateL1Beans)
           .containsExactlyElementsOf(expectedIntermediateBeanList)
@@ -261,8 +250,8 @@ public class JMXMBeanReconnectDUnitTest {
       finalL1Beans.clear();
       finalL2Beans.clear();
 
-      finalL1Beans.addAll(getFederatedGemfireBeansFrom(locator1Connection));
-      finalL2Beans.addAll(getFederatedGemfireBeansFrom(locator2Connection));
+      finalL1Beans.addAll(jmxConToLocator1.getGemfireFederatedBeans());
+      finalL2Beans.addAll(jmxConToLocator2.getGemfireFederatedBeans());
 
       // check that the final state eventually matches the initial state
       assertThat(finalL1Beans)
@@ -270,36 +259,6 @@ public class JMXMBeanReconnectDUnitTest {
           .containsExactlyElementsOf(initialL1Beans)
           .hasSize(NUM_REMOTE_BEANS);
     });
-  }
-
-  /**
-   * Returns a list of remote MBeans from the given member. The MBeans are filtered to exclude the
-   * member's local MBeans. The resulting list includes only MBeans that all locators in the system
-   * should have.
-   *
-   * @param remoteMBS - the connection to the locator's MBean server, created using
-   *        connectToMBeanServerFor(MemberVM member).
-   * @return List<ObjectName> - a filtered and sorted list of MBeans from the given member
-   */
-  private static List<ObjectName> getFederatedGemfireBeansFrom(MBeanServerConnection remoteMBS)
-      throws IOException {
-    Set<ObjectName> allBeans = remoteMBS.queryNames(null, null);
-    // Each locator will have a "Manager" bean that is a part of the above query,
-    // representing the ManagementAdapter.
-    // This bean is registered (and so included in its own queries),
-    // but *not* federated (and so is not included in another locator's bean queries).
-    // For the scope of this test, we do not consider these "service=Manager" beans.
-    return allBeans.stream()
-        .filter(b -> b.toString().contains("GemFire"))
-        .filter(b -> !b.toString().contains("service=Manager,type=Member,member=locator"))
-        .sorted()
-        .collect(toList());
-  }
-
-  private static MBeanServerConnection connectToMBeanServerFor(int jmxPort) throws IOException {
-    String url = "service:jmx:rmi:///jndi/rmi://localhost" + ":" + jmxPort + "/jmxrmi";
-    final JMXServiceURL serviceURL = new JMXServiceURL(url);
-    return JMXConnectorFactory.connect(serviceURL).getMBeanServerConnection();
   }
 
   /**
@@ -315,22 +274,5 @@ public class JMXMBeanReconnectDUnitTest {
 
   private static Predicate<ObjectName> excludingBeansFor(String memberName) {
     return b -> !b.getCanonicalName().contains("member=" + memberName);
-  }
-
-  private Properties locator1Properties() {
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.NAME, LOCATOR_1_NAME);
-    props.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
-    return props;
-  }
-
-  private Properties locator2Properties() {
-    Properties props = new Properties();
-    props.setProperty(ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost");
-    props.setProperty(ConfigurationProperties.NAME, LOCATOR_2_NAME);
-    props.setProperty(ConfigurationProperties.LOCATORS, "localhost[" + locator1.getPort() + "]");
-    props.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
-    return props;
   }
 }
