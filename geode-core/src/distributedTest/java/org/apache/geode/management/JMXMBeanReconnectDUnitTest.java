@@ -50,7 +50,6 @@ import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 public class JMXMBeanReconnectDUnitTest {
   private static final String REGION_PATH = "/test-region-1";
   private static final String RECONNECT_MAILBOX = "reconnectReady";
-  private static final int SERVER_1_VM_INDEX = 2;
   private static final int SERVER_COUNT = 2;
   private static final int NUM_REMOTE_BEANS = 19;
   private static final int NUM_LOCATOR_BEANS = 8;
@@ -74,7 +73,9 @@ public class JMXMBeanReconnectDUnitTest {
   @Before
   public void before() throws Exception {
     locator1 = lsRule.startLocatorVM(0);
+    locator1.waitTilFullyReconnected();
     locator2 = lsRule.startLocatorVM(1, locator1.getPort());
+    locator2.waitTilFullyReconnected();
 
     server1 = lsRule.startServerVM(2, locator1.getPort());
     // start an extra server to have more MBeans, but we don't need to use it in these tests
@@ -215,7 +216,7 @@ public class JMXMBeanReconnectDUnitTest {
 
     // calculate the expected list of MBeans when the server has crashed
     List<ObjectName> expectedIntermediateBeanList = initialL1Beans.stream()
-        .filter(excludingBeansFor("server-" + SERVER_1_VM_INDEX)).collect(toList());
+        .filter(excludingBeansFor("server-2")).collect(toList());
 
     // crash the server
     server1.forceDisconnect(TIMEOUT, TimeUnit.MILLISECONDS, RECONNECT_MAILBOX);
