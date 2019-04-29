@@ -317,6 +317,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       SearchState state = searchState;
 
       long locatorWaitTime = ((long) services.getConfig().getLocatorWaitTime()) * 1000L;
+
       long timeout = services.getConfig().getJoinTimeout();
       logger.debug("join timeout is set to {}", timeout);
       long retrySleep = JOIN_RETRY_SLEEP;
@@ -334,7 +335,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           if (localAddress.getNetMember().preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
             if (state.joinedMembersContacted <= 0 &&
-                (tries > 2 || System.currentTimeMillis() < giveupTime)) {
+                (tries > (locators.size() + 2) || System.currentTimeMillis() > giveupTime)) {
               synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
