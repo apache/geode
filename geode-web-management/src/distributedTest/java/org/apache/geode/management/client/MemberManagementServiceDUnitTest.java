@@ -22,6 +22,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,7 +69,7 @@ public class MemberManagementServiceDUnitTest {
   @WithMockUser
   public void listMember() {
     MemberConfig memberConfig = new MemberConfig();
-    ClusterManagementResult result = client.list(memberConfig);
+    ClusterManagementResult<MemberConfig> result = client.list(memberConfig, MemberConfig.class);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -79,10 +81,12 @@ public class MemberManagementServiceDUnitTest {
   public void getOneMember() throws Exception {
     MemberConfig config = new MemberConfig();
     config.setId("server-0");
-    ClusterManagementResult result = client.list(config);
+    ClusterManagementResult<MemberConfig> result = client.list(config, MemberConfig.class);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(1);
+
+    List<MemberConfig> memberConfig = result.getResult();
+    assertThat(memberConfig.size()).isEqualTo(1);
   }
 
   @Test
@@ -91,7 +95,7 @@ public class MemberManagementServiceDUnitTest {
     MemberConfig config = new MemberConfig();
     // look for a member with a non-existent id
     config.setId("server");
-    ClusterManagementResult result = client.list(config);
+    ClusterManagementResult<MemberConfig> result = client.list(config, MemberConfig.class);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);

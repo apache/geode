@@ -41,7 +41,8 @@ public class MemberManagementController extends AbstractManagementController {
       @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
     config.setId(id);
-    ClusterManagementResult result = clusterManagementService.list(config);
+    ClusterManagementResult<MemberConfig> result =
+        clusterManagementService.list(config, MemberConfig.class);
 
     if (result.getResult().size() == 0) {
       throw new EntityNotFoundException("Unable to find the member with id = " + id);
@@ -59,7 +60,8 @@ public class MemberManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
-    ClusterManagementResult result = clusterManagementService.list(filter);
+    ClusterManagementResult<MemberConfig> result =
+        clusterManagementService.list(filter, MemberConfig.class);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);

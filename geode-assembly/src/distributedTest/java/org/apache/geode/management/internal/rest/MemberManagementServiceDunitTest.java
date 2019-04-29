@@ -46,7 +46,7 @@ public class MemberManagementServiceDunitTest {
   @Test
   public void listAllMembers() {
     MemberConfig config = new MemberConfig();
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<MemberConfig> result = cmsClient.list(config, MemberConfig.class);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -64,7 +64,7 @@ public class MemberManagementServiceDunitTest {
     MemberConfig config = new MemberConfig();
     config.setId("locator-0");
 
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<MemberConfig> result = cmsClient.list(config, MemberConfig.class);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getResult().size()).isEqualTo(1);
@@ -79,7 +79,7 @@ public class MemberManagementServiceDunitTest {
   public void listNonExistentMember() throws Exception {
     MemberConfig config = new MemberConfig();
     config.setId("locator");
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<MemberConfig> result = cmsClient.list(config, MemberConfig.class);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);

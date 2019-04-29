@@ -35,6 +35,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
@@ -125,11 +126,12 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult list(CacheElement config) {
-    String endPoint = getEndpoint(config);
+  public <T extends CacheElement, R extends RuntimeCacheElement> ClusterManagementResult<R> list(
+      T filter, Class<R> type) {
+    String endPoint = getEndpoint(filter);
     return restTemplate
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
-            ClusterManagementResult.class, config.getId(), config.getGroup())
+            ClusterManagementResult.class, filter.getId(), filter.getGroup())
         .getBody();
   }
 

@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 @Controller("regionManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -66,7 +67,8 @@ public class RegionManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(group)) {
       filter.setGroup(group);
     }
-    ClusterManagementResult result = clusterManagementService.list(filter);
+    ClusterManagementResult<RuntimeRegionConfig> result =
+        clusterManagementService.list(filter, RuntimeRegionConfig.class);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
   }

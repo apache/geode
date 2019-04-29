@@ -31,12 +31,12 @@ import org.apache.geode.management.configuration.RuntimeCacheElement;
  * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
-public interface ConfigurationManager<T extends CacheElement> {
+public interface ConfigurationManager<T extends CacheElement, R extends RuntimeCacheElement> {
   void add(T config, CacheConfig existing);
 
   void update(T config, CacheConfig existing);
 
   void delete(T config, CacheConfig existing);
 
-  List<? extends RuntimeCacheElement> list(T filterConfig, CacheConfig existing);
+  List<R> list(T filterConfig, CacheConfig existing);
 }

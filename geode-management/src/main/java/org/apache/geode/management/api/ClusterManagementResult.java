@@ -25,7 +25,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 @Experimental
-public class ClusterManagementResult {
+public class ClusterManagementResult<T extends RuntimeCacheElement> {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
@@ -59,7 +59,7 @@ public class ClusterManagementResult {
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
 
-  private List<RuntimeCacheElement> result = new ArrayList<>();
+  private List<T> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -109,11 +109,11 @@ public class ClusterManagementResult {
     return statusCode;
   }
 
-  public List<RuntimeCacheElement> getResult() {
+  public List<T> getResult() {
     return result;
   }
 
-  public void setResult(List<RuntimeCacheElement> result) {
+  public void setResult(List<T> result) {
     this.result = result;
   }
 }

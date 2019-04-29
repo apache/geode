@@ -47,7 +47,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
@@ -66,7 +65,7 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
   private ConfigurationValidator<CacheElement> cacheElementValidator;
-  private ConfigurationManager<RegionConfig> regionManager;
+  private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
 
   @Before
   public void before() throws Exception {
@@ -133,7 +132,7 @@ public class LocatorClusterManagementServiceTest {
     regionConfig.setGroup("cluster");
     when(persistenceService.getGroups()).thenReturn(Sets.newHashSet("cluster", "group1"));
 
-    service.list(regionConfig);
+    service.list(regionConfig, RuntimeRegionConfig.class);
     // even we are listing regions in one group, we still need to go through all the groups
     verify(persistenceService).getCacheConfig("cluster", true);
     verify(persistenceService).getCacheConfig("group1", true);
@@ -157,7 +156,8 @@ public class LocatorClusterManagementServiceTest {
 
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
-    List<RuntimeCacheElement> results = service.list(new RegionConfig()).getResult();
+    List<RuntimeRegionConfig> results =
+        service.list(new RegionConfig(), RuntimeRegionConfig.class).getResult();
     assertThat(results).hasSize(1);
     RuntimeRegionConfig result = (RuntimeRegionConfig) results.get(0);
     assertThat(result.getName()).isEqualTo("region1");

@@ -166,34 +166,36 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult list(CacheElement filter) {
-    ConfigurationManager manager = managers.get(filter.getClass());
-    ClusterManagementResult result = new ClusterManagementResult();
+  public <T extends CacheElement, R extends RuntimeCacheElement> ClusterManagementResult<R> list(
+      T filter, Class<R> type) {
+    ConfigurationManager<T, R> manager = managers.get(filter.getClass());
+    ClusterManagementResult<R> result = new ClusterManagementResult<>();
 
     if (filter instanceof MemberConfig) {
-      List<RuntimeCacheElement> listResults = manager.list(filter, null);
+      List<R> listResults = manager.list(filter, null);
       result.setResult(listResults);
       return result;
     }
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementResult<>(false,
           "Cluster configuration service needs to be enabled");
     }
 
-    List<RuntimeCacheElement> resultList = new ArrayList<>();
+    List<R> resultList = new ArrayList<>();
 
     // get a list of all the resultList from all groups that satisfy the filter criteria (all
     // filters
     // have been applied except the group)
     for (String group : persistenceService.getGroups()) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-      for (RuntimeCacheElement element : listInGroup) {
+      List<R> listInGroup =
+          manager.list(filter, currentPersistedConfig);
+      for (R element : listInGroup) {
         element.getGroups().add(group);
         int index = resultList.indexOf(element);
         if (index >= 0) {
-          RuntimeCacheElement exist = resultList.get(index);
+          R exist = resultList.get(index);
           exist.getGroups().add(group);
         } else {
           resultList.add(element);
@@ -205,13 +207,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // belong to multiple groups and we want the "group" field to show that.
     if (StringUtils.isNotBlank(filter.getGroup())) {
       resultList =
-          resultList.stream().filter(e -> e.getGroups().contains(filter.getConfigGroup()))
+          resultList.stream()
+              .filter(e -> e.getGroups().contains(filter.getConfigGroup()))
               .collect(Collectors.toList());
     }
 
     // if "cluster" is the only group of the element, remove it
     for (RuntimeCacheElement element : resultList) {
-      if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
+      if (element.getGroups().size() == 1
+          && "cluster".equals(element.getGroup())) {
         element.getGroups().clear();
       }
     }

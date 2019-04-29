@@ -34,7 +34,6 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -96,7 +95,7 @@ public class RegionManagementIntegrationTest {
 
   @Test
   public void invalidConfigObject() throws Exception {
-    RuntimeRegionConfig regionConfig = new RuntimeRegionConfig();
+    RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setGroup("group1");
 

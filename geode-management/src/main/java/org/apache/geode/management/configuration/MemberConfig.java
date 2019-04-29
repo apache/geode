@@ -22,7 +22,8 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RuntimeCacheElement, RestfulEndpoint {
+public class MemberConfig extends CacheElement
+    implements RuntimeCacheElement, RestfulEndpoint {
 
   private static final long serialVersionUID = -6262538068604902018L;
 
