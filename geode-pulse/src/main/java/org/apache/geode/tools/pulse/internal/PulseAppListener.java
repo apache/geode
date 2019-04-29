@@ -19,11 +19,11 @@ package org.apache.geode.tools.pulse.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -44,18 +44,37 @@ import org.apache.geode.tools.pulse.internal.data.Repository;
 // @WebListener
 public class PulseAppListener implements ServletContextListener {
   private static final Logger logger = LogManager.getLogger();
-  private final ResourceBundle resourceBundle = Repository.get().getResourceBundle();
   private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
-  private Properties pulseProperties;
-  private Properties pulseSecurityProperties;
+  private final boolean sysIsEmbedded;
+  private final Repository repository;
+  private final Function<String, Properties> functionLoadProperties;
+  private final ResourceBundle resourceBundle;
+
+  public PulseAppListener() {
+    this(Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED), Repository.get(),
+        null);
+  }
+
+  public PulseAppListener(boolean sysIsEmbedded, Repository repository,
+      Function<String, Properties> functionLoadProperties) {
+    this.sysIsEmbedded = sysIsEmbedded;
+    this.repository = repository;
+    resourceBundle = repository.getResourceBundle();
+
+    if (functionLoadProperties == null) {
+      this.functionLoadProperties = this::loadProperties;
+    } else {
+      this.functionLoadProperties = functionLoadProperties;
+    }
+  }
 
   @Override
   public void contextDestroyed(ServletContextEvent event) {
 
     // Stop all running threads those are created in Pulse
     // Stop cluster threads
-    Repository.get().removeAllClusters();
+    repository.removeAllClusters();
 
     logger.info("{}{}", resourceBundle.getString("LOG_MSG_CONTEXT_DESTROYED"),
         event.getServletContext().getContextPath());
@@ -64,21 +83,11 @@ public class PulseAppListener implements ServletContextListener {
   @Override
   public void contextInitialized(ServletContextEvent event) {
     logger.info(resourceBundle.getString("LOG_MSG_CONTEXT_INITIALIZED"));
-    // Load Pulse Properties
-    pulseProperties = loadProperties(PulseConstants.PULSE_PROPERTIES_FILE);
 
     // Load Pulse version details
     loadPulseVersionDetails();
 
-    // load pulse security properties
-    pulseSecurityProperties = loadProperties(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE);
-
-    // Reference to repository
-    Repository repository = Repository.get();
-
     logger.info(resourceBundle.getString("LOG_MSG_CHECK_APP_RUNNING_MODE"));
-
-    boolean sysIsEmbedded = Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED);
 
     if (sysIsEmbedded) {
       // jmx connection parameters
@@ -102,6 +111,11 @@ public class PulseAppListener implements ServletContextListener {
     } else {
       // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_NONEMBEDDED_MODE"));
+
+      // Load Pulse Properties
+      Properties pulseProperties =
+          functionLoadProperties.apply(PulseConstants.PULSE_PROPERTIES_FILE);
+
       repository.setJmxUseLocator(Boolean.valueOf(
           pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_USELOCATOR)));
       repository.setHost(pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_HOST,
@@ -115,24 +129,30 @@ public class PulseAppListener implements ServletContextListener {
       repository.setUseSSLLocator(Boolean.valueOf(pulseProperties
           .getProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_LOCATOR, "false")));
 
+      // load pulse security properties
+      Properties pulseSecurityProperties =
+          functionLoadProperties.apply(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE);
+
       // set the ssl related properties found in pulsesecurity.properties
       if (!pulseSecurityProperties.isEmpty()) {
-        Set entrySet = pulseSecurityProperties.entrySet();
-        for (Iterator it = entrySet.iterator(); it.hasNext();) {
-          Entry<String, String> entry = (Entry<String, String>) it.next();
-          String key = entry.getKey();
+        Set<Entry<Object, Object>> entrySet = pulseSecurityProperties.entrySet();
+        for (Entry<Object, Object> entry : entrySet) {
+          String key = (String) entry.getKey();
           if (key.startsWith("javax.net.ssl.")) {
-            String val = entry.getValue();
+            String val = (String) entry.getValue();
             System.setProperty(key, val);
           }
         }
+
+        repository.setJavaSslProperties(pulseSecurityProperties);
       }
     }
   }
 
   // Function to load pulse version details from properties file
   private void loadPulseVersionDetails() {
-    Properties properties = loadProperties(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
+    Properties properties =
+        functionLoadProperties.apply(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
     // Set pulse version details in common object
     PulseController.pulseVersion
         .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
