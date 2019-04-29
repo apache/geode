@@ -90,10 +90,10 @@ public class JMXMBeanReconnectDUnitTest {
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
 
     locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
-    locator1.waitTilLocatorFullyStarted();
+    locator1.waitTilFullyReconnected();
 
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
-    locator2.waitTilLocatorFullyStarted();
+    locator2.waitTilFullyReconnected();
 
     server1 = lsRule.startServerVM(SERVER_1_VM_INDEX, properties, locator1.getPort());
     // start an extra server to have more MBeans, but we don't need to use it in these tests
@@ -129,7 +129,7 @@ public class JMXMBeanReconnectDUnitTest {
         .containsExactlyElementsOf(initialServerBeans)
         .hasSize(NUM_SERVER_BEANS);
 
-    locator1.waitTilLocatorFullyReconnected();
+    locator1.waitTilFullyReconnected();
 
     List<String> finalServerBeans = server1.invoke(() -> getLocalCanonicalBeanNames());
     assertThat(finalServerBeans)
@@ -152,7 +152,7 @@ public class JMXMBeanReconnectDUnitTest {
         .containsExactlyElementsOf(initialLocatorBeans)
         .hasSize(NUM_LOCATOR_BEANS);
 
-    server1.waitTilServerFullyReconnected();
+    server1.waitTilFullyReconnected();
     locator1.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, SERVER_COUNT);
 
     List<String> finalLocatorBeans = locator1.invoke(() -> getLocalCanonicalBeanNames());

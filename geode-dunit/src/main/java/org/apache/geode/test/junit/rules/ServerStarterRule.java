@@ -17,6 +17,7 @@ package org.apache.geode.test.junit.rules;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_DEV_REST_API;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -232,5 +233,29 @@ public class ServerStarterRule extends MemberStarterRule<ServerStarterRule> impl
   @Override
   public int getEmbeddedLocatorPort() {
     return embeddedLocatorPort;
+  }
+
+  @Override
+  public void waitTilFullyReconnected() {
+    try {
+      await().until(() -> {
+        InternalDistributedSystem internalDistributedSystem =
+            InternalDistributedSystem.getConnectedInstance();
+        return internalDistributedSystem != null
+            && internalDistributedSystem.getCache() != null
+            && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
+      });
+
+    } catch (Exception e) {
+      // provide more information when condition is not satisfied after awaitility timeout
+      InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
+      System.out.println("ds is: " + (ids != null ? "not null" : "null"));
+      System.out.println("cache is: " + (ids.getCache() != null ? "not null" : "null"));
+      System.out.println("has cache server: "
+          + (!ids.getCache().getCacheServers().isEmpty()));
+      throw e;
+    }
+    InternalDistributedSystem dm = InternalDistributedSystem.getConnectedInstance();
+    cache = dm.getCache();
   }
 }

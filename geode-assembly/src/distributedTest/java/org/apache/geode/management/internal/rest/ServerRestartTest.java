@@ -16,10 +16,12 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -33,7 +35,7 @@ public class ServerRestartTest {
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
   @Test
-  public void name() throws Exception {
+  public void serverReconnect() throws Exception {
     MemberVM locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     cluster.startServerVM(1, locator.getPort());
 
@@ -52,7 +54,12 @@ public class ServerRestartTest {
     // force reconnect and then server should reconnect after 5 seconds
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
+
+    server2.invoke(() -> {
+      Region foo = ClusterStartupRule.getCache().getRegion("Foo");
+      assertThat(foo).isNotNull();
+    });
   }
 
 }
