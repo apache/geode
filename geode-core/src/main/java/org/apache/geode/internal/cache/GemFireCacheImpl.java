@@ -398,6 +398,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * This list has all the cache servers that are not gateway receivers
    */
   private final List<CacheServer> cacheServersNotGatewayReceivers = new CopyOnWriteArrayList<>();
+  private final List<CacheServer> immutableCacheServersNotGatewayReceivers =
+      Collections.unmodifiableList(cacheServersNotGatewayReceivers);
 
   /**
    * Controls updates to the list of all gateway senders
@@ -3938,7 +3940,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public List<CacheServer> getCacheServers() {
-    return this.cacheServersNotGatewayReceivers;
+    return this.immutableCacheServersNotGatewayReceivers;
   }
 
   @Override

@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.NotSerializableException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -361,7 +362,7 @@ public class GemFireCacheImplTest {
   @Test
   public void getCacheServersUnchangedAfterAddRemoveOfNonGatewayCacheServer() {
     gemFireCacheImpl = createGemFireCacheImpl();
-    List<CacheServer> original = gemFireCacheImpl.getCacheServers();
+    List<CacheServer> original = new ArrayList<>(gemFireCacheImpl.getCacheServers());
     CacheServer addedNonGatewayServer = gemFireCacheImpl.addCacheServer(false);
 
     gemFireCacheImpl.removeCacheServer(addedNonGatewayServer);
@@ -373,7 +374,7 @@ public class GemFireCacheImplTest {
   @Test
   public void getCacheServersUnchangedAfterAddRemoveOfGatewayCacheServer() {
     gemFireCacheImpl = createGemFireCacheImpl();
-    List<CacheServer> original = gemFireCacheImpl.getCacheServers();
+    List<CacheServer> original = new ArrayList<>(gemFireCacheImpl.getCacheServers());
     CacheServer addedGatewayServer = gemFireCacheImpl.addCacheServer(true);
 
     gemFireCacheImpl.removeCacheServer(addedGatewayServer);
