@@ -143,13 +143,9 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
 
     // Start a second server
     int vm1_port = vm1.invoke("Start server2 in with subscriptions turned on", () -> {
-      try {
-        int serverPort = createSubscriptionServer(cacheRule.getCache());
-        InitialImageOperation.slowImageProcessing = 500;
-        return serverPort;
-      } catch (IOException e) {
-        return 0;
-      }
+      int serverPort = createSubscriptionServer(cacheRule.getCache());
+      InitialImageOperation.slowImageProcessing = 500;
+      return serverPort;
     });
 
     // Make copying the queue slow
