@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.io.ByteArrayInputStream;
@@ -32,7 +33,6 @@ import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
-import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -72,12 +72,12 @@ public class PutOp {
       if (server != null) {
         try {
           PoolImpl poolImpl = (PoolImpl) pool;
-          boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1
-              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections()) ? true : false);
+          boolean onlyUseExistingCnx = (poolImpl.getMaxConnections() != -1
+              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections());
           op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
           return pool.executeOn(new ServerLocation(server.getHostName(), server.getPort()), op,
               true, onlyUseExistingCnx);
-        } catch (AllConnectionsInUseException e) {
+        } catch (AllConnectionsInUseException ignored) {
         } catch (ServerConnectivityException e) {
           if (e instanceof ServerOperationException) {
             throw e; // fixed 44656
@@ -166,11 +166,28 @@ public class PutOp {
     public PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
         EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
         Object callbackArg, boolean respondingToInvalidDelta, boolean prSingleHopEnabled) {
+      this(regionName, key, value, deltaBytes, event, op, requireOldValue, expectedOldValue,
+          callbackArg, respondingToInvalidDelta, respondingToInvalidDelta, prSingleHopEnabled);
+    }
+
+    PutOpImpl(Region region, Object key, Object value, byte[] deltaBytes,
+        EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
+        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled) {
+      this(region.getFullPath(), key, value, deltaBytes, event, op, requireOldValue,
+          expectedOldValue,
+          callbackArg, false, sendFullObj, prSingleHopEnabled);
+      this.region = (LocalRegion) region;
+    }
+
+    private PutOpImpl(String regionName, Object key, Object value, byte[] deltaBytes,
+        EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
+        Object callbackArg, boolean respondingToInvalidDelta, boolean sendFullObj,
+        boolean prSingleHopEnabled) {
       super(MessageType.PUT,
           7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0));
       final boolean isDebugEnabled = logger.isDebugEnabled();
       if (isDebugEnabled) {
-        logger.debug("PutOpImpl constructing(1) message for {}; operation={}", event.getEventId(),
+        logger.debug("PutOpImpl constructing message for {}; operation={}", event.getEventId(),
             op);
       }
       this.key = key;
@@ -197,71 +214,10 @@ public class PutOp {
         getMessage().setIsRetry();
       }
       // Add message part for sending either delta or full value
-      if (!respondingToInvalidDelta && deltaBytes != null && op == Operation.UPDATE) {
-        getMessage().addObjPart(Boolean.TRUE);
-        getMessage().addBytesPart(deltaBytes);
-        this.deltaSent = true;
-        if (isDebugEnabled) {
-          logger.debug("PutOp: Sending delta for key {}", this.key);
-        }
-      } else if (value instanceof CachedDeserializable) {
-        CachedDeserializable cd = (CachedDeserializable) value;
-        if (!cd.isSerialized()) {
-          // it is a byte[]
-          getMessage().addObjPart(Boolean.FALSE);
-          getMessage().addObjPart(cd.getDeserializedForReading());
-        } else {
-          getMessage().addObjPart(Boolean.FALSE);
-          Object cdValue = cd.getValue();
-          if (cdValue instanceof byte[]) {
-            getMessage().addRawPart((byte[]) cdValue, true);
-          } else {
-            getMessage().addObjPart(cdValue);
-          }
-        }
-      } else {
-        getMessage().addObjPart(Boolean.FALSE);
-        getMessage().addObjPart(value);
-      }
-      getMessage().addBytesPart(event.getEventId().calcBytes());
-      if (callbackArg != null) {
-        getMessage().addObjPart(callbackArg);
-      }
-    }
-
-    public PutOpImpl(Region region, Object key, Object value, byte[] deltaBytes,
-        EntryEventImpl event, Operation op, boolean requireOldValue, Object expectedOldValue,
-        Object callbackArg, boolean sendFullObj, boolean prSingleHopEnabled) {
-      super(MessageType.PUT,
-          7 + (callbackArg != null ? 1 : 0) + (expectedOldValue != null ? 1 : 0));
-      this.key = key;
-      this.callbackArg = callbackArg;
-      this.event = event;
-      this.value = value;
-      this.region = (LocalRegion) region;
-      this.regionName = region.getFullPath();
-      this.prSingleHopEnabled = prSingleHopEnabled;
-      final boolean isDebugEnabled = logger.isDebugEnabled();
-      if (isDebugEnabled) {
-        logger.debug("PutOpImpl constructing message with operation={}", op);
-      }
-      getMessage().addStringPart(region.getFullPath());
-      getMessage().addBytePart(op.ordinal);
-      int flags = 0;
-      if (requireOldValue)
-        flags |= 0x01;
-      if (expectedOldValue != null)
-        flags |= 0x02;
-      getMessage().addIntPart(flags);
-      if (expectedOldValue != null) {
-        getMessage().addObjPart(expectedOldValue);
-      }
-      getMessage().addStringOrObjPart(key);
-      // Add message part for sending either delta or full value
       if (!sendFullObj && deltaBytes != null && op == Operation.UPDATE) {
         getMessage().addObjPart(Boolean.TRUE);
         getMessage().addBytesPart(deltaBytes);
-        this.deltaSent = true;
+        deltaSent = true;
         if (isDebugEnabled) {
           logger.debug("PutOp: Sending delta for key {}", this.key);
         }
@@ -310,14 +266,14 @@ public class PutOp {
      */
     @Override
     protected Object processResponse(Message msg, Connection con) throws Exception {
-      processAck(msg, "put", con);
+      processAck(msg, con);
 
       if (prSingleHopEnabled) {
         Part part = msg.getPart(0);
         byte[] bytesReceived = part.getSerializedForm();
         if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
             && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
-          if (this.region != null) {
+          if (region != null) {
             ClientMetadataService cms = region.getCache().getClientMetadataService();
             byte myVersion =
                 cms.getMetaDataVersion(region, Operation.UPDATE, key, value, callbackArg);
@@ -342,10 +298,10 @@ public class PutOp {
         // if the server has versioning we will attach it to the client's event
         // here so it can be applied to the cache
         if ((flags & HAS_VERSION_TAG) != 0) {
-          VersionTag tag = (VersionTag) msg.getPart(partIdx++).getObject();
+          VersionTag tag = (VersionTag) msg.getPart(partIdx).getObject();
           // we use the client's ID since we apparently don't track the server's ID in connections
           tag.replaceNullIDs((InternalDistributedMember) con.getEndpoint().getMemberId());
-          this.event.setVersionTag(tag);
+          event.setVersionTag(tag);
         }
         return oldValue;
       }
@@ -356,36 +312,33 @@ public class PutOp {
      * Process a response that contains an ack.
      *
      * @param msg the message containing the response
-     * @param opName text describing this op
      * @param con Connection on which this op is executing
      * @throws Exception if response could not be processed or we received a response with a server
      *         exception.
      * @since GemFire 6.1
      */
-    private void processAck(Message msg, String opName, Connection con) throws Exception {
+    private void processAck(Message msg, Connection con) throws Exception {
       final int msgType = msg.getMessageType();
       // Update delta stats
-      if (this.deltaSent && this.region != null) {
-        this.region.getCachePerfStats().incDeltasSent();
+      if (deltaSent && region != null) {
+        region.getCachePerfStats().incDeltasSent();
       }
-      if (msgType == MessageType.REPLY) {
-        return;
-      } else {
+      if (msgType != MessageType.REPLY) {
         Part part = msg.getPart(0);
         if (msgType == MessageType.PUT_DELTA_ERROR) {
           if (logger.isDebugEnabled()) {
             logger.debug("PutOp: Sending full value as delta failed on server...");
           }
-          AbstractOp op = new PutOpImpl(this.regionName, this.key, this.value, null, this.event,
-              Operation.CREATE, this.requireOldValue, this.expectedOldValue, this.callbackArg,
-              true /* send full obj */, this.prSingleHopEnabled);
+          AbstractOp op = new PutOpImpl(regionName, key, value, null, event,
+              Operation.CREATE, requireOldValue, expectedOldValue, callbackArg,
+              true /* send full obj */, prSingleHopEnabled);
 
           op.attempt(con);
-          if (this.region != null) {
-            this.region.getCachePerfStats().incDeltaFullValuesSent();
+          if (region != null) {
+            region.getCachePerfStats().incDeltaFullValuesSent();
           }
         } else if (msgType == MessageType.EXCEPTION) {
-          String s = ": While performing a remote " + opName;
+          String s = ": While performing a remote " + "put";
           throw new ServerOperationException(s, (Throwable) part.getObject());
           // Get the exception toString part.
           // This was added for c++ thin client and not used in java
@@ -423,40 +376,6 @@ public class PutOp {
       return "PutOp:" + key;
     }
 
-    /**
-     * Attempts to read a response to this operation by reading it from the given connection, and
-     * returning it.
-     *
-     * @param cnx the connection to read the response from
-     * @return the result of the operation or <code>null</code if the operation has no result.
-     * @throws Exception if the execute failed
-     */
-    @Override
-    protected Object attemptReadResponse(Connection cnx) throws Exception {
-      Message msg = createResponseMessage();
-      if (msg != null) {
-        msg.setComms(cnx.getSocket(), cnx.getInputStream(), cnx.getOutputStream(),
-            cnx.getCommBuffer(), cnx.getStats());
-        if (msg instanceof ChunkedMessage) {
-          try {
-            return processResponse(msg, cnx);
-          } finally {
-            msg.unsetComms();
-            processSecureBytes(cnx, msg);
-          }
-        } else {
-          try {
-            msg.receive();
-          } finally {
-            msg.unsetComms();
-            processSecureBytes(cnx, msg);
-          }
-          return processResponse(msg, cnx);
-        }
-      } else {
-        return null;
-      }
-    }
   }
 
 }

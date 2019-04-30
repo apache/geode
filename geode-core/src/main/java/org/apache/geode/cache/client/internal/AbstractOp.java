@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.io.ByteArrayInputStream;
@@ -49,7 +50,7 @@ public abstract class AbstractOp implements Op {
   private boolean allowDuplicateMetadataRefresh;
 
   protected AbstractOp(int msgType, int msgParts) {
-    this.msg = new Message(msgParts, Version.CURRENT);
+    msg = new Message(msgParts, Version.CURRENT);
     getMessage().setMessageType(msgType);
   }
 
@@ -57,7 +58,7 @@ public abstract class AbstractOp implements Op {
    * Returns the message that this op will send to the server
    */
   protected Message getMessage() {
-    return this.msg;
+    return msg;
   }
 
   protected void initMessagePart() {
@@ -112,26 +113,23 @@ public abstract class AbstractOp implements Op {
     if (cnx.getServer().getRequiresCredentials()) {
       // Security is enabled on client as well as on server
       getMessage().setMessageHasSecurePartFlag();
-      long userId = -1;
+      long userId;
 
       if (UserAttributes.userAttributes.get() == null) { // single user mode
         userId = cnx.getServer().getUserId();
       } else { // multi user mode
-        Object id = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());
+        Long id = UserAttributes.userAttributes.get().getServerToId().get(cnx.getServer());
         if (id == null) {
           // This will ensure that this op is retried on another server, unless
           // the retryCount is exhausted. Fix for Bug 41501
           throw new ServerConnectivityException("Connection error while authenticating user");
         }
-        userId = (Long) id;
+        userId = id;
       }
-      HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT);
-      try {
+      try (HeapDataOutputStream hdos = new HeapDataOutputStream(Version.CURRENT)) {
         hdos.writeLong(cnx.getConnectionID());
         hdos.writeLong(userId);
         getMessage().setSecurePart(((ConnectionImpl) cnx).encryptBytes(hdos.toByteArray()));
-      } finally {
-        hdos.close();
       }
     }
     getMessage().send(false);
@@ -249,9 +247,7 @@ public abstract class AbstractOp implements Op {
    */
   protected void processAck(Message msg, String opName) throws Exception {
     final int msgType = msg.getMessageType();
-    if (msgType == MessageType.REPLY) {
-      return;
-    } else {
+    if (msgType != MessageType.REPLY) {
       Part part = msg.getPart(0);
       if (msgType == MessageType.EXCEPTION) {
         String s = ": While performing a remote " + opName;
@@ -299,11 +295,11 @@ public abstract class AbstractOp implements Op {
     }
   }
 
-  public boolean isAllowDuplicateMetadataRefresh() {
+  boolean isAllowDuplicateMetadataRefresh() {
     return allowDuplicateMetadataRefresh;
   }
 
-  public void setAllowDuplicateMetadataRefresh(final boolean allowDuplicateMetadataRefresh) {
+  void setAllowDuplicateMetadataRefresh(final boolean allowDuplicateMetadataRefresh) {
     this.allowDuplicateMetadataRefresh = allowDuplicateMetadataRefresh;
   }
 
@@ -328,7 +324,7 @@ public abstract class AbstractOp implements Op {
    * @throws Exception if response could not be processed or we received a response with a server
    *         exception.
    */
-  protected void processChunkedResponse(ChunkedMessage msg, String opName, ChunkHandler callback)
+  void processChunkedResponse(ChunkedMessage msg, String opName, ChunkHandler callback)
       throws Exception {
     msg.readHeader();
     final int msgType = msg.getMessageType();
@@ -372,24 +368,24 @@ public abstract class AbstractOp implements Op {
    */
   @Override
   public Object attempt(Connection cnx) throws Exception {
-    this.failed = true;
-    this.timedOut = false;
+    failed = true;
+    timedOut = false;
     long start = startAttempt(cnx.getStats());
     try {
       try {
         attemptSend(cnx);
-        this.failed = false;
+        failed = false;
       } finally {
         endSendAttempt(cnx.getStats(), start);
       }
-      this.failed = true;
+      failed = true;
       try {
         Object result = attemptReadResponse(cnx);
-        this.failed = false;
+        failed = false;
         return result;
       } catch (SocketTimeoutException ste) {
-        this.failed = false;
-        this.timedOut = true;
+        failed = false;
+        timedOut = true;
         throw ste;
       }
     } finally {
@@ -398,11 +394,11 @@ public abstract class AbstractOp implements Op {
   }
 
   protected boolean hasFailed() {
-    return this.failed;
+    return failed;
   }
 
   protected boolean hasTimedOut() {
-    return this.timedOut;
+    return timedOut;
   }
 
   protected abstract long startAttempt(ConnectionStats stats);

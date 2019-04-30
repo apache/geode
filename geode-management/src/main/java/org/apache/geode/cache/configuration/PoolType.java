@@ -1,4 +1,3 @@
-
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements. See the NOTICE file distributed with
@@ -106,9 +105,9 @@ public class PoolType {
   @XmlElement(name = "server", namespace = "http://geode.apache.org/schema/cache")
   protected List<Server> servers;
   @XmlAttribute(name = "subscription-timeout-multiplier")
-  protected String subscriptionTimeoutMultiplier;
+  private String subscriptionTimeoutMultiplier;
   @XmlAttribute(name = "socket-connect-timeout")
-  protected String socketConnectTimeout;
+  private String socketConnectTimeout;
   @XmlAttribute(name = "free-connection-timeout")
   protected String freeConnectionTimeout;
   @XmlAttribute(name = "load-conditioning-interval")
@@ -134,7 +133,7 @@ public class PoolType {
   @XmlAttribute(name = "subscription-enabled")
   protected Boolean subscriptionEnabled;
   @XmlAttribute(name = "subscription-message-tracking-timeout")
-  protected String subscriptionMessageTrackingTimeout;
+  private String subscriptionMessageTrackingTimeout;
   @XmlAttribute(name = "subscription-ack-interval")
   protected String subscriptionAckInterval;
   @XmlAttribute(name = "subscription-redundancy")
@@ -147,7 +146,7 @@ public class PoolType {
   @XmlAttribute(name = "pr-single-hop-enabled")
   protected Boolean prSingleHopEnabled;
   @XmlAttribute(name = "multiuser-authentication")
-  protected Boolean multiuserAuthentication;
+  private Boolean multiuserAuthentication;
 
   /**
    * Gets the value of the locator property.
@@ -174,9 +173,9 @@ public class PoolType {
    */
   public List<Locator> getLocators() {
     if (locators == null) {
-      locators = new ArrayList<Locator>();
+      locators = new ArrayList<>();
     }
-    return this.locators;
+    return locators;
   }
 
   /**
@@ -204,9 +203,9 @@ public class PoolType {
    */
   public List<Server> getServers() {
     if (servers == null) {
-      servers = new ArrayList<Server>();
+      servers = new ArrayList<>();
     }
-    return this.servers;
+    return servers;
   }
 
   /**
@@ -228,7 +227,7 @@ public class PoolType {
    *
    */
   public void setSubscriptionTimeoutMultiplier(String value) {
-    this.subscriptionTimeoutMultiplier = value;
+    subscriptionTimeoutMultiplier = value;
   }
 
   /**
@@ -250,7 +249,7 @@ public class PoolType {
    *
    */
   public void setSocketConnectTimeout(String value) {
-    this.socketConnectTimeout = value;
+    socketConnectTimeout = value;
   }
 
   /**
@@ -272,7 +271,7 @@ public class PoolType {
    *
    */
   public void setFreeConnectionTimeout(String value) {
-    this.freeConnectionTimeout = value;
+    freeConnectionTimeout = value;
   }
 
   /**
@@ -294,7 +293,7 @@ public class PoolType {
    *
    */
   public void setLoadConditioningInterval(String value) {
-    this.loadConditioningInterval = value;
+    loadConditioningInterval = value;
   }
 
   /**
@@ -316,7 +315,7 @@ public class PoolType {
    *
    */
   public void setMinConnections(String value) {
-    this.minConnections = value;
+    minConnections = value;
   }
 
   /**
@@ -338,7 +337,7 @@ public class PoolType {
    *
    */
   public void setMaxConnections(String value) {
-    this.maxConnections = value;
+    maxConnections = value;
   }
 
   /**
@@ -360,7 +359,7 @@ public class PoolType {
    *
    */
   public void setRetryAttempts(String value) {
-    this.retryAttempts = value;
+    retryAttempts = value;
   }
 
   /**
@@ -382,7 +381,7 @@ public class PoolType {
    *
    */
   public void setIdleTimeout(String value) {
-    this.idleTimeout = value;
+    idleTimeout = value;
   }
 
   /**
@@ -404,7 +403,7 @@ public class PoolType {
    *
    */
   public void setPingInterval(String value) {
-    this.pingInterval = value;
+    pingInterval = value;
   }
 
   /**
@@ -426,7 +425,7 @@ public class PoolType {
    *
    */
   public void setName(String value) {
-    this.name = value;
+    name = value;
   }
 
   /**
@@ -448,7 +447,7 @@ public class PoolType {
    *
    */
   public void setReadTimeout(String value) {
-    this.readTimeout = value;
+    readTimeout = value;
   }
 
   /**
@@ -470,7 +469,7 @@ public class PoolType {
    *
    */
   public void setServerGroup(String value) {
-    this.serverGroup = value;
+    serverGroup = value;
   }
 
   /**
@@ -492,7 +491,7 @@ public class PoolType {
    *
    */
   public void setSocketBufferSize(String value) {
-    this.socketBufferSize = value;
+    socketBufferSize = value;
   }
 
   /**
@@ -514,7 +513,7 @@ public class PoolType {
    *
    */
   public void setSubscriptionEnabled(Boolean value) {
-    this.subscriptionEnabled = value;
+    subscriptionEnabled = value;
   }
 
   /**
@@ -536,7 +535,7 @@ public class PoolType {
    *
    */
   public void setSubscriptionMessageTrackingTimeout(String value) {
-    this.subscriptionMessageTrackingTimeout = value;
+    subscriptionMessageTrackingTimeout = value;
   }
 
   /**
@@ -558,7 +557,7 @@ public class PoolType {
    *
    */
   public void setSubscriptionAckInterval(String value) {
-    this.subscriptionAckInterval = value;
+    subscriptionAckInterval = value;
   }
 
   /**
@@ -580,7 +579,7 @@ public class PoolType {
    *
    */
   public void setSubscriptionRedundancy(String value) {
-    this.subscriptionRedundancy = value;
+    subscriptionRedundancy = value;
   }
 
   /**
@@ -602,7 +601,7 @@ public class PoolType {
    *
    */
   public void setStatisticInterval(String value) {
-    this.statisticInterval = value;
+    statisticInterval = value;
   }
 
   /**
@@ -630,7 +629,7 @@ public class PoolType {
    */
   @Deprecated
   public void setThreadLocalConnections(Boolean value) {
-    this.threadLocalConnections = value;
+    threadLocalConnections = value;
   }
 
   /**
@@ -652,7 +651,7 @@ public class PoolType {
    *
    */
   public void setPrSingleHopEnabled(Boolean value) {
-    this.prSingleHopEnabled = value;
+    prSingleHopEnabled = value;
   }
 
   /**
@@ -674,7 +673,7 @@ public class PoolType {
    *
    */
   public void setMultiuserAuthentication(Boolean value) {
-    this.multiuserAuthentication = value;
+    multiuserAuthentication = value;
   }
 
 
@@ -726,7 +725,7 @@ public class PoolType {
      *
      */
     public void setHost(String value) {
-      this.host = value;
+      host = value;
     }
 
     /**
@@ -748,7 +747,7 @@ public class PoolType {
      *
      */
     public void setPort(String value) {
-      this.port = value;
+      port = value;
     }
 
   }
@@ -802,7 +801,7 @@ public class PoolType {
      *
      */
     public void setHost(String value) {
-      this.host = value;
+      host = value;
     }
 
     /**
@@ -824,7 +823,7 @@ public class PoolType {
      *
      */
     public void setPort(String value) {
-      this.port = value;
+      port = value;
     }
 
   }

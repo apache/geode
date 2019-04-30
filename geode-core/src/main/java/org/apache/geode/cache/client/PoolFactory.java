@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client;
 
 import org.apache.geode.cache.InterestResultPolicy;
@@ -184,7 +185,7 @@ public interface PoolFactory {
    * <p>
    * Current value: 0
    */
-  public static final int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
+  int DEFAULT_SUBSCRIPTION_TIMEOUT_MULTIPLIER = 0;
 
   /**
    * The default server group.
@@ -458,7 +459,7 @@ public interface PoolFactory {
    * The resulting timeout will be multiplied by 1.25 in order to avoid race conditions with the
    * server sending its "ping" message.
    */
-  public PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
+  PoolFactory setSubscriptionTimeoutMultiplier(int multiplier);
 
   /**
    * Sets the interval in milliseconds to wait before sending acknowledgements to the cache server
