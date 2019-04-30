@@ -119,6 +119,8 @@ public class DeployCommandFunctionRegistrationDUnitTest {
         "Failed to connect to \"mysqlDataSource\". See log for details");
     logger.info("check point 4");
     System.out.println("check point 4");
+    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+        .statusIsSuccess();
     // create the data-source
     gfshConnector.executeAndAssertThat(
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
@@ -138,9 +140,13 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     String jarFile = mysqlDriverFile.getAbsolutePath();
     logger.info("check point 9");
     System.out.println("check point 9");
+    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+        .statusIsSuccess();
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
     logger.info("check point 10");
     System.out.println("check point 10");
+    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+        .statusIsSuccess();
     gfshConnector.executeAndAssertThat(
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
             + URL + "\"")
