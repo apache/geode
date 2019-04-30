@@ -79,7 +79,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
 
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
 
     callFunction(server1);
   }

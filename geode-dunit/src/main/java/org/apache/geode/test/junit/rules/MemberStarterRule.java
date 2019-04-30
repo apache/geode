@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_P
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -119,6 +120,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     // initial values
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
     systemProperties.setProperty(ClusterManagementService.FEATURE_FLAG, "true");
   }
 
@@ -484,7 +486,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
         WAIT_UNTIL_TIMEOUT, TimeUnit.SECONDS);
   }
 
-
   /**
    * This method wraps an {@link GeodeAwaitility#await()} call for more meaningful error
    * reporting.
@@ -543,6 +544,8 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     MembershipManagerHelper
         .crashDistributedSystem(InternalDistributedSystem.getConnectedInstance());
   }
+
+  public abstract void waitTilFullyReconnected();
 
   @Override
   public File getWorkingDir() {

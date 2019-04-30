@@ -103,7 +103,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
 
     server2.invoke(() -> {
@@ -135,7 +135,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers(REGION_PATH, 2);
 
     server2.invoke(() -> {
@@ -160,7 +160,7 @@ public class RegionChangesPersistThroughClusterConfigurationDUnitTest {
 
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
 
     server2.invoke(() -> {
       InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
