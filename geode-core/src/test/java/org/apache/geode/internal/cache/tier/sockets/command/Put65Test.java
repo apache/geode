@@ -169,6 +169,32 @@ public class Put65Test {
   }
 
   @Test
+  public void noRegionNameShouldFail() throws Exception {
+    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(this.regionNamePart.getString()).thenReturn(null);
+
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(this.errorResponseMessage).addStringPart(argument.capture());
+    assertThat(argument.getValue()).contains("The input region name for the put request is null");
+    verify(this.errorResponseMessage).send(this.serverConnection);
+  }
+
+  @Test
+  public void noKeyShouldFail() throws Exception {
+    when(this.securityService.isClientSecurityRequired()).thenReturn(false);
+    when(this.keyPart.getStringOrObject()).thenReturn(null);
+
+    this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
+
+    ArgumentCaptor<String> argument = ArgumentCaptor.forClass(String.class);
+    verify(this.errorResponseMessage).addStringPart(argument.capture());
+    assertThat(argument.getValue()).contains("The input key for the put request is null");
+    verify(this.errorResponseMessage).send(this.serverConnection);
+  }
+
+  @Test
   public void integratedSecurityShouldSucceedIfAuthorized() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(true);
     when(this.securityService.isIntegratedSecurity()).thenReturn(true);

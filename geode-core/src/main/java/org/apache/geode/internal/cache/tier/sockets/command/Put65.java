@@ -69,7 +69,6 @@ public class Put65 extends BaseCommand {
       final SecurityService securityService, long p_start)
       throws IOException, InterruptedException {
     long start = p_start;
-    final StringBuilder errMessage = new StringBuilder();
     final CacheServerStats stats = serverConnection.getCacheServerStats();
 
     // requiresResponse = true;
@@ -159,6 +158,7 @@ public class Put65 extends BaseCommand {
 
     // Process the put request
     if (key == null || regionName == null) {
+      final StringBuilder errMessage = new StringBuilder();
       if (key == null) {
         final String putMsg = " The input key for the put request is null";
         if (isDebugEnabled) {
@@ -193,8 +193,7 @@ public class Put65 extends BaseCommand {
       if (isDebugEnabled) {
         logger.debug("{}:{}", serverConnection.getName(), putMsg);
       }
-      errMessage.append(putMsg);
-      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, errMessage.toString(),
+      writeErrorResponse(clientMessage, MessageType.PUT_DATA_ERROR, putMsg,
           serverConnection);
       serverConnection.setAsTrue(RESPONDED);
       return;
