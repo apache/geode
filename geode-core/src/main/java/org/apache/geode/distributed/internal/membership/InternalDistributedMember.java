@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -1227,6 +1228,15 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     return dsfidVersions;
   }
 
+  @VisibleForTesting
+  void setUniqueTag(String tag) {
+    uniqueTag = tag;
+  }
+
+  @VisibleForTesting
+  void setIsPartial(boolean value) {
+    isPartial = value;
+  }
 
   public static class InternalDistributedMemberWrapper {
     InternalDistributedMember mbr;
