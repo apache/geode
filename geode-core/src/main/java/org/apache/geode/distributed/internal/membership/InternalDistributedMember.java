@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
@@ -648,27 +649,14 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     InetAddress myAddr = getInetAddress();
     InetAddress otherAddr = other.getInetAddress();
-    // Discard null cases
     if (myAddr == null && otherAddr == null) {
       return true;
-    } else if (myAddr == null) {
-      return false;
-    } else if (otherAddr == null) {
-      return false;
-    } else if (!myAddr.equals(otherAddr)) {
+    } else if (!Objects.equals(myAddr, otherAddr)) {
       return false;
     }
 
     if (!isPartial() && !other.isPartial()) {
-      String myName = getName();
-      String otherName = other.getName();
-      if (myName == null && otherName == null) {
-        // could be equal
-      } else if (myName == null) {
-        return false;
-      } else if (otherName == null) {
-        return false;
-      } else if (!myName.equals(otherName)) {
+      if (!Objects.equals(getName(), other.getName())) {
         return false;
       }
     }
@@ -682,11 +670,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
           return false;
         } // else they're the same, so continue
       }
-    } else if (this.uniqueTag == null) {
-      return false;
-    } else if (other.uniqueTag == null) {
-      return false;
-    } else if (!this.uniqueTag.equals(other.uniqueTag)) {
+    } else if (!Objects.equals(this.uniqueTag, other.uniqueTag)) {
       return false;
     }
 
