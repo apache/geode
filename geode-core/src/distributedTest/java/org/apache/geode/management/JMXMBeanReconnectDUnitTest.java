@@ -57,7 +57,7 @@ public class JMXMBeanReconnectDUnitTest {
   private static final String LOCATOR_2_NAME = "locator-two";
   private static final String REGION_PATH = "/test-region-1";
   private static final String RECONNECT_MAILBOX = "reconnectReady";
-  private static final int LOCATOR_1_VM_INDEX = 0;
+  private static final int LOCATOR_1_VM_INDEX_T = 0;
   private static final int LOCATOR_2_VM_INDEX = 1;
   private static final int SERVER_1_VM_INDEX = 2;
   private static final int SERVER_2_VM_INDEX = 3;
@@ -89,7 +89,7 @@ public class JMXMBeanReconnectDUnitTest {
     Properties properties = new Properties();
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
 
-    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX, locator1Properties());
+    locator1 = lsRule.startLocatorVM(LOCATOR_1_VM_INDEX_T, locator1Properties());
     locator1.waitTilLocatorFullyStarted();
 
     locator2 = lsRule.startLocatorVM(LOCATOR_2_VM_INDEX, locator2Properties(), locator1.getPort());
