@@ -267,6 +267,7 @@ public class ConnectionImpl implements Connection {
 
   @Override
   public Object execute(Op op) throws Exception {
+    logger.info("#### ConnectionImpl.execute: " + op);
     Object result;
     // Do not synchronize when used for GatewaySender
     // as the same connection is being used
@@ -279,6 +280,7 @@ public class ConnectionImpl implements Connection {
       if (op instanceof ExecuteFunctionOpImpl || op instanceof ExecuteRegionFunctionOpImpl
           || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
         int earliertimeout = this.getSocket().getSoTimeout();
+        logger.info("#### Executing function, the earlier timeout is: " + earliertimeout + " function timeout is: " + getClientFunctionTimeout());
         this.getSocket().setSoTimeout(getClientFunctionTimeout());
         try {
           result = op.attempt(this);

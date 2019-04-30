@@ -7,6 +7,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -42,8 +43,10 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -87,14 +90,22 @@ public class FunctionTimeoutTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
+    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100");
     locator = clusterStartupRule.startLocatorVM(0);
     server1 = startServer(1);
     server2 = startServer(2);
     server3 = startServer(3);
 
-    client = clusterStartupRule.startClientVM(4,
-        cacheRule -> cacheRule.withLocatorConnection(locator.getPort())
-            .withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(100)));
+    client = clusterStartupRule.startClientVM(4, cacheRule -> cacheRule
+        // yes, Virginia, the only way to affect client fn timeout is via a system property!
+        .withCacheSetup(_ignore->System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+        .withLocatorConnection(locator.getPort()));
+    /*
+     This was an attempt to limit client wait time for fn execution. It didn't work (you gotta use
+     the system property above. Keeping this snippet in case we want to use it for non-fn op
+     timeouts later.
+        .withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(100)));
+     */
   }
 
   @After

@@ -64,6 +64,18 @@ public class ClientCacheRule extends SerializableExternalResource {
     return this;
   }
 
+  /**
+   * Register a function to modify the {@link ClientCacheFactory} before
+   * {@link ClientCacheFactory#create()} is called.
+   *
+   * The function will run in the client VM. So if you have other work to do in that VM,
+   * such as setting system properties, your function can do that.
+   *
+   * @param setup is a {@link Consumer} that will eventually receive the constructed,
+   * but not-yet-{@code create()}ed {@link ClientCacheFactory}, in the client VM.
+   *
+   * @return this
+   */
   public ClientCacheRule withCacheSetup(Consumer<ClientCacheFactory> setup) {
     cacheSetups.add(setup);
     return this;
