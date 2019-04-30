@@ -3,14 +3,11 @@ package org.apache.geode.internal.cache.execute;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
-import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
-import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.VM.getHostName;
-import static org.apache.geode.test.dunit.VM.getVM;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -20,6 +17,7 @@ import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -27,8 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import util.TestException;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
@@ -38,25 +34,16 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.ClientRegionFactory;
 import org.apache.geode.cache.client.ClientRegionShortcut;
-import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.cache.client.internal.InternalClientCache;
-import org.apache.geode.cache.client.internal.PoolImpl;
-import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
-import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.rules.CacheRule;
-import org.apache.geode.test.dunit.rules.ClientCacheRule;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -72,11 +59,13 @@ public class FunctionTimeoutTest implements Serializable {
 
   private static String regionName = "FunctionTimeoutTest";
 
-  private ClientVM client;
+  private MemberVM locator;
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
+  private ClientVM client;
 
+  private Logger logger = LogService.getLogger();
 
   private enum RegionType {
     PARTITION, REPLICATE
@@ -93,29 +82,31 @@ public class FunctionTimeoutTest implements Serializable {
   public DistributedRule distributedRule = new DistributedRule();
 
   @Rule
-  public CacheRule cacheRule = new CacheRule();
-
-  @Rule
-  public ClientCacheRule clientCacheRule = new ClientCacheRule();
-
-  @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
       new DistributedRestoreSystemProperties();
 
   @Before
   public void setUp() throws Exception {
-    final MemberVM locator = clusterStartupRule.startLocatorVM(0);
+    locator = clusterStartupRule.startLocatorVM(0);
+    server1 = startServer(1);
+    server2 = startServer(2);
+    server3 = startServer(3);
 
-    server1 = clusterStartupRule.startServerVM(1, locator.getPort());
-    server2 = clusterStartupRule.startServerVM(2, locator.getPort());
-    server3 = clusterStartupRule.startServerVM(3, locator.getPort());
-
-    client = clusterStartupRule.startClientVM(4,cacheRule->cacheRule
-        .withLocatorConnection(locator.getPort()).withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(10)));
+    client = clusterStartupRule.startClientVM(4,
+        cacheRule -> cacheRule.withLocatorConnection(locator.getPort())
+            .withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(100)));
   }
 
   @After
   public void tearDown() throws Exception {
+
+  }
+
+  private MemberVM startServer(int vmIndex) {
+    return clusterStartupRule.startServerVM(vmIndex,
+        x -> x.withConnectionToLocator(locator.getPort())
+            .withProperty(SERIALIZABLE_OBJECT_FILTER,
+                "org.apache.geode.internal.cache.execute.FunctionTimeoutTest*"));
   }
 
   private void createServerRegion() {
@@ -134,32 +125,32 @@ public class FunctionTimeoutTest implements Serializable {
     server3.invoke(() -> createServerRegion());
 
     client.invoke(() -> {
-      final Region<Object, Object>
-          region = clusterStartupRule.getClientCache().getRegion(regionName);
+      final Region<Object, Object> region =
+          clusterStartupRule.getClientCache().getRegion(regionName);
       region.put("k1", "v1");
     });
 
     server1.invoke(() -> {
-      final Region<Object, Object>
-          region = clusterStartupRule.getCache().getRegion(regionName);
+      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
       assertThat(region.get("k1")).isEqualTo("v1");
     });
     server2.invoke(() -> {
-      final Region<Object, Object>
-          region = clusterStartupRule.getCache().getRegion(regionName);
+      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
       assertThat(region.get("k1")).isEqualTo("v1");
     });
     server3.invoke(() -> {
-      final Region<Object, Object>
-          region = clusterStartupRule.getCache().getRegion(regionName);
+      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
       assertThat(region.get("k1")).isEqualTo("v1");
     });
 
     try {
+      logger.info("#### Executing function from client.");
       client.invoke(() -> executeFunction(ExecutionTarget.REGION, false, 1000));
-    } catch(final Throwable e) {
-      if (true /*expect exception*/) {
-        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type").isExactlyInstanceOf(ServerConnectivityException.class);
+    } catch (final Throwable e) {
+      logger.info("#### Exception Executing function from client: " + e.getMessage());
+      if (true /* expect exception */) {
+        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type")
+            .isExactlyInstanceOf(ServerConnectivityException.class);
       } else {
         throw new TestException("Geode threw unexpected exception", e);
       }
@@ -168,20 +159,21 @@ public class FunctionTimeoutTest implements Serializable {
 
   @Test
   @Parameters({
-      "false, 0, 10, false",  // !isHA => no retries, timeout==0 => no timeout
-      // "true, 1000, 10,   false",  // isHA => 1 retry, timeout >> thinkTime => no timeout
-      // "true, 10,   1000, true"    // isHA => 1 retry, timeout << thinkTime => timeout
+      "false, 0, 10, false", // !isHA => no retries, timeout==0 => no timeout
+      // "true, 1000, 10, false", // isHA => 1 retry, timeout >> thinkTime => no timeout
+      // "true, 10, 1000, true" // isHA => 1 retry, timeout << thinkTime => timeout
   })
   public void doFoo(final boolean isHA, final int timeoutMillis,
-                    final int thinkTimeMillis, final boolean expectServerConnectivityException) {
+      final int thinkTimeMillis, final boolean expectServerConnectivityException) {
     final int port = server1.invoke(() -> createServerCache(RegionType.REPLICATE));
-//    client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeoutMillis));
+    // client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeoutMillis));
 
     try {
       client.invoke(() -> executeFunction(ExecutionTarget.REGION, isHA, thinkTimeMillis));
-    } catch(final Throwable e) {
+    } catch (final Throwable e) {
       if (expectServerConnectivityException) {
-        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type").isExactlyInstanceOf(ServerConnectivityException.class);
+        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type")
+            .isExactlyInstanceOf(ServerConnectivityException.class);
       } else {
         throw new TestException("Geode threw unexpected exception", e);
       }
@@ -191,7 +183,7 @@ public class FunctionTimeoutTest implements Serializable {
   private Throwable getFunctionExecutionExceptionCause(final Throwable fromDUnit) {
     return Optional.ofNullable(fromDUnit)
         .map(_fromDUnit -> _fromDUnit.getCause())
-            .map(fromTheFunction -> fromTheFunction.getCause()).orElseGet(null);
+        .map(fromTheFunction -> fromTheFunction.getCause()).orElseGet(null);
   }
 
   private void createClientCache(final String hostName, final int port, final int timeout) {
@@ -199,15 +191,14 @@ public class FunctionTimeoutTest implements Serializable {
       System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(timeout));
     }
 
-//    final Properties config = new Properties();
-//    config.setProperty(LOCATORS, "");
-//    config.setProperty(MCAST_PORT, "0");
+    // final Properties config = new Properties();
+    // config.setProperty(LOCATORS, "");
+    // config.setProperty(MCAST_PORT, "0");
 
-    final ClientCacheFactory clientCacheFactory = new ClientCacheFactory(/*config*/);
+    final ClientCacheFactory clientCacheFactory = new ClientCacheFactory(/* config */);
     clientCacheFactory.addPoolServer(hostName, port);
 
-    final InternalClientCache
-        clientCache =
+    final InternalClientCache clientCache =
         (InternalClientCache) clientCacheFactory.create();
 
     final ClientRegionFactory<String, String> clientRegionFactory =
@@ -216,8 +207,7 @@ public class FunctionTimeoutTest implements Serializable {
     clientRegionFactory.create(regionName);
   }
 
-  private int createServerCache(final RegionType regionType) throws
-      IOException {
+  private int createServerCache(final RegionType regionType) throws IOException {
     assertThat(regionType).isNotNull();
 
     final Properties config = new Properties();
@@ -229,7 +219,7 @@ public class FunctionTimeoutTest implements Serializable {
 
     final RegionFactory<String, String> regionFactory;
 
-    switch(regionType) {
+    switch (regionType) {
       case PARTITION:
         final PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
         paf.setRedundantCopies(REDUNDANT_COPIES);
@@ -261,13 +251,15 @@ public class FunctionTimeoutTest implements Serializable {
     FunctionService.registerFunction(function);
     final Execution<Integer, Long, List<Long>> execution;
 
-    switch(executionTarget) {
+    switch (executionTarget) {
       case REGION:
         execution =
-            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName)).setArguments(thinkTimeMillis);
+            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+                .setArguments(thinkTimeMillis);
         break;
       case SERVER:
-        execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool()).setArguments(thinkTimeMillis);
+        execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
+            .setArguments(thinkTimeMillis);
         break;
       default:
         throw new TestException("unknown ExecutionTarget: " + executionTarget);
@@ -275,12 +267,14 @@ public class FunctionTimeoutTest implements Serializable {
 
     try {
       final ResultCollector<Long, List<Long>> resultCollector = execution.execute(function);
-    } catch(final Throwable e) {
-        throw new TestException("Geode threw an unexpected exception", e);
+    } catch (final Throwable e) {
+      throw new TestException("Geode threw an unexpected exception", e);
     }
   }
 
   private static class TheFunction implements Function<Integer> {
+    // private Logger logger = LogService.getLogger();
+
     private boolean isHA;
 
     public TheFunction(boolean isHA) {
@@ -289,13 +283,17 @@ public class FunctionTimeoutTest implements Serializable {
 
     @Override
     public void execute(final FunctionContext<Integer> context) {
+      System.out.println("#### Executing function on server.");
       final int thinkTimeMillis = context.getArguments();
-      final long elapsed = getElapsed(()->{Thread.sleep(thinkTimeMillis);});
+      System.out.println("#### Function arg thinkTimeMillis: " + thinkTimeMillis);
+      final long elapsed = getElapsed(() -> Thread.sleep(thinkTimeMillis));
       context.getResultSender().lastResult(elapsed);
     }
 
     @FunctionalInterface
-    private interface Thunk { void apply() throws InterruptedException;}
+    private interface Thunk {
+      void apply() throws InterruptedException;
+    }
 
     private long getElapsed(final Thunk thunk) {
       final long start = System.currentTimeMillis();
