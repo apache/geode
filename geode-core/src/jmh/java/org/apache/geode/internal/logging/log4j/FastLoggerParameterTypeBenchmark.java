@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.logging.log4j.Level.INFO;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,8 +39,8 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
-@Measurement(iterations = 1, time = 1, timeUnit = SECONDS)
-@Warmup(iterations = 1, time = 1, timeUnit = SECONDS)
+@Measurement(iterations = 1, time = 1, timeUnit = MINUTES)
+@Warmup(iterations = 1, time = 1, timeUnit = MINUTES)
 @Fork(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(SECONDS)
