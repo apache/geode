@@ -858,7 +858,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     String name = DataSerializer.readString(in);
     this.uniqueTag = DataSerializer.readString(in);
     String durableId = DataSerializer.readString(in);
-    int durableTimeout = DataSerializer.readInteger(in).intValue();
+    int durableTimeout = in.readInt();
     DurableClientAttributes durableClientAttributes =
         new DurableClientAttributes(durableId, durableTimeout);
 
@@ -1028,7 +1028,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
 
     String durableId = DataSerializer.readString(in);
-    int durableTimeout = DataSerializer.readInteger(in).intValue();
+    int durableTimeout = in.readInt();
     DurableClientAttributes durableClientAttributes =
         durableId.length() > 0 ? new DurableClientAttributes(durableId, durableTimeout) : null;
 
@@ -1073,7 +1073,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
 
     String durableId = DataSerializer.readString(in);
-    int durableTimeout = DataSerializer.readInteger(in).intValue();
+    int durableTimeout = in.readInt();
     DurableClientAttributes durableClientAttributes =
         durableId.length() > 0 ? new DurableClientAttributes(durableId, durableTimeout) : null;
 
