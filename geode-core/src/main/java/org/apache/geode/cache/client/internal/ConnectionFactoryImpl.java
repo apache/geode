@@ -66,10 +66,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   @MutableForTesting
   public static boolean testFailedConnectionToServer = false;
 
-  public ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
-      InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout, int readTimeout,
-      ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
-      GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
+  ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
+                        InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout,
+                        int readTimeout,
+                        ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
+                        boolean usedByGateway,
+                        GatewaySender sender, long pingInterval, boolean multiuserSecureMode,
+                        PoolImpl pool) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
             readTimeout, cancelCriterion, usedByGateway, sender,
@@ -84,11 +87,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
   public ConnectionFactoryImpl(ConnectionConnector connectionConnector, ConnectionSource source,
       long pingInterval, PoolImpl pool, CancelCriterion cancelCriterion) {
+    this.connectionConnector = connectionConnector;
     this.source = source;
-    this.denyList = new ServerDenyList(pingInterval);
     this.pool = pool;
     this.cancelCriterion = cancelCriterion;
-    this.connectionConnector = connectionConnector;
+
+    denyList = new ServerDenyList(pingInterval);
   }
 
   public void start(ScheduledExecutorService background) {
@@ -105,11 +109,9 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throws GemFireSecurityException {
     FailureTracker failureTracker = denyList.getFailureTracker(location);
 
-    boolean initialized = false;
     Connection connection = null;
     try {
       connection = connectionConnector.connectClientToServer(location, forQueue);
-      initialized = true;
       failureTracker.reset();
       authenticateIfRequired(connection);
     } catch (GemFireConfigException | CancelException | GemFireSecurityException
@@ -132,12 +134,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
         logger.warn("Could not connect to: " + location, e);
       }
       testFailedConnectionToServer = true;
-    } finally {
-      if (!initialized && connection != null) {
-        connection.destroy();
-        failureTracker.addFailure();
-        connection = null;
-      }
     }
 
     return connection;
@@ -160,14 +156,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
+  public ServerLocation findBestServer(ServerLocation currentServer, Set<ServerLocation> excludedServers) {
     if (currentServer != null && source.isBalanced()) {
       return currentServer;
     }
-    final Set origExcludedServers = excludedServers;
-    excludedServers = new HashSet(excludedServers);
-    Set denyListedServers = denyList.getBadServers();
-    excludedServers.addAll(denyListedServers);
+    final Set<ServerLocation> origExcludedServers = excludedServers;
+    excludedServers = new HashSet<>(excludedServers);
+    excludedServers.addAll(denyList.getBadServers());
     ServerLocation server = source.findReplacementServer(currentServer, excludedServers);
     if (server == null) {
       // Nothing worked! Let's try without the denylist.
@@ -183,12 +178,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public Connection createClientToServerConnection(Set excludedServers)
+  public Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
       throws GemFireSecurityException {
-    final Set origExcludedServers = excludedServers;
-    excludedServers = new HashSet(excludedServers);
-    Set denyListedServers = denyList.getBadServers();
-    excludedServers.addAll(denyListedServers);
+    final Set<ServerLocation> origExcludedServers = excludedServers;
+    excludedServers = new HashSet<>(excludedServers);
+    excludedServers.addAll(denyList.getBadServers());
     Connection conn = null;
     RuntimeException fatalException = null;
     boolean tryDenyList = true;
@@ -200,12 +194,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
         if (tryDenyList) {
           // Nothing worked! Let's try without the denylist.
           tryDenyList = false;
-          int size = excludedServers.size();
-          excludedServers.removeAll(denyListedServers);
-          // make sure we didn't remove any of the ones that the caller set not to use
-          excludedServers.addAll(origExcludedServers);
-          if (excludedServers.size() < size) {
-            // We are able to remove some exclusions, so lets give this another whirl.
+          if (excludedServers.size() > origExcludedServers.size()) {
+            excludedServers = origExcludedServers;
             continue;
           }
         }
@@ -220,20 +210,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
       try {
         conn = createClientToServerConnection(server, false);
-      } catch (CancelException e) {
-        // propagate this up immediately
+      } catch (CancelException | GemFireSecurityException | GatewayConfigurationException e) {
         throw e;
-      } catch (GemFireSecurityException e) {
-        // propagate this up immediately
-        throw e;
-      } catch (GatewayConfigurationException e) {
-        // propagate this up immediately
-        throw e;
-      } catch (ServerRefusedConnectionException srce) {
-        fatalException = srce;
+      } catch (ServerRefusedConnectionException e) {
+        fatalException = e;
         if (logger.isDebugEnabled()) {
           logger.debug("ServerRefusedConnectionException attempting to connect to {}", server,
-              srce);
+              e);
         }
       } catch (Exception e) {
         logger.warn(String.format("Could not connect to: %s", server), e);
@@ -253,10 +236,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     if (logger.isDebugEnabled()) {
       logger.debug("Establishing: {}", clientUpdateName);
     }
-    // Launch the thread
-    CacheClientUpdater updater = connectionConnector.connectServerToClient(endpoint, qManager,
-        isPrimary, failedUpdater, clientUpdateName);
-
-    return updater;
+    return connectionConnector.connectServerToClient(endpoint, qManager, isPrimary, failedUpdater, clientUpdateName);
   }
 }
