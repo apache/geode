@@ -380,11 +380,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               logger.debug("sleeping for {} before making another attempt to find the coordinator",
                   retrySleep);
               Thread.sleep(retrySleep);
-            } /* else { */
-            // since we were given a coordinator that couldn't be used we should keep trying
-            tries = 0;
-            giveupTime = System.currentTimeMillis() + timeout;
-            // }
+            } else {
+              // since we were given a coordinator that couldn't be used we should keep trying
+              tries = 0;
+              giveupTime = System.currentTimeMillis() + timeout;
+            }
           }
         } catch (InterruptedException e) {
           logger.debug("retry sleep interrupted - giving up on joining the distributed system");
