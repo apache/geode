@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -378,7 +379,7 @@ public class QueueManagerJUnitTest {
     public void destroy(boolean keepAlive) {}
 
     @Override
-    public int getSocketConnectTimeout() {
+    public long getSocketConnectTimeout(TimeUnit timeUnit) {
       return 0;
     }
 

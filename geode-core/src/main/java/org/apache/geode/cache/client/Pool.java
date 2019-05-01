@@ -15,7 +15,10 @@
 
 package org.apache.geode.cache.client;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.query.QueryService;
@@ -64,8 +67,19 @@ public interface Pool {
    * Returns the socket connect timeout of this pool.
    *
    * @see PoolFactory#setSocketConnectTimeout(int)
+   * @deprecated Use {@link #getSocketConnectTimeout(TimeUnit)}
    */
-  int getSocketConnectTimeout();
+  @Deprecated
+  default int getSocketConnectTimeout() {
+    return (int) getSocketConnectTimeout(MILLISECONDS);
+  }
+
+  /**
+   * Returns the socket connect timeout of this pool in the given {@link TimeUnit}.
+   *
+   * @see PoolFactory#setSocketConnectTimeout(long, TimeUnit)
+   */
+  long getSocketConnectTimeout(TimeUnit timeUnit);
 
   /**
    * Returns the connection timeout of this pool.

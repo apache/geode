@@ -15,6 +15,7 @@
 
 package org.apache.geode.cache.client;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
@@ -160,7 +161,7 @@ public class ClientCacheFactoryJUnitTest {
     dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem.connect(dsProps);
     Pool p = PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
-        .setSocketConnectTimeout(1400).create("singlePool");
+        .setSocketConnectTimeout(0, MILLISECONDS).create("singlePool");
 
     this.clientCache = new ClientCacheFactory().create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
@@ -180,7 +181,7 @@ public class ClientCacheFactoryJUnitTest {
     // however we should be to to create it by configuring a pool
     Pool pool = PoolManager.createFactory()
         .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
-        .setMultiuserAuthentication(true).setSocketConnectTimeout(2345).create("pool1");
+        .setMultiuserAuthentication(true).setSocketConnectTimeout(5, MILLISECONDS).create("pool1");
     RegionService cc = this.clientCache.createAuthenticatedView(suProps, pool.getName());
     ProxyCache pc = (ProxyCache) cc;
     UserAttributes ua = pc.getUserAttributes();
@@ -200,9 +201,9 @@ public class ClientCacheFactoryJUnitTest {
     dsProps.setProperty(MCAST_PORT, "0");
     DistributedSystem.connect(dsProps);
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
-        .setSocketConnectTimeout(2500).create("p7");
+        .setSocketConnectTimeout(0, MILLISECONDS).create("p7");
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
-        .setSocketConnectTimeout(5200).create("p6");
+        .setSocketConnectTimeout(0, MILLISECONDS).create("p6");
 
     this.clientCache = new ClientCacheFactory().create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
@@ -238,7 +239,8 @@ public class ClientCacheFactoryJUnitTest {
   @Test
   public void test004SetMethod() {
     this.clientCache =
-        new ClientCacheFactory().set(LOG_LEVEL, "severe").setPoolSocketConnectTimeout(0).create();
+        new ClientCacheFactory().set(LOG_LEVEL, "severe")
+            .setPoolSocketConnectTimeout(0, MILLISECONDS).create();
     GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
     assertThat(gfc.isClient()).isTrue();
 
@@ -248,8 +250,9 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(dsProps.getProperty(LOG_LEVEL)).isEqualTo("severe");
     assertThat(this.clientCache.getDefaultPool().getSocketConnectTimeout()).isEqualTo(0);
 
-    assertThatThrownBy(() -> new ClientCacheFactory().setPoolSocketConnectTimeout(-1).create())
-        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(
+        () -> new ClientCacheFactory().setPoolSocketConnectTimeout(-1, MILLISECONDS).create())
+            .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

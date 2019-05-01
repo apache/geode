@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -405,7 +407,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
     v = atts.getValue(SOCKET_CONNECT_TIMEOUT);
     if (v != null) {
-      f.setSocketConnectTimeout(parseInt(v));
+      f.setSocketConnectTimeout(parseInt(v), MILLISECONDS);
     }
     v = atts.getValue(FREE_CONNECTION_TIMEOUT);
     if (v != null) {

@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -69,11 +72,12 @@ public class PoolFactoryImpl implements PoolFactory {
   }
 
   @Override
-  public PoolFactory setSocketConnectTimeout(int socketConnectTimeout) {
+  public PoolFactory setSocketConnectTimeout(long socketConnectTimeout, TimeUnit timeUnit) {
     if (socketConnectTimeout <= -1) {
       throw new IllegalArgumentException("socketConnectTimeout must be greater than -1");
     }
-    attributes.socketConnectTimeout = socketConnectTimeout;
+    attributes.socketConnectTimeout =
+        (int) Math.min(MILLISECONDS.convert(socketConnectTimeout, timeUnit), Integer.MAX_VALUE);
     return this;
   }
 
@@ -315,7 +319,7 @@ public class PoolFactoryImpl implements PoolFactory {
    * Initializes the state of this factory for the given pool's state.
    */
   public void init(Pool cp) {
-    setSocketConnectTimeout(cp.getSocketConnectTimeout());
+    setSocketConnectTimeout(cp.getSocketConnectTimeout(MILLISECONDS), MILLISECONDS);
     setFreeConnectionTimeout(cp.getFreeConnectionTimeout());
     setLoadConditioningInterval(cp.getLoadConditioningInterval());
     setSocketBufferSize(cp.getSocketBufferSize());
@@ -444,8 +448,8 @@ public class PoolFactoryImpl implements PoolFactory {
     public boolean gateway = false;
 
     @Override
-    public int getSocketConnectTimeout() {
-      return socketConnectTimeout;
+    public long getSocketConnectTimeout(TimeUnit timeUnit) {
+      return timeUnit.convert(socketConnectTimeout, MILLISECONDS);
     }
 
     @Override

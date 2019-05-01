@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getAllVMs;
 import static org.apache.geode.test.dunit.VM.getHostName;
@@ -202,7 +203,7 @@ public class AcceptorImplClientQueueDistributedTest implements Serializable {
       clientCacheFactory.setPoolRetryAttempts(0);
       clientCacheFactory.setPoolMinConnections(1);
       clientCacheFactory.setPoolMaxConnections(1);
-      clientCacheFactory.setPoolSocketConnectTimeout(5000);
+      clientCacheFactory.setPoolSocketConnectTimeout(5000, MILLISECONDS);
       clientCacheFactory.addPoolServer(hostName, vm1_port);
       ClientCache cache = clientCacheFactory.set("mcast-port", "0").create();
       ClientRegionFactory<Integer, Integer> clientRegionFactory =

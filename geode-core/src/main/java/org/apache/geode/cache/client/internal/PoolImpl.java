@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.net.InetSocketAddress;
@@ -197,7 +198,7 @@ public class PoolImpl implements InternalPool {
     this.cache = cache;
     this.threadMonitoring = threadMonitoring;
 
-    socketConnectTimeout = attributes.getSocketConnectTimeout();
+    socketConnectTimeout = (int) attributes.getSocketConnectTimeout(MILLISECONDS);
     freeConnectionTimeout = attributes.getFreeConnectionTimeout();
     loadConditioningInterval = attributes.getLoadConditioningInterval();
     socketBufferSize = attributes.getSocketBufferSize();
@@ -344,7 +345,7 @@ public class PoolImpl implements InternalPool {
 
     if (statisticInterval > 0 && distributedSystem.getConfig().getStatisticSamplingEnabled()) {
       backgroundProcessor.scheduleWithFixedDelay(new PublishClientStatsTask(), statisticInterval,
-          statisticInterval, TimeUnit.MILLISECONDS);
+          statisticInterval, MILLISECONDS);
     }
     // LOG: changed from config to info
     logger.info("Pool {} started with multiuser-authentication={}",
@@ -377,8 +378,8 @@ public class PoolImpl implements InternalPool {
   }
 
   @Override
-  public int getSocketConnectTimeout() {
-    return socketConnectTimeout;
+  public long getSocketConnectTimeout(TimeUnit timeUnit) {
+    return timeUnit.convert(socketConnectTimeout, MILLISECONDS);
   }
 
   @Override
@@ -579,7 +580,7 @@ public class PoolImpl implements InternalPool {
       try {
         if (backgroundProcessor != null) {
           backgroundProcessor.shutdown();
-          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, TimeUnit.MILLISECONDS)) {
+          if (!backgroundProcessor.awaitTermination(SHUTDOWN_TIMEOUT, MILLISECONDS)) {
             logger.warn("Timeout waiting for background tasks to complete.");
           }
         }

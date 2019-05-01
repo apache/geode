@@ -15,10 +15,12 @@
 
 package org.apache.geode.cache.client;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheWriterException;
@@ -292,9 +294,26 @@ public class ClientCacheFactory {
    * @return a reference to <code>this</code>
    * @throws IllegalArgumentException if <code>socketConnectTimeout</code> is less than or equal to
    *         <code>-1</code>.
+   * @deprecated Use {@link #setPoolSocketConnectTimeout(long, TimeUnit)}
    */
+  @Deprecated
   public ClientCacheFactory setPoolSocketConnectTimeout(int socketConnectTimeout) {
-    getPoolFactory().setSocketConnectTimeout(socketConnectTimeout);
+    return setPoolSocketConnectTimeout(socketConnectTimeout, MILLISECONDS);
+  }
+
+  /**
+   * Sets the socket connect timeout for this pool. The duration specified as socket
+   * timeout when the client connects to the servers/locators. A timeout of zero is interpreted as
+   * an infinite timeout. The connection will then block until established or an error occurs.
+   *
+   * @param socketConnectTimeout timeout in {@code timeUnit} when the client connects to the servers
+   * @param timeUnit Unit of {@code socketConnectTimeout}
+   * @return a reference to {@code this}
+   * @throws IllegalArgumentException if {@code socketConnectTimeout} is less than 0.
+   */
+  public ClientCacheFactory setPoolSocketConnectTimeout(long socketConnectTimeout,
+      TimeUnit timeUnit) {
+    getPoolFactory().setSocketConnectTimeout(socketConnectTimeout, timeUnit);
     return this;
   }
 

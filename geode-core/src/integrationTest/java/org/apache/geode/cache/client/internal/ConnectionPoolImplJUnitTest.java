@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.junit.Assert.assertEquals;
@@ -134,7 +135,7 @@ public class ConnectionPoolImplJUnitTest {
     int socketTimeout = 123123;
 
     PoolFactory cpf = PoolManager.createFactory();
-    cpf.addServer("localhost", port).setSocketConnectTimeout(socketTimeout)
+    cpf.addServer("localhost", port).setSocketConnectTimeout(socketTimeout, MILLISECONDS)
         .setReadTimeout(readTimeout).setThreadLocalConnections(true);
 
     PoolImpl pool = (PoolImpl) cpf.create("myfriendlypool");
