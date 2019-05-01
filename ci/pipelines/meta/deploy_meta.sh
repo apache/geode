@@ -123,12 +123,11 @@ YML
     --var concourse-team=main \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
+  if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
+    exit 1
+  fi
 popd 2>&1 > /dev/null
 
-
-if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
-  exit 1
-fi
 
 # bootstrap all precursors of the actual Build job
 
