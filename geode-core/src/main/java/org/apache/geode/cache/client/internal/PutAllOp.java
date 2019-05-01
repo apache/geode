@@ -266,7 +266,7 @@ public class PutAllOp {
           (callbackArg != null ? 6 : 5) + (map.size() * 2));
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.region = (LocalRegion) region;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addBytesPart(eventId.calcBytes());
       getMessage().addIntPart(skipCallbacks ? 1 : 0);
       this.map = map;

@@ -119,7 +119,7 @@ public class ExecuteRegionFunctionNoAckOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       getMessage().addBytesPart(new byte[] {functionState});
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       if (serverRegionExecutor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {
@@ -152,7 +152,7 @@ public class ExecuteRegionFunctionNoAckOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       getMessage().addBytesPart(new byte[] {functionState});
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);

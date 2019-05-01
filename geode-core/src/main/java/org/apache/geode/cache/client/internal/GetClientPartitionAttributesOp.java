@@ -68,7 +68,7 @@ public class GetClientPartitionAttributesOp {
     public GetClientPartitionAttributesOpImpl(String regionFullPath) {
       super(MessageType.GET_CLIENT_PARTITION_ATTRIBUTES, 1);
       this.regionFullPath = regionFullPath;
-      getMessage().addStringPart(regionFullPath);
+      getMessage().addStringPart(regionFullPath, true);
     }
 
     @Override

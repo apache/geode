@@ -53,7 +53,7 @@ public class ContainsKeyOp {
      */
     public ContainsKeyOpImpl(String region, Object key, MODE mode) {
       super(MessageType.CONTAINS_KEY, 3);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(key);
       getMessage().addIntPart(mode.ordinal());
       this.region = region;

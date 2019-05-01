@@ -111,7 +111,7 @@ public class GatewaySenderBatchOp {
           Object callbackArg = event.getSenderCallbackArgument();
 
           // Add region name
-          getMessage().addStringPart(regionName);
+          getMessage().addStringPart(regionName, true);
           // Add event id
           getMessage().addObjPart(eventId);
           // Add key
