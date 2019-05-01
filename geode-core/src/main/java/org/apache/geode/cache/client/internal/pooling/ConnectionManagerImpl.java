@@ -356,7 +356,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
       return null;
     }
-    PooledConnection pooledConn = new PooledConnection(this, conn);
+    PooledConnection pooledConn = new PooledConnection(conn);
     allConnectionsMap.addConnection(pooledConn);
     if (logger.isDebugEnabled()) {
       logger.debug("Created a new connection. {} Connection count is now {}", pooledConn,

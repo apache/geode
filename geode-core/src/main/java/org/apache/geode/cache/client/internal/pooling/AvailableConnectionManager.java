@@ -108,7 +108,6 @@ public class AvailableConnectionManager {
   }
 
   private void passivate(PooledConnection connection, boolean accessed) {
-    // thread local connections are already passive at this point
     if (connection.isActive()) {
       connection.passivate(accessed);
     }
