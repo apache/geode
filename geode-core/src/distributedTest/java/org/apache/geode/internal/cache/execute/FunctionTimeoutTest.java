@@ -1,23 +1,14 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
-import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.cache.client.ClientRegionShortcut.CACHING_PROXY;
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.SERIALIZABLE_OBJECT_FILTER;
-import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
-import static org.apache.geode.test.dunit.DistributedTestUtils.getLocatorPort;
-import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 import junitparams.JUnitParamsRunner;
-import junitparams.Parameters;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -27,26 +18,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import util.TestException;
 
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.internal.InternalClientCache;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
+import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -69,6 +53,7 @@ public class FunctionTimeoutTest implements Serializable {
   private ClientVM client;
 
   private Logger logger = LogService.getLogger();
+
 
   private enum RegionType {
     PARTITION, REPLICATE
@@ -96,21 +81,23 @@ public class FunctionTimeoutTest implements Serializable {
     server2 = startServer(2);
     server3 = startServer(3);
 
+
     client = clusterStartupRule.startClientVM(4, cacheRule -> cacheRule
         // yes, Virginia, the only way to affect client fn timeout is via a system property!
-        .withCacheSetup(_ignore->System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+        .withCacheSetup(_ignore -> System
+            .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
         .withLocatorConnection(locator.getPort()));
     /*
-     This was an attempt to limit client wait time for fn execution. It didn't work (you gotta use
-     the system property above. Keeping this snippet in case we want to use it for non-fn op
-     timeouts later.
-        .withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(100)));
+     * This was an attempt to limit client wait time for fn execution. It didn't work (you gotta use
+     * the system property above. Keeping this snippet in case we want to use it for non-fn op
+     * timeouts later.
+     * .withCacheSetup(cacheFactory -> cacheFactory.setPoolReadTimeout(100)));
      */
   }
 
   @After
   public void tearDown() throws Exception {
-
+    IgnoredException.removeAllExpectedExceptions();
   }
 
   private MemberVM startServer(int vmIndex) {
@@ -121,13 +108,25 @@ public class FunctionTimeoutTest implements Serializable {
   }
 
   private void createServerRegion() {
-    clusterStartupRule.getCache().createRegionFactory(PARTITION).create(regionName);
+    final PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
+    paf.setRedundantCopies(0);
+    paf.setTotalNumBuckets(3);
+    clusterStartupRule.getCache().createRegionFactory(PARTITION)
+        .setPartitionAttributes(paf.create())
+        .create(regionName);
   }
 
   private void createClientRegion() {
     clusterStartupRule.getClientCache().createClientRegionFactory(CACHING_PROXY).create(regionName);
   }
 
+  /*
+   * @Parameters({
+   * "false, 0, 10, false", // !isHA => no retries, timeout==0 => no timeout
+   * // "true, 1000, 10, false", // isHA => 1 retry, timeout >> thinkTime => no timeout
+   * // "true, 10, 1000, true" // isHA => 1 retry, timeout << thinkTime => timeout
+   * })
+   */
   @Test
   public void testClientServer() {
     client.invoke(() -> createClientRegion());
@@ -145,120 +144,41 @@ public class FunctionTimeoutTest implements Serializable {
       final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
       assertThat(region.get("k1")).isEqualTo("v1");
     });
-    server2.invoke(() -> {
-      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
-      assertThat(region.get("k1")).isEqualTo("v1");
-    });
-    server3.invoke(() -> {
-      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
-      assertThat(region.get("k1")).isEqualTo("v1");
-    });
 
-    try {
-      logger.info("#### Executing function from client.");
-      client.invoke(() -> executeFunction(ExecutionTarget.REGION, false, 1000));
-    } catch (final Throwable e) {
-      logger.info("#### Exception Executing function from client: " + e.getMessage());
-      if (true /* expect exception */) {
-        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type")
-            .isExactlyInstanceOf(ServerConnectivityException.class);
-      } else {
-        throw new TestException("Geode threw unexpected exception", e);
+    logger.info("#### Executing function from client.");
+    IgnoredException.addIgnoredException(FunctionException.class.getName());
+
+    Function function = client.invoke(() -> executeFunction(ExecutionTarget.REGION, false, 1000));
+
+    System.out.println("#### Number of functions executed on all servers :"
+        + getNumFunctionExecutionFromAllServers(function.getId()));
+    assertThat(getNumFunctionExecutionFromAllServers(function.getId())).isEqualTo(3);
+  }
+
+  private int getNumFunctionExecutionFromAllServers(String functionId) {
+    return getNumFunctions(server1, functionId) +
+        getNumFunctions(server2, functionId) +
+        getNumFunctions(server3, functionId);
+  }
+
+  private int getNumFunctions(MemberVM vm, final String functionId) {
+    return vm.invoke(() -> {
+      int numExecutions = 0;
+      FunctionStats functionStats = FunctionStats.getFunctionStats(functionId);
+      if (functionStats != null) {
+        GeodeAwaitility.await("Awaiting GatewayReceiverMXBean.isRunning(true)")
+            .untilAsserted(() -> assertThat(functionStats.getFunctionExecutionsRunning()).isZero());
+        numExecutions = functionStats.getFunctionExecutionCalls();
       }
-    }
+      return numExecutions;
+    });
   }
 
-  @Test
-  @Parameters({
-      "false, 0, 10, false", // !isHA => no retries, timeout==0 => no timeout
-      // "true, 1000, 10, false", // isHA => 1 retry, timeout >> thinkTime => no timeout
-      // "true, 10, 1000, true" // isHA => 1 retry, timeout << thinkTime => timeout
-  })
-  public void doFoo(final boolean isHA, final int timeoutMillis,
-      final int thinkTimeMillis, final boolean expectServerConnectivityException) {
-    final int port = server1.invoke(() -> createServerCache(RegionType.REPLICATE));
-    // client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeoutMillis));
-
-    try {
-      client.invoke(() -> executeFunction(ExecutionTarget.REGION, isHA, thinkTimeMillis));
-    } catch (final Throwable e) {
-      if (expectServerConnectivityException) {
-        assertThat(getFunctionExecutionExceptionCause(e)).as("verify the precise exception type")
-            .isExactlyInstanceOf(ServerConnectivityException.class);
-      } else {
-        throw new TestException("Geode threw unexpected exception", e);
-      }
-    }
-  }
-
-  private Throwable getFunctionExecutionExceptionCause(final Throwable fromDUnit) {
-    return Optional.ofNullable(fromDUnit)
-        .map(_fromDUnit -> _fromDUnit.getCause())
-        .map(fromTheFunction -> fromTheFunction.getCause()).orElseGet(null);
-  }
-
-  private void createClientCache(final String hostName, final int port, final int timeout) {
-    if (timeout > 0) {
-      System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(timeout));
-    }
-
-    // final Properties config = new Properties();
-    // config.setProperty(LOCATORS, "");
-    // config.setProperty(MCAST_PORT, "0");
-
-    final ClientCacheFactory clientCacheFactory = new ClientCacheFactory(/* config */);
-    clientCacheFactory.addPoolServer(hostName, port);
-
-    final InternalClientCache clientCache =
-        (InternalClientCache) clientCacheFactory.create();
-
-    final ClientRegionFactory<String, String> clientRegionFactory =
-        clientCache.createClientRegionFactory(ClientRegionShortcut.CACHING_PROXY);
-
-    clientRegionFactory.create(regionName);
-  }
-
-  private int createServerCache(final RegionType regionType) throws IOException {
-    assertThat(regionType).isNotNull();
-
-    final Properties config = new Properties();
-    config.setProperty(LOCATORS, "localhost[" + getLocatorPort() + "]");
-    config.setProperty(SERIALIZABLE_OBJECT_FILTER,
-        "org.apache.geode.internal.cache.execute.FunctionTimeoutTest*");
-
-    final InternalCache serverCache = (InternalCache) new CacheFactory(config).create();
-
-    final RegionFactory<String, String> regionFactory;
-
-    switch (regionType) {
-      case PARTITION:
-        final PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
-        paf.setRedundantCopies(REDUNDANT_COPIES);
-        paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
-
-        regionFactory = serverCache.createRegionFactory(RegionShortcut.PARTITION);
-        regionFactory.setPartitionAttributes(paf.create());
-        break;
-      case REPLICATE:
-        regionFactory = serverCache.createRegionFactory(RegionShortcut.REPLICATE);
-        break;
-      default:
-        throw new TestException("unknown region type: " + regionType);
-    }
-
-    regionFactory.create(regionName);
-
-    final CacheServer server = serverCache.addCacheServer();
-    server.setPort(0);
-    server.start();
-    return server.getPort();
-  }
-
-  private void executeFunction(
-      final ExecutionTarget executionTarget, final boolean isHA, final int thinkTimeMillis) {
+  private Function executeFunction(final ExecutionTarget executionTarget, final boolean isHA,
+      final int thinkTimeMillis) {
     assertThat(executionTarget).isNotNull();
 
-    final Function<Integer> function = new TheFunction(isHA);
+    Function<Integer> function = new TheFunction(isHA);
     FunctionService.registerFunction(function);
     final Execution<Integer, Long, List<Long>> execution;
 
@@ -276,15 +196,24 @@ public class FunctionTimeoutTest implements Serializable {
         throw new TestException("unknown ExecutionTarget: " + executionTarget);
     }
 
+    ResultCollector<Long, List<Long>> resultCollector = null;
     try {
-      final ResultCollector<Long, List<Long>> resultCollector = execution.execute(function);
-    } catch (final Throwable e) {
-      throw new TestException("Geode threw an unexpected exception", e);
+      resultCollector = execution.execute(function);
+    } catch (FunctionException fe) {
+      assertThat(fe.getCause()).isInstanceOf(ServerConnectivityException.class);
     }
+
+    if (resultCollector != null) {
+      try {
+        resultCollector.getResult();
+      } catch (Exception ex) {
+        System.out.println("#### Exception while collecting the result: " + ex.getMessage());
+      }
+    }
+    return function;
   }
 
   private static class TheFunction implements Function<Integer> {
-    // private Logger logger = LogService.getLogger();
 
     private boolean isHA;
 
@@ -294,9 +223,8 @@ public class FunctionTimeoutTest implements Serializable {
 
     @Override
     public void execute(final FunctionContext<Integer> context) {
-      System.out.println("#### Executing function on server.");
+      LogService.getLogger().info("#### Executing function on server.");
       final int thinkTimeMillis = context.getArguments();
-      System.out.println("#### Function arg thinkTimeMillis: " + thinkTimeMillis);
       final long elapsed = getElapsed(() -> Thread.sleep(thinkTimeMillis));
       context.getResultSender().lastResult(elapsed);
     }
