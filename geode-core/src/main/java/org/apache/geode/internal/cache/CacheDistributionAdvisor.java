@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheEvent;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.InterestPolicy;
@@ -1099,13 +1100,13 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     }
   }
 
+  @MakeNotStatic("not tied to the cache lifecycle")
   private static final SameGatewaySenderIdsCollector sameGatewaySenderIdsCollector =
       new SameGatewaySenderIdsCollector();
 
   public List<Set<String>> adviseSameGatewaySenderIds(final Set<String> allGatewaySenderIds) {
     return collectProfiles(sameGatewaySenderIdsCollector, allGatewaySenderIds);
   }
-
 
   private static class SameAsyncEventQueueIdsCollector implements ProfileCollector<Set<String>> {
     @Override
@@ -1125,11 +1126,11 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     }
   }
 
+  @MakeNotStatic("not tied to the cache lifecycle")
   private static final SameAsyncEventQueueIdsCollector sameAsyncEventQueueIdsCollector =
       new SameAsyncEventQueueIdsCollector();
 
   public List<Set<String>> adviseSameAsyncEventQueueIds(final Set<String> allAsyncEventIds) {
     return collectProfiles(sameAsyncEventQueueIdsCollector, allAsyncEventIds);
   }
-
 }
