@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
@@ -1265,11 +1266,64 @@ public class LocatorDUnitTest implements java.io.Serializable {
     }
   }
 
+  @Test
+  public void testConcurrentLocatorStartup() throws Exception {
+    List<AvailablePort.Keeper> portKeepers =
+        AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
+    List<AsyncInvocation<Object>> asyncInvocations = new ArrayList(portKeepers.size());
+    StringBuilder sb = new StringBuilder(100);
+    for (int i = 0; i < portKeepers.size(); i++) {
+      AvailablePort.Keeper keeper = portKeepers.get(i);
+      sb.append("localhost[").append(keeper.getPort()).append("]");
+      if (i < portKeepers.size() - 1) {
+        sb.append(',');
+      }
+    }
+    String locators = sb.toString();
+    Properties dsProps = getClusterProperties(locators, "false");
+    for (int i = 0; i < portKeepers.size(); i++) {
+      AvailablePort.Keeper keeper = portKeepers.get(i);
+      final int port = keeper.getPort();
+      DistributedTestUtils.deleteLocatorStateFile(port);
+      keeper.release();
+      AsyncInvocation<Object> startLocator = VM.getVM(i).invokeAsync("start locator " + i, () -> {
+        DUnitBlackboard blackboard = getBlackboard();
+        blackboard.signalGate("" + port);
+        try {
+          blackboard.waitForGate("startLocators", 5, MINUTES);
+        } catch (InterruptedException e) {
+          throw new RuntimeException("test was interrupted");
+        }
+        startLocatorBase(dsProps, port);
+        assertTrue(isSystemConnected());
+        System.out.println("Locator startup completed");
+      });
+      asyncInvocations.add(startLocator);
+      getBlackboard().waitForGate("" + port, 5, MINUTES);
+    }
+
+    getBlackboard().signalGate("startLocators");
+    int expectedCount = asyncInvocations.size() - 1;
+    for (int i = 0; i < asyncInvocations.size(); i++) {
+      asyncInvocations.get(i).await();
+    }
+    for (int i = 0; i < asyncInvocations.size(); i++) {
+      assertTrue(VM.getVM(i).invoke("assert all in same cluster", () -> CacheFactory
+          .getAnyInstance().getDistributedSystem().getAllOtherMembers().size() == expectedCount));
+    }
+    for (int i = 0; i < asyncInvocations.size(); i++) {
+      VM.getVM(i).invoke(() -> {
+        Locator.getLocator().stop();
+        system = null;
+      });
+    }
+  }
+
   /**
-   * Tests starting multiple locators in multiple VMs.
+   * Tests starting two locators and two servers in different JVMs
    */
   @Test
-  public void testMultipleLocators() {
+  public void testTwoLocatorsTwoServers() {
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
     VM vm2 = VM.getVM(2);
@@ -1904,6 +1958,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
     properties.put(MEMBER_TIMEOUT, "2000");
     properties.put(LOG_LEVEL, logger.getLevel().name());
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.put(USE_CLUSTER_CONFIGURATION, "false");
     properties.put(LOCATOR_WAIT_TIME, "10"); // seconds
     return properties;
   }

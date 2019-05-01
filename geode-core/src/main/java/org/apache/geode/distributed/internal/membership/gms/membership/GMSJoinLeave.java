@@ -279,13 +279,13 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     public String toString() {
       StringBuffer sb = new StringBuffer(200);
-      sb.append("SearchState(locatorsContacted=").append(locatorsContacted)
+      sb.append("locatorsContacted=").append(locatorsContacted)
           .append("; findInViewResponses=").append(joinedMembersContacted)
           .append("; alreadyTried=").append(alreadyTried).append("; registrants=")
           .append(registrants).append("; possibleCoordinator=").append(possibleCoordinator)
           .append("; viewId=").append(viewId).append("; hasContactedAJoinedLocator=")
           .append(hasContactedAJoinedLocator).append("; view=").append(view).append("; responses=")
-          .append(responses).append(")");
+          .append(responses);
       return sb.toString();
     }
   }
@@ -323,6 +323,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       long startTime = System.currentTimeMillis();
       long locatorGiveUpTime = startTime + locatorWaitTime;
       long giveupTime = startTime + timeout;
+      int minimumRetriesBeforeBecomingCoordinator = locators.size() * 2;
 
       for (int tries = 0; !this.isJoined && !this.isStopping; tries++) {
         logger.debug("searching for the membership coordinator");
@@ -333,8 +334,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           logger.info("found possible coordinator {}", state.possibleCoordinator);
           if (localAddress.getNetMember().preferredForCoordinator()
               && state.possibleCoordinator.equals(this.localAddress)) {
+            // if we haven't contacted a member of a cluster maybe this node should
+            // become the coordinator.
             if (state.joinedMembersContacted <= 0 &&
-                (tries > 2 || System.currentTimeMillis() < giveupTime)) {
+                (tries >= minimumRetriesBeforeBecomingCoordinator ||
+                    state.locatorsContacted >= locators.size())) {
               synchronized (viewInstallationLock) {
                 becomeCoordinator();
               }
@@ -376,10 +380,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
               logger.debug("sleeping for {} before making another attempt to find the coordinator",
                   retrySleep);
               Thread.sleep(retrySleep);
+            } else {
+              // since we were given a coordinator that couldn't be used we should keep trying
+              tries = 0;
+              giveupTime = System.currentTimeMillis() + timeout;
             }
-            // since we were given a coordinator that couldn't be used we should keep trying
-            tries = 0;
-            giveupTime = System.currentTimeMillis() + timeout;
           }
         } catch (InterruptedException e) {
           logger.debug("retry sleep interrupted - giving up on joining the distributed system");
