@@ -19,14 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.naming.NamingException;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -39,9 +36,7 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
-      throws DataSourceCreateException, NamingException {
-    ResultSender<Object> resultSender = context.getResultSender();
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     Object[] arguments = context.getArguments();
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
@@ -54,19 +49,17 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));
-    } catch (DataSourceCreateException ex) {
+    } catch (DataSourceCreateException dsce) {
       if (logger.isErrorEnabled()) {
-        logger.error("create " + TYPE_NAME + " failed", ex.getWrappedException());
+        logger.error("create " + TYPE_NAME + " failed", dsce.getWrappedException());
       }
-      throw ex;
-    } catch (NamingException ex) {
+      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, dsce.getMessage());
+    } catch (Exception ex) {
       if (logger.isErrorEnabled()) {
-        logger.error("create " + TYPE_NAME + " failed", ex);
+        logger.error("create " + TYPE_NAME + " failed", ex.getMessage());
       }
-      throw ex;
-
+      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
     }
-
     return new CliFunctionResult(context.getMemberName(), StatusState.OK,
         String.format("Created %s \"%s\" on \"%s\".", TYPE_NAME, configuration.getJndiName(),
             context.getMemberName()));

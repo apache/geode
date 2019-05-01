@@ -105,57 +105,35 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     String URL = "jdbc:mysql://127.0.0.1/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
-    logger.info("check point 1");
-    System.out.println("check point 1");
     IgnoredException.addIgnoredException(
         "java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Driver");
-    logger.info("check point 2");
-    System.out.println("check point 2");
     IgnoredException.addIgnoredException(
         "Access denied for user 'mysqlUser'@'localhost'");
-    logger.info("check point 3");
-    System.out.println("check point 3");
     IgnoredException.addIgnoredException(
         "Failed to connect to \"mysqlDataSource\". See log for details");
-    logger.info("check point 4");
-    System.out.println("check point 4");
-    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-        .statusIsSuccess();
+    IgnoredException.addIgnoredException(
+        "create jndi-binding failed");
+    IgnoredException.addIgnoredException(
+        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+
     // create the data-source
     gfshConnector.executeAndAssertThat(
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
             + URL + "\"")
         .statusIsError().containsOutput("An Exception was caught while trying to load the driver");
-    logger.info("check point 5");
-    System.out.println("check point 5");
+
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
-    logger.info("check point 6");
-    System.out.println("check point 6");
     File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
-    logger.info("check point 7");
-    System.out.println("check point 7");
     AssertionsForClassTypes.assertThat(mysqlDriverFile).exists();
-    logger.info("check point 8");
-    System.out.println("check point 8");
     String jarFile = mysqlDriverFile.getAbsolutePath();
-    logger.info("check point 9");
-    System.out.println("check point 9");
-    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-        .statusIsSuccess();
+
+    IgnoredException.removeAllExpectedExceptions();
+
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
-    logger.info("check point 10");
-    System.out.println("check point 10");
-
-    // saj SAJ
-
-    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-        .statusIsSuccess();
     gfshConnector.executeAndAssertThat(
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
             + URL + "\"")
         .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
-    logger.info("check point 11");
-    System.out.println("check point 11");
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
