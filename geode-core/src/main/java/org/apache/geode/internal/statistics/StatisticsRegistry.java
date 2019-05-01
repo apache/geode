@@ -16,8 +16,10 @@ package org.apache.geode.internal.statistics;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.IntSupplier;
@@ -28,6 +30,7 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMeters;
 import org.apache.geode.internal.process.ProcessUtils;
 
 /**
@@ -44,6 +47,7 @@ public class StatisticsRegistry implements StatisticsManager {
   private final long startTime;
   private final List<Statistics> instances = new CopyOnWriteArrayList<>();
   private final AtomicLong nextUniqueId = new AtomicLong(1);
+  private final Set<String> meterWhitelist;
 
   private int modificationCount;
 
@@ -104,6 +108,13 @@ public class StatisticsRegistry implements StatisticsManager {
     this.osStatisticsFactory = osStatisticsFactory;
     this.atomicStatisticsFactory = atomicStatisticsFactory;
     this.pidSupplier = pidSupplier;
+    meterWhitelist = createMeterWhitelist();
+  }
+
+  private static Set<String> createMeterWhitelist() {
+    Set<String> meterWhitelist = new HashSet<>();
+    meterWhitelist.addAll(GatewayReceiverMeters.whitelist());
+    return meterWhitelist;
   }
 
   @Override
@@ -134,6 +145,11 @@ public class StatisticsRegistry implements StatisticsManager {
   @Override
   public Statistics[] getStatistics() {
     return getStatsList().toArray(new Statistics[0]);
+  }
+
+  @Override
+  public Set<String> getMeterWhitelist() {
+    return meterWhitelist;
   }
 
   @Override

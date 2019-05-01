@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLE_RATE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
 import static org.apache.geode.internal.cache.wan.GatewayReceiverStats.createGatewayReceiverStats;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,38 +40,44 @@ import org.apache.geode.cache.server.ServerLoad;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMeters;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
+import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category(JMXTest.class)
 public class GatewayReceiverStatsIntegrationTest {
 
-  private static final long SLEEP = 100;
-  private static final long TIMEOUT = 4 * 1000;
-
   private InternalDistributedSystem system;
   private GatewayReceiverMBeanBridge bridge;
   private GatewayReceiverStats receiverStats;
+  private GatewayReceiverMeters receiverMeters;
+  private GemFireStatSampler statSampler;
 
   @Before
   public void setUp() throws Exception {
     Properties configProperties = new Properties();
     configProperties.setProperty(MCAST_PORT, "0");
     configProperties.setProperty(ENABLE_TIME_STATISTICS, "true");
-    configProperties.setProperty(STATISTIC_SAMPLING_ENABLED, "false");
-    configProperties.setProperty(STATISTIC_SAMPLE_RATE, "60000");
+    configProperties.setProperty(STATISTIC_SAMPLING_ENABLED, "true");
+    configProperties.setProperty(STATISTIC_SAMPLE_RATE, "1000");
 
     system = (InternalDistributedSystem) DistributedSystem.connect(configProperties);
-    assertNotNull(system.getStatSampler());
-    assertNotNull(system.getStatSampler().waitForSampleCollector(TIMEOUT));
+    statSampler = system.getStatSampler();
 
-    new CacheFactory().create();
+    assertNotNull(statSampler);
+    assertNotNull(statSampler.waitForSampleCollector(getTimeout().getValueInMS()));
+
+    InternalCache cache = (InternalCache) new CacheFactory()
+        .addMeterSubregistry(new SimpleMeterRegistry())
+        .create();
 
     StatisticsFactory statisticsFactory = system.getStatisticsManager();
     receiverStats = createGatewayReceiverStats(statisticsFactory, "Test Sock Name");
+    receiverMeters = new GatewayReceiverMeters(cache.getMeterRegistry(), receiverStats);
 
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     InternalCacheServer receiverServer = mock(InternalCacheServer.class);
@@ -78,14 +86,11 @@ public class GatewayReceiverStatsIntegrationTest {
 
     bridge = new GatewayReceiverMBeanBridge(gatewayReceiver);
     bridge.addGatewayReceiverStats(receiverStats);
-
-    sample();
   }
 
   @After
   public void tearDown() throws Exception {
     system.disconnect();
-    system = null;
   }
 
   @Test
@@ -109,7 +114,7 @@ public class GatewayReceiverStatsIntegrationTest {
     ServerLoad load = new ServerLoad(1, 1, 1, 1);
     receiverStats.setLoad(load);
 
-    sample();
+    statSampler.waitForSample(getTimeout().getValueInMS());
 
     assertEquals(1, getCurrentClients());
     assertEquals(1, getConnectionThreads());
@@ -137,14 +142,14 @@ public class GatewayReceiverStatsIntegrationTest {
 
   @Test
   public void testReceiverStats() throws InterruptedException {
-    receiverStats.incEventsReceived(100);
+    receiverMeters.eventsReceivedCounter().increment(100);
     receiverStats.incUpdateRequest();
     receiverStats.incCreateRequest();
     receiverStats.incDestroyRequest();
     receiverStats.incDuplicateBatchesReceived();
     receiverStats.incOutoforderBatchesReceived();
 
-    sample();
+    statSampler.waitForSample(getTimeout().getValueInMS());
 
     assertTrue(getEventsReceivedRate() > 0);
     assertTrue(getCreateRequestsRate() > 0);
@@ -241,10 +246,5 @@ public class GatewayReceiverStatsIntegrationTest {
 
   private int getCurrentClients() {
     return bridge.getCurrentClients();
-  }
-
-  private void sample() throws InterruptedException {
-    system.getStatSampler().getSampleCollector().sample(NanoTimer.getTime());
-    Thread.sleep(SLEEP);
   }
 }

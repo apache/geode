@@ -14,15 +14,31 @@
  */
 package org.apache.geode.internal.metrics;
 
+import java.util.Set;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.config.MeterFilter;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
 
   @Override
-  public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
+  public CompositeMeterRegistry create(int systemId, String memberName, String hostName,
+      Set<String> meterWhitelist) {
     CompositeMeterRegistry registry = new CompositeMeterRegistry();
+    MeterRegistry whitelistedRegistry = new SimpleMeterRegistry();
+
+    // meter name
+    // whether to wire it to a stat
+    // how to wire it to a stat
+
+    MeterFilter acceptOnlyStatMeters =
+        MeterFilter.denyUnless(id -> meterWhitelist.contains(id.getName()));
+    whitelistedRegistry.config().meterFilter(acceptOnlyStatMeters);
+
+    registry.add(whitelistedRegistry);
 
     MeterRegistry.Config registryConfig = registry.config();
     registryConfig.commonTags("cluster.id", String.valueOf(systemId));

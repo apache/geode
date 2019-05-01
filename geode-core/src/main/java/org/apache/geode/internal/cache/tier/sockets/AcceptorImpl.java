@@ -89,6 +89,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheClientNotifierProvider;
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
+import org.apache.geode.internal.cache.wan.GatewayReceiverMeters;
 import org.apache.geode.internal.cache.wan.GatewayReceiverStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -334,7 +335,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
   private static boolean isPostAuthzCallbackPresent;
 
   private final boolean isGatewayReceiver;
-
+  private final GatewayReceiverMeters gatewayReceiverMeters;
   private final List<GatewayTransportFilter> gatewayTransportFilters;
 
   private final SocketCreator socketCreator;
@@ -400,8 +401,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
    * @param securityService the SecurityService to use for authentication and authorization
-   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
-   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param gatewayTransportFilters List of GatewayTransportFilters
    */
   AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
@@ -598,9 +597,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
       StatisticsFactory statisticsFactory =
           internalCache.getInternalDistributedSystem().getStatisticsManager();
       if (isGatewayReceiver()) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
+        GatewayReceiverStats gatewayReceiverStats =
+            GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
+        stats = gatewayReceiverStats;
+        gatewayReceiverMeters =
+            new GatewayReceiverMeters(internalCache.getMeterRegistry(), gatewayReceiverStats);
       } else {
         stats = new CacheServerStats(statisticsFactory, sockName);
+        gatewayReceiverMeters = null;
       }
     }
 
@@ -1403,6 +1407,11 @@ public class AcceptorImpl implements Acceptor, Runnable {
   @Override
   public void decClientServerConnectionCount() {
     clientServerCnxCount.decrementAndGet();
+  }
+
+  @Override
+  public GatewayReceiverMeters gatewayReceiverMetrics() {
+    return gatewayReceiverMeters;
   }
 
   @Override

@@ -47,6 +47,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.metrics.CacheLifecycleMetricsSession;
 import org.apache.geode.internal.metrics.CacheMeterRegistryFactory;
 import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -200,9 +201,10 @@ public class InternalCacheBuilder {
             int systemId = internalDistributedSystem.getConfig().getDistributedSystemId();
             String memberName = internalDistributedSystem.getName();
             String hostName = internalDistributedSystem.getDistributedMember().getHost();
+            StatisticsManager statisticsManager = internalDistributedSystem.getStatisticsManager();
 
             CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
-                .create(systemId, memberName, hostName);
+                .create(systemId, memberName, hostName, statisticsManager.getMeterWhitelist());
 
             for (MeterRegistry meterSubregistry : meterSubregistries) {
               compositeMeterRegistry.add(meterSubregistry);

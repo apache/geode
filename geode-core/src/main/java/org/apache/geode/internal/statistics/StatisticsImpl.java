@@ -537,7 +537,7 @@ public abstract class StatisticsImpl implements Statistics {
    *
    * @return the number of callback errors that occurred while sampling stats
    */
-  int invokeSuppliers() {
+  public int invokeSuppliers() {
     int errors = 0;
     for (Map.Entry<Integer, IntSupplier> entry : intSuppliers.entrySet()) {
       try {

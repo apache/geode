@@ -139,18 +139,9 @@ public class GatewayReceiverStats extends CacheServerStats {
     eventsRetriedId = statType.nameToId(EVENTS_RETRIED);
   }
 
-  // /////////////////// Instance Methods /////////////////////
-
-  // /**
-  // * Increments the number of failover batches received by 1.
-  // */
-  // public void incFailoverBatchesReceived() {
-  // this.stats.incInt(failoverBatchesReceivedId, 1);
-  // }
-  //
-  // public int getFailoverBatchesReceived() {
-  // return this.stats.getInt(failoverBatchesReceivedId);
-  // }
+  int getEventsReceivedId() {
+    return eventsReceivedId;
+  }
 
   /**
    * Increments the number of duplicate batches received by 1.
@@ -183,17 +174,6 @@ public class GatewayReceiverStats extends CacheServerStats {
 
   public int getEarlyAcks() {
     return this.stats.getInt(earlyAcksId);
-  }
-
-  /**
-   * Increments the number of events received by 1.
-   */
-  public void incEventsReceived(int delta) {
-    this.stats.incInt(eventsReceivedId, delta);
-  }
-
-  public int getEventsReceived() {
-    return this.stats.getInt(eventsReceivedId);
   }
 
   /**

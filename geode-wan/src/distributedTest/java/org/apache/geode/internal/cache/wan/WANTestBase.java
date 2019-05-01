@@ -78,6 +78,7 @@ import java.util.stream.Stream;
 
 import javax.management.ObjectName;
 
+import io.micrometer.core.instrument.Counter;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.Logger;
 import org.junit.Before;
@@ -149,6 +150,7 @@ import org.apache.geode.internal.cache.execute.data.ShipmentId;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage;
 import org.apache.geode.internal.cache.partitioned.BecomePrimaryBucketMessage.BecomePrimaryBucketResponse;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
@@ -1266,24 +1268,29 @@ public class WANTestBase extends DistributedTestCase {
       int creates) {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
-    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
+    Acceptor acceptor = ((CacheServerImpl) receiver.getServer()).getAcceptor();
+    GatewayReceiverMeters gatewayReceiverMeters = acceptor.gatewayReceiverMetrics();
+    Counter eventsReceivedCounter = gatewayReceiverMeters.eventsReceivedCounter();
+    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) acceptor.getStats();
+
     assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
-    assertEquals(eventsReceived, gatewayReceiverStats.getEventsReceived());
+    assertEquals(eventsReceived, eventsReceivedCounter.count(), 0.0);
     assertEquals(creates, gatewayReceiverStats.getCreateRequest());
   }
 
   public static void checkMinimumGatewayReceiverStats(int processBatches, int eventsReceived) {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
-    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
+    Acceptor acceptor = ((CacheServerImpl) receiver.getServer()).getAcceptor();
+    GatewayReceiverMeters gatewayReceiverMeters = acceptor.gatewayReceiverMetrics();
+    Counter eventsReceivedCounter = gatewayReceiverMeters.eventsReceivedCounter();
+    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) acceptor.getStats();
+
+
     assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
-    assertTrue(gatewayReceiverStats.getEventsReceived() >= eventsReceived);
+    assertTrue((int) eventsReceivedCounter.count() >= eventsReceived);
   }
 
   public static void checkExceptionStats(int exceptionsOccurred) {
@@ -1304,12 +1311,14 @@ public class WANTestBase extends DistributedTestCase {
       int creates) {
     Set<GatewayReceiver> gatewayReceivers = cache.getGatewayReceivers();
     GatewayReceiver receiver = gatewayReceivers.iterator().next();
-    CacheServerStats stats = ((CacheServerImpl) receiver.getServer()).getAcceptor().getStats();
 
-    assertTrue(stats instanceof GatewayReceiverStats);
-    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) stats;
+    Acceptor acceptor = ((CacheServerImpl) receiver.getServer()).getAcceptor();
+    GatewayReceiverMeters gatewayReceiverMeters = acceptor.gatewayReceiverMetrics();
+    Counter eventsReceivedCounter = gatewayReceiverMeters.eventsReceivedCounter();
+    GatewayReceiverStats gatewayReceiverStats = (GatewayReceiverStats) acceptor.getStats();
+
     assertTrue(gatewayReceiverStats.getProcessBatchRequests() >= processBatches);
-    assertTrue(gatewayReceiverStats.getEventsReceived() >= eventsReceived);
+    assertTrue((int) eventsReceivedCounter.count() >= eventsReceived);
     assertTrue(gatewayReceiverStats.getCreateRequest() >= creates);
   }
 

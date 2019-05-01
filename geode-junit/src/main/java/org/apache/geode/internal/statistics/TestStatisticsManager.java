@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static java.util.Collections.emptySet;
+
+import java.util.Set;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
@@ -32,5 +36,10 @@ public class TestStatisticsManager extends AbstractStatisticsFactory
   public Statistics createOsStatistics(final StatisticsType type, final String textId,
       final long numericId, final int osStatFlags) {
     return null;
+  }
+
+  @Override
+  public Set<String> getMeterWhitelist() {
+    return emptySet();
   }
 }

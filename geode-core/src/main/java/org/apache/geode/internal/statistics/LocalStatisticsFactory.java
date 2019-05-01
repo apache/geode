@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.statistics;
 
+import static java.util.Collections.emptySet;
+
+import java.util.Set;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -93,5 +97,10 @@ public class LocalStatisticsFactory extends AbstractStatisticsFactory
       return new DummyStatisticsImpl(type, textId, numericId);
     }
     return super.createAtomicStatistics(type, textId, numericId);
+  }
+
+  @Override
+  public Set<String> getMeterWhitelist() {
+    return emptySet();
   }
 }

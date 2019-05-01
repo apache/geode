@@ -38,12 +38,16 @@ public class StripedStatisticsImpl extends StatisticsImpl {
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
 
     this.intAdders =
-        Stream.generate(LongAdder::new).limit(realType.getIntStatCount()).toArray(LongAdder[]::new);
+        Stream.generate(LongAdder::new)
+            .limit(realType.getIntStatCount())
+            .toArray(LongAdder[]::new);
     this.longAdders =
-        Stream.generate(LongAdder::new).limit(realType.getLongStatCount())
+        Stream.generate(LongAdder::new)
+            .limit(realType.getLongStatCount())
             .toArray(LongAdder[]::new);
     this.doubleAdders =
-        Stream.generate(DoubleAdder::new).limit(realType.getDoubleStatCount())
+        Stream.generate(DoubleAdder::new)
+            .limit(realType.getDoubleStatCount())
             .toArray(DoubleAdder[]::new);
   }
 

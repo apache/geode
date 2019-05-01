@@ -50,6 +50,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
 import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * Unit tests for {@link InternalCacheBuilder}.
@@ -167,7 +168,7 @@ public class InternalCacheBuilderTest {
         .create();
 
     verify(theCompositeMeterRegistryFactory)
-        .create(eq(theSystemId), eq(theMemberName), eq(theHostName));
+        .create(eq(theSystemId), eq(theMemberName), eq(theHostName), any());
   }
 
   @Test
@@ -178,7 +179,7 @@ public class InternalCacheBuilderTest {
     CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
     CompositeMeterRegistryFactory theCompositeMeterRegistryFactory =
         mock(CompositeMeterRegistryFactory.class);
-    when(theCompositeMeterRegistryFactory.create(anyInt(), any(), any()))
+    when(theCompositeMeterRegistryFactory.create(anyInt(), any(), any(), any()))
         .thenReturn(theCompositeMeterRegistry);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
@@ -626,7 +627,7 @@ public class InternalCacheBuilderTest {
     MeterRegistry theMeterRegistry = new SimpleMeterRegistry();
 
     CompositeMeterRegistry theCompositeMeterRegistry = new CompositeMeterRegistry();
-    when(compositeMeterRegistryFactory.create(anyInt(), any(), any()))
+    when(compositeMeterRegistryFactory.create(anyInt(), any(), any(), any()))
         .thenReturn(theCompositeMeterRegistry);
 
     InternalCacheBuilder internalCacheBuilder = new InternalCacheBuilder(
@@ -659,11 +660,14 @@ public class InternalCacheBuilderTest {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class, mockName);
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
+    StatisticsManager statisticsManager = mock(StatisticsManager.class);
+
     when(distributionConfig.getDistributedSystemId()).thenReturn(systemId);
     when(distributedMember.getHost()).thenReturn(hostName);
     when(system.getConfig()).thenReturn(distributionConfig);
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(system.getName()).thenReturn(memberName);
+    when(system.getStatisticsManager()).thenReturn(statisticsManager);
     return system;
   }
 

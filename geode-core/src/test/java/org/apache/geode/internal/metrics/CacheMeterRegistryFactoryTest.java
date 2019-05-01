@@ -14,10 +14,14 @@
  */
 package org.apache.geode.internal.metrics;
 
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
@@ -32,10 +36,41 @@ public class CacheMeterRegistryFactoryTest {
   private static final String HOST_NAME = "host-name";
 
   @Test
+  public void storesValuesForMetersThatFeedStats() {
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+
+    Set<String> whitelist = new HashSet<>();
+    whitelist.add("whitelisted-counter");
+
+    CompositeMeterRegistry registry =
+        factory.create(37, "my-member-name", "my-host-name", whitelist);
+
+    Counter whitelistedCounter = Counter.builder("whitelisted-counter").register(registry);
+
+    whitelistedCounter.increment(55);
+
+    assertThat(whitelistedCounter.count()).isEqualTo(55);
+  }
+
+  @Test
+  public void doesNotStoreValuesForMetersThatDoNotFeedStats() {
+    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+
+    CompositeMeterRegistry registry =
+        factory.create(37, "my-member-name", "my-host-name", emptySet());
+
+    Counter nonWhitelistedCounter = Counter.builder("non.whitelisted.counter").register(registry);
+
+    nonWhitelistedCounter.increment(33);
+
+    assertThat(nonWhitelistedCounter.count()).isZero();
+  }
+
+  @Test
   public void createsCompositeMeterRegistry() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
-    assertThat(factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME))
+    assertThat(factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME, emptySet()))
         .isInstanceOf(CompositeMeterRegistry.class);
   }
 
@@ -44,7 +79,8 @@ public class CacheMeterRegistryFactoryTest {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     String theMemberName = "the-member-name";
 
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, theMemberName, HOST_NAME);
+    CompositeMeterRegistry registry =
+        factory.create(CLUSTER_ID, theMemberName, HOST_NAME, emptySet());
 
     Meter meter = registry
         .counter("my.meter");
@@ -58,7 +94,8 @@ public class CacheMeterRegistryFactoryTest {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     int theSystemId = 21;
 
-    CompositeMeterRegistry registry = factory.create(theSystemId, MEMBER_NAME, HOST_NAME);
+    CompositeMeterRegistry registry =
+        factory.create(theSystemId, MEMBER_NAME, HOST_NAME, emptySet());
 
     Meter meter = registry
         .counter("my.meter");
@@ -72,7 +109,8 @@ public class CacheMeterRegistryFactoryTest {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     String theHostName = "the-host-name";
 
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, theHostName);
+    CompositeMeterRegistry registry =
+        factory.create(CLUSTER_ID, MEMBER_NAME, theHostName, emptySet());
 
     Meter meter = registry
         .counter("my.meter");
@@ -85,7 +123,8 @@ public class CacheMeterRegistryFactoryTest {
   public void addsGaugesForHeapMemory() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
+    CompositeMeterRegistry registry =
+        factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME, emptySet());
     registry.add(new SimpleMeterRegistry());
 
     Collection<Gauge> heapGauges = registry
@@ -100,7 +139,8 @@ public class CacheMeterRegistryFactoryTest {
   public void addsGaugesForNonHeapUsedMemory() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
+    CompositeMeterRegistry registry =
+        factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME, emptySet());
     registry.add(new SimpleMeterRegistry());
 
     Collection<Gauge> nonheapGauges = registry

@@ -14,50 +14,25 @@
  */
 package org.apache.geode.internal.statistics;
 
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingExecutors;
 
 public class CallbackSampler {
   private static final Logger logger = LogService.getLogger();
-  private StatisticsManager statisticsManager;
-  private final CancelCriterion cancelCriterion;
-  private long sampleIntervalNanos;
-  private ScheduledExecutorService executor;
+  private final StatisticsManager statisticsManager;
   private final StatSamplerStats statSamplerStats;
 
-  public CallbackSampler(final CancelCriterion cancelCriterion,
-      final StatSamplerStats statSamplerStats) {
-    this.cancelCriterion = cancelCriterion;
+  public CallbackSampler(StatisticsManager statisticsManager, StatSamplerStats statSamplerStats) {
+    this.statisticsManager = statisticsManager;
     this.statSamplerStats = statSamplerStats;
   }
 
-  public void start(StatisticsManager statisticsManager, int sampleInterval, TimeUnit timeUnit) {
-    ScheduledExecutorService executor =
-        LoggingExecutors.newSingleThreadScheduledExecutor("CallbackSampler");
-    start(executor, statisticsManager, sampleInterval, timeUnit);
-  }
-
-  void start(ScheduledExecutorService executor, StatisticsManager statisticsManager,
-      int sampleInterval, TimeUnit timeUnit) {
-    stop();
-    this.statisticsManager = statisticsManager;
-    this.executor = executor;
-
-    executor.scheduleAtFixedRate(() -> sampleCallbacks(), sampleInterval, sampleInterval, timeUnit);
-  }
-
-  private void sampleCallbacks() {
-    if (cancelCriterion.isCancelInProgress()) {
-      executor.shutdown();
-    }
+  public void sampleCallbacks() {
     int errors = 0;
     int suppliers = 0;
     long start = System.nanoTime();
@@ -76,13 +51,6 @@ public class CallbackSampler {
       statSamplerStats.incSampleCallbackDuration(TimeUnit.NANOSECONDS.toMillis(end - start));
       statSamplerStats.incSampleCallbackErrors(errors);
       statSamplerStats.setSampleCallbacks(suppliers);
-    }
-
-  }
-
-  public void stop() {
-    if (executor != null) {
-      this.executor.shutdown();
     }
   }
 }

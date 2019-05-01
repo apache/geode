@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.metrics;
 
+import java.util.Set;
+
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 /**
@@ -21,5 +23,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
  */
 public interface CompositeMeterRegistryFactory {
 
-  CompositeMeterRegistry create(int systemId, String memberName, String hostName);
+  CompositeMeterRegistry create(int systemId, String memberName, String hostName,
+      Set<String> meterWhitelist);
 }

@@ -37,7 +37,6 @@ import org.apache.geode.internal.admin.remote.StatListenerMessage;
 import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
@@ -60,7 +59,6 @@ public class GemFireStatSampler extends HostStatSampler {
 
   private final long systemId;
   private final StatisticsConfig statisticsConfig;
-  private final StatisticsManager statisticsManager;
   private final DistributionManager distributionManager;
 
   private int nextListenerId = 1;
@@ -88,10 +86,9 @@ public class GemFireStatSampler extends HostStatSampler {
       StatisticsManager statisticsManager,
       DistributionManager distributionManager,
       long systemId) {
-    super(cancelCriterion, statSamplerStats, logFile);
+    super(statisticsManager, cancelCriterion, statSamplerStats, logFile);
     this.systemId = systemId;
     this.statisticsConfig = statisticsConfig;
-    this.statisticsManager = statisticsManager;
     this.distributionManager = distributionManager;
   }
 
@@ -252,16 +249,6 @@ public class GemFireStatSampler extends HostStatSampler {
   @Override
   public boolean isSamplingEnabled() {
     return statisticsConfig.getStatisticSamplingEnabled();
-  }
-
-  @Override
-  protected StatisticsManager getStatisticsManager() {
-    return statisticsManager;
-  }
-
-  @Override
-  protected OsStatisticsFactory getOsStatisticsFactory() {
-    return statisticsManager;
   }
 
   @Override

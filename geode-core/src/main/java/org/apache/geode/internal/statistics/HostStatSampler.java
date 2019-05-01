@@ -88,32 +88,38 @@ public abstract class HostStatSampler
    */
   private final StoppableCountDownLatch statSamplerInitializedLatch;
 
+  private final StatisticsManager statisticsManager;
   private final CancelCriterion stopper;
   private final CallbackSampler callbackSampler;
   private final NanoTimer timer;
   private final LogFile logFile;
 
-  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats) {
-    this(stopper, samplerStats, new NanoTimer());
+  protected HostStatSampler(StatisticsManager statisticsManager, CancelCriterion stopper,
+      StatSamplerStats samplerStats) {
+    this(statisticsManager, stopper, samplerStats, new NanoTimer());
   }
 
-  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
+  protected HostStatSampler(StatisticsManager statisticsManager, CancelCriterion stopper,
+      StatSamplerStats samplerStats,
       NanoTimer timer) {
-    this(stopper, samplerStats, timer, null);
+    this(statisticsManager, stopper, samplerStats, timer, null);
   }
 
-  protected HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats,
+  protected HostStatSampler(StatisticsManager statisticsManager, CancelCriterion stopper,
+      StatSamplerStats samplerStats,
       LogFile logFile) {
-    this(stopper, samplerStats, new NanoTimer(), logFile);
+    this(statisticsManager, stopper, samplerStats, new NanoTimer(), logFile);
   }
 
-  HostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
+  HostStatSampler(StatisticsManager statisticsManager, CancelCriterion stopper,
+      StatSamplerStats samplerStats, NanoTimer timer,
       LogFile logFile) {
+    this.statisticsManager = statisticsManager;
     this.stopper = stopper;
     this.statSamplerInitializedLatch = new StoppableCountDownLatch(this.stopper, 1);
     this.samplerStats = samplerStats;
     this.fileSizeLimitInKB = Boolean.getBoolean(TEST_FILE_SIZE_LIMIT_IN_KB_PROPERTY);
-    this.callbackSampler = new CallbackSampler(stopper, samplerStats);
+    this.callbackSampler = new CallbackSampler(statisticsManager, samplerStats);
     this.timer = timer;
     this.logFile = logFile;
   }
@@ -219,6 +225,7 @@ public abstract class HostStatSampler
         if (!stopRequested() && isSamplingEnabled()) {
           final long nanosTimeStamp = timer.getLastResetTime();
           final long nanosElapsedSleeping = nanosTimeStamp - nanosBeforeSleep;
+          callbackSampler.sampleCallbacks();
           checkElapsedSleepTime(nanosElapsedSleeping);
           if (stopRequested())
             break;
@@ -296,7 +303,6 @@ public abstract class HostStatSampler
               "Statistics sampling thread is already running, indicating an incomplete shutdown of a previous cache.");
         }
       }
-      this.callbackSampler.start(getStatisticsManager(), getSampleRate(), TimeUnit.MILLISECONDS);
       statThread = new LoggingThread("StatSampler", this);
       statThread.setPriority(Thread.MAX_PRIORITY);
       statThread.start();
@@ -318,7 +324,6 @@ public abstract class HostStatSampler
 
   private void stop(boolean interruptIfAlive) {
     synchronized (HostStatSampler.class) {
-      this.callbackSampler.stop();
       if (statThread == null) {
         return;
       }
@@ -425,13 +430,12 @@ public abstract class HostStatSampler
    */
   public abstract boolean isSamplingEnabled();
 
-  /**
-   * Returns the statistics manager using this sampler.
-   */
-  protected abstract StatisticsManager getStatisticsManager();
+  protected StatisticsManager getStatisticsManager() {
+    return statisticsManager;
+  }
 
   protected OsStatisticsFactory getOsStatisticsFactory() {
-    return null;
+    return statisticsManager;
   }
 
   protected void initProcessStats(long id) {
@@ -578,5 +582,9 @@ public abstract class HostStatSampler
             NanoTimer.nanosToMillis(wakeupDelay));
       }
     }
+  }
+
+  public CallbackSampler getCallbackSampler() {
+    return callbackSampler;
   }
 }

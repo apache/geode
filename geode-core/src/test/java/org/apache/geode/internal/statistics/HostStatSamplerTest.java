@@ -95,13 +95,11 @@ public class HostStatSamplerTest {
 
   private static class TestableHostStatSampler extends HostStatSampler {
 
-    private final StatisticsManager statisticsManager;
     private final long systemId;
 
     TestableHostStatSampler(CancelCriterion stopper, StatSamplerStats samplerStats, NanoTimer timer,
         LogFile logFile, StatisticsManager statisticsManager, long systemId) {
-      super(stopper, samplerStats, timer, logFile);
-      this.statisticsManager = statisticsManager;
+      super(statisticsManager, stopper, samplerStats, timer, logFile);
       this.systemId = systemId;
     }
 
@@ -118,11 +116,6 @@ public class HostStatSamplerTest {
     @Override
     public boolean isSamplingEnabled() {
       return false;
-    }
-
-    @Override
-    protected StatisticsManager getStatisticsManager() {
-      return statisticsManager;
     }
 
     @Override

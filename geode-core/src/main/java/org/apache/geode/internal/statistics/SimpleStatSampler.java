@@ -54,15 +54,12 @@ public class SimpleStatSampler extends HostStatSampler {
   private final int sampleRate =
       Integer.getInteger(SAMPLE_RATE_PROPERTY, DEFAULT_SAMPLE_RATE).intValue();
 
-  private final StatisticsManager sm;
-
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm) {
     this(stopper, sm, new NanoTimer());
   }
 
   public SimpleStatSampler(CancelCriterion stopper, StatisticsManager sm, NanoTimer timer) {
-    super(stopper, new StatSamplerStats(sm, 0), timer);
-    this.sm = sm;
+    super(sm, stopper, new StatSamplerStats(sm, 0), timer);
     logger.info(LogMarker.STATISTICS_MARKER, "stats.sample-rate={}", getSampleRate());
   }
 
@@ -102,11 +99,6 @@ public class SimpleStatSampler extends HostStatSampler {
   @Override
   public String getProductDescription() {
     return "Unknown product";
-  }
-
-  @Override
-  protected StatisticsManager getStatisticsManager() {
-    return this.sm;
   }
 
   @Override

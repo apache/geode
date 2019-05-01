@@ -16,6 +16,7 @@
 package org.apache.geode.internal.statistics;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
@@ -76,4 +77,6 @@ public interface StatisticsManager extends StatisticsFactory, OsStatisticsFactor
    * Returns an array of all the current statistic resource instances.
    */
   Statistics[] getStatistics();
+
+  Set<String> getMeterWhitelist();
 }
