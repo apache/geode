@@ -102,7 +102,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     Logger logger = LogService.getLogger();
     logger.info("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
     System.out.println("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
-    String URL = "jdbc:mysql://localhost/";
+    String URL = "jdbc:mysql://host.not.found/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
     logger.info("check point 1");
@@ -145,14 +145,17 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
     logger.info("check point 10");
     System.out.println("check point 10");
-//    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-//        .statusIsSuccess();
-//    gfshConnector.executeAndAssertThat(
-//        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
-//            + URL + "\"")
-//        .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
-//    logger.info("check point 11");
-//    System.out.println("check point 11");
+
+    // saj SAJ
+
+     gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+     .statusIsSuccess();
+     gfshConnector.executeAndAssertThat(
+     "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+     + URL + "\"")
+     .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
+     logger.info("check point 11");
+     System.out.println("check point 11");
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
