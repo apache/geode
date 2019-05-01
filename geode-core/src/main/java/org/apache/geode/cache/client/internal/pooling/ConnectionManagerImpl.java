@@ -78,10 +78,8 @@ public class ConnectionManagerImpl implements ConnectionManager {
       new AvailableConnectionManager();
   protected final ConnectionMap allConnectionsMap = new ConnectionMap();
   private final EndpointManager endpointManager;
-  private final long idleTimeout; // make this an int
+  private final long idleTimeout;
   private final long idleTimeoutNanos;
-  private final int lifetimeTimeout;
-  private final long lifetimeTimeoutNanos;
   private final InternalLogWriter securityLogWriter;
   protected final CancelCriterion cancelCriterion;
 
@@ -150,12 +148,10 @@ public class ConnectionManagerImpl implements ConnectionManager {
     this.endpointManager = endpointManager;
     connectionAccounting = new ConnectionAccounting(minConnections,
         maxConnections == -1 ? Integer.MAX_VALUE : maxConnections);
-    this.lifetimeTimeout = addVarianceToInterval(lifetimeTimeout);
-    lifetimeTimeoutNanos = MILLISECONDS.toNanos(this.lifetimeTimeout);
-    if (this.lifetimeTimeout != -1) {
-      if (idleTimeout > this.lifetimeTimeout || idleTimeout == -1) {
+    if (lifetimeTimeout != -1) {
+      if (idleTimeout > lifetimeTimeout || idleTimeout == -1) {
         // lifetimeTimeout takes precedence over longer idle timeouts
-        idleTimeout = this.lifetimeTimeout;
+        idleTimeout = lifetimeTimeout;
       }
     }
     this.idleTimeout = idleTimeout;
@@ -614,25 +610,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
     PooledConnection.loadEmergencyClasses();
   }
 
-  protected class LifetimeExpireConnectionsTask implements Runnable {
-    @Override
-    public void run() {
-      try {
-        allConnectionsMap.checkLifetimes();
-      } catch (CancelException ignore) {
-      } catch (VirtualMachineError e) {
-        SystemFailure.initiateFailure(e);
-        throw e;
-      } catch (Throwable t) {
-        SystemFailure.checkFailure();
-        logger.warn(String.format("LoadConditioningTask <%s> encountered exception",
-            this),
-            t);
-        // Don't rethrow, it will just get eaten and kill the timer
-      }
-    }
-  }
-
   protected class IdleExpireConnectionsTask implements Runnable {
     @Override
     public void run() {
@@ -674,93 +651,9 @@ public class ConnectionManagerImpl implements ConnectionManager {
     }
   }
 
-  /**
-   * Offer the replacement "con" to any cnx currently connected to "currentServer".
-   *
-   */
-  private void offerReplacementConnection(Connection con, ServerLocation currentServer) {
-    boolean retry;
-    do {
-      retry = false;
-      PooledConnection target = allConnectionsMap.findReplacementTarget(currentServer);
-      if (target != null) {
-        final Endpoint targetEP = target.getEndpoint();
-        boolean interrupted = false;
-        try {
-          if (target.switchConnection(con)) {
-            getPoolStats().incLoadConditioningDisconnect();
-            allConnectionsMap.addReplacedCnx(target, targetEP);
-            return;
-          } else {
-            retry = true;
-          }
-        } catch (InterruptedException e) {
-          // thrown by switchConnection
-          interrupted = true;
-          cancelCriterion.checkCancelInProgress(e);
-          retry = false;
-        } finally {
-          if (interrupted) {
-            Thread.currentThread().interrupt();
-          }
-        }
-      }
-    } while (retry);
-    getPoolStats().incLoadConditioningReplaceTimeouts();
-    con.destroy();
-  }
-
-  /**
-   * An existing connections lifetime has expired. We only want to create one replacement connection
-   * at a time so this should block until this connection replaces an existing one. Note that if
-   * a connection is created here it must not count against the pool max and its idle time and
-   * lifetime must not begin until it actually replaces the existing one.
-   *
-   * @param currentServer the server the candidate connection is connected to
-   * @return true if caller should recheck for expired lifetimes; false if a background check was
-   *         scheduled or no expirations are possible.
-   */
-  private boolean createLifetimeReplacementConnection(ServerLocation currentServer) {
-    HashSet<ServerLocation> excludedServers = new HashSet<>();
-    while (true) {
-      ServerLocation sl = connectionFactory.findBestServer(currentServer, excludedServers);
-      if (sl == null || sl.equals(currentServer)) {
-        // we didn't find a server to create a replacement cnx on so
-        // extends the currentServers life
-        allConnectionsMap.extendLifeOfCnxToServer(currentServer);
-        break;
-      }
-      if (!allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
-        break;
-      }
-      Connection con;
-      try {
-        con = connectionFactory.createClientToServerConnection(sl, false);
-        if (con != null) {
-          getPoolStats().incLoadConditioningConnect();
-          if (allConnectionsMap.hasExpiredCnxToServer(currentServer)) {
-            offerReplacementConnection(con, currentServer);
-          } else {
-            getPoolStats().incLoadConditioningReplaceTimeouts();
-            con.destroy();
-          }
-          break;
-        }
-      } catch (GemFireSecurityException e) {
-        securityLogWriter.warning(
-            String.format("Security exception connecting to server '%s': %s", sl, e));
-      } catch (ServerRefusedConnectionException srce) {
-        logger.warn("Server '{}' refused new connection: {}", sl, srce.getMessage());
-      }
-      excludedServers.add(sl);
-    }
-    return allConnectionsMap.checkForReschedule(true);
-  }
-
   protected class ConnectionMap {
     private final Map<Endpoint, Set<PooledConnection>> map = new HashMap<>();
     private List<PooledConnection> allConnections = new LinkedList<>();
-    private boolean haveLifetimeExpireConnectionsTask;
     volatile boolean closing;
 
     synchronized boolean isIdleExpirePossible() {
@@ -779,8 +672,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
           sb.append("-DESTROYED");
         } else if (pc.hasIdleExpired(now, idleTimeoutNanos)) {
           sb.append("-IDLE");
-        } else if (pc.remainingLife(now, lifetimeTimeoutNanos) <= 0) {
-          sb.append("-EOL");
         }
         if (it.hasNext()) {
           sb.append(",");
@@ -804,27 +695,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
       if (isIdleExpirePossible()) {
         startBackgroundExpiration();
-      }
-      if (lifetimeTimeout != -1 && !haveLifetimeExpireConnectionsTask) {
-        if (checkForReschedule(true)) {
-          // something has already expired so start processing with no delay
-          startBackgroundLifetimeExpiration(0);
-        }
-      }
-    }
-
-    synchronized void addReplacedCnx(PooledConnection con, Endpoint oldEndpoint) {
-      if (closing) {
-        throw new CacheClosedException("This pool is closing");
-      }
-      if (allConnections.remove(con)) {
-        // otherwise someone else has removed it and closed it
-        removeFromEndpointMap(oldEndpoint, con);
-        addToEndpointMap(con);
-        allConnections.add(con);
-        if (isIdleExpirePossible()) {
-          startBackgroundExpiration();
-        }
       }
     }
 
@@ -920,121 +790,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
       }
     }
 
-    /**
-     * Returns a pooled connection that can have its underlying cnx to currentServer replaced by a
-     * new connection.
-     *
-     * @return null if a target could not be found
-     */
-    synchronized PooledConnection findReplacementTarget(ServerLocation currentServer) {
-      final long now = System.nanoTime();
-      for (PooledConnection pc : allConnections) {
-        if (currentServer.equals(pc.getServer())) {
-          if (!pc.shouldDestroy() && pc.remainingLife(now, lifetimeTimeoutNanos) <= 0) {
-            removeFromEndpointMap(pc);
-            return pc;
-          }
-        }
-      }
-      return null;
-    }
-
-    /**
-     * Return true if we have a connection to the currentServer whose lifetime has expired.
-     * Otherwise return false;
-     */
-    synchronized boolean hasExpiredCnxToServer(ServerLocation currentServer) {
-      if (!allConnections.isEmpty()) {
-        final long now = System.nanoTime();
-        for (PooledConnection pc : allConnections) {
-          if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-          } else if (currentServer.equals(pc.getServer())) {
-            {
-              long life = pc.remainingLife(now, lifetimeTimeoutNanos);
-              if (life <= 0) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    /**
-     * Returns true if caller should recheck for expired lifetimes Returns false if a background
-     * check was scheduled or no expirations are possible.
-     */
-    synchronized boolean checkForReschedule(boolean rescheduleOk) {
-      if (!allConnections.isEmpty()) {
-        final long now = System.nanoTime();
-        for (PooledConnection pc : allConnections) {
-          if (pc.hasIdleExpired(now, idleTimeoutNanos)) {
-            // this con has already idle expired so ignore it
-            continue;
-          } else if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-            continue;
-          } else {
-            long life = pc.remainingLife(now, lifetimeTimeoutNanos);
-            if (life > 0) {
-              if (rescheduleOk) {
-                startBackgroundLifetimeExpiration(life);
-                return false;
-              } else {
-                return false;
-              }
-            } else {
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
-
-    /**
-     * Extend the life of the first expired connection to sl.
-     */
-    synchronized void extendLifeOfCnxToServer(ServerLocation sl) {
-      if (!allConnections.isEmpty()) {
-        final long now = System.nanoTime();
-        for (Iterator<PooledConnection> it = allConnections.iterator(); it.hasNext();) {
-          PooledConnection pc = it.next();
-          if (pc.remainingLife(now, lifetimeTimeoutNanos) > 0) {
-            // no more connections whose lifetime could have expired
-            break;
-            // note don't ignore idle connections because they are still connected
-            // } else if (pc.remainingIdle(now, idleTimeoutNanos) <= 0) {
-            // // this con has already idle expired so ignore it
-          } else if (pc.shouldDestroy()) {
-            // this con has already been destroyed so ignore it
-          } else if (sl.equals(pc.getEndpoint().getLocation())) {
-            // we found a connection to whose lifetime we can extend
-            it.remove();
-            pc.setBirthDate(now);
-            getPoolStats().incLoadConditioningExtensions();
-            allConnections.add(pc);
-            // break so we only do this to the oldest connection
-            break;
-          }
-        }
-      }
-    }
-
-    synchronized void startBackgroundLifetimeExpiration(long delay) {
-      if (!haveLifetimeExpireConnectionsTask) {
-        haveLifetimeExpireConnectionsTask = true;
-        try {
-          LifetimeExpireConnectionsTask task = new LifetimeExpireConnectionsTask();
-          loadConditioningProcessor.schedule(task, delay, TimeUnit.NANOSECONDS);
-        } catch (RejectedExecutionException e) {
-          // ignore, the timer has been cancelled, which means we're shutting down.
-        }
-      }
-    }
-
     void expireIdleConnections() {
       int expireCount = 0;
       List<PooledConnection> toClose;
@@ -1112,63 +867,6 @@ public class ConnectionManagerImpl implements ConnectionManager {
         }
       }
     }
-
-    void checkLifetimes() {
-      boolean done;
-      synchronized (this) {
-        haveLifetimeExpireConnectionsTask = false;
-        if (shuttingDown.get()) {
-          return;
-        }
-      }
-      do {
-        getPoolStats().incLoadConditioningCheck();
-        long firstLife = -1;
-        ServerLocation candidate = null;
-        boolean idlePossible;
-
-        synchronized (this) {
-          if (shuttingDown.get()) {
-            return;
-          }
-          // find a connection whose lifetime has expired
-          // and who is not already being replaced
-          long now = System.nanoTime();
-          long life = 0;
-          idlePossible = isIdleExpirePossible();
-          for (Iterator<PooledConnection> it = allConnections.iterator(); it.hasNext()
-              && life <= 0
-              && (candidate == null);) {
-            PooledConnection pc = it.next();
-            // skip over idle expired and destroyed
-            life = pc.remainingLife(now, lifetimeTimeoutNanos);
-            if (life <= 0) {
-              boolean idleTimedOut = idlePossible && pc.hasIdleExpired(now, idleTimeoutNanos);
-              boolean destroyed = pc.shouldDestroy();
-              if (!idleTimedOut && !destroyed) {
-                candidate = pc.getServer();
-              }
-            } else {
-              firstLife = life;
-            }
-          }
-        }
-        if (candidate != null) {
-          done = !createLifetimeReplacementConnection(candidate);
-        } else {
-          if (firstLife >= 0) {
-            // reschedule
-            startBackgroundLifetimeExpiration(firstLife);
-          }
-          done = true;
-        }
-      } while (!done);
-      // If a lifetimeExpire task is not scheduled at this point then
-      // schedule one that will do a check in our configured lifetimeExpire.
-      // this should not be needed but seems to currently help.
-      startBackgroundLifetimeExpiration(lifetimeTimeoutNanos);
-    }
-
   }
 
   private void logInfo(String message, Throwable t) {

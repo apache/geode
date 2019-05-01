@@ -44,7 +44,6 @@ import org.apache.geode.CancelException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
-import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
@@ -785,7 +784,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     this.handler.addHandler(LocatorListRequest.class, serverLocator);
     this.handler.addHandler(ClientConnectionRequest.class, serverLocator);
     this.handler.addHandler(QueueConnectionRequest.class, serverLocator);
-    this.handler.addHandler(ClientReplacementRequest.class, serverLocator);
     this.handler.addHandler(GetAllServersRequest.class, serverLocator);
     this.handler.addHandler(LocatorStatusRequest.class, serverLocator);
     this.serverLocator = serverLocator;

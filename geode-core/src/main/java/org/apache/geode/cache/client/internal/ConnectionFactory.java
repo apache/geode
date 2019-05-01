@@ -39,15 +39,6 @@ public interface ConnectionFactory {
       throws GemFireSecurityException;
 
   /**
-   * Returns the best server for this client to connect to. Returns null if no servers exist.
-   *
-   * @param currentServer if non-null then we are trying to replace a connection that we have to
-   *        this server.
-   * @param excludedServers the list of servers to skip over when finding a server to connect to
-   */
-  ServerLocation findBestServer(ServerLocation currentServer, Set<ServerLocation> excludedServers);
-
-  /**
    * Create a client to server connection to any server that is not in the excluded list.
    *
    * @param excludedServers the list of servers to skip over when finding a server to connect to
@@ -55,7 +46,8 @@ public interface ConnectionFactory {
    * @throws GemFireSecurityException if there was a security exception trying to establish a
    *         connection.
    */
-  Connection createClientToServerConnection(Set<ServerLocation> excludedServers) throws GemFireSecurityException;
+  Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
+      throws GemFireSecurityException;
 
   ClientUpdater createServerToClientConnection(Endpoint endpoint, QueueManager qManager,
       boolean isPrimary, ClientUpdater failedUpdater);

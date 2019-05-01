@@ -38,7 +38,6 @@ import org.apache.geode.cache.client.NoAvailableLocatorsException;
 import org.apache.geode.cache.client.internal.PoolImpl.PoolTask;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
@@ -105,17 +104,12 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
 
   public AutoConnectionSourceImpl(List<HostAddress> contacts, String serverGroup,
       int handshakeTimeout) {
-    this.locators.set(new LocatorList(new ArrayList<>(contacts)));
-    this.onlineLocators.set(new LocatorList(Collections.emptyList()));
-    this.initialLocators = Collections.unmodifiableList(this.locators.get().getLocatorAddresses());
-    this.connectionTimeout = handshakeTimeout;
+    locators.set(new LocatorList(new ArrayList<>(contacts)));
+    onlineLocators.set(new LocatorList(Collections.emptyList()));
+    initialLocators = Collections.unmodifiableList(locators.get().getLocatorAddresses());
+    connectionTimeout = handshakeTimeout;
     this.serverGroup = serverGroup;
-    this.tcpClient = new TcpClient();
-  }
-
-  @Override
-  public boolean isBalanced() {
-    return isBalanced;
+    tcpClient = new TcpClient();
   }
 
   @Override
@@ -133,23 +127,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set<ServerLocation> excludedServers) {
-    if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
-      return null;
-    }
-    ClientReplacementRequest request =
-        new ClientReplacementRequest(currentServer, excludedServers, serverGroup);
-    ClientConnectionResponse response = (ClientConnectionResponse) queryLocators(request);
-    if (response == null) {
-      throw new NoAvailableLocatorsException(
-          "Unable to connect to any locators in the list " + locators);
-    }
-    return response.getServer();
-  }
-
-  @Override
-  public ServerLocation findServer(Set excludedServers) {
+  public ServerLocation findServer(Set<ServerLocation> excludedServers) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
     }
@@ -358,14 +336,14 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   public void start(InternalPool pool) {
     this.pool = pool;
     pool.getStats().setInitialContacts((locators.get()).size());
-    this.locatorUpdateInterval = Long.getLong(
+    locatorUpdateInterval = Long.getLong(
         DistributionConfig.GEMFIRE_PREFIX + "LOCATOR_UPDATE_INTERVAL", pool.getPingInterval());
 
     if (locatorUpdateInterval > 0) {
       pool.getBackgroundProcessor().scheduleWithFixedDelay(new UpdateLocatorListTask(), 0,
           locatorUpdateInterval, TimeUnit.MILLISECONDS);
       logger.info("AutoConnectionSource UpdateLocatorListTask started with interval={} ms.",
-          new Object[] {this.locatorUpdateInterval});
+          new Object[] {locatorUpdateInterval});
     }
   }
 
@@ -375,11 +353,11 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   public void setLocatorDiscoveryCallback(LocatorDiscoveryCallback callback) {
-    this.locatorCallback = callback;
+    locatorCallback = callback;
   }
 
   private synchronized void reportLiveLocator(InetSocketAddress l) {
-    Object prevState = this.locatorState.put(l, null);
+    Object prevState = locatorState.put(l, null);
     if (prevState != null) {
       logger.info("Communication has been restored with locator {}.",
           l);
@@ -387,7 +365,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   private synchronized void reportDeadLocator(InetSocketAddress l, Exception ex) {
-    Object prevState = this.locatorState.put(l, ex);
+    Object prevState = locatorState.put(l, ex);
     if (prevState == null) {
       if (ex instanceof ConnectException) {
         logger.info(String.format("locator %s is not running.", l), ex);
@@ -398,7 +376,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   }
 
   long getLocatorUpdateInterval() {
-    return this.locatorUpdateInterval;
+    return locatorUpdateInterval;
   }
 
   /**

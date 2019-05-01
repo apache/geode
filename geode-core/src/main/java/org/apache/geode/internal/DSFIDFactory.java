@@ -31,7 +31,6 @@ import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.cache.client.internal.CacheServerLoadMessage;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
@@ -827,7 +826,6 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(CLIENT_CONNECTION_RESPONSE, ClientConnectionResponse.class);
     registerDSFID(QUEUE_CONNECTION_REQUEST, QueueConnectionRequest.class);
     registerDSFID(QUEUE_CONNECTION_RESPONSE, QueueConnectionResponse.class);
-    registerDSFID(CLIENT_REPLACEMENT_REQUEST, ClientReplacementRequest.class);
     registerDSFID(OBJECT_PART_LIST, ObjectPartList.class);
     registerDSFID(VERSIONED_OBJECT_LIST, VersionedObjectList.class);
     registerDSFID(OBJECT_PART_LIST66, ObjectPartList651.class);

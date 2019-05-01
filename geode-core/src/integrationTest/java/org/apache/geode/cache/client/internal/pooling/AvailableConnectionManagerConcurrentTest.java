@@ -138,16 +138,16 @@ public class AvailableConnectionManagerConcurrentTest {
     // now add a bunch of connections that will not match the predicate
     repeat(() -> {
       PooledConnection nonMatchingConnection = createConnection();
-      when(nonMatchingConnection.getBirthDate()).thenReturn(1L);
+      when(nonMatchingConnection.getConnectionID()).thenReturn(1L);
       instance.addFirst(nonMatchingConnection, false);
     }, connectionCount);
 
     executor.inParallel(() -> {
       repeat(() -> {
-        PooledConnection used = instance.useFirst(c -> c.getBirthDate() == 0L);
+        PooledConnection used = instance.useFirst(c -> c.getConnectionID() == 0L);
         if (used != null) {
           Thread.yield();
-          assertThat(used.getBirthDate()).isEqualTo(0L);
+          assertThat(used.getConnectionID()).isEqualTo(0L);
           instance.addLast(used, true);
         }
       }, iterationCount);

@@ -49,13 +49,11 @@ public class PooledConnection implements Connection {
   private long lastAccessed; // read & written while synchronized
   private boolean active = true; // read and write while synchronized on this
   private final AtomicBoolean shouldDestroy = new AtomicBoolean();
-  private boolean waitingToSwitch = false;
 
   public PooledConnection(ConnectionManagerImpl manager, Connection connection) {
     this.connection = connection;
     this.endpoint = connection.getEndpoint();
-    this.birthDate = System.nanoTime();
-    this.lastAccessed = this.birthDate;
+    this.lastAccessed = System.nanoTime();
   }
 
   @Override
@@ -77,7 +75,6 @@ public class PooledConnection implements Connection {
     this.shouldDestroy.set(true); // probably already set but make sure
     synchronized (this) {
       this.active = false;
-      notifyAll();
       Connection myCon = connection;
       if (myCon != null) {
         myCon.destroy();
@@ -169,7 +166,6 @@ public class PooledConnection implements Connection {
         throw new InternalGemFireException("Connection not active");
       }
       this.active = false;
-      notifyAll();
       if (accessed) {
         this.lastAccessed = now; // do this while synchronized
       }
@@ -177,53 +173,9 @@ public class PooledConnection implements Connection {
   }
 
 
-  public synchronized boolean switchConnection(Connection newCon) throws InterruptedException {
-    Connection oldCon = null;
-    synchronized (this) {
-      if (shouldDestroy())
-        return false;
-
-      if (this.active && !shouldDestroy()) {
-        this.waitingToSwitch = true;
-        try {
-          while (this.active && !shouldDestroy()) {
-            wait();
-          }
-        } finally {
-          this.waitingToSwitch = false;
-          notifyAll();
-        }
-      }
-      if (shouldDestroy())
-        return false;
-      assert !this.active;
-      final long now = System.nanoTime();
-      oldCon = this.connection;
-      this.connection = newCon;
-      this.endpoint = newCon.getEndpoint();
-      this.birthDate = now;
-    }
-    if (oldCon != null) {
-      try {
-        // do this outside of sync
-        oldCon.close(false);
-      } catch (Exception e) {
-        // ignore
-      }
-    }
-    return true;
-  }
-
   @Override
   public boolean activate() {
     synchronized (this) {
-      try {
-        while (this.waitingToSwitch) {
-          wait();
-        }
-      } catch (InterruptedException ex) {
-        Thread.currentThread().interrupt();
-      }
       if (isDestroyed() || shouldDestroy()) {
         return false;
       }
@@ -237,21 +189,6 @@ public class PooledConnection implements Connection {
 
   private synchronized long getLastAccessed() {
     return lastAccessed;
-  }
-
-  public long getBirthDate() {
-    return this.birthDate;
-  }
-
-  public void setBirthDate(long ts) {
-    this.birthDate = ts;
-  }
-
-  /**
-   * Returns the number of nanos remaining is this connection's life.
-   */
-  public long remainingLife(long now, long timeoutNanos) {
-    return (getBirthDate() - now) + timeoutNanos;
   }
 
   private long remainingIdle(long now, long timeoutNanos) {

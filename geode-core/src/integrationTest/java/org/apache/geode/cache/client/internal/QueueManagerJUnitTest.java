@@ -576,11 +576,6 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
-      return null;
-    }
-
-    @Override
     public Connection createClientToServerConnection(Set excludedServers) {
       return null;
     }
@@ -638,12 +633,6 @@ public class QueueManagerJUnitTest {
     }
 
     @Override
-    public ServerLocation findReplacementServer(ServerLocation currentServer,
-        Set<ServerLocation> excludedServers) {
-      return new ServerLocation("localhost", nextPort++);
-    }
-
-    @Override
     public List<ServerLocation> findServersForQueue(Set excludedServers, int numServers,
         ClientProxyMembershipID proxyId, boolean findDurableQueue) {
       numServers =
@@ -660,11 +649,6 @@ public class QueueManagerJUnitTest {
 
     @Override
     public void stop() {}
-
-    @Override
-    public boolean isBalanced() {
-      return false;
-    }
 
     @Override
     public List<ServerLocation> getAllServers() {

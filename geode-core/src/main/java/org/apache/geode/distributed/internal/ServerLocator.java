@@ -36,7 +36,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.ClientConnectionResponse;
-import org.apache.geode.cache.client.internal.locator.ClientReplacementRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
 import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
 import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
@@ -191,9 +190,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
       case DataSerializableFixedID.LOCATOR_LIST_REQUEST:
         response = getLocatorListResponse((LocatorListRequest) request);
         break;
-      case DataSerializableFixedID.CLIENT_REPLACEMENT_REQUEST:
-        response = pickReplacementServer((ClientReplacementRequest) request);
-        break;
       case DataSerializableFixedID.GET_ALL_SERVERS_REQUEST:
         response = pickAllServers((GetAllServersRequest) request);
         break;
@@ -219,14 +215,6 @@ public class ServerLocator implements TcpHandler, DistributionAdvisee {
         clientRequest.getExcludedServers());
     return new ClientConnectionResponse(location);
   }
-
-  private ClientConnectionResponse pickReplacementServer(ClientReplacementRequest clientRequest) {
-    ServerLocation location =
-        loadSnapshot.getReplacementServerForConnection(clientRequest.getCurrentServer(),
-            clientRequest.getServerGroup(), clientRequest.getExcludedServers());
-    return new ClientConnectionResponse(location);
-  }
-
 
   private GetAllServersResponse pickAllServers(GetAllServersRequest clientRequest) {
     ArrayList servers = loadSnapshot.getServers(clientRequest.getServerGroup());

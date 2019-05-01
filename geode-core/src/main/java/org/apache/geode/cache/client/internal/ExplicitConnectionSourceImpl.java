@@ -18,7 +18,6 @@ package org.apache.geode.cache.client.internal;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -79,19 +78,6 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
   }
 
   @Override
-  public ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set<ServerLocation> excludedServers) {
-    // at this time we always try to find a server other than currentServer
-    // and if we do return it. Otherwise return null;
-    // so that clients would attempt to keep the same number of connections
-    // to each server but it would be a bit of work.
-    // Plus we need to make sure it would work ok for hardware load balancers.
-    HashSet<ServerLocation> excludedPlusCurrent = new HashSet<>(excludedServers);
-    excludedPlusCurrent.add(currentServer);
-    return findServer(excludedPlusCurrent);
-  }
-
-  @Override
   public synchronized ServerLocation findServer(Set excludedServers) {
     if (PoolImpl.TEST_DURABLE_IS_NET_DOWN) {
       return null;
@@ -130,11 +116,6 @@ public class ExplicitConnectionSourceImpl implements ConnectionSource {
     } else {
       return pickQueueServers(excludedServers, numServers);
     }
-  }
-
-  @Override
-  public boolean isBalanced() {
-    return false;
   }
 
   private List<ServerLocation> pickQueueServers(Set<ServerLocation> excludedServers,

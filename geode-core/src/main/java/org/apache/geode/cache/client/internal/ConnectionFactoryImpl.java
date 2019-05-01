@@ -67,12 +67,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   public static boolean testFailedConnectionToServer = false;
 
   ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
-                        InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout,
-                        int readTimeout,
-                        ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
-                        boolean usedByGateway,
-                        GatewaySender sender, long pingInterval, boolean multiuserSecureMode,
-                        PoolImpl pool) {
+      InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout,
+      int readTimeout,
+      ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion,
+      boolean usedByGateway,
+      GatewaySender sender, long pingInterval, boolean multiuserSecureMode,
+      PoolImpl pool) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
             readTimeout, cancelCriterion, usedByGateway, sender,
@@ -156,28 +156,6 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public ServerLocation findBestServer(ServerLocation currentServer, Set<ServerLocation> excludedServers) {
-    if (currentServer != null && source.isBalanced()) {
-      return currentServer;
-    }
-    final Set<ServerLocation> origExcludedServers = excludedServers;
-    excludedServers = new HashSet<>(excludedServers);
-    excludedServers.addAll(denyList.getBadServers());
-    ServerLocation server = source.findReplacementServer(currentServer, excludedServers);
-    if (server == null) {
-      // Nothing worked! Let's try without the denylist.
-      if (excludedServers.size() > origExcludedServers.size()) {
-        // We had some servers denylisted so lets give this another whirl.
-        server = source.findReplacementServer(currentServer, origExcludedServers);
-      }
-    }
-    if (server == null && logger.isDebugEnabled()) {
-      logger.debug("Source was unable to findForReplacement any servers");
-    }
-    return server;
-  }
-
-  @Override
   public Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
       throws GemFireSecurityException {
     final Set<ServerLocation> origExcludedServers = excludedServers;
@@ -236,6 +214,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     if (logger.isDebugEnabled()) {
       logger.debug("Establishing: {}", clientUpdateName);
     }
-    return connectionConnector.connectServerToClient(endpoint, qManager, isPrimary, failedUpdater, clientUpdateName);
+    return connectionConnector.connectServerToClient(endpoint, qManager, isPrimary, failedUpdater,
+        clientUpdateName);
   }
 }

@@ -362,60 +362,6 @@ public class ConnectionManagerJUnitTest {
   }
 
   @Test
-  public void testLifetimeExpiration() throws InterruptedException, AllConnectionsInUseException,
-      NoAvailableServersException, Throwable {
-    int lifetimeTimeout = 500;
-    manager = new ConnectionManagerImpl("pool", factory, endpointManager, 2, 2, -1, lifetimeTimeout,
-        logger, 60 * 1000, cancelCriterion, poolStats);
-    manager.start(background);
-
-    {
-      factory.waitWhile(() -> factory.creates < 2);
-      Assert.assertEquals(2, factory.creates);
-      Assert.assertEquals(0, factory.destroys);
-      Assert.assertEquals(0, factory.finds);
-    }
-
-    // need to start a thread that keeps the connections busy
-    // so that their last access time keeps changing
-    AtomicReference exception = new AtomicReference();
-    int updaterCount = 2;
-    UpdaterThread[] updaters = new UpdaterThread[updaterCount];
-
-    for (int i = 0; i < updaterCount; i++) {
-      updaters[i] = new UpdaterThread(null, exception, i, (lifetimeTimeout / 10) * 2);
-    }
-
-    for (int i = 0; i < updaterCount; i++) {
-      updaters[i].start();
-    }
-
-    {
-      long durationMillis = factory.waitWhile(() -> factory.finds < 2);
-      Assert.assertEquals(2, factory.finds);
-      // server shouldn't have changed so no increase in creates or destroys
-      Assert.assertEquals(2, factory.creates);
-      Assert.assertEquals(0, factory.destroys);
-      Assert.assertEquals(0, factory.closes);
-
-      Assert.assertTrue("took too long to expire lifetime; expected=" + lifetimeTimeout
-          + " but took=" + durationMillis, durationMillis < lifetimeTimeout * 5);
-    }
-
-    for (int i = 0; i < updaterCount; i++) {
-      ThreadUtils.join(updaters[i], 30 * 1000);
-    }
-
-    if (exception.get() != null) {
-      throw (Throwable) exception.get();
-    }
-
-    for (int i = 0; i < updaterCount; i++) {
-      Assert.assertFalse("Updater [" + i + "] is still running", updaters[i].isAlive());
-    }
-  }
-
-  @Test
   public void testExclusiveConnectionAccess() throws Throwable {
     manager = new ConnectionManagerImpl("pool", factory, endpointManager, 1, 0, -1, -1, logger,
         60 * 1000, cancelCriterion, poolStats);
@@ -795,21 +741,6 @@ public class ConnectionManagerJUnitTest {
     @Override
     public ServerDenyList getDenyList() {
       return new ServerDenyList(1);
-    }
-
-
-    @Override
-    public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
-      synchronized (this) {
-        finds++;
-        this.notifyAll();
-      }
-      if (excludedServers != null) {
-        if (excludedServers.contains(nextServer)) {
-          return null;
-        }
-      }
-      return nextServer;
     }
 
     @Override

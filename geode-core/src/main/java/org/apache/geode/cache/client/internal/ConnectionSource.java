@@ -33,18 +33,6 @@ public interface ConnectionSource {
   ServerLocation findServer(Set<ServerLocation> excludedServers);
 
   /**
-   * Asks if we should replace a connection to <code>currentServer</code> with one to the returned
-   * server.
-   *
-   * @param currentServer the server we currently have a connection to.
-   * @param excludedServers the replacement server can not be one in this set
-   * @return the server we should connect to; <code>currentServer</code> if a replacement is not
-   *         needed; <code>null</code> if no server found
-   */
-  ServerLocation findReplacementServer(ServerLocation currentServer,
-      Set<ServerLocation> excludedServers);
-
-  /**
    * Find the servers to host the queue
    *
    * @param excludedServers the servers to exclude from the search
@@ -60,13 +48,6 @@ public interface ConnectionSource {
   void start(InternalPool poolImpl);
 
   void stop();
-
-  /**
-   * Check to see if the load on the servers is balanced, according to this connection source.
-   *
-   * @return true if the servers have balanced load.
-   */
-  boolean isBalanced();
 
   /**
    * get the list of all the servers
