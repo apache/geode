@@ -23,7 +23,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -46,27 +46,22 @@ public class PulseAppListener implements ServletContextListener {
   private static final Logger logger = LogManager.getLogger();
   private static final String GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM = "org.apache.geode.sslConfig";
 
-  private final boolean sysIsEmbedded;
+  private final boolean isEmbedded;
   private final Repository repository;
-  private final Function<String, Properties> functionLoadProperties;
   private final ResourceBundle resourceBundle;
+  private final BiFunction<String, ResourceBundle, Properties> propertiesFileLoader;
 
   public PulseAppListener() {
     this(Boolean.getBoolean(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED), Repository.get(),
-        null);
+        PulseAppListener::loadPropertiesFromFile);
   }
 
-  public PulseAppListener(boolean sysIsEmbedded, Repository repository,
-      Function<String, Properties> functionLoadProperties) {
-    this.sysIsEmbedded = sysIsEmbedded;
+  public PulseAppListener(boolean isEmbedded, Repository repository,
+      BiFunction<String, ResourceBundle, Properties> propertiesFileLoader) {
+    this.isEmbedded = isEmbedded;
     this.repository = repository;
-    resourceBundle = repository.getResourceBundle();
-
-    if (functionLoadProperties == null) {
-      this.functionLoadProperties = this::loadProperties;
-    } else {
-      this.functionLoadProperties = functionLoadProperties;
-    }
+    this.resourceBundle = repository.getResourceBundle();
+    this.propertiesFileLoader = propertiesFileLoader;
   }
 
   @Override
@@ -89,7 +84,7 @@ public class PulseAppListener implements ServletContextListener {
 
     logger.info(resourceBundle.getString("LOG_MSG_CHECK_APP_RUNNING_MODE"));
 
-    if (sysIsEmbedded) {
+    if (isEmbedded) {
       // jmx connection parameters
       logger.info(resourceBundle.getString("LOG_MSG_APP_RUNNING_EMBEDDED_MODE"));
       repository.setJmxUseLocator(false);
@@ -114,7 +109,7 @@ public class PulseAppListener implements ServletContextListener {
 
       // Load Pulse Properties
       Properties pulseProperties =
-          functionLoadProperties.apply(PulseConstants.PULSE_PROPERTIES_FILE);
+          propertiesFileLoader.apply(PulseConstants.PULSE_PROPERTIES_FILE, resourceBundle);
 
       repository.setJmxUseLocator(Boolean.valueOf(
           pulseProperties.getProperty(PulseConstants.APPLICATION_PROPERTY_PULSE_USELOCATOR)));
@@ -131,7 +126,7 @@ public class PulseAppListener implements ServletContextListener {
 
       // load pulse security properties
       Properties pulseSecurityProperties =
-          functionLoadProperties.apply(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE);
+          propertiesFileLoader.apply(PulseConstants.PULSE_SECURITY_PROPERTIES_FILE, resourceBundle);
 
       // set the ssl related properties found in pulsesecurity.properties
       if (!pulseSecurityProperties.isEmpty()) {
@@ -152,7 +147,7 @@ public class PulseAppListener implements ServletContextListener {
   // Function to load pulse version details from properties file
   private void loadPulseVersionDetails() {
     Properties properties =
-        functionLoadProperties.apply(PulseConstants.PULSE_VERSION_PROPERTIES_FILE);
+        propertiesFileLoader.apply(PulseConstants.PULSE_VERSION_PROPERTIES_FILE, resourceBundle);
     // Set pulse version details in common object
     PulseController.pulseVersion
         .setPulseVersion(properties.getProperty(PulseConstants.PROPERTY_PULSE_VERSION, ""));
@@ -170,7 +165,8 @@ public class PulseAppListener implements ServletContextListener {
   }
 
   // Function to load pulse properties from pulse.properties file
-  private Properties loadProperties(String propertyFile) {
+  private static Properties loadPropertiesFromFile(String propertyFile,
+      ResourceBundle resourceBundle) {
     final Properties properties = new Properties();
     try (final InputStream stream =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFile)) {

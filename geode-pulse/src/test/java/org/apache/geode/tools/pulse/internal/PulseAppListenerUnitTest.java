@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -59,13 +59,13 @@ public class PulseAppListenerUnitTest {
   private Repository repository;
 
   @Mock
-  private Function<String, Properties> loadProperties;
+  private BiFunction<String, ResourceBundle, Properties> loadProperties;
 
   private ResourceBundle resourceBundle;
 
   @Before
   public void setUp() {
-    when(loadProperties.apply(eq("GemFireVersion.properties"))).thenReturn(new Properties());
+    when(loadProperties.apply(eq("GemFireVersion.properties"), any())).thenReturn(new Properties());
   }
 
   @Test
@@ -104,7 +104,7 @@ public class PulseAppListenerUnitTest {
     resourceBundle = new StubResourceBundle();
 
     when(repository.getResourceBundle()).thenReturn(resourceBundle);
-    when(loadProperties.apply(anyString())).thenReturn(new Properties());
+    when(loadProperties.apply(anyString(), any())).thenReturn(new Properties());
 
     subject = new PulseAppListener(false, repository, loadProperties);
 
@@ -121,8 +121,8 @@ public class PulseAppListenerUnitTest {
     sslProperties.put("foo", "bar");
 
     when(repository.getResourceBundle()).thenReturn(resourceBundle);
-    when(loadProperties.apply(eq("pulse.properties"))).thenReturn(new Properties());
-    when(loadProperties.apply(eq("pulsesecurity.properties"))).thenReturn(sslProperties);
+    when(loadProperties.apply(eq("pulse.properties"), any())).thenReturn(new Properties());
+    when(loadProperties.apply(eq("pulsesecurity.properties"), any())).thenReturn(sslProperties);
 
     subject = new PulseAppListener(false, repository, loadProperties);
 
