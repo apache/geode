@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -73,17 +74,37 @@ public class ClassPathLoader {
   @MakeNotStatic
   private static volatile ClassPathLoader latest;
 
-  private volatile URLClassLoader classLoaderForDeployedJars;
+  public final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader =
+      new HashMap<>();
+
+  private volatile DeployJarChildFirstClassLoader head;
 
   private final JarDeployer jarDeployer;
 
   private boolean excludeTCCL;
 
   void rebuildClassLoaderForDeployedJars() {
+    head = null;
     ClassLoader parent = ClassPathLoader.class.getClassLoader();
-
-    this.classLoaderForDeployedJars = new URLClassLoader(jarDeployer.getDeployedJarURLs(), parent);
+    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
+    for (DeployedJar deployedJar : deployedJars) {
+      if (head == null) {
+        head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
+            new URL[] {deployedJar.getFileURL()},
+            deployedJar.getJarName(), parent);
+      } else {
+        head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
+            new URL[] {deployedJar.getFileURL()},
+            deployedJar.getJarName(), head);
+      }
+    }
   }
+
+  void chainClassloader(DeployedJar jar) {
+    head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
+        new URL[] {jar.getFileURL()}, jar.getJarName(), head);
+  }
+
 
   public ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
@@ -148,12 +169,20 @@ public class ClassPathLoader {
   public Class<?> forName(final String name) throws ClassNotFoundException {
     final boolean isDebugEnabled = logger.isTraceEnabled();
     if (isDebugEnabled) {
-      logger.trace("forName({})", name);
+      logger.debug("forName({})", name);
     }
 
+    Class<?> clazz = forName(name, isDebugEnabled);
+    if (clazz != null)
+      return clazz;
+
+    throw new ClassNotFoundException(name);
+  }
+
+  private Class<?> forName(String name, boolean isDebugEnabled) {
     for (ClassLoader classLoader : this.getClassLoaders()) {
       if (isDebugEnabled) {
-        logger.trace("forName trying: {}", classLoader);
+        logger.debug("forName trying: {}", classLoader);
       }
       try {
         Class<?> clazz = Class.forName(name, true, classLoader);
@@ -168,8 +197,7 @@ public class ClassPathLoader {
         // try next classLoader
       }
     }
-
-    throw new ClassNotFoundException(name);
+    return null;
   }
 
   /**
@@ -308,10 +336,11 @@ public class ClassPathLoader {
       }
     }
 
-    if (classLoaderForDeployedJars != null) {
-      classLoaders.add(classLoaderForDeployedJars);
+    if (head == null) {
+      classLoaders.add(ClassPathLoader.class.getClassLoader());
+    } else {
+      classLoaders.add(head);
     }
-
     return classLoaders;
   }
 
