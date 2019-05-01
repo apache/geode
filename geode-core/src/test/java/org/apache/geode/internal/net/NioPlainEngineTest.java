@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -57,6 +58,7 @@ public class NioPlainEngineTest {
   }
 
   @Test
+  @Ignore("Pending fix of GEODE-6733 to remove static from Buffers implementation")
   public void ensureWrappedCapacity() {
     ByteBuffer wrappedBuffer = Buffers.acquireReceiveBuffer(100, mockStats);
     verify(mockStats, times(1)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
