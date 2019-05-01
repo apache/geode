@@ -102,7 +102,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     Logger logger = LogService.getLogger();
     logger.info("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
     System.out.println("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
-    String URL = "jdbc:mysql://host.not.found/";
+    String URL = "jdbc:mysql://127.0.0.1/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
     logger.info("check point 1");
