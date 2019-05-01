@@ -58,34 +58,39 @@ public class CreateDataSourceCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-  // @Test
-  // public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
-  // String URL = "jdbc:mysql://localhost/";
-  // IgnoredException.addIgnoredException(
-  // "No suitable driver");
-  // IgnoredException.addIgnoredException(
-  // "Access denied for user 'mySqlUser'@'localhost'");
-  // IgnoredException.addIgnoredException(
-  // "Failed to connect to \"mySqlDataSource\". See log for details");
-  // // create the data-source
-  // gfsh.executeAndAssertThat(
-  // "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass
-  // --pooled=false --url=\""
-  // + URL + "\"")
-  // .statusIsError().containsOutput("No suitable driver");
-  //
-  // final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
-  // File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
-  // assertThat(mySqlDriverFile).exists();
-  // String jarFile = mySqlDriverFile.getAbsolutePath();
-  // gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
-  //
-  // gfsh.executeAndAssertThat(
-  // "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass
-  // --pooled=false --url=\""
-  // + URL + "\"")
-  // .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
-  // }
+  @Test
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "No suitable driver");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\". See log for details");
+    IgnoredException.addIgnoredException(
+        "create jndi-binding failed");
+    IgnoredException.addIgnoredException(
+        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+
+    // create the data-source
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("No suitable driver");
+
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+
+    IgnoredException.removeAllExpectedExceptions();
+
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+  }
 
   private File loadTestResource(String fileName) {
     String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
