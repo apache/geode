@@ -148,14 +148,14 @@ public class DeployCommandFunctionRegistrationDUnitTest {
 
     // saj SAJ
 
-     gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-     .statusIsSuccess();
-     gfshConnector.executeAndAssertThat(
-     "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
-     + URL + "\"")
-     .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
-     logger.info("check point 11");
-     System.out.println("check point 11");
+    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+        .statusIsSuccess();
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
+    logger.info("check point 11");
+    System.out.println("check point 11");
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
