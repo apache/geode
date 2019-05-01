@@ -30,10 +30,6 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
     CompositeMeterRegistry registry = new CompositeMeterRegistry();
     MeterRegistry whitelistedRegistry = new SimpleMeterRegistry();
 
-    // meter name
-    // whether to wire it to a stat
-    // how to wire it to a stat
-
     MeterFilter acceptOnlyStatMeters =
         MeterFilter.denyUnless(id -> meterWhitelist.contains(id.getName()));
     whitelistedRegistry.config().meterFilter(acceptOnlyStatMeters);
