@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -484,8 +483,9 @@ public class JarDeployer implements Serializable {
     File jarFile = jar.getFile();
     try {
       Driver driver = (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
-//      URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
-//      Driver driver = (Driver) Class.forName(driverClassName, true, urlClassLoader).newInstance();
+      // URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
+      // Driver driver = (Driver) Class.forName(driverClassName, true,
+      // urlClassLoader).newInstance();
       DriverManager.registerDriver(new DriverWrapper(driver));
     } catch (IllegalAccessException
         | ClassNotFoundException | InstantiationException | SQLException e) {
