@@ -376,7 +376,7 @@ public class JarDeployer implements Serializable {
           newVersionToOldVersion.put(deployedJar, oldJar);
           String driverClassName = getJdbcDriverName(deployedJar);
           if (StringUtils.isNotBlank(driverClassName)) {
-            addToSystemClasspathAndRegisterDriver(deployedJar, driverClassName);
+            registerDriver(deployedJar, driverClassName);
           }
         }
       }
@@ -480,16 +480,15 @@ public class JarDeployer implements Serializable {
     }
   }
 
-
-  private void addToSystemClasspathAndRegisterDriver(DeployedJar jar,
-      String driverClassName) {
+  private void registerDriver(DeployedJar jar, String driverClassName) {
     File jarFile = jar.getFile();
     try {
-      URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
-      Driver driver = (Driver) Class.forName(driverClassName, true, urlClassLoader).newInstance();
+      Driver driver = (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
+//      URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
+//      Driver driver = (Driver) Class.forName(driverClassName, true, urlClassLoader).newInstance();
       DriverManager.registerDriver(new DriverWrapper(driver));
     } catch (IllegalAccessException
-        | ClassNotFoundException | InstantiationException | SQLException | IOException e) {
+        | ClassNotFoundException | InstantiationException | SQLException e) {
       e.printStackTrace();
     }
   }
