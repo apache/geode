@@ -15,9 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,6 +32,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
@@ -1219,7 +1218,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     // This is a debugging method so ignore all exceptions like
     // ClassNotFoundException
     try {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedBytes));
+      ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
       deserializedObject = DataSerializer.readObject(dis);
     } catch (Exception e) {
     }
