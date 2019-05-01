@@ -45,11 +45,12 @@ public class PartTest {
   @Test
   public void getCacheStringReturnsCanonicalInstance() {
     String stringValue = "test string";
-    byte[] stringBytes = CacheServerHelper.toUTF(stringValue);
     Part part1 = new Part();
-    part1.setPartState(stringBytes, false);
+    byte[] stringBytes1 = CacheServerHelper.toUTF(stringValue);
+    part1.setPartState(stringBytes1, false);
     Part part2 = new Part();
-    part2.setPartState(stringBytes, false);
+    byte[] stringBytes2 = CacheServerHelper.toUTF(stringValue);
+    part2.setPartState(stringBytes2, false);
 
     String result1 = part1.getCachedString();
     String result2 = part2.getCachedString();
