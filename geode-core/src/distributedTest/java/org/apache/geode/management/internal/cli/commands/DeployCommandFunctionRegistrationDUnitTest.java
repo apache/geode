@@ -126,25 +126,25 @@ public class DeployCommandFunctionRegistrationDUnitTest {
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
             + URL + "\"")
         .statusIsError().containsOutput("An Exception was caught while trying to load the driver");
-//    logger.info("check point 5");
-//    System.out.println("check point 5");
-//    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
-//    logger.info("check point 6");
-//    System.out.println("check point 6");
-//    File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
-//    logger.info("check point 7");
-//    System.out.println("check point 7");
-//    AssertionsForClassTypes.assertThat(mysqlDriverFile).exists();
-//    logger.info("check point 8");
-//    System.out.println("check point 8");
-//    String jarFile = mysqlDriverFile.getAbsolutePath();
-//    logger.info("check point 9");
-//    System.out.println("check point 9");
-//    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
-//        .statusIsSuccess();
-//    gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
-//    logger.info("check point 10");
-//    System.out.println("check point 10");
+    logger.info("check point 5");
+    System.out.println("check point 5");
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    logger.info("check point 6");
+    System.out.println("check point 6");
+    File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
+    logger.info("check point 7");
+    System.out.println("check point 7");
+    AssertionsForClassTypes.assertThat(mysqlDriverFile).exists();
+    logger.info("check point 8");
+    System.out.println("check point 8");
+    String jarFile = mysqlDriverFile.getAbsolutePath();
+    logger.info("check point 9");
+    System.out.println("check point 9");
+    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
+        .statusIsSuccess();
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    logger.info("check point 10");
+    System.out.println("check point 10");
 //    gfshConnector.executeAndAssertThat("set variable --name=APP_QUIET_EXECUTION --value=true")
 //        .statusIsSuccess();
 //    gfshConnector.executeAndAssertThat(
