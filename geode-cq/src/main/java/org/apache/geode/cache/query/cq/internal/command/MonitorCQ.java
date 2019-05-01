@@ -60,7 +60,7 @@ public class MonitorCQ extends BaseCQCommand {
     String regionName = null;
     if (clientMessage.getNumberOfParts() == 2) {
       // This will be enable/disable on region.
-      regionName = clientMessage.getPart(1).getString();
+      regionName = clientMessage.getPart(1).getCachedString();
       if (regionName == null) {
         // This should have been taken care at the client - remove?
         String err =

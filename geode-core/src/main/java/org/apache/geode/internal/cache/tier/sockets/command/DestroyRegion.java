@@ -87,7 +87,7 @@ public class DestroyRegion extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     if (logger.isDebugEnabled()) {
       logger.debug("{}: Received destroy region request ({} bytes) from {} for region {}",
           serverConnection.getName(), clientMessage.getPayloadLength(),

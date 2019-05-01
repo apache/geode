@@ -188,7 +188,7 @@ public class GatewayReceiverCommand extends BaseCommand {
 
           // Retrieve the region name from the message parts
           Part regionNamePart = clientMessage.getPart(partNumber + 2);
-          regionName = regionNamePart.getString();
+          regionName = regionNamePart.getCachedString();
           if (regionName.equals(PeerTypeRegistration.REGION_FULL_PATH)) {
             indexWithoutPDXEvent--;
             isPdxEvent = true;
@@ -541,7 +541,7 @@ public class GatewayReceiverCommand extends BaseCommand {
               try {
                 // Region name
                 regionNamePart = clientMessage.getPart(partNumber + 2);
-                regionName = regionNamePart.getString();
+                regionName = regionNamePart.getCachedString();
 
                 // Retrieve the event id from the message parts
                 eventIdPart = clientMessage.getPart(partNumber + 3);

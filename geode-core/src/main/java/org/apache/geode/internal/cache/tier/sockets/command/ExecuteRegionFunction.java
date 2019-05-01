@@ -80,7 +80,7 @@ public class ExecuteRegionFunction extends BaseCommand {
         serverConnection.setAsTrue(REQUIRES_RESPONSE);
         serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
       }
-      regionName = clientMessage.getPart(1).getString();
+      regionName = clientMessage.getPart(1).getCachedString();
       function = clientMessage.getPart(2).getStringOrObject();
       args = clientMessage.getPart(3).getObject();
       Part part = clientMessage.getPart(4);

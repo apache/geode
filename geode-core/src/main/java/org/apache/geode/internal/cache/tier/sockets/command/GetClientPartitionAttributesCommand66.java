@@ -55,7 +55,7 @@ public class GetClientPartitionAttributesCommand66 extends BaseCommand {
       final SecurityService securityService, long start)
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
-    regionFullPath = clientMessage.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getCachedString();
     String errMessage = "";
     if (regionFullPath == null) {
       logger.warn("The input region path for the GetClientPartitionAttributes request is null");

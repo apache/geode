@@ -83,7 +83,7 @@ public class Put extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     try {
       key = keyPart.getStringOrObject();

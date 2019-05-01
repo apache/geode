@@ -59,7 +59,7 @@ public class RegisterInterest extends BaseCommand {
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     InterestResultPolicy policy = null;
     // Retrieve the interest type
     int interestType = clientMessage.getPart(1).getInt();
@@ -84,7 +84,7 @@ public class RegisterInterest extends BaseCommand {
     }
     // Retrieve the key
     keyPart = clientMessage.getPart(4);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {

@@ -175,6 +175,34 @@ public class Part {
     return CacheServerHelper.fromUTF((byte[]) this.part);
   }
 
+  @MakeNotStatic
+  private static final Map<ByteBuffer, String> CACHED_STRINGS = new ConcurrentHashMap<>();
+
+  private static String getCachedString(byte[] serializedBytes) {
+    ByteBuffer key = ByteBuffer.wrap(serializedBytes);
+    String result = CACHED_STRINGS.get(key);
+    if (result == null) {
+      result = CacheServerHelper.fromUTF(serializedBytes);
+      CACHED_STRINGS.put(key, result);
+    }
+    return result;
+  }
+
+  /**
+   * Like getString but will also check a cache of frequently serialized strings.
+   * The result will be added to the cache if it is not already in it.
+   * NOTE: only call this for strings that are reused often (like region names).
+   */
+  public String getCachedString() {
+    if (this.part == null) {
+      return null;
+    }
+    if (!isBytes()) {
+      Assert.assertTrue(false, "expected String part to be of type BYTE, part =" + this.toString());
+    }
+    return getCachedString((byte[]) this.part);
+  }
+
   @Immutable
   private static final byte[][] BYTES = new byte[256][1];
   private static final int BYTES_OFFSET = -1 * Byte.MIN_VALUE;

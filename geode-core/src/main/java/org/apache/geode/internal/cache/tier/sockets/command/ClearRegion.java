@@ -76,7 +76,7 @@ public class ClearRegion extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     if (logger.isDebugEnabled()) {
       logger.debug(serverConnection.getName() + ": Received clear region request ("
           + clientMessage.getPayloadLength() + " bytes) from " + serverConnection.getSocketString()
