@@ -77,13 +77,11 @@ public class AcceptorImplTest {
     securityService = mock(SecurityService.class);
     system = mock(InternalDistributedSystem.class);
     statisticsManager = mock(StatisticsManager.class);
-
     ServerSocket serverSocket = mock(ServerSocket.class);
+    when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
 
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
-    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
-    when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
     when(socketCreator.createServerSocket(anyInt(), anyInt(), isNull(), anyList(), anyInt()))
         .thenReturn(serverSocket);
     when(system.getConfig()).thenReturn(mock(DistributionConfig.class));
@@ -106,11 +104,12 @@ public class AcceptorImplTest {
   @Test
   public void constructorWithGatewayReceiverCreatesAcceptorImplForGatewayReceiver()
       throws Exception {
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
     StatisticsType statisticsType = mock(StatisticsType.class);
     when(statisticsType.getDescription()).thenReturn("some-description");
     Statistics statistics = mock(Statistics.class);
     when(statistics.getType()).thenReturn(statisticsType);
-    
+
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
     when(statisticsManager.createType(any(), any(), any())).thenReturn(statisticsType);
     when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(statistics);

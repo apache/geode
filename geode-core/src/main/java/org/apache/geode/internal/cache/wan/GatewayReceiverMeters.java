@@ -52,7 +52,8 @@ public class GatewayReceiverMeters {
       int statId) {
     if (!meterWhitelist.contains(meterName)) {
       throw new IllegalStateException(
-          format("Meter name '%s' is not whitelisted in %s", meterName, getClass().getSimpleName()));
+          format("Meter name '%s' is not whitelisted in %s", meterName,
+              getClass().getSimpleName()));
     }
     Counter counter = Counter.builder(meterName)
         .description(stats.getType().getDescription())
