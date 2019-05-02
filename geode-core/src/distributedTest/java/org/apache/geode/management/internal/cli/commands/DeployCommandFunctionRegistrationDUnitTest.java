@@ -20,8 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
-import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +30,6 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -99,9 +96,6 @@ public class DeployCommandFunctionRegistrationDUnitTest {
 
   @Test
   public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
-    Logger logger = LogService.getLogger();
-    logger.info("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
-    System.out.println("testCreateDataSourceWithJarOptionDoesNotThrowDriverError");
     String URL = "jdbc:mysql://localhost/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
@@ -124,7 +118,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
 
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
     File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
-    AssertionsForClassTypes.assertThat(mysqlDriverFile).exists();
+    assertThat(mysqlDriverFile).exists();
     String jarFile = mysqlDriverFile.getAbsolutePath();
 
     IgnoredException.removeAllExpectedExceptions();

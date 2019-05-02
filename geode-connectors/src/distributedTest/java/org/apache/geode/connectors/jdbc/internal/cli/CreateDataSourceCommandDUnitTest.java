@@ -68,7 +68,7 @@ public class CreateDataSourceCommandDUnitTest {
     IgnoredException.addIgnoredException(
         "Failed to connect to \"mySqlDataSource\". See log for details");
     IgnoredException.addIgnoredException(
-        "create jndi-binding failed");
+        "create data-source failed");
     IgnoredException.addIgnoredException(
         "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
 

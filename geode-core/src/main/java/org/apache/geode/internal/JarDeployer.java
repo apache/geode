@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -363,7 +365,7 @@ public class JarDeployer implements Serializable {
   }
 
   public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
-      throws ClassNotFoundException {
+      throws ClassNotFoundException, MalformedURLException {
     lock.lock();
     try {
       Map<DeployedJar, DeployedJar> newVersionToOldVersion = new HashMap<>();
@@ -479,13 +481,15 @@ public class JarDeployer implements Serializable {
     }
   }
 
-  private void registerDriver(DeployedJar jar, String driverClassName) {
+  private void registerDriver(DeployedJar jar, String driverClassName)
+      throws MalformedURLException {
     File jarFile = jar.getFile();
     try {
-      Driver driver = (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
-      // URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
-      // Driver driver = (Driver) Class.forName(driverClassName, true,
-      // urlClassLoader).newInstance();
+      // Driver driver = (Driver)
+      // ClassPathLoader.getLatest().forName(driverClassName).newInstance();
+      URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
+      Driver driver = (Driver) Class.forName(driverClassName, true,
+          urlClassLoader).newInstance();
       DriverManager.registerDriver(new DriverWrapper(driver));
     } catch (IllegalAccessException
         | ClassNotFoundException | InstantiationException | SQLException e) {
