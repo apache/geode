@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.api;
+package org.apache.geode.management;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -31,6 +31,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -42,6 +43,7 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
 import org.apache.geode.management.internal.SSLUtil;
@@ -50,6 +52,23 @@ import org.apache.geode.management.internal.cli.functions.GetMemberInformationFu
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfo;
 import org.apache.geode.management.internal.configuration.messages.ClusterManagementServiceInfoRequest;
 import org.apache.geode.security.AuthInitialize;
+
+/**
+ * The class used to create an instance of {@link ClusterManagementService} using appropriate
+ * settings derived from either a {@link Cache} or {@link ClientCache}.
+ * <p/>
+ * For example, if a Geode client has already been configured to use SSL and a {@link
+ * SecurityManager} is configured on the cluster, the following might be sufficient:
+ * <p/>
+ *
+ * <pre>
+ *   ClusterManagementServiceConfig config = GeodeClusterManagementServiceConfig.builder()
+ *       .setClientCache(cache)
+ *       .build()
+ *
+ *   ClusterManagementService client = new ClientClusterManagementService(config);
+ * </pre>
+ */
 
 public class GeodeClusterManagementServiceConfig implements ClusterManagementServiceConfig {
 
@@ -60,20 +79,54 @@ public class GeodeClusterManagementServiceConfig implements ClusterManagementSer
   private static final Logger logger = LogService.getLogger();
 
   public interface GenericBuilder {
+
+    /**
+     * If necessary, the username may explicitly be provided.
+     */
     GenericBuilder setUsername(String username);
 
+    /**
+     * If necessary, the password may explicitly be provided.
+     */
     GenericBuilder setPassword(String password);
 
     ClusterManagementServiceConfig build();
   }
 
   public interface ClientCacheBuilder extends GenericBuilder {
+
+    /**
+     * When used in the context of a Geode client a {@link ClientCache} can be used to configure the
+     * connection. The following will be derived:
+     * <ul>
+     * <li>The locator address, taken from the default {@link Pool}, will be used as the
+     * hostname.</li>
+     * <li>The locator address will be used to query for the correct
+     * {@code ClusterManagementService} port</li>
+     * <li>The client's SSL properties will be used to configure the {@code SSLContext}</li>
+     * <li>The client's configured {@code security-username} and {@code security-password} Geode
+     * properties will be used if available</li>
+     * </ul>
+     */
     ClientCacheBuilder setClientCache(ClientCache clientCache);
 
     ClusterManagementServiceConfig build();
   }
 
   public interface CacheBuilder extends GenericBuilder {
+
+    /**
+     * When used in the context of a Geode server a {@link Cache} can be used to configure the
+     * connection. The following will be derived:
+     * <ul>
+     * <li>The locator address will be used as the hostname.</li>
+     * <li>The locator address will be used to query for the correct
+     * {@code ClusterManagementService} port</li>
+     * <li>The servers's SSL properties will be used to configure the {@code SSLContext}</li>
+     * <li>The servers's configured {@code security-username} and {@code security-password} Geode
+     * properties will be used if available</li>
+     * </ul>
+     */
     CacheBuilder setCache(Cache cache);
 
     ClusterManagementServiceConfig build();

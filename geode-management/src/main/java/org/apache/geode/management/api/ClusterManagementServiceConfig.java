@@ -17,7 +17,18 @@ package org.apache.geode.management.api;
 
 import org.springframework.web.client.RestTemplate;
 
+/**
+ * The interface used to create an instance of {@link ClusterManagementService}. See {@code
+ * GeodeClusterManagementServiceConfig} and {@link ClusterManagementServiceConfig} for examples.
+ */
 public interface ClusterManagementServiceConfig {
 
+  /**
+   * Return the {@link RestTemplate} which is able to connect to the
+   * {@link ClusterManagementService}
+   * running in the cluster.
+   *
+   * @return a configured {@code RestTemplate} instance
+   */
   RestTemplate getRestTemplate();
 }

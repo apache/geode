@@ -26,7 +26,9 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -42,8 +44,11 @@ public class ServerRestartTest {
     // we will stop the 2nd server so that we won't get "loss of qurom" error
     MemberVM server2 = cluster.startServerVM(2, locator.getPort());
 
-    ClusterManagementService cmService =
-        ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+        .setHost("localhost")
+        .setPort(locator.getHttpPort())
+        .build();
+    ClusterManagementService cmService = new ClientClusterManagementService(config);
 
     RegionConfig region = new RegionConfig();
     region.setName("Foo");

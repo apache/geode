@@ -21,8 +21,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.springframework.web.util.AbstractUriTemplateHandler;
 
+import org.apache.geode.management.GeodeClusterManagementServiceConfig;
 import org.apache.geode.management.internal.ClientClusterManagementService;
-import org.apache.geode.management.internal.api.GeodeClusterManagementServiceConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 

@@ -29,8 +29,25 @@ import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.DefaultUriTemplateHandler;
 
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.internal.RestTemplateResponseErrorHandler;
+
+/**
+ * The class used to create an instance of {@link ClusterManagementService} using explicit
+ * connection properties. For example:
+ *
+ * <pre>
+ *   ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+ *       .setHost("localhost")
+ *       .setPort(7070)
+ *       .build()
+ *
+ *   ClusterManagementService client = new ClientClusterManagementService(config);
+ * </pre>
+ *
+ * @see JavaClientClusterManagementServiceConfig
+ */
 
 public class JavaClientClusterManagementServiceConfig implements ClusterManagementServiceConfig {
 
@@ -40,21 +57,50 @@ public class JavaClientClusterManagementServiceConfig implements ClusterManageme
   private final RestTemplate restTemplate;
 
   public interface GenericBuilder {
+
+    /**
+     * The host which is running the Cluster Management Service.
+     */
     GenericBuilder setHost(String host);
 
+    /**
+     * The port for the host running the Cluster Management Service
+     */
     GenericBuilder setPort(int port);
 
+    /**
+     * An optional {@code SSLContext} configured to make SSL connections to the Cluster Management
+     * Service.
+     */
     GenericBuilder setSslContext(SSLContext sslContext);
 
+    /**
+     * An optional {@code HostnameVerifier} which can be used to verify the server if SSL is
+     * enabled.
+     */
     GenericBuilder setHostnameVerifier(HostnameVerifier hostnameVerifier);
 
+    /**
+     * An optional username if a {@link SecurityManager} has been configured on the cluster.
+     */
     GenericBuilder setUsername(String username);
 
+    /**
+     * An optional password if a {@link SecurityManager} has been configured on the cluster.
+     */
     GenericBuilder setPassword(String password);
 
+    /**
+     * Build a concrete instance.
+     */
     ClusterManagementServiceConfig build();
   }
 
+  /**
+   * An alternative {@code ClusterManagementServiceConfig} builder which can use a
+   * {@link ClientHttpRequestFactory} as input. Typically only relevant for testing with
+   * {@code MockMvc}.
+   */
   public interface RequestFactoryBuilder {
     RequestFactoryBuilder setRequestFactory(ClientHttpRequestFactory requestFactory);
 
