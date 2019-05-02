@@ -885,23 +885,6 @@ public class WANTestBase extends DistributedTestCase {
 
   private static CacheListener myListener;
 
-  public static void longPauseAfterNumEvents(int numEvents, int milliSeconds) {
-    myListener = new CacheListenerAdapter<Object, Object>() {
-      @Override
-      public void afterCreate(final EntryEvent<Object, Object> event) {
-        try {
-          if (event.getRegion().size() >= numEvents) {
-            Thread.sleep(milliSeconds);
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    };
-    cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
-        .addCacheListener(myListener);
-  }
-
   public static void removeCacheListener() {
     cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
         .removeCacheListener(myListener);
@@ -1069,8 +1052,8 @@ public class WANTestBase extends DistributedTestCase {
     }
     for (AsyncInvocation invocation : tasks) {
       try {
-        invocation.join(30000); // TODO: these might be AsyncInvocation orphans
-      } catch (InterruptedException e) {
+        invocation.await();
+      } catch (InterruptedException | ExecutionException e) {
         fail("Starting senders was interrupted");
       }
     }
@@ -3798,8 +3781,7 @@ public class WANTestBase extends DistributedTestCase {
       invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
     }
     for (AsyncInvocation invocation : invocations) {
-      invocation.join();
-      invocation.checkException();
+      invocation.await();
     }
   }
 
