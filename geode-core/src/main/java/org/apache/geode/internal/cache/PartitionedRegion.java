@@ -326,6 +326,7 @@ public class PartitionedRegion extends LocalRegion
    * The advisor that hold information about this partitioned region
    */
   private final RegionAdvisor distAdvisor;
+  private final SenderIdMonitor senderIdMonitor;
 
   /** Logging mechanism for debugging */
   private static final Logger logger = LogService.getLogger();
@@ -764,6 +765,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Warning: potential early escape of instance
     this.distAdvisor = RegionAdvisor.createRegionAdvisor(this);
+    senderIdMonitor = createSenderIdMonitor();
     // Warning: potential early escape of instance
     this.redundancyProvider = new PRHARedundancyProvider(this);
 
@@ -1221,6 +1223,7 @@ public class PartitionedRegion extends LocalRegion
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
           .addShadowPartitionedRegionForUserPR(this);
     }
+    updateSenderIdMonitor();
   }
 
   public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
@@ -1249,6 +1252,7 @@ public class PartitionedRegion extends LocalRegion
   public void removeGatewaySenderId(String gatewaySenderId) {
     super.removeGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
   }
 
   @Override
@@ -1268,35 +1272,29 @@ public class PartitionedRegion extends LocalRegion
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
           .addShadowPartitionedRegionForUserPR(this);
     }
+    updateSenderIdMonitor();
   }
 
   @Override
   public void removeAsyncEventQueueId(String asyncEventQueueId) {
     super.removeAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
+  }
+
+  private SenderIdMonitor createSenderIdMonitor() {
+    SenderIdMonitor senderIdMonitor = new SenderIdMonitor(this, this.distAdvisor);
+    this.distAdvisor.addProfileChangeListener(senderIdMonitor);
+    return senderIdMonitor;
+  }
+
+  private void updateSenderIdMonitor() {
+    this.senderIdMonitor.update();
   }
 
   @Override
   void checkSameSenderIdsAvailableOnAllNodes() {
-    List senderIds =
-        this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
-    if (!senderIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
-
-              new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
-    }
-
-    List asycnQueueIds = this.getCacheDistributionAdvisor()
-        .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
-    if (!asycnQueueIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
-
-              new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
-    }
+    this.senderIdMonitor.checkSenderIds();
   }
 
   /**

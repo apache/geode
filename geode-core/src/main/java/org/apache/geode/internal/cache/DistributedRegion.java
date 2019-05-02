@@ -141,7 +141,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   private final Object dlockMonitor = new Object();
 
   final CacheDistributionAdvisor distAdvisor;
-  final SenderIdMonitor senderIdMonitor;
+  private final SenderIdMonitor senderIdMonitor;
 
   /**
    * GuardedBy {@link #dlockMonitor}
