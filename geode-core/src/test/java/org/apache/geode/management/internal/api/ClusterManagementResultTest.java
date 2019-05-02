@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementResultTest {
@@ -111,6 +112,6 @@ public class ClusterManagementResultTest {
     String json = "{\"statusCode\":\"OK\"}";
     ClusterManagementResult result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
-    assertThat(result.getResult()).isNotNull().isEmpty();
+    assertThat(result.getResult(RuntimeCacheElement.class)).isNotNull().isEmpty();
   }
 }

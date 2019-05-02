@@ -110,10 +110,6 @@ public class ClusterManagementResult {
     return statusCode;
   }
 
-  public List<RuntimeCacheElement> getResult() {
-    return result;
-  }
-
   public <R extends RuntimeCacheElement> List<R> getResult(Class<R> clazz) {
     return result.stream().map(clazz::cast).collect(Collectors.toList());
   }

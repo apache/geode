@@ -90,9 +90,11 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
 
     ClusterManagementResult result1 = mapper.readValue(json, ClusterManagementResult.class);
-    assertThat(result1.getResult()).hasSize(2);
-    assertThat(result1.getResult().get(0)).isInstanceOf(RegionConfig.class);
-    assertThat(result1.getResult().get(1)).isInstanceOf(MemberConfig.class);
+    assertThat(result1.getResult(RuntimeCacheElement.class)).hasSize(2);
+    assertThat(result1.getResult(RuntimeCacheElement.class).get(0))
+        .isInstanceOf(RegionConfig.class);
+    assertThat(result1.getResult(RuntimeCacheElement.class).get(1))
+        .isInstanceOf(MemberConfig.class);
   }
 
   @Test

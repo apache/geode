@@ -26,6 +26,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceProvider;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -50,10 +51,11 @@ public class MemberManagementServiceDunitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(2);
+    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(2);
 
     MemberConfig memberConfig =
-        (MemberConfig) CacheElement.findElement(result.getResult(), "locator-0");
+        (MemberConfig) CacheElement.findElement(result.getResult(RuntimeCacheElement.class),
+            "locator-0");
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
     assertThat(memberConfig.getPorts().get(0)).isEqualTo(locator.getPort());
@@ -67,9 +69,9 @@ public class MemberManagementServiceDunitTest {
     ClusterManagementResult result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(1);
+    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(1);
 
-    MemberConfig memberConfig = (MemberConfig) result.getResult().get(0);
+    MemberConfig memberConfig = (MemberConfig) result.getResult(RuntimeCacheElement.class).get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
     assertThat(memberConfig.getPorts().get(0)).isEqualTo(locator.getPort());
@@ -83,6 +85,6 @@ public class MemberManagementServiceDunitTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(0);
+    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(0);
   }
 }
