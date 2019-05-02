@@ -33,7 +33,6 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
