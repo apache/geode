@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.wan;
 
 import static java.lang.String.format;
+import static java.util.Collections.unmodifiableSet;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -24,13 +25,17 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.Statistics;
+import org.apache.geode.annotations.Immutable;
 
 public class GatewayReceiverMeters {
-  private static final Set<String> meterWhitelist = new HashSet<String>() {
-    {
-      add("cache.gatewayreceiver.events.received");
-    }
-  };
+  @Immutable
+  private static final Set<String> meterWhitelist;
+
+  static {
+    Set<String> whitelist = new HashSet<>();
+    whitelist.add("cache.gatewayreceiver.events.received");
+    meterWhitelist = unmodifiableSet(whitelist);
+  }
 
   private final Counter eventsReceivedCounter;
 
@@ -43,23 +48,23 @@ public class GatewayReceiverMeters {
     return meterWhitelist;
   }
 
-  private Counter createIntCounter(MeterRegistry registry, String name, Statistics stats,
+  private Counter createIntCounter(MeterRegistry registry, String meterName, Statistics stats,
       int statId) {
-    if (!meterWhitelist.contains(name)) {
+    if (!meterWhitelist.contains(meterName)) {
       throw new IllegalStateException(
-          format("Meter name '%s' is not whitelisted in %s", name, getClass().getSimpleName()));
+          format("Meter name '%s' is not whitelisted in %s", meterName, getClass().getSimpleName()));
     }
-    Counter counter = Counter.builder(name)
+    Counter counter = Counter.builder(meterName)
         .description(stats.getType().getDescription())
         .register(registry);
 
     // NOTE: This will convert the double count to an int, which will roll from MAX_INT to MIN_INT.
     stats.setIntSupplier(statId, () -> (int) counter.count());
-
     return counter;
   }
 
   public Counter eventsReceivedCounter() {
     return eventsReceivedCounter;
   }
+
 }

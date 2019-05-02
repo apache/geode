@@ -45,7 +45,7 @@ public class CacheFactoryIntegrationTest {
         .create();
 
     assertThat(getCacheMeterRegistry(cache).getRegistries())
-        .containsExactly(theMeterRegistry);
+        .contains(theMeterRegistry);
   }
 
   @Test
@@ -61,7 +61,7 @@ public class CacheFactoryIntegrationTest {
         .create();
 
     assertThat(getCacheMeterRegistry(cache).getRegistries())
-        .containsExactlyInAnyOrder(firstMeterRegistry, secondMeterRegistry, thirdMeterRegistry);
+        .contains(firstMeterRegistry, secondMeterRegistry, thirdMeterRegistry);
   }
 
   @Test

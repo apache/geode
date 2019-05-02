@@ -32,6 +32,7 @@ import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.Properties;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,6 +82,7 @@ public class AcceptorImplTest {
 
     when(cache.getDistributedSystem()).thenReturn(system);
     when(cache.getInternalDistributedSystem()).thenReturn(system);
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
     when(serverSocket.getLocalSocketAddress()).thenReturn(mock(SocketAddress.class));
     when(socketCreator.createServerSocket(anyInt(), anyInt(), isNull(), anyList(), anyInt()))
         .thenReturn(serverSocket);
@@ -104,9 +106,14 @@ public class AcceptorImplTest {
   @Test
   public void constructorWithGatewayReceiverCreatesAcceptorImplForGatewayReceiver()
       throws Exception {
+    StatisticsType statisticsType = mock(StatisticsType.class);
+    when(statisticsType.getDescription()).thenReturn("some-description");
+    Statistics statistics = mock(Statistics.class);
+    when(statistics.getType()).thenReturn(statisticsType);
+    
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
-    when(statisticsManager.createType(any(), any(), any())).thenReturn(mock(StatisticsType.class));
-    when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
+    when(statisticsManager.createType(any(), any(), any())).thenReturn(statisticsType);
+    when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(statistics);
 
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,

@@ -143,7 +143,7 @@ public class MeterSubregistryReconnectDistributedTest implements Serializable {
       InternalCache cache = system.getCache();
       CompositeMeterRegistry compositeMeterRegistry =
           (CompositeMeterRegistry) cache.getMeterRegistry();
-      assertThat(compositeMeterRegistry.getRegistries()).containsOnly(addedSubregistry);
+      assertThat(compositeMeterRegistry.getRegistries()).contains(addedSubregistry);
     });
   }
 

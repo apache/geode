@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Collections.emptySet;
 import static org.apache.geode.distributed.internal.InternalDistributedSystem.ALLOW_MULTIPLE_SYSTEMS_PROPERTY;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.CLOSED;
 import static org.apache.geode.internal.cache.InternalCacheBuilderAllowsMultipleSystemsTest.CacheState.OPEN;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import java.util.Collections;
 import java.util.Properties;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -48,6 +50,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalCacheConstructor;
 import org.apache.geode.internal.cache.InternalCacheBuilder.InternalDistributedSystemConstructor;
 import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
+import org.apache.geode.internal.statistics.StatisticsManager;
 
 /**
  * Unit tests for {@link InternalCacheBuilder} when
@@ -426,11 +429,15 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
     InternalDistributedSystem system = mock(InternalDistributedSystem.class, mockName);
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     InternalDistributedMember distributedMember = mock(InternalDistributedMember.class);
+    StatisticsManager statisticsManager = mock(StatisticsManager.class);
+
     when(distributionConfig.getDistributedSystemId()).thenReturn(systemId);
     when(distributedMember.getHost()).thenReturn(hostName);
     when(system.getConfig()).thenReturn(distributionConfig);
     when(system.getDistributedMember()).thenReturn(distributedMember);
     when(system.getName()).thenReturn(memberName);
+    when(statisticsManager.getMeterWhitelist()).thenReturn(emptySet());
+    when(system.getStatisticsManager()).thenReturn(statisticsManager);
     return system;
   }
 
