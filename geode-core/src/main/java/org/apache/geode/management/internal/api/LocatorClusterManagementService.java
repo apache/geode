@@ -168,6 +168,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <T extends CacheElement, R extends RuntimeCacheElement> ClusterManagementResult<R> list(
       T filter, Class<R> type) {
+    filter.assertIsAssignableFrom(type);
+
     ConfigurationManager<T, R> manager = managers.get(filter.getClass());
     ClusterManagementResult<R> result = new ClusterManagementResult<>();
 

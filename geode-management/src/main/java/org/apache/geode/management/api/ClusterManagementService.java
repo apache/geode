@@ -88,6 +88,8 @@ public interface ClusterManagementService {
    *        RuntimeRegionConfig}. Some types may have the same object as the runtime type, for
    *        example
    *        {@link MemberConfig}.
+   * @throws IllegalArgumentException if <code>runtimeConfigType</code> is not a subclass of
+   *         <code>filter</code>
    */
   <T extends CacheElement, R extends RuntimeCacheElement> ClusterManagementResult<R> list(
       T filter, Class<R> runtimeConfigType);

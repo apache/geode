@@ -129,7 +129,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends CacheElement, R extends RuntimeCacheElement> ClusterManagementResult<R> list(
       T filter, Class<R> type) {
     String endPoint = getEndpoint(filter);
-    return restTemplate
+
+    filter.assertIsAssignableFrom(type);
+
+    return getRestTemplate()
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
             ClusterManagementResult.class, filter.getId(), filter.getGroup())
         .getBody();

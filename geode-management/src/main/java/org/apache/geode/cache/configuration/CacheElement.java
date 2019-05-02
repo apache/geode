@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 @Experimental
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
@@ -46,6 +47,15 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
 
   public static <T extends Identifiable> void removeElement(List<T> list, String id) {
     list.removeIf(t -> t.getId().equals(id));
+  }
+
+  public void assertIsAssignableFrom(Class<? extends RuntimeCacheElement> runtimeCacheElement) {
+    // Is it possible that this could be handled with generics?
+    if (!getClass().isAssignableFrom(runtimeCacheElement)) {
+      throw new IllegalArgumentException(
+          String.format("Mismatched request type and return type: %s must extend %s",
+              runtimeCacheElement.getName(), getClass().getName()));
+    }
   }
 
   /**
