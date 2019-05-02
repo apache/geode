@@ -31,6 +31,7 @@ import javax.transaction.xa.XAResource;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 
@@ -204,6 +205,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
         this.xaResourcesMap.put(xaConn, xar);
       }
     } catch (Exception ex) {
+      provider.returnAndExpireConnection(xaConn);
       Exception e = new Exception(
           String.format(
               "GemFireTransactionDataSource-registerTranxConnection(). Exception in registering the XAResource with the Transaction.Exception occurred= %s",
@@ -219,7 +221,13 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
-    Connection conn = poolC.getConnection();
+    Connection conn;
+    try {
+      conn = poolC.getConnection();
+    } catch (SQLException e) {
+      provider.returnAndExpireConnection(poolC);
+      throw new SQLException(e);
+    }
     boolean val = validateConnection(conn);
     if (val)
       return conn;
@@ -246,5 +254,13 @@ public class GemFireTransactionDataSource extends AbstractDataSource
   public void close() {
     super.close();
     provider.clearUp();
+  }
+
+  /**
+   * Used by unit tests
+   */
+  @VisibleForTesting
+  public void setTransManager(TransactionManager txmanager) {
+    transManager = txmanager;
   }
 }

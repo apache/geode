@@ -178,7 +178,13 @@ public class GemFireConnPooledDataSource extends AbstractDataSource
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
-    Connection conn = poolC.getConnection();
+    Connection conn;
+    try {
+      conn = poolC.getConnection();
+    } catch (SQLException e) {
+      provider.returnAndExpireConnection(poolC);
+      throw new SQLException(e);
+    }
     boolean val = validateConnection(conn);
     if (val)
       return conn;
