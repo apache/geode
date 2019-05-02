@@ -16,8 +16,9 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -162,20 +163,17 @@ public class CacheServerMaxConnectionsJUnitTest {
     this.system.getLogWriter().info(
         "<ExpectedException action=add>" + "exceeded max-connections" + "</ExpectedException>");
     try {
-      Connection cnx = proxy.acquireConnection();
-      if (cnx != null) {
-        fail("should not have been able to connect more than " + MAX_CNXS
-            + " times but was able to connect " + s.getInt("currentClientConnections")
-            + " times. Last connection=" + cnx);
+      Throwable thrown = catchThrowable(() -> {
+        Connection cnx = proxy.acquireConnection();
+        assertThat(cnx).withFailMessage(
+            "should not have been able to connect more than {} times but was able to connect {} times. Last connection={}",
+            MAX_CNXS, s.getInt("currentClientConnections"), cnx).isNull();
+        this.system.getLogWriter().info("acquire connection returned null which is ok");
+      });
+      if (thrown != null) {
+        assertThat(thrown).isInstanceOf(NoAvailableServersException.class);
+        this.system.getLogWriter().info("received expected " + thrown.getMessage());
       }
-      this.system.getLogWriter().info("acquire connection returned null which is ok");
-    } catch (NoAvailableServersException expected) {
-      // This is expected but due to race conditions in server handshake
-      // we may get null back from acquireConnection instead.
-      this.system.getLogWriter().info("received expected " + expected.getMessage());
-    } catch (Exception ex) {
-      fail("expected acquireConnection to throw NoAvailableServersException but instead it threw "
-          + ex);
     } finally {
       this.system.getLogWriter().info("<ExpectedException action=remove>"
           + "exceeded max-connections" + "</ExpectedException>");
