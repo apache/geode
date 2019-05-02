@@ -65,7 +65,7 @@ public class GetClientPartitionAttributesCommandTest {
 
     when(this.message.getPart(eq(0))).thenReturn(this.regionNamePart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getResponseMessage()).thenReturn(this.responseMessage);

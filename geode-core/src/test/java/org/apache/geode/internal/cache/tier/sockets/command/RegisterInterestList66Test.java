@@ -122,7 +122,7 @@ public class RegisterInterestList66Test {
 
     when(this.regionDataPolicyPart.getObject()).thenReturn(DATA_POLICY);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.registerInterestOperationContext.getKey()).thenReturn(KEY);
 

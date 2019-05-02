@@ -112,7 +112,7 @@ public class RegisterInterest61Test {
 
     when(this.notifyPart.getObject()).thenReturn(DURABLE);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.registerInterestOperationContext.getKey()).thenReturn(KEY);
 

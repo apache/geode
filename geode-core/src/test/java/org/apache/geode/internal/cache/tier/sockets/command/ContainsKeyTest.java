@@ -82,7 +82,7 @@ public class ContainsKeyTest {
     when(this.serverConnection.getErrorResponseMessage()).thenReturn(this.errorResponseMessage);
 
     Part regionNamePart = mock(Part.class);
-    when(regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     Part keyPart = mock(Part.class);
     when(keyPart.getStringOrObject()).thenReturn(KEY);

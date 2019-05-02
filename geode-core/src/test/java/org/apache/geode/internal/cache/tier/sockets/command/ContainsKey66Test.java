@@ -90,7 +90,7 @@ public class ContainsKey66Test {
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
     when(this.serverConnection.getClientVersion()).thenReturn(Version.CURRENT);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.keyPart.getStringOrObject()).thenReturn(KEY);
     when(this.modePart.getInt()).thenReturn(0);
