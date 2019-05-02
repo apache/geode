@@ -21,9 +21,7 @@ import java.io.File;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
@@ -49,13 +47,20 @@ public class CreateDataSourceCommandDUnitTest {
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
 
-  @BeforeClass
-  public static void before() throws Exception {
+  @Before
+  public void before() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group1", locator.getPort());
 
     gfsh.connectAndVerify(locator);
+  }
+
+  @After
+  public void after() throws Exception {
+    server1.stop(true);
+    server2.stop(true);
+    locator.stop(true);
   }
 
   @Test
