@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -176,16 +177,41 @@ public class Part {
   }
 
   @MakeNotStatic
-  private static final Map<ByteBuffer, String> CACHED_STRINGS = new ConcurrentHashMap<>();
+  private static final Map<ByteArrayKey, String> CACHED_STRINGS = new ConcurrentHashMap<>();
 
   private static String getCachedString(byte[] serializedBytes) {
-    ByteBuffer key = ByteBuffer.wrap(serializedBytes);
+    ByteArrayKey key = new ByteArrayKey(serializedBytes);
     String result = CACHED_STRINGS.get(key);
     if (result == null) {
       result = CacheServerHelper.fromUTF(serializedBytes);
       CACHED_STRINGS.put(key, result);
     }
     return result;
+  }
+
+  /**
+   * Used to wrap a byte array so that it can be used
+   * as a key on a HashMap. This is needed so that
+   * equals and hashCode will be based on the contents
+   * of the byte array instead of the identity.
+   */
+  private static final class ByteArrayKey {
+    private final byte[] bytes;
+
+    public ByteArrayKey(byte[] bytes) {
+      this.bytes = bytes;
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(bytes);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      ByteArrayKey other = (ByteArrayKey) obj;
+      return Arrays.equals(bytes, other.bytes);
+    }
   }
 
   /**
