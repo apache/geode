@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,5 +53,27 @@ public class RegionConfigRealizerIntegrationTest {
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(region.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
+  }
+
+  @Test
+  public void create2ndTime() throws Exception {
+    config.setName("foo");
+    config.setType(RegionType.REPLICATE);
+    realizer.create(config, server.getCache());
+
+    // the 2nd time with same name and type will not throw an error
+    realizer.create(config, server.getCache());
+  }
+
+  @Test
+  public void createDifferentRegion2ndTime() throws Exception {
+    config.setName("bar");
+    config.setType(RegionType.REPLICATE);
+    realizer.create(config, server.getCache());
+
+    // the 2nd time with different type will throw an error
+    config.setType(RegionType.PARTITION);
+    assertThatThrownBy(() -> realizer.create(config, server.getCache()))
+        .isInstanceOf(IllegalStateException.class);
   }
 }
