@@ -183,6 +183,8 @@ public class DistributionAdvisor {
    */
   private ConcurrentMap<ProfileListener, Boolean> profileListeners = new ConcurrentHashMap<>();
 
+  private volatile InitializationListener initializationListener;
+
   /**
    * The resource getting advise from this.
    */
@@ -424,6 +426,17 @@ public class DistributionAdvisor {
     membershipListeners.putIfAbsent(listener, Boolean.TRUE);
   }
 
+  public interface InitializationListener {
+    /**
+     * Called after this DistributionAdvisor has been initialized.
+     */
+    void initialized();
+  }
+
+  public void setInitializationListener(InitializationListener listener) {
+    this.initializationListener = listener;
+  }
+
   public boolean addProfileChangeListener(ProfileListener listener) {
     return null == profileListeners.putIfAbsent(listener, Boolean.TRUE);
   }
@@ -453,10 +466,21 @@ public class DistributionAdvisor {
     if (initialized) {
       return false;
     }
-    synchronized (initializeLock) {
-      if (!initialized) {
-        exchangeProfiles();
-        return true;
+    boolean exchangedProfiles = false;
+    try {
+      synchronized (initializeLock) {
+        if (!initialized) {
+          exchangedProfiles = true;
+          exchangeProfiles();
+          return true;
+        }
+      }
+    } finally {
+      if (exchangedProfiles) {
+        if (this.initializationListener != null) {
+          // this needs to be done outside the initializeLock
+          this.initializationListener.initialized();
+        }
       }
     }
     return false;
@@ -475,7 +499,7 @@ public class DistributionAdvisor {
    *
    * @since GemFire 5.7
    */
-  protected boolean pollIsInitialized() {
+  public boolean pollIsInitialized() {
     return initialized;
   }
 

@@ -17,12 +17,13 @@ package org.apache.geode.internal.cache;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.geode.distributed.internal.DistributionAdvisor.InitializationListener;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 
-public class SenderIdMonitor implements ProfileListener {
+public class SenderIdMonitor implements ProfileListener, InitializationListener {
   private final InternalRegion region;
   private final CacheDistributionAdvisor advisor;
   private volatile Set<String> illegalGatewaySenderIds = null;
@@ -37,6 +38,7 @@ public class SenderIdMonitor implements ProfileListener {
       CacheDistributionAdvisor advisor) {
     SenderIdMonitor senderIdMonitor = new SenderIdMonitor(region, advisor);
     advisor.addProfileChangeListener(senderIdMonitor);
+    advisor.setInitializationListener(senderIdMonitor);
     return senderIdMonitor;
   }
 
@@ -55,10 +57,18 @@ public class SenderIdMonitor implements ProfileListener {
     update();
   }
 
+  @Override
+  public void initialized() {
+    update();
+  }
+
   /**
    * Needs to be called if this region's gateways or asyncEventIds change.
    */
   public void update() {
+    if (!this.advisor.pollIsInitialized()) {
+      return;
+    }
     final Set<String> gatewaySenderIds = region.getGatewaySenderIds();
     final Set<String> visibleAsyncEventQueueIds = region.getVisibleAsyncEventQueueIds();
     final AtomicBoolean foundIllegalState = new AtomicBoolean();
