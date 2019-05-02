@@ -63,7 +63,7 @@ public class GetClientPRMetaDataOp {
       super(MessageType.GET_CLIENT_PR_METADATA, 1);
       this.regionFullPath = regionFullPath;
       this.cms = cms;
-      getMessage().addStringPart(regionFullPath);
+      getMessage().addStringPart(regionFullPath, true);
     }
 
     @Override

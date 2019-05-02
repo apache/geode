@@ -162,7 +162,7 @@ public class ClientInterestMessageImpl implements ClientMessage {
     }
 
     // Add the region name
-    message.addStringPart(this.regionName);
+    message.addStringPart(this.regionName, true);
 
     // Add the key
     message.addStringOrObjPart(this.keyOfInterest);

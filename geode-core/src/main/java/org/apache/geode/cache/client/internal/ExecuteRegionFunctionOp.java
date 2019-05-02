@@ -348,7 +348,7 @@ public class ExecuteRegionFunctionOp {
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
 
       addBytes(functionState);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       if (serverRegionExecutor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {
@@ -410,7 +410,7 @@ public class ExecuteRegionFunctionOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(function);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
@@ -467,7 +467,7 @@ public class ExecuteRegionFunctionOp {
       MemberMappedArgument memberMappedArg = executor.getMemberMappedArgument();
       getMessage().clear();
       addBytes(this.hasResult);
-      getMessage().addStringPart(this.regionName);
+      getMessage().addStringPart(this.regionName, true);
       if (executor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {

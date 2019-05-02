@@ -197,7 +197,7 @@ public class PutOp {
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.requireOldValue = requireOldValue;
       this.expectedOldValue = expectedOldValue;
-      getMessage().addStringPart(regionName);
+      getMessage().addStringPart(regionName, true);
       getMessage().addBytePart(op.ordinal);
       int flags = 0;
       if (requireOldValue)

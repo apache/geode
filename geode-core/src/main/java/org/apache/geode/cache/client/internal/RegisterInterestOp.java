@@ -119,7 +119,7 @@ public class RegisterInterestOp {
         byte regionDataPolicy) {
       super(MessageType.REGISTER_INTEREST, 7);
       this.region = region;
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addIntPart(interestType);
       getMessage().addObjPart(policy);
       {

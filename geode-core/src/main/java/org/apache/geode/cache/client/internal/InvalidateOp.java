@@ -60,7 +60,7 @@ public class InvalidateOp {
       super(MessageType.INVALIDATE, event.getCallbackArgument() != null ? 4 : 3);
       Object callbackArg = event.getCallbackArgument();
       this.event = event;
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(event.getKeyInfo().getKey());
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {

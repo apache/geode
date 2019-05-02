@@ -147,7 +147,7 @@ public class GetAllOp {
       super(callback != null ? MessageType.GET_ALL_WITH_CALLBACK : MessageType.GET_ALL_70, 3);
       this.keyList = keys;
       this.callback = callback;
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
     }
 
     @Override
