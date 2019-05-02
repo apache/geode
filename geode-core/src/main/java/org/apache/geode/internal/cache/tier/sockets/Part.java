@@ -176,7 +176,7 @@ public class Part {
     return CacheServerHelper.fromUTF((byte[]) this.part);
   }
 
-  @MakeNotStatic
+  @MakeNotStatic("not tied to the cache lifecycle")
   private static final Map<ByteArrayKey, String> CACHED_STRINGS = new ConcurrentHashMap<>();
 
   private static String getCachedString(byte[] serializedBytes) {
