@@ -34,6 +34,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_ALIAS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_WEB_SERVICE_REQUIRE_AUTHENTICATION;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
@@ -77,7 +78,6 @@ import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * @since GemFire 8.0
@@ -99,7 +99,8 @@ public class RestAPIsWithSSLDUnitTest {
 
   private static File findTrustedJKSWithSingleEntry() {
     return new File(
-        TestUtil.getResourcePath(RestAPIsWithSSLDUnitTest.class, "/ssl/trusted.keystore"));
+        createTempFileFromResource(RestAPIsWithSSLDUnitTest.class, "/ssl/trusted.keystore")
+            .getAbsolutePath());
   }
 
   private static File findTrustStore(Properties props) {
@@ -249,9 +250,11 @@ public class RestAPIsWithSSLDUnitTest {
 
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+        createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+            .getAbsolutePath());
     props.setProperty(SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
+        createTempFileFromResource(getClass(),
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath());
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");
@@ -267,9 +270,11 @@ public class RestAPIsWithSSLDUnitTest {
 
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+        createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+            .getAbsolutePath());
     props.setProperty(SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
+        createTempFileFromResource(getClass(),
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath());
     props.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     props.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     props.setProperty(SSL_KEYSTORE_TYPE, "JKS");

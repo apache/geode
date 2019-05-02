@@ -18,6 +18,7 @@ import static junitparams.JUnitParamsRunner.$;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -40,7 +41,6 @@ import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
 import org.apache.geode.internal.cache.wan.MyGatewayEventFilter;
 import org.apache.geode.test.junit.categories.AEQTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({AEQTest.class})
 @RunWith(JUnitParamsRunner.class)
@@ -90,8 +90,10 @@ public class AsyncEventQueueValidationsJUnitTest {
   @Parameters(method = "getCacheXmlFileBaseNames")
   public void testAsyncEventQueueConfiguredFromXmlUsesFilter(String cacheXmlFileBaseName) {
     // Create cache with xml
-    String cacheXmlFileName = TestUtil.getResourcePath(getClass(),
-        getClass().getSimpleName() + "." + cacheXmlFileBaseName + ".cache.xml");
+    String cacheXmlFileName =
+        createTempFileFromResource(getClass(),
+            getClass().getSimpleName() + "." + cacheXmlFileBaseName + ".cache.xml")
+                .getAbsolutePath();
     cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
 
     // Get region and do puts

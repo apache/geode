@@ -24,7 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.File;
 
@@ -44,7 +44,8 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 public class RestSecurityWithSSLTest {
 
   private static File KEYSTORE_FILE =
-      new File(getResourcePath(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
+      new File(createTempFileFromResource(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore")
+          .getAbsolutePath());
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();

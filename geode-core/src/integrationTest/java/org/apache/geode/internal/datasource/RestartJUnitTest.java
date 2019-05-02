@@ -19,6 +19,7 @@ package org.apache.geode.internal.datasource;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.fail;
 
@@ -32,8 +33,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.jndi.JNDIInvoker;
-import org.apache.geode.util.test.TestUtil;
-
 
 /**
  *
@@ -53,7 +52,9 @@ public class RestartJUnitTest {
     try {
       props = new Properties();
       props.setProperty(MCAST_PORT, "0");
-      String path = TestUtil.getResourcePath(RestartJUnitTest.class, "/jta/cachejta.xml");
+      String path =
+          createTempFileFromResource(RestartJUnitTest.class, "/jta/cachejta.xml")
+              .getAbsolutePath();
       props.setProperty(CACHE_XML_FILE, path);
 
       ds1 = DistributedSystem.connect(props);

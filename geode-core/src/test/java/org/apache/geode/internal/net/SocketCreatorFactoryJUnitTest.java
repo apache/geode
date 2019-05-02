@@ -71,6 +71,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -85,7 +86,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({MembershipTest.class})
 public class SocketCreatorFactoryJUnitTest {
@@ -300,9 +300,11 @@ public class SocketCreatorFactoryJUnitTest {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+        createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+            .getAbsolutePath());
     properties.setProperty(SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
+        createTempFileFromResource(getClass(),
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath());
 
     properties.setProperty(SSL_CLUSTER_ALIAS, "clusterKey");
     properties.setProperty(SSL_DEFAULT_ALIAS, "serverKey");
@@ -329,9 +331,11 @@ public class SocketCreatorFactoryJUnitTest {
     Properties properties = configureSSLProperties(SecurableCommunicationChannel.ALL.getConstant());
 
     properties.setProperty(SSL_KEYSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+        createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+            .getAbsolutePath());
     properties.setProperty(SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
+        createTempFileFromResource(getClass(),
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath());
 
     DistributionConfigImpl distributionConfig = new DistributionConfigImpl(properties);
     SocketCreatorFactory.setDistributionConfig(distributionConfig);
@@ -549,6 +553,8 @@ public class SocketCreatorFactoryJUnitTest {
   }
 
   private File findTestJKS() {
-    return new File(TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore"));
+    return new File(
+        createTempFileFromResource(getClass(), "/ssl/trusted.keystore")
+            .getAbsolutePath());
   }
 }

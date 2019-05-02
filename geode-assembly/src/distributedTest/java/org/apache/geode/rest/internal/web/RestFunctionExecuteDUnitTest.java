@@ -17,6 +17,7 @@ package org.apache.geode.rest.internal.web;
 
 
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +37,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({RestAPITest.class})
 public class RestFunctionExecuteDUnitTest {
@@ -110,8 +110,10 @@ public class RestFunctionExecuteDUnitTest {
 
   // find ImplementsFunction.java in the geode-core resource
   private static File loadClassToFile() {
-    String resourcePath = TestUtil.getResourcePath(Function.class.getClassLoader(),
-        "org/apache/geode/management/internal/deployment/ImplementsFunction.java");
+    String resourcePath =
+        createTempFileFromResource(Function.class.getClassLoader(),
+            "org/apache/geode/management/internal/deployment/ImplementsFunction.java")
+                .getAbsolutePath();
     assertThat(resourcePath).isNotNull();
 
     return new File(resourcePath);

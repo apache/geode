@@ -52,7 +52,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.util.ResourceUtils;
 
 @Category({RestAPITest.class})
 public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
@@ -241,7 +241,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   String getJSONDir(String file) {
-    String path = TestUtil.getResourcePath(getClass(), file);
+    String path = ResourceUtils.getResource(getClass(), file).getPath();
     return new File(path).getParent();
   }
 

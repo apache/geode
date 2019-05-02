@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -79,7 +80,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
@@ -1755,7 +1755,9 @@ public class PRQueryDUnitHelper implements Serializable {
 
 
   public File findFile(String fileName) {
-    return new File(TestUtil.getResourcePath(PRQueryDUnitHelper.class, fileName));
+    return new File(
+        createTempFileFromResource(PRQueryDUnitHelper.class, fileName)
+            .getAbsolutePath());
   }
 
   public CacheSerializableRunnable getCacheSerializableRunnableForIndexCreationCheck(

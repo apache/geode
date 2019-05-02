@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -31,8 +32,6 @@ import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.util.test.TestUtil;
-
 
 public class StartServerWithXmlDUnitTest {
 
@@ -49,7 +48,9 @@ public class StartServerWithXmlDUnitTest {
     Properties props = new Properties();
     String locators = "localhost[" + locator.getPort() + "]";
     props.setProperty(LOCATORS, locators);
-    String cacheXmlPath = TestUtil.getResourcePath(getClass(), "CacheServerWithZeroPort.xml");
+    String cacheXmlPath =
+        createTempFileFromResource(getClass(), "CacheServerWithZeroPort.xml")
+            .getAbsolutePath();
     props.setProperty(CACHE_XML_FILE, cacheXmlPath);
 
     server = cluster.getVM(1);

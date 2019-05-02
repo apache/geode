@@ -21,6 +21,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -32,12 +33,12 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({ClientServerTest.class})
 public class LocatorSSLJUnitTest {
   private final String KEY_STORE =
-      TestUtil.getResourcePath(LocatorSSLJUnitTest.class, "default.keystore");
+      createTempFileFromResource(LocatorSSLJUnitTest.class, "default.keystore")
+          .getAbsolutePath();
 
   @After
   public void tearDownTest() {

@@ -16,6 +16,7 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.internal.Assert.assertTrue;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
@@ -36,7 +37,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test exercises auto-reconnect functionality when there is a cache-server that was started by
@@ -71,7 +71,9 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties result = super.getDistributedSystemProperties();
-    String fileName = TestUtil.getResourcePath(getClass(), "ReconnectWithCacheXMLDUnitTest.xml");
+    String fileName =
+        createTempFileFromResource(getClass(), "ReconnectWithCacheXMLDUnitTest.xml")
+            .getAbsolutePath();
     result.put(ConfigurationProperties.CACHE_XML_FILE, fileName);
     result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "true");
     result.put(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "false");

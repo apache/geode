@@ -26,6 +26,7 @@ import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREA
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.CANNOT_CREATE_LUCENE_INDEX_DIFFERENT_SERIALIZER;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.INDEX_NAME;
 import static org.apache.geode.cache.lucene.test.LuceneTestUtilities.REGION_NAME;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
@@ -59,7 +60,6 @@ import org.apache.geode.cache.lucene.test.TestObject;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({LuceneTest.class})
 @RunWith(JUnitParamsRunner.class)
@@ -469,8 +469,8 @@ public class LuceneIndexCreationDUnitTest extends LuceneDUnitTest {
   }
 
   protected String getXmlFileForTest(String testName) {
-    return TestUtil.getResourcePath(getClass(),
-        getClassSimpleName() + "." + testName + ".cache.xml");
+    return createTempFileFromResource(getClass(),
+        getClassSimpleName() + "." + testName + ".cache.xml").getAbsolutePath();
   }
 
   protected String getClassSimpleName() {

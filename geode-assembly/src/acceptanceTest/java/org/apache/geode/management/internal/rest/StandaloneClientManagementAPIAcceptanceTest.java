@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -45,7 +46,6 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
 
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
@@ -75,8 +75,9 @@ public class StandaloneClientManagementAPIAcceptanceTest {
      * -keystore trusted.keystore -keypass password -storepass password \
      * -ext san=ip:127.0.0.1,dns:localhost -storetype jks
      */
-    trustStorePath = TestUtil.getResourcePath(StandaloneClientManagementAPIAcceptanceTest.class,
-        "/ssl/trusted.keystore");
+    trustStorePath =
+        createTempFileFromResource(StandaloneClientManagementAPIAcceptanceTest.class,
+            "/ssl/trusted.keystore").getAbsolutePath();
     assertThat(trustStorePath).as("java file resource not found").isNotBlank();
   }
 
@@ -85,7 +86,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        TestUtil.getResourcePath(this.getClass(), "/ManagementClientCreateRegion.java");
+        createTempFileFromResource(this.getClass(), "/ManagementClientCreateRegion.java")
+            .getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 
     File outputJar = new File(tempDir.getRoot(), "output.jar");

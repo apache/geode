@@ -37,7 +37,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -57,12 +57,12 @@ import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-
 @Category({SecurityTest.class, PulseTest.class})
 public class PulseSecurityWithSSLTest {
 
   private static File jks =
-      new File(getResourcePath(PulseSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
+      new File(createTempFileFromResource(PulseSecurityWithSSLTest.class, "/ssl/trusted.keystore")
+          .getAbsolutePath());
 
   @Rule
   public LocatorStarterRule locator = new LocatorStarterRule().withHttpService();

@@ -34,7 +34,7 @@ public class ResourceUtilsTest {
   private String resourceName;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     className = getClass().getName();
     resourceName = getClass().getSimpleName() + RESOURCE_SUFFIX;
   }
@@ -45,7 +45,7 @@ public class ResourceUtilsTest {
   }
 
   @Test
-  public void getCallerClass() throws Exception {
+  public void getCallerClass() {
     assertThat(ResourceUtils.getCallerClass(1)).isEqualTo(getClass());
   }
 

@@ -15,6 +15,7 @@
 package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -138,7 +139,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests 7.0 cache.xml feature : Fixed Partitioning.
@@ -4388,18 +4388,18 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
 
     } else {
 
-      File example = new File(TestUtil.getResourcePath(getClass(),
-          "/org/apache/geode/cache/doc-files/example-cache.xml"));
+      File example = new File(createTempFileFromResource(getClass(),
+          "/org/apache/geode/cache/doc-files/example-cache.xml").getAbsolutePath());
       FileInputStream fis = new FileInputStream(example);
       CacheXmlParser.parse(fis);
 
-      File example2 = new File(TestUtil.getResourcePath(getClass(),
-          "/org/apache/geode/cache/doc-files/example2-cache.xml"));
+      File example2 = new File(createTempFileFromResource(getClass(),
+          "/org/apache/geode/cache/doc-files/example2-cache.xml").getAbsolutePath());
       fis = new FileInputStream(example2);
       CacheXmlParser.parse(fis);
 
-      File example3 = new File(TestUtil.getResourcePath(getClass(),
-          "/org/apache/geode/cache/doc-files/example3-cache.xml"));
+      File example3 = new File(createTempFileFromResource(getClass(),
+          "/org/apache/geode/cache/doc-files/example3-cache.xml").getAbsolutePath());
       fis = new FileInputStream(example3);
       CacheXmlParser.parse(fis);
     }

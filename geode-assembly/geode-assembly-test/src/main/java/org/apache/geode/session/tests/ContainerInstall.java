@@ -14,6 +14,7 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -47,7 +48,6 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Base class for handling downloading and configuring J2EE containers.
@@ -145,7 +145,7 @@ public abstract class ContainerInstall {
 
     clearPreviousInstall(installDir);
 
-    String resource = TestUtil.getResourcePath(getClass(), "/" + downloadURL);
+    String resource = getResource(getClass(), "/" + downloadURL).getPath();
     URL url = Paths.get(resource).toUri().toURL();
     logger.info("Installing container from URL " + url);
 

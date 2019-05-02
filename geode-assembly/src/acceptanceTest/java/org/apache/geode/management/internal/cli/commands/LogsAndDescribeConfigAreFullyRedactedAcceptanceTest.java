@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,28 +37,32 @@ import org.apache.geode.examples.security.ExampleSecurityManager;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.junit.categories.LoggingTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test class expects a "security.json" file to be visible on the member classpath. The
- * security.json is consumed by {@link org.apache.geode.examples.security.ExampleSecurityManager}
- * and should contain each username/password combination present (even though not all will actually
- * be consumed by the Security Manager).
+ * security.json is consumed by {@link ExampleSecurityManager} and should contain each
+ * username/password combination present (even though not all will actually be consumed by the
+ * Security Manager).
  *
+ * <p>
  * Each password shares the string below for easier log scanning.
  */
 @Category({SecurityTest.class, LoggingTest.class})
 public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
 
-  private static String sharedPasswordString = "abcdefg";
+  private static final String sharedPasswordString = "abcdefg";
 
   private File propertyFile;
   private File securityPropertyFile;
 
   @Rule
   public GfshRule gfsh = new GfshRule();
+
+  @Rule
+  public RequiresGeodeHome geodeHome = new RequiresGeodeHome();
 
   @Before
   public void createDirectoriesAndFiles() throws Exception {
@@ -85,36 +90,32 @@ public class LogsAndDescribeConfigAreFullyRedactedAcceptanceTest {
     startSecureLocatorAndServer();
   }
 
-  private void startSecureLocatorAndServer() throws Exception {
-    try {
-      // The json is in the root resource directory.
-      String securityJson = TestUtil.getResourcePath(
-          LogsAndDescribeConfigAreFullyRedactedAcceptanceTest.class, "/security.json");
-      // We want to add the folder to the classpath, so we strip off the filename.
-      securityJson = securityJson.substring(0, securityJson.length() - "security.json".length());
-      String startLocatorCmd =
-          new CommandStringBuilder("start locator").addOption("name", "test-locator")
-              .addOption("properties-file", propertyFile.getAbsolutePath())
-              .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-              .addOption("J", "-Dsecure-username-jd=user-jd")
-              .addOption("J", "-Dsecure-password-jd=password-jd")
-              .addOption("classpath", securityJson).getCommandString();
+  private void startSecureLocatorAndServer() {
+    // The json is in the root resource directory.
+    String securityJson =
+        getResource(LogsAndDescribeConfigAreFullyRedactedAcceptanceTest.class,
+            "/security.json").getPath();
+    // We want to add the folder to the classpath, so we strip off the filename.
+    securityJson = securityJson.substring(0, securityJson.length() - "security.json".length());
+    String startLocatorCmd =
+        new CommandStringBuilder("start locator").addOption("name", "test-locator")
+            .addOption("properties-file", propertyFile.getAbsolutePath())
+            .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+            .addOption("J", "-Dsecure-username-jd=user-jd")
+            .addOption("J", "-Dsecure-password-jd=password-jd")
+            .addOption("classpath", securityJson).getCommandString();
 
-      String startServerCmd = new CommandStringBuilder("start server")
-          .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
-          .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
-          .addOption("properties-file", propertyFile.getAbsolutePath())
-          .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
-          .addOption("J", "-Dsecure-username-jd=user-jd")
-          .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
-          .addOption("server-port", "0")
-          .addOption("classpath", securityJson).getCommandString();
+    String startServerCmd = new CommandStringBuilder("start server")
+        .addOption("name", "test-server").addOption("user", "viaStartMemberOptions")
+        .addOption("password", sharedPasswordString + "-viaStartMemberOptions")
+        .addOption("properties-file", propertyFile.getAbsolutePath())
+        .addOption("security-properties-file", securityPropertyFile.getAbsolutePath())
+        .addOption("J", "-Dsecure-username-jd=user-jd")
+        .addOption("J", "-Dsecure-password-jd=" + sharedPasswordString + "-password-jd")
+        .addOption("server-port", "0")
+        .addOption("classpath", securityJson).getCommandString();
 
-      gfsh.execute(startLocatorCmd, startServerCmd);
-    } catch (Exception e) {
-      throw new Exception(
-          "Cluster could not start, failing beyond the intended scope of this test.", e);
-    }
+    gfsh.execute(startLocatorCmd, startServerCmd);
   }
 
   @Test

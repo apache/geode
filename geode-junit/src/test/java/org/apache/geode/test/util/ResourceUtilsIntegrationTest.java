@@ -16,6 +16,7 @@
  */
 package org.apache.geode.test.util;
 
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -41,9 +42,9 @@ public class ResourceUtilsIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     resourceName = ResourceUtilsTest.class.getSimpleName() + RESOURCE_SUFFIX;
-    resource = ResourceUtils.getResource(ResourceUtilsTest.class, resourceName);
+    resource = getResource(ResourceUtilsTest.class, resourceName);
   }
 
   @Test

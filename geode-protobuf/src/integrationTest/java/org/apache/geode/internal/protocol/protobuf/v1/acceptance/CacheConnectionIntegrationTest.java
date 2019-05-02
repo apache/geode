@@ -26,6 +26,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.validateGetResponse;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -73,7 +74,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtoco
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Test that using the magic byte to indicate intend ot use ProtoBuf messages works
@@ -232,9 +232,12 @@ public class CacheConnectionIntegrationTest {
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {
-    String keyStore = TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+    String keyStore =
+        createTempFileFromResource(CacheConnectionIntegrationTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
     String trustStore =
-        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+        createTempFileFromResource(CacheConnectionIntegrationTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
 
     properties.setProperty(SSL_ENABLED_COMPONENTS, "server");
     properties.setProperty(SSL_PROTOCOLS, SSL_PROTOCOLS_VALUE);
@@ -250,9 +253,11 @@ public class CacheConnectionIntegrationTest {
 
   private Socket getSSLSocket() throws IOException {
     String keyStorePath =
-        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+        createTempFileFromResource(CacheConnectionIntegrationTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
     String trustStorePath =
-        TestUtil.getResourcePath(CacheConnectionIntegrationTest.class, DEFAULT_STORE);
+        createTempFileFromResource(CacheConnectionIntegrationTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
 
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setEnabled(true);

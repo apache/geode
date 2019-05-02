@@ -14,6 +14,7 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -31,7 +32,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({RestAPITest.class})
 public class AssemblyContentsIntegrationTest {
@@ -42,7 +42,8 @@ public class AssemblyContentsIntegrationTest {
   @Before
   public void loadExpectedAssemblyContent() throws IOException {
     String assemblyContent =
-        TestUtil.getResourcePath(AssemblyContentsIntegrationTest.class, "/assembly_content.txt");
+        createTempFileFromResource(AssemblyContentsIntegrationTest.class,
+            "/assembly_content.txt").getAbsolutePath();
 
     expectedAssemblyContent =
         Files.lines(Paths.get(assemblyContent)).collect(Collectors.toCollection(TreeSet::new));
