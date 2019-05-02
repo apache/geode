@@ -2418,4 +2418,19 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     return entries.clear(rvv, this);
   }
 
+  @Override
+  SenderIdMonitor createSenderIdMonitor() {
+    // bucket regions do not need to monitor sender ids
+    return null;
+  }
+
+  @Override
+  void updateSenderIdMonitor() {
+    // nothing needed on a bucket region
+  }
+
+  @Override
+  void checkSameSenderIdsAvailableOnAllNodes() {
+    // nothing needed on a bucket region
+  }
 }

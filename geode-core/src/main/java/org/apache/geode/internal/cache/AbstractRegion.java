@@ -701,7 +701,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return this.asyncEventQueueIds;
   }
 
-  Set<String> getVisibleAsyncEventQueueIds() {
+  @Override
+  public Set<String> getVisibleAsyncEventQueueIds() {
     return this.visibleAsyncEventQueueIds;
   }
 
