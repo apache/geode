@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.net;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -31,7 +32,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({MembershipTest.class})
 public class SocketCreatorJUnitTest {
@@ -99,6 +99,6 @@ public class SocketCreatorJUnitTest {
   }
 
   private String getSingleKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore");
+    return createTempFileFromResource(getClass(), "/ssl/trusted.keystore").getAbsolutePath();
   }
 }

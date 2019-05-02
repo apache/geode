@@ -41,6 +41,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -107,7 +108,6 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests the ability of the {@link Locator} API to start and stop locators running in remote VMs.
@@ -1817,15 +1817,17 @@ public class LocatorDUnitTest implements java.io.Serializable {
   }
 
   private String getSingleKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/ssl/trusted.keystore");
+    return createTempFileFromResource(getClass(), "/ssl/trusted.keystore").getAbsolutePath();
   }
 
   private String getMultiKeyKeystore() {
-    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks");
+    return createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+        .getAbsolutePath();
   }
 
   private String getMultiKeyTruststore() {
-    return TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks");
+    return createTempFileFromResource(getClass(),
+        "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath();
   }
 
   private void startVerifyAndStopLocator(VM loc1, VM loc2, int port1, int port2,

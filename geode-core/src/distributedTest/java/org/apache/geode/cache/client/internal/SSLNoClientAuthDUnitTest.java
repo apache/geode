@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_PR
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SERVER_SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -52,7 +53,6 @@ import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Test for GEODE-396
@@ -118,8 +118,12 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     gemFireProps.put(SERVER_SSL_CIPHERS, cacheServerSslciphers);
     gemFireProps.put(SERVER_SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
-    String keyStore = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE);
-    String trustStore = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE);
+    String keyStore =
+        createTempFileFromResource(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
+    String trustStore =
+        createTempFileFromResource(SSLNoClientAuthDUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
     gemFireProps.put(SERVER_SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(SERVER_SSL_KEYSTORE, keyStore);
     gemFireProps.put(SERVER_SSL_KEYSTORE_PASSWORD, "password");
@@ -145,8 +149,12 @@ public class SSLNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
     String cacheServerSslprotocols = "any";
     String cacheServerSslciphers = "any";
 
-    String keyStorePath = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, keyStore);
-    String trustStorePath = TestUtil.getResourcePath(SSLNoClientAuthDUnitTest.class, trustStore);
+    String keyStorePath =
+        createTempFileFromResource(SSLNoClientAuthDUnitTest.class, keyStore)
+            .getAbsolutePath();
+    String trustStorePath =
+        createTempFileFromResource(SSLNoClientAuthDUnitTest.class, trustStore)
+            .getAbsolutePath();
     // using new server-ssl-* properties
     gemFireProps.put(SERVER_SSL_ENABLED, String.valueOf(cacheServerSslenabled));
     gemFireProps.put(SERVER_SSL_PROTOCOLS, cacheServerSslprotocols);

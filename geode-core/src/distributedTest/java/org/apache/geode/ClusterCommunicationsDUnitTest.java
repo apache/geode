@@ -31,6 +31,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_C
 import static org.apache.geode.internal.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.DataInput;
@@ -79,8 +80,6 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 import org.apache.geode.test.version.VersionManager;
-import org.apache.geode.util.test.TestUtil;
-
 
 /**
  * This class tests cluster tcp/ip communications both with and without SSL enabled
@@ -309,8 +308,12 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
 
     if (useSSL) {
       properties.put(SSL_ENABLED_COMPONENTS, "cluster,locator");
-      properties.put(SSL_KEYSTORE, TestUtil.getResourcePath(this.getClass(), "server.keystore"));
-      properties.put(SSL_TRUSTSTORE, TestUtil.getResourcePath(this.getClass(), "server.keystore"));
+      properties.put(SSL_KEYSTORE,
+          createTempFileFromResource(this.getClass(), "server.keystore")
+              .getAbsolutePath());
+      properties.put(SSL_TRUSTSTORE,
+          createTempFileFromResource(this.getClass(), "server.keystore")
+              .getAbsolutePath());
       properties.put(SSL_PROTOCOLS, "TLSv1.2");
       properties.put(SSL_KEYSTORE_PASSWORD, "password");
       properties.put(SSL_TRUSTSTORE_PASSWORD, "password");

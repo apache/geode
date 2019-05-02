@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security.generator;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+
 import java.security.Principal;
 import java.security.Provider;
 import java.security.Security;
@@ -21,7 +23,6 @@ import java.util.Properties;
 
 import org.apache.geode.security.templates.PKCSAuthInit;
 import org.apache.geode.security.templates.PKCSAuthenticator;
-import org.apache.geode.util.test.TestUtil;
 
 public class PKCSCredentialGenerator extends CredentialGenerator {
 
@@ -51,7 +52,8 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
   @Override
   protected Properties initialize() throws IllegalArgumentException {
     final String keyStoreFile =
-        TestUtil.getResourcePath(PKCSCredentialGenerator.class, keyStoreDir + "/publickeyfile");
+        createTempFileFromResource(PKCSCredentialGenerator.class,
+            keyStoreDir + "/publickeyfile").getAbsolutePath();
 
     final Properties props = new Properties();
     props.setProperty(PKCSAuthenticator.PUBLIC_KEY_FILE, keyStoreFile);
@@ -77,8 +79,9 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
 
   @Override
   public Properties getInvalidCredentials(int index) {
-    final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
-        keyStoreDir + "/gemfire11.keystore");
+    final String keyStoreFile =
+        createTempFileFromResource(PKCSCredentialGenerator.class,
+            keyStoreDir + "/gemfire11.keystore").getAbsolutePath();
 
     final Properties props = new Properties();
     props.setProperty(PKCSAuthInit.KEYSTORE_FILE_PATH, keyStoreFile);
@@ -91,8 +94,9 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
   @Override
   public Properties getValidCredentials(int index) {
     final int aliasnum = (index % 10) + 1;
-    final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
-        keyStoreDir + "/gemfire" + aliasnum + ".keystore");
+    final String keyStoreFile =
+        createTempFileFromResource(PKCSCredentialGenerator.class,
+            keyStoreDir + "/gemfire" + aliasnum + ".keystore").getAbsolutePath();
 
     final Properties props = new Properties();
     props.setProperty(PKCSAuthInit.KEYSTORE_FILE_PATH, keyStoreFile);
@@ -104,8 +108,9 @@ public class PKCSCredentialGenerator extends CredentialGenerator {
 
   @Override
   public Properties getValidCredentials(Principal principal) {
-    final String keyStoreFile = TestUtil.getResourcePath(PKCSCredentialGenerator.class,
-        keyStoreDir + principal.getName() + ".keystore");
+    final String keyStoreFile =
+        createTempFileFromResource(PKCSCredentialGenerator.class,
+            keyStoreDir + principal.getName() + ".keystore").getAbsolutePath();
 
     final Properties props = new Properties();
     props.setProperty(PKCSAuthInit.KEYSTORE_FILE_PATH, keyStoreFile);

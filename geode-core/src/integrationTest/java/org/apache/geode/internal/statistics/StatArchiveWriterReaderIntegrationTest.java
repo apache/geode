@@ -17,6 +17,7 @@ package org.apache.geode.internal.statistics;
 import static org.apache.geode.internal.statistics.StatArchiveFormat.NANOS_PER_MILLI;
 import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_INITIAL_DATE_MILLIS;
 import static org.apache.geode.internal.statistics.TestStatArchiveWriter.WRITER_PREVIOUS_TIMESTAMP_NANOS;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -54,7 +55,6 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatArchiveReader.StatValue;
 import org.apache.geode.test.junit.categories.StatisticsTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Integration tests for {@link StatArchiveWriter} and {@link StatArchiveReader}.
@@ -989,8 +989,9 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     // validate byte content of stat archive file against saved expected file
 
-    final File expected = new File(TestUtil.getResourcePath(getClass(),
-        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs"));
+    final File expected = new File(createTempFileFromResource(getClass(),
+        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs")
+            .getAbsolutePath());
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
 
@@ -1394,8 +1395,9 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     // validate byte content of stat archive file against saved expected file
 
-    final File expected = new File(TestUtil.getResourcePath(getClass(),
-        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs"));
+    final File expected = new File(createTempFileFromResource(getClass(),
+        "StatArchiveWriterReaderJUnitTest_" + this.testName.getMethodName() + "_expected.gfs")
+            .getAbsolutePath());
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
 

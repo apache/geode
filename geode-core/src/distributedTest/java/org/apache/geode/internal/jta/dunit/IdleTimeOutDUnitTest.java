@@ -15,6 +15,7 @@
 package org.apache.geode.internal.jta.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -48,8 +49,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.util.test.TestUtil;
-
 
 public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
@@ -132,7 +131,9 @@ public class IdleTimeOutDUnitTest extends JUnit4DistributedTestCase {
     path = File.createTempFile("dunit-cachejta_", ".xml").getAbsolutePath();
     LogWriterUtils.getLogWriter().fine("PATH " + path);
     /** * Return file as string and then modify the string accordingly ** */
-    String file_as_str = readFile(TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
+    String file_as_str = readFile(
+        createTempFileFromResource(CacheUtils.class, "cachejta.xml")
+            .getAbsolutePath());
     file_as_str = file_as_str.replaceAll("newDB", "newDB_" + pid);
     String modified_file_str = modifyFile(file_as_str);
     FileOutputStream fos = new FileOutputStream(path);

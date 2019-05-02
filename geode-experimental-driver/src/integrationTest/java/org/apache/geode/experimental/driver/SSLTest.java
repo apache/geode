@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -52,7 +53,6 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({ClientServerTest.class})
 public class SSLTest {
@@ -63,19 +63,24 @@ public class SSLTest {
   public ExpectedException expectedException = ExpectedException.none();
 
   private final String DEFAULT_KEY_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "default.keystore");
+      createTempFileFromResource(SSLTest.class, "default.keystore").getAbsolutePath();
   private final String SERVER_KEY_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "cacheserver.keystore");
+      createTempFileFromResource(SSLTest.class, "cacheserver.keystore")
+          .getAbsolutePath();
   private final String SERVER_TRUST_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "cacheserver.truststore");
+      createTempFileFromResource(SSLTest.class, "cacheserver.truststore")
+          .getAbsolutePath();
   private final String BOGUSSERVER_KEY_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "bogusserver.keystore");
+      createTempFileFromResource(SSLTest.class, "bogusserver.keystore")
+          .getAbsolutePath();
   private final String BOGUSCLIENT_KEY_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "bogusclient.keystore");
+      createTempFileFromResource(SSLTest.class, "bogusclient.keystore")
+          .getAbsolutePath();
   private final String CLIENT_KEY_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "client.keystore");
+      createTempFileFromResource(SSLTest.class, "client.keystore").getAbsolutePath();
   private final String CLIENT_TRUST_STORE =
-      TestUtil.getResourcePath(SSLTest.class, "client.truststore");
+      createTempFileFromResource(SSLTest.class, "client.truststore")
+          .getAbsolutePath();
   private Locator locator;
   private Cache cache;
   private Driver driver;

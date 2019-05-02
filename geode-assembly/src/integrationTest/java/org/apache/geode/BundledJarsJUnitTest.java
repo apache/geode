@@ -14,6 +14,7 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -34,7 +35,6 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({RestAPITest.class})
 public class BundledJarsJUnitTest {
@@ -46,7 +46,8 @@ public class BundledJarsJUnitTest {
   @Before
   public void loadExpectedJars() throws IOException {
     String expectedJarFile =
-        TestUtil.getResourcePath(BundledJarsJUnitTest.class, "/expected_jars.txt");
+        createTempFileFromResource(BundledJarsJUnitTest.class, "/expected_jars.txt")
+            .getAbsolutePath();
 
     expectedJars = Files.lines(Paths.get(expectedJarFile)).collect(Collectors.toSet());
   }

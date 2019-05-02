@@ -24,6 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.validateGetResponse;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -67,7 +68,6 @@ import org.apache.geode.internal.protocol.protobuf.v1.serializer.ProtobufProtoco
 import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.InvalidProtocolMessageException;
 import org.apache.geode.internal.protocol.protobuf.v1.utilities.ProtobufUtilities;
 import org.apache.geode.test.junit.categories.ClientServerTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Test operations using ProtoBuf
@@ -362,8 +362,12 @@ public class CacheOperationsJUnitTest {
   }
 
   private void updatePropertiesForSSLCache(Properties properties) {
-    String keyStore = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
-    String trustStore = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
+    String keyStore =
+        createTempFileFromResource(CacheOperationsJUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
+    String trustStore =
+        createTempFileFromResource(CacheOperationsJUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
 
     properties.put(SSL_ENABLED_COMPONENTS, "server");
     properties.put(ConfigurationProperties.SSL_PROTOCOLS, SSL_PROTOCOLS);
@@ -378,8 +382,12 @@ public class CacheOperationsJUnitTest {
   }
 
   private Socket getSSLSocket() throws IOException {
-    String keyStorePath = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
-    String trustStorePath = TestUtil.getResourcePath(CacheOperationsJUnitTest.class, DEFAULT_STORE);
+    String keyStorePath =
+        createTempFileFromResource(CacheOperationsJUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
+    String trustStorePath =
+        createTempFileFromResource(CacheOperationsJUnitTest.class, DEFAULT_STORE)
+            .getAbsolutePath();
 
     SSLConfig sslConfig = new SSLConfig();
     sslConfig.setEnabled(true);

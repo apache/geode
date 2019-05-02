@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.util.ResourceUtils.copyDirectoryResource;
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -29,7 +31,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.test.junit.rules.RequiresGeodeHome;
-import org.apache.geode.test.util.ResourceUtils;
 
 public class GradleBuildWithGeodeCoreAcceptanceTest {
 
@@ -41,7 +42,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
 
   @Test
   public void testBasicGradleBuild() throws Exception {
-    URL projectDir = ResourceUtils.getResource("/gradle-test-projects/management");
+    URL projectDir = getResource("/gradle-test-projects/management");
     assertThat(projectDir).isNotNull();
 
     String projectGroup = System.getProperty("projectGroup");
@@ -51,7 +52,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     String geodeVersion = GemFireVersion.getGemFireVersion();
 
     File buildDir = temp.getRoot();
-    ResourceUtils.copyDirectoryResource(projectDir, buildDir);
+    copyDirectoryResource(projectDir, buildDir);
 
     GradleConnector connector = GradleConnector.newConnector();
     connector.useBuildDistribution();

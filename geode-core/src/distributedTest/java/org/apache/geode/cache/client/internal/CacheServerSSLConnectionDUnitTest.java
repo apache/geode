@@ -42,6 +42,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -89,7 +90,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests cacheserver ssl support added. See https://svn.gemstone.com/trac/gemfire/ticket/48995 for
@@ -201,9 +201,11 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
           String.valueOf(cacheServerSslRequireAuth));
 
       String keyStore =
-          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+          createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE)
+              .getAbsolutePath();
       String trustStore =
-          TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+          createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class,
+              SERVER_TRUST_STORE).getAbsolutePath();
       gemFireProps.put(CLUSTER_SSL_KEYSTORE_TYPE, "jks");
       gemFireProps.put(CLUSTER_SSL_KEYSTORE, keyStore);
       gemFireProps.put(CLUSTER_SSL_KEYSTORE_PASSWORD, "password");
@@ -230,9 +232,11 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     gemFireProps.put(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
 
     String keyStore =
-        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE);
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, SERVER_KEY_STORE)
+            .getAbsolutePath();
     String trustStore =
-        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE);
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, SERVER_TRUST_STORE)
+            .getAbsolutePath();
     gemFireProps.put(SSL_KEYSTORE_TYPE, "jks");
     gemFireProps.put(SSL_KEYSTORE, keyStore);
     gemFireProps.put(SSL_KEYSTORE_PASSWORD, "password");
@@ -251,9 +255,11 @@ public class CacheServerSSLConnectionDUnitTest extends JUnit4DistributedTestCase
     String cacheServerSslciphers = "any";
 
     String keyStorePath =
-        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, keyStore);
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, keyStore)
+            .getAbsolutePath();
     String trustStorePath =
-        TestUtil.getResourcePath(CacheServerSSLConnectionDUnitTest.class, trustStore);
+        createTempFileFromResource(CacheServerSSLConnectionDUnitTest.class, trustStore)
+            .getAbsolutePath();
 
     if (cacheServerSslenabled) {
       if (useOldSSLSettings) {

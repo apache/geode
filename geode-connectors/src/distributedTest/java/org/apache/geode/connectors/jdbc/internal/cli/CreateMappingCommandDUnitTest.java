@@ -25,6 +25,7 @@ import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_
 import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
 import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -79,7 +80,6 @@ import org.apache.geode.test.junit.categories.JDBCConnectorTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({JDBCConnectorTest.class})
 public class CreateMappingCommandDUnitTest {
@@ -571,7 +571,8 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    String filePath =
+        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);

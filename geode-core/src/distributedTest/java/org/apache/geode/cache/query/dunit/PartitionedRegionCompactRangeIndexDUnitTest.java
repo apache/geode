@@ -16,6 +16,7 @@ package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -43,7 +44,6 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({OQLQueryTest.class})
 public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable {
@@ -61,7 +61,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
     props.setProperty(LOCATORS, "localhost[" + DistributedTestUtils.getDUnitLocatorPort() + "]");
-    props.setProperty(CACHE_XML_FILE, TestUtil.getResourcePath(getClass(), cacheXML));
+    props.setProperty(CACHE_XML_FILE,
+        createTempFileFromResource(getClass(), cacheXML).getAbsolutePath());
     return props;
   }
 

@@ -22,6 +22,7 @@ package org.apache.geode.internal.jta;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -39,7 +40,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.util.test.TestUtil;
 
 public class CacheUtils {
   public static DistributedSystem ds;
@@ -57,7 +57,9 @@ public class CacheUtils {
 
   public static String init(String className) throws Exception {
     Properties props = new Properties();
-    props.setProperty(CACHE_XML_FILE, TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
+    props.setProperty(CACHE_XML_FILE,
+        createTempFileFromResource(CacheUtils.class, "cachejta.xml")
+            .getAbsolutePath());
     String tableName = "";
     props.setProperty(MCAST_PORT, "0");
 

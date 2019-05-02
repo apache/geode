@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.wan;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -46,7 +47,6 @@ import org.apache.geode.internal.cache.wan.spi.WANFactory;
 import org.apache.geode.test.junit.categories.WanTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({WanTest.class})
 @RunWith(Parameterized.class)
@@ -68,15 +68,19 @@ public class GatewayReceiverXmlParsingValidationsJUnitTest {
 
   @Test(expected = CacheXmlException.class)
   public void multipleReceiversShouldThrowException() {
-    String cacheXmlFileName = TestUtil.getResourcePath(getClass(),
-        getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml");
+    String cacheXmlFileName =
+        createTempFileFromResource(getClass(),
+            getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml")
+                .getAbsolutePath();
     cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
   }
 
   @Test
   public void correctConfiguration() {
-    String cacheXmlFileName = TestUtil.getResourcePath(getClass(),
-        getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml");
+    String cacheXmlFileName =
+        createTempFileFromResource(getClass(),
+            getClass().getSimpleName() + "." + testName.getMethodName() + ".cache.xml")
+                .getAbsolutePath();
     cache = new CacheFactory().set(MCAST_PORT, "0").set(CACHE_XML_FILE, cacheXmlFileName).create();
 
     assertThat(cache.getGatewayReceivers()).isNotEmpty();

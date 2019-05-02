@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -28,7 +29,6 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This class tests regions created by xml files
@@ -97,7 +97,8 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
 
   private void createCache(String cacheXmlFileName) {
     Properties config = new Properties();
-    String cacheXmlPath = TestUtil.getResourcePath(getClass(), cacheXmlFileName);
+    String cacheXmlPath =
+        createTempFileFromResource(getClass(), cacheXmlFileName).getAbsolutePath();
     config.setProperty(CACHE_XML_FILE, cacheXmlPath);
 
     getSystem(config);

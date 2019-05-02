@@ -14,6 +14,8 @@
  */
 package org.apache.geode.security.generator;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Properties;
@@ -22,7 +24,6 @@ import java.util.Set;
 import org.apache.geode.cache.operations.OperationContext.OperationCode;
 import org.apache.geode.security.templates.UsernamePrincipal;
 import org.apache.geode.security.templates.XmlAuthorization;
-import org.apache.geode.util.test.TestUtil;
 
 public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
@@ -82,12 +83,14 @@ public class XmlAuthzCredentialGenerator extends AuthzCredentialGenerator {
 
     if (this.generator.classCode().isDummy()) {
       final String xmlFilename =
-          TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + dummyXml);
+          createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + dummyXml)
+              .getAbsolutePath();
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
     } else if (this.generator.classCode().isLDAP()) {
       final String xmlFilename =
-          TestUtil.getResourcePath(XmlAuthzCredentialGenerator.class, dirName + ldapXml);
+          createTempFileFromResource(XmlAuthzCredentialGenerator.class, dirName + ldapXml)
+              .getAbsolutePath();
       sysProps.setProperty(XmlAuthorization.DOC_URI_PROP_NAME, xmlFilename);
 
       // } else if (this.generator.classCode().isPKCS()) {
