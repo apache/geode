@@ -169,7 +169,7 @@ public class LogExporter {
   }
 
   List<Path> findLogFiles(Path workingDir) throws IOException {
-    Predicate<Path> logFileSelector = (Path file) -> file.toString().toLowerCase().endsWith(".log");
+    Predicate<Path> logFileSelector = (Path file) -> file.toString().toLowerCase().contains(".log");
     return findFiles(workingDir, logFileSelector);
   }
 
