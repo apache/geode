@@ -1283,9 +1283,7 @@ public class PartitionedRegion extends LocalRegion
   }
 
   private SenderIdMonitor createSenderIdMonitor() {
-    SenderIdMonitor senderIdMonitor = new SenderIdMonitor(this, this.distAdvisor);
-    this.distAdvisor.addProfileChangeListener(senderIdMonitor);
-    return senderIdMonitor;
+    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
   }
 
   private void updateSenderIdMonitor() {

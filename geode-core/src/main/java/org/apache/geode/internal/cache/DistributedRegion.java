@@ -2690,9 +2690,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
   SenderIdMonitor createSenderIdMonitor() {
-    SenderIdMonitor senderIdMonitor = new SenderIdMonitor(this, this.distAdvisor);
-    this.distAdvisor.addProfileChangeListener(senderIdMonitor);
-    return senderIdMonitor;
+    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
   }
 
   void updateSenderIdMonitor() {

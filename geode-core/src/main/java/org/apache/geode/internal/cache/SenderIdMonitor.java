@@ -28,9 +28,16 @@ public class SenderIdMonitor implements ProfileListener {
   private volatile Set<String> illegalGatewaySenderIds = null;
   private volatile Set<String> illegalAsyncEventQueueIds = null;
 
-  public SenderIdMonitor(InternalRegion region, CacheDistributionAdvisor advisor) {
+  private SenderIdMonitor(InternalRegion region, CacheDistributionAdvisor advisor) {
     this.region = region;
     this.advisor = advisor;
+  }
+
+  public static SenderIdMonitor createSenderIdMonitor(InternalRegion region,
+      CacheDistributionAdvisor advisor) {
+    SenderIdMonitor senderIdMonitor = new SenderIdMonitor(region, advisor);
+    advisor.addProfileChangeListener(senderIdMonitor);
+    return senderIdMonitor;
   }
 
   @Override
