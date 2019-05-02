@@ -264,6 +264,8 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
 
         if (currentTimeStamp - oldTimeStamp > monitorInterval + MONITOR_DELAY_THRESHOLD) {
           // delay in running this task - don't suspect anyone for a while
+          logger.info(
+              "Failure detector has noticed a JVM pause and is giving all members a heartbeat");
           for (InternalDistributedMember member : myView.getMembers()) {
             PhiAccrualFailureDetector detector = memberDetectors.get(member);
             if (detector != null) {
@@ -444,7 +446,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       logger.info("Creating new failure detector for {}", member);
       // TODO consider giving different kinds of members different thresholds
       final int threshold = Integer.getInteger("geode.phiAccrualThreshold", 10);
-      final int sampleSize = Integer.getInteger("geode.phiAccrualSampleSize", 200);
+      final int sampleSize = Integer.getInteger("geode.phiAccrualSampleSize", 15);
       final int minStdDev = Integer.getInteger("geode.phiAccrualMinimumStandardDeviation", 100);
       detector = new PhiAccrualFailureDetector(
           threshold, sampleSize, minStdDev, memberTimeout / 2, currentTimeStamp);
@@ -1386,6 +1388,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             services.getJoinLeave().remove(mbr, reason);
             // make sure it is still suspected
             memberSuspected(localAddress, mbr, reason);
+            failed = true;
           } else {
             // if this node can survive an availability check then initiate suspicion about
             // the node that failed the availability check
@@ -1401,9 +1404,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               suspectMembersMessage.setSender(localAddress);
               logger.debug("Performing local processing on suspect request");
               processSuspectMembersRequest(suspectMembersMessage);
+              failed = true;
+
+            } else {
+              logger.info(
+                  "Availability check failed but unable to connect to my own failure detection port");
             }
           }
-          failed = true;
         } else {
           logger.info(
               "Availability check failed but detected recent message traffic for suspect member "

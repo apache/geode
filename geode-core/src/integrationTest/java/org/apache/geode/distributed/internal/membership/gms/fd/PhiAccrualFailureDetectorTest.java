@@ -92,23 +92,19 @@ public class PhiAccrualFailureDetectorTest {
         new PhiAccrualFailureDetector(threshold, historySize, stddev,
             acceptableHeartbeatPauseMillis, now);
     long heartbeatTime = 0;
-    for (long l = 1; l <= historySize; l++) {
-      long deviation = getDeviation(heartbeatInterval, random);
-      detector.heartbeat(now + (l * heartbeatInterval) + deviation);
-    }
     for (long l : intervals) {
       if (l > 0) {
         long deviation = getDeviation(heartbeatInterval, random);
-        detector.heartbeat(now + (heartbeatInterval * (l + historySize)) + deviation);
+        detector.heartbeat(now + (heartbeatInterval * l) + deviation);
       }
       l = Math.abs(l);
-      heartbeatTime = now + (heartbeatInterval * (l + historySize));
+      heartbeatTime = now + (heartbeatInterval * l);
       System.out.println("heartbeat " + l + " phi= " + detector.phi(heartbeatTime));
     }
     assertFalse("phi=" + detector.phi(heartbeatTime), detector.isAvailable(heartbeatTime));
   }
 
   public int getDeviation(int heartbeatInterval, Random random) {
-    return 0; // random.nextInt(heartbeatInterval / 4);
+    return random.nextInt(heartbeatInterval / 4);
   }
 }

@@ -121,10 +121,14 @@ public class PhiAccrualFailureDetector {
     this.minStdDeviationMillis = minStdDeviationMillis;
     this.acceptableHeartbeatPauseMillis = acceptableHeartbeatPauseMillis;
 
-    long stdDeviationMillis = firstHeartbeatEstimateMillis / 4;
     heartbeatHistory = new HeartbeatHistory(maxSampleSize);
-    heartbeatHistory.add(firstHeartbeatEstimateMillis - stdDeviationMillis)
-        .add(firstHeartbeatEstimateMillis + stdDeviationMillis);
+    for (int i = 0; i < maxSampleSize; i++) {
+      heartbeatHistory.add(acceptableHeartbeatPauseMillis);
+    }
+
+    // long stdDeviationMillis = acceptableHeartbeatPauseMillis / 4;
+    // heartbeatHistory.add(acceptableHeartbeatPauseMillis - stdDeviationMillis)
+    // .add(acceptableHeartbeatPauseMillis + stdDeviationMillis);
 
     // Bruce: record the estimate as the last timestamp received
     lastTimestampMillis.set(firstHeartbeatEstimateMillis);

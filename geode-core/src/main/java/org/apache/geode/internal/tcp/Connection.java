@@ -1861,12 +1861,12 @@ public class Connection implements Runnable {
    * initiate suspect processing if a shared/ordered connection is lost and we're not shutting down
    */
   private void initiateSuspicionIfSharedUnordered() {
-    if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
-      if (!this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
-        this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
-            INITIATING_SUSPECT_PROCESSING);
-      }
-    }
+    // if (this.isReceiver && this.handshakeRead && !this.preserveOrder && this.sharedResource) {
+    // if (!this.owner.getConduit().getCancelCriterion().isCancelInProgress()) {
+    // this.owner.getDM().getMembershipManager().suspectMember(this.getRemoteAddress(),
+    // INITIATING_SUSPECT_PROCESSING);
+    // }
+    // }
   }
 
   /**
