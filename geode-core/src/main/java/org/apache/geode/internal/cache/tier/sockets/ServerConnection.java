@@ -18,8 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIE
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -55,6 +53,7 @@ import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.internal.Connection;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
@@ -1070,8 +1069,7 @@ public abstract class ServerConnection implements Runnable {
 
       credBytes = handshake.getEncryptor().decryptBytes(credBytes);
 
-      ByteArrayInputStream bis = new ByteArrayInputStream(credBytes);
-      DataInputStream dinp = new DataInputStream(bis);
+      ByteArrayDataInput dinp = new ByteArrayDataInput(credBytes);
       Properties credentials = DataSerializer.readProperties(dinp);
 
       // When here, security is enforced on server, if login returns a subject, then it's the newly

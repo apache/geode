@@ -42,6 +42,14 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   public ByteArrayDataInput() {}
 
+  public ByteArrayDataInput(byte[] bytes) {
+    initialize(bytes, null);
+  }
+
+  public ByteArrayDataInput(byte[] bytes, Version version) {
+    initialize(bytes, version);
+  }
+
   /**
    * Initialize this byte array stream with given byte array and version.
    *
@@ -146,9 +154,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public void readFully(byte[] b) throws IOException {
-    final int len = b.length;
-    System.arraycopy(this.bytes, this.pos, b, 0, len);
-    this.pos += len;
+    readFully(b, 0, b.length);
   }
 
   /**
@@ -391,11 +397,49 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   }
 
   /**
+   * Behaves like InputStream.read()
+   * Returns the next byte as an int in the range [0..255]
+   * or -1 if at EOF.
+   */
+  private int readByteAsInt() {
+    if (this.pos >= this.nBytes) {
+      return -1;
+    } else {
+      return this.bytes[this.pos++] & 0xff;
+    }
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override
   public String readLine() throws IOException {
-    throw new UnsupportedOperationException();
+    if (this.pos >= this.nBytes) {
+      return null;
+    }
+    // index of the first byte in the line
+    int startIdx = this.pos;
+    // index of the last byte in the line
+    int lastIdx = -1;
+    while (lastIdx == -1) {
+      int c = readByteAsInt();
+      switch (c) {
+        case -1:
+          lastIdx = this.pos;
+          break;
+        case '\n':
+          lastIdx = this.pos - 1;
+          break;
+        case '\r':
+          lastIdx = this.pos - 1;
+          int c2 = readByteAsInt();
+          if (c2 != '\n' && c2 != -1) {
+            this.pos--;
+          }
+          break;
+      }
+    }
+    return new String(this.bytes, 0, startIdx, lastIdx - startIdx);
   }
 
   /**
