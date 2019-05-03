@@ -20,13 +20,24 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.stream.Collectors;
 
+/**
+ * This class loader loads from itself/child first. It also crawls the rest of the deployed jars
+ * when attempting
+ * to do a class look up (for inter jar dependencies).
+ *
+ * As new jars versions of jars are deployed, the jar deployer does a little book keeping in the
+ * latestJarNamesToClassLoader map.
+ * This map is then used to ignore any old versions of a jar. For example if we have deployed
+ * foov2.jar we should no longer crawl
+ * foov1.jar when doing class look ups (even in the inter jar dependency case)
+ *
+ */
 public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
 
   private String jarName;
   public final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader;
-
-
 
   public DeployJarChildFirstClassLoader(
       HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader, URL[] urls,
@@ -47,17 +58,39 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
     return loadClass(name, false);
   }
 
+
   /**
    * We override the parent-first behavior established by java.lang.Classloader.
    */
   @Override
   protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    Class c;
     if (thisIsOld()) {
-      return searchParent(name);
+      c = searchParent(name);
     } else {
-      System.out.println("JASON loading class:" + name + " from " + jarName + ":" + this);
-      return super.loadClass(name, resolve);
+      c = super.loadClass(name, resolve);
     }
+    if (c == null) {
+      for (DeployJarChildFirstClassLoader sibling : latestJarNamesToClassLoader.values().stream()
+          .filter(s -> s != null).collect(Collectors.toList())) {
+        try {
+          c = sibling.findClass(name);
+          if (c != null) {
+            break;
+          }
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+        }
+      }
+    }
+    return c;
+  }
+
+  @Override
+  public Class findClass(String name) throws ClassNotFoundException {
+    if (thisIsOld()) {
+      return null;
+    }
+    return super.findClass(name);
   }
 
   @Override
@@ -78,8 +111,13 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
   }
 
   private boolean thisIsOld() {
-    System.out.println("JASON" + jarName + ":" + latestJarNamesToClassLoader.get(jarName) + "::::"
-        + this + " is this old?:" + (latestJarNamesToClassLoader.get(jarName) != this));
+    new Exception(
+        "thisIsOld lookup:" + latestJarNamesToClassLoader.get(jarName) + ":" + jarName + ":" + this)
+            .printStackTrace();
     return latestJarNamesToClassLoader.get(jarName) != this;
+  }
+
+  public String getJarName() {
+    return jarName;
   }
 }

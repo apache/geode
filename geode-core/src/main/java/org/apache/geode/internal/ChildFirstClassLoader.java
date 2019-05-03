@@ -62,11 +62,14 @@ public class ChildFirstClassLoader extends URLClassLoader {
       }
     }
 
-
     // if we could not find it, delegate to parent
     // Note that we don't attempt to catch any ClassNotFoundException
     if (c == null) {
-      c = searchParent(name);
+      try {
+        c = searchParent(name);
+      } catch (ClassNotFoundException | NoClassDefFoundError cnfe) {
+        // ignore
+      }
     }
 
     if (resolve) {

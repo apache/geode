@@ -77,34 +77,11 @@ public class ClassPathLoader {
   public final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader =
       new HashMap<>();
 
-  private volatile DeployJarChildFirstClassLoader head;
+  private volatile DeployJarChildFirstClassLoader leafLoader;
 
   private final JarDeployer jarDeployer;
 
   private boolean excludeTCCL;
-
-  void rebuildClassLoaderForDeployedJars() {
-    head = null;
-    ClassLoader parent = ClassPathLoader.class.getClassLoader();
-    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
-    for (DeployedJar deployedJar : deployedJars) {
-      if (head == null) {
-        head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
-            new URL[] {deployedJar.getFileURL()},
-            deployedJar.getJarName(), parent);
-      } else {
-        head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
-            new URL[] {deployedJar.getFileURL()},
-            deployedJar.getJarName(), head);
-      }
-    }
-  }
-
-  void chainClassloader(DeployedJar jar) {
-    head = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
-        new URL[] {jar.getFileURL()}, jar.getJarName(), head);
-  }
-
 
   public ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
@@ -137,6 +114,30 @@ public class ClassPathLoader {
    */
   static ClassPathLoader createWithDefaults(final boolean excludeTCCL) {
     return new ClassPathLoader(excludeTCCL);
+  }
+
+  synchronized void rebuildClassLoaderForDeployedJars() {
+    leafLoader = null;
+    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
+    for (DeployedJar deployedJar : deployedJars) {
+      chainClassloader(deployedJar);
+    }
+  }
+
+  ClassLoader getLeafLoader() {
+    if (leafLoader == null) {
+      return ClassPathLoader.class.getClassLoader();
+    }
+    return leafLoader;
+  }
+
+  synchronized void chainClassloader(DeployedJar jar) {
+    this.leafLoader = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
+        new URL[] {jar.getFileURL()}, jar.getJarName(), getLeafLoader());
+  }
+
+  synchronized void unloadClassloaderForJar(String jarName) {
+    latestJarNamesToClassLoader.put(jarName, null);
   }
 
   public URL getResource(final String name) {
@@ -186,7 +187,6 @@ public class ClassPathLoader {
       }
       try {
         Class<?> clazz = Class.forName(name, true, classLoader);
-
         if (clazz != null) {
           if (isDebugEnabled) {
             logger.trace("forName found by: {}", classLoader);
@@ -336,10 +336,10 @@ public class ClassPathLoader {
       }
     }
 
-    if (head == null) {
+    if (leafLoader == null) {
       classLoaders.add(ClassPathLoader.class.getClassLoader());
     } else {
-      classLoaders.add(head);
+      classLoaders.add(leafLoader);
     }
     return classLoaders;
   }

@@ -484,7 +484,7 @@ public class JarDeployer implements Serializable {
         throw new IllegalArgumentException("JAR not deployed");
       }
 
-      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+      ClassPathLoader.getLatest().unloadClassloaderForJar(jarName);
 
       deployedJar.cleanUp(null);
 

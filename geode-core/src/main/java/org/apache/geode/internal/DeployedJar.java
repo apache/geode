@@ -156,7 +156,6 @@ public class DeployedJar {
     JarInputStream jarInputStream = null;
     try {
       Collection<String> functionClasses = findFunctionsInThisJar();
-
       jarInputStream = new JarInputStream(bufferedInputStream);
       JarEntry jarEntry = jarInputStream.getNextJarEntry();
 
