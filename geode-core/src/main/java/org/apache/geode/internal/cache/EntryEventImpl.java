@@ -17,9 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_OLD_VALUE;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.function.Function;
@@ -1810,7 +1808,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       try {
         long start = CachePerfStats.getStatTime();
         ((org.apache.geode.Delta) value)
-            .fromDelta(new DataInputStream(new ByteArrayInputStream(getDeltaBytes())));
+            .fromDelta(new ByteArrayDataInput(getDeltaBytes()));
         getRegion().getCachePerfStats().endDeltaUpdate(start);
         deltaBytesApplied = true;
       } catch (RuntimeException rte) {
