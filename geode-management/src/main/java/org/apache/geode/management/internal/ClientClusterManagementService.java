@@ -16,15 +16,14 @@
 package org.apache.geode.management.internal;
 
 
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
@@ -45,19 +44,22 @@ import org.apache.geode.management.api.RestfulEndpoint;
  */
 public class ClientClusterManagementService implements ClusterManagementService {
 
+  private static final ResponseErrorHandler DEFAULT_ERROR_HANDLER =
+      new RestTemplateResponseErrorHandler();
+
   private static final String VERSION = "/v2";
 
-  private final ClusterManagementServiceConfig serviceConfig;
+  private final RestTemplate restTemplate;
 
-  public ClientClusterManagementService(ClusterManagementServiceConfig serviceConfig) {
-    this.serviceConfig = serviceConfig;
+  public ClientClusterManagementService(RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
   }
 
   @Override
   public ClusterManagementResult create(CacheElement config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return serviceConfig.getRestTemplate()
+    return restTemplate
         .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
         .getBody();
   }
@@ -75,7 +77,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult list(CacheElement config) {
     String endPoint = getEndpoint(config);
-    return serviceConfig.getRestTemplate()
+    return restTemplate
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
             ClusterManagementResult.class, config.getId(), config.getGroup())
         .getBody();
@@ -87,13 +89,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
       throw new IllegalArgumentException("Id is required.");
     }
     String endPoint = getEndpoint(config);
-    return serviceConfig.getRestTemplate()
+    return restTemplate
         .getForEntity(VERSION + endPoint + "/{id}", ClusterManagementResult.class, config.getId())
         .getBody();
   }
 
   public RestTemplate getRestTemplate() {
-    return serviceConfig.getRestTemplate();
+    return restTemplate;
   }
 
   private String getEndpoint(CacheElement config) {
@@ -106,7 +108,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   public boolean isConnected() {
-    return serviceConfig.getRestTemplate().getForEntity(VERSION + "/ping", String.class)
+    return restTemplate.getForEntity(VERSION + "/ping", String.class)
         .getBody().equals("pong");
   }
 

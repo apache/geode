@@ -34,8 +34,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -61,11 +59,8 @@ public class ClientClusterManagementServiceDUnitTest {
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
-
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setRequestFactory(webContext.getRequestFactory())
-        .build();
-    client = new ClientClusterManagementService(config);
+    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
+        .setRequestFactory(webContext.getRequestFactory()).build();
     server1 = cluster.startServerVM(0, webContext.getLocator().getPort());
   }
 
@@ -82,6 +77,7 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result).hasStatusCode(ClusterManagementResult.StatusCode.OK,
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
+
 
   @Test
   @WithMockUser

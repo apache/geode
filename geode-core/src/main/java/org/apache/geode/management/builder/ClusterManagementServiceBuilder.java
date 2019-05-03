@@ -13,22 +13,21 @@
  * the License.
  */
 
-package org.apache.geode.management.api;
+package org.apache.geode.management.builder;
 
-import org.springframework.web.client.RestTemplate;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.management.internal.api.GeodeClusterManagementServiceBuilder;
 
-/**
- * The interface used to create an instance of {@link ClusterManagementService}. See {@code
- * GeodeClusterManagementServiceConfig} and {@link ClusterManagementServiceConfig} for examples.
- */
-public interface ClusterManagementServiceConfig {
+public class ClusterManagementServiceBuilder {
 
-  /**
-   * Return the {@link RestTemplate} which is able to connect to the
-   * {@link ClusterManagementService}
-   * running in the cluster.
-   *
-   * @return a configured {@code RestTemplate} instance
-   */
-  RestTemplate getRestTemplate();
+  public static GeodeBuilder buildWithCache() {
+    return new GeodeClusterManagementServiceBuilder();
+  }
+
+  public interface GeodeBuilder extends
+      org.apache.geode.management.client.ClusterManagementServiceBuilder.Builder {
+    GeodeBuilder setCredentials(String username, String password);
+
+    GeodeBuilder setCache(GemFireCache cache);
+  }
 }

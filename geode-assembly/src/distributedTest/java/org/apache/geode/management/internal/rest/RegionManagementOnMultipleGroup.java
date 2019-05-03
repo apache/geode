@@ -24,9 +24,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
-import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -42,11 +40,10 @@ public class RegionManagementOnMultipleGroup {
     cluster.startServerVM(2, "group2", locator.getPort());
     cluster.startServerVM(3, "group1,group2", locator.getPort());
 
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setHost("localhost")
-        .setPort(locator.getHttpPort())
-        .build();
-    ClusterManagementService cms = new ClientClusterManagementService(config);
+    ClusterManagementService cms =
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .build();
     RegionConfig region = new RegionConfig();
     region.setName("test");
     region.setGroup("group1");

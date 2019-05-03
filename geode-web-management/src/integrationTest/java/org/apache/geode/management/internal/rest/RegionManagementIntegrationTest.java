@@ -33,10 +33,8 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
-import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
@@ -55,10 +53,8 @@ public class RegionManagementIntegrationTest {
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setRequestFactory(context.getRequestFactory())
-        .build();
-    client = new ClientClusterManagementService(config);
+    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
+        .setRequestFactory(context.getRequestFactory()).build();
   }
 
   @Test
