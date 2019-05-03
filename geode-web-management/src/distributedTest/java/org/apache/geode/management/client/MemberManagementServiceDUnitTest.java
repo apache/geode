@@ -38,6 +38,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -73,7 +74,7 @@ public class MemberManagementServiceDUnitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(2);
+    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(2);
   }
 
   @Test
@@ -99,7 +100,7 @@ public class MemberManagementServiceDUnitTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(0);
+    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(0);
   }
 
   @Test

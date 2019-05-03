@@ -57,7 +57,7 @@ public class ClusterManagementResultAssert
   }
 
   public ListAssert<RuntimeCacheElement> hasListResult() {
-    return assertThat(actual.getResult());
+    return assertThat(actual.getResult(RuntimeCacheElement.class));
   }
 
   public static ClusterManagementResultAssert assertManagementResult(

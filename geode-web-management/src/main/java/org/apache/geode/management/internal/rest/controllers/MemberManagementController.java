@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 @Controller("members")
@@ -43,7 +44,7 @@ public class MemberManagementController extends AbstractManagementController {
     config.setId(id);
     ClusterManagementResult result = clusterManagementService.list(config);
 
-    if (result.getResult().size() == 0) {
+    if (result.getResult(RuntimeCacheElement.class).size() == 0) {
       throw new EntityNotFoundException("Unable to find the member with id = " + id);
     }
 
