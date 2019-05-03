@@ -309,8 +309,15 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   @Override
   public String readUTF() throws IOException {
     final int utfLen = readUnsignedShort();
+    if (utfLen == 0) {
+      return "";
+    }
 
     if ((this.pos + utfLen) <= this.nBytes) {
+      String asciiString = readASCII(utfLen);
+      if (asciiString != null) {
+        return asciiString;
+      }
       if (this.charBuf == null || this.charBuf.length < utfLen) {
         int charBufLength = (((utfLen / 2) + 1) * 3);
         this.charBuf = new char[charBufLength];
@@ -322,17 +329,6 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
       final int limit = index + utfLen;
       int nChars = 0;
       int char1, char2, char3;
-
-      // quick check for ASCII strings first
-      for (; index < limit; index++, nChars++) {
-        char1 = (bytes[index] & 0xff);
-        if (char1 < 128) {
-          chars[nChars] = (char) char1;
-          continue;
-        } else {
-          break;
-        }
-      }
 
       for (; index < limit; index++, nChars++) {
         char1 = (bytes[index] & 0xff);
@@ -394,6 +390,23 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
     } else {
       throw new EOFException();
     }
+  }
+
+  /**
+   * If the utf encoded data is all ASCII then return
+   * a String containing that data. Otherwise return null.
+   */
+  private String readASCII(int utfLen) {
+    final int startIdx = pos;
+    int index = pos;
+    final int limit = index + utfLen;
+    for (; index < limit; index++) {
+      if ((bytes[index] & 0xff) >= 128) {
+        return null;
+      }
+    }
+    pos = limit;
+    return new String(bytes, 0, startIdx, utfLen);
   }
 
   /**
