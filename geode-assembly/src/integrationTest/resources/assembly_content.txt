@@ -660,6 +660,11 @@ javadoc/org/apache/geode/management/FixedPartitionAttributesData.html
 javadoc/org/apache/geode/management/GatewayReceiverMXBean.html
 javadoc/org/apache/geode/management/GatewaySenderMXBean.html
 javadoc/org/apache/geode/management/GemFireProperties.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.Builder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.CacheBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.ClientCacheBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.GenericBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.html
 javadoc/org/apache/geode/management/JMXNotificationType.html
 javadoc/org/apache/geode/management/JMXNotificationUserData.html
 javadoc/org/apache/geode/management/JVMMetrics.html
