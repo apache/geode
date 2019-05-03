@@ -16,15 +16,15 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-
-import org.apache.geode.internal.ByteArrayDataInput;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 
 public class AuthIds {
   private long connectionId;
   private long uniqueId;
 
   public AuthIds(byte[] bytes) throws Exception {
-    ByteArrayDataInput dis = new ByteArrayDataInput(bytes);
+    DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
     if (bytes.length == 8) {
       // only connectionid
       connectionId = dis.readLong();

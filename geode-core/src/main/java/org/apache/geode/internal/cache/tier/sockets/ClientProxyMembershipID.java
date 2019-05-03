@@ -16,7 +16,9 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.Externalizable;
 import java.io.IOException;
@@ -36,10 +38,10 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -391,9 +393,10 @@ public class ClientProxyMembershipID
 
   public DistributedMember getDistributedMember() {
     if (memberId == null) {
-      ByteArrayDataInput dataInput = new ByteArrayDataInput(identity);
+      ByteArrayInputStream bais = new ByteArrayInputStream(identity);
+      DataInputStream dis = new VersionedDataInputStream(bais, Version.CURRENT);
       try {
-        memberId = (DistributedMember) DataSerializer.readObject(dataInput);
+        memberId = (DistributedMember) DataSerializer.readObject(dis);
       } catch (Exception e) {
         logger.error("Unable to deserialize membership id", e);
       }

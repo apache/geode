@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
@@ -22,7 +24,6 @@ import java.util.Arrays;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.EventID;
 
 /**
@@ -203,7 +204,7 @@ public class ThreadIdentifier implements DataSerializable {
     Object mbr;
     try {
       mbr = InternalDistributedMember
-          .readEssentialData(new ByteArrayDataInput(membershipID));
+          .readEssentialData(new DataInputStream(new ByteArrayInputStream(membershipID)));
     } catch (Exception e) {
       mbr = membershipID; // punt and use the bytes
     }

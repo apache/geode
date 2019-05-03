@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -63,7 +65,6 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.Version;
@@ -1803,7 +1804,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
     Object deserializedObject = serializedBytes;
     // This is a debugging method so ignore all exceptions like ClassNotFoundException
     try {
-      ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
+      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedBytes));
       deserializedObject = DataSerializer.readObject(dis);
     } catch (ClassNotFoundException | IOException ignore) {
     }

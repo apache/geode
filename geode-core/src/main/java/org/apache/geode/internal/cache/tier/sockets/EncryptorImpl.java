@@ -23,6 +23,7 @@ import static org.apache.geode.internal.cache.tier.sockets.Handshake.PUBLIC_KEY_
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_AUTH_NOT_REQUIRED;
 import static org.apache.geode.internal.cache.tier.sockets.Handshake.REPLY_OK;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.FileInputStream;
@@ -65,7 +66,6 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.Encryptor;
@@ -582,7 +582,8 @@ public class EncryptorImpl implements Encryptor {
       byte[] encBytes = DataSerializer.readByteArray(dis);
       Cipher c = getDecryptCipher(this.clientSKAlgo, this.clientPublicKey);
       byte[] credentialBytes = decryptBytes(encBytes, c);
-      ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
+      ByteArrayInputStream bis = new ByteArrayInputStream(credentialBytes);
+      DataInputStream dinp = new DataInputStream(bis);
       // credentials = DataSerializer.readProperties(dinp);//Hitesh: we don't send in handshake
       // now
       byte[] challengeRes = DataSerializer.readByteArray(dinp);
@@ -686,7 +687,8 @@ public class EncryptorImpl implements Encryptor {
       }
 
       byte[] credentialBytes = decrypt.doFinal(encBytes);
-      ByteArrayDataInput dinp = new ByteArrayDataInput(credentialBytes);
+      ByteArrayInputStream bis = new ByteArrayInputStream(credentialBytes);
+      DataInputStream dinp = new DataInputStream(bis);
       credentials = DataSerializer.readProperties(dinp);
       byte[] challengeRes = DataSerializer.readByteArray(dinp);
       // Check the challenge string

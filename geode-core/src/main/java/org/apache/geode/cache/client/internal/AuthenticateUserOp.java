@@ -17,6 +17,8 @@ package org.apache.geode.cache.client.internal;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.util.Properties;
 
 import org.apache.geode.DataSerializer;
@@ -27,7 +29,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.MessageType;
@@ -181,7 +182,7 @@ public class AuthenticateUserOp {
         } else {
           cnx.getServer().setRequiresCredentials(true);
           byte[] decrypted = ((ConnectionImpl) cnx).decryptBytes(bytes);
-          ByteArrayDataInput dis = new ByteArrayDataInput(decrypted);
+          DataInputStream dis = new DataInputStream(new ByteArrayInputStream(decrypted));
           userId = dis.readLong();
         }
         if (needsServerLocation) {

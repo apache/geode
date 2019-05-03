@@ -14,12 +14,13 @@
  */
 package org.apache.geode.internal.offheap;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -279,6 +280,6 @@ public class DataType {
   }
 
   public static DataInput getDataInput(byte[] bytes) {
-    return new ByteArrayDataInput(bytes);
+    return new DataInputStream(new ByteArrayInputStream(bytes));
   }
 }

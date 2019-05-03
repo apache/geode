@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.distributed.ConfigurationProperties.CONFLATE_EVENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTH_INIT;
 
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
@@ -49,7 +50,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
@@ -269,8 +269,12 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
   private InternalDistributedMember readServerMember(DataInputStream p_dis) throws IOException {
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
+    ByteArrayInputStream bais = new ByteArrayInputStream(memberBytes);
+    DataInputStream dis = new DataInputStream(bais);
     Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
-    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v);
+    if (v != null) {
+      dis = new VersionedDataInputStream(dis, v);
+    }
     try {
       return DataSerializer.readObject(dis);
     } catch (EOFException e) {
