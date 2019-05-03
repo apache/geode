@@ -18,6 +18,7 @@
 {% from 'shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared_jinja.yml' import pipeline_prefix with context %}
 {% from 'shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
 
 ---
 
@@ -224,6 +225,7 @@ jobs:
         pre: ((semver-prerelease-token))
     - do:
       - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
       - task: create_instance
         {{- alpine_tools_config()|indent(8) }}
           params:
@@ -234,9 +236,13 @@ jobs:
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:
+          - name: attempts-log
+            path: old
           - name: concourse-metadata-resource
           - name: geode-ci
           outputs:
+          - name: attempts-log
+            path: new
           - name: instance-data
         timeout: 15m
         attempts: 10
