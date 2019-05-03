@@ -33,8 +33,9 @@ import org.apache.geode.management.membership.ClientMembershipEvent;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
 /**
- * Abstract class that contains common code that all true implementations of {@link CacheServer} can
- * use.
+ * Abstract class that contains common code that all true implementations of
+ * {@link InternalCacheServer}
+ * can use.
  *
  * @since GemFire 5.7
  */
@@ -375,7 +376,8 @@ public abstract class AbstractCacheServer implements InternalCacheServer {
     return this.tcpNoDelay;
   }
 
-  public Cache getCache() {
+  @Override
+  public InternalCache getCache() {
     return this.cache;
   }
 

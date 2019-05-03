@@ -39,6 +39,7 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache30.CacheSerializableRunnable;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -279,7 +280,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       org.apache.geode.LogWriter logger = cache.getLogger();
       CacheServerImpl currentServer =
           (CacheServerImpl) (new ArrayList(cache.getCacheServers()).get(0));
-      AcceptorImpl ai = currentServer.getAcceptor();
+      Acceptor ai = currentServer.getAcceptor();
       CacheClientNotifier notifier = ai.getCacheClientNotifier();
       CacheClientNotifierStats stats = notifier.getStats();
       logger.info("Stats:" + "\nDurableReconnectionCount:" + stats.get_durableReconnectionCount()
@@ -297,7 +298,7 @@ public class DurableClientStatsDUnitTest extends JUnit4DistributedTestCase {
       org.apache.geode.LogWriter logger = cache.getLogger();
       CacheServerImpl currentServer =
           (CacheServerImpl) (new ArrayList(cache.getCacheServers()).get(0));
-      AcceptorImpl ai = currentServer.getAcceptor();
+      Acceptor ai = currentServer.getAcceptor();
       CacheClientNotifier notifier = ai.getCacheClientNotifier();
       CacheClientNotifierStats stats = notifier.getStats();
       logger.info("Stats:" + "\nDurableReconnectionCount:" + stats.get_durableReconnectionCount()

@@ -85,7 +85,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        TestUtil.getResourcePath(this.getClass(), "/ManagementClientTestCreateRegion.java");
+        TestUtil.getResourcePath(this.getClass(), "/ManagementClientCreateRegion.java");
     assertThat(filePath).as("java file resource not found").isNotBlank();
 
     File outputJar = new File(tempDir.getRoot(), "output.jar");
@@ -189,7 +189,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         .split(File.pathSeparator))
         .filter(x -> x.contains(module)
             && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
-                || x.endsWith("/resources") || x.endsWith(".jar")))
+                || x.endsWith("/resources") || x.endsWith("/resources/main")
+                || x.endsWith(".jar")))
         .collect(Collectors.joining(File.pathSeparator));
 
     assertThat(classPath).as("no classes found for module: " + module)

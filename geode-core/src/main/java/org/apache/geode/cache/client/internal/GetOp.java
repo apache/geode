@@ -126,7 +126,7 @@ public class GetOp {
       this.key = key;
       this.callbackArg = callbackArg;
       this.clientEvent = clientEvent;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);

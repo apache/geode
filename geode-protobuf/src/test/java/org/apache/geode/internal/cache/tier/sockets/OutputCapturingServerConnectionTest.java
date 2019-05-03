@@ -14,25 +14,27 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static java.net.InetSocketAddress.createUnresolved;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
 import org.junit.experimental.categories.Category;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
-import org.apache.geode.cache.IncompatibleVersionException;
 import org.apache.geode.internal.cache.InternalCacheForClientAccess;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.tier.CachedRegionHelper;
@@ -40,61 +42,55 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
-
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class OutputCapturingServerConnectionTest {
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
 
   @Rule
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
+  private AcceptorImpl acceptor;
+  private ClientProtocolProcessor clientProtocolProcessor;
+  private Socket socket;
+  private InternalCacheForClientAccess cache;
+  private CachedRegionHelper cachedRegionHelper;
+
+  @Before
+  public void setUp() throws Exception {
+    acceptor = mock(AcceptorImpl.class);
+    clientProtocolProcessor = mock(ClientProtocolProcessor.class);
+    socket = mock(Socket.class);
+    cache = mock(InternalCacheForClientAccess.class);
+    cachedRegionHelper = mock(CachedRegionHelper.class);
+
+    when(acceptor.getClientHealthMonitor()).thenReturn(mock(ClientHealthMonitor.class));
+    when(cachedRegionHelper.getCache()).thenReturn(cache);
+    when(socket.getInetAddress()).thenReturn(mock(InetAddress.class));
+    when(socket.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+    when(socket.getRemoteSocketAddress()).thenReturn(createUnresolved("localhost", 9071));
+    when(socket.isClosed()).thenReturn(true);
+  }
+
   @Test
-  public void testEOFDoesNotCauseWarningMessage() throws IOException, IncompatibleVersionException {
-    Socket socketMock = mock(Socket.class);
-    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
-    when(socketMock.isClosed()).thenReturn(true);
-    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    when(socketMock.getOutputStream()).thenReturn(outputStream);
-
-    AcceptorImpl acceptorStub = mock(AcceptorImpl.class);
-    ClientProtocolProcessor clientProtocolProcessor = mock(ClientProtocolProcessor.class);
-    doThrow(new IOException()).when(clientProtocolProcessor).processMessage(any(), any());
-
-    ServerConnection serverConnection =
-        getServerConnection(socketMock, clientProtocolProcessor, acceptorStub);
-
-    String expectedMessage = "invoking doOneMessage";
-    String unexpectedMessage = "IOException";
+  public void testEOFDoesNotCauseWarningMessage() throws Exception {
+    doThrow(new IOException("throw me")).when(clientProtocolProcessor).processMessage(any(), any());
 
     // Create some stdout content so we can tell that the capture worked.
+    String expectedMessage = "invoking doOneMessage";
     System.out.println(expectedMessage);
+
+    ServerConnection serverConnection = new ProtobufServerConnection(socket, cache,
+        cachedRegionHelper, mock(CacheServerStats.class), 0, 1024, "",
+        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptor,
+        clientProtocolProcessor, mock(SecurityService.class));
 
     serverConnection.doOneMessage();
 
     // verify that an IOException wasn't logged
     String stdoutCapture = systemOutRule.getLog();
-    assertTrue(stdoutCapture.contains(expectedMessage));
-    assertFalse(stdoutCapture.contains(unexpectedMessage));
+    assertThat(stdoutCapture).contains(expectedMessage);
+    assertThat(stdoutCapture).doesNotContain("IOException");
   }
-
-  private ProtobufServerConnection getServerConnection(Socket socketMock,
-      ClientProtocolProcessor clientProtocolProcessorMock, AcceptorImpl acceptorStub)
-      throws IOException {
-    ClientHealthMonitor clientHealthMonitorMock = mock(ClientHealthMonitor.class);
-    when(acceptorStub.getClientHealthMonitor()).thenReturn(clientHealthMonitorMock);
-    InetSocketAddress inetSocketAddressStub = InetSocketAddress.createUnresolved("localhost", 9071);
-    InetAddress inetAddressStub = mock(InetAddress.class);
-    when(socketMock.getInetAddress()).thenReturn(InetAddress.getByName("localhost"));
-    when(socketMock.getRemoteSocketAddress()).thenReturn(inetSocketAddressStub);
-    when(socketMock.getInetAddress()).thenReturn(inetAddressStub);
-
-    InternalCacheForClientAccess cache = mock(InternalCacheForClientAccess.class);
-    when(cache.getCacheForProcessingClientRequests()).thenReturn(cache);
-    CachedRegionHelper cachedRegionHelper = mock(CachedRegionHelper.class);
-    when(cachedRegionHelper.getCache()).thenReturn(cache);
-    return new ProtobufServerConnection(socketMock, cache, cachedRegionHelper,
-        mock(CacheServerStats.class), 0, 1024, "",
-        CommunicationMode.ProtobufClientServerProtocol.getModeNumber(), acceptorStub,
-        clientProtocolProcessorMock, mock(SecurityService.class));
-  }
-
 }

@@ -54,7 +54,7 @@ public class KeySetOp {
      */
     public KeySetOpImpl(String region) {
       super(MessageType.KEY_SET, 1);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
     }
 
     @Override

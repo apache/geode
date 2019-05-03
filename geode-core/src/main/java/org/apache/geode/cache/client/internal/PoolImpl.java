@@ -19,7 +19,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,7 +37,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.NoSubscriptionServersAvailableException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionService;
@@ -94,7 +92,7 @@ public class PoolImpl implements InternalPool {
    * servers.
    */
   @MutableForTesting
-  public static volatile boolean TEST_DURABLE_IS_NET_DOWN = false;
+  static volatile boolean TEST_DURABLE_IS_NET_DOWN = false;
 
   private final String name;
   private final int socketConnectTimeout;
@@ -135,7 +133,7 @@ public class PoolImpl implements InternalPool {
   private ScheduledExecutorService backgroundProcessor;
   private final OpExecutorImpl executor;
   private final RegisterInterestTracker riTracker = new RegisterInterestTracker();
-  private final InternalDistributedSystem dsys;
+  private final InternalDistributedSystem distributedSystem;
   private InternalCache cache;
 
   private final ClientProxyMembershipID proxyId;
@@ -171,7 +169,7 @@ public class PoolImpl implements InternalPool {
   /**
    * @since GemFire 5.7
    */
-  protected void finishCreate(PoolManagerImpl pm) {
+  private void finishCreate(PoolManagerImpl pm) {
     pm.register(this);
     try {
       start();
@@ -186,74 +184,76 @@ public class PoolImpl implements InternalPool {
   }
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
-      List<HostAddress> locAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache, ThreadsMonitoring tMonitoring) {
-    this.threadMonitoring = tMonitoring;
+      List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
+      InternalCache cache, ThreadsMonitoring threadMonitoring) {
     this.pm = pm;
     this.name = name;
-    this.socketConnectTimeout = attributes.getSocketConnectTimeout();
-    this.freeConnectionTimeout = attributes.getFreeConnectionTimeout();
-    this.loadConditioningInterval = attributes.getLoadConditioningInterval();
-    this.socketBufferSize = attributes.getSocketBufferSize();
-    this.threadLocalConnections = attributes.getThreadLocalConnections();
-    this.readTimeout = attributes.getReadTimeout();
-    this.minConnections = attributes.getMinConnections();
-    this.maxConnections = attributes.getMaxConnections();
-    this.retryAttempts = attributes.getRetryAttempts();
-    this.idleTimeout = attributes.getIdleTimeout();
-    this.pingInterval = attributes.getPingInterval();
-    this.statisticInterval = attributes.getStatisticInterval();
-    this.subscriptionEnabled = attributes.getSubscriptionEnabled();
-    this.prSingleHopEnabled = attributes.getPRSingleHopEnabled();
-    this.subscriptionRedundancyLevel = attributes.getSubscriptionRedundancy();
-    this.subscriptionMessageTrackingTimeout = attributes.getSubscriptionMessageTrackingTimeout();
-    this.subscriptionAckInterval = attributes.getSubscriptionAckInterval();
-    this.subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
-    if (this.subscriptionTimeoutMultiplier < 0) {
-      throw new IllegalArgumentException("The subscription timeout multipler must not be negative");
-    }
-    this.serverGroup = attributes.getServerGroup();
-    this.multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
-    this.locatorAddresses = locAddresses;
-    this.locators = attributes.getLocators();
-    this.servers = attributes.getServers();
-    this.startDisabled =
-        ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();
-    this.usedByGateway = ((PoolFactoryImpl.PoolAttributes) attributes).isGateway();
-    this.gatewaySender = ((PoolFactoryImpl.PoolAttributes) attributes).getGatewaySender();
-    this.dsys = distributedSystem;
-    if (this.dsys == null) {
+    this.locatorAddresses = locatorAddresses;
+    if (distributedSystem == null) {
       throw new IllegalStateException(
           "Distributed System must be created before creating pool");
     }
+    this.distributedSystem = distributedSystem;
     this.cache = cache;
-    this.securityLogWriter = this.dsys.getSecurityInternalLogWriter();
-    if (!this.dsys.getConfig().getStatisticSamplingEnabled() && this.statisticInterval > 0) {
-      logger.info("statistic-sampling must be enabled for sampling rate of {} to take affect",
-          this.statisticInterval);
+    this.threadMonitoring = threadMonitoring;
+
+    socketConnectTimeout = attributes.getSocketConnectTimeout();
+    freeConnectionTimeout = attributes.getFreeConnectionTimeout();
+    loadConditioningInterval = attributes.getLoadConditioningInterval();
+    socketBufferSize = attributes.getSocketBufferSize();
+    threadLocalConnections = attributes.getThreadLocalConnections();
+    readTimeout = attributes.getReadTimeout();
+    minConnections = attributes.getMinConnections();
+    maxConnections = attributes.getMaxConnections();
+    retryAttempts = attributes.getRetryAttempts();
+    idleTimeout = attributes.getIdleTimeout();
+    pingInterval = attributes.getPingInterval();
+    statisticInterval = attributes.getStatisticInterval();
+    subscriptionEnabled = attributes.getSubscriptionEnabled();
+    prSingleHopEnabled = attributes.getPRSingleHopEnabled();
+    subscriptionRedundancyLevel = attributes.getSubscriptionRedundancy();
+    subscriptionMessageTrackingTimeout = attributes.getSubscriptionMessageTrackingTimeout();
+    subscriptionAckInterval = attributes.getSubscriptionAckInterval();
+    subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
+    if (subscriptionTimeoutMultiplier < 0) {
+      throw new IllegalArgumentException("The subscription timeout multipler must not be negative");
     }
-    this.cancelCriterion = new Stopper();
+    serverGroup = attributes.getServerGroup();
+    multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();
+    locators = attributes.getLocators();
+    servers = attributes.getServers();
+    startDisabled =
+        ((PoolFactoryImpl.PoolAttributes) attributes).startDisabled || !pm.isNormal();
+    usedByGateway = ((PoolFactoryImpl.PoolAttributes) attributes).isGateway();
+    gatewaySender = ((PoolFactoryImpl.PoolAttributes) attributes).getGatewaySender();
+    securityLogWriter = distributedSystem.getSecurityInternalLogWriter();
+    if (!distributedSystem.getConfig().getStatisticSamplingEnabled() && statisticInterval > 0) {
+      logger.info("statistic-sampling must be enabled for sampling rate of {} to take affect",
+          statisticInterval);
+    }
+    cancelCriterion = new Stopper();
     if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SPECIAL_DURABLE")) {
       ClientProxyMembershipID.setPoolName(name);
-      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(this.dsys);
+      proxyId = ClientProxyMembershipID.getNewProxyMembership(distributedSystem);
       ClientProxyMembershipID.setPoolName(null);
     } else {
-      this.proxyId = ClientProxyMembershipID.getNewProxyMembership(this.dsys);
+      proxyId = ClientProxyMembershipID.getNewProxyMembership(distributedSystem);
     }
-    StatisticsFactory statFactory = null;
-    if (this.gatewaySender != null) {
+    StatisticsFactory statFactory;
+    if (gatewaySender != null) {
       statFactory = new DummyStatisticsFactory();
     } else {
-      statFactory = this.dsys;
+      statFactory = distributedSystem;
     }
-    this.stats = this.startDisabled ? null
+    stats = startDisabled ? null
         : new PoolStats(statFactory, getName() + "->"
             + (isEmpty(serverGroup) ? "[any servers]" : "[" + getServerGroup() + "]"));
 
     source = getSourceImpl(((PoolFactoryImpl.PoolAttributes) attributes).locatorCallback);
-    endpointManager = new EndpointManagerImpl(name, this.dsys, this.cancelCriterion, this.stats);
-    connectionFactory = new ConnectionFactoryImpl(source, endpointManager, this.dsys,
-        socketBufferSize, socketConnectTimeout, readTimeout, proxyId, this.cancelCriterion,
+    endpointManager = new EndpointManagerImpl(name, distributedSystem, cancelCriterion,
+        stats);
+    connectionFactory = new ConnectionFactoryImpl(source, endpointManager, distributedSystem,
+        socketBufferSize, socketConnectTimeout, readTimeout, proxyId, cancelCriterion,
         usedByGateway, gatewaySender, pingInterval, multiuserSecureModeEnabled, this);
     if (subscriptionEnabled) {
       queueManager = new QueueManagerImpl(this, endpointManager, source, connectionFactory,
@@ -267,10 +267,10 @@ public class PoolImpl implements InternalPool {
     // an exception, by passing in the poolOrCache stopper
     executor = new OpExecutorImpl(manager, queueManager, endpointManager, riTracker, retryAttempts,
         freeConnectionTimeout, new PoolOrCacheStopper(), this);
-    if (this.multiuserSecureModeEnabled) {
-      this.proxyCacheList = new ArrayList<ProxyCache>();
+    if (multiuserSecureModeEnabled) {
+      proxyCacheList = new ArrayList<>();
     } else {
-      this.proxyCacheList = null;
+      proxyCacheList = null;
     }
   }
 
@@ -305,7 +305,7 @@ public class PoolImpl implements InternalPool {
   }
 
   private void start() {
-    if (this.startDisabled)
+    if (startDisabled)
       return;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -342,13 +342,13 @@ public class PoolImpl implements InternalPool {
     }
 
 
-    if (this.statisticInterval > 0 && this.dsys.getConfig().getStatisticSamplingEnabled()) {
+    if (statisticInterval > 0 && distributedSystem.getConfig().getStatisticSamplingEnabled()) {
       backgroundProcessor.scheduleWithFixedDelay(new PublishClientStatsTask(), statisticInterval,
           statisticInterval, TimeUnit.MILLISECONDS);
     }
     // LOG: changed from config to info
     logger.info("Pool {} started with multiuser-authentication={}",
-        new Object[] {this.name, this.multiuserSecureModeEnabled});
+        new Object[] {name, multiuserSecureModeEnabled});
   }
 
   /**
@@ -358,7 +358,7 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public CancelCriterion getCancelCriterion() {
-    return this.cancelCriterion;
+    return cancelCriterion;
   }
 
   @Override
@@ -373,22 +373,22 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public String getName() {
-    return this.name;
+    return name;
   }
 
   @Override
   public int getSocketConnectTimeout() {
-    return this.socketConnectTimeout;
+    return socketConnectTimeout;
   }
 
   @Override
   public int getFreeConnectionTimeout() {
-    return this.freeConnectionTimeout;
+    return freeConnectionTimeout;
   }
 
   @Override
   public int getLoadConditioningInterval() {
-    return this.loadConditioningInterval;
+    return loadConditioningInterval;
   }
 
   @Override
@@ -418,42 +418,42 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public int getStatisticInterval() {
-    return this.statisticInterval;
+    return statisticInterval;
   }
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   @Override
   public boolean getThreadLocalConnections() {
-    return this.threadLocalConnections;
+    return threadLocalConnections;
   }
 
   @Override
   public int getReadTimeout() {
-    return this.readTimeout;
+    return readTimeout;
   }
 
   @Override
   public boolean getSubscriptionEnabled() {
-    return this.subscriptionEnabled;
+    return subscriptionEnabled;
   }
 
   @Override
   public boolean getPRSingleHopEnabled() {
-    return this.prSingleHopEnabled;
+    return prSingleHopEnabled;
   }
 
   @Override
   public int getSubscriptionRedundancy() {
-    return this.subscriptionRedundancyLevel;
+    return subscriptionRedundancyLevel;
   }
 
   @Override
   public int getSubscriptionMessageTrackingTimeout() {
-    return this.subscriptionMessageTrackingTimeout;
+    return subscriptionMessageTrackingTimeout;
   }
 
   @Override
@@ -463,35 +463,31 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public String getServerGroup() {
-    return this.serverGroup;
+    return serverGroup;
   }
 
   @Override
   public boolean getMultiuserAuthentication() {
-    return this.multiuserSecureModeEnabled;
+    return multiuserSecureModeEnabled;
   }
 
   @Override
   public List<InetSocketAddress> getLocators() {
-    return this.locators;
+    return locators;
   }
 
   @Override
   public List<InetSocketAddress> getOnlineLocators() {
-    return this.source.getOnlineLocators();
+    return source.getOnlineLocators();
   }
 
   @Override
   public List<InetSocketAddress> getServers() {
-    return this.servers;
+    return servers;
   }
 
   public GatewaySender getGatewaySender() {
     return gatewaySender;
-  }
-
-  public InternalLogWriter getSecurityInternalLogWriter() {
-    return this.securityLogWriter;
   }
 
   @Override
@@ -501,10 +497,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder(100);
-    sb.append(this.getClass().getSimpleName()).append('@').append(System.identityHashCode(this))
-        .append(" name=").append(getName());
-    return sb.toString();
+    return getClass().getSimpleName() + '@' + System.identityHashCode(this) + " name=" + getName();
   }
 
   @Override
@@ -519,51 +512,46 @@ public class PoolImpl implements InternalPool {
       if (SPECIAL_DURABLE) {
         synchronized (simpleLock) {
           try {
-            if (cache == null && dsys != null) {
-              cache = dsys.getCache();
+            if (cache == null && distributedSystem != null) {
+              cache = distributedSystem.getCache();
               if (cache == null) {
-                throw new IllegalStateException(
-                    "Cache must be created before creating pool");
+                throw new IllegalStateException("Cache must be created before creating pool");
               }
             }
-            if (!cache.isClosed() && this.getPoolOrCacheCancelInProgress() == null) {
+            if (!cache.isClosed() && getPoolOrCacheCancelInProgress() == null) {
               Set<Region<?, ?>> regions = cache.rootRegions();
               for (Region<?, ?> roots : regions) {
                 Set<Region<?, ?>> subregions = roots.subregions(true);
                 for (Region<?, ?> subroots : subregions) {
                   if (!subroots.isDestroyed() && subroots.getAttributes().getPoolName() != null
-                      && subroots.getAttributes().getPoolName().equals(this.name)) {
+                      && subroots.getAttributes().getPoolName().equals(name)) {
                     if (logger.isDebugEnabled()) {
                       logger.debug(
                           "PoolImpl.destroy[ Region connected count:{} Region subroot closing:{} Pool Name:{} ]",
-                          cnt, subroots.getName(), this.name);
+                          cnt, subroots.getName(), name);
                     }
                     subroots.close();
                   }
                 }
 
                 if (!roots.isDestroyed() && roots.getAttributes().getPoolName() != null
-                    && roots.getAttributes().getPoolName().equals(this.name)) {
+                    && roots.getAttributes().getPoolName().equals(name)) {
                   if (logger.isDebugEnabled()) {
                     logger.debug(
                         "PoolImpl.destroy[ Region connected count:{} Region root closing:{} Pool Name:{} ]",
-                        cnt, roots.getName(), this.name);
+                        cnt, roots.getName(), name);
                   }
                   roots.close();
                 }
               }
             }
-          } catch (CacheClosedException ccex) {
+          } catch (Exception e) {
             if (logger.isDebugEnabled()) {
-              logger.debug(ccex.getMessage(), ccex);
-            }
-          } catch (Exception ex) {
-            if (logger.isDebugEnabled()) {
-              logger.debug(ex.getMessage(), ex);
+              logger.debug(e.getMessage(), e);
             }
           }
         }
-      } // end special case
+      }
 
       cnt = getAttachCount();
       if (cnt > 0) {
@@ -572,7 +560,7 @@ public class PoolImpl implements InternalPool {
                 cnt));
       }
     }
-    if (this.pm.unregister(this)) {
+    if (pm.unregister(this)) {
       basicDestroy(keepAlive);
     }
   }
@@ -583,7 +571,7 @@ public class PoolImpl implements InternalPool {
    */
   public synchronized void basicDestroy(boolean keepAlive) {
     if (!isDestroyed()) {
-      this.destroyed = true;
+      destroyed = true;
       this.keepAlive = keepAlive;
       // LOG: changed from config to info
       logger.info("Destroying connection pool {}", name);
@@ -602,15 +590,15 @@ public class PoolImpl implements InternalPool {
       }
 
       try {
-        if (this.source != null) {
-          this.source.stop();
+        if (source != null) {
+          source.stop();
         }
       } catch (RuntimeException e) {
         logger.error("Error encountered while stopping connection source.", e);
       }
 
       try {
-        if (this.queueManager != null) {
+        if (queueManager != null) {
           queueManager.close(keepAlive);
         }
       } catch (RuntimeException e) {
@@ -620,7 +608,7 @@ public class PoolImpl implements InternalPool {
       }
 
       try {
-        if (this.manager != null) {
+        if (manager != null) {
           manager.close(keepAlive);
         }
       } catch (RuntimeException e) {
@@ -634,8 +622,8 @@ public class PoolImpl implements InternalPool {
       }
 
       try {
-        if (this.stats != null) {
-          this.stats.close();
+        if (stats != null) {
+          stats.close();
         }
       } catch (RuntimeException e) {
         logger.error("Error while closing statistics", e);
@@ -668,9 +656,8 @@ public class PoolImpl implements InternalPool {
    */
   public void sameAs(Object obj) {
     if (!(obj instanceof PoolImpl)) {
-      throw new RuntimeException(
-          String.format("%s is not the same as %s because it should have been a PoolImpl",
-              new Object[] {this, obj}));
+      throw new RuntimeException(String
+          .format("%s is not the same as %s because it should have been a PoolImpl", this, obj));
     }
     PoolImpl other = (PoolImpl) obj;
     if (!getName().equals(other.getName())) {
@@ -758,7 +745,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public PoolStats getStats() {
-    return this.stats;
+    return stats;
   }
 
 
@@ -887,14 +874,14 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public RegisterInterestTracker getRITracker() {
-    return this.riTracker;
+    return riTracker;
   }
 
   /**
    * Test hook that returns the number of servers we currently have connections to.
    */
   public int getConnectedServerCount() {
-    return this.endpointManager.getConnectedServerCount();
+    return endpointManager.getConnectedServerCount();
   }
 
   /**
@@ -906,11 +893,7 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 5.1
    */
   public boolean verifyIfDuplicate(EventID eventId) {
-    return ((QueueStateImpl) this.queueManager.getState()).verifyIfDuplicate(eventId);
-  }
-
-  public boolean verifyIfDuplicate(EventID eventId, boolean addToMap) {
-    return ((QueueStateImpl) this.queueManager.getState()).verifyIfDuplicate(eventId);
+    return queueManager.getState().verifyIfDuplicate(eventId);
   }
 
   /**
@@ -954,18 +937,18 @@ public class PoolImpl implements InternalPool {
    * Test hook that returns the ThreadIdToSequenceIdMap
    */
   public Map getThreadIdToSequenceIdMap() {
-    if (this.queueManager == null)
+    if (queueManager == null)
       return Collections.emptyMap();
-    if (this.queueManager.getState() == null)
+    if (queueManager.getState() == null)
       return Collections.emptyMap();
-    return this.queueManager.getState().getThreadIdToSequenceIdMap();
+    return queueManager.getState().getThreadIdToSequenceIdMap();
   }
 
   /**
    * Test hook that returns true if we have a primary and its updater thread is alive.
    */
   public boolean isPrimaryUpdaterAlive() {
-    return ((QueueManagerImpl) this.queueManager).isPrimaryUpdaterAlive();
+    return ((QueueManagerImpl) queueManager).isPrimaryUpdaterAlive();
   }
 
   /**
@@ -974,8 +957,8 @@ public class PoolImpl implements InternalPool {
   public void killPrimaryEndpoint() // throws ServerException
   {
     boolean ok = false;
-    if (this.queueManager != null) {
-      QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
+    if (queueManager != null) {
+      QueueManager.QueueConnections cons = queueManager.getAllConnections();
       Connection con = cons.getPrimary();
       if (con != null) {
         final String msg = "killing primary endpoint";
@@ -996,40 +979,27 @@ public class PoolImpl implements InternalPool {
     }
   }
 
-  // Pool that are declared in a cache.xml will set this property to true.
-  private boolean declaredInXML;
-
-  public void setDeclaredInXML(boolean v) {
-    this.declaredInXML = v;
-  }
-
-  public boolean getDeclaredInXML() {
-    return this.declaredInXML;
-  }
-
   // used by unit tests to confirm if readyForEvents has been called on a pool
   private boolean readyForEventsCalled;
 
   public boolean getReadyForEventsCalled() {
-    return this.readyForEventsCalled;
+    return readyForEventsCalled;
   }
 
   public void readyForEvents(InternalDistributedSystem system) {
     if (!isDurableClient() || queueManager == null) {
       return;
     }
-    this.readyForEventsCalled = true;
+    readyForEventsCalled = true;
     queueManager.readyForEvents(system);
 
   }
 
   @Override
   public boolean isDurableClient() {
-    boolean isDurable = false;
-    DistributionConfig config = dsys.getConfig();
+    DistributionConfig config = distributedSystem.getConfig();
     String durableClientId = config.getDurableClientId();
-    isDurable = durableClientId != null && durableClientId.length() > 0;
-    return isDurable;
+    return durableClientId != null && durableClientId.length() > 0;
   }
 
   /**
@@ -1064,8 +1034,8 @@ public class PoolImpl implements InternalPool {
    */
   public ServerLocation getPrimary() {
     ServerLocation result = null;
-    if (this.queueManager != null) {
-      QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
+    if (queueManager != null) {
+      QueueManager.QueueConnections cons = queueManager.getAllConnections();
       Connection con = cons.getPrimary();
       result = con.getServer();
     }
@@ -1076,8 +1046,8 @@ public class PoolImpl implements InternalPool {
    * Test hook to get a connection to the primary server.
    */
   public Connection getPrimaryConnection() {
-    if (this.queueManager != null) {
-      QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
+    if (queueManager != null) {
+      QueueManager.QueueConnections cons = queueManager.getAllConnections();
       return cons.getPrimary();
     }
     return null;
@@ -1088,15 +1058,13 @@ public class PoolImpl implements InternalPool {
    * redundant server. An empty list is returned if we have no redundant servers.
    */
   public List<String> getRedundantNames() {
-    List result = Collections.emptyList();
-    if (this.queueManager != null) {
-      QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
+    List<String> result = Collections.emptyList();
+    if (queueManager != null) {
+      QueueManager.QueueConnections cons = queueManager.getAllConnections();
       List<Connection> backupCons = cons.getBackups();
       if (backupCons.size() > 0) {
-        result = new ArrayList(backupCons.size());
-        Iterator<Connection> it = backupCons.iterator();
-        while (it.hasNext()) {
-          Connection con = it.next();
+        result = new ArrayList<>(backupCons.size());
+        for (Connection con : backupCons) {
           ServerLocation sl = con.getServer();
           result.add(sl.getHostName() + sl.getPort());
         }
@@ -1110,15 +1078,13 @@ public class PoolImpl implements InternalPool {
    * redundant server. An empty list is returned if we have no redundant servers.
    */
   public List<ServerLocation> getRedundants() {
-    List result = Collections.emptyList();
-    if (this.queueManager != null) {
-      QueueManager.QueueConnections cons = this.queueManager.getAllConnections();
+    List<ServerLocation> result = Collections.emptyList();
+    if (queueManager != null) {
+      QueueManager.QueueConnections cons = queueManager.getAllConnections();
       List<Connection> backupCons = cons.getBackups();
       if (backupCons.size() > 0) {
-        result = new ArrayList(backupCons.size());
-        Iterator<Connection> it = backupCons.iterator();
-        while (it.hasNext()) {
-          Connection con = it.next();
+        result = new ArrayList<>(backupCons.size());
+        for (Connection con : backupCons) {
           result.add(con.getServer());
         }
       }
@@ -1152,7 +1118,7 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 5.7
    */
   public int getAttachCount() {
-    return this.attachCount.get();
+    return attachCount.get();
   }
 
   /**
@@ -1161,7 +1127,7 @@ public class PoolImpl implements InternalPool {
    * @since GemFire 5.7
    */
   public void attach() {
-    this.attachCount.getAndIncrement();
+    attachCount.getAndIncrement();
   }
 
   /**
@@ -1171,17 +1137,15 @@ public class PoolImpl implements InternalPool {
    */
   @Override
   public void detach() {
-    this.attachCount.getAndDecrement();
+    attachCount.getAndDecrement();
   }
 
   /**
    * Returns a list of ServerLocation instances; one for each server we are currently connected to.
    */
   public List<ServerLocation> getCurrentServers() {
-    ArrayList result = new ArrayList();
-    Map endpointMap = endpointManager.getEndpointMap();
-    result.addAll(endpointMap.keySet());
-    return result;
+    Map<ServerLocation, Endpoint> endpointMap = endpointManager.getEndpointMap();
+    return new ArrayList<>(endpointMap.keySet());
   }
 
   /**
@@ -1190,10 +1154,8 @@ public class PoolImpl implements InternalPool {
    */
   public List<String> getCurrentServerNames() {
     List<ServerLocation> servers = getCurrentServers();
-    ArrayList<String> result = new ArrayList(servers.size());
-    Iterator it = servers.iterator();
-    while (it.hasNext()) {
-      ServerLocation sl = (ServerLocation) it.next();
+    ArrayList<String> result = new ArrayList<>(servers.size());
+    for (ServerLocation sl : servers) {
       String name = sl.getHostName() + sl.getPort();
       result.add(name);
     }
@@ -1225,14 +1187,13 @@ public class PoolImpl implements InternalPool {
     logger.debug("PoolImpl - endpointsNetDownForDUnitTest");
     setTEST_DURABLE_IS_NET_DOWN(true);
     try {
-      Thread.sleep(this.pingInterval * 2);
+      Thread.sleep(pingInterval * 2);
     } catch (java.lang.InterruptedException ignore) {
       // do nothing.
     }
 
-    Map endpoints = endpointManager.getEndpointMap();
-    for (Iterator itr = endpoints.values().iterator(); itr.hasNext();) {
-      Endpoint endpoint = (Endpoint) itr.next();
+    Map<ServerLocation, Endpoint> endpoints = endpointManager.getEndpointMap();
+    for (Endpoint endpoint : endpoints.values()) {
       logger.debug("PoolImpl Simulating crash of endpoint {}", endpoint);
       endpointManager.serverCrashed(endpoint);
     }
@@ -1244,7 +1205,7 @@ public class PoolImpl implements InternalPool {
   public void endpointsNetUpForDUnitTest() {
     setTEST_DURABLE_IS_NET_DOWN(false);
     try {
-      Thread.sleep(this.pingInterval * 2);
+      Thread.sleep(pingInterval * 2);
     } catch (java.lang.InterruptedException ignore) {
       // do nothing.
     }
@@ -1254,7 +1215,7 @@ public class PoolImpl implements InternalPool {
    * test hook
    */
   public int getInvalidateCount() {
-    return ((QueueStateImpl) this.queueManager.getState()).getInvalidateCount();
+    return ((QueueStateImpl) queueManager.getState()).getInvalidateCount();
   }
 
   @Override
@@ -1332,7 +1293,7 @@ public class PoolImpl implements InternalPool {
    * new connection.
    */
   @MutableForTesting
-  public static volatile boolean AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG = false;
+  static volatile boolean AFTER_PRIMARY_RECOVERED_CALLBACK_FLAG = false;
 
   public abstract static class PoolTask implements Runnable {
 
@@ -1427,7 +1388,7 @@ public class PoolImpl implements InternalPool {
   }
 
   public RegionService createAuthenticatedCacheView(Properties properties) {
-    if (!this.multiuserSecureModeEnabled) {
+    if (!multiuserSecureModeEnabled) {
       throw new UnsupportedOperationException(
           "Operation not supported when multiuser-authentication is false.");
     }
@@ -1439,16 +1400,16 @@ public class PoolImpl implements InternalPool {
     for (Entry<Object, Object> entry : properties.entrySet()) {
       props.setProperty((String) entry.getKey(), (String) entry.getValue());
     }
-    if (cache == null && dsys != null) {
-      cache = dsys.getCache();
+    if (cache == null && distributedSystem != null) {
+      cache = distributedSystem.getCache();
       if (cache == null) {
         throw new IllegalStateException(
             "Cache must be created before creating pool");
       }
     }
     ProxyCache proxy = new ProxyCache(props, cache, this);
-    synchronized (this.proxyCacheList) {
-      this.proxyCacheList.add(proxy);
+    synchronized (proxyCacheList) {
+      proxyCacheList.add(proxy);
     }
     return proxy;
   }
@@ -1464,8 +1425,8 @@ public class PoolImpl implements InternalPool {
       if (cacheCriterion != null) {
         return cacheCriterion.generateCancelledException(e);
       }
-      if (dsys != null) {
-        cache = dsys.getCache();
+      if (distributedSystem != null) {
+        cache = distributedSystem.getCache();
         if (cache == null) {
           throw new IllegalStateException(
               "Cache must be created before creating pool");
@@ -1482,7 +1443,7 @@ public class PoolImpl implements InternalPool {
 
   @Override
   public String getPoolOrCacheCancelInProgress() {
-    String reason = null;
+    String reason;
     try {
       reason = getCancelCriterion().cancelInProgress();
       if (reason != null) {
@@ -1524,8 +1485,8 @@ public class PoolImpl implements InternalPool {
     return cache.keepDurableSubscriptionsAlive();
   }
 
-  public ArrayList<ProxyCache> getProxyCacheList() {
-    return this.proxyCacheList;
+  ArrayList<ProxyCache> getProxyCacheList() {
+    return proxyCacheList;
   }
 
   /**
@@ -1564,15 +1525,15 @@ public class PoolImpl implements InternalPool {
   }
 
   private void authenticateOnAllServers(Op op) {
-    if (this.multiuserSecureModeEnabled && ((AbstractOp) op).needsUserId()) {
+    if (multiuserSecureModeEnabled && ((AbstractOp) op).needsUserId()) {
       UserAttributes userAttributes = UserAttributes.userAttributes.get();
       if (userAttributes != null) {
         ConcurrentHashMap<ServerLocation, Long> map = userAttributes.getServerToId();
 
-        if (this.queueManager == null) {
+        if (queueManager == null) {
           throw new SubscriptionNotEnabledException();
         }
-        Connection primary = this.queueManager.getAllConnectionsNoWait().getPrimary();
+        Connection primary = queueManager.getAllConnectionsNoWait().getPrimary();
         if (primary != null && !map.containsKey(primary.getServer())) {
           Long userId = (Long) AuthenticateUserOp.executeOn(primary.getServer(), this,
               userAttributes.getCredentials());
@@ -1581,9 +1542,8 @@ public class PoolImpl implements InternalPool {
           }
         }
 
-        List<Connection> backups = this.queueManager.getAllConnectionsNoWait().getBackups();
-        for (int i = 0; i < backups.size(); i++) {
-          Connection conn = backups.get(i);
+        List<Connection> backups = queueManager.getAllConnectionsNoWait().getBackups();
+        for (Connection conn : backups) {
           if (!map.containsKey(conn.getServer())) {
             Long userId = (Long) AuthenticateUserOp.executeOn(conn.getServer(), this,
                 userAttributes.getCredentials());
@@ -1600,20 +1560,20 @@ public class PoolImpl implements InternalPool {
   }
 
   public void setPendingEventCount(int count) {
-    this.primaryQueueSize.set(count);
+    primaryQueueSize.set(count);
   }
 
   @Override
   public int getPendingEventCount() {
-    if (!isDurableClient() || this.queueManager == null) {
+    if (!isDurableClient() || queueManager == null) {
       throw new IllegalStateException(
           "Only durable clients should call getPendingEventCount()");
     }
-    if (this.readyForEventsCalled) {
+    if (readyForEventsCalled) {
       throw new IllegalStateException(
           "getPendingEventCount() should be called before invoking readyForEvents().");
     }
-    return this.primaryQueueSize.get();
+    return primaryQueueSize.get();
   }
 
   @Override

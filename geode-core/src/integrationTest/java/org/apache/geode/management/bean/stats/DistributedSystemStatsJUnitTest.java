@@ -94,6 +94,12 @@ public class DistributedSystemStatsJUnitTest {
       cachePerfStats.incCreates();
     }
 
+    long startGetsTime1 = cachePerfStats.startGet();
+    long startGetsTime2 = cachePerfStats.startGet();
+
+    cachePerfStats.endGet(startGetsTime1, true);
+    cachePerfStats.endGet(startGetsTime2, false);
+
     sample();
 
     service.getLocalManager().runManagementTaskAdhoc();
@@ -104,6 +110,8 @@ public class DistributedSystemStatsJUnitTest {
     service.getLocalManager().runManagementTaskAdhoc();
 
     assertTrue(dsmbean.getAverageWrites() == 0);
+    assertTrue(dsmbean.getTotalMissCount() == 1);
+    assertTrue(dsmbean.getTotalHitCount() == 1);
 
   }
 

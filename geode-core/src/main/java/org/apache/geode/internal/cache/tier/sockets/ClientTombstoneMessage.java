@@ -94,7 +94,7 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
     message = new Message(numParts, clientVersion);
     // Set message type
     message.setMessageType(MessageType.TOMBSTONE_OPERATION);
-    message.addStringPart(this.getRegionName());
+    message.addStringPart(this.getRegionName(), true);
     message.addIntPart(this.op.ordinal());
     message.addObjPart(this.removalInformation);
     message.addObjPart(getEventId());

@@ -53,7 +53,7 @@ VERSION_BUCKET="concourse-${ENV_ID}-version"
 
 #echo "DEBUG INFO *****************************"
 #echo "Pipeline prefix = ${PIPELINE_PREFIX}"
-#echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"]
+#echo "Docker image prefix = ${DOCKER_IMAGE_PREFIX}"
 pushd ${SCRIPTDIR} 2>&1 > /dev/null
 
   cat > repository.yml <<YML

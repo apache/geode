@@ -18,6 +18,7 @@ package org.apache.geode.distributed.internal.membership.gms;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -123,10 +124,11 @@ public class MembershipManagerHelper {
     GeodeAwaitility.await().untilAsserted(ev);
   }
 
+  @VisibleForTesting
+  // this method is only used for testing. Should be extract to a test helper instead
   public static void crashDistributedSystem(final DistributedSystem msys) {
     msys.getLogWriter().info("crashing distributed system: " + msys);
     GMSMembershipManager mgr = ((GMSMembershipManager) getMembershipManager(msys));
-    mgr.saveCacheXmlForReconnect(false);
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);

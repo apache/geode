@@ -86,6 +86,9 @@ public class GMSUtil {
         int startIdx = str.indexOf('[') + 1;
         int endIdx = str.indexOf(']');
         port = Integer.parseInt(str.substring(startIdx, endIdx));
+        if (port <= 0) {
+          continue;
+        }
         InetSocketAddress isa = new InetSocketAddress(host, port);
 
         if (checkLoopback) {

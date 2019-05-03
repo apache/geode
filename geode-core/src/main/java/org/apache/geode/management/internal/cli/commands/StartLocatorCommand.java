@@ -225,8 +225,8 @@ public class StartLocatorCommand extends OfflineGfshCommand {
         gemfirePropertiesFile, gemfireSecurityPropertiesFile, gemfireProperties, classpath,
         includeSystemClasspath, jvmArgsOpts, initialHeap, maxHeap);
 
-    final Process locatorProcess = new ProcessBuilder(locatorCommandLine)
-        .directory(new File(locatorLauncher.getWorkingDirectory())).start();
+    final Process locatorProcess =
+        getProcess(locatorLauncher.getWorkingDirectory(), locatorCommandLine);
 
     locatorProcess.getInputStream().close();
     locatorProcess.getOutputStream().close();
@@ -351,6 +351,12 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
 
     return result;
+  }
+
+  Process getProcess(String workingDir, String[] locatorCommandLine)
+      throws IOException {
+    return new ProcessBuilder(locatorCommandLine)
+        .directory(new File(workingDir)).start();
   }
 
   // TODO should we connect implicitly when in non-interactive, headless mode (e.g. gfsh -e "start
@@ -485,7 +491,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
 
     if (launcher.getBindAddress() != null) {
-      commandLine.add("--bind-address=" + launcher.getBindAddress().getCanonicalHostName());
+      commandLine.add("--bind-address=" + launcher.getBindAddress().getHostAddress());
     }
 
     if (launcher.isDebugging() || isDebugging()) {

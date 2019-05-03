@@ -45,6 +45,8 @@ public class PulseAppListenerTest {
 
   @Before
   public void setUp() {
+    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, "true");
+
     repository = Repository.get();
     appListener = new PulseAppListener();
 
@@ -56,7 +58,6 @@ public class PulseAppListenerTest {
 
   @Test
   public void embeddedModeDefaultPropertiesRepositoryInitializationTest() {
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, "true");
     appListener.contextInitialized(contextEvent);
 
     Assert.assertEquals(false, repository.getJmxUseLocator());
@@ -69,7 +70,6 @@ public class PulseAppListenerTest {
 
   @Test
   public void embeddedModeNonDefaultPropertiesRepositoryInitializationTest() {
-    System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_EMBEDDED, "true");
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_PORT, "9999");
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_HOST, "nonDefaultBindAddress");
     System.setProperty(PulseConstants.SYSTEM_PROPERTY_PULSE_USESSL_MANAGER,

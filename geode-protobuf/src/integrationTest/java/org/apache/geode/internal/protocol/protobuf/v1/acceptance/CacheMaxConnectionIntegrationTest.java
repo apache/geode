@@ -15,6 +15,10 @@
 
 package org.apache.geode.internal.protocol.protobuf.v1.acceptance;
 
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.protocol.protobuf.v1.MessageUtil.performAndVerifyHandshake;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
@@ -44,11 +48,9 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.ConfigurationProperties;
-import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.protocol.protobuf.v1.ClientProtocol;
 import org.apache.geode.internal.protocol.protobuf.v1.MessageUtil;
@@ -59,19 +61,20 @@ import org.apache.geode.internal.protocol.protobuf.v1.serializer.exception.Inval
 /**
  * Test that using the magic byte to indicate intend to use ProtoBuf messages works
  */
-public class CacheMaxConnectionJUnitTest {
+public class CacheMaxConnectionIntegrationTest {
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public TestName testName = new TestName();
+
   private static final String TEST_KEY = "testKey";
   private static final String TEST_VALUE = "testValue";
   private static final String TEST_REGION = "testRegion";
 
   private Cache cache;
   private Socket socket;
-
-  @Rule
-  public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
-
-  @Rule
-  public TestName testName = new TestName();
   private ProtobufSerializationService serializationService;
   private ProtobufProtocolSerializer protobufProtocolSerializer;
 
@@ -79,15 +82,14 @@ public class CacheMaxConnectionJUnitTest {
   public void setup() throws Exception {
     Properties properties = new Properties();
     CacheFactory cacheFactory = new CacheFactory(properties);
-    cacheFactory.set(ConfigurationProperties.MCAST_PORT, "0");
-    cacheFactory.set(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false");
-    cacheFactory.set(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "false");
-    cacheFactory.set(ConfigurationProperties.TCP_PORT, "0");
+    cacheFactory.set(MCAST_PORT, "0");
+    cacheFactory.set(ENABLE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(USE_CLUSTER_CONFIGURATION, "false");
+    cacheFactory.set(TCP_PORT, "0");
     cache = cacheFactory.create();
 
     CacheServer cacheServer = cache.addCacheServer();
-    int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.start();
 
     RegionFactory<Object, Object> regionFactory = cache.createRegionFactory();
@@ -95,7 +97,7 @@ public class CacheMaxConnectionJUnitTest {
 
     System.setProperty("geode.feature-protobuf-protocol", "true");
 
-    socket = new Socket("localhost", cacheServerPort);
+    socket = new Socket("localhost", cacheServer.getPort());
     await().until(socket::isConnected);
 
     serializationService = new ProtobufSerializationService();
@@ -124,20 +126,19 @@ public class CacheMaxConnectionJUnitTest {
   // can't create another, and repeat once to be sure we're cleaning up.
   private void testNewProtocolRespectsMaxConnectionLimit(int threads, boolean isSelector)
       throws Exception {
-    final int connections = 16;
-
     List<CacheServer> cacheServers = cache.getCacheServers();
     assertEquals(1, cacheServers.size());
     cacheServers.get(0).stop();
 
+    int connections = 16;
+
     CacheServer cacheServer = cache.addCacheServer();
-    final int cacheServerPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    cacheServer.setPort(cacheServerPort);
+    cacheServer.setPort(0);
     cacheServer.setMaxConnections(connections);
     cacheServer.setMaxThreads(threads);
     cacheServer.start();
 
-    AcceptorImpl acceptor = ((CacheServerImpl) cacheServer).getAcceptor();
+    Acceptor acceptor = ((InternalCacheServer) cacheServer).getAcceptor();
 
     if (isSelector) {
       assertTrue(acceptor.isSelector());
@@ -145,19 +146,16 @@ public class CacheMaxConnectionJUnitTest {
       assertFalse(acceptor.isSelector());
     }
 
-    validateSocketCreationAndDestruction(cacheServerPort, connections);
+    validateSocketCreationAndDestruction(cacheServer.getPort(), connections);
 
     // Once all connections are closed, the acceptor should have a connection count of 0.
-    await()
-        .until(() -> acceptor.getClientServerCnxCount() == 0);
+    await().until(() -> acceptor.getClientServerConnectionCount() == 0);
 
     // do it again, just to be sure there's no leak somewhere else.
-    validateSocketCreationAndDestruction(cacheServerPort, connections);
+    validateSocketCreationAndDestruction(cacheServer.getPort(), connections);
 
     // Once all connections are closed, the acceptor should have a connection count of 0.
-    await()
-        .until(() -> acceptor.getClientServerCnxCount() == 0);
-
+    await().until(() -> acceptor.getClientServerConnectionCount() == 0);
   }
 
   // Start exactly as many that the server will support, check that they work.
@@ -165,14 +163,13 @@ public class CacheMaxConnectionJUnitTest {
   // Close all the sockets when we're done.
   private void validateSocketCreationAndDestruction(int cacheServerPort, int connections)
       throws Exception {
-    final Socket[] sockets = new Socket[connections];
-
     ExecutorService executor = Executors.newFixedThreadPool(connections);
     try {
 
       // Used to assert the exception is non-null.
-      ArrayList<Callable<Exception>> callables = new ArrayList<>();
+      List<Callable<Exception>> callables = new ArrayList<>();
 
+      Socket[] sockets = new Socket[connections];
       for (int i = 0; i < connections; i++) {
         final int j = i;
         callables.add(() -> {
@@ -226,8 +223,6 @@ public class CacheMaxConnectionJUnitTest {
   private ClientProtocol.Message deserializeResponse(Socket socket,
       ProtobufProtocolSerializer protobufProtocolSerializer)
       throws InvalidProtocolMessageException, IOException {
-    ClientProtocol.Message message =
-        protobufProtocolSerializer.deserialize(socket.getInputStream());
-    return message;
+    return protobufProtocolSerializer.deserialize(socket.getInputStream());
   }
 }

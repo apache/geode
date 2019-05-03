@@ -2602,6 +2602,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading STRING_BYTES of len={}", len);
     }
+    if (len == 0) {
+      return "";
+    }
     byte[] buf = threadLocalByteArrayCache.get(len);
     dataInput.readFully(buf, 0, len);
     return new String(buf, 0, 0, len); // intentionally using deprecated constructor

@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.concurrent.RejectedExecutionException;
@@ -47,13 +48,13 @@ public class InstantiatorRecoveryListener extends EndpointManager.EndpointListen
   protected final InternalPool pool;
   protected final ScheduledExecutorService background;
   protected final long pingInterval;
-  protected final Object recoveryScheduledLock = new Object();
-  protected boolean recoveryScheduled;
+  private final Object recoveryScheduledLock = new Object();
+  private boolean recoveryScheduled;
 
   public InstantiatorRecoveryListener(ScheduledExecutorService background, InternalPool pool) {
-    this.pool = pool;
-    this.pingInterval = pool.getPingInterval();
     this.background = background;
+    this.pool = pool;
+    pingInterval = pool.getPingInterval();
   }
 
   @Override

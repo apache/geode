@@ -22,10 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.VM;
@@ -132,82 +129,9 @@ public class MemberVM extends VMProvider implements Member {
     });
   }
 
-  public void waitTilLocatorFullyStarted() {
+  public void waitTilFullyReconnected() {
     vm.invoke(() -> {
-      try {
-        await().until(() -> {
-          InternalLocator intLocator = ClusterStartupRule.getLocator();
-          InternalCache cache = ClusterStartupRule.getCache();
-          return intLocator != null && cache != null && intLocator.getDistributedSystem()
-              .isConnected();
-        });
-      } catch (Exception e) {
-        // provide more information when condition is not satisfied after awaitility timeout
-        InternalLocator intLocator = ClusterStartupRule.getLocator();
-        InternalCache cache = ClusterStartupRule.getCache();
-        DistributedSystem ds = intLocator.getDistributedSystem();
-        logger.info("locator is: " + (intLocator != null ? "not null" : "null"));
-        logger.info("cache is: " + (cache != null ? "not null" : "null"));
-        if (ds != null) {
-          logger
-              .info("distributed system is: " + (ds.isConnected() ? "connected" : "not connected"));
-        } else {
-          logger.info("distributed system is: null");
-        }
-        throw e;
-      }
-
-    });
-  }
-
-  public void waitTilLocatorFullyReconnected() {
-    vm.invoke(() -> {
-      try {
-        await().until(() -> {
-          InternalLocator intLocator = ClusterStartupRule.getLocator();
-          InternalCache cache = ClusterStartupRule.getCache();
-          return intLocator != null && cache != null && intLocator.getDistributedSystem()
-              .isConnected() && intLocator.isReconnected();
-        });
-      } catch (Exception e) {
-        // provide more information when condition is not satisfied after awaitility timeout
-        InternalLocator intLocator = ClusterStartupRule.getLocator();
-        InternalCache cache = ClusterStartupRule.getCache();
-        DistributedSystem ds = intLocator.getDistributedSystem();
-        logger.info("locator is: " + (intLocator != null ? "not null" : "null"));
-        logger.info("cache is: " + (cache != null ? "not null" : "null"));
-        if (ds != null) {
-          logger
-              .info("distributed system is: " + (ds.isConnected() ? "connected" : "not connected"));
-        } else {
-          logger.info("distributed system is: null");
-        }
-        logger.info("locator is reconnected: " + (intLocator.isReconnected()));
-        throw e;
-      }
-
-    });
-  }
-
-  public void waitTilServerFullyReconnected() {
-    vm.invoke(() -> {
-      try {
-        await().until(() -> {
-          InternalDistributedSystem internalDistributedSystem =
-              InternalDistributedSystem.getConnectedInstance();
-          return internalDistributedSystem != null
-              && internalDistributedSystem.getCache() != null
-              && !internalDistributedSystem.getCache().getCacheServers().isEmpty();
-        });
-      } catch (Exception e) {
-        // provide more information when condition is not satisfied after awaitility timeout
-        InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
-        logger.info("ds is: " + (ids != null ? "not null" : "null"));
-        logger.info("cache is: " + (ids.getCache() != null ? "not null" : "null"));
-        logger.info("has cache server: "
-            + (!ids.getCache().getCacheServers().isEmpty()));
-        throw e;
-      }
+      ClusterStartupRule.memberStarter.waitTilFullyReconnected();
     });
   }
 

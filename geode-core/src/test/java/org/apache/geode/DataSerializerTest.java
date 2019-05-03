@@ -20,11 +20,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
 @Category({SerializationTest.class})
@@ -47,5 +51,19 @@ public class DataSerializerTest {
 
     assertThat(mockDataSerializer.getEventId()).isSameAs(mockEventID);
     assertThat(mockDataSerializer.getContext()).isSameAs(mockClientProxyMembershipID);
+  }
+
+  @Test
+  public void readStringShouldReturnCanonicalEmptyString() throws IOException {
+    byte[] serializedEmptyStringBytes = BlobHelper.serializeToBlob("");
+    ByteArrayDataInput dataInput1 = new ByteArrayDataInput();
+    dataInput1.initialize(serializedEmptyStringBytes, null);
+    ByteArrayDataInput dataInput2 = new ByteArrayDataInput();
+    dataInput2.initialize(serializedEmptyStringBytes, null);
+
+    String firstRead = DataSerializer.readString(dataInput1);
+    String secondRead = DataSerializer.readString(dataInput2);
+
+    assertThat(secondRead).isSameAs(firstRead);
   }
 }
