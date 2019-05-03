@@ -59,10 +59,6 @@ if [[ "${SANITIZED_BUILD_JOB_NAME}" =~ [Ww]indows ]]; then
   WINDOWS_PREFIX="windows-"
 fi
 
-PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
-ZONE=${PERMITTED_ZONES[$((${RANDOM} % 4))]}
-echo "Deploying to zone ${ZONE}"
-
 INSTANCE_NAME_STRING="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-build${JAVA_BUILD_VERSION}-test${JAVA_TEST_VERSION}-job#${BUILD_NAME}"
 
 INSTANCE_NAME="heavy-lifter-$(uuidgen -n @dns -s -N "${INSTANCE_NAME_STRING}")"
@@ -76,6 +72,20 @@ GCP_NETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].netw
 GCP_NETWORK=${GCP_NETWORK##*/}
 GCP_SUBNETWORK=$(echo ${NETWORK_INTERFACE_INFO} | jq -r '.networkInterfaces[0].subnetwork')
 GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
+
+# Determine and store our attempt number
+cp old/attempts new/
+echo attempt >> new/attempts
+attempts=$(cat new/attempts | wc -l)
+echo $attempts > /tmp/retry_number
+
+if [ $attempts -eq 1 ]; then
+  ZONE=${MY_ZONE}
+else
+  PERMITTED_ZONES=(us-central1-a us-central1-b us-central1-c us-central1-f)
+  ZONE=${PERMITTED_ZONES[$((${RANDOM} % 4))]}
+fi
+echo "Deploying to zone ${ZONE}"
 
 #in a retry loop we intentionally generate the same instance name, so make sure prior attempt is cleaned up
 gcloud compute instances delete ${INSTANCE_NAME} --zone=${ZONE} --quiet &>/dev/null || true

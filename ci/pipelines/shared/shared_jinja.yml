@@ -38,3 +38,13 @@ username: ((github-username))
 password: ((github-password))
 {%- endif %}
 {%- endmacro %}
+
+{%- macro init_retry() -%}
+- task: initial-output
+  {{- docker_config()|indent(2) }}
+    outputs:
+    - name: attempts-log
+    run:
+      path: touch
+      args: ['attempts-log/attempts']
+{%- endmacro %}
