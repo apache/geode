@@ -17,6 +17,7 @@ package org.apache.geode.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 
@@ -25,14 +26,176 @@ import org.junit.Test;
 public class ByteArrayDataInputTest {
   @Test
   public void readFullyThatReadsPastEndOfDataThrowsEOFException() throws IOException {
-    @SuppressWarnings("resource")
-    ByteArrayDataInput input = new ByteArrayDataInput();
     byte[] inputBytes = new byte[1];
+    DataInput input = createDataInput(inputBytes);
     byte[] outputBytes = new byte[2];
-    input.initialize(inputBytes, null);
 
     Throwable t = catchThrowable(() -> input.readFully(outputBytes));
 
     assertThat(t).isInstanceOf(EOFException.class);
+  }
+
+  @Test
+  public void readLineGivenInputAtEOFReturnsNull() throws IOException {
+    byte[] inputBytes = new byte[1];
+    DataInput input = createDataInput(inputBytes);
+    input.readByte();
+
+    String result = input.readLine();
+
+    assertThat(result).isNull();
+    assertThat(dataRemaining(input)).isEqualTo(0);
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByLineFeedReturnsEmptyString() throws IOException {
+    byte[] inputBytes = new byte[] {'\n'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(0);
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByLineFeedReturnsEmptyStringDoesNotConsumeNextByte()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'\n', 'a'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) 'a');
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByCarriageReturnReturnsEmptyString()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'\r'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(0);
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByCarriageReturnReturnsEmptyStringAndDoesNotConsumeNextByte()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'\r', 'a'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) 'a');
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByCarriageReturnLineFeedReturnsEmptyString()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'\r', '\n'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(0);
+  }
+
+  @Test
+  public void readLineGivenEmptyLineTerminatedByCarriageReturnLineFeedReturnsEmptyStringDoesNotConsumeNextByte()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'\r', '\n', 'a'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) 'a');
+  }
+
+  @Test
+  public void readLineGivenLineTerminatedByEOFReturnsCorrectLineData() throws IOException {
+    byte[] inputBytes = new byte[] {'a', 'b', 'c'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEqualTo("abc");
+    assertThat(dataRemaining(input)).isEqualTo(0);
+  }
+
+  @Test
+  public void readLineGivenLineTerminatedByLineFeedReturnsCorrectLineData() throws IOException {
+    byte[] inputBytes = new byte[] {'a', 'b', 'c', '\n', '2'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEqualTo("abc");
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) '2');
+  }
+
+  @Test
+  public void readLineGivenLineTerminatedByCarriageReturnReturnsCorrectLineData()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'a', 'b', 'c', '\r', '2'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEqualTo("abc");
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) '2');
+  }
+
+  @Test
+  public void readLineGivenLineTerminatedByCarriageReturnLineFeedReturnsCorrectLineData()
+      throws IOException {
+    byte[] inputBytes = new byte[] {'a', 'b', 'c', '\r', '\n', '2'};
+    DataInput input = createDataInput(inputBytes);
+
+    String result = input.readLine();
+
+    assertThat(result).isEqualTo("abc");
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readUnsignedByte()).isEqualTo((int) '2');
+  }
+
+  /**
+   * We want ByteArrayDataInput to behave like DataInputStream(ByteArrayInputStream).
+   * This boolean allows us to switch back and forth in this test to make sure
+   * they both behave the same. It should never be checked in with testJDK=true.
+   */
+  private boolean testJDK = false;
+
+  private DataInput createDataInput(byte[] inputBytes) {
+    if (testJDK) {
+      return new java.io.DataInputStream(new java.io.ByteArrayInputStream(inputBytes));
+    } else {
+      ByteArrayDataInput input = new ByteArrayDataInput();
+      input.initialize(inputBytes, null);
+      return input;
+    }
+  }
+
+  private int dataRemaining(DataInput dataInput) {
+    if (testJDK) {
+      try {
+        return ((java.io.DataInputStream) dataInput).available();
+      } catch (IOException e) {
+        throw new IllegalStateException(e);
+      }
+    } else {
+      return ((ByteArrayDataInput) dataInput).available();
+    }
   }
 }
