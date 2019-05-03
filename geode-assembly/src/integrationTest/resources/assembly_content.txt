@@ -660,6 +660,11 @@ javadoc/org/apache/geode/management/FixedPartitionAttributesData.html
 javadoc/org/apache/geode/management/GatewayReceiverMXBean.html
 javadoc/org/apache/geode/management/GatewaySenderMXBean.html
 javadoc/org/apache/geode/management/GemFireProperties.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.Builder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.CacheBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.ClientCacheBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.GenericBuilder.html
+javadoc/org/apache/geode/management/GeodeClusterManagementServiceConfig.html
 javadoc/org/apache/geode/management/JMXNotificationType.html
 javadoc/org/apache/geode/management/JMXNotificationUserData.html
 javadoc/org/apache/geode/management/JVMMetrics.html
@@ -680,6 +685,7 @@ javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
+javadoc/org/apache/geode/management/api/ClusterManagementServiceConfig.html
 javadoc/org/apache/geode/management/api/RestfulEndpoint.html
 javadoc/org/apache/geode/management/api/Status.html
 javadoc/org/apache/geode/management/api/package-frame.html
@@ -702,7 +708,10 @@ javadoc/org/apache/geode/management/cli/UpdateAllConfigurationGroupsMarker.html
 javadoc/org/apache/geode/management/cli/package-frame.html
 javadoc/org/apache/geode/management/cli/package-summary.html
 javadoc/org/apache/geode/management/cli/package-tree.html
-javadoc/org/apache/geode/management/client/ClusterManagementServiceProvider.html
+javadoc/org/apache/geode/management/client/JavaClientClusterManagementServiceConfig.Builder.html
+javadoc/org/apache/geode/management/client/JavaClientClusterManagementServiceConfig.GenericBuilder.html
+javadoc/org/apache/geode/management/client/JavaClientClusterManagementServiceConfig.RequestFactoryBuilder.html
+javadoc/org/apache/geode/management/client/JavaClientClusterManagementServiceConfig.html
 javadoc/org/apache/geode/management/client/package-frame.html
 javadoc/org/apache/geode/management/client/package-summary.html
 javadoc/org/apache/geode/management/client/package-tree.html

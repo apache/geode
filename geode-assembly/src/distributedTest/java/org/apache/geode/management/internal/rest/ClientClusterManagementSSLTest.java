@@ -30,11 +30,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
@@ -42,25 +40,23 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.GeodeClusterManagementServiceConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
+import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class ClientClusterManagementSSLTest {
 
   @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(2);
+  public static ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   private static MemberVM locator, server;
-  private ClusterManagementService cmsClient;
-  private RegionConfig region;
-  private static SSLContext sslContext;
-  private static HostnameVerifier hostnameVerifier;
-
-  @ClassRule
-  public static RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+  private static ClientVM client;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -72,97 +68,188 @@ public class ClientClusterManagementSSLTest {
     sslProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     sslProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     sslProps.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.WEB.getConstant());
+
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps)
         .withSecurityManager(SimpleSecurityManager.class));
+
     int locatorPort = locator.getPort();
     server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
         .withProperties(sslProps)
         .withCredential("cluster", "cluster"));
 
-    System.setProperty("javax.net.ssl.keyStore", keyFile.getCanonicalPath());
-    System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    System.setProperty("javax.net.ssl.keyStoreType", "JKS");
-    System.setProperty("javax.net.ssl.trustStore", keyFile.getCanonicalPath());
-    System.setProperty("javax.net.ssl.trustStorePassword", "password");
-    System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+    client = cluster.startClientVM(2, c -> {
+    });
 
-    sslContext = SSLContext.getDefault();
-    hostnameVerifier = new NoopHostnameVerifier();
-  }
-
-  @Before
-  public void before() throws Exception {
-    region = new RegionConfig();
-    region.setName("customer");
+    client.invoke(() -> {
+      System.setProperty("javax.net.ssl.keyStore", keyFile.getCanonicalPath());
+      System.setProperty("javax.net.ssl.keyStorePassword", "password");
+      System.setProperty("javax.net.ssl.keyStoreType", "JKS");
+      System.setProperty("javax.net.ssl.trustStore", keyFile.getCanonicalPath());
+      System.setProperty("javax.net.ssl.trustStorePassword", "password");
+      System.setProperty("javax.net.ssl.trustStoreType", "JKS");
+    });
   }
 
   @Test
   public void createRegion_Successful() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        sslContext, hostnameVerifier, "dataManage", "dataManage");
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    client.invoke(() -> {
+      SSLContext sslContext = SSLContext.getDefault();
+      HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setSslContext(sslContext)
+          .setHostnameVerifier(hostnameVerifier)
+          .setUsername("dataManage")
+          .setPassword("dataManage")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+
+      ClusterManagementResult result = cmsClient.create(region);
+      assertThat(result.isSuccessful()).isTrue();
+      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+      assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    });
   }
 
   @Test
   public void createRegion_NoSsl() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        null, null, "dataManage", "dataManage");
-    assertThatThrownBy(() -> cmsClient.create(region)).isInstanceOf(ResourceAccessException.class);
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
+
+    client.invoke(() -> {
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setUsername("dataManage")
+          .setPassword("dataManage")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+      assertThatThrownBy(() -> cmsClient.create(region))
+          .isInstanceOf(ResourceAccessException.class);
+    });
   }
 
   @Test
   public void createRegion_WrongPassword() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        sslContext, hostnameVerifier, "dataManage", "wrongPswd");
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    client.invoke(() -> {
+      SSLContext sslContext = SSLContext.getDefault();
+      HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setSslContext(sslContext)
+          .setHostnameVerifier(hostnameVerifier)
+          .setUsername("dataManage")
+          .setPassword("wrongPassword")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+
+      ClusterManagementResult result = cmsClient.create(region);
+      assertThat(result.isSuccessful()).isFalse();
+      assertThat(result.getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    });
   }
 
   @Test
   public void createRegion_NoUser() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        sslContext, hostnameVerifier, null, null);
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    client.invoke(() -> {
+      SSLContext sslContext = SSLContext.getDefault();
+      HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setSslContext(sslContext)
+          .setHostnameVerifier(hostnameVerifier)
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+
+      ClusterManagementResult result = cmsClient.create(region);
+      assertThat(result.isSuccessful()).isFalse();
+      assertThat(result.getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    });
   }
 
   @Test
   public void createRegion_NoPassword() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        sslContext, hostnameVerifier, "dataManage", null);
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    client.invoke(() -> {
+      SSLContext sslContext = SSLContext.getDefault();
+      HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setSslContext(sslContext)
+          .setHostnameVerifier(hostnameVerifier)
+          .setUsername("dataManage")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+
+      ClusterManagementResult result = cmsClient.create(region);
+      assertThat(result.isSuccessful()).isFalse();
+      assertThat(result.getStatusCode())
+          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+    });
   }
 
   @Test
   public void createRegion_NoPrivilege() throws Exception {
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(),
-        sslContext, hostnameVerifier, "dataRead", "dataRead");
+    RegionConfig region = new RegionConfig();
+    region.setName("customer");
+    int httpPort = locator.getHttpPort();
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
+    client.invoke(() -> {
+      SSLContext sslContext = SSLContext.getDefault();
+      HostnameVerifier hostnameVerifier = new NoopHostnameVerifier();
+
+      ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+          .setHost("localhost")
+          .setPort(httpPort)
+          .setSslContext(sslContext)
+          .setHostnameVerifier(hostnameVerifier)
+          .setUsername("dataRead")
+          .setPassword("dataRead")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
+
+      ClusterManagementResult result = cmsClient.create(region);
+      assertThat(result.isSuccessful()).isFalse();
+      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
+    });
   }
 
   @Test
   public void invokeFromServer() throws Exception {
     server.invoke(() -> {
       // when getting the service from the server, we don't need to provide the host information
-      ClusterManagementService cmsClient =
-          ClusterManagementServiceProvider.getService("dataManage", "dataManage");
+      ClusterManagementServiceConfig config = GeodeClusterManagementServiceConfig.builder()
+          .setCache(ClusterStartupRule.getCache())
+          .setUsername("dataManage")
+          .setPassword("dataManage")
+          .build();
+      ClusterManagementService cmsClient = new ClientClusterManagementService(config);
       RegionConfig region = new RegionConfig();
       region.setName("orders");
       cmsClient.create(region);

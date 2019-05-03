@@ -37,8 +37,10 @@ import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -62,7 +64,12 @@ public class MemberManagementServiceDUnitTest {
   public void before() {
     cluster.setSkipLocalDistributedSystemCleanup(true);
     webContext = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceProvider.getService(webContext.getRequestFactory());
+
+    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+        .setRequestFactory(webContext.getRequestFactory())
+        .build();
+    client = new ClientClusterManagementService(config);
+
     cluster.startServerVM(0, webContext.getLocator().getPort());
   }
 

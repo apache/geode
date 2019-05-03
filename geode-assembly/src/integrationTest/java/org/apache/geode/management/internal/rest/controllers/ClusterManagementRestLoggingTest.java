@@ -22,6 +22,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ClusterManagementServiceConfig;
+import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
 import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -34,7 +36,11 @@ public class ClusterManagementRestLoggingTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    cms = new ClientClusterManagementService("localhost", locator.getHttpPort());
+    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
+        .setHost("localhost")
+        .setPort(locator.getHttpPort())
+        .build();
+    cms = new ClientClusterManagementService(config);
   }
 
   @Test
