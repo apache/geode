@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +68,7 @@ public class UndeployCommand extends GfshCommand {
     List<CliFunctionResult> results =
         executeAndGetFunctionResult(this.undeployFunction, new Object[] {jars}, targetMembers);
 
+    Map<String, String> undeployedJars = new HashMap();
     ResultModel result = new ResultModel();
     TabularResultModel tabularData = result.addTable("jars");
     for (CliFunctionResult cliResult : results) {
@@ -74,7 +76,7 @@ public class UndeployCommand extends GfshCommand {
         result.setStatus(Result.Status.ERROR);
       }
 
-      Map<String, String> undeployedJars = (Map<String, String>) cliResult.getResultObject();
+      undeployedJars = (Map<String, String>) cliResult.getResultObject();
       if (undeployedJars == null) {
         continue;
       }
@@ -85,6 +87,8 @@ public class UndeployCommand extends GfshCommand {
         tabularData.accumulate("Un-Deployed From JAR Location", undeployedJars.get(key));
       }
     }
+
+    String[] undeployedList = undeployedJars.keySet().toArray(new String[undeployedJars.size()]);
 
     if (tabularData.getRowSize() == 0) {
       return ResultModel.createInfo(CliStrings.UNDEPLOY__NO_JARS_FOUND_MESSAGE);
@@ -97,7 +101,7 @@ public class UndeployCommand extends GfshCommand {
       result.addInfo().addLine(CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
     } else {
       ((InternalConfigurationPersistenceService) getConfigurationPersistenceService())
-          .removeJars(jars, groups);
+          .removeJars(undeployedList, groups);
     }
 
     return result;

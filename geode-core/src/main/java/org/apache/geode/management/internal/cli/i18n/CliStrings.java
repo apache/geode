@@ -1065,6 +1065,9 @@ public class CliStrings {
   public static final String DEPLOY__GROUP__HELP =
       "Group(s) to which the specified JARs will be deployed. If not specified, deploy will occur on all members.";
   public static final String DEPLOY__JAR__HELP = "Path of the JAR to deploy.";
+  public static final String DEPLOY__REGISTER__DRIVER = "register-driver";
+  public static final String DEPLOY__REGISTER__DRIVER__HELP =
+      "Whether to attempt to register JDBC driver contained within the JAR with the JDBC Driver Manager";
 
   /* describe config command */
   public static final String DESCRIBE_CONFIG = "describe config";

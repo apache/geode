@@ -110,7 +110,7 @@ public class ClusterConfigurationLoader {
         Map<String, File> stagedJarFiles =
             getJarsFromLocator(response.getMember(), response.getJarNames());
 
-        List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles);
+        List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles, false);
 
         deployedJars.stream().filter(Objects::nonNull)
             .forEach((jar) -> logger.info("Deployed: {}", jar.getFile().getAbsolutePath()));

@@ -82,7 +82,7 @@ public class ClassPathLoaderTest {
     jarFiles.put("JarDeployerDUnitZLF.jar", zeroFile);
 
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles, false);
     }).isInstanceOf(IllegalArgumentException.class);
 
     byte[] validBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitZLF1");
@@ -95,7 +95,7 @@ public class ClassPathLoaderTest {
     jarFiles.put("JarDeployerDUnitZLF2.jar", zeroFile);
 
     assertThatThrownBy(() -> {
-      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles);
+      ClassPathLoader.getLatest().getJarDeployer().deploy(jarFiles, false);
     }).isInstanceOf(IllegalArgumentException.class);
   }
 

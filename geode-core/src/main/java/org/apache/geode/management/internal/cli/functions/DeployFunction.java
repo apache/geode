@@ -59,6 +59,7 @@ public class DeployFunction implements InternalFunction {
       final Object[] args = (Object[]) context.getArguments();
       final List<String> jarFilenames = (List<String>) args[0];
       final List<RemoteInputStream> jarStreams = (List<RemoteInputStream>) args[1];
+      final Boolean registerDriver = (Boolean) args[2];
 
       InternalCache cache = (InternalCache) context.getCache();
       DistributedMember member = cache.getDistributedSystem().getDistributedMember();
@@ -76,7 +77,7 @@ public class DeployFunction implements InternalFunction {
 
       List<String> deployedList = new ArrayList<>();
       List<DeployedJar> jarClassLoaders =
-          ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles);
+          ClassPathLoader.getLatest().getJarDeployer().deploy(stagedFiles, registerDriver);
       for (int i = 0; i < jarFilenames.size(); i++) {
         deployedList.add(jarFilenames.get(i));
         if (jarClassLoaders.get(i) != null) {

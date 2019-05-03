@@ -21,7 +21,9 @@ import java.io.File;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
-import org.junit.*;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
@@ -46,9 +48,8 @@ public class CreateDataSourceCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-
-  @Before
-  public void before() throws Exception {
+  @BeforeClass
+  public static void before() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, "group1", locator.getPort());
     server2 = cluster.startServerVM(2, "group1", locator.getPort());
@@ -56,24 +57,11 @@ public class CreateDataSourceCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
-  @After
-  public void after() throws Exception {
-    server1.stop(true);
-    server2.stop(true);
-    locator.stop(true);
-  }
-
   @Test
   public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
     String URL = "jdbc:mysql://localhost/";
     IgnoredException.addIgnoredException(
         "No suitable driver");
-    IgnoredException.addIgnoredException(
-        "Access denied for user 'mySqlUser'@'localhost'");
-    IgnoredException.addIgnoredException(
-        "Failed to connect to \"mySqlDataSource\". See log for details");
-    IgnoredException.addIgnoredException(
-        "create data-source failed");
     IgnoredException.addIgnoredException(
         "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
 
@@ -90,11 +78,18 @@ public class CreateDataSourceCommandDUnitTest {
 
     IgnoredException.removeAllExpectedExceptions();
 
-    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile + " --register-driver").statusIsSuccess();
     gfsh.executeAndAssertThat(
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
             + URL + "\"")
         .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+
+    gfsh.executeAndAssertThat("undeploy --jar=" + jdbcJarName).statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("No suitable driver");
   }
 
   private File loadTestResource(String fileName) {

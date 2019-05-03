@@ -68,7 +68,7 @@ public class JarDeployer implements Serializable {
   private static final Lock lock = new ReentrantLock();
 
   private final Map<String, DeployedJar> deployedJars = new ConcurrentHashMap<>();
-
+  private final Map<String, Driver> deployedDrivers = new ConcurrentHashMap<>();
 
   // Split a versioned filename into its name and version
   public static final Pattern versionedPattern =
@@ -319,7 +319,7 @@ public class JarDeployer implements Serializable {
         }
       }
 
-      registerNewVersions(latestVersionOfEachJar);
+      registerNewVersions(latestVersionOfEachJar, false);
     } catch (Exception e) {
       throw new RuntimeException(e);
     } finally {
@@ -364,7 +364,8 @@ public class JarDeployer implements Serializable {
 
   }
 
-  public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars)
+  public List<DeployedJar> registerNewVersions(List<DeployedJar> deployedJars,
+      Boolean registerDriver)
       throws ClassNotFoundException, MalformedURLException {
     lock.lock();
     try {
@@ -375,9 +376,11 @@ public class JarDeployer implements Serializable {
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
           newVersionToOldVersion.put(deployedJar, oldJar);
-          String driverClassName = getJdbcDriverName(deployedJar);
-          if (StringUtils.isNotBlank(driverClassName)) {
-            registerDriver(deployedJar, driverClassName);
+          if (registerDriver) {
+            String driverClassName = getJdbcDriverName(deployedJar);
+            if (StringUtils.isNotBlank(driverClassName)) {
+              registerDriver(deployedJar, driverClassName);
+            }
           }
         }
       }
@@ -461,11 +464,11 @@ public class JarDeployer implements Serializable {
 
     public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info)
         throws SQLException {
-      return this.getPropertyInfo(url, info);
+      return this.jdbcDriver.getPropertyInfo(url, info);
     }
 
     public int getMajorVersion() {
-      return this.getMajorVersion();
+      return this.jdbcDriver.getMajorVersion();
     }
 
     public int getMinorVersion() {
@@ -485,14 +488,14 @@ public class JarDeployer implements Serializable {
       throws MalformedURLException {
     File jarFile = jar.getFile();
     try {
-      // Driver driver = (Driver)
-      // ClassPathLoader.getLatest().forName(driverClassName).newInstance();
       URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {jarFile.toURI().toURL()});
       Driver driver = (Driver) Class.forName(driverClassName, true,
           urlClassLoader).newInstance();
-      DriverManager.registerDriver(new DriverWrapper(driver));
-    } catch (IllegalAccessException
-        | ClassNotFoundException | InstantiationException | SQLException e) {
+      Driver d = new DriverWrapper(driver);
+      DriverManager.registerDriver(d);
+      deployedDrivers.put(jar.getJarName(), d);
+    } catch (IllegalAccessException | ClassNotFoundException | InstantiationException
+        | SQLException e) {
       e.printStackTrace();
     }
   }
@@ -506,7 +509,8 @@ public class JarDeployer implements Serializable {
    *         already deployed.
    * @throws IOException When there's an error saving the JAR file to disk
    */
-  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles)
+  public List<DeployedJar> deploy(final Map<String, File> stagedJarFiles,
+      Boolean registerDriver)
       throws IOException, ClassNotFoundException {
     List<DeployedJar> deployedJars = new ArrayList<>(stagedJarFiles.size());
 
@@ -523,7 +527,7 @@ public class JarDeployer implements Serializable {
         deployedJars.add(deployWithoutRegistering(fileName, stagedJarFiles.get(fileName)));
       }
 
-      return registerNewVersions(deployedJars);
+      return registerNewVersions(deployedJars, registerDriver);
     } finally {
       lock.unlock();
     }
@@ -564,7 +568,7 @@ public class JarDeployer implements Serializable {
     jarFiles.put(jarName, stagedJarFile);
 
     try {
-      List<DeployedJar> deployedJars = deploy(jarFiles);
+      List<DeployedJar> deployedJars = deploy(jarFiles, false);
       if (deployedJars == null || deployedJars.size() == 0) {
         return null;
       }
@@ -587,7 +591,7 @@ public class JarDeployer implements Serializable {
    * @return The path to the location on disk where the JAR file had been deployed
    * @throws IOException If there's a problem deleting the file
    */
-  public String undeploy(final String jarName) throws IOException {
+  public String undeploy(final String jarName) throws IOException, SQLException {
     lock.lock();
 
     try {
@@ -601,6 +605,13 @@ public class JarDeployer implements Serializable {
       deployedJar.cleanUp(null);
 
       deleteAllVersionsOfJar(jarName);
+
+      Driver driverToDeregister = deployedDrivers.get(jarName);
+      if (driverToDeregister != null) {
+        DriverManager.deregisterDriver(driverToDeregister);
+        deployedDrivers.remove(jarName);
+      }
+
       return deployedJar.getFileCanonicalPath();
     } finally {
       lock.unlock();
