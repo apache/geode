@@ -146,9 +146,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public void readFully(byte[] b) throws IOException {
-    final int len = b.length;
-    System.arraycopy(this.bytes, this.pos, b, 0, len);
-    this.pos += len;
+    readFully(b, 0, b.length);
   }
 
   /**
