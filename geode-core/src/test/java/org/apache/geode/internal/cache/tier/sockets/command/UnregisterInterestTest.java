@@ -120,7 +120,7 @@ public class UnregisterInterestTest {
     when(this.message.getPart(eq(3))).thenReturn(this.isClosingPart);
     when(this.message.getPart(eq(4))).thenReturn(this.keepAlivePart);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);

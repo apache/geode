@@ -55,7 +55,7 @@ public class GetClientPRMetadataCommand extends BaseCommand {
       throws IOException, ClassNotFoundException, InterruptedException {
     String regionFullPath = null;
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
-    regionFullPath = clientMessage.getPart(0).getString();
+    regionFullPath = clientMessage.getPart(0).getCachedString();
     String errMessage = "";
     if (regionFullPath == null) {
       logger.warn("The input region path for the GetClientPRMetadata request is null");

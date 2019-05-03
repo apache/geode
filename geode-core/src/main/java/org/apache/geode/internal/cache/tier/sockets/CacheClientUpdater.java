@@ -640,7 +640,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       boolean withInterest = (Boolean) isInterestListPassedPart.getObject();
       boolean withCQs = (Boolean) hasCqsPart.getObject();
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
       Object callbackArgument = callbackArgumentPart.getObject();
 
@@ -821,7 +821,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part isInterestListPassedPart = clientMessage.getPart(partCnt++);
       Part hasCqsPart = clientMessage.getPart(partCnt++);
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
 
       Object callbackArgument = callbackArgumentPart.getObject();
@@ -923,7 +923,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
         versionTag.replaceNullIDs((InternalDistributedMember) this.endpoint.getMemberId());
       }
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
 
       Part isInterestListPassedPart = clientMessage.getPart(partCnt++);
@@ -1011,7 +1011,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       int partCnt = 0;
       Part regionNamePart = clientMessage.getPart(partCnt++);
       Part callbackArgumentPart = clientMessage.getPart(partCnt++);
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       Object callbackArgument = callbackArgumentPart.getObject();
 
       Part hasCqsPart = clientMessage.getPart(partCnt++);
@@ -1084,7 +1084,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       Part hasCqsPart = clientMessage.getPart(partCnt++);
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       Object callbackArgument = callbackArgumentPart.getObject();
       if (isDebugEnabled) {
         logger.debug("Clearing region: {} callbackArgument: {}", regionName, callbackArgument);
@@ -1151,7 +1151,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
 
       Part hasCqsPart = clientMessage.getPart(partCnt++);
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
 
       if ((Boolean) hasCqsPart.getObject()) {
         Part numCqsPart = clientMessage.getPart(partCnt++);
@@ -1348,7 +1348,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part isDurablePart = clientMessage.getPart(partCnt++);
       Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt++);
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
       int interestType = (Integer) interestTypePart.getObject();
       byte interestResultPolicy = (Byte) interestResultPolicyPart.getObject();
@@ -1406,7 +1406,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       Part receiveUpdatesAsInvalidatesPart = clientMessage.getPart(partCnt++);
       // Not reading the eventId part
 
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
       key = keyPart.getStringOrObject();
       int interestType = (Integer) interestTypePart.getObject();
       boolean isDurable = (Boolean) isDurablePart.getObject();
@@ -1448,7 +1448,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
       int partIdx = 0;
 
       // see ClientTombstoneMessage.getGFE70Message
-      regionName = clientMessage.getPart(partIdx++).getString();
+      regionName = clientMessage.getPart(partIdx++).getCachedString();
       int op = clientMessage.getPart(partIdx++).getInt();
       LocalRegion region = (LocalRegion) this.cacheHelper.getRegion(regionName);
 

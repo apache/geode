@@ -145,7 +145,7 @@ public class Put65 extends BaseCommand {
       return;
     }
 
-    final String regionName = regionNamePart.getString();
+    final String regionName = regionNamePart.getCachedString();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {

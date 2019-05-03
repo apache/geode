@@ -83,7 +83,7 @@ public class PutAll extends BaseCommand {
       // Retrieve the data from the message parts
       // part 0: region name
       regionNamePart = clientMessage.getPart(0);
-      regionName = regionNamePart.getString();
+      regionName = regionNamePart.getCachedString();
 
       if (regionName == null) {
         String putAllMsg =

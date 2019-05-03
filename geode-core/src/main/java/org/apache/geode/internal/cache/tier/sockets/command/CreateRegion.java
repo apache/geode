@@ -52,10 +52,10 @@ public class CreateRegion extends BaseCommand {
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     Part parentRegionNamePart = clientMessage.getPart(0);
-    String parentRegionName = parentRegionNamePart.getString();
+    String parentRegionName = parentRegionNamePart.getCachedString();
 
     regionNamePart = clientMessage.getPart(1);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     if (logger.isDebugEnabled()) {
       logger.debug(

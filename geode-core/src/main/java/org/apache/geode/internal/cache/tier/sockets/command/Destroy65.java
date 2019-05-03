@@ -152,7 +152,7 @@ public class Destroy65 extends BaseCommand {
       return;
     }
 
-    final String regionName = regionNamePart.getString();
+    final String regionName = regionNamePart.getCachedString();
 
     if (logger.isDebugEnabled()) {
       logger.debug(
