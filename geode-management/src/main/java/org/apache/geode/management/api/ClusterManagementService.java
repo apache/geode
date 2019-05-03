@@ -62,6 +62,8 @@ public interface ClusterManagementService {
 
   ClusterManagementResult list(CacheElement config);
 
+  ClusterManagementResult get(CacheElement config);
+
   /**
    * Test to see if this instance of ClusterManagementService retrieved from the client side is
    * properly connected to the locator or not

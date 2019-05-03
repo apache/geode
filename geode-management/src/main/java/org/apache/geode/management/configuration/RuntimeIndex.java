@@ -15,47 +15,36 @@
 
 package org.apache.geode.management.configuration;
 
-
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.api.RestfulEndpoint;
 
-@Experimental
-public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheElement {
-  private long entryCount;
+public class RuntimeIndex extends RegionConfig.Index implements RuntimeCacheElement,
+    RestfulEndpoint {
+  private String regionName;
 
-  public RuntimeRegionConfig() {}
-
-  public RuntimeRegionConfig(RegionConfig config) {
-    super(config);
+  public String getRegionName() {
+    return regionName;
   }
 
-  public long getEntryCount() {
-    return entryCount;
+  public void setRegionName(String regionName) {
+    this.regionName = regionName;
   }
 
-  public void setEntryCount(long entrySize) {
-    this.entryCount = entrySize;
-  }
-
+  @Override
   public List<String> getGroups() {
     return groups;
   }
 
-  public List<RuntimeIndex> getRuntimeIndexes(String indexId) {
-    Stream<Index> stream = getIndexes().stream();
-    if (indexId != null) {
-      stream = stream.filter(i -> i.getId().equals(indexId));
-    }
-    return stream
-        .map(e -> {
-          RuntimeIndex index = new RuntimeIndex(e);
-          index.setRegionName(getName());
-          return index;
-        })
-        .collect(Collectors.toList());
+  public RuntimeIndex() {};
+
+  public RuntimeIndex(RegionConfig.Index index) {
+    super(index);
+  }
+
+  @Override
+  public String getEndpoint() {
+    return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
   }
 }

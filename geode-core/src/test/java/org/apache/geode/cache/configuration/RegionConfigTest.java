@@ -91,4 +91,54 @@ public class RegionConfigTest {
     String xml = service.marshall(cacheConfig);
     assertThat(xml).contains("<region name=\"test\" refid=\"REPLICATE\"");
   }
+
+  @Test
+  public void indexType() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    assertThat(index.isKeyIndex()).isNull();
+    assertThat(index.getType()).isEqualTo("range");
+
+    index.setKeyIndex(true);
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isNull();
+
+    index.setKeyIndex(false);
+    assertThat(index.isKeyIndex()).isFalse();
+    assertThat(index.getType()).isEqualTo("range");
+
+    index.setType("hash");
+    assertThat(index.isKeyIndex()).isFalse();
+    assertThat(index.getType()).isEqualTo("hash");
+
+    index.setType("key");
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isNull();
+  }
+
+  @Test
+  public void index() throws Exception {
+    String xml = "<region name=\"region1\" refid=\"REPLICATE\">\n"
+        + "<region-attributes data-policy=\"replicate\" scope=\"distributed-ack\" concurrency-checks-enabled=\"true\"/>\n"
+        + "<index name=\"index1\" expression=\"id\" from-clause=\"/region1\" key-index=\"true\"/>\n"
+        + "</region>";
+
+    RegionConfig regionConfig = service.unMarshall(xml, RegionConfig.class);
+
+    RegionConfig.Index index = regionConfig.getIndexes().get(0);
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isNull();
+
+    String json = GeodeJsonMapper.getMapper().writeValueAsString(index);
+    RegionConfig.Index newIndex =
+        GeodeJsonMapper.getMapper().readValue(json, RegionConfig.Index.class);
+    assertThat(newIndex.isKeyIndex()).isTrue();
+    assertThat(newIndex.getType()).isNull();
+
+    CacheConfig cacheConfig = new CacheConfig();
+    regionConfig.getIndexes().clear();
+    regionConfig.getIndexes().add(newIndex);
+    cacheConfig.getRegions().add(regionConfig);
+    // the end xml should not have "type" attribute in index definition
+    assertThat(service.marshall(cacheConfig)).doesNotContain("type=");
+  }
 }

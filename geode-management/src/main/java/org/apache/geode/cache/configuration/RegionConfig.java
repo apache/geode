@@ -672,6 +672,17 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     @XmlAttribute(name = "type")
     protected String type; // for non-key index type, range or hash
 
+    public Index() {}
+
+    public Index(Index index) {
+      this.name = index.name;
+      this.expression = index.expression;
+      this.fromClause = index.fromClause;
+      this.imports = index.imports;
+      this.keyIndex = index.keyIndex;
+      this.type = index.type;
+    }
+
     /**
      * Gets the value of the name property.
      *
@@ -790,6 +801,10 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
      *
      */
     public String getType() {
+      if (keyIndex == Boolean.TRUE) {
+        return null;
+      }
+
       if (type == null) {
         return "range";
       } else {
@@ -814,11 +829,11 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
       } else {
         throw new IllegalArgumentException("Invalid index type " + value);
       }
-
       setKeyIndex("key".equalsIgnoreCase(value));
     }
 
     @Override
+    @JsonIgnore
     public String getId() {
       return getName();
     }

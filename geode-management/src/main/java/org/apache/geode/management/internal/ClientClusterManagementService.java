@@ -80,6 +80,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody();
   }
 
+  @Override
+  public ClusterManagementResult get(CacheElement config) {
+    String endPoint = getEndpoint(config);
+    return serviceConfig.getRestTemplate()
+        .getForEntity(VERSION + endPoint + "/{id}", ClusterManagementResult.class, config.getId())
+        .getBody();
+  }
+
   public RestTemplate getRestTemplate() {
     return serviceConfig.getRestTemplate();
   }

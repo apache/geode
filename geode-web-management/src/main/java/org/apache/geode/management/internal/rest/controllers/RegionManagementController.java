@@ -18,6 +18,8 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import java.util.List;
+
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -26,13 +28,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.RuntimeIndex;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.security.ResourcePermission.Operation;
+import org.apache.geode.security.ResourcePermission.Resource;
 
 @Controller("regionManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -56,7 +65,8 @@ public class RegionManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> listRegion(
+  @ResponseBody
+  public ClusterManagementResult listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
     RegionConfig filter = new RegionConfig();
@@ -66,8 +76,53 @@ public class RegionManagementController extends AbstractManagementController {
     if (StringUtils.isNotBlank(group)) {
       filter.setGroup(group);
     }
-    ClusterManagementResult result = clusterManagementService.list(filter);
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    return clusterManagementService.list(filter);
+  }
+
+  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
+  @ResponseBody
+  public ClusterManagementResult getRegion(
+      @PathVariable(name = "id") String id) {
+    securityService.authorize(Resource.CLUSTER, Operation.READ, id);
+    RegionConfig config = new RegionConfig();
+    config.setName(id);
+    return clusterManagementService.get(config);
+  }
+
+  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}/indexes")
+  @ResponseBody
+  public ClusterManagementResult listIndex(
+      @PathVariable(name = "id") String regionName,
+      @RequestParam(required = false) String indexId) {
+
+    ClusterManagementResult result = getRegion(regionName);
+    RuntimeRegionConfig runtimeRegion = result.getResult(RuntimeRegionConfig.class).get(0);
+
+    // only send the index information back
+    List<RuntimeIndex> runtimeIndexes = runtimeRegion.getRuntimeIndexes(indexId);
+    result.setResult(runtimeIndexes);
+
+    return result;
+  }
+
+  @RequestMapping(method = RequestMethod.GET,
+      value = REGION_CONFIG_ENDPOINT + "/{id}/indexes/{indexId}")
+  @ResponseBody
+  public ClusterManagementResult getIndex(
+      @PathVariable(name = "id") String regionName,
+      @PathVariable(name = "indexId") String indexName) {
+    ClusterManagementResult result = listIndex(regionName, indexName);
+    List<RuntimeIndex> indexList = result.getResult(RuntimeIndex.class);
+
+    if (indexList.size() == 0) {
+      throw new EntityNotFoundException("Index " + indexName + " not found.");
+    }
+
+    if (indexList.size() > 1) {
+      throw new IllegalStateException("More than one entity found.");
+    }
+
+    result.setResult(indexList);
+    return result;
   }
 }

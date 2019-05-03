@@ -54,6 +54,7 @@ import org.apache.geode.management.internal.configuration.validators.CacheElemen
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
@@ -218,6 +219,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     result.setResult(resultList);
     return result;
+  }
+
+  @Override
+  public ClusterManagementResult get(CacheElement config) {
+    ClusterManagementResult list = list(config);
+    List<RuntimeCacheElement> result = list.getResult(RuntimeCacheElement.class);
+    if (result.size() == 0) {
+      throw new EntityNotFoundException("id = " + config.getId() + " not found.");
+    }
+
+    if (result.size() > 1) {
+      throw new IllegalStateException("Expect only one entity.");
+    }
+    return list;
   }
 
 

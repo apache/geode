@@ -62,7 +62,7 @@ public class ClusterManagementResult {
   private String statusMessage;
 
   @JsonProperty
-  private List<RuntimeCacheElement> result = new ArrayList<>();
+  private List<? extends RuntimeCacheElement> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -116,7 +116,7 @@ public class ClusterManagementResult {
     return result.stream().map(clazz::cast).collect(Collectors.toList());
   }
 
-  public void setResult(List<RuntimeCacheElement> result) {
+  public void setResult(List<? extends RuntimeCacheElement> result) {
     this.result = result;
   }
 }
