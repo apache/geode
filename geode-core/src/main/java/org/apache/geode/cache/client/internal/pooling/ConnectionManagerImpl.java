@@ -308,7 +308,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
    * destroyed when returned to the pool.
    */
   @Override
-  public PooledConnection borrowConnection(ServerLocation server, long acquireTimeout,
+  public PooledConnection borrowConnection(ServerLocation server,
       boolean onlyUseExistingCnx) throws AllConnectionsInUseException, NoAvailableServersException {
     PooledConnection connection =
         availableConnectionManager.useFirst((c) -> c.getServer().equals(server));
@@ -331,7 +331,7 @@ public class ConnectionManagerImpl implements ConnectionManager {
 
   @Override
   public Connection exchangeConnection(final Connection oldConnection,
-      final Set<ServerLocation> excludedServers, final long acquireTimeout)
+      final Set<ServerLocation> excludedServers)
       throws AllConnectionsInUseException {
 
     try {

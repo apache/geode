@@ -161,7 +161,7 @@ public class OpExecutorImpl implements ExecutablePool {
           }
           attemptedServers.add(conn.getServer());
           try {
-            conn = connectionManager.exchangeConnection(conn, attemptedServers, serverTimeout);
+            conn = connectionManager.exchangeConnection(conn, attemptedServers);
           } catch (NoAvailableServersException nse) {
             // if retries is -1, don't try again after the last server has failed
             if (retries == -1 || TRY_SERVERS_ONCE) {
@@ -170,7 +170,7 @@ public class OpExecutorImpl implements ExecutablePool {
               // try one of the failed servers again, until we exceed the retry attempts.
               attemptedServers.clear();
               try {
-                conn = connectionManager.exchangeConnection(conn, attemptedServers, serverTimeout);
+                conn = connectionManager.exchangeConnection(conn, attemptedServers);
               } catch (NoAvailableServersException nse2) {
                 handleException(e, conn, attempt, true);
               }
@@ -339,7 +339,7 @@ public class OpExecutorImpl implements ExecutablePool {
       }
     }
     if (conn == null) {
-      conn = connectionManager.borrowConnection(server, serverTimeout, onlyUseExistingCnx);
+      conn = connectionManager.borrowConnection(server, onlyUseExistingCnx);
     }
     boolean success = true;
     try {
