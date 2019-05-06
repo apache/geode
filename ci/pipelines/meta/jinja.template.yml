@@ -22,7 +22,6 @@ resource_types:
 - name: concourse-pipeline
   type: docker-image
   source:
-    tag: dev
     repository: concourse/concourse-pipeline-resource
 
 resources:
