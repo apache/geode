@@ -86,6 +86,7 @@ public class ClientRegistrationEventQueueManagerTest {
         .thenReturn(filterRoutingInfo);
     when(localRegion.getFilterProfile()).thenReturn(filterProfile);
     when(internalCacheEvent.getRegion()).thenReturn(localRegion);
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
 
