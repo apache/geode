@@ -229,6 +229,7 @@ jobs:
           get_params: {skip_download: true}
       - do:
         - put: concourse-metadata-resource
+        {{ init_retry()|indent(8) }}
         - task: create_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             params:
@@ -245,8 +246,12 @@ jobs:
             - name: concourse-metadata-resource
             - name: geode
             - name: geode-ci
+            - name: attempts-log
+              path: old
             outputs:
             - name: instance-data
+            - name: attempts-log
+              path: new
           timeout: 15m
           attempts: 100
     - task: rsync_code_up-{{java_test_version.name}}
