@@ -56,7 +56,7 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
       return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, dsce.getMessage());
     } catch (Exception ex) {
       if (logger.isErrorEnabled()) {
-        logger.error("create " + TYPE_NAME + " failed", ex.getMessage());
+        logger.error("create " + TYPE_NAME + " failed", ex);
       }
       return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
     }

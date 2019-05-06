@@ -60,7 +60,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletionDeploy() {
     buffer = "deploy";
     candidate = parser.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(5);
+    assertThat(candidate.getCandidates()).hasSize(6);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " --dir");
   }
 
@@ -68,7 +68,7 @@ public class GfshParserAutoCompletionTest {
   public void testCompletionDeployWithSpace() {
     buffer = "deploy ";
     candidate = parser.complete(buffer);
-    assertThat(candidate.getCandidates()).hasSize(5);
+    assertThat(candidate.getCandidates()).hasSize(6);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--dir");
   }
 
