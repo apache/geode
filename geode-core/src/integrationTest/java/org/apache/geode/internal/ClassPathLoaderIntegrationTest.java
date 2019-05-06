@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -111,7 +112,7 @@ public class ClassPathLoaderIntegrationTest {
   }
 
   @Test
-  public void testDeployFileAndChange() throws IOException, ClassNotFoundException {
+  public void testDeployFileAndChange() throws IOException, ClassNotFoundException, SQLException {
     String jarName = "JarDeployerIntegrationTest.jar";
 
     String classAResource = "integration/parent/ClassA.class";
