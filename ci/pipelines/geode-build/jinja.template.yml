@@ -421,6 +421,7 @@ jobs:
       {{ all_gating_jobs() | indent(6) }}
     - do:
       - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
       - task: create_instance
         {{- alpine_tools_config()|indent(8) }}
           params:
@@ -433,8 +434,12 @@ jobs:
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
+          - name: attempts-log
+            path: old
           outputs:
           - name: instance-data
+          - name: attempts-log
+            path: new
         timeout: 15m
         attempts: 10
   - task: rsync_code_up
@@ -490,6 +495,7 @@ jobs:
       - put: concourse-metadata-resource
     - aggregate:
       - do:
+        {{ init_retry()|indent(8) }}
         - task: create_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             params:
@@ -503,9 +509,13 @@ jobs:
             inputs:
             - name: concourse-metadata-resource
             - name: geode-ci
+            - name: attempts-log
+              path: old
             outputs:
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
+            - name: attempts-log
+              path: new
           timeout: 15m
           attempts: 10
         - task: rsync_code_up-{{java_test_version.name}}

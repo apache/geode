@@ -17,6 +17,7 @@
 
 {% from 'shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
 
 {% macro common_instance_params(test) -%}
 GCP_PROJECT: ((gcp-project))
@@ -84,6 +85,7 @@ jobs:
       trigger: true
     - do:
       - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
       - task: create_instance
         {{ alpine_tools_config()|indent(8) }}
           params:
@@ -95,8 +97,12 @@ jobs:
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
+          - name: attempts-log
+            path: old
           outputs:
           - name: instance-data
+          - name: attempts-log
+            path: new
         timeout: 15m
         attempts: 10
       - task: rsync_code_up
