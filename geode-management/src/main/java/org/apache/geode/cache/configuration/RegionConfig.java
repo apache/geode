@@ -801,8 +801,10 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
      *
      */
     public String getType() {
+      // this should return a "key" value because some production code relies on this method
+      // returning a type string that would turn into IndexType enum object
       if (keyIndex == Boolean.TRUE) {
-        return null;
+        return "key";
       }
 
       if (type == null) {
@@ -823,13 +825,18 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
      *             {@link #setKeyIndex(Boolean)}
      */
     public void setType(String value) {
-      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)
-          || "key".equalsIgnoreCase(value)) {
+      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
         this.type = value.toLowerCase();
+        setKeyIndex(false);
+      }
+      // we need to avoid setting the "type" to key since by xsd definition, it should only contain
+      // "hash" and "range" value.
+      else if ("key".equalsIgnoreCase(value)) {
+        this.type = null;
+        setKeyIndex(true);
       } else {
         throw new IllegalArgumentException("Invalid index type " + value);
       }
-      setKeyIndex("key".equalsIgnoreCase(value));
     }
 
     @Override

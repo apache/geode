@@ -100,7 +100,7 @@ public class RegionConfigTest {
 
     index.setKeyIndex(true);
     assertThat(index.isKeyIndex()).isTrue();
-    assertThat(index.getType()).isNull();
+    assertThat(index.getType()).isEqualTo("key");
 
     index.setKeyIndex(false);
     assertThat(index.isKeyIndex()).isFalse();
@@ -112,7 +112,7 @@ public class RegionConfigTest {
 
     index.setType("key");
     assertThat(index.isKeyIndex()).isTrue();
-    assertThat(index.getType()).isNull();
+    assertThat(index.getType()).isEqualTo("key");
   }
 
   @Test
@@ -126,19 +126,23 @@ public class RegionConfigTest {
 
     RegionConfig.Index index = regionConfig.getIndexes().get(0);
     assertThat(index.isKeyIndex()).isTrue();
-    assertThat(index.getType()).isNull();
+    assertThat(index.getType()).isEqualTo("key");
 
     String json = GeodeJsonMapper.getMapper().writeValueAsString(index);
+    System.out.println(json);
     RegionConfig.Index newIndex =
         GeodeJsonMapper.getMapper().readValue(json, RegionConfig.Index.class);
     assertThat(newIndex.isKeyIndex()).isTrue();
-    assertThat(newIndex.getType()).isNull();
+    assertThat(newIndex.getType()).isEqualTo("key");
 
     CacheConfig cacheConfig = new CacheConfig();
     regionConfig.getIndexes().clear();
     regionConfig.getIndexes().add(newIndex);
     cacheConfig.getRegions().add(regionConfig);
+
     // the end xml should not have "type" attribute in index definition
-    assertThat(service.marshall(cacheConfig)).doesNotContain("type=");
+    String newXml = service.marshall(cacheConfig);
+    System.out.println(newXml);
+    assertThat(newXml).doesNotContain("type=");
   }
 }
