@@ -379,6 +379,7 @@ public class RegionAttributesCreation extends UserSpecifiedRegionAttributes
    * Returns whether or not this <code>RegionAttributesCreation</code> is equivalent to another
    * <code>RegionAttributes</code>.
    */
+
   public boolean sameAs(RegionAttributes other) {
     if (!equal(this.cacheListeners, Arrays.asList(other.getCacheListeners()))) {
       throw new RuntimeException(

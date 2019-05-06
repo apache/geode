@@ -118,7 +118,7 @@ public class RegionHelper {
     }
   }
 
-  private static RegionAttributes getRegionAttributes(Cache cache,
+  public static RegionAttributes getRegionAttributes(Cache cache,
       RegionConfiguration configuration) {
     // Create the requested attributes
     RegionAttributes baseRequestedAttributes =
