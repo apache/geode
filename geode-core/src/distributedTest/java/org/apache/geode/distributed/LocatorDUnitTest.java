@@ -39,8 +39,15 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.internal.security.SecurableCommunicationChannel.LOCATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.dunit.Disconnect.disconnectFromDS;
+import static org.apache.geode.test.dunit.DistributedTestUtils.deleteLocatorStateFile;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.VM.getController;
+import static org.apache.geode.test.dunit.VM.getHostName;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.dunit.VM.toArray;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -52,12 +59,13 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -68,7 +76,6 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -89,17 +96,12 @@ import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHel
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.LocalLogWriter;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.Connection;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -107,6 +109,7 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.internal.DUnitLauncher;
 import org.apache.geode.test.dunit.rules.DistributedRule;
+import org.apache.geode.test.dunit.rules.SharedErrorCollector;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -114,20 +117,73 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  *
  * @since GemFire 4.0
  */
-@Category({MembershipTest.class})
-public class LocatorDUnitTest implements java.io.Serializable {
+@Category(MembershipTest.class)
+@SuppressWarnings("serial")
+public class LocatorDUnitTest implements Serializable {
   private static final Logger logger = LogService.getLogger();
 
-  private static DUnitBlackboard blackboard;
-  private static TestHook hook;
-  static volatile InternalDistributedSystem system = null;
+  protected static volatile InternalDistributedSystem system;
+  private static volatile DUnitBlackboard blackboard;
+  private static volatile TestHook hook;
+
   protected int port1;
   private int port2;
+  private int port3;
+  private int port4;
+
+  protected String hostName;
+
+  protected VM vm0;
+  private VM vm1;
+  private VM vm2;
+  private VM vm3;
+  private VM vm4;
 
   @Rule
-  public DistributedRule distributedRule =
-      DistributedRule.builder().withVMCount(6).build();
+  public DistributedRule distributedRule = new DistributedRule(6);
 
+  @Rule
+  public SharedErrorCollector errorCollector = new SharedErrorCollector();
+
+  @Before
+  public void setUp() {
+    addIgnoredException("Removing shunned member");
+
+    vm0 = getVM(0);
+    vm1 = getVM(1);
+    vm2 = getVM(2);
+    vm3 = getVM(3);
+    vm4 = getVM(4);
+
+    hostName = NetworkUtils.getServerHostName();
+
+    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(4);
+    port1 = ports[0];
+    port2 = ports[1];
+    port3 = ports[2];
+    port4 = ports[3];
+    deleteLocatorStateFile(port1, port2, port3, port4);
+  }
+
+  @After
+  public void tearDown() {
+    for (VM vm : toArray(getController(), vm0, vm1, vm2, vm3, vm4)) {
+      vm.invoke(() -> {
+        stopLocator();
+        disconnectFromDS();
+        system = null;
+        blackboard = null;
+        hook = null;
+      });
+    }
+
+    // delete locator state files so they don't accidentally get used by other tests
+    for (int port : new int[] {port1, port2, port3, port4}) {
+      if (port > 0) {
+        deleteLocatorStateFile(port);
+      }
+    }
+  }
 
   private static DUnitBlackboard getBlackboard() {
     if (blackboard == null) {
@@ -153,18 +209,14 @@ public class LocatorDUnitTest implements java.io.Serializable {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
   }
 
-
   /**
    * return the distributed member id for the ds on this vm
    */
   private static DistributedMember getDistributedMember(Properties props) {
-    props.put("name", "vm_" + VM.getCurrentVMNum());
+    props.setProperty("name", "vm_" + VM.getCurrentVMNum());
     DistributedSystem sys = getConnectedDistributedSystem(props);
-    sys.getLogWriter().info("<ExpectedException action=add>service failure</ExpectedException>");
-    sys.getLogWriter().info(
-        "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-    sys.getLogWriter().info(
-        "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
+    addIgnoredException("service failure");
+    addIgnoredException(ForcedDisconnectException.class);
     return sys.getDistributedMember();
   }
 
@@ -172,7 +224,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
    * find a running locator and return its distributed member id
    */
   private static DistributedMember getLocatorDistributedMember() {
-    return (Locator.getLocator()).getDistributedSystem().getDistributedMember();
+    return Locator.getLocator().getDistributedSystem().getDistributedMember();
   }
 
   /**
@@ -191,8 +243,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     }
   }
 
-  //////// Test Methods
-
   /**
    * This tests that the locator can resume control as coordinator after all locators have been shut
    * down and one is restarted. It's necessary to have a lock service start so elder failover is
@@ -201,29 +251,24 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testCollocatedLocatorWithSecurity() {
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
+    String locators = hostName + "[" + port1 + "]";
 
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-
-    final String locators = NetworkUtils.getServerHostName() + "[" + port1 + "]";
-    final Properties properties = new Properties();
-    properties.put(MCAST_PORT, "0");
-    properties.put(START_LOCATOR, locators);
-    properties.put(LOG_LEVEL, logger.getLevel().name());
-    properties.put(SECURITY_PEER_AUTH_INIT, "org.apache.geode.distributed.AuthInitializer.create");
-    properties.put(SECURITY_PEER_AUTHENTICATOR,
+    Properties properties = new Properties();
+    properties.setProperty(SECURITY_PEER_AUTH_INIT,
+        "org.apache.geode.distributed.AuthInitializer.create");
+    properties.setProperty(SECURITY_PEER_AUTHENTICATOR,
         "org.apache.geode.distributed.MyAuthenticator.create");
+    properties.setProperty(START_LOCATOR, locators);
     addDSProps(properties);
+
     system = getConnectedDistributedSystem(properties);
     assertThat(system.getDistributedMember().getVmKind())
         .describedAs("expected the VM to have NORMAL vmKind")
         .isEqualTo(ClusterDistributionManager.NORMAL_DM_TYPE);
 
     properties.remove(START_LOCATOR);
-    properties.put(LOCATORS, locators);
+    properties.setProperty(LOCATORS, locators);
+
     SerializableRunnable startSystem = new SerializableRunnable("start system") {
       @Override
       public void run() {
@@ -253,15 +298,14 @@ public class LocatorDUnitTest implements java.io.Serializable {
     system.disconnect();
 
     vm1.invoke("ensure grantor failover", () -> {
-      DistributedLockService serviceNamed =
-          DistributedLockService.getServiceNamed("test service");
+      DistributedLockService serviceNamed = DistributedLockService.getServiceNamed("test service");
       serviceNamed.lock("foo3", 0, 0);
-      await()
-          .until(serviceNamed::isLockGrantor);
+      await().until(serviceNamed::isLockGrantor);
       assertThat(serviceNamed.isLockGrantor()).isTrue();
     });
 
-    properties.put(START_LOCATOR, locators);
+    properties.setProperty(START_LOCATOR, locators);
+
     system = getConnectedDistributedSystem(properties);
     System.out.println("done connecting distributed system.  Membership view is "
         + MembershipManagerHelper.getMembershipManager(system).getView());
@@ -289,7 +333,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     vm3.invoke(startSystem);
     vm3.invoke("get the lock service and lock something(2)",
         () -> DistributedLockService.create("test service", system).lock("foo5", 0, 0));
-
   }
 
   /**
@@ -300,232 +343,172 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testStartTwoLocators() throws Exception {
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    this.port2 = port2; // for cleanup in tearDown2
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    DistributedTestUtils.deleteLocatorStateFile(port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "false");
+    Properties properties = getClusterProperties(locators, "false");
     addDSProps(properties);
 
-    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
-    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
-    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
+    startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
+    startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
+    startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
   }
 
   @Test
   public void testStartTwoLocatorsWithSingleKeystoreSSL() throws Exception {
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    this.port2 = port2; // for cleanup in tearDown2
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    DistributedTestUtils.deleteLocatorStateFile(port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "false");
-    properties.put(SSL_CIPHERS, "any");
-    properties.put(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
-    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    Properties properties = getClusterProperties(locators, "false");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
+    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_PROTOCOLS, "TLSv1,TLSv1.1,TLSv1.2");
+    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
-    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
+    startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
   }
 
   @Test
   public void testStartTwoLocatorsWithMultiKeystoreSSL() throws Exception {
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    this.port2 = port2; // for cleanup in tearDown2
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    DistributedTestUtils.deleteLocatorStateFile(port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "false");
-    properties.put(SSL_CIPHERS, "any");
-    properties.put(SSL_PROTOCOLS, "any");
-    properties.put(SSL_KEYSTORE, getMultiKeyKeystore());
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
-    properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    Properties properties = getClusterProperties(locators, "false");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
+    properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_LOCATOR_ALIAS, "locatorkey");
+    properties.setProperty(SSL_PROTOCOLS, "any");
 
-    startVerifyAndStopLocator(loc1, loc2, port1, port2, properties);
+    startVerifyAndStopLocator(vm1, vm2, port1, port2, properties);
   }
 
   @Test
   public void testNonSSLLocatorDiesWhenConnectingToSSLLocator() {
-    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
-    IgnoredException.addIgnoredException("LocatorCancelException");
+    addIgnoredException("Unrecognized SSL message, plaintext connection");
+    addIgnoredException(LocatorCancelException.class);
 
-    final String hostname = NetworkUtils.getServerHostName();
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
-    port1 = -1;
-    port2 = -1;
-    final Properties properties = new Properties();
-    properties.put(MCAST_PORT, "0");
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "false");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(LOG_LEVEL, logger.getLevel().name());
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
-    properties.put(SSL_CIPHERS, "any");
-    properties.put(SSL_PROTOCOLS, "any");
-    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    Properties properties = new Properties();
+    properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "false");
+    properties.setProperty(MEMBER_TIMEOUT, "2000");
+    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
+    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
     // we set port1 so that the state file gets cleaned up later.
-    port1 = startLocatorGetPort(loc1, properties, 0);
+    port1 = startLocatorGetPort(vm1, properties, 0);
 
-    loc1.invoke("expect only one member in system",
+    vm1.invoke("expect only one member in system",
         () -> expectSystemToContainThisManyMembers(1));
 
+    properties.setProperty(LOCATORS, hostName + "[" + port1 + "]");
     properties.remove(SSL_ENABLED_COMPONENTS);
-    properties.put(LOCATORS, hostname + "[" + port1 + "]");
 
     // we set port2 so that the state file gets cleaned up later.
-    loc2.invoke(() -> {
+    vm2.invoke(() -> {
       assertThatThrownBy(() -> startLocatorBase(properties, 0))
           .isInstanceOfAny(LocatorCancelException.class, SystemConnectException.class);
 
       assertThat(Locator.getLocator()).isNull();
     });
 
-    loc1.invoke("expect only one member in system",
+    vm1.invoke("expect only one member in system",
         () -> expectSystemToContainThisManyMembers(1));
 
-    loc1.invoke("stop locator", LocatorDUnitTest::stopLocator);
+    vm1.invoke("stop locator", LocatorDUnitTest::stopLocator);
   }
 
   @Test
   public void testSSLEnabledLocatorDiesWhenConnectingToNonSSLLocator() {
-    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
-    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
-    IgnoredException.addIgnoredException("LocatorCancelException");
+    addIgnoredException("Remote host closed connection during handshake");
+    addIgnoredException("Unrecognized SSL message, plaintext connection");
+    addIgnoredException("LocatorCancelException");
 
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
-
-    final String hostname = NetworkUtils.getServerHostName();
-    final Properties properties = getClusterProperties("", "false");
+    Properties properties = getClusterProperties("", "false");
     properties.remove(LOCATORS);
-    properties.put(SSL_CIPHERS, "any");
-    properties.put(SSL_PROTOCOLS, "any");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_PROTOCOLS, "any");
 
     // we set port1 so that the state file gets cleaned up later.
-    port1 = startLocatorGetPort(loc1, properties, 0);
-    loc1.invoke("expectSystemToContainThisManyMembers",
+    port1 = startLocatorGetPort(vm1, properties, 0);
+    vm1.invoke("expectSystemToContainThisManyMembers",
         () -> expectSystemToContainThisManyMembers(1));
 
-    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
+    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
 
-    final String locators = hostname + "[" + port1 + "]";
-    properties.put(LOCATORS, locators);
+    String locators = hostName + "[" + port1 + "]";
 
+    properties.setProperty(LOCATORS, locators);
 
     // we set port2 so that the state file gets cleaned up later.
-    assertThatThrownBy(() -> startLocatorGetPort(loc2, properties, 0))
+    assertThatThrownBy(() -> startLocatorGetPort(vm2, properties, 0))
         .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
     assertThat(Locator.getLocator()).isNull();
 
-    loc1.invoke("expectSystemToContainThisManyMembers",
+    vm1.invoke("expectSystemToContainThisManyMembers",
         () -> expectSystemToContainThisManyMembers(1));
 
-    loc1.invoke("stop locator", LocatorDUnitTest::stopLocator);
+    vm1.invoke("stop locator", LocatorDUnitTest::stopLocator);
   }
 
   @Test
   public void testStartTwoLocatorsWithDifferentSSLCertificates() {
-    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
-    IgnoredException
-        .addIgnoredException("unable to find valid certification path to requested target");
-    IgnoredException.addIgnoredException("Received fatal alert: certificate_unknown");
-    IgnoredException.addIgnoredException("LocatorCancelException");
-    IgnoredException.addIgnoredException("Unrecognized SSL message, plaintext connection");
+    addIgnoredException("Remote host closed connection during handshake");
+    addIgnoredException("unable to find valid certification path to requested target");
+    addIgnoredException("Received fatal alert: certificate_unknown");
+    addIgnoredException("LocatorCancelException");
+    addIgnoredException("Unrecognized SSL message, plaintext connection");
 
-    VM loc1 = VM.getVM(1);
-    VM loc2 = VM.getVM(2);
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    this.port2 = port2; // for cleanup in tearDown2
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    DistributedTestUtils.deleteLocatorStateFile(port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "false");
-    properties.put(SSL_CIPHERS, "any");
-    properties.put(SSL_PROTOCOLS, "any");
-    properties.put(SSL_KEYSTORE, getSingleKeyKeystore());
-    properties.put(SSL_KEYSTORE_PASSWORD, "password");
-    properties.put(SSL_KEYSTORE_TYPE, "JKS");
-    properties.put(SSL_TRUSTSTORE, getSingleKeyKeystore());
-    properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-    properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
-    properties.put(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannel.LOCATOR.getConstant());
+    Properties properties = getClusterProperties(locators, "false");
+    properties.setProperty(SSL_CIPHERS, "any");
+    properties.setProperty(SSL_ENABLED_COMPONENTS, LOCATOR.getConstant());
+    properties.setProperty(SSL_KEYSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+    properties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
+    properties.setProperty(SSL_PROTOCOLS, "any");
+    properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
+    properties.setProperty(SSL_TRUSTSTORE, getSingleKeyKeystore());
+    properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
-    try {
-      startLocator(loc1, properties, port1);
-      loc1.invoke("expectSystemToContainThisManyMembers",
-          () -> expectSystemToContainThisManyMembers(1));
+    startLocator(vm1, properties, port1);
 
-      properties.put(SSL_KEYSTORE, getMultiKeyKeystore());
-      properties.put(SSL_TRUSTSTORE, getMultiKeyTruststore());
-      properties.put(SSL_LOCATOR_ALIAS, "locatorkey");
+    vm1.invoke("expectSystemToContainThisManyMembers",
+        () -> expectSystemToContainThisManyMembers(1));
 
-      assertThatThrownBy(() -> startLocator(loc2, properties, port2))
-          .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
-      assertThat(Locator.getLocator()).isNull();
+    properties.setProperty(SSL_KEYSTORE, getMultiKeyKeystore());
+    properties.setProperty(SSL_LOCATOR_ALIAS, "locatorkey");
+    properties.setProperty(SSL_TRUSTSTORE, getMultiKeyTruststore());
 
+    assertThatThrownBy(() -> startLocator(vm2, properties, port2))
+        .isInstanceOfAny(LocatorCancelException.class, RMIException.class);
+    assertThat(Locator.getLocator()).isNull();
 
-
-    } finally {
-      try {
-        loc1.invoke("expectSystemToContainThisManyMembers",
-            () -> expectSystemToContainThisManyMembers(1));
-      } finally {
-        loc1.invoke("stop locator", LocatorDUnitTest::stopLocator);
-      }
-    }
+    vm1.invoke("expectSystemToContainThisManyMembers",
+        () -> expectSystemToContainThisManyMembers(1));
   }
 
   /**
@@ -533,70 +516,56 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testLeadMemberSelection() throws Exception {
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
+    String locators = hostName + "[" + port1 + "]";
 
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName() + "[" + port1 + "]";
-    final Properties properties = getBasicProperties(locators);
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-
+    Properties properties = getBasicProperties(locators);
+    properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
     addDSProps(properties);
-    File logFile = new File("");
-    if (logFile.exists()) {
-      assertThat(logFile.delete()).isTrue();
-    }
-    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
-    try {
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-      assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
 
-      // connect three vms and then watch the lead member selection as they
-      // are disconnected/reconnected
-      properties.put("name", "vm1");
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+    assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
 
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
+    // connect three vms and then watch the lead member selection as they
+    // are disconnected/reconnected
+    properties.setProperty("name", "vm1");
 
-      properties.put("name", "vm2");
-      DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
+    DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
 
-      properties.put("name", "vm3");
-      DistributedMember mem3 = vm3.invoke(() -> getDistributedMember(properties));
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
 
-      // after disconnecting the first vm, the second one should become the leader
-      vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
+    properties.setProperty("name", "vm2");
+    DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
 
-      properties.put("name", "vm1");
-      mem1 = vm1.invoke(() -> getDistributedMember(properties));
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
+    properties.setProperty("name", "vm3");
+    DistributedMember mem3 = vm3.invoke(() -> getDistributedMember(properties));
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
 
-      vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem2);
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
+    // after disconnecting the first vm, the second one should become the leader
+    vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
-      vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
+    properties.setProperty("name", "vm1");
+    mem1 = vm1.invoke(() -> getDistributedMember(properties));
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem2, system);
 
-      vm3.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem3);
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(null, system);
+    vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem2);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
 
-    } finally {
-      locator.stop();
-    }
+    vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem1);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem3, system);
+
+    vm3.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    MembershipManagerHelper.getMembershipManager(system).waitForDeparture(mem3);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(null, system);
   }
-
 
   /**
    * test lead member and coordinator failure with network partition detection enabled. It would be
@@ -615,98 +584,70 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testLeadAndCoordFailure() throws Exception {
-    IgnoredException.addIgnoredException("Possible loss of quorum due");
+    addIgnoredException("Possible loss of quorum due");
 
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM locatorVM = VM.getVM(3);
-    Locator locator = null;
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "true");
-
+    Properties properties = getClusterProperties(locators, "true");
     addDSProps(properties);
-    try {
-      File logFile = new File("");
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      system.getLogWriter()
-          .info("<ExpectedException action=add>java.net.ConnectException</ExpectedException>");
-      MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-      startLocator(locatorVM, properties, port2);
 
-      assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-      // properties.put("log-level", getDUnitLogLevel());
+    addIgnoredException(ConnectException.class);
+    MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
+    startLocator(vm3, properties, port2);
 
-      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
-      vm2.invoke(() -> getDistributedMember(properties));
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
+    assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
 
-      assertThat(system.getDistributedMember())
-          .isEqualTo(MembershipManagerHelper.getCoordinator(system));
+    DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+    vm2.invoke(() -> getDistributedMember(properties));
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(mem1, system);
 
-      // crash the second vm and the locator. Should be okay
-      DistributedTestUtils.crashDistributedSystem(vm2);
-      locatorVM.invoke(() -> {
-        Locator loc = Locator.getLocator();
-        MembershipManagerHelper.crashDistributedSystem(loc.getDistributedSystem());
-        loc.stop();
-      });
+    assertThat(system.getDistributedMember())
+        .isEqualTo(MembershipManagerHelper.getCoordinator(system));
 
-      assertThat(vm1.invoke(LocatorDUnitTest::isSystemConnected))
-          .describedAs("Distributed system should not have disconnected").isTrue();
+    // crash the second vm and the locator. Should be okay
+    DistributedTestUtils.crashDistributedSystem(vm2);
+    vm3.invoke(() -> {
+      Locator loc = Locator.getLocator();
+      MembershipManagerHelper.crashDistributedSystem(loc.getDistributedSystem());
+      loc.stop();
+    });
 
-      // ensure quorumLost is properly invoked
-      ClusterDistributionManager dm =
-          (ClusterDistributionManager) ((InternalDistributedSystem) system)
-              .getDistributionManager();
-      MyMembershipListener listener = new MyMembershipListener();
-      dm.addMembershipListener(listener);
-      // ensure there is an unordered reader thread for the member
-      new HighPriorityAckedMessage().send(Collections.singleton(mem1), false);
+    assertThat(vm1.invoke(LocatorDUnitTest::isSystemConnected))
+        .describedAs("Distributed system should not have disconnected").isTrue();
 
-      // disconnect the first vm and demonstrate that the third vm and the
-      // locator notice the failure and exit
-      DistributedTestUtils.crashDistributedSystem(vm1);
+    // ensure quorumLost is properly invoked
+    DistributionManager dm = system.getDistributionManager();
+    MyMembershipListener listener = new MyMembershipListener();
+    dm.addMembershipListener(listener);
+    // ensure there is an unordered reader thread for the member
+    new HighPriorityAckedMessage().send(Collections.singleton(mem1), false);
 
-      /*
-       * This vm is watching vm1, which is watching vm2 which is watching locatorVM. It will take 3
-       * * (3
-       * * member-timeout) milliseconds to detect the full failure and eject the lost members from
-       * the view.
-       */
+    // disconnect the first vm and demonstrate that the third vm and the
+    // locator notice the failure and exit
+    DistributedTestUtils.crashDistributedSystem(vm1);
 
-      logger.info("waiting for my distributed system to disconnect due to partition detection");
+    /*
+     * This vm is watching vm1, which is watching vm2 which is watching locatorVM. It will take 3
+     * (3 member-timeout) milliseconds to detect the full failure and eject the lost members from
+     * the view.
+     */
 
-      await().until(() -> !system.isConnected());
+    logger.info("waiting for my distributed system to disconnect due to partition detection");
 
-      if (system.isConnected()) {
-        fail(
-            "Distributed system did not disconnect as expected - network partition detection is broken");
-      }
-      // quorumLost should be invoked if we get a ForcedDisconnect in this situation
-      assertThat(listener.quorumLostInvoked).describedAs("expected quorumLost to be invoked")
-          .isTrue();
-      assertThat(listener.suspectReasons.contains(Connection.INITIATING_SUSPECT_PROCESSING))
-          .describedAs("expected suspect processing initiated by TCPConduit").isTrue();
-    } finally {
-      if (locator != null) {
-        locator.stop();
-      }
-      LogWriter bLogger = new LocalLogWriter(ALL.intLevel(), System.out);
-      bLogger.info("<ExpectedException action=remove>service failure</ExpectedException>");
-      bLogger
-          .info("<ExpectedException action=remove>java.net.ConnectException</ExpectedException>");
-      bLogger.info(
-          "<ExpectedException action=remove>org.apache.geode.ForcedDisconnectException</ExpectedException>");
+    await().until(() -> !system.isConnected());
+
+    if (system.isConnected()) {
+      fail(
+          "Distributed system did not disconnect as expected - network partition detection is broken");
     }
+    // quorumLost should be invoked if we get a ForcedDisconnect in this situation
+    assertThat(listener.quorumLostInvoked).describedAs("expected quorumLost to be invoked")
+        .isTrue();
+    assertThat(listener.suspectReasons.contains(Connection.INITIATING_SUSPECT_PROCESSING))
+        .describedAs("expected suspect processing initiated by TCPConduit").isTrue();
   }
 
   /**
@@ -722,96 +663,61 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testLeadFailureAndCoordShutdown() throws Exception {
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM locatorVM = VM.getVM(3);
-    Locator locator = null;
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    final int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    this.port2 = port2;
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "true");
-
+    Properties properties = getClusterProperties(locators, "true");
     addDSProps(properties);
 
-    try {
-      File logFile = new File("");
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      locatorVM.invoke(() -> {
-        File lf = new File("");
-        try {
-          Locator loc = Locator.startLocatorAndDS(port2, lf, properties);
-          system = (InternalDistributedSystem) loc.getDistributedSystem();
-          MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
-        } catch (IOException ios) {
-          throw new RuntimeException("Unable to start locator2", ios);
-        }
-      });
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-      assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
-
-      DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
-      DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
-
-      assertThat(mem1).isEqualTo(MembershipManagerHelper.getLeadMember(system));
-
-      assertThat(system.getDistributedMember())
-          .isEqualTo(MembershipManagerHelper.getCoordinator(system));
-
+    vm3.invoke(() -> {
+      Locator loc = Locator.startLocatorAndDS(port2, null, properties);
+      system = (InternalDistributedSystem) loc.getDistributedSystem();
       MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
+    });
 
-      // crash the lead vm. Should be okay
-      vm1.invoke(() -> {
-        LogWriter logWriter = LocatorDUnitTest.system.getLogWriter();
-        assertThat(logWriter).isNotNull();
-        logWriter
-            .info("<ExpectedException action=add>service failure</ExpectedException>");
-        logWriter.info(
-            "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-        logWriter.info(
-            "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-        MembershipManagerHelper.crashDistributedSystem(LocatorDUnitTest.system);
-      });
+    assertThat(MembershipManagerHelper.getLeadMember(system)).isNull();
 
-      waitUntilTheSystemIsConnected(vm2, locatorVM);
-      // stop the locator normally. This should also be okay
-      locator.stop();
+    DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+    DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
 
-      await()
-          .until(() -> {
-            assertThat(Locator.getLocator()).describedAs("locator is not stopped").isNull();
-            return true;
-          });
+    assertThat(mem1).isEqualTo(MembershipManagerHelper.getLeadMember(system));
 
-      checkSystemConnectedInVMs(vm2, locatorVM);
+    assertThat(system.getDistributedMember())
+        .isEqualTo(MembershipManagerHelper.getCoordinator(system));
 
-      // the remaining non-locator member should now be the lead member
-      assertEquals(
-          "This test sometimes fails.  If the log contains "
-              + "'failed to collect all ACKs' it is a false failure.",
-          mem2, vm2.invoke(LocatorDUnitTest::getLeadMember));
+    MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
 
-      // disconnect the first vm and demonstrate that the third vm and the
-      // locator notice the failure and exit
-      vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      locatorVM.invoke(LocatorDUnitTest::stopLocator);
-    } finally {
-      MembershipManagerHelper.inhibitForcedDisconnectLogging(false);
-      if (locator != null) {
-        locator.stop();
-      }
-      try {
-        locatorVM.invoke(LocatorDUnitTest::stopLocator);
-      } catch (Exception e) {
-        logger.error("failed to stop locator in vm 3", e);
-      }
-    }
+    // crash the lead vm. Should be okay
+    vm1.invoke(() -> {
+      addIgnoredException("service failure");
+      addIgnoredException(ForcedDisconnectException.class);
+      MembershipManagerHelper.crashDistributedSystem(system);
+    });
+
+    waitUntilTheSystemIsConnected(vm2, vm3);
+    // stop the locator normally. This should also be okay
+    locator.stop();
+
+    await()
+        .until(() -> {
+          assertThat(Locator.getLocator()).describedAs("locator is not stopped").isNull();
+          return true;
+        });
+
+    checkSystemConnectedInVMs(vm2, vm3);
+
+    // the remaining non-locator member should now be the lead member
+    assertEquals(
+        "This test sometimes fails.  If the log contains "
+            + "'failed to collect all ACKs' it is a false failure.",
+        mem2, vm2.invoke(LocatorDUnitTest::getLeadMember));
+
+    // disconnect the first vm and demonstrate that the third vm and the
+    // locator notice the failure and exit
+    vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    vm3.invoke(LocatorDUnitTest::stopLocator);
   }
 
   /**
@@ -825,128 +731,84 @@ public class LocatorDUnitTest implements java.io.Serializable {
    * We then shut down the group coordinator and observe the second locator pick up the job and the
    * remaining member continues to operate normally.
    */
-  // disabled on trunk - should be re-enabled on cedar_dev_Oct12
-  // this test leaves a CloserThread around forever that logs "pausing" messages every 500 ms
   @Test
   public void testForceDisconnectAndPeerShutdownCause() throws Exception {
-    Host host = Host.getHost(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM locvm = VM.getVM(3);
-    Locator locator = null;
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2);
-    final String host0 = NetworkUtils.getServerHostName(host);
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-
-    final Properties properties = new Properties();
-    properties.put(MCAST_PORT, "0");
-    properties.put(LOCATORS, locators);
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(LOG_LEVEL, LogWriterUtils.getDUnitLogLevel());
-
+    Properties properties = new Properties();
+    properties.setProperty(MCAST_PORT, "0");
+    properties.setProperty(LOCATORS, locators);
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+    properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    properties.setProperty(MEMBER_TIMEOUT, "2000");
     addDSProps(properties);
 
-    try {
-      final String uname = "testForceDisconnectAndPeerShutdownCause";
-      File logFile = new File("");
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      locvm.invoke(() -> {
-        File lf = new File("");
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    vm3.invoke(() -> {
+      Locator loc = Locator.startLocatorAndDS(port2, null, properties);
+      system = (InternalDistributedSystem) loc.getDistributedSystem();
+    });
+
+    SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
+      @Override
+      public void run() {
+        addIgnoredException("service failure");
+        addIgnoredException("Possible loss of quorum");
+        addIgnoredException(ForcedDisconnectException.class);
+
+        hook = new TestHook();
+        MembershipManagerHelper.getMembershipManager(system).registerTestHook(hook);
         try {
-          Locator loc = Locator.startLocatorAndDS(port2, lf, properties);
-          system = (InternalDistributedSystem) loc.getDistributedSystem();
-        } catch (IOException ios) {
-          throw new RuntimeException("Unable to start locator2", ios);
+          MembershipManagerHelper.crashDistributedSystem(system);
+        } finally {
+          hook.reset();
         }
-      });
-
-      SerializableRunnable crashSystem = new SerializableRunnable("Crash system") {
-        @Override
-        public void run() {
-          DistributedSystem msys = LocatorDUnitTest.system;
-          msys.getLogWriter()
-              .info("<ExpectedException action=add>service failure</ExpectedException>");
-          msys.getLogWriter().info(
-              "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-          msys.getLogWriter().info(
-              "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-          msys.getLogWriter()
-              .info("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
-          hook = new TestHook();
-          MembershipManagerHelper.getMembershipManager(msys).registerTestHook(hook);
-          try {
-            MembershipManagerHelper.crashDistributedSystem(msys);
-          } finally {
-            hook.reset();
-          }
-        }
-      };
-
-      assertNull(MembershipManagerHelper.getLeadMember(system));
-
-      final DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
-      final DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
-
-      assertEquals(mem1, MembershipManagerHelper.getLeadMember(system));
-
-      assertEquals(system.getDistributedMember(), MembershipManagerHelper.getCoordinator(system));
-
-      assertTrue("Distributed system should not have disconnected", isSystemConnected());
-
-      assertTrue("Distributed system should not have disconnected",
-          vm2.invoke(() -> LocatorDUnitTest.isSystemConnected()));
-
-      assertTrue("Distributed system should not have disconnected",
-          locvm.invoke(() -> LocatorDUnitTest.isSystemConnected()));
-
-      vm2.invokeAsync(crashSystem);
-
-      Wait.pause(1000); // 4 x the member-timeout
-
-
-      // request member removal for first peer from second peer.
-      vm2.invoke(new SerializableRunnable("Request Member Removal") {
-
-        @Override
-        public void run() {
-          DistributedSystem msys = LocatorDUnitTest.system;
-          MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(msys);
-
-          // check for shutdown cause in MembershipManager. Following call should
-          // throw DistributedSystemDisconnectedException which should have cause as
-          // ForceDisconnectException.
-          try {
-            msys.getLogWriter().info(
-                "<ExpectedException action=add>Membership: requesting removal of </ExpectedException>");
-            mmgr.requestMemberRemoval(mem1, "test reasons");
-            msys.getLogWriter().info(
-                "<ExpectedException action=remove>Membership: requesting removal of </ExpectedException>");
-            fail("It should have thrown exception in requestMemberRemoval");
-          } catch (DistributedSystemDisconnectedException e) {
-            Throwable cause = e.getCause();
-            assertTrue("This should have been ForceDisconnectException but found " + cause,
-                cause instanceof ForcedDisconnectException);
-          } finally {
-            hook.reset();
-          }
-        }
-      });
-
-    } finally {
-      if (locator != null) {
-        locator.stop();
       }
-      locvm.invoke(() -> stopLocator());
-      assertTrue("locator is not stopped", Locator.getLocators().isEmpty());
-    }
+    };
+
+    assertNull(MembershipManagerHelper.getLeadMember(system));
+
+    DistributedMember mem1 = vm1.invoke(() -> getDistributedMember(properties));
+    DistributedMember mem2 = vm2.invoke(() -> getDistributedMember(properties));
+
+    assertEquals(mem1, MembershipManagerHelper.getLeadMember(system));
+
+    assertEquals(system.getDistributedMember(), MembershipManagerHelper.getCoordinator(system));
+
+    assertTrue("Distributed system should not have disconnected", isSystemConnected());
+
+    assertTrue("Distributed system should not have disconnected",
+        vm2.invoke(() -> isSystemConnected()));
+
+    assertTrue("Distributed system should not have disconnected",
+        vm3.invoke(() -> isSystemConnected()));
+
+    vm2.invokeAsync(crashSystem);
+
+    Wait.pause(1000); // 4 x the member-timeout
+
+    // request member removal for first peer from second peer.
+    vm2.invoke(new SerializableRunnable("Request Member Removal") {
+
+      @Override
+      public void run() {
+        MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(system);
+
+        // check for shutdown cause in MembershipManager. Following call should
+        // throw DistributedSystemDisconnectedException which should have cause as
+        // ForceDisconnectException.
+        try (IgnoredException i = addIgnoredException("Membership: requesting removal of")) {
+          mmgr.requestMemberRemoval(mem1, "test reasons");
+          fail("It should have thrown exception in requestMemberRemoval");
+        } catch (DistributedSystemDisconnectedException e) {
+          assertThat(e).hasRootCauseInstanceOf(ForcedDisconnectException.class);
+        } finally {
+          hook.reset();
+        }
+      }
+    });
   }
 
   /**
@@ -959,123 +821,93 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testLeadShutdownAndCoordFailure() throws Exception {
-    VM memberThatWillBeShutdownVM = VM.getVM(1);
-    VM memberVM = VM.getVM(2);
-    VM locatorThatWillBeShutdownVM = VM.getVM(3);
-    Locator locator = null;
-    int ports[] = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = ports[0];
-    this.port1 = port1;
-    final int port2 = ports[1];
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-    final Properties properties = getClusterProperties(locators, "true");
+    VM memberThatWillBeShutdownVM = vm1;
+    VM memberVM = vm2;
+    VM locatorThatWillBeShutdownVM = vm3;
 
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
+
+    Properties properties = getClusterProperties(locators, "true");
     addDSProps(properties);
-    try {
-      locatorThatWillBeShutdownVM.invoke(() -> {
-        Locator localLocator;
-        try {
-          localLocator = Locator.startLocatorAndDS(port2, new File(""), properties);
-          system = (InternalDistributedSystem) localLocator.getDistributedSystem();
-          assertThat(localLocator.getDistributedSystem().isConnected()).isTrue();
-        } catch (IOException ios) {
-          throw new RuntimeException("Unable to start locator1", ios);
-        }
-      });
 
-      // Test runner will be locator 2
-      locator = Locator.startLocatorAndDS(port1, new File(""), properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      assertThat(locator.getDistributedSystem().isConnected()).isTrue();
-      DistributedSystem testRunnerLocatorDS = locator.getDistributedSystem();
-      testRunnerLocatorDS.getLogWriter().info(
-          "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-      assertThat(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS))
-          .describedAs("There was a lead member when there should not be.").isNull();
+    locatorThatWillBeShutdownVM.invoke(() -> {
+      Locator localLocator = Locator.startLocatorAndDS(port2, null, properties);
+      system = (InternalDistributedSystem) localLocator.getDistributedSystem();
+      assertThat(localLocator.getDistributedSystem().isConnected()).isTrue();
+    });
 
-      DistributedMember distributedMemberThatWillBeShutdown =
-          memberThatWillBeShutdownVM.invoke(() -> getDistributedMember(properties));
-      memberThatWillBeShutdownVM
-          .invoke(() -> MembershipManagerHelper.inhibitForcedDisconnectLogging(true));
+    // Test runner will be locator 2
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+    assertThat(locator.getDistributedSystem().isConnected()).isTrue();
+    DistributedSystem testRunnerLocatorDS = locator.getDistributedSystem();
+    addIgnoredException(ForcedDisconnectException.class);
+    assertThat(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS))
+        .describedAs("There was a lead member when there should not be.").isNull();
 
-      DistributedMember distributedMember = memberVM.invoke(() -> getDistributedMember(properties));
+    DistributedMember distributedMemberThatWillBeShutdown =
+        memberThatWillBeShutdownVM.invoke(() -> getDistributedMember(properties));
+    memberThatWillBeShutdownVM
+        .invoke(() -> MembershipManagerHelper.inhibitForcedDisconnectLogging(true));
 
-      DistributedMember locatorMemberToBeShutdown =
-          locatorThatWillBeShutdownVM.invoke(LocatorDUnitTest::getLocatorDistributedMember);
+    DistributedMember distributedMember = memberVM.invoke(() -> getDistributedMember(properties));
 
-      waitForMemberToBecomeLeadMemberOfDistributedSystem(distributedMemberThatWillBeShutdown,
-          testRunnerLocatorDS);
-      DistributedMember oldLeader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
+    DistributedMember locatorMemberToBeShutdown =
+        locatorThatWillBeShutdownVM.invoke(LocatorDUnitTest::getLocatorDistributedMember);
 
-      assertThat(locatorMemberToBeShutdown)
-          .isEqualTo(MembershipManagerHelper.getCoordinator(testRunnerLocatorDS));
-      DistributedMember oldCoordinator =
-          MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
+    waitForMemberToBecomeLeadMemberOfDistributedSystem(distributedMemberThatWillBeShutdown,
+        testRunnerLocatorDS);
+    DistributedMember oldLeader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
 
-      // crash the lead locator. Should be okay
-      locatorThatWillBeShutdownVM.invoke("crash locator", () -> {
-        Locator loc = Locator.getLocator();
-        DistributedSystem distributedSystem = loc.getDistributedSystem();
-        LogWriter logWriter = distributedSystem.getLogWriter();
-        assertThat(logWriter).isNotNull();
-        logWriter
-            .info("<ExpectedException action=add>service failure</ExpectedException>");
-        logWriter.info(
-            "<ExpectedException action=add>org.apache.geode.ForcedDisconnectException</ExpectedException>");
-        logWriter.info(
-            "<ExpectedException action=add>org.apache.geode.ConnectException</ExpectedException>");
-        MembershipManagerHelper.crashDistributedSystem(distributedSystem);
-        loc.stop();
-      });
+    assertThat(locatorMemberToBeShutdown)
+        .isEqualTo(MembershipManagerHelper.getCoordinator(testRunnerLocatorDS));
+    DistributedMember oldCoordinator =
+        MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
 
-      await().until(testRunnerLocatorDS::isConnected);
+    // crash the lead locator. Should be okay
+    locatorThatWillBeShutdownVM.invoke("crash locator", () -> {
+      Locator loc = Locator.getLocator();
+      DistributedSystem distributedSystem = loc.getDistributedSystem();
+      addIgnoredException("service failure");
+      addIgnoredException(ForcedDisconnectException.class);
+      MembershipManagerHelper.crashDistributedSystem(distributedSystem);
+      loc.stop();
+    });
 
-      waitUntilTheSystemIsConnected(memberThatWillBeShutdownVM, memberVM);
+    await().until(testRunnerLocatorDS::isConnected);
 
-      // disconnect the first vm and demonstrate that the non-lead vm and the
-      // locator notice the failure and continue to run
-      memberThatWillBeShutdownVM.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      await().until(
-          () -> memberThatWillBeShutdownVM.invoke(() -> !LocatorDUnitTest.isSystemConnected()));
-      await().until(() -> memberVM.invoke(LocatorDUnitTest::isSystemConnected));
+    waitUntilTheSystemIsConnected(memberThatWillBeShutdownVM, memberVM);
 
-      assertThat(memberVM.invoke(LocatorDUnitTest::isSystemConnected))
-          .describedAs("Distributed system should not have disconnected").isTrue();
+    // disconnect the first vm and demonstrate that the non-lead vm and the
+    // locator notice the failure and continue to run
+    memberThatWillBeShutdownVM.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    await().until(
+        () -> memberThatWillBeShutdownVM.invoke(() -> !isSystemConnected()));
+    await().until(() -> memberVM.invoke(LocatorDUnitTest::isSystemConnected));
 
-      await("waiting for the old coordinator to drop out").until(
-          () -> MembershipManagerHelper.getCoordinator(testRunnerLocatorDS) != oldCoordinator);
+    assertThat(memberVM.invoke(LocatorDUnitTest::isSystemConnected))
+        .describedAs("Distributed system should not have disconnected").isTrue();
 
-      await().until(() -> {
-        DistributedMember survivingDistributedMember = testRunnerLocatorDS.getDistributedMember();
-        DistributedMember coordinator = MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
-        assertThat(survivingDistributedMember).isEqualTo(coordinator);
-        return true;
-      });
+    await("waiting for the old coordinator to drop out").until(
+        () -> MembershipManagerHelper.getCoordinator(testRunnerLocatorDS) != oldCoordinator);
 
-      await("Waiting for the old leader to drop out")
-          .pollInterval(1, TimeUnit.SECONDS).until(() -> {
-            DistributedMember leader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
-            return leader != oldLeader;
-          });
+    await().untilAsserted(() -> {
+      DistributedMember survivingDistributedMember = testRunnerLocatorDS.getDistributedMember();
+      DistributedMember coordinator = MembershipManagerHelper.getCoordinator(testRunnerLocatorDS);
+      assertThat(survivingDistributedMember).isEqualTo(coordinator);
+    });
 
-      await().until(() -> {
-        assertThat(distributedMember)
-            .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
-        return true;
-      });
+    await("Waiting for the old leader to drop out")
+        .pollInterval(1, SECONDS).until(() -> {
+          DistributedMember leader = MembershipManagerHelper.getLeadMember(testRunnerLocatorDS);
+          return leader != oldLeader;
+        });
 
-    } finally {
-      memberVM.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-
-      if (locator != null) {
-        locator.stop();
-      }
-      locatorThatWillBeShutdownVM.invoke(LocatorDUnitTest::stopLocator);
-    }
+    await().untilAsserted(() -> {
+      assertThat(distributedMember)
+          .isEqualTo(MembershipManagerHelper.getLeadMember(testRunnerLocatorDS));
+    });
   }
-
 
   /**
    * Tests that attempting to connect to a distributed system in which no locator is defined throws
@@ -1083,24 +915,16 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testNoLocator() {
-    int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
+    String locators = hostName + "[" + port2 + "]";
+
     Properties props = getBasicProperties(locators);
-
     addDSProps(props);
-    final String expected = "java.net.ConnectException";
-    final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
-    final String removeExpected =
-        "<ExpectedException action=remove>" + expected + "</ExpectedException>";
 
-    LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
-    bgexecLogger.info(addExpected);
+    addIgnoredException(ConnectException.class);
 
-    boolean exceptionOccurred = true;
     try {
       getConnectedDistributedSystem(props);
-      exceptionOccurred = false;
+      fail("Should have thrown a GemFireConfigException");
 
     } catch (DistributionException ex) {
       // I guess it can throw this too...
@@ -1108,17 +932,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
     } catch (GemFireConfigException ex) {
       String s = ex.getMessage();
       assertThat(s.contains("Locator does not exist")).isTrue();
-
-    } catch (Exception ex) {
-      // if you see this fail, determine if unexpected exception is expected
-      // if expected then add in a catch block for it above this catch
-      throw new RuntimeException("Failed with unexpected exception", ex);
-    } finally {
-      bgexecLogger.info(removeExpected);
-    }
-
-    if (!exceptionOccurred) {
-      fail("Should have thrown a GemFireConfigException");
     }
   }
 
@@ -1131,61 +944,45 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testOneLocator() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+    String locators = hostName + "[" + port2 + "]";
 
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
+    startLocatorWithSomeBasicProperties(vm0, port2);
 
-    startLocatorWithSomeBasicProperties(vm0, port);
+    SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
+      @Override
+      public void run() {
+        Properties props = getBasicProperties(locators);
+        props.setProperty(MEMBER_TIMEOUT, "1000");
+        addDSProps(props);
 
-    try {
-      SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-        @Override
-        public void run() {
-          Properties props = getBasicProperties(locators);
-          props.setProperty(MEMBER_TIMEOUT, "1000");
-          addDSProps(props);
-          getConnectedDistributedSystem(props);
-        }
-      };
-
-      vm1.invoke(connect);
-      vm2.invoke(connect);
-
-      Properties props = getBasicProperties(locators);
-      props.setProperty(MEMBER_TIMEOUT, "1000");
-      addDSProps(props);
-      system = getConnectedDistributedSystem(props);
-
-      final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
-      logger.info("coordinator before termination of locator is " + coord);
-
-      vm0.invoke(LocatorDUnitTest::stopLocator);
-
-      // now ensure that one of the remaining members became the coordinator
-
-      await()
-          .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
-
-      DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
-      logger.info("coordinator after shutdown of locator was " + newCoord);
-      if (coord.equals(newCoord)) {
-        fail("another member should have become coordinator after the locator was stopped");
+        getConnectedDistributedSystem(props);
       }
+    };
 
-      system.disconnect();
+    vm1.invoke(connect);
+    vm2.invoke(connect);
 
-      vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
+    Properties props = getBasicProperties(locators);
+    props.setProperty(MEMBER_TIMEOUT, "1000");
+    addDSProps(props);
 
-    } finally {
-      vm0.invoke(LocatorDUnitTest::stopLocator);
+    system = getConnectedDistributedSystem(props);
+
+    DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
+    logger.info("coordinator before termination of locator is " + coord);
+
+    vm0.invoke(LocatorDUnitTest::stopLocator);
+
+    // now ensure that one of the remaining members became the coordinator
+
+    await().until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
+
+    DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
+    logger.info("coordinator after shutdown of locator was " + newCoord);
+    if (coord.equals(newCoord)) {
+      fail("another member should have become coordinator after the locator was stopped");
     }
   }
-
 
   /**
    * Tests starting one locator in a remote VM and having multiple members of the distributed system
@@ -1195,82 +992,60 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testLocatorBecomesCoordinator() {
-    final String expected = "java.net.ConnectException";
-    final String addExpected = "<ExpectedException action=add>" + expected + "</ExpectedException>";
-    final String removeExpected =
-        "<ExpectedException action=remove>" + expected + "</ExpectedException>";
+    addIgnoredException(ConnectException.class);
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
+    String locators = hostName + "[" + port2 + "]";
 
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
+    startLocatorPreferredCoordinators(vm0, port2);
 
-    startLocatorPreferredCoordinators(vm0, port);
+    Properties props = new Properties();
+    props.setProperty(LOCATORS, locators);
+    props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+    addDSProps(props);
 
-    try {
+    vm1.invoke(() -> {
+      getSystem(props);
+    });
+    vm2.invoke(() -> {
+      getSystem(props);
+    });
 
-      final Properties props = new Properties();
-      props.setProperty(LOCATORS, locators);
-      props.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
+    system = getSystem(props);
 
-      addDSProps(props);
-      vm1.invoke(() -> {
-        DistributedSystem sys = getSystem(props);
-        sys.getLogWriter().info(addExpected);
-      });
-      vm2.invoke(() -> {
-        DistributedSystem sys = getSystem(props);
-        sys.getLogWriter().info(addExpected);
-      });
+    DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
+    logger.info("coordinator before termination of locator is " + coord);
 
-      system = getSystem(props);
+    vm0.invoke(LocatorDUnitTest::stopLocator);
 
-      final DistributedMember coord = MembershipManagerHelper.getCoordinator(system);
-      logger.info("coordinator before termination of locator is " + coord);
+    // now ensure that one of the remaining members became the coordinator
+    await().until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
 
-      vm0.invoke(LocatorDUnitTest::stopLocator);
-
-      // now ensure that one of the remaining members became the coordinator
-      await()
-          .until(() -> !coord.equals(MembershipManagerHelper.getCoordinator(system)));
-
-      DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
-      logger.info("coordinator after shutdown of locator was " + newCoord);
-      if (newCoord == null || coord.equals(newCoord)) {
-        fail("another member should have become coordinator after the locator was stopped: "
-            + newCoord);
-      }
-
-      // restart the locator to demonstrate reconnection & make disconnects faster
-      // it should also regain the role of coordinator, so we check to make sure
-      // that the coordinator has changed
-      startLocatorPreferredCoordinators(vm0, port);
-
-      final DistributedMember tempCoord = newCoord;
-
-      await()
-          .until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
-
-      system.disconnect();
-      LogWriter bgexecLogger = new LocalLogWriter(ALL.intLevel(), System.out);
-      bgexecLogger.info(removeExpected);
-
-      checkConnectionAndPrintInfo(vm1);
-      checkConnectionAndPrintInfo(vm2);
-      vm0.invoke(LocatorDUnitTest::stopLocator);
-    } finally {
-      vm0.invoke(LocatorDUnitTest::stopLocator);
+    DistributedMember newCoord = MembershipManagerHelper.getCoordinator(system);
+    logger.info("coordinator after shutdown of locator was " + newCoord);
+    if (newCoord == null || coord.equals(newCoord)) {
+      fail("another member should have become coordinator after the locator was stopped: "
+          + newCoord);
     }
+
+    // restart the locator to demonstrate reconnection & make disconnects faster
+    // it should also regain the role of coordinator, so we check to make sure
+    // that the coordinator has changed
+    startLocatorPreferredCoordinators(vm0, port2);
+
+    DistributedMember tempCoord = newCoord;
+
+    await().until(() -> !tempCoord.equals(MembershipManagerHelper.getCoordinator(system)));
+
+    system.disconnect();
+
+    checkConnectionAndPrintInfo(vm1);
+    checkConnectionAndPrintInfo(vm2);
   }
 
   @Test
   public void testConcurrentLocatorStartup() throws Exception {
     List<AvailablePort.Keeper> portKeepers =
         AvailablePortHelper.getRandomAvailableTCPPortKeepers(4);
-    List<AsyncInvocation<Object>> asyncInvocations = new ArrayList(portKeepers.size());
     StringBuilder sb = new StringBuilder(100);
     for (int i = 0; i < portKeepers.size(); i++) {
       AvailablePort.Keeper keeper = portKeepers.get(i);
@@ -1280,20 +1055,19 @@ public class LocatorDUnitTest implements java.io.Serializable {
       }
     }
     String locators = sb.toString();
+
     Properties dsProps = getClusterProperties(locators, "false");
+
+    List<AsyncInvocation<Object>> asyncInvocations = new ArrayList<>(portKeepers.size());
+
     for (int i = 0; i < portKeepers.size(); i++) {
       AvailablePort.Keeper keeper = portKeepers.get(i);
-      final int port = keeper.getPort();
-      DistributedTestUtils.deleteLocatorStateFile(port);
+      int port = keeper.getPort();
       keeper.release();
-      AsyncInvocation<Object> startLocator = VM.getVM(i).invokeAsync("start locator " + i, () -> {
+      AsyncInvocation<Object> startLocator = getVM(i).invokeAsync("start locator " + i, () -> {
         DUnitBlackboard blackboard = getBlackboard();
         blackboard.signalGate("" + port);
-        try {
-          blackboard.waitForGate("startLocators", 5, MINUTES);
-        } catch (InterruptedException e) {
-          throw new RuntimeException("test was interrupted");
-        }
+        blackboard.waitForGate("startLocators", 5, MINUTES);
         startLocatorBase(dsProps, port);
         assertTrue(isSystemConnected());
         System.out.println("Locator startup completed");
@@ -1308,14 +1082,8 @@ public class LocatorDUnitTest implements java.io.Serializable {
       asyncInvocations.get(i).await();
     }
     for (int i = 0; i < asyncInvocations.size(); i++) {
-      assertTrue(VM.getVM(i).invoke("assert all in same cluster", () -> CacheFactory
+      assertTrue(getVM(i).invoke("assert all in same cluster", () -> CacheFactory
           .getAnyInstance().getDistributedSystem().getAllOtherMembers().size() == expectedCount));
-    }
-    for (int i = 0; i < asyncInvocations.size(); i++) {
-      VM.getVM(i).invoke(() -> {
-        Locator.getLocator().stop();
-        system = null;
-      });
     }
   }
 
@@ -1324,62 +1092,36 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testTwoLocatorsTwoServers() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
 
-    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    final int port1 = freeTCPPorts[0];
-    this.port1 = port1;
-    final int port2 = freeTCPPorts[1];
-    this.port2 = port2;
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-
-    final Properties dsProps = getBasicProperties(locators);
+    Properties dsProps = getBasicProperties(locators);
     addDSProps(dsProps);
 
     startLocator(vm0, dsProps, port1);
-    try {
-      startLocator(vm3, dsProps, port2);
-      try {
 
-        SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
-          @Override
-          public void run() {
-            Properties props = getBasicProperties(locators);
-            addDSProps(props);
-            getConnectedDistributedSystem(props);
-          }
-        };
-        vm1.invoke(connect);
-        vm2.invoke(connect);
+    startLocator(vm3, dsProps, port2);
 
+    SerializableRunnable connect = new SerializableRunnable("Connect to " + locators) {
+      @Override
+      public void run() {
         Properties props = getBasicProperties(locators);
-
         addDSProps(props);
-        system = getConnectedDistributedSystem(props);
-
-        await().until(() -> system.getDM().getViewMembers().size() >= 3);
-
-        // three applications plus
-        assertThat(system.getDM().getViewMembers().size()).isEqualTo(5);
-
-        system.disconnect();
-
-        vm1.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-        vm2.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-
-      } finally {
-        vm3.invoke(LocatorDUnitTest::stopLocator);
+        getConnectedDistributedSystem(props);
       }
-    } finally {
-      vm0.invoke(LocatorDUnitTest::stopLocator);
-    }
-  }
+    };
+    vm1.invoke(connect);
+    vm2.invoke(connect);
 
+    Properties props = getBasicProperties(locators);
+
+    addDSProps(props);
+    system = getConnectedDistributedSystem(props);
+
+    await().until(() -> system.getDM().getViewMembers().size() >= 3);
+
+    // three applications plus
+    assertThat(system.getDM().getViewMembers().size()).isEqualTo(5);
+  }
 
   private void waitUntilLocatorBecomesCoordinator() {
     await().until(() -> system != null && system.isConnected() &&
@@ -1405,230 +1147,183 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testMultipleLocatorsRestartingAtSameTime() {
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
-    VM vm4 = VM.getVM(4);
+    String locators =
+        hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]," + hostName + "[" + port3
+            + "]";
 
-    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    this.port1 = freeTCPPorts[0];
-    this.port2 = freeTCPPorts[1];
-    int port3 = freeTCPPorts[2];
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2, port3);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators =
-        host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
-
-    final Properties dsProps = getBasicProperties(locators);
+    Properties dsProps = getBasicProperties(locators);
     dsProps.setProperty(LOG_LEVEL, logger.getLevel().name());
     dsProps.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, "true");
-
     addDSProps(dsProps);
+
     startLocator(vm0, dsProps, port1);
     startLocator(vm1, dsProps, port2);
     startLocator(vm2, dsProps, port3);
 
-    try {
-      vm3.invoke(() -> {
-        getConnectedDistributedSystem(dsProps);
-        return true;
-      });
-      vm4.invoke(() -> {
-        getConnectedDistributedSystem(dsProps);
-        return true;
-      });
+    vm3.invoke(() -> {
+      getConnectedDistributedSystem(dsProps);
+    });
+    vm4.invoke(() -> {
+      getConnectedDistributedSystem(dsProps);
+    });
 
-      system = getConnectedDistributedSystem(dsProps);
+    system = getConnectedDistributedSystem(dsProps);
 
-      await().until(() -> system.getDM().getViewMembers().size() == 6);
+    await().until(() -> system.getDM().getViewMembers().size() == 6);
 
-      // three applications plus
-      assertThat(system.getDM().getViewMembers().size()).isEqualTo(6);
+    // three applications plus
+    assertThat(system.getDM().getViewMembers().size()).isEqualTo(6);
 
-      vm0.invoke(LocatorDUnitTest::stopLocator);
-      vm1.invoke(LocatorDUnitTest::stopLocator);
-      vm2.invoke(LocatorDUnitTest::stopLocator);
+    vm0.invoke(LocatorDUnitTest::stopLocator);
+    vm1.invoke(LocatorDUnitTest::stopLocator);
+    vm2.invoke(LocatorDUnitTest::stopLocator);
 
-      await()
-          .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
+    await()
+        .until(() -> system.getDM().getMembershipManager().getView().size() <= 3);
 
-      final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
-      dsProps.setProperty(LOCATORS, newLocators);
+    String newLocators = hostName + "[" + port2 + "]," + hostName + "[" + port3 + "]";
+    dsProps.setProperty(LOCATORS, newLocators);
 
-      final InternalDistributedMember currentCoordinator = getCoordinator();
-      DistributedMember vm3ID = vm3.invoke(() -> system.getDM().getDistributionManagerId());
-      assertEquals(
-          "View is " + system.getDM().getMembershipManager().getView() + " and vm3's ID is "
-              + vm3ID,
-          vm3ID, vm3.invoke(
-              () -> system.getDistributionManager().getMembershipManager().getView().getCreator()));
+    InternalDistributedMember currentCoordinator = getCoordinator();
+    DistributedMember vm3ID = vm3.invoke(() -> system.getDM().getDistributionManagerId());
+    assertEquals(
+        "View is " + system.getDM().getMembershipManager().getView() + " and vm3's ID is "
+            + vm3ID,
+        vm3ID, vm3.invoke(
+            () -> system.getDistributionManager().getMembershipManager().getView().getCreator()));
 
-      startLocator(vm1, dsProps, port2);
-      startLocator(vm2, dsProps, port3);
+    startLocator(vm1, dsProps, port2);
+    startLocator(vm2, dsProps, port3);
 
-      await()
-          .until(() -> !getCoordinator().equals(currentCoordinator)
-              && system.getDM().getAllHostedLocators().size() == 2);
+    await()
+        .until(() -> !getCoordinator().equals(currentCoordinator)
+            && system.getDM().getAllHostedLocators().size() == 2);
 
-      vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
-      vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
-      vm3.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
-      vm4.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+    vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+    vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+    vm3.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+    vm4.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
 
-      int netViewId = vm1.invoke("Checking ViewCreator", () -> getView().getViewId());
-      assertThat((int) vm2.invoke("checking ViewID", () -> getView().getViewId()))
-          .isEqualTo(netViewId);
-      assertThat((int) vm3.invoke("checking ViewID", () -> getView().getViewId()))
-          .isEqualTo(netViewId);
-      assertThat((int) vm4.invoke("checking ViewID", () -> getView().getViewId()))
-          .isEqualTo(netViewId);
-      assertThat((boolean) vm4
-          .invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator()))).isFalse();
-      // Given the start up order of servers, this server is the elder server
-      assertFalse(vm3
-          .invoke("Checking ViewCreator",
-              () -> system.getDistributedMember().equals(getView().getCreator())));
-      if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-        assertThat((boolean) vm2.invoke("Checking ViewCreator",
-            () -> system.getDistributedMember().equals(getView().getCreator())))
-                .isFalse();
-      } else {
-        assertThat((boolean) vm2.invoke("Checking ViewCreator",
-            () -> system.getDistributedMember().equals(getView().getCreator())))
-                .isTrue();
-      }
-
-    } finally {
-      system.disconnect();
-      vm3.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      vm4.invoke(LocatorDUnitTest::disconnectDistributedSystem);
-      vm2.invoke(LocatorDUnitTest::stopLocator);
-      vm1.invoke(LocatorDUnitTest::stopLocator);
+    int netViewId = vm1.invoke("Checking ViewCreator", () -> getView().getViewId());
+    assertThat((int) vm2.invoke("checking ViewID", () -> getView().getViewId()))
+        .isEqualTo(netViewId);
+    assertThat((int) vm3.invoke("checking ViewID", () -> getView().getViewId()))
+        .isEqualTo(netViewId);
+    assertThat((int) vm4.invoke("checking ViewID", () -> getView().getViewId()))
+        .isEqualTo(netViewId);
+    assertThat((boolean) vm4
+        .invoke("Checking ViewCreator",
+            () -> system.getDistributedMember().equals(getView().getCreator()))).isFalse();
+    // Given the start up order of servers, this server is the elder server
+    assertFalse(vm3
+        .invoke("Checking ViewCreator",
+            () -> system.getDistributedMember().equals(getView().getCreator())));
+    if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
+      assertThat((boolean) vm2.invoke("Checking ViewCreator",
+          () -> system.getDistributedMember().equals(getView().getCreator())))
+              .isFalse();
+    } else {
+      assertThat((boolean) vm2.invoke("Checking ViewCreator",
+          () -> system.getDistributedMember().equals(getView().getCreator())))
+              .isTrue();
     }
   }
-
 
   @Test
   public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
-    IgnoredException.addIgnoredException("ForcedDisconnectException");
-    IgnoredException.addIgnoredException("Possible loss of quorum");
-    IgnoredException.addIgnoredException("java.lang.Exception: Message id is");
+    addIgnoredException("ForcedDisconnectException");
+    addIgnoredException("Possible loss of quorum");
+    addIgnoredException("java.lang.Exception: Message id is");
 
-    VM vm0 = VM.getVM(0);
-    VM vm1 = VM.getVM(1);
-    VM vm2 = VM.getVM(2);
-    VM vm3 = VM.getVM(3);
-    VM vm4 = VM.getVM(4);
+    String locators =
+        hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]," + hostName + "[" + port3
+            + "]";
 
-    int[] freeTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    this.port1 = freeTCPPorts[0];
-    this.port2 = freeTCPPorts[1];
-    int port3 = freeTCPPorts[2];
-    DistributedTestUtils.deleteLocatorStateFile(port1, port2, port3);
-    final String host0 = NetworkUtils.getServerHostName();
-    final String locators =
-        host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
-
-    final Properties dsProps = getBasicProperties(locators);
+    Properties dsProps = getBasicProperties(locators);
     dsProps.setProperty(LOG_LEVEL, logger.getLevel().name());
     dsProps.setProperty(DISABLE_AUTO_RECONNECT, "true");
     dsProps.setProperty(MEMBER_TIMEOUT, "2000");
-
     addDSProps(dsProps);
+
     startLocator(vm0, dsProps, port1);
     startLocator(vm1, dsProps, port2);
     startLocator(vm2, dsProps, port3);
 
-    try {
-      vm3.invoke(() -> {
-        getConnectedDistributedSystem(dsProps);
-        return true;
-      });
-      vm4.invoke(() -> {
-        getConnectedDistributedSystem(dsProps);
+    vm3.invoke(() -> {
+      getConnectedDistributedSystem(dsProps);
+    });
+    vm4.invoke(() -> {
+      getConnectedDistributedSystem(dsProps);
 
+      await().until(() -> system.getDM().getViewMembers().size() == 5);
+    });
+
+    vm0.invoke(this::forceDisconnect);
+    vm1.invoke(this::forceDisconnect);
+    vm2.invoke(this::forceDisconnect);
+
+    SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
+      @Override
+      public void run() {
         await()
-            .until(() -> system.getDM().getViewMembers()
-                .size() == 5);
-        return true;
-      });
-
-      vm0.invoke(this::forceDisconnect);
-      vm1.invoke(this::forceDisconnect);
-      vm2.invoke(this::forceDisconnect);
-
-      SerializableRunnable waitForDisconnect = new SerializableRunnable("waitForDisconnect") {
-        @Override
-        public void run() {
-          await()
-              .until(() -> system == null);
-        }
-      };
-      vm0.invoke(() -> waitForDisconnect);
-      vm1.invoke(() -> waitForDisconnect);
-      vm2.invoke(() -> waitForDisconnect);
-
-      final String newLocators = host0 + "[" + port2 + "]," + host0 + "[" + port3 + "]";
-      dsProps.setProperty(LOCATORS, newLocators);
-
-      getBlackboard().initBlackboard();
-      AsyncInvocation async1 = vm1.invokeAsync(() -> {
-        getBlackboard().signalGate("vm1ready");
-        getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
-        System.out.println("vm1 is ready to connect");
-        startLocatorBase(dsProps, port2);
-      });
-      AsyncInvocation async2 = vm2.invokeAsync(() -> {
-        getBlackboard().signalGate("vm2ready");
-        getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
-        System.out.println("vm2 is ready to connect");
-        startLocatorBase(dsProps, port3);
-      });
-      getBlackboard().waitForGate("vm1ready", 30, SECONDS);
-      getBlackboard().waitForGate("vm2ready", 30, SECONDS);
-      getBlackboard().signalGate("readyToConnect");
-      async1.join();
-      async2.join();
-
-      vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
-      vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
-
-      if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
-        assertFalse(
-            vm2.invoke("Checking ViewCreator",
-                () -> system.getDistributedMember().equals(getView().getCreator())));
-      } else {
-        assertTrue(
-            vm2.invoke("Checking ViewCreator",
-                () -> system.getDistributedMember().equals(getView().getCreator())));
+            .until(() -> system == null);
       }
+    };
+    vm0.invoke(() -> waitForDisconnect);
+    vm1.invoke(() -> waitForDisconnect);
+    vm2.invoke(() -> waitForDisconnect);
 
-    } finally {
-      vm2.invoke(LocatorDUnitTest::stopLocator);
-      vm1.invoke(LocatorDUnitTest::stopLocator);
+    String newLocators = hostName + "[" + port2 + "]," + hostName + "[" + port3 + "]";
+    dsProps.setProperty(LOCATORS, newLocators);
+
+    getBlackboard().initBlackboard();
+    AsyncInvocation async1 = vm1.invokeAsync(() -> {
+      getBlackboard().signalGate("vm1ready");
+      getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
+      System.out.println("vm1 is ready to connect");
+      startLocatorBase(dsProps, port2);
+    });
+    AsyncInvocation async2 = vm2.invokeAsync(() -> {
+      getBlackboard().signalGate("vm2ready");
+      getBlackboard().waitForGate("readyToConnect", 30, SECONDS);
+      System.out.println("vm2 is ready to connect");
+      startLocatorBase(dsProps, port3);
+    });
+    getBlackboard().waitForGate("vm1ready", 30, SECONDS);
+    getBlackboard().waitForGate("vm2ready", 30, SECONDS);
+    getBlackboard().signalGate("readyToConnect");
+
+    async1.await();
+    async2.await();
+
+    vm1.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+    vm2.invoke("waitUntilLocatorBecomesCoordinator", this::waitUntilLocatorBecomesCoordinator);
+
+    if (vm1.invoke(() -> system.getDistributedMember().equals(getView().getCreator()))) {
+      assertFalse(
+          vm2.invoke("Checking ViewCreator",
+              () -> system.getDistributedMember().equals(getView().getCreator())));
+    } else {
+      assertTrue(
+          vm2.invoke("Checking ViewCreator",
+              () -> system.getDistributedMember().equals(getView().getCreator())));
     }
   }
-
 
   /**
    * Tests that a VM can connect to a locator that is hosted in its own VM.
    */
   @Test
   public void testConnectToOwnLocator() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-
-    final String locators = NetworkUtils.getServerHostName() + "[" + port1 + "]";
+    String locators = hostName + "[" + port1 + "]";
 
     Properties props = getBasicProperties(locators);
     props.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
-    Locator locator = Locator.startLocatorAndDS(port1, new File(""), props);
+
+    Locator locator = Locator.startLocatorAndDS(port1, null, props);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     system.disconnect();
     locator.stop();
-
   }
 
   /**
@@ -1636,35 +1331,19 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testHostingMultipleLocators() throws Exception {
-    int[] randomAvailableTCPPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    port1 = randomAvailableTCPPorts[0];
-    File logFile1 = new File("");
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    Locator locator1 = Locator.startLocator(port1, logFile1);
+    Locator.startLocator(port1, null);
 
     try {
-
-      int port2 = randomAvailableTCPPorts[1];
-      DistributedTestUtils.deleteLocatorStateFile(port2);
-
-      try {
-        Locator.startLocator(port2, new File(""));
-        fail("expected second locator start to fail.");
-      } catch (IllegalStateException expected) {
-      }
-
-      final String host0 = NetworkUtils.getServerHostName();
-      final String locators = host0 + "[" + port1 + "]," + host0 + "[" + port2 + "]";
-
-      Properties props = getBasicProperties(locators);
-      props.setProperty(LOG_LEVEL, logger.getLevel().name());
-      getConnectedDistributedSystem(props);
-
-      disconnectDistributedSystem();
-
-    } finally {
-      locator1.stop();
+      Locator.startLocator(port2, null);
+      fail("expected second locator start to fail.");
+    } catch (IllegalStateException expected) {
     }
+
+    String locators = hostName + "[" + port1 + "]," + hostName + "[" + port2 + "]";
+
+    Properties props = getBasicProperties(locators);
+
+    getConnectedDistributedSystem(props);
   }
 
   /**
@@ -1674,136 +1353,79 @@ public class LocatorDUnitTest implements java.io.Serializable {
    */
   @Test
   public void testRestartLocator() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    File logFile = new File("");
     File stateFile = new File("locator" + port1 + "state.dat");
-    VM vm = VM.getVM(0);
-    final Properties properties =
-        getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
+
+    Properties properties = getBasicProperties(getHostName() + "[" + port1 + "]");
     properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(LOG_LEVEL, DUnitLauncher.logLevel);
     addDSProps(properties);
+
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
-
     }
 
     logger.info("Starting locator");
-    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
-    try {
 
-      vm.invoke(() -> {
-        getConnectedDistributedSystem(properties);
-        return true;
-      });
+    vm0.invoke(() -> {
+      getConnectedDistributedSystem(properties);
+    });
 
-      logger.info("Stopping locator");
-      locator.stop();
+    logger.info("Stopping locator");
+    locator.stop();
 
-      logger.info("Starting locator");
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
+    logger.info("Starting locator");
+    locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-      vm.invoke("disconnect", () -> {
-        getConnectedDistributedSystem(properties).disconnect();
-        return null;
-      });
-
-    } finally {
-      locator.stop();
-    }
-
+    vm0.invoke("disconnect", () -> {
+      getConnectedDistributedSystem(properties).disconnect();
+    });
   }
 
   /**
-   * See GEODE-3588 - a locator is restarted twice with a server and ends up in a split-brain
+   * a locator is restarted twice with a server and ends up in a split-brain
    */
   @Test
   public void testRestartLocatorMultipleTimes() throws Exception {
-    port1 = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    File logFile = new File("");
     File stateFile = new File("locator" + port1 + "state.dat");
-    VM vm = VM.getVM(0);
-    final Properties properties =
-        getBasicProperties(Host.getHost(0).getHostName() + "[" + port1 + "]");
+
+    Properties properties = getBasicProperties(getHostName() + "[" + port1 + "]");
     addDSProps(properties);
+
     if (stateFile.exists()) {
       assertThat(stateFile.delete()).isTrue();
     }
 
-    Locator locator = Locator.startLocatorAndDS(port1, logFile, properties);
+    Locator locator = Locator.startLocatorAndDS(port1, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
 
-    vm.invoke(() -> {
+    vm0.invoke(() -> {
       getConnectedDistributedSystem(properties);
-      return null;
     });
 
-    try {
-      locator.stop();
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
-          .getViewMembers().size());
+    locator.stop();
+    locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+    assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+        .getViewMembers().size());
 
-      locator.stop();
-      locator = Locator.startLocatorAndDS(port1, logFile, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
-          .getViewMembers().size());
-
-    } finally {
-      vm.invoke("disconnect", () -> {
-        getConnectedDistributedSystem(properties).disconnect();
-        return null;
-      });
-      locator.stop();
-    }
-
+    locator.stop();
+    locator = Locator.startLocatorAndDS(port1, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+    assertEquals(2, ((InternalDistributedSystem) locator.getDistributedSystem()).getDM()
+        .getViewMembers().size());
   }
 
-  @Before
-  public final void setUp() {
-    port1 = -1;
-    port2 = -1;
-    IgnoredException.addIgnoredException("Removing shunned member");
-  }
-
-  @After
-  public final void tearDown() {
-    if (Locator.hasLocator()) {
-      Locator.getLocator().stop();
-    }
-    GemFireCacheImpl cache = GemFireCacheImpl.getInstance();
-    if (cache != null && !cache.isClosed()) {
-      cache.close();
-    }
-    // delete locator state files so they don't accidentally
-    // get used by other tests
-    if (port1 > 0) {
-      DistributedTestUtils.deleteLocatorStateFile(port1);
-    }
-    if (port2 > 0) {
-      DistributedTestUtils.deleteLocatorStateFile(port2);
-    }
-    if (system != null) {
-      system.disconnect();
-      system = null;
-    }
-  }
-
-  // for child classes
   protected void addDSProps(Properties p) {
-    p.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    p.put(USE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    p.setProperty(USE_CLUSTER_CONFIGURATION, "false");
   }
 
-  protected static InternalDistributedSystem getConnectedDistributedSystem(Properties properties) {
+  static InternalDistributedSystem getConnectedDistributedSystem(Properties properties) {
     if (system == null || !system.isConnected()) {
-      properties.put(NAME, "vm" + VM.getCurrentVMNum());
+      properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
       system = (InternalDistributedSystem) DistributedSystem.connect(properties);
     }
     return system;
@@ -1811,7 +1433,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
   private void startLocatorWithPortAndProperties(final int port, final Properties properties)
       throws IOException {
-    Locator locator = Locator.startLocatorAndDS(port, new File(""), properties);
+    Locator locator = Locator.startLocatorAndDS(port, null, properties);
     system = (InternalDistributedSystem) locator.getDistributedSystem();
     assertThat(locator).isNotNull();
   }
@@ -1871,7 +1493,7 @@ public class LocatorDUnitTest implements java.io.Serializable {
       if (member != null) {
         return member.equals(lead);
       }
-      return (lead == null);
+      return lead == null;
     });
   }
 
@@ -1885,21 +1507,17 @@ public class LocatorDUnitTest implements java.io.Serializable {
     });
   }
 
-  private Locator startLocatorBase(Properties properties, int port) {
-    File lf = new File("");
-    try {
-      properties.put(NAME, "vm" + VM.getCurrentVMNum());
-      Locator locator = Locator.startLocatorAndDS(port, lf, properties);
-      system = (InternalDistributedSystem) locator.getDistributedSystem();
-      return locator;
-    } catch (IOException ios) {
-      throw new RuntimeException("Unable to start locator", ios);
-    }
+  private Locator startLocatorBase(Properties properties, int port) throws IOException {
+    properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
+
+    Locator locator = Locator.startLocatorAndDS(port, null, properties);
+    system = (InternalDistributedSystem) locator.getDistributedSystem();
+
+    return locator;
   }
 
   void startLocatorWithSomeBasicProperties(VM vm, int port) {
     Properties locProps = new Properties();
-    locProps.setProperty(MCAST_PORT, "0");
     locProps.setProperty(MEMBER_TIMEOUT, "1000");
     addDSProps(locProps);
 
@@ -1909,14 +1527,15 @@ public class LocatorDUnitTest implements java.io.Serializable {
   private void startLocatorPreferredCoordinators(VM vm0, int port) {
     try {
       System.setProperty(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS, "true");
+
       Properties locProps1 = new Properties();
-      locProps1.put(MCAST_PORT, "0");
-      locProps1.put(LOG_LEVEL, logger.getLevel().name());
+      locProps1.setProperty(MCAST_PORT, "0");
+      locProps1.setProperty(LOG_LEVEL, logger.getLevel().name());
       addDSProps(locProps1);
 
       startLocator(vm0, locProps1, port);
     } finally {
-      System.getProperties().remove(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
+      System.clearProperty(InternalLocator.LOCATORS_PREFERRED_AS_COORDINATORS);
     }
   }
 
@@ -1934,11 +1553,6 @@ public class LocatorDUnitTest implements java.io.Serializable {
       if (sys != null && sys.isConnected()) {
         sys.disconnect();
       }
-      // connectExceptions occur during disconnect, so we need the
-      // ExpectedException hint to be in effect until this point
-      LogWriter bLogger = new LocalLogWriter(ALL.intLevel(), System.out);
-      bLogger
-          .info("<ExpectedException action=remove>java.net.ConnectException</ExpectedException>");
     });
   }
 
@@ -1948,25 +1562,22 @@ public class LocatorDUnitTest implements java.io.Serializable {
 
   Properties getBasicProperties(String locators) {
     Properties props = new Properties();
-    props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, locators);
     return props;
   }
 
   private Properties getClusterProperties(String locators, String s) {
-    final Properties properties = getBasicProperties(locators);
-    properties.put(ENABLE_NETWORK_PARTITION_DETECTION, s);
-    properties.put(DISABLE_AUTO_RECONNECT, "true");
-    properties.put(MEMBER_TIMEOUT, "2000");
-    properties.put(LOG_LEVEL, logger.getLevel().name());
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
-    properties.put(LOCATOR_WAIT_TIME, "10"); // seconds
+    Properties properties = getBasicProperties(locators);
+    properties.setProperty(DISABLE_AUTO_RECONNECT, "true");
+    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(ENABLE_NETWORK_PARTITION_DETECTION, s);
+    properties.setProperty(LOCATOR_WAIT_TIME, "10"); // seconds
+    properties.setProperty(MEMBER_TIMEOUT, "2000");
+    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     return properties;
   }
 
   private void waitUntilTheSystemIsConnected(VM vm2, VM locatorVM) {
-
     await().until(() -> {
       assertThat(isSystemConnected())
           .describedAs("Distributed system should not have disconnected")
@@ -1977,9 +1588,10 @@ public class LocatorDUnitTest implements java.io.Serializable {
     });
   }
 
-
-  // New test hook which blocks before closing channel.
-  static class TestHook implements MembershipTestHook {
+  /**
+   * New test hook which blocks before closing channel.
+   */
+  private class TestHook implements MembershipTestHook {
 
     volatile boolean unboundedWait = true;
 
@@ -1992,31 +1604,31 @@ public class LocatorDUnitTest implements java.io.Serializable {
           Wait.pause(1000);
         }
       } else {
-        cause.printStackTrace();
+        errorCollector.addError(cause);
       }
     }
-
-    @Override
-    public void afterMembershipFailure(String reason, Throwable cause) {}
 
     void reset() {
       unboundedWait = false;
     }
-
   }
 
-  static class MyMembershipListener implements MembershipListener {
+  private static class MyMembershipListener implements MembershipListener {
 
-    boolean quorumLostInvoked;
+    volatile boolean quorumLostInvoked;
     final List<String> suspectReasons = new ArrayList<>(50);
 
     @Override
     public void memberJoined(DistributionManager distributionManager,
-        InternalDistributedMember id) {}
+        InternalDistributedMember id) {
+      // nothing
+    }
 
     @Override
     public void memberDeparted(DistributionManager distributionManager,
-        InternalDistributedMember id, boolean crashed) {}
+        InternalDistributedMember id, boolean crashed) {
+      // nothing
+    }
 
     @Override
     public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,

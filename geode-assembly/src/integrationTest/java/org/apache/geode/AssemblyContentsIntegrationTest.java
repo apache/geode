@@ -28,16 +28,22 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RestAPITest;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class AssemblyContentsIntegrationTest {
 
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
+
   private Collection<String> expectedAssemblyContent;
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Before
   public void loadExpectedAssemblyContent() throws IOException {
@@ -55,7 +61,7 @@ public class AssemblyContentsIntegrationTest {
     Files.write(Paths.get("assembly_content.txt"), currentAssemblyContent);
 
     assertThat(currentAssemblyContent)
-        .describedAs("The assembly contents have changed. Verify dependencies and "
+        .as("The assembly contents have changed. Verify dependencies and "
             + "copy geode-assembly/build/integrationTest/assembly_content.txt to "
             + "geode-assembly/src/integrationTest/resources/assembly_content.txt")
         .containsExactlyElementsOf(expectedAssemblyContent);
@@ -69,7 +75,7 @@ public class AssemblyContentsIntegrationTest {
     Path geodeHomePath = Paths.get(GEODE_HOME);
 
     assertThat(geodeHomeDirectory)
-        .describedAs(
+        .as(
             "Please set the GEODE_HOME environment variable to the product installation directory.")
         .isDirectory();
 

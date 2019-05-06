@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
@@ -69,7 +68,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    /**
+    /*
      * This file was generated with:
      * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
      * -keystore trusted.keystore -keypass password -storepass password \
@@ -82,7 +81,6 @@ public class StandaloneClientManagementAPIAcceptanceTest {
   }
 
   @Test
-  @Parameterized.Parameters
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =

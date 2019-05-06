@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.tools.pulse;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_ENABLED;
@@ -60,7 +59,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 @Category({SecurityTest.class, PulseTest.class})
 public class PulseSecurityWithSSLTest {
 
-  private static File jks =
+  private static final File jks =
       new File(createTempFileFromResource(PulseSecurityWithSSLTest.class, "/ssl/trusted.keystore")
           .getAbsolutePath());
 
@@ -132,5 +131,4 @@ public class PulseSecurityWithSSLTest {
 
     assertThat(JsonPath.parse(body).read("$.SystemAlerts.connectedFlag", Boolean.class)).isTrue();
   }
-
 }

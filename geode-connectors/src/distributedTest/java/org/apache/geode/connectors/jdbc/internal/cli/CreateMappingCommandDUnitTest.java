@@ -31,7 +31,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.SQLException;
@@ -81,7 +80,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
-@Category({JDBCConnectorTest.class})
+@Category(JDBCConnectorTest.class)
 public class CreateMappingCommandDUnitTest {
 
   private static final String TEST_REGION = "testRegion";
@@ -126,7 +125,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @After
-  public void after() throws Exception {
+  public void after() {
     teardownDatabase();
   }
 
@@ -210,17 +209,14 @@ public class CreateMappingCommandDUnitTest {
         .statusIsSuccess();
   }
 
-  private static RegionMapping getRegionMappingFromClusterConfig(String regionName,
-      String groups) {
+  private static RegionMapping getRegionMappingFromClusterConfig(String regionName, String groups) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(groups);
     RegionConfig regionConfig = cacheConfig.getRegions().stream()
         .filter(region -> region.getName().equals(convertRegionPathToName(regionName))).findFirst()
         .orElse(null);
-    RegionMapping regionMapping =
-        (RegionMapping) regionConfig.getCustomRegionElements().stream()
-            .filter(element -> element instanceof RegionMapping).findFirst().orElse(null);
-    return regionMapping;
+    return (RegionMapping) regionConfig.getCustomRegionElements().stream()
+        .filter(element -> element instanceof RegionMapping).findFirst().orElse(null);
   }
 
   private static RegionMapping getRegionMappingFromService(String regionName) {
@@ -229,8 +225,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static void validateAsyncEventQueueCreatedInClusterConfig(String regionName,
-      String groups,
-      boolean isParallel) {
+      String groups, boolean isParallel) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(groups);
     List<CacheConfig.AsyncEventQueue> queueList = cacheConfig.getAsyncEventQueues();
@@ -243,8 +238,7 @@ public class CreateMappingCommandDUnitTest {
     assertThat(queue.isParallel()).isEqualTo(isParallel);
   }
 
-  private static CacheConfig.AsyncEventQueue findQueue(
-      List<CacheConfig.AsyncEventQueue> queueList,
+  private static CacheConfig.AsyncEventQueue findQueue(List<CacheConfig.AsyncEventQueue> queueList,
       String queueName) {
     for (CacheConfig.AsyncEventQueue queue : queueList) {
       if (queue.getId().equals(queueName)) {
@@ -261,8 +255,7 @@ public class CreateMappingCommandDUnitTest {
     return regionPath;
   }
 
-  private static void validateRegionAlteredInClusterConfig(String regionName,
-      String groups,
+  private static void validateRegionAlteredInClusterConfig(String regionName, String groups,
       boolean synchronous) {
     CacheConfig cacheConfig =
         InternalLocator.getLocator().getConfigurationPersistenceService().getCacheConfig(groups);
@@ -489,8 +482,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static void assertValidMappingOnLocator(RegionMapping mapping, String regionName,
-      String groups,
-      boolean synchronous, boolean isParallel) {
+      String groups, boolean synchronous, boolean isParallel) {
     assertValidMapping(mapping);
     validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
     if (!synchronous) {
@@ -523,8 +515,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static void assertValidEmployeeMappingOnLocator(RegionMapping mapping, String regionName,
-      String groups,
-      boolean synchronous, boolean isParallel, String tableName) {
+      String groups, boolean synchronous, boolean isParallel, String tableName) {
     assertValidEmployeeMapping(mapping, tableName);
     validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
     if (!synchronous) {
@@ -550,8 +541,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static void assertValidResourcePDXMappingOnServer(RegionMapping mapping,
-      String regionName,
-      boolean synchronous, boolean isParallel, String tableName) {
+      String regionName, boolean synchronous, boolean isParallel, String tableName) {
     assertValidResourcePDXMapping(mapping, tableName);
     validateRegionAlteredOnServer(regionName, synchronous);
     if (!synchronous) {
@@ -560,9 +550,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private static void assertValidResourcePDXMappingOnLocator(RegionMapping mapping,
-      String regionName,
-      String groups,
-      boolean synchronous, boolean isParallel, String tableName) {
+      String regionName, String groups, boolean synchronous, boolean isParallel, String tableName) {
     assertValidResourcePDXMapping(mapping, tableName);
     validateRegionAlteredInClusterConfig(regionName, groups, synchronous);
     if (!synchronous) {
@@ -571,8 +559,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath =
-        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
+    String filePath = createTempFileFromResource(getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);
@@ -588,8 +575,7 @@ public class CreateMappingCommandDUnitTest {
 
   private File createJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
-    File source = loadTestResource(
-        "/org/apache/geode/internal/ResourcePDX.java");
+    File source = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
@@ -598,8 +584,7 @@ public class CreateMappingCommandDUnitTest {
 
   private File createClassFile() throws IOException {
     final JavaCompiler javaCompiler = new JavaCompiler();
-    File source = loadTestResource(
-        "/org/apache/geode/internal/ResourcePDX.java");
+    File source = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
     List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(source);
     String className = compiledSourceCodes.get(0).className;
     String fileName = className.substring(className.lastIndexOf(".") + 1) + ".class";
@@ -629,7 +614,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithDeployedPdxClassSucceeds() throws IOException, URISyntaxException {
+  public void createMappingWithDeployedPdxClassSucceeds() throws IOException {
     String region1Name = "region1";
     setupReplicate(region1Name);
 
@@ -657,7 +642,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithPdxClassFileSetToAJarFile() throws IOException, URISyntaxException {
+  public void createMappingWithPdxClassFileSetToAJarFile() throws IOException {
     String region1Name = "region1";
     setupReplicate(region1Name);
     File jarFile = createJar();
@@ -686,7 +671,7 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithNonExistingPdxClassFileFails() throws IOException {
+  public void createMappingWithNonExistingPdxClassFileFails() {
     String region1Name = "region1";
     setupReplicate(region1Name);
 
@@ -704,11 +689,10 @@ public class CreateMappingCommandDUnitTest {
   }
 
   @Test
-  public void createMappingWithInvalidJarPdxClassFileFails() throws IOException {
+  public void createMappingWithInvalidJarPdxClassFileFails() {
     String region1Name = "region1";
     setupReplicate(region1Name);
-    File invalidFile = loadTestResource(
-        "/org/apache/geode/internal/ResourcePDX.java");
+    File invalidFile = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, region1Name);
@@ -725,7 +709,7 @@ public class CreateMappingCommandDUnitTest {
 
   @Test
   public void createMappingWithPdxClassFileSetToAClassFile()
-      throws IOException, URISyntaxException {
+      throws IOException {
     String region1Name = "region1";
     setupReplicate(region1Name);
     File classFile = createClassFile();
@@ -880,130 +864,6 @@ public class CreateMappingCommandDUnitTest {
       assertValidEmployeeMappingOnLocator(regionMapping, region2Name, null, false, false,
           "employeeRegion");
     });
-  }
-
-  public static class Employee implements PdxSerializable {
-    private String id;
-    private String name;
-    private int age;
-
-    public Employee() {
-      // nothing
-    }
-
-    Employee(String id, String name, int age) {
-      this.id = id;
-      this.name = name;
-      this.age = age;
-    }
-
-    String getId() {
-      return id;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    int getAge() {
-      return age;
-    }
-
-    @Override
-    public void toData(PdxWriter writer) {
-      writer.writeString("id", this.id);
-      writer.writeString("name", this.name);
-      writer.writeInt("age", this.age);
-    }
-
-    @Override
-    public void fromData(PdxReader reader) {
-      this.id = reader.readString("id");
-      this.name = reader.readString("name");
-      this.age = reader.readInt("age");
-    }
-  }
-
-  public static class EmployeeNumeric implements PdxSerializerObject {
-    private String id;
-    private String name;
-    private int age;
-    private float income;
-    private long refid;
-
-    public EmployeeNumeric() {
-      // nothing
-    }
-
-    EmployeeNumeric(String id, String name, int age, float income, long refid) {
-      this.id = id;
-      this.name = name;
-      this.age = age;
-      this.income = income;
-      this.refid = refid;
-    }
-
-    String getId() {
-      return id;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    int getAge() {
-      return age;
-    }
-
-    float getIncome() {
-      return income;
-    }
-
-    void setIncome(float income) {
-      this.income = income;
-    }
-
-    long getRefid() {
-      return refid;
-    }
-
-    void setRefid(long refid) {
-      this.refid = refid;
-    }
-  }
-
-  public static class IdAndName implements PdxSerializable {
-    private String id;
-    private String name;
-
-    public IdAndName() {
-      // nothing
-    }
-
-    IdAndName(String id, String name) {
-      this.id = id;
-      this.name = name;
-    }
-
-    String getId() {
-      return id;
-    }
-
-    String getName() {
-      return name;
-    }
-
-    @Override
-    public void toData(PdxWriter writer) {
-      writer.writeString("myid", this.id);
-      writer.writeString("name", this.name);
-    }
-
-    @Override
-    public void fromData(PdxReader reader) {
-      this.id = reader.readString("myid");
-      this.name = reader.readString("name");
-    }
   }
 
   @Test
@@ -1278,4 +1138,130 @@ public class CreateMappingCommandDUnitTest {
             + " must not already exist.");
   }
 
+  private static class Employee implements PdxSerializable {
+
+    private String id;
+    private String name;
+    private int age;
+
+    public Employee() {
+      // nothing
+    }
+
+    Employee(String id, String name, int age) {
+      this.id = id;
+      this.name = name;
+      this.age = age;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    int getAge() {
+      return age;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("id", id);
+      writer.writeString("name", name);
+      writer.writeInt("age", age);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      id = reader.readString("id");
+      name = reader.readString("name");
+      age = reader.readInt("age");
+    }
+  }
+
+  private static class EmployeeNumeric implements PdxSerializerObject {
+
+    private String id;
+    private String name;
+    private int age;
+    private float income;
+    private long refid;
+
+    public EmployeeNumeric() {
+      // nothing
+    }
+
+    EmployeeNumeric(String id, String name, int age, float income, long refid) {
+      this.id = id;
+      this.name = name;
+      this.age = age;
+      this.income = income;
+      this.refid = refid;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    int getAge() {
+      return age;
+    }
+
+    float getIncome() {
+      return income;
+    }
+
+    void setIncome(float income) {
+      this.income = income;
+    }
+
+    long getRefid() {
+      return refid;
+    }
+
+    void setRefid(long refid) {
+      this.refid = refid;
+    }
+  }
+
+  private static class IdAndName implements PdxSerializable {
+
+    private String id;
+    private String name;
+
+    public IdAndName() {
+      // nothing
+    }
+
+    IdAndName(String id, String name) {
+      this.id = id;
+      this.name = name;
+    }
+
+    String getId() {
+      return id;
+    }
+
+    String getName() {
+      return name;
+    }
+
+    @Override
+    public void toData(PdxWriter writer) {
+      writer.writeString("myid", id);
+      writer.writeString("name", name);
+    }
+
+    @Override
+    public void fromData(PdxReader reader) {
+      id = reader.readString("myid");
+      name = reader.readString("name");
+    }
+  }
 }

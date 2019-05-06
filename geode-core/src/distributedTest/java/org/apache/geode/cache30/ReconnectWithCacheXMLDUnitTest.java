@@ -22,6 +22,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -35,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
@@ -44,15 +46,15 @@ import org.apache.geode.test.junit.categories.MembershipTest;
  * GEODE-2732.
  */
 @Category({MembershipTest.class, ClientServerTest.class})
+@SuppressWarnings("serial")
 public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
-  private static final long serialVersionUID = 1L;
+
   private String xmlProperty = DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile";
   private String oldPropertySetting;
 
-
-  public ReconnectWithCacheXMLDUnitTest() {
-    super();
-  }
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   @Override
   public final void postSetUp() {
@@ -74,10 +76,10 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
     String fileName =
         createTempFileFromResource(getClass(), "ReconnectWithCacheXMLDUnitTest.xml")
             .getAbsolutePath();
-    result.put(ConfigurationProperties.CACHE_XML_FILE, fileName);
-    result.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "true");
-    result.put(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "false");
-    result.put(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "2000");
+    result.setProperty(ConfigurationProperties.CACHE_XML_FILE, fileName);
+    result.setProperty(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "true");
+    result.setProperty(ConfigurationProperties.DISABLE_AUTO_RECONNECT, "false");
+    result.setProperty(ConfigurationProperties.MAX_WAIT_TIME_RECONNECT, "2000");
     return result;
   }
 
@@ -87,15 +89,12 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
         .withDisableDefaultServer(true);
     Cache cache = getCache();
 
-    final AtomicBoolean membershipFailed = new AtomicBoolean();
+    AtomicBoolean membershipFailed = new AtomicBoolean();
     MembershipManagerHelper.addTestHook(cache.getDistributedSystem(), new MembershipTestHook() {
       @Override
       public void beforeMembershipFailure(String reason, Throwable cause) {
         membershipFailed.set(true);
       }
-
-      @Override
-      public void afterMembershipFailure(String reason, Throwable cause) {}
     });
     MembershipManagerHelper.crashDistributedSystem(cache.getDistributedSystem());
     assertTrue(membershipFailed.get());

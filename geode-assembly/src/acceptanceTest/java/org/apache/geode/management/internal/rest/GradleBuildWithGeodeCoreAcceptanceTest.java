@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.util.ResourceUtils.copyDirectoryResource;
@@ -41,7 +40,7 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
   public TemporaryFolder temp = new TemporaryFolder();
 
   @Test
-  public void testBasicGradleBuild() throws Exception {
+  public void testBasicGradleBuild() {
     URL projectDir = getResource("/gradle-test-projects/management");
     assertThat(projectDir).isNotNull();
 
@@ -65,12 +64,11 @@ public class GradleBuildWithGeodeCoreAcceptanceTest {
     build.setStandardOutput(System.out);
     build.withArguments("-Pversion=" + geodeVersion,
         "-Pgroup=" + projectGroup,
-        "-PgeodeHome=" + geodeHome.toString());
+        "-PgeodeHome=" + geodeHome);
 
     build.forTasks("installDist", "run");
     build.run();
 
     connection.close();
   }
-
 }

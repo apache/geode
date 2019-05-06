@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -43,7 +42,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class, RestAPITest.class})
 public class RestSecurityWithSSLTest {
 
-  private static File KEYSTORE_FILE =
+  private static final File KEYSTORE_FILE =
       new File(createTempFileFromResource(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore")
           .getAbsolutePath());
 
