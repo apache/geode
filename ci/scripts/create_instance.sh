@@ -77,7 +77,6 @@ GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 cp old/attempts new/
 echo attempt >> new/attempts
 attempts=$(cat new/attempts | wc -l)
-echo $attempts > /tmp/retry_number
 
 if [ $attempts -eq 1 ]; then
   ZONE=${MY_ZONE}
