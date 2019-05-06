@@ -112,7 +112,7 @@ jobs:
             - name: attempts-log
               path: new
           timeout: 15m
-          attempts: 100
+          attempts: 10
     - task: rsync_code_up
       {{- alpine_tools_config()|indent(6) }}
         run:
@@ -253,7 +253,7 @@ jobs:
             - name: attempts-log
               path: new
           timeout: 15m
-          attempts: 100
+          attempts: 10
     - task: rsync_code_up-{{java_test_version.name}}
       {{- alpine_tools_config()|indent(6) }}
         run:
