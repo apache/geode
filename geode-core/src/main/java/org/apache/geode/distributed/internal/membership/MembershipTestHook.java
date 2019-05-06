@@ -15,19 +15,21 @@
 package org.apache.geode.distributed.internal.membership;
 
 /**
- * Test hook for hydra test development
- *
- *
+ * Test hook for membership test development
  */
 public interface MembershipTestHook {
+
   /**
    * test hook invoked prior to shutting down distributed system
    */
-  void beforeMembershipFailure(String reason, Throwable cause);
+  default void beforeMembershipFailure(String reason, Throwable cause) {
+    // nothing
+  }
 
   /**
    * test hook invoked after shutting down distributed system
    */
-  void afterMembershipFailure(String reason, Throwable cause);
-
+  default void afterMembershipFailure(String reason, Throwable cause) {
+    // nothing
+  }
 }

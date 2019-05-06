@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
@@ -22,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +35,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 
 public class StartServerWithXmlDUnitTest {
 
+  private static Cache cache;
+
   private VM server;
   private MemberVM locator;
 
@@ -45,28 +47,36 @@ public class StartServerWithXmlDUnitTest {
   public void before() throws Exception {
     locator = cluster.startLocatorVM(0);
 
-    Properties props = new Properties();
     String locators = "localhost[" + locator.getPort() + "]";
-    props.setProperty(LOCATORS, locators);
     String cacheXmlPath =
         createTempFileFromResource(getClass(), "CacheServerWithZeroPort.xml")
             .getAbsolutePath();
+
+    Properties props = new Properties();
+    props.setProperty(LOCATORS, locators);
     props.setProperty(CACHE_XML_FILE, cacheXmlPath);
 
     server = cluster.getVM(1);
 
     server.invoke(() -> {
       ServerLauncherParameters.INSTANCE.withBindAddress("localhost");
-      CacheFactory cf = new CacheFactory(props);
-      Cache cache = cf.create();
+      cache = new CacheFactory(props).create();
+    });
+  }
+
+  @After
+  public void tearDown() {
+    server.invoke(() -> {
+      cache.close();
+      cache = null;
     });
   }
 
   @Test
   public void startServerWithXMLNotToStartDefaultCacheServer() {
-    // Verify that when there is a declarative cache server then we dont launch default server
+    // Verify that when there is a declarative cache server then we don't launch default server
     server.invoke(() -> {
-      assertThat(GemFireCacheImpl.getInstance().getCacheServers().size()).isEqualTo(1);
+      assertThat(cache.getCacheServers().size()).isEqualTo(1);
     });
   }
 }

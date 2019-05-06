@@ -25,20 +25,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.NetworkUtils;
-import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
-@Category({MembershipTest.class})
+@Category(MembershipTest.class)
 public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
-
-  @Override
-  @Test
-  public void testMultipleLocatorsRestartingAtSameTimeWithMissingServers() throws Exception {
-    super.testMultipleLocatorsRestartingAtSameTimeWithMissingServers();
-  }
 
   @Override
   protected void addDSProps(Properties p) {
@@ -48,23 +38,17 @@ public class LocatorUDPSecurityDUnitTest extends LocatorDUnitTest {
 
   @Test
   public void testLocatorWithUDPSecurityButServer() {
-    VM vm = VM.getVM(0);
+    String locators = hostName + "[" + port1 + "]";
 
-    final int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(port1);
-    final String locators = NetworkUtils.getServerHostName() + "[" + port + "]";
-
-    startLocatorWithSomeBasicProperties(vm, port);
+    startLocatorWithSomeBasicProperties(vm0, port1);
 
     try {
       Properties props = getBasicProperties(locators);
       props.setProperty(MEMBER_TIMEOUT, "1000");
       system = getConnectedDistributedSystem(props);
       fail("Should not have reached this line, it should have caught the exception.");
-    } catch (GemFireConfigException gce) {
-      assertThat(gce.getMessage()).contains("Rejecting findCoordinatorRequest");
-    } finally {
-      vm.invoke(LocatorDUnitTest::stopLocator);
+    } catch (GemFireConfigException e) {
+      assertThat(e.getMessage()).contains("Rejecting findCoordinatorRequest");
     }
   }
 }

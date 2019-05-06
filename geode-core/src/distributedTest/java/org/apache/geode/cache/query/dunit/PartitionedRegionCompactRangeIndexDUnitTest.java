@@ -16,9 +16,9 @@ package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.Collection;
@@ -34,29 +34,30 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
-@Category({OQLQueryTest.class})
+@Category(OQLQueryTest.class)
 public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable {
+
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
-  protected MemberVM locator;
+  private MemberVM locator;
 
-  Properties props;
+  private Properties props;
 
-  MemberVM server1;
-  MemberVM server2;
-  MemberVM server3;
+  private MemberVM server1;
+  private MemberVM server2;
+  private MemberVM server3;
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
@@ -67,22 +68,22 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   }
 
   @Before
-  public void before() throws Exception {
-    this.locator = this.clusterStartupRule.startLocatorVM(0);
+  public void before() {
+    locator = clusterStartupRule.startLocatorVM(0);
     props = getSystemProperties("PersistentPartitionWithIndex.xml");
 
-    server1 = this.clusterStartupRule.startServerVM(1, props, this.locator.getPort());
-    server2 = this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
-    server3 = this.clusterStartupRule.startServerVM(3, props, this.locator.getPort());
+    server1 = clusterStartupRule.startServerVM(1, props, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, props, locator.getPort());
+    server3 = clusterStartupRule.startServerVM(3, props, locator.getPort());
 
     // Adding due to known race condition for creation of partitioned indexes via cache.xml
-    IgnoredException.addIgnoredException("IndexNameConflictException");
+    addIgnoredException(IndexNameConflictException.class);
   }
 
   @Test
-  public void testGIIUpdateWithIndexDoesNotDuplicateEntryInIndexWhenAlreadyRecoveredFromPersistence()
-      throws Exception {
-    String regionName = "persistentTestRegion"; // this region is created via cache.xml
+  public void testGIIUpdateWithIndexDoesNotDuplicateEntryInIndexWhenAlreadyRecoveredFromPersistence() {
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegion";
     String idQuery = "select * from /" + regionName + " p where p.ID = 1";
     int idQueryExpectedSize = 1;
     int numEntries = 100;
@@ -97,8 +98,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     // update entries
     server3.invoke(() -> populateRegion(regionName, entries));
     clusterStartupRule.stop(1, false);
-    server1 = this.clusterStartupRule.startServerVM(1, props, this.locator.getPort());
-    server2 = this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    server1 = clusterStartupRule.startServerVM(1, props, locator.getPort());
+    server2 = clusterStartupRule.startServerVM(2, props, locator.getPort());
 
     server3.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
     server2.invoke(verifyQueryResultsSize(idQuery, idQueryExpectedSize));
@@ -108,8 +109,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void giiWithPersistenceAndStaleDataDueToUpdatesShouldCorrectlyPopulateIndexes()
       throws Exception {
-    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
-                                                                 // cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
@@ -125,12 +126,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -150,12 +151,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     });
   }
 
-
   @Test
   public void giiWithPersistenceAndStaleDataDueToSameUpdatesShouldCorrectlyPopulateIndexes()
       throws Exception {
-    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
-    // cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -171,12 +171,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -196,12 +196,11 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     });
   }
 
-
   @Test
   public void giiWithPersistenceAndStaleDataDueToUpdatesShouldCorrectlyPopulateIndexesWithEntrySet()
       throws Exception {
-    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
-                                                                 // cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
@@ -218,12 +217,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -246,8 +245,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldProvideCorrectResultsWithEntrySet()
       throws Exception {
-    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
-                                                                 // cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -260,12 +259,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -288,8 +287,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldHaveEmptyIndexesWithEntrySet()
       throws Exception {
-    String regionName = "persistentTestRegionWithEntrySetIndex"; // this region is created via
-                                                                 // cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -302,12 +301,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -327,7 +326,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldProvideCorrectResultsWithIndexes()
       throws Exception {
-    String regionName = "persistentTestRegion"; // this region is created via cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegion";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -339,12 +339,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -367,7 +367,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldHaveEmptyIndexes()
       throws Exception {
-    String regionName = "persistentTestRegion"; // this region is created via cache.xml
+    // this region is created via cache.xml
+    String regionName = "persistentTestRegion";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -380,12 +381,12 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
     clusterStartupRule.stop(3, false);
 
     Thread t3 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(3, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(3, props, locator.getPort()));
     t3.start();
     Thread t1 =
-        new Thread(() -> this.clusterStartupRule.startServerVM(1, props, this.locator.getPort()));
+        new Thread(() -> clusterStartupRule.startServerVM(1, props, locator.getPort()));
     t1.start();
-    this.clusterStartupRule.startServerVM(2, props, this.locator.getPort());
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
     t3.join();
     t1.join();
 
@@ -403,13 +404,13 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   }
 
   private void verifyAllEntries(String query, Supplier<IntStream> idsSupplier, int numTimes,
-      int expectedSize) throws Exception {
+      int expectedSize) {
     for (int j = 0; j < numTimes; j++) {
       idsSupplier.get().forEach(i -> {
         try {
           verifyQueryResultsSize(query + i, expectedSize).run();
         } catch (Exception e) {
-          fail();
+          throw new RuntimeException(e);
         }
       });
     }
@@ -425,8 +426,8 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
           SelectResults sr = (SelectResults) q.execute();
           assertEquals(expectedSize, sr.size());
         } catch (Exception e) {
-          e.printStackTrace();
-          fail("Exception occurred when executing verifyQueryResultsSize for query:" + query);
+          throw new RuntimeException(
+              "Exception occurred when executing verifyQueryResultsSize for query:" + query, e);
         }
       }
     };

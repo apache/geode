@@ -76,22 +76,27 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RestAPITest;
 
 /**
  * @since GemFire 8.0
  */
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class RestAPIsWithSSLDUnitTest {
+
   private static final String PEOPLE_REGION_NAME = "People";
   private static final String INVALID_CLIENT_ALIAS = "INVALID_CLIENT_ALIAS";
 
-  public String urlContext = "/geode";
+  private String urlContext = "/geode";
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
+  @Rule
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
   private MemberVM server;
   private ClientVM client;
@@ -168,7 +173,6 @@ public class RestAPIsWithSSLDUnitTest {
   }
 
   private static CloseableHttpClient getSSLBasedHTTPClient(Properties properties) throws Exception {
-
     KeyStore clientKeys = KeyStore.getInstance("JKS");
     File keystoreJKSForPath = findKeyStoreJKS(properties);
     clientKeys.load(new FileInputStream(keystoreJKSForPath), "password".toCharArray());
@@ -193,7 +197,7 @@ public class RestAPIsWithSSLDUnitTest {
           }
         }).build();
 
-    // Host checking is disabled here , as tests might run on multiple hosts and
+    // Host checking is disabled here, as tests might run on multiple hosts and
     // host entries can not be assumed
     SSLConnectionSocketFactory sslConnectionSocketFactory = new SSLConnectionSocketFactory(
         sslcontext, SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
@@ -229,11 +233,8 @@ public class RestAPIsWithSSLDUnitTest {
     assertEquals(json.get("gender").asText(), Gender.FEMALE.name());
   }
 
-  // Actual Tests starts here.
-
   @Test
   public void testSimpleSSL() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
     props.setProperty(SSL_TRUSTSTORE, findTrustedJKSWithSingleEntry().getCanonicalPath());
@@ -247,7 +248,6 @@ public class RestAPIsWithSSLDUnitTest {
 
   @Test
   public void testSimpleSSLWithMultiKey_KeyStore() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE,
         createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
@@ -267,7 +267,6 @@ public class RestAPIsWithSSLDUnitTest {
 
   @Test(expected = RuntimeException.class)
   public void testSimpleSSLWithMultiKey_KeyStore_WithInvalidClientKey() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(SSL_KEYSTORE,
         createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
@@ -461,7 +460,6 @@ public class RestAPIsWithSSLDUnitTest {
 
   @Test
   public void testSimpleSSLLegacy() throws Exception {
-
     Properties props = new Properties();
     props.setProperty(HTTP_SERVICE_SSL_ENABLED, "true");
     props.setProperty(HTTP_SERVICE_SSL_KEYSTORE,
@@ -590,5 +588,4 @@ public class RestAPIsWithSSLDUnitTest {
     startClusterWithSSL(props);
     validateConnection(props);
   }
-
 }

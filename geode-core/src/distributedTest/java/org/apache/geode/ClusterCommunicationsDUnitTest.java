@@ -31,6 +31,9 @@ import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_C
 import static org.apache.geode.internal.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
+import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +41,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -53,6 +57,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -71,9 +77,8 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.VM;
+import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.BackwardCompatibilityTest;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -86,31 +91,8 @@ import org.apache.geode.test.version.VersionManager;
  */
 @Category({MembershipTest.class, BackwardCompatibilityTest.class})
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
-public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
-
-  private boolean conserveSockets;
-  private boolean useSSL;
-
-  enum RunConfiguration {
-    SHARED_CONNECTIONS(true, false),
-    SHARED_CONNECTIONS_WITH_SSL(true, true),
-    UNSHARED_CONNECTIONS(false, false),
-    UNSHARED_CONNECTIONS_WITH_SSL(false, true);
-
-    boolean useSSL;
-    boolean conserveSockets;
-
-    RunConfiguration(boolean conserveSockets, boolean useSSL) {
-      this.useSSL = useSSL;
-      this.conserveSockets = conserveSockets;
-    }
-  }
-
-  @Parameterized.Parameters(name = "{0}")
-  public static Collection<RunConfiguration> data() {
-    return Arrays.asList(RunConfiguration.values());
-  }
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+public class ClusterCommunicationsDUnitTest implements Serializable {
 
   private static final int NUM_SERVERS = 2;
   private static final int SMALL_BUFFER_SIZE = 8000;
@@ -119,73 +101,79 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
 
   private static Cache cache;
 
+  private final String regionName = "clusterTestRegion";
+
+  private boolean conserveSockets;
+  private boolean useSSL;
+
+  @Parameters(name = "{0}")
+  public static Collection<RunConfiguration> data() {
+    return Arrays.asList(RunConfiguration.values());
+  }
+
   @Rule
   public DistributedRule distributedRule =
       DistributedRule.builder().withVMCount(NUM_SERVERS + 1).build();
 
   @Rule
-  public final SerializableTestName testName = new SerializableTestName();
+  public DistributedRestoreSystemProperties restoreSystemProperties =
+      new DistributedRestoreSystemProperties();
 
-  private final String regionName = "clusterTestRegion";
+  @Rule
+  public SerializableTestName testName = new SerializableTestName();
 
   public ClusterCommunicationsDUnitTest(RunConfiguration runConfiguration) {
-    this.useSSL = runConfiguration.useSSL;
-    this.conserveSockets = runConfiguration.conserveSockets;
+    useSSL = runConfiguration.useSSL;
+    conserveSockets = runConfiguration.conserveSockets;
   }
 
   @Before
   public void setUp() throws Exception {
-    final Boolean testWithSSL = useSSL;
-    final Boolean testWithConserveSocketsTrue = conserveSockets;
-    Invoke.invokeInEveryVM(() -> {
-      this.useSSL = testWithSSL;
-      this.conserveSockets = testWithConserveSocketsTrue;
-    });
-    IgnoredException.addIgnoredException("Socket Closed");
-    IgnoredException.addIgnoredException("Remote host closed connection during handshake");
+    addIgnoredException("Socket Closed");
+    addIgnoredException("Remote host closed connection during handshake");
   }
 
   @Test
   public void createEntryAndVerifyUpdate() {
-    int locatorPort = createLocator(VM.getVM(0));
+    int locatorPort = createLocator(getVM(0));
     for (int i = 1; i <= NUM_SERVERS; i++) {
-      createCacheAndRegion(VM.getVM(i), locatorPort);
+      createCacheAndRegion(getVM(i), locatorPort);
     }
-    performCreate(VM.getVM(1));
+    performCreate(getVM(1));
     for (int i = 1; i <= NUM_SERVERS; i++) {
-      verifyCreatedEntry(VM.getVM(i));
+      verifyCreatedEntry(getVM(i));
     }
-    performUpdate(VM.getVM(1));
+    performUpdate(getVM(1));
     for (int i = 1; i <= NUM_SERVERS; i++) {
-      verifyUpdatedEntry(VM.getVM(i));
+      verifyUpdatedEntry(getVM(i));
     }
   }
 
   @Test
   public void createEntryWithBigMessage() {
-    int locatorPort = createLocator(VM.getVM(0));
+    int locatorPort = createLocator(getVM(0));
     for (int i = 1; i <= NUM_SERVERS; i++) {
-      createCacheAndRegion(VM.getVM(i), locatorPort);
+      createCacheAndRegion(getVM(i), locatorPort);
     }
-    performCreateWithLargeValue(VM.getVM(1));
+    performCreateWithLargeValue(getVM(1));
     // fault the value into an empty cache - forces use of message chunking
     for (int i = 1; i <= NUM_SERVERS - 1; i++) {
-      verifyCreatedEntry(VM.getVM(i));
+      verifyCreatedEntry(getVM(i));
     }
   }
 
   @Test
   public void receiveBigResponse() {
-    Invoke.invokeInEveryVM(() -> DSFIDFactory.registerDSFID(SERIAL_ACKED_MESSAGE,
+    invokeInEveryVM(() -> DSFIDFactory.registerDSFID(SERIAL_ACKED_MESSAGE,
         SerialAckedMessageWithBigReply.class));
     try {
-      int locatorPort = createLocator(VM.getVM(0));
+      int locatorPort = createLocator(getVM(0));
       for (int i = 1; i <= NUM_SERVERS; i++) {
-        createCacheAndRegion(VM.getVM(i), locatorPort);
+        createCacheAndRegion(getVM(i), locatorPort);
       }
-      final DistributedMember vm2ID =
-          VM.getVM(2).invoke(() -> cache.getDistributedSystem().getDistributedMember());
-      VM.getVM(1).invoke("receive a large direct-reply message", () -> {
+      DistributedMember vm2ID =
+          getVM(2).invoke(() -> cache.getDistributedSystem().getDistributedMember());
+      getVM(1).invoke("receive a large direct-reply message", () -> {
         SerialAckedMessageWithBigReply messageWithBigReply = new SerialAckedMessageWithBigReply();
         await().until(() -> {
           messageWithBigReply.send(Collections.singleton(vm2ID));
@@ -193,7 +181,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
         });
       });
     } finally {
-      Invoke.invokeInEveryVM(
+      invokeInEveryVM(
           () -> DSFIDFactory.registerDSFID(SERIAL_ACKED_MESSAGE, SerialAckedMessage.class));
     }
   }
@@ -209,7 +197,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
     VM server1VM = Host.getHost(0).getVM(testVersion, 1);
     int locatorPort = createLocator(locatorVM);
     createCacheAndRegion(server1VM, locatorPort);
-    performCreate(VM.getVM(1));
+    performCreate(getVM(1));
 
     // roll the locator to the current version
     locatorVM.invoke("stop locator", () -> Locator.getLocator().stop());
@@ -234,7 +222,6 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
     server1VM = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     createCacheAndRegion(server1VM, locatorPort);
 
-
     verifyCreatedEntry(server1VM);
     verifyCreatedEntry(server2VM);
   }
@@ -245,7 +232,6 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
       cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
     });
   }
-
 
   private void performCreate(VM memberVM) {
     memberVM.invoke("perform create", () -> cache
@@ -293,33 +279,48 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
     // if you need to debug SSL communications use this property:
     // System.setProperty("javax.net.debug", "all");
     Properties properties = getDistributedSystemProperties();
-    properties.put(LOCATORS, "localhost[" + locatorPort + "]");
+    properties.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
     return new CacheFactory(properties).create();
   }
 
   public Properties getDistributedSystemProperties() {
     Properties properties = new Properties();
-    properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
-    properties.put(USE_CLUSTER_CONFIGURATION, "false");
-    properties.put(NAME, "vm" + VM.getCurrentVMNum());
-    properties.put(CONSERVE_SOCKETS, "" + conserveSockets);
-    properties.put(SOCKET_LEASE_TIME, "10000");
-    properties.put(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
+    properties.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
+    properties.setProperty(CONSERVE_SOCKETS, "" + conserveSockets);
+    properties.setProperty(SOCKET_LEASE_TIME, "10000");
+    properties.setProperty(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
 
     if (useSSL) {
-      properties.put(SSL_ENABLED_COMPONENTS, "cluster,locator");
-      properties.put(SSL_KEYSTORE,
-          createTempFileFromResource(this.getClass(), "server.keystore")
+      properties.setProperty(SSL_ENABLED_COMPONENTS, "cluster,locator");
+      properties
+          .setProperty(SSL_KEYSTORE, createTempFileFromResource(getClass(), "server.keystore")
               .getAbsolutePath());
-      properties.put(SSL_TRUSTSTORE,
-          createTempFileFromResource(this.getClass(), "server.keystore")
+      properties.setProperty(SSL_TRUSTSTORE,
+          createTempFileFromResource(getClass(), "server.keystore")
               .getAbsolutePath());
-      properties.put(SSL_PROTOCOLS, "TLSv1.2");
-      properties.put(SSL_KEYSTORE_PASSWORD, "password");
-      properties.put(SSL_TRUSTSTORE_PASSWORD, "password");
-      properties.put(SSL_REQUIRE_AUTHENTICATION, "true");
+      properties.setProperty(SSL_PROTOCOLS, "TLSv1.2");
+      properties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
+      properties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
+      properties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
     }
     return properties;
+  }
+
+  enum RunConfiguration {
+    SHARED_CONNECTIONS(true, false),
+    SHARED_CONNECTIONS_WITH_SSL(true, true),
+    UNSHARED_CONNECTIONS(false, false),
+    UNSHARED_CONNECTIONS_WITH_SSL(false, true);
+
+    boolean useSSL;
+    boolean conserveSockets;
+
+    RunConfiguration(boolean conserveSockets, boolean useSSL) {
+      this.useSSL = useSSL;
+      this.conserveSockets = conserveSockets;
+    }
   }
 
   /**
@@ -329,21 +330,19 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
    * of SERIAL_ACKED_MESSAGE. Don't forget to reset the registration to
    * SerialAckedMessage at the end of the test.
    */
-  public static class SerialAckedMessageWithBigReply extends DistributionMessage
-      implements MessageWithReply,
-      DirectReplyMessage {
+  private static class SerialAckedMessageWithBigReply extends DistributionMessage
+      implements MessageWithReply, DirectReplyMessage {
     static final int DSFID = SERIAL_ACKED_MESSAGE;
 
     private int processorId;
-    private transient ClusterDistributionManager originDm;
-    private transient DirectReplyProcessor replyProcessor;
+    private ClusterDistributionManager originDm;
+    private DirectReplyProcessor replyProcessor;
 
     public SerialAckedMessageWithBigReply() {
-      super();
       InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-      if (ds != null) { // this constructor is used in serialization as well as when sending to
-                        // others
-        this.originDm = (ClusterDistributionManager) ds.getDistributionManager();
+      // this constructor is used in serialization as well as when sending to others
+      if (ds != null) {
+        originDm = (ClusterDistributionManager) ds.getDistributionManager();
       }
     }
 
@@ -355,7 +354,7 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
       processorId = replyProcessor.getProcessorId();
       setRecipients(recipients);
       Set failures = originDm.putOutgoing(this);
-      if (failures != null && failures.size() > 0) {
+      if (failures != null && !failures.isEmpty()) {
         for (Object failure : failures) {
           System.err.println("Unable to send serial acked message to " + failure);
         }
@@ -417,9 +416,8 @@ public class ClusterCommunicationsDUnitTest implements java.io.Serializable {
     @Override
     public void registerProcessor() {
       if (replyProcessor != null) {
-        this.processorId = this.replyProcessor.register();
+        processorId = replyProcessor.register();
       }
     }
   }
-
 }
