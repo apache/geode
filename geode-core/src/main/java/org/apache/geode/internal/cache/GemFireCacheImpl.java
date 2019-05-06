@@ -397,6 +397,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
    * outnumber the mutative operations such as add, remove.
    */
   private final List<InternalCacheServer> allCacheServers = new CopyOnWriteArrayList<>();
+  /**
+   * Unmodifiable view of "allCacheServers".
+   */
+  private final List<CacheServer> unmodifiableAllCacheServers =
+      Collections.unmodifiableList(allCacheServers);
 
   /**
    * Controls updates to the list of all gateway senders
@@ -3957,7 +3962,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
   @Override
   public List<CacheServer> getCacheServers() {
-    return Collections.unmodifiableList(allCacheServers);
+    return this.unmodifiableAllCacheServers;
   }
 
   @Override

@@ -554,6 +554,14 @@ public class GemFireCacheImplTest {
     assertThat(value).isFalse();
   }
 
+  @Test
+  public void getCacheServersIsCanonical() {
+    gemFireCacheImpl = createGemFireCacheImpl();
+    List<CacheServer> list1 = gemFireCacheImpl.getCacheServers();
+    List<CacheServer> list2 = gemFireCacheImpl.getCacheServers();
+    assertThat(list1).isSameAs(list2);
+  }
+
   private static GemFireCacheImpl createGemFireCacheImpl() {
     return (GemFireCacheImpl) new InternalCacheBuilder().create(Fakes.distributedSystem());
   }
