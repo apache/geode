@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 
@@ -140,12 +142,12 @@ public class QueryResultFormatterTest {
     checkResult(queryResultFormatter);
   }
 
-  private void checkResult(final QueryResultFormatter queryResultFormatter) throws GfJsonException {
+  private void checkResult(final QueryResultFormatter queryResultFormatter) throws Exception {
     String jsonString = queryResultFormatter.toString();
     System.out.println("queryResultFormatter.toString=" + jsonString);
-    GfJsonObject gfJsonObject = new GfJsonObject(jsonString);
-    System.out.println("gfJsonObject=" + gfJsonObject);
-    assertThat(gfJsonObject.get(RESULT)).isNotNull();
+    JsonNode jsonObject = new ObjectMapper().readTree(jsonString);
+    System.out.println("jsonObject=" + jsonObject);
+    assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 
   private enum Currency {

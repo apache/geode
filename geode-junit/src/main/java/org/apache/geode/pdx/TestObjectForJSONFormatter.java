@@ -14,6 +14,7 @@
  */
 package org.apache.geode.pdx;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayDeque;
@@ -29,10 +30,8 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 enum Day {
   Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday
@@ -99,11 +98,10 @@ public class TestObjectForJSONFormatter implements PdxSerializable {
 
   public TestObjectForJSONFormatter() {}
 
-  public String addClassTypeToJson(String json) throws GfJsonException {
-    GfJsonObject jsonObj = new GfJsonObject(json);
-    ((ObjectNode) jsonObj.getInternalJsonObject()).put("@type",
-        "org.apache.geode.pdx.TestObjectForJSONFormatter");
-    return jsonObj.toString();
+  public String addClassTypeToJson(String json) throws IOException {
+    ObjectNode node = (ObjectNode) new ObjectMapper().readTree(json);
+    node.put("@type", "org.apache.geode.pdx.TestObjectForJSONFormatter");
+    return node.toString();
   }
 
   public void defaultInitialization() {

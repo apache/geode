@@ -47,6 +47,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -85,9 +87,8 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.UnableToControlProcessException;
 import org.apache.geode.lang.AttachAPINotFoundException;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.util.HostUtils;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.PdxSerializer;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -2591,21 +2592,20 @@ public class ServerLauncher extends AbstractLauncher<String> {
      */
     public static ServerState fromJson(final String json) {
       try {
-        final GfJsonObject gfJsonObject = new GfJsonObject(json);
+        final JsonNode jsonObject = new ObjectMapper().readTree(json);
 
-        final Status status = Status.valueOfDescription(gfJsonObject.getString(JSON_STATUS));
-        final List<String> jvmArguments =
-            gfJsonObject.getJSONArray(JSON_JVMARGUMENTS).toStringList();
+        final Status status = Status.valueOfDescription(jsonObject.get(JSON_STATUS).asText());
+        final List<String> jvmArguments = JsonUtil.toStringList(jsonObject.get(JSON_JVMARGUMENTS));
 
-        return new ServerState(status, gfJsonObject.getString(JSON_STATUSMESSAGE),
-            gfJsonObject.getLong(JSON_TIMESTAMP), gfJsonObject.getString(JSON_LOCATION),
-            gfJsonObject.getInt(JSON_PID), gfJsonObject.getLong(JSON_UPTIME),
-            gfJsonObject.getString(JSON_WORKINGDIRECTORY), jvmArguments,
-            gfJsonObject.getString(JSON_CLASSPATH), gfJsonObject.getString(JSON_GEMFIREVERSION),
-            gfJsonObject.getString(JSON_JAVAVERSION), gfJsonObject.getString(JSON_LOGFILE),
-            gfJsonObject.getString(JSON_HOST), gfJsonObject.getString(JSON_PORT),
-            gfJsonObject.getString(JSON_MEMBERNAME));
-      } catch (GfJsonException e) {
+        return new ServerState(status, jsonObject.get(JSON_STATUSMESSAGE).asText(),
+            jsonObject.get(JSON_TIMESTAMP).asLong(), jsonObject.get(JSON_LOCATION).asText(),
+            jsonObject.get(JSON_PID).asInt(), jsonObject.get(JSON_UPTIME).asLong(),
+            jsonObject.get(JSON_WORKINGDIRECTORY).asText(), jvmArguments,
+            jsonObject.get(JSON_CLASSPATH).asText(), jsonObject.get(JSON_GEMFIREVERSION).asText(),
+            jsonObject.get(JSON_JAVAVERSION).asText(), jsonObject.get(JSON_LOGFILE).asText(),
+            jsonObject.get(JSON_HOST).asText(), jsonObject.get(JSON_PORT).asText(),
+            jsonObject.get(JSON_MEMBERNAME).asText());
+      } catch (Exception e) {
         throw new IllegalArgumentException("Unable to create ServerStatus from JSON: " + json, e);
       }
     }

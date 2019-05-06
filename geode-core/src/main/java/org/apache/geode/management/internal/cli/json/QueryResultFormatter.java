@@ -22,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jetty.io.RuntimeIOException;
+
 /**
  * A JSON serializer that has special handling for collections to limit the number of elements
  * written to the document. It also has special handling for PdxInstance and query Structs.
@@ -34,8 +36,8 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
   private final Map<String, List<Object>> map;
 
   /**
-   * Create a formatter that will limit collection sizes to maxCollectionElements
-   * and will limit object traversal to being the same but in depth.
+   * Create a formatter that will limit collection sizes to maxCollectionElements and will limit
+   * object traversal to being the same but in depth.
    *
    * @param maxCollectionElements limit on collection elements and depth-first object traversal
    */
@@ -55,8 +57,8 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
   }
 
   /**
-   * After instantiating a formatter add the objects you want to be formatted
-   * using this method. Typically this will be add("result", queryResult)
+   * After instantiating a formatter add the objects you want to be formatted using this method.
+   * Typically this will be add("result", queryResult)
    */
   public synchronized QueryResultFormatter add(String key, Object value) {
     List<Object> list = this.map.get(key);
@@ -91,16 +93,14 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       writer.write('}');
 
       return writer.toString();
-    } catch (IOException exception) {
-      new GfJsonException(exception).printStackTrace();
-    } catch (GfJsonException e) {
+    } catch (Exception e) {
       e.printStackTrace();
     }
     return null;
   }
 
 
-  private Writer writeList(Writer writer, List<Object> values) throws GfJsonException {
+  private Writer writeList(Writer writer, List<Object> values) {
     // for each object we clear out the serializedObjects recursion map so that
     // we don't immediately see "duplicate" entries
     serializedObjects.clear();
@@ -123,7 +123,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       }
       writer.write(']');
     } catch (IOException e) {
-      throw new GfJsonException(e);
+      throw new RuntimeIOException(e);
     }
     return writer;
   }

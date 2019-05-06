@@ -21,7 +21,6 @@ import static org.junit.Assert.assertTrue;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
@@ -33,7 +32,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.pdx.internal.PdxInstanceImpl;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -58,7 +56,7 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  public void ValidatePdxInstanceToJsonConversion() throws GfJsonException {
+  public void ValidatePdxInstanceToJsonConversion() throws Exception {
     TestObjectForJSONFormatter actualTestObject = new TestObjectForJSONFormatter();
     actualTestObject.defaultInitialization();
 
@@ -78,7 +76,7 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  public void verifyJsonToPdxInstanceConversion() throws JsonProcessingException, GfJsonException {
+  public void verifyJsonToPdxInstanceConversion() throws Exception {
     TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
     expectedTestObject.defaultInitialization();
 
@@ -113,7 +111,7 @@ public class JSONFormatterJUnitTest {
   }
 
   @Test
-  public void verifyJsonToPdxInstanceConversionWithJSONFormatter() throws GfJsonException {
+  public void verifyJsonToPdxInstanceConversionWithJSONFormatter() throws Exception {
     TestObjectForJSONFormatter expectedTestObject = new TestObjectForJSONFormatter();
     expectedTestObject.defaultInitialization();
 

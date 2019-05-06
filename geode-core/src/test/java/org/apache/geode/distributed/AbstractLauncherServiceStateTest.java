@@ -35,6 +35,8 @@ import java.net.InetAddress;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -42,8 +44,7 @@ import org.junit.Test;
 
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.process.ProcessUtils;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
 
 /**
  * Unit tests for {@link AbstractLauncher.ServiceState}. Tests marshalling of ServiceState to and
@@ -801,20 +802,20 @@ public class AbstractLauncherServiceStateTest {
 
       protected static TestState fromJson(final String json) {
         try {
-          GfJsonObject gfJsonObject = new GfJsonObject(json);
+          JsonNode jsonObject = new ObjectMapper().readTree(json);
 
-          Status status = valueOfDescription(gfJsonObject.getString(JSON_STATUS));
-          List<String> jvmArguments = gfJsonObject.getJSONArray(JSON_JVMARGUMENTS).toStringList();
+          Status status = valueOfDescription(jsonObject.get(JSON_STATUS).asText());
+          List<String> jvmArguments = JsonUtil.toStringList(jsonObject.get(JSON_JVMARGUMENTS));
 
-          return new TestState(status, gfJsonObject.getString(JSON_STATUSMESSAGE),
-              gfJsonObject.getLong(JSON_TIMESTAMP), gfJsonObject.getString(JSON_LOCATION),
-              gfJsonObject.getInt(JSON_PID), gfJsonObject.getLong(JSON_UPTIME),
-              gfJsonObject.getString(JSON_WORKINGDIRECTORY), jvmArguments,
-              gfJsonObject.getString(JSON_CLASSPATH), gfJsonObject.getString(JSON_GEMFIREVERSION),
-              gfJsonObject.getString(JSON_JAVAVERSION), gfJsonObject.getString(JSON_LOGFILE),
-              gfJsonObject.getString(JSON_HOST), gfJsonObject.getString(JSON_PORT),
-              gfJsonObject.getString(JSON_MEMBERNAME));
-        } catch (GfJsonException e) {
+          return new TestState(status, jsonObject.get(JSON_STATUSMESSAGE).asText(),
+              jsonObject.get(JSON_TIMESTAMP).asLong(), jsonObject.get(JSON_LOCATION).asText(),
+              jsonObject.get(JSON_PID).asInt(), jsonObject.get(JSON_UPTIME).asLong(),
+              jsonObject.get(JSON_WORKINGDIRECTORY).asText(), jvmArguments,
+              jsonObject.get(JSON_CLASSPATH).asText(), jsonObject.get(JSON_GEMFIREVERSION).asText(),
+              jsonObject.get(JSON_JAVAVERSION).asText(), jsonObject.get(JSON_LOGFILE).asText(),
+              jsonObject.get(JSON_HOST).asText(), jsonObject.get(JSON_PORT).asText(),
+              jsonObject.get(JSON_MEMBERNAME).asText());
+        } catch (Exception e) {
           throw new IllegalArgumentException("Unable to create TestState from JSON: " + json);
         }
       }

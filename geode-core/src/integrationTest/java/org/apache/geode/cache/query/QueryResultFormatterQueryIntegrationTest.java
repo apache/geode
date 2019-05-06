@@ -16,14 +16,16 @@ package org.apache.geode.cache.query;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.query.data.Portfolio;
 import org.apache.geode.cache.query.data.Position;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.management.internal.cli.json.QueryResultFormatter;
 import org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -96,9 +98,9 @@ public class QueryResultFormatterQueryIntegrationTest {
     return portfolios;
   }
 
-  private void checkResult(final QueryResultFormatter queryResultFormatter) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(queryResultFormatter.toString());
-    System.out.println(gfJsonObject);
-    assertThat(gfJsonObject.get(RESULT)).isNotNull();
+  private void checkResult(final QueryResultFormatter queryResultFormatter) throws IOException {
+    JsonNode jsonObject = new ObjectMapper().readTree(queryResultFormatter.toString());
+    System.out.println(jsonObject.toString());
+    assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 }

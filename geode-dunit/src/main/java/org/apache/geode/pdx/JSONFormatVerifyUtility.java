@@ -16,67 +16,64 @@
 package org.apache.geode.pdx;
 
 
-import org.junit.Assert;
+import java.io.IOException;
 
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Assert;
 
 public class JSONFormatVerifyUtility {
   static void verifyJsonWithJavaObject(String json, TestObjectForJSONFormatter testObject)
-      throws GfJsonException {
-    GfJsonObject jsonObject = new GfJsonObject(json);
+      throws IOException {
+    JsonNode jsonObject = new ObjectMapper().readTree(json);
 
     // Testcase-1: Validate json string against the pdxInstance.
     // validation for primitive types
     Assert.assertEquals("VerifyPdxInstanceToJson: Int type values are not matched",
         testObject.getP_int(),
-        jsonObject.getInt(testObject.getP_intFN()));
+        jsonObject.get(testObject.getP_intFN()).asInt());
     Assert.assertEquals("VerifyPdxInstanceToJson: long type values are not matched",
-        testObject.getP_long(), jsonObject.getLong(testObject.getP_longFN()));
+        testObject.getP_long(), jsonObject.get(testObject.getP_longFN()).asLong());
 
     // validation for wrapper types
     Assert.assertEquals("VerifyPdxInstanceToJson: Boolean type values are not matched",
-        testObject.getW_bool().booleanValue(), jsonObject.getBoolean(testObject.getW_boolFN()));
+        testObject.getW_bool().booleanValue(),
+        jsonObject.get(testObject.getW_boolFN()).asBoolean());
     Assert.assertEquals("VerifyPdxInstanceToJson: Float type values are not matched",
-        testObject.getW_double().doubleValue(), jsonObject.getDouble(testObject.getW_doubleFN()),
+        testObject.getW_double().doubleValue(),
+        jsonObject.get(testObject.getW_doubleFN()).asDouble(),
         0);
     Assert.assertEquals("VerifyPdxInstanceToJson: bigDec type values are not matched",
-        testObject.getW_bigDec().longValue(), jsonObject.getLong(testObject.getW_bigDecFN()));
+        testObject.getW_bigDec().longValue(), jsonObject.get(testObject.getW_bigDecFN()).asLong());
 
     // validation for array types
     Assert.assertEquals("VerifyPdxInstanceToJson: Byte[] type values are not matched",
         (int) testObject.getW_byteArray()[1],
-        jsonObject.getJSONArray(testObject.getW_byteArrayFN()).getInternalJsonArray().get(1)
-            .asInt());
+        jsonObject.get(testObject.getW_byteArrayFN()).get(1).asInt());
     Assert.assertEquals("VerifyPdxInstanceToJson: Double[] type values are not matched",
         testObject.getW_doubleArray()[0],
-        jsonObject.getJSONArray(testObject.getW_doubleArrayFN()).getInternalJsonArray().get(0)
-            .asDouble(0),
-        0);
+        jsonObject.get(testObject.getW_doubleArrayFN()).get(0).asDouble(0), 0);
     Assert.assertEquals("VerifyPdxInstanceToJson: String[] type values are not matched",
         testObject.getW_strArray()[2],
-        jsonObject.getJSONArray(testObject.getW_strArrayFN()).getInternalJsonArray().get(2)
-            .textValue());
+        jsonObject.get(testObject.getW_strArrayFN()).get(2).textValue());
 
     // validation for collection types
     Assert.assertEquals("VerifyPdxInstanceToJson: list type values are not matched",
         testObject.getC_list().get(0),
-        jsonObject.getJSONArray(testObject.getC_listFN()).getInternalJsonArray().get(0)
-            .textValue());
+        jsonObject.get(testObject.getC_listFN()).get(0).textValue());
 
     Assert.assertEquals("VerifyPdxInstanceToJson: stack type values are not matched",
         testObject.getC_stack().get(2),
-        jsonObject.getJSONArray(testObject.getC_stackFN()).getInternalJsonArray().get(2)
-            .textValue());
+        jsonObject.get(testObject.getC_stackFN()).get(2).textValue());
 
     // validation for Map
     Assert.assertEquals("VerifyPdxInstanceToJson: Map type values are not matched",
         testObject.getM_empByCity().get("Ahmedabad").get(0).getFname(),
-        jsonObject.getJSONObject(testObject.getM_empByCityFN()).getJSONArray("Ahmedabad")
-            .getJsonObject(0).getString("fname"));
+        jsonObject.get(testObject.getM_empByCityFN()).get("Ahmedabad")
+            .get(0).get("fname").asText());
 
     // validation Enum
     Assert.assertEquals("VerifyPdxInstanceToJson: Enum type values are not matched",
-        testObject.getDay().toString(), jsonObject.getString(testObject.getDayFN()));
+        testObject.getDay().toString(), jsonObject.get(testObject.getDayFN()).asText());
   }
 }
