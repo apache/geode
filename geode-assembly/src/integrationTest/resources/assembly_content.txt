@@ -717,6 +717,7 @@ javadoc/org/apache/geode/management/client/package-summary.html
 javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/RuntimeCacheElement.html
+javadoc/org/apache/geode/management/configuration/RuntimeIndex.html
 javadoc/org/apache/geode/management/configuration/RuntimeRegionConfig.html
 javadoc/org/apache/geode/management/configuration/package-frame.html
 javadoc/org/apache/geode/management/configuration/package-summary.html

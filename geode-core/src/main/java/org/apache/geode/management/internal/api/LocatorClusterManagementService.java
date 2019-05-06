@@ -226,7 +226,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementResult list = list(config);
     List<RuntimeCacheElement> result = list.getResult(RuntimeCacheElement.class);
     if (result.size() == 0) {
-      throw new EntityNotFoundException("id = " + config.getId() + " not found.");
+      throw new EntityNotFoundException("Entity with id = " + config.getId() + " not found.");
     }
 
     if (result.size() > 1) {
