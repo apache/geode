@@ -133,6 +133,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
 
@@ -178,6 +179,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
     Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
@@ -209,6 +211,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
     Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
