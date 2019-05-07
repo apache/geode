@@ -16,13 +16,12 @@ package org.apache.geode.management.internal.cli.json;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.eclipse.jetty.io.RuntimeIOException;
 
 /**
  * A JSON serializer that has special handling for collections to limit the number of elements
@@ -123,7 +122,7 @@ public class QueryResultFormatter extends AbstractJSONFormatter {
       }
       writer.write(']');
     } catch (IOException e) {
-      throw new RuntimeIOException(e);
+      throw new UncheckedIOException(e);
     }
     return writer;
   }
