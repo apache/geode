@@ -36,7 +36,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
@@ -70,6 +69,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .param("id", "locator-0"))
         .andDo(print())
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.result[*].id", contains("locator-0")))
         .andExpect(jsonPath("$.result[0].port", greaterThan(0)))
@@ -84,6 +84,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .param("id", "server-1"))
         .andDo(print())
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.result[*].id", contains("server-1")))
         .andExpect(jsonPath("$.result[0].port").doesNotExist())
@@ -98,6 +99,7 @@ public class MemberManagementServiceRestIntegrationTest {
     webContext.perform(get("/v2/members"))
         .andDo(print())
         .andExpect(status().isOk())
+        .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.result[*].id", containsInAnyOrder("locator-0", "server-1")));
   }

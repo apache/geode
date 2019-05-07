@@ -99,7 +99,7 @@ public class MemberManagementServiceDUnitTest {
             .as("server should have one cache server").isEqualTo(1);
         assertThat(oneMember.getCacheServers().get(0).getPort()).isGreaterThan(0);
         assertThat(oneMember.getCacheServers().get(0).getMaxConnections()).isGreaterThan(0);
-        assertThat(oneMember.getCacheServers().get(0).getMaxThreads()).isGreaterThan(0);
+        assertThat(oneMember.getCacheServers().get(0).getMaxThreads()).isEqualTo(0);
       }
     }
   }
