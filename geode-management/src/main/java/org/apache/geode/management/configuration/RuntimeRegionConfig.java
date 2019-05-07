@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
@@ -47,7 +49,7 @@ public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheEle
 
   public List<RuntimeIndex> getRuntimeIndexes(String indexId) {
     Stream<Index> stream = getIndexes().stream();
-    if (indexId != null) {
+    if (StringUtils.isNotBlank(indexId)) {
       stream = stream.filter(i -> i.getId().equals(indexId));
     }
     return stream

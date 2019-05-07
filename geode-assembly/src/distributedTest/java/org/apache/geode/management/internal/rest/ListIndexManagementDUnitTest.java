@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -69,6 +70,9 @@ public class ListIndexManagementDUnitTest {
     gfsh.executeAndAssertThat(
         "create index --name=index1 --type=key --expression=id --region=/region1")
         .statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create index --name=index2 --type=key --expression=key --region=/region1")
+        .statusIsSuccess();
   }
 
   @Before
@@ -90,13 +94,7 @@ public class ListIndexManagementDUnitTest {
     assertThat(regions).hasSize(1);
     RuntimeRegionConfig region = regions.get(0);
     List<RegionConfig.Index> indexes = region.getIndexes();
-    assertThat(indexes).hasSize(1);
-    RegionConfig.Index index = indexes.get(0);
-    assertThat(index.getId()).isEqualTo("index1");
-    assertThat(index.getName()).isEqualTo("index1");
-    assertThat(index.getExpression()).isEqualTo("id");
-    assertThat(index.getFromClause()).isEqualTo("/region1");
-    assertThat(index.isKeyIndex()).isEqualTo(true);
+    assertThat(indexes).hasSize(2);
   }
 
   @Test
@@ -108,8 +106,49 @@ public class ListIndexManagementDUnitTest {
 
   @Test
   public void listIndexForOneRegion() throws Exception {
-    RuntimeIndex index = new RuntimeIndex();
+    RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
+    ClusterManagementResult list = cms.list(index);
+    List<RuntimeIndex> result = list.getResult(RuntimeIndex.class);
+    assertThat(result).hasSize(2);
+  }
+
+  @Test
+  public void getIndex() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setRegionName("region1");
+    index.setName("index1");
+    ClusterManagementResult list = cms.get(index);
+    List<RuntimeIndex> result = list.getResult(RuntimeIndex.class);
+    assertThat(result).hasSize(1);
+    RuntimeIndex runtimeIndex = result.get(0);
+    assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
+    assertThat(runtimeIndex.getName()).isEqualTo("index1");
+    assertThat(runtimeIndex.getFromClause()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getExpression()).isEqualTo("id");
+  }
+
+  @Test
+  public void getIndexWithoutIndexId() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setRegionName("region1");
+    assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("Id is required");
+  }
+
+  @Test
+  public void getIndexWithoutRegionName() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setName("index1");
+    assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("regionName is required");
+  }
+
+  @Test
+  public void listIndexesWithIdFilter() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setRegionName("region1");
+    index.setName("index1");
     ClusterManagementResult list = cms.list(index);
     List<RuntimeIndex> result = list.getResult(RuntimeIndex.class);
     assertThat(result).hasSize(1);
@@ -118,6 +157,25 @@ public class ListIndexManagementDUnitTest {
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
     assertThat(runtimeIndex.getFromClause()).isEqualTo("/region1");
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
+  }
 
+  @Test
+  public void getNonExistingIndex() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setRegionName("region1");
+    index.setName("index333");
+    assertManagementResult(cms.get(index)).failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+  }
+
+  @Test
+  public void listNonExistingIndexesWithIdFilter() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setRegionName("region1");
+    index.setName("index333");
+    ClusterManagementResult list = cms.list(index);
+    List<RuntimeIndex> result = list.getResult(RuntimeIndex.class);
+    assertThat(result).hasSize(0);
+    assertThat(list.isSuccessful()).isTrue();
   }
 }

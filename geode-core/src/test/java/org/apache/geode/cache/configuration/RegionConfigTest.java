@@ -145,4 +145,35 @@ public class RegionConfigTest {
     System.out.println(newXml);
     assertThat(newXml).doesNotContain("type=");
   }
+
+  @Test
+  public void invalidRegionName() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setExpression("id");
+    index.setName("index1");
+    index.setFromClause("/regionA");
+
+    assertThatThrownBy(() -> index.setRegionName("regionB"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void fromClauseInferredByRegionName() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setExpression("id");
+    index.setName("index1");
+    index.setRegionName("regionA");
+
+    assertThat(index.getFromClause()).isEqualTo("/regionA");
+
+    CacheConfig cacheConfig = new CacheConfig();
+    regionConfig.getIndexes().clear();
+    regionConfig.getIndexes().add(index);
+    cacheConfig.getRegions().add(regionConfig);
+
+    // the end xml should not have "type" attribute in index definition
+    String newXml = service.marshall(cacheConfig);
+    System.out.println(newXml);
+    assertThat(newXml).contains("from-clause=");
+  }
 }

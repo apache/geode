@@ -18,6 +18,7 @@ package org.apache.geode.management.internal;
 
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
@@ -82,6 +83,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult get(CacheElement config) {
+    if (StringUtils.isBlank(config.getId())) {
+      throw new IllegalArgumentException("Id is required.");
+    }
     String endPoint = getEndpoint(config);
     return serviceConfig.getRestTemplate()
         .getForEntity(VERSION + endPoint + "/{id}", ClusterManagementResult.class, config.getId())
@@ -98,7 +102,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
           String.format("The config type %s does not have a RESTful endpoint defined",
               config.getClass().getName()));
     }
-
     return ((RestfulEndpoint) config).getEndpoint();
   }
 

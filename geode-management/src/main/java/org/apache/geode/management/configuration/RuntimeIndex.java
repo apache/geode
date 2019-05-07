@@ -18,20 +18,8 @@ package org.apache.geode.management.configuration;
 import java.util.List;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.api.RestfulEndpoint;
 
-public class RuntimeIndex extends RegionConfig.Index implements RuntimeCacheElement,
-    RestfulEndpoint {
-  private String regionName;
-
-  public String getRegionName() {
-    return regionName;
-  }
-
-  public void setRegionName(String regionName) {
-    this.regionName = regionName;
-  }
-
+public class RuntimeIndex extends RegionConfig.Index implements RuntimeCacheElement {
   @Override
   public List<String> getGroups() {
     return groups;
@@ -41,10 +29,5 @@ public class RuntimeIndex extends RegionConfig.Index implements RuntimeCacheElem
 
   public RuntimeIndex(RegionConfig.Index index) {
     super(index);
-  }
-
-  @Override
-  public String getEndpoint() {
-    return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
   }
 }

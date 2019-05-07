@@ -89,33 +89,34 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
-  @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}/indexes")
+  @RequestMapping(method = RequestMethod.GET,
+      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
   public ClusterManagementResult listIndex(
-      @PathVariable(name = "id") String regionName,
-      @RequestParam(required = false) String indexId) {
+      @PathVariable String regionName,
+      @RequestParam(required = false) String id) {
 
     ClusterManagementResult result = getRegion(regionName);
     RuntimeRegionConfig runtimeRegion = result.getResult(RuntimeRegionConfig.class).get(0);
 
     // only send the index information back
-    List<RuntimeIndex> runtimeIndexes = runtimeRegion.getRuntimeIndexes(indexId);
+    List<RuntimeIndex> runtimeIndexes = runtimeRegion.getRuntimeIndexes(id);
     result.setResult(runtimeIndexes);
 
     return result;
   }
 
   @RequestMapping(method = RequestMethod.GET,
-      value = REGION_CONFIG_ENDPOINT + "/{id}/indexes/{indexId}")
+      value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   public ClusterManagementResult getIndex(
-      @PathVariable(name = "id") String regionName,
-      @PathVariable(name = "indexId") String indexName) {
-    ClusterManagementResult result = listIndex(regionName, indexName);
+      @PathVariable String regionName,
+      @PathVariable String id) {
+    ClusterManagementResult result = listIndex(regionName, id);
     List<RuntimeIndex> indexList = result.getResult(RuntimeIndex.class);
 
     if (indexList.size() == 0) {
-      throw new EntityNotFoundException("Index " + indexName + " not found.");
+      throw new EntityNotFoundException("Index " + id + " not found.");
     }
 
     if (indexList.size() > 1) {

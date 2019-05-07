@@ -28,9 +28,11 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -658,7 +660,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Index extends CacheElement {
+  public static class Index extends CacheElement implements RestfulEndpoint {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")
@@ -671,6 +673,8 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     protected Boolean keyIndex;
     @XmlAttribute(name = "type")
     protected String type; // for non-key index type, range or hash
+    @XmlTransient
+    protected String regionName;
 
     public Index() {}
 
@@ -839,10 +843,32 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
       }
     }
 
+    public String getRegionName() {
+      return regionName;
+    }
+
+    public void setRegionName(String regionName) {
+      this.regionName = regionName;
+      if (fromClause == null) {
+        fromClause = "/" + regionName;
+      } else if (!fromClause.contains(regionName)) {
+        throw new IllegalArgumentException(
+            "Invalid regionName for this index with fromClause = " + fromClause);
+      }
+    }
+
     @Override
     @JsonIgnore
     public String getId() {
       return getName();
+    }
+
+    @Override
+    public String getEndpoint() {
+      if (StringUtils.isBlank(regionName)) {
+        throw new IllegalArgumentException("regionName is required.");
+      }
+      return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
     }
   }
 
