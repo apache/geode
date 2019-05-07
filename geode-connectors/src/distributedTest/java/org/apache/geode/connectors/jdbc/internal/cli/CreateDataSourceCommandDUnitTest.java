@@ -18,6 +18,7 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 import java.io.File;
+import java.sql.DriverManager;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
@@ -84,13 +85,12 @@ public class CreateDataSourceCommandDUnitTest {
             + URL + "\"")
         .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
 
-    // gfsh.executeAndAssertThat("undeploy --jar=" + jdbcJarName).statusIsSuccess();
+    gfsh.executeAndAssertThat("undeploy --jar=" + jdbcJarName).statusIsSuccess();
 
-    // gfsh.executeAndAssertThat(
-    // "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass
-    // --pooled=false --url=\""
-    // + URL + "\"")
-    // .statusIsError().containsOutput("No suitable driver");
+    gfsh.executeAndAssertThat(
+     "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+     + URL + "\"")
+     .statusIsError().containsOutput("No suitable driver");
   }
 
   private File loadTestResource(String fileName) {
