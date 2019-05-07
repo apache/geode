@@ -125,6 +125,6 @@ public class MemberManagementServiceDUnitTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", is("ENTITY_NOT_FOUND")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Entity with id = server not found.")));
+            is("MemberConfig with id = server not found.")));
   }
 }
