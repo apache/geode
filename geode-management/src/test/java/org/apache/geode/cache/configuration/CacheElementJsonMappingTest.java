@@ -40,7 +40,7 @@ public class CacheElementJsonMappingTest {
   public static void beforeClass() throws Exception {
     member = new MemberConfig();
     member.setId("server");
-    member.setPid("123");
+    member.setPid(123);
 
     region = new RuntimeRegionConfig();
     region.setName("test");

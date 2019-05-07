@@ -16,6 +16,8 @@ package org.apache.geode.management.internal.cli.domain;
 
 import java.io.Serializable;
 
+import org.apache.geode.cache.server.CacheServer;
+
 public class CacheServerInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;
@@ -23,35 +25,35 @@ public class CacheServerInfo implements Serializable {
   private String bindAddress;
   private int port;
   private boolean isRunning;
+  private int maxConnections;
+  private int maxThreads;
 
-  public CacheServerInfo(String bindAddress, int port, boolean isRunning) {
-    this.setBindAddress(bindAddress);
-    this.setPort(port);
-    this.setRunning(isRunning);
+  public CacheServerInfo(CacheServer cacheServer) {
+    bindAddress = cacheServer.getBindAddress();
+    port = cacheServer.getPort();
+    isRunning = cacheServer.isRunning();
+    maxConnections = cacheServer.getMaxConnections();
+    maxThreads = cacheServer.getMaxThreads();
   }
 
   public String getBindAddress() {
     return bindAddress;
   }
 
-  public void setBindAddress(String bindAddress) {
-    this.bindAddress = bindAddress;
-  }
-
   public int getPort() {
     return port;
   }
 
-  public void setPort(int port) {
-    this.port = port;
+  public int getMaxThreads() {
+    return maxThreads;
+  }
+
+  public int getMaxConnections() {
+    return maxConnections;
   }
 
   public boolean isRunning() {
     return isRunning;
-  }
-
-  public void setRunning(boolean isRunning) {
-    this.isRunning = isRunning;
   }
 
   public String toString() {

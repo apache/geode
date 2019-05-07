@@ -15,15 +15,17 @@
 
 package org.apache.geode.management.configuration;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement
-    implements RuntimeCacheElement, RestfulEndpoint {
+public class MemberConfig extends CacheElement implements RuntimeCacheElement, RestfulEndpoint {
 
   private static final long serialVersionUID = -6262538068604902018L;
 
@@ -33,12 +35,48 @@ public class MemberConfig extends CacheElement
   private boolean isCoordinator;
   private String id;
   private String host;
-  private String pid;
-  private List<Integer> ports;
+  private String status;
+  private int pid;
+  // Only relevant for locators - will be suppressed if null
+  private Integer port;
+  // Only relevant for servers - will be suppressed if empty
+  private List<CacheServerConfig> cacheServers = new ArrayList<>();
+  private long maxHeap;
+  private long initialHeap;
 
-  public MemberConfig() {
+  public static class CacheServerConfig {
+    private int port;
+    private int maxConnections;
+    private int maxThreads;
 
+    public CacheServerConfig() {}
+
+    public int getPort() {
+      return port;
+    }
+
+    public void setPort(int port) {
+      this.port = port;
+    }
+
+    public int getMaxConnections() {
+      return maxConnections;
+    }
+
+    public void setMaxConnections(int maxConnections) {
+      this.maxConnections = maxConnections;
+    }
+
+    public int getMaxThreads() {
+      return maxThreads;
+    }
+
+    public void setMaxThreads(int maxThreads) {
+      this.maxThreads = maxThreads;
+    }
   }
+
+  public MemberConfig() {}
 
   public void setId(String id) {
     this.id = id;
@@ -68,20 +106,38 @@ public class MemberConfig extends CacheElement
     this.host = host;
   }
 
-  public String getPid() {
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public int getPid() {
     return pid;
   }
 
-  public void setPid(String pid) {
+  public void setPid(int pid) {
     this.pid = pid;
   }
 
-  public List<Integer> getPorts() {
-    return ports;
+  @JsonInclude(value = JsonInclude.Include.NON_NULL)
+  public Integer getPort() {
+    return port;
   }
 
-  public void setPorts(List<Integer> port) {
-    this.ports = port;
+  public void setPort(Integer port) {
+    this.port = port;
+  }
+
+  @JsonInclude(value = JsonInclude.Include.NON_EMPTY)
+  public List<CacheServerConfig> getCacheServers() {
+    return cacheServers;
+  }
+
+  public void addCacheServer(CacheServerConfig cacheServer) {
+    cacheServers.add(cacheServer);
   }
 
   @Override
@@ -96,5 +152,21 @@ public class MemberConfig extends CacheElement
 
   public List<String> getGroups() {
     return groups;
+  }
+
+  public long getMaxHeap() {
+    return maxHeap;
+  }
+
+  public void setMaxHeap(long maxHeap) {
+    this.maxHeap = maxHeap;
+  }
+
+  public long getInitialHeap() {
+    return initialHeap;
+  }
+
+  public void setInitialHeap(long initialHeap) {
+    this.initialHeap = initialHeap;
   }
 }

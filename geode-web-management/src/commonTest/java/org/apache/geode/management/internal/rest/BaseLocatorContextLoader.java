@@ -20,7 +20,6 @@ import org.springframework.test.context.web.WebMergedContextConfiguration;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
 import org.apache.geode.internal.cache.HttpService;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 /**
  * This is quite horrible. In particular we're trying to link the lifecycle of the
@@ -30,19 +29,19 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
  */
 public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoader {
 
-  public abstract LocatorStarterRule getLocator();
+  public abstract GeodeComponent getLocator();
 
   @Override
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
       WebMergedContextConfiguration webMergedConfig) {
 
-    getLocator().before();
+    getLocator().start();
 
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        getLocator().getCache().getSecurityService());
+        getLocator().getSecurityService());
     context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        getLocator().getLocator().getClusterManagementService());
+        getLocator().getClusterManagementService());
     context.getServletContext().setAttribute("locator", getLocator());
   }
 }

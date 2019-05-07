@@ -26,7 +26,6 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 /**
  * use in conjunction with any BaseLocatorContextLoader to ease the interaction with the locator
@@ -53,8 +52,8 @@ public class LocatorWebContext {
     requestFactory = new MockMvcClientHttpRequestFactory(mockMvc);
   }
 
-  public LocatorStarterRule getLocator() {
-    return (LocatorStarterRule) webApplicationContext.getServletContext().getAttribute("locator");
+  public GeodeComponent getLocator() {
+    return (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
   }
 
   public MockMvcClientHttpRequestFactory getRequestFactory() {

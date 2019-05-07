@@ -15,25 +15,39 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
+public class WrappedLocatorStarterRule implements GeodeComponent {
+  private final LocatorStarterRule rule;
 
-@Component
-public class LocatorCleanupEventListener {
+  public WrappedLocatorStarterRule(LocatorStarterRule rule) {
+    this.rule = rule;
+  }
 
-  @Autowired
-  private WebApplicationContext webApplicationContext;
+  @Override
+  public void start() {
+    rule.before();
+  }
 
-  @EventListener
-  public void handleContextCloseEvent(ContextClosedEvent closedEvent) {
-    GeodeComponent locator =
-        (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
-    if (locator != null) {
-      locator.stop();
-    }
+  @Override
+  public void stop() {
+    rule.after();
+  }
+
+  @Override
+  public int getPort() {
+    return rule.getPort();
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return rule.getLocator().getCache().getSecurityService();
+  }
+
+  @Override
+  public ClusterManagementService getClusterManagementService() {
+    return rule.getLocator().getClusterManagementService();
   }
 }

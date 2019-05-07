@@ -20,16 +20,16 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
 
-  private final LocatorStarterRule locator;
+  private final GeodeComponent locator;
 
   public LocatorWithSecurityManagerContextLoader() {
-    locator = new LocatorStarterRule()
+    locator = new WrappedLocatorStarterRule(new LocatorStarterRule()
         .withSecurityManager(SimpleSecurityManager.class)
-        .withAutoStart();
+        .withAutoStart());
   }
 
   @Override
-  public LocatorStarterRule getLocator() {
+  public GeodeComponent getLocator() {
     return locator;
   }
 

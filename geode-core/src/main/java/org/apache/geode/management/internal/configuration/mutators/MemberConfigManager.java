@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -82,19 +81,26 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
     ArrayList<MemberInformation> output = (ArrayList<MemberInformation>) rc.getResult();
 
-
     for (MemberInformation mInfo : output) {
       MemberConfig member = new MemberConfig();
       member.setId(mInfo.getName());
       member.setHost(mInfo.getHost());
       member.setPid(mInfo.getProcessId());
+      member.setStatus(mInfo.getStatus());
+      member.setInitialHeap(mInfo.getInitHeapSize());
+      member.setMaxHeap(mInfo.getMaxHeapSize());
 
       if (mInfo.isServer() && mInfo.getCacheServeInfo() != null) {
-        member.setPorts(mInfo.getCacheServeInfo().stream().map(CacheServerInfo::getPort)
-            .collect(Collectors.toList()));
+        for (CacheServerInfo info : mInfo.getCacheServeInfo()) {
+          MemberConfig.CacheServerConfig csConfig = new MemberConfig.CacheServerConfig();
+          csConfig.setPort(info.getPort());
+          csConfig.setMaxConnections(info.getMaxConnections());
+          csConfig.setMaxThreads(info.getMaxThreads());
+          member.addCacheServer(csConfig);
+        }
         member.setLocator(false);
       } else {
-        member.setPorts(Arrays.asList(mInfo.getLocatorPort()));
+        member.setPort(mInfo.getLocatorPort());
         member.setLocator(true);
       }
 

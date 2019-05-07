@@ -35,12 +35,13 @@ public class MemberInformation implements Serializable {
   private String statArchiveFilePath;
   private String serverBindAddress;
   private String locators;
-  private String heapUsage;
-  private String maxHeapSize;
-  private String initHeapSize;
+  private String status;
+  private long heapUsage;
+  private long maxHeapSize;
+  private long initHeapSize;
   private String cacheXmlFilePath;
   private String host;
-  private String processId;
+  private int processId;
   private int locatorPort;
   private int httpServicePort;
   private String httpServiceBindAddress;
@@ -133,19 +134,27 @@ public class MemberInformation implements Serializable {
     this.locators = locators;
   }
 
-  public String getHeapUsage() {
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public long getHeapUsage() {
     return heapUsage;
   }
 
-  public void setHeapUsage(String heapUsage) {
+  public void setHeapUsage(long heapUsage) {
     this.heapUsage = heapUsage;
   }
 
-  public String getMaxHeapSize() {
+  public long getMaxHeapSize() {
     return maxHeapSize;
   }
 
-  public void setMaxHeapSize(String maxHeapSize) {
+  public void setMaxHeapSize(long maxHeapSize) {
     this.maxHeapSize = maxHeapSize;
   }
 
@@ -157,11 +166,11 @@ public class MemberInformation implements Serializable {
     this.cacheXmlFilePath = cacheXmlFilePath;
   }
 
-  public String getInitHeapSize() {
+  public long getInitHeapSize() {
     return initHeapSize;
   }
 
-  public void setInitHeapSize(String initHeapSize) {
+  public void setInitHeapSize(long initHeapSize) {
     this.initHeapSize = initHeapSize;
   }
 
@@ -173,11 +182,11 @@ public class MemberInformation implements Serializable {
     this.host = host;
   }
 
-  public String getProcessId() {
+  public int getProcessId() {
     return processId;
   }
 
-  public void setProcessId(String processId) {
+  public void setProcessId(int processId) {
     this.processId = processId;
   }
 
