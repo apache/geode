@@ -18,6 +18,7 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import org.junit.Before;
@@ -95,7 +96,7 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   }
 
   @Test
-  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() throws URISyntaxException {
     String URL = "jdbc:mysql://localhost/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
