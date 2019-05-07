@@ -153,7 +153,7 @@ public class CacheElementJsonMappingTest {
   @Test
   public void serializeRuntimeRegionConfigWithIndex() throws Exception {
     RegionConfig config = new RegionConfig();
-    config.setName("test");
+    config.setName("region1");
     config.setType(RegionType.REPLICATE);
     config.setGroup("group1");
     RegionConfig.Index index = new RegionConfig.Index();
@@ -169,7 +169,7 @@ public class CacheElementJsonMappingTest {
     assertThat(runtimeConfig.getGroups()).containsExactly("group1");
     List<RuntimeIndex> runtimeIndexes = runtimeConfig.getRuntimeIndexes(null);
     assertThat(runtimeIndexes).hasSize(1);
-    assertThat(runtimeIndexes.get(0).getRegionName()).isEqualTo("test");
+    assertThat(runtimeIndexes.get(0).getRegionName()).isEqualTo("region1");
   }
 
   @Test
