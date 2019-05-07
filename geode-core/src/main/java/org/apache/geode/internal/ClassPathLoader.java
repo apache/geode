@@ -85,6 +85,10 @@ public class ClassPathLoader {
     this.classLoaderForDeployedJars = new URLClassLoader(jarDeployer.getDeployedJarURLs(), parent);
   }
 
+  public URLClassLoader getClassLoaderForDeployedJars() {
+    return this.classLoaderForDeployedJars;
+  }
+
   public ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
     this.jarDeployer = new JarDeployer();

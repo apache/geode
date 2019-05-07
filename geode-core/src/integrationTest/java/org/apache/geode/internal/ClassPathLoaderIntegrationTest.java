@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Vector;
 
@@ -185,6 +186,29 @@ public class ClassPathLoaderIntegrationTest {
     assertThat(newJarClassLoader).isNull();
     assertThat(deployedJar).exists();
 
+  }
+
+  @Test
+  public void testDeployNoUpdateClassLoaderWhenNoChange()
+      throws IOException, ClassNotFoundException {
+    String jarName = "JarDeployerIntegrationTest.jar";
+
+    // First deploy of the JAR file
+    byte[] jarBytes = new ClassBuilder().createJarFromName("JarDeployerDUnitDNUWNC");
+    File jarFile = temporaryFolder.newFile();
+    writeJarBytesToFile(jarFile, jarBytes);
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
+    URLClassLoader jarClassLoader = ClassPathLoader.getLatest().getClassLoaderForDeployedJars();
+
+    assertThat(jarClassLoader).isNotNull();
+
+    // Re-deploy of the same JAR should do nothing
+    ClassPathLoader.getLatest().getJarDeployer().deploy(jarName, jarFile);
+    URLClassLoader newJarClassLoader = ClassPathLoader.getLatest().getClassLoaderForDeployedJars();
+
+    assertThat(newJarClassLoader).isNotNull();
+    assertThat(jarClassLoader).isEqualTo(newJarClassLoader);
   }
 
   private void assertThatClassCanBeLoaded(String className) throws ClassNotFoundException {

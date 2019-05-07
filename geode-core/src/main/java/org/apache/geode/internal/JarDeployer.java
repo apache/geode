@@ -357,15 +357,19 @@ public class JarDeployer implements Serializable {
     try {
       Map<DeployedJar, DeployedJar> newVersionToOldVersion = new HashMap<>();
 
+      boolean anyJarToDeploy = false;
       for (DeployedJar deployedJar : deployedJars) {
         if (deployedJar != null) {
+          anyJarToDeploy = true;
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
           newVersionToOldVersion.put(deployedJar, oldJar);
         }
       }
 
-      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+      if (anyJarToDeploy) {
+        ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+      }
 
       // Finally, unregister functions that were removed
       for (Map.Entry<DeployedJar, DeployedJar> entry : newVersionToOldVersion.entrySet()) {
