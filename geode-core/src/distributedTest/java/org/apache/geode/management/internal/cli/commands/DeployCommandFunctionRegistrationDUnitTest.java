@@ -102,12 +102,6 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     IgnoredException.addIgnoredException(
         "java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Driver");
     IgnoredException.addIgnoredException(
-        "Access denied for user 'mysqlUser'@'localhost'");
-    IgnoredException.addIgnoredException(
-        "Failed to connect to \"mysqlDataSource\". See log for details");
-    IgnoredException.addIgnoredException(
-        "create jndi-binding failed");
-    IgnoredException.addIgnoredException(
         "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
 
     // create the data-source
