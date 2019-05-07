@@ -14,10 +14,17 @@
  */
 package org.apache.geode.pdx;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -28,10 +35,14 @@ import org.apache.geode.test.junit.categories.RestAPITest;
  * examples.
  */
 @Category({RestAPITest.class})
+@RunWith(JUnitParamsRunner.class)
 public class JSONFormatterBasicJUnitTest {
   // This is needed because the JsonFormatter needs to access the PDX region, which requires a
   // running Cache.
   private static Cache cache;
+
+  @Rule
+  public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -99,7 +110,44 @@ public class JSONFormatterBasicJUnitTest {
   }
 
   @Test
-  public void simpleObjectParses() {
-    JSONFormatter.fromJSON("{\"a\": 2}");
+  @Parameters({"true", "false"})
+  public void simpleObjectAsStringParsesWithIdentityField(String usePdxInstanceSortedHelper) {
+    System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, usePdxInstanceSortedHelper);
+    String identityField = "a";
+    String nonIdentityField = "b";
+    String nonExistentField = "c";
+    String jsonObjectString = "{\"a\":2,\"b\":3}";
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString, identityField);
+    String deserializedJsonObjectString = JSONFormatter.toJSON(pdxInstance);
+
+    assertThat(pdxInstance.isIdentityField(identityField)).isTrue();
+    assertThat(pdxInstance.isIdentityField(nonIdentityField)).isFalse();
+    assertThat(pdxInstance.isIdentityField(nonExistentField)).isFalse();
+    assertThat(pdxInstance.hasField(identityField)).isTrue();
+    assertThat(pdxInstance.hasField(nonIdentityField)).isTrue();
+    assertThat(pdxInstance.hasField(nonExistentField)).isFalse();
+    assertThat(deserializedJsonObjectString).isEqualTo(jsonObjectString);
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void simpleObjectAsBytesParsesWithIdentityField(String usePdxInstanceSortedHelper) {
+    System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, usePdxInstanceSortedHelper);
+    String identityField = "a";
+    String nonIdentityField = "b";
+    String nonExistentField = "c";
+    String jsonObjectString = "{\"a\":2,\"b\":3}";
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString.getBytes(), identityField);
+    byte[] deserializedJsonObjectString = JSONFormatter.toJSONByteArray(pdxInstance);
+
+    assertThat(pdxInstance.isIdentityField(identityField)).isTrue();
+    assertThat(pdxInstance.isIdentityField(nonIdentityField)).isFalse();
+    assertThat(pdxInstance.isIdentityField(nonExistentField)).isFalse();
+    assertThat(pdxInstance.hasField(identityField)).isTrue();
+    assertThat(pdxInstance.hasField(nonIdentityField)).isTrue();
+    assertThat(pdxInstance.hasField(nonExistentField)).isFalse();
+    assertThat(deserializedJsonObjectString).isEqualTo(jsonObjectString.getBytes());
   }
 }
