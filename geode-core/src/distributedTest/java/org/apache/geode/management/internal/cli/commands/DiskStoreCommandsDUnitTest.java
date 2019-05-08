@@ -76,9 +76,17 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   public transient TemporaryFolder tempDir = new TemporaryFolder();
 
   private void createDiskStoreAndRegion(MemberVM jmxManager, int serverCount) {
+    createDiskStore(jmxManager, serverCount);
+
+    gfsh.executeAndAssertThat(String.format(
+        "create region --name=%s --type=REPLICATE_PERSISTENT --disk-store=%s --group=%s --eviction-action=overflow-to-disk",
+        REGION_1, DISKSTORE, GROUP)).statusIsSuccess();
+  }
+
+  private void createDiskStore(MemberVM jmxManager, int serverCount) {
     gfsh.executeAndAssertThat(String.format(
         "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
-        DISKSTORE, DISKSTORE, GROUP));
+        DISKSTORE, DISKSTORE, GROUP)).statusIsSuccess();
 
     List<String> diskStores =
         IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).collect(Collectors.toList());
@@ -86,10 +94,6 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         .tableHasColumnWithValuesContaining("Disk Store Name", diskStores.toArray(new String[0]));
 
     jmxManager.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, serverCount);
-
-    gfsh.executeAndAssertThat(String.format(
-        "create region --name=%s --type=REPLICATE_PERSISTENT --disk-store=%s --group=%s --eviction-action=overflow-to-disk",
-        REGION_1, DISKSTORE, GROUP)).statusIsSuccess();
   }
 
   private static SerializableRunnableIF dataProducer() {
@@ -99,6 +103,25 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
       Region<String, String> r = cache.getRegion(REGION_1);
       r.put("A", "B");
     };
+  }
+
+  @Test
+  public void createDuplicateDiskStoreFails() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+
+    createDiskStore(locator, 1);
+
+    gfsh.executeAndAssertThat(String.format(
+        "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
+        DISKSTORE, DISKSTORE, GROUP))
+        .statusIsError()
+        .containsOutput("Error: Disk store DISKSTORE already exists");
   }
 
   @Test

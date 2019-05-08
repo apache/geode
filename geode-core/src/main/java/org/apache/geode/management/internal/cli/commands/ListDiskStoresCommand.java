@@ -23,6 +23,7 @@ import java.util.Set;
 import org.springframework.shell.core.annotation.CliCommand;
 
 import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
@@ -54,8 +55,8 @@ public class ListDiskStoresCommand extends GfshCommand {
   }
 
   @SuppressWarnings("unchecked")
-  List<DiskStoreDetails> getDiskStoreListing(Set<DistributedMember> members) {
-    final Execution membersFunctionExecutor = getMembersFunctionExecutor(members);
+  static List<DiskStoreDetails> getDiskStoreListing(Set<DistributedMember> members) {
+    final Execution membersFunctionExecutor = FunctionService.onMembers(members);
     if (membersFunctionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) membersFunctionExecutor).setIgnoreDepartedMembers(true);
     }

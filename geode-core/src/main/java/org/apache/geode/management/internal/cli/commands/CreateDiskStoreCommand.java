@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -31,6 +32,7 @@ import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.domain.DiskStoreDetails;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -113,6 +115,12 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    Pair<Boolean, String> validationResult =
+        validateDiskstoreAttributes(diskStoreAttributes, targetMembers);
+    if (validationResult.getLeft().equals(Boolean.FALSE)) {
+      return ResultModel.createError(validationResult.getRight());
+    }
+
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new CreateDiskStoreFunction(), new Object[] {name, diskStoreAttributes}, targetMembers);
 
@@ -120,6 +128,22 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     result.setConfigObject(createDiskStoreType(name, diskStoreAttributes));
 
     return result;
+  }
+
+  private Pair<Boolean, String> validateDiskstoreAttributes(
+      DiskStoreAttributes diskStoreAttributes,
+      Set<DistributedMember> targetMembers) {
+    List<DiskStoreDetails> currentDiskstores =
+        ListDiskStoresCommand.getDiskStoreListing(targetMembers);
+
+    for (DiskStoreDetails detail : currentDiskstores) {
+      if (detail.getName().equals(diskStoreAttributes.getName())) {
+        return Pair.of(Boolean.FALSE,
+            String.format("Error: Disk store %s already exists", diskStoreAttributes.getName()));
+      }
+    }
+
+    return Pair.of(Boolean.TRUE, null);
   }
 
   private DiskStoreType createDiskStoreType(String name, DiskStoreAttributes diskStoreAttributes) {
