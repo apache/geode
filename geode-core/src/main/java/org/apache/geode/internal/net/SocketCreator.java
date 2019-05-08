@@ -172,6 +172,11 @@ public class SocketCreator {
    * Only print this SocketCreator's config once
    */
   private boolean configShown = false;
+  /**
+   * Only print hostname validation disabled log once
+   */
+  private boolean hostnameValidationDisabledLogShown = false;
+
 
   /**
    * context for SSL socket factories
@@ -1062,9 +1067,12 @@ public class SocketCreator {
         sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         sslSocket.setSSLParameters(sslParameters);
       } else {
-        logger.warn("Your SSL configuration disables hostname validation. "
-            + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
-            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+        if (!hostnameValidationDisabledLogShown) {
+          logger.info("Your SSL configuration disables hostname validation. "
+              + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
+              + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+          hostnameValidationDisabledLogShown = true;
+        }
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
