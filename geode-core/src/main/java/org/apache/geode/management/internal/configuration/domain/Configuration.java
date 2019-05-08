@@ -48,6 +48,7 @@ public class Configuration implements DataSerializable {
   private String propertiesFileName;
   private Properties gemfireProperties;
   Set<String> jarNames;
+  Set<String> driverJarNames;
 
   // Public no arg constructor required for Deserializable
   public Configuration() {
@@ -62,6 +63,7 @@ public class Configuration implements DataSerializable {
     this.gemfireProperties = new Properties();
     this.gemfireProperties.putAll(that.gemfireProperties);
     this.jarNames = new HashSet<>(that.jarNames);
+    this.driverJarNames = new HashSet<>(that.driverJarNames);
   }
 
   public Configuration(String configName) {
@@ -70,6 +72,7 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = configName + ".properties";
     this.gemfireProperties = new Properties();
     this.jarNames = new HashSet<String>();
+    this.driverJarNames = new HashSet<String>();
   }
 
   public String getCacheXmlContent() {
@@ -130,27 +133,50 @@ public class Configuration implements DataSerializable {
   }
 
   public void addJarNames(Set<String> jarNames) {
-    this.jarNames.addAll(jarNames);
+    addJarNames(jarNames, false);
   }
 
   public void addJarNames(String[] jarNames) {
+    addJarNames(jarNames, false);
+  }
+
+  public void addJarNames(Set<String> jarNames, boolean isDriverJar) {
+    if (isDriverJar) {
+      this.driverJarNames.addAll(jarNames);
+    }
+    this.jarNames.addAll(jarNames);
+  }
+
+  public void addJarNames(String[] jarNames, boolean isDriverJar) {
     if (jarNames == null)
       return;
-
+    if (isDriverJar) {
+      this.driverJarNames.addAll(Stream.of(jarNames).collect(Collectors.toSet()));
+    }
     this.jarNames.addAll(Stream.of(jarNames).collect(Collectors.toSet()));
+  }
+
+  public void addDriverJarNames(Set<String> driverJarNames) {
+    this.driverJarNames.addAll(driverJarNames);
   }
 
 
   public void removeJarNames(String[] jarNames) {
     if (jarNames != null) {
       this.jarNames.removeAll(Stream.of(jarNames).collect(Collectors.toSet()));
+      this.driverJarNames.removeAll(Stream.of(jarNames).collect(Collectors.toSet()));
     } else {
       this.jarNames.clear();
+      this.driverJarNames.clear();
     }
   }
 
   public Set<String> getJarNames() {
     return this.jarNames;
+  }
+
+  public Set<String> getDriverJarNames() {
+    return this.driverJarNames;
   }
 
   @Override
@@ -161,6 +187,7 @@ public class Configuration implements DataSerializable {
     DataSerializer.writeString(propertiesFileName, out);
     DataSerializer.writeProperties(gemfireProperties, out);
     DataSerializer.writeHashSet((HashSet<?>) jarNames, out);
+    DataSerializer.writeHashSet((HashSet<?>) driverJarNames, out);
   }
 
   @Override
@@ -171,6 +198,7 @@ public class Configuration implements DataSerializable {
     this.propertiesFileName = DataSerializer.readString(in);
     this.gemfireProperties = DataSerializer.readProperties(in);
     this.jarNames = DataSerializer.readHashSet(in);
+    this.driverJarNames = DataSerializer.readHashSet(in);
   }
 
 
@@ -178,7 +206,8 @@ public class Configuration implements DataSerializable {
   public String toString() {
     return "Configuration [configName=" + configName + ", cacheXmlContent=" + cacheXmlContent
         + ", cacheXmlFileName=" + cacheXmlFileName + ", propertiesFileName=" + propertiesFileName
-        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames + "]";
+        + ", gemfireProperties=" + gemfireProperties + ", jarNames=" + jarNames
+        + ", driverJarNames=" + driverJarNames + "]";
   }
 
   @Override
@@ -190,6 +219,7 @@ public class Configuration implements DataSerializable {
     result = prime * result + ((configName == null) ? 0 : configName.hashCode());
     result = prime * result + ((gemfireProperties == null) ? 0 : gemfireProperties.hashCode());
     result = prime * result + ((jarNames == null) ? 0 : jarNames.hashCode());
+    result = prime * result + ((driverJarNames == null) ? 0 : driverJarNames.hashCode());
     result = prime * result + ((propertiesFileName == null) ? 0 : propertiesFileName.hashCode());
     return result;
   }
@@ -227,6 +257,11 @@ public class Configuration implements DataSerializable {
       if (other.jarNames != null)
         return false;
     } else if (!jarNames.equals(other.jarNames))
+      return false;
+    if (driverJarNames == null) {
+      if (other.driverJarNames != null)
+        return false;
+    } else if (!driverJarNames.equals(other.driverJarNames))
       return false;
     if (propertiesFileName == null) {
       if (other.propertiesFileName != null)

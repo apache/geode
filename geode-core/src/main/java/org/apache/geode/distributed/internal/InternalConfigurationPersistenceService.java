@@ -340,7 +340,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Add jar information into the shared configuration and save the jars in the file system used
    * when deploying jars
    */
-  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups) throws IOException {
+  public void addJarsToThisLocator(List<String> jarFullPaths, String[] groups, boolean isDriverJar)
+      throws IOException {
     lockSharedConfiguration();
     try {
       if (groups == null) {
@@ -372,7 +373,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         String memberId = cache.getMyId().getId();
 
         Configuration configurationCopy = new Configuration(configuration);
-        configurationCopy.addJarNames(jarNames);
+        configurationCopy.addJarNames(jarNames, isDriverJar);
         configRegion.put(group, configurationCopy, memberId);
       }
     } finally {
@@ -612,6 +613,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           configResponse.addConfiguration(configuration);
           if (configuration != null) {
             configResponse.addJar(group, configuration.getJarNames());
+            configResponse.addDriverJar(group, configuration.getDriverJarNames());
           }
         }
 
@@ -756,6 +758,15 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       clusterRegion.clear();
 
       String memberId = cache.getMyId().getId();
+
+      // for(Map.Entry<String, Configuration> config : sharedConfiguration.entrySet()) {
+      // if(clusterRegion.get(config.getKey()) != null) {
+      // Set<String> configDriverJars = clusterRegion.get(config.getKey()).getDriverJarNames();
+      // if (!configDriverJars.isEmpty()) {
+      // config.getValue().addDriverJarNames(configDriverJars);
+      // }
+      // }
+      // }
       clusterRegion.putAll(sharedConfiguration, memberId);
 
       // Overwrite the security settings using the locator's properties, ignoring whatever

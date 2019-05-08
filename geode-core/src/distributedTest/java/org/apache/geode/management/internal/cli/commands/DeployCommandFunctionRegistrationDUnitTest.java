@@ -96,7 +96,8 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   }
 
   @Test
-  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() throws URISyntaxException {
+  public void testCreateJndiBindingWithJarOptionDoesNotThrowDriverErrorAfterDeployingJarAsDriver()
+      throws URISyntaxException {
     String URL = "jdbc:mysql://localhost/";
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
@@ -123,6 +124,53 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     IgnoredException.removeAllExpectedExceptions();
 
     gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
+  }
+
+  @Test
+  public void testCreateJndiBindingWithJarOptionDoesNotThrowDriverErrorAfterDeployingJarAsDriverOnNewServer()
+      throws Exception {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "An Exception was caught while trying to load the driver");
+    IgnoredException.addIgnoredException(
+        "create jndi-binding failed");
+    IgnoredException.addIgnoredException(
+        "java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Driver");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mysqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+
+    // create the data-source
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("An Exception was caught while trying to load the driver");
+
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    File mysqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mysqlDriverFile).exists();
+    String jarFile = mysqlDriverFile.getAbsolutePath();
+
+    IgnoredException.removeAllExpectedExceptions();
+
+    gfshConnector.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+    gfshConnector.executeAndAssertThat(
+        "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mysqlDataSource\". See log for details");
+
+    server.stop();
+    locator.stop();
+    locator = lsRule.startLocatorVM(0);
+    MemberVM server1 = lsRule.startServerVM(2, locator.getPort());
+    gfshConnector.connectAndVerify(locator);
+
+
     gfshConnector.executeAndAssertThat(
         "create jndi-binding --name=mysqlDataSource --type=simple --username=mysqlUser --password=mysqlPass --jdbc-driver-class=\"com.mysql.cj.jdbc.Driver\" --connection-url=\""
             + URL + "\"")

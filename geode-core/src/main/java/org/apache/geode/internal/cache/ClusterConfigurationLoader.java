@@ -109,8 +109,22 @@ public class ClusterConfigurationLoader {
 
         Map<String, File> stagedJarFiles =
             getJarsFromLocator(response.getMember(), response.getJarNames());
+        Map<String, File> driverJarFiles = new HashMap<>();
+        Map<String, File> nonDriverJarFiles = new HashMap<>();
 
-        List<DeployedJar> deployedJars = jarDeployer.deploy(stagedJarFiles, false);
+        for (Map.Entry<String, File> entry : stagedJarFiles.entrySet()) {
+          if (response.getDriverJarNames().containsKey(entry.getKey())) {
+            driverJarFiles.put(entry.getKey(), entry.getValue());
+          } else {
+            nonDriverJarFiles.put(entry.getKey(), entry.getValue());
+          }
+        }
+
+        // Deploy first for non driver jars
+        List<DeployedJar> deployedJars = jarDeployer.deploy(nonDriverJarFiles, false);
+
+        // Deploy driver jars separately so we can register them with the driver manager
+        deployedJars.addAll(jarDeployer.deploy(driverJarFiles, true));
 
         deployedJars.stream().filter(Objects::nonNull)
             .forEach((jar) -> logger.info("Deployed: {}", jar.getFile().getAbsolutePath()));

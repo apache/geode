@@ -96,6 +96,51 @@ public class CreateDataSourceCommandDUnitTest {
         .statusIsError().containsOutput("No suitable driver");
   }
 
+  @Test
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverErrorOnNewMemberStartup() {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "No suitable driver");
+    IgnoredException.addIgnoredException(
+        "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
+
+    server1.stop();
+
+    // create the data-source
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .statusIsError().containsOutput("No suitable driver");
+
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+
+    IgnoredException.removeAllExpectedExceptions();
+
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile + " --register-driver").statusIsSuccess();
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+
+    server2.stop();
+
+    server1 = cluster.startServerVM(1, "group1", locator.getPort());
+
+    gfsh.executeAndAssertThat("list deployed");
+
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .containsOutput("Failed to connect to \"mySqlDataSource\". See log for details");
+  }
+
   private File loadTestResource(String fileName) {
     String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
     Assertions.assertThat(filePath).isNotNull();

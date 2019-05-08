@@ -42,6 +42,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   private Map<String, Configuration> requestedConfiguration = new HashMap<>();
   private Map<String, Set<String>> jarNames = new HashMap<>();
+  private Map<String, Set<String>> driverJarNames = new HashMap<>();
   private boolean failedToGetSharedConfig = false;
 
   // This is set to the member from which this object was received
@@ -56,6 +57,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeHashMap(requestedConfiguration, out);
     DataSerializer.writeHashMap(jarNames, out);
+    DataSerializer.writeHashMap(driverJarNames, out);
     DataSerializer.writeBoolean(Boolean.valueOf(failedToGetSharedConfig), out);
   }
 
@@ -63,6 +65,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.requestedConfiguration = DataSerializer.readHashMap(in);
     this.jarNames = DataSerializer.readHashMap(in);
+    this.driverJarNames = DataSerializer.readHashMap(in);
     this.failedToGetSharedConfig = DataSerializer.readBoolean(in);
   }
 
@@ -130,8 +133,16 @@ public class ConfigurationResponse implements DataSerializableFixedID {
     this.jarNames.put(group, jarNames);
   }
 
+  public void addDriverJar(String group, Set<String> driverJarNames) {
+    this.driverJarNames.put(group, driverJarNames);
+  }
+
   public Map<String, Set<String>> getJarNames() {
     return jarNames;
+  }
+
+  public Map<String, Set<String>> getDriverJarNames() {
+    return driverJarNames;
   }
 
   public DistributedMember getMember() {
