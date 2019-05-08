@@ -859,7 +859,14 @@ public class SocketCreator {
       ConnectionWatcher optionalWatcher, boolean clientSide, int socketBufferSize,
       boolean sslConnection) throws IOException {
     Socket socket = null;
-    SocketAddress sockaddr = new InetSocketAddress(inetadd.getHostName(), port);
+    SocketAddress sockaddr;
+
+    if (inetadd != null) {
+      sockaddr = new InetSocketAddress(inetadd.getHostName(), port);
+    } else {
+      sockaddr = new InetSocketAddress(port);
+    }
+
     printConfig();
     try {
       if (sslConnection) {
