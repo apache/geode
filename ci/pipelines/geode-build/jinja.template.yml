@@ -105,6 +105,7 @@ groups:
   {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
+  - UpdatePassingBuild
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -119,6 +120,7 @@ groups:
   {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
+  - UpdatePassingBuild
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -188,6 +190,14 @@ resources:
     initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/version
+- name: geode-passing-version
+  type: semver
+  source:
+    bucket: ((version-bucket))
+    driver: gcs
+    initial_version: 1.10.0
+    json_key: ((!concourse-gcp-key))
+    key: ((pipeline-prefix))((geode-build-branch))/passing-version
 
 resource_types:
 - name: concourse-metadata-resource
@@ -352,6 +362,16 @@ jobs:
       outputs:
       - name: results
 {% endif %}
+- name: UpdatePassingBuild
+  public: true
+  serial: true
+  plan:
+  - get: geode-build-version
+    passed:
+    {{ all_gating_jobs() | indent(6) }}
+  - put: geode-passing-version
+    params:
+      file: geode-build-version/number
 - name: Benchmark
   public: true
   plan:
