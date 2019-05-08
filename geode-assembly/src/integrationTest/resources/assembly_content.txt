@@ -715,6 +715,7 @@ javadoc/org/apache/geode/management/client/JavaClientClusterManagementServiceCon
 javadoc/org/apache/geode/management/client/package-frame.html
 javadoc/org/apache/geode/management/client/package-summary.html
 javadoc/org/apache/geode/management/client/package-tree.html
+javadoc/org/apache/geode/management/configuration/MemberConfig.CacheServerConfig.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/RuntimeCacheElement.html
 javadoc/org/apache/geode/management/configuration/RuntimeRegionConfig.html

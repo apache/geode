@@ -15,25 +15,23 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
+import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.distributed.LocatorLauncher;
 
+public class LocatorLauncherContextLoader extends BaseLocatorContextLoader {
 
-@Component
-public class LocatorCleanupEventListener {
+  private final GeodeComponent locator;
 
-  @Autowired
-  private WebApplicationContext webApplicationContext;
+  public LocatorLauncherContextLoader() {
+    LocatorLauncher.Builder builder = new LocatorLauncher.Builder()
+        .setPort(0)
+        .setMemberName("locator-0")
+        .set(ConfigurationProperties.LOG_LEVEL, "config");
+    locator = new WrappedLocatorLauncher(builder);
+  }
 
-  @EventListener
-  public void handleContextCloseEvent(ContextClosedEvent closedEvent) {
-    GeodeComponent locator =
-        (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
-    if (locator != null) {
-      locator.stop();
-    }
+  @Override
+  public GeodeComponent getLocator() {
+    return locator;
   }
 }

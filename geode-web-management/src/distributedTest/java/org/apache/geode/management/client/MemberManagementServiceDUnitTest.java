@@ -16,13 +16,14 @@
 package org.apache.geode.management.client;
 
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -41,13 +42,13 @@ import org.apache.geode.management.api.ClusterManagementServiceConfig;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.internal.ClientClusterManagementService;
+import org.apache.geode.management.internal.rest.LocatorLauncherContextLoader;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
-import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
-    loader = PlainLocatorContextLoader.class)
+    loader = LocatorLauncherContextLoader.class)
 @WebAppConfiguration
 public class MemberManagementServiceDUnitTest {
 
@@ -70,31 +71,69 @@ public class MemberManagementServiceDUnitTest {
         .build();
     client = new ClientClusterManagementService(config);
 
-    cluster.startServerVM(0, webContext.getLocator().getPort());
+    cluster.startServerVM(1, webContext.getLocator().getPort());
   }
 
   @Test
   @WithMockUser
-  public void listMember() {
+  public void listAllMembers() {
     MemberConfig memberConfig = new MemberConfig();
     ClusterManagementResult result = client.list(memberConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult(RuntimeCacheElement.class).size()).isEqualTo(2);
+
+    List<MemberConfig> members = result.getResult(MemberConfig.class);
+    assertThat(members.size()).isEqualTo(2);
+    assertThat(members.stream().map(MemberConfig::getId).collect(Collectors.toList()))
+        .containsExactlyInAnyOrder("locator-0", "server-1");
+    for (MemberConfig oneMember : members) {
+      if (oneMember.isLocator()) {
+        assertThat(oneMember.getPort())
+            .as("port for locator member should not be null").isNotNull().isGreaterThan(0);
+        assertThat(oneMember.getCacheServers().size())
+            .as("locators should not have cache servers").isEqualTo(0);
+      } else {
+        assertThat(oneMember.getPort()).as("port for server member should be null").isNull();
+        assertThat(oneMember.getCacheServers().size())
+            .as("server should have one cache server").isEqualTo(1);
+        assertThat(oneMember.getCacheServers().get(0).getPort()).isGreaterThan(0);
+        assertThat(oneMember.getCacheServers().get(0).getMaxConnections()).isGreaterThan(0);
+        assertThat(oneMember.getCacheServers().get(0).getMaxThreads()).isEqualTo(0);
+      }
+    }
   }
 
   @Test
   @WithMockUser
   public void getOneMember() throws Exception {
     MemberConfig config = new MemberConfig();
-    config.setId("server-0");
+    config.setId("server-1");
     ClusterManagementResult result = client.list(config);
+
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
     List<MemberConfig> memberConfig = result.getResult(MemberConfig.class);
     assertThat(memberConfig.size()).isEqualTo(1);
+  }
+
+  @Test
+  @WithMockUser
+  public void getMemberStatus() throws Exception {
+    MemberConfig config = new MemberConfig();
+    config.setId("locator-0");
+    ClusterManagementResult result = client.list(config);
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+
+    List<MemberConfig> members = result.getResult(MemberConfig.class);
+    assertThat(members.size()).isEqualTo(1);
+
+    MemberConfig memberConfig = members.get(0);
+    assertThat(memberConfig.getInitialHeap()).isGreaterThan(0);
+    assertThat(memberConfig.getMaxHeap()).isGreaterThan(0);
+    assertThat(memberConfig.getStatus()).isEqualTo("online");
   }
 
   @Test

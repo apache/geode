@@ -19,15 +19,15 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
 
-  private final LocatorStarterRule locator;
+  private final GeodeComponent locator;
 
   public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule()
-        .withAutoStart();
+    locator = new WrappedLocatorStarterRule(new LocatorStarterRule()
+        .withAutoStart());
   }
 
   @Override
-  public LocatorStarterRule getLocator() {
+  public GeodeComponent getLocator() {
     return locator;
   }
 }

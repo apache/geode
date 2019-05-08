@@ -15,25 +15,18 @@
 
 package org.apache.geode.management.internal.rest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.ContextClosedEvent;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.web.context.WebApplicationContext;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.api.ClusterManagementService;
 
+public interface GeodeComponent {
 
-@Component
-public class LocatorCleanupEventListener {
+  void start();
 
-  @Autowired
-  private WebApplicationContext webApplicationContext;
+  void stop();
 
-  @EventListener
-  public void handleContextCloseEvent(ContextClosedEvent closedEvent) {
-    GeodeComponent locator =
-        (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
-    if (locator != null) {
-      locator.stop();
-    }
-  }
+  int getPort();
+
+  SecurityService getSecurityService();
+
+  ClusterManagementService getClusterManagementService();
 }

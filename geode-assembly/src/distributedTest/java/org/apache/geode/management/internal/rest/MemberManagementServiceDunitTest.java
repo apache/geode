@@ -64,7 +64,7 @@ public class MemberManagementServiceDunitTest {
             "locator-0");
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
-    assertThat(memberConfig.getPorts().get(0)).isEqualTo(locator.getPort());
+    assertThat(memberConfig.getPort()).isEqualTo(locator.getPort());
   }
 
   @Test
@@ -80,7 +80,7 @@ public class MemberManagementServiceDunitTest {
     MemberConfig memberConfig = (MemberConfig) result.getResult(RuntimeCacheElement.class).get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
-    assertThat(memberConfig.getPorts().get(0)).isEqualTo(locator.getPort());
+    assertThat(memberConfig.getPort()).isEqualTo(locator.getPort());
   }
 
   @Test
