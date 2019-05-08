@@ -63,7 +63,11 @@ public class CreateDataSourceCommandDUnitTest {
     IgnoredException.addIgnoredException(
         "No suitable driver");
     IgnoredException.addIgnoredException(
+        "create data-source failed");
+    IgnoredException.addIgnoredException(
         "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
 
     // create the data-source
     gfsh.executeAndAssertThat(

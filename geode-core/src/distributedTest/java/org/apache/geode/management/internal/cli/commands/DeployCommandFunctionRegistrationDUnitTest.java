@@ -101,7 +101,11 @@ public class DeployCommandFunctionRegistrationDUnitTest {
     IgnoredException.addIgnoredException(
         "An Exception was caught while trying to load the driver");
     IgnoredException.addIgnoredException(
+        "create jndi-binding failed");
+    IgnoredException.addIgnoredException(
         "java.lang.ClassNotFoundException: com.mysql.cj.jdbc.Driver");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mysqlUser'@'localhost'");
     IgnoredException.addIgnoredException(
         "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
 
