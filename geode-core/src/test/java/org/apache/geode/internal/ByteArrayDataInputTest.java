@@ -170,6 +170,61 @@ public class ByteArrayDataInputTest {
     assertThat(input.readUnsignedByte()).isEqualTo((int) '2');
   }
 
+  @Test
+  public void readUTFHandlesEmptyString() throws IOException {
+    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    output.writeUTF("");
+    output.writeByte(1);
+    DataInput input = createDataInput(output.toByteArray());
+
+    String result = input.readUTF();
+
+    assertThat(result).isEmpty();
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readByte()).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void readUTFHandlesAsciiString() throws IOException {
+    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    String string = "\u0001test\u007f";
+    output.writeUTF(string);
+    output.writeByte(1);
+    DataInput input = createDataInput(output.toByteArray());
+
+    String result = input.readUTF();
+
+    assertThat(result).isEqualTo(string);
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readByte()).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void readUTFHandlesUTF16String() throws IOException {
+    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    String string = "\u0000test\u0080\uffff";
+    output.writeUTF(string);
+    output.writeByte(1);
+    DataInput input = createDataInput(output.toByteArray());
+
+    String result = input.readUTF();
+
+    assertThat(result).isEqualTo(string);
+    assertThat(dataRemaining(input)).isEqualTo(1);
+    assertThat(input.readByte()).isEqualTo((byte) 1);
+  }
+
+  @Test
+  public void readUTFOnInputWithJustLengthThrowsEOF() {
+    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    output.writeShort(1);
+    DataInput input = createDataInput(output.toByteArray());
+
+    Throwable t = catchThrowable(() -> input.readUTF());
+
+    assertThat(t).isInstanceOf(EOFException.class);
+  }
+
   /**
    * We want ByteArrayDataInput to behave like DataInputStream(ByteArrayInputStream).
    * This boolean allows us to switch back and forth in this test to make sure
