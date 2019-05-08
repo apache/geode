@@ -166,6 +166,13 @@ public class PoolManagerImpl {
    * @return true if pool unregistered from cache; false if someone else already did it
    */
   public boolean unregister(Pool pool) {
+    // Continue only if the pool is not currently being used by any region and/or service.
+    int attachCount = ((PoolImpl) pool).getAttachCount();
+    if (attachCount > 0) {
+      throw new IllegalStateException(String.format(
+          "Pool could not be destroyed because it is still in use by %s regions", attachCount));
+    }
+
     synchronized (poolLock) {
       Map<String, Pool> copy = new HashMap<>(pools);
       String name = pool.getName();
