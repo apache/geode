@@ -32,6 +32,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
@@ -161,16 +163,25 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
 
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
+
+  @ApiModelProperty(hidden=true)
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
+
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
   protected List<Entry> entries;
+
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
+
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig> regions;
+
   @XmlAttribute(name = "name", required = true)
   protected String name;
+
   @XmlAttribute(name = "refid")
   protected String type;
 
@@ -252,6 +263,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    * Currently, users can not create regions with custom region elements using management v2 api.
    * this cache element list will be ignored when creating the region
    */
+  @ApiModelProperty(hidden = true)
   public List<CacheElement> getCustomRegionElements() {
     if (regionElements == null) {
       regionElements = new ArrayList<>();
