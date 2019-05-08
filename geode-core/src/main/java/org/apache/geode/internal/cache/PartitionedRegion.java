@@ -1848,13 +1848,42 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @since GemFire 5.0
-   * @throws UnsupportedOperationException OVERRIDES
-   */
   @Override
-  public CacheStatistics getStatistics() {
-    throw new UnsupportedOperationException();
+  public long getLastModifiedTime() {
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastModifiedTime =
+        buckets.stream().map(x -> x.getLastModifiedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    this.setLastModifiedTime(lastModifiedTime);
+    return lastModifiedTime;
+  }
+
+  @Override
+  public long getLastAccessedTime() {
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastAccessedTime =
+        buckets.stream().map(x -> x.getLastAccessedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    this.setLastAccessedTime(lastAccessedTime, true);
+    return lastAccessedTime;
+  }
+
+  @Override
+  public long getMissCount() {
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getMissCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public long getHitCount() {
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getHitCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public void resetCounts() {
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    for (BucketRegion bucket : buckets) {
+      bucket.resetCounts();
+    }
   }
 
   /**

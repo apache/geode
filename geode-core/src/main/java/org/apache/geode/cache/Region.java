@@ -208,7 +208,6 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
    *
    * @return the <code>CacheStatistics</code> of this region
    * @throws StatisticsDisabledException if statistics have been disabled for this region
-   * @throws UnsupportedOperationException If the region is a partitioned region
    */
   CacheStatistics getStatistics() throws StatisticsDisabledException;
 
