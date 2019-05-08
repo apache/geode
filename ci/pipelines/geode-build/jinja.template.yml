@@ -369,6 +369,7 @@ jobs:
   - get: geode-build-version
     passed:
     {{ all_gating_jobs() | indent(6) }}
+    trigger: true
   - put: geode-passing-version
     params:
       file: geode-build-version/number
