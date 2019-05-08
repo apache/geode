@@ -107,20 +107,20 @@ YML
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
-    --var concourse-url=${CONCOURSE_URL} \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
+    --var concourse-team=main \
+    --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
-    --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
-    --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var geode-fork=${GEODE_FORK} \
     --var geode-repo-name=${GEODE_REPO_NAME} \
-    --var upstream-fork=${UPSTREAM_FORK} \
-    --var pipeline-prefix=${PIPELINE_PREFIX} \
     --var gradle-global-args="${GRADLE_GLOBAL_ARGS}" \
     --var maven-snapshot-bucket="${MAVEN_SNAPSHOT_BUCKET}" \
+    --var pipeline-prefix=${PIPELINE_PREFIX} \
+    --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
+    --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
-    --var concourse-team=main \
+    --var upstream-fork=${UPSTREAM_FORK} \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
   if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then

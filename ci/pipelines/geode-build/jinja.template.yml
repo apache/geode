@@ -344,8 +344,12 @@ jobs:
   serial: true
   plan:
   - get: geode
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+    passed: [PublishArtifacts]
+{% else %}
     passed:
-    {{ all_gating_jobs() | indent(4) }}
+    {{ all_gating_jobs() | indent(6) }}
+{% endif %}
     trigger: true
   - get: geode-ci
   - task: updatepassingref
@@ -367,8 +371,12 @@ jobs:
   serial: true
   plan:
   - get: geode-build-version
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+    passed: [PublishArtifacts]
+{% else %}
     passed:
     {{ all_gating_jobs() | indent(6) }}
+{% endif %}
     trigger: true
   - put: geode-passing-version
     params:
