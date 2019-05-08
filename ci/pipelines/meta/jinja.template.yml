@@ -108,16 +108,13 @@ jobs:
   plan:
   - get: geode-images-pipeline
     trigger: true
+  - get: meta-mini-image
+    trigger: true
+    passed: [build-meta-mini-docker-image]
   - task: create-image-yml
+    image: meta-mini-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          username: ((!docker-username))
-          password: ((!docker-password))
-          tag: latest
-          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-images-pipeline
       outputs:
@@ -151,16 +148,13 @@ jobs:
   plan:
   - get: geode-pipeline
     trigger: true
+  - get: meta-mini-image
+    trigger: true
+    passed: [set-images-pipeline]
   - task: create-geode-pipeline-yml
+    image: meta-mini-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          username: ((!docker-username))
-          password: ((!docker-password))
-          tag: latest
-          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-pipeline
       outputs:
@@ -200,16 +194,13 @@ jobs:
   plan:
   - get: geode-examples-pipeline
     trigger: true
+  - get: meta-mini-image
+    trigger: true
+    passed: [build-meta-mini-docker-image]
   - task: deploy-build
+    image: meta-mini-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          username: ((!docker-username))
-          password: ((!docker-password))
-          tag: latest
-          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
         - name: geode-examples-pipeline
       outputs:
@@ -245,16 +236,13 @@ jobs:
   plan:
   - get: geode-pr-pipeline
     trigger: true
+  - get: meta-mini-image
+    trigger: true
+    passed: [build-meta-mini-docker-image]
   - task: deploy-pr
+    image: meta-mini-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          username: ((!docker-username))
-          password: ((!docker-password))
-          tag: latest
-          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
         - name: geode-pr-pipeline
       outputs:
@@ -290,16 +278,13 @@ jobs:
   plan:
   - get: geode-metrics-pipeline
     trigger: true
+  - get: meta-mini-image
+    trigger: true
+    passed: [build-meta-mini-docker-image]
   - task: create-metrics-pipeline-yml
+    image: meta-mini-image
     config:
       platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          username: ((!docker-username))
-          password: ((!docker-password))
-          tag: latest
-          repository: gcr.io/((!gcp-project))/((!sanitized-geode-fork))-((!sanitized-geode-build-branch))-meta-img
       inputs:
       - name: geode-metrics-pipeline
       outputs:
