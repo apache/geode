@@ -557,24 +557,6 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
         new FieldMapping("name", FieldType.STRING.name(), "NAME", JDBCType.VARCHAR.name(), true));
   }
 
-
-  private static void assertValidResourcePDXMapping(RegionMapping mapping, String tableName) {
-    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-    assertThat(mapping.getTableName()).isEqualTo(tableName);
-    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.internal.ResourcePDX");
-    assertThat(mapping.getIds()).isEqualTo("id");
-    assertThat(mapping.getCatalog()).isNull();
-    assertThat(mapping.getSchema()).isEqualTo("mySchema");
-    List<FieldMapping> fieldMappings = mapping.getFieldMappings();
-    assertThat(fieldMappings).hasSize(3);
-    assertThat(fieldMappings.get(0))
-        .isEqualTo(new FieldMapping("id", "STRING", "ID", "VARCHAR", false));
-    assertThat(fieldMappings.get(1))
-        .isEqualTo(new FieldMapping("name", "STRING", "NAME", "VARCHAR", true));
-    assertThat(fieldMappings.get(2))
-        .isEqualTo(new FieldMapping("age", "INT", "AGE", "INTEGER", true));
-  }
-
   public static class IdAndName implements PdxSerializable {
     private String id;
     private String name;
