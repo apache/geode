@@ -29,10 +29,10 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
-import org.apache.geode.pdx.FieldType;
-import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.connectors.jdbc.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.rules.PostgresConnectionRule;
+import org.apache.geode.pdx.FieldType;
+import org.apache.geode.pdx.PdxInstance;
 
 public class PostgresJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 

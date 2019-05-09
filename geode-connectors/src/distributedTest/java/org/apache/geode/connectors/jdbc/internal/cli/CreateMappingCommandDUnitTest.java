@@ -525,7 +525,8 @@ public class CreateMappingCommandDUnitTest {
   private static void assertValidResourcePDXMapping(RegionMapping mapping, String tableName) {
     assertThat(mapping.getDataSourceName()).isEqualTo("connection");
     assertThat(mapping.getTableName()).isEqualTo(tableName);
-    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
+    assertThat(mapping.getPdxName())
+        .isEqualTo("org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     assertThat(mapping.getIds()).isEqualTo("id");
     assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
@@ -574,7 +575,8 @@ public class CreateMappingCommandDUnitTest {
 
   private File createJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
-    File source = loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
+    File source =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
@@ -583,7 +585,8 @@ public class CreateMappingCommandDUnitTest {
 
   private File createClassFile() throws IOException {
     final JavaCompiler javaCompiler = new JavaCompiler();
-    File source = loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
+    File source =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
     List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(source);
     String className = compiledSourceCodes.get(0).className;
     String fileName = className.substring(className.lastIndexOf(".") + 1) + ".class";
@@ -691,7 +694,8 @@ public class CreateMappingCommandDUnitTest {
   public void createMappingWithInvalidJarPdxClassFileFails() {
     String region1Name = "region1";
     setupReplicate(region1Name);
-    File invalidFile = loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
+    File invalidFile =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, region1Name);

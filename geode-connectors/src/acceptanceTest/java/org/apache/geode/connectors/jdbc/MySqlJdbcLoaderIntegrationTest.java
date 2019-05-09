@@ -25,9 +25,9 @@ import java.util.List;
 import org.junit.ClassRule;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
-import org.apache.geode.pdx.FieldType;
 import org.apache.geode.connectors.jdbc.rules.DatabaseConnectionRule;
 import org.apache.geode.connectors.jdbc.rules.MySqlConnectionRule;
+import org.apache.geode.pdx.FieldType;
 
 public class MySqlJdbcLoaderIntegrationTest extends JdbcLoaderIntegrationTest {
 

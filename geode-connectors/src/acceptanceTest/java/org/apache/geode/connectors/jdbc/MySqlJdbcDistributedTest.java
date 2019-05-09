@@ -24,9 +24,9 @@ import java.sql.Types;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.connectors.jdbc.rules.MySqlConnectionRule;
 import org.apache.geode.connectors.jdbc.rules.SqlDatabaseConnectionRule;
+import org.apache.geode.test.dunit.rules.MemberVM;
 
 /**
  * End-to-end dunits for jdbc connector
