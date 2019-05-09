@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import javax.naming.NamingException;
 
+import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.configuration.JndiBindingsType;
@@ -51,6 +52,10 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     } else {
       TYPE_NAME = "jndi-binding";
     }
+    try {
+      DriverJarUtil util = new DriverJarUtil();
+      util.registerDriver("");
+    } catch (Exception ex){}
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));
