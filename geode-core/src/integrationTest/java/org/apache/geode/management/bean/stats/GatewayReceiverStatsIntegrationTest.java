@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Properties;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +70,9 @@ public class GatewayReceiverStatsIntegrationTest {
     new CacheFactory().create();
 
     StatisticsFactory statisticsFactory = system.getStatisticsManager();
-    receiverStats = createGatewayReceiverStats(statisticsFactory, "Test Sock Name");
+    SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+    receiverStats = createGatewayReceiverStats(statisticsFactory, "Test Sock Name",
+        meterRegistry);
 
     GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     InternalCacheServer receiverServer = mock(InternalCacheServer.class);

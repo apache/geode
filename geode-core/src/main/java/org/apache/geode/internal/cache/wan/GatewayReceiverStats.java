@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -28,73 +31,120 @@ public class GatewayReceiverStats extends CacheServerStats {
   // /** Name of the events queued statistic */
   // private static final String FAILOVER_BATCHES_RECEIVED = "failoverBatchesReceived";
 
-  /** Name of the events not queued because conflated statistic */
+  /**
+   * Name of the events not queued because conflated statistic
+   */
   private static final String DUPLICATE_BATCHES_RECEIVED = "duplicateBatchesReceived";
 
-  /** Name of the event queue time statistic */
+  /**
+   * Name of the event queue time statistic
+   */
   private static final String OUT_OF_ORDER_BATCHES_RECEIVED = "outoforderBatchesReceived";
 
-  /** Name of the event queue size statistic */
+  /**
+   * Name of the event queue size statistic
+   */
   private static final String EARLY_ACKS = "earlyAcks";
 
-  /** Name of the events distributed statistic */
+  /**
+   * Name of the events distributed statistic
+   */
   private static final String EVENTS_RECEIVED = "eventsReceived";
 
-  /** Name of the events exceeding alert threshold statistic */
+  /**
+   * Name of the events exceeding alert threshold statistic
+   */
   private static final String CREAT_REQUESTS = "createRequests";
 
-  /** Name of the batch distribution time statistic */
+  /**
+   * Name of the batch distribution time statistic
+   */
   private static final String UPDATE_REQUESTS = "updateRequest";
 
-  /** Name of the batches distributed statistic */
+  /**
+   * Name of the batches distributed statistic
+   */
   private static final String DESTROY_REQUESTS = "destroyRequest";
 
-  /** Name of the batches redistributed statistic */
+  /**
+   * Name of the batches redistributed statistic
+   */
   private static final String UNKNOWN_OPERATIONS_RECEIVED = "unknowsOperationsReceived";
 
-  /** Name of the unprocessed events added by primary statistic */
+  /**
+   * Name of the unprocessed events added by primary statistic
+   */
   private static final String EXCEPTIONS_OCCURRED = "exceptionsOccurred";
 
-  /** Name of the events retried */
+  /**
+   * Name of the events retried
+   */
   private static final String EVENTS_RETRIED = "eventsRetried";
+  private final MeterRegistry meterRegistry;
 
   // /** Id of the events queued statistic */
   // private int failoverBatchesReceivedId;
 
-  /** Id of the events not queued because conflated statistic */
+  /**
+   * Id of the events not queued because conflated statistic
+   */
   private int duplicateBatchesReceivedId;
 
-  /** Id of the event queue time statistic */
+  /**
+   * Id of the event queue time statistic
+   */
   private int outoforderBatchesReceivedId;
 
-  /** Id of the event queue size statistic */
+  /**
+   * Id of the event queue size statistic
+   */
   private int earlyAcksId;
 
-  /** Id of the events distributed statistic */
+  /**
+   * Id of the events distributed statistic
+   */
   private int eventsReceivedId;
+  private final FunctionCounter eventsReceivedCounter;
+  private static final String EVENTS_RECEIVED_COUNTER_NAME =
+      "cache.gatewayreceiver.events.received";
+  private static final String EVENTS_RECEIVED_COUNTER_DESCRIPTION =
+      "total number events across the batched received by this GatewayReceiver";
+  private static final String EVENTS_RECEIVED_COUNTER_UNITS = "operations";
 
-  /** Id of the events exceeding alert threshold statistic */
+  /**
+   * Id of the events exceeding alert threshold statistic
+   */
   private int createRequestId;
 
-  /** Id of the batch distribution time statistic */
+  /**
+   * Id of the batch distribution time statistic
+   */
   private int updateRequestId;
 
-  /** Id of the batches distributed statistic */
+  /**
+   * Id of the batches distributed statistic
+   */
   private int destroyRequestId;
 
-  /** Id of the batches redistributed statistic */
+  /**
+   * Id of the batches redistributed statistic
+   */
   private int unknowsOperationsReceivedId;
 
-  /** Id of the unprocessed events added by primary statistic */
+  /**
+   * Id of the unprocessed events added by primary statistic
+   */
   private int exceptionsOccurredId;
 
-  /** Id of the events retried statistic */
+  /**
+   * Id of the events retried statistic
+   */
   private int eventsRetriedId;
 
   // ///////////////////// Constructors ///////////////////////
 
   public static GatewayReceiverStats createGatewayReceiverStats(StatisticsFactory f,
-      String ownerName) {
+      String ownerName, MeterRegistry meterRegistry) {
     StatisticDescriptor[] descriptors = new StatisticDescriptor[] {
         f.createIntCounter(DUPLICATE_BATCHES_RECEIVED,
             "number of batches which have already been seen by this GatewayReceiver",
@@ -104,8 +154,8 @@ public class GatewayReceiverStats extends CacheServerStats {
         f.createIntCounter(EARLY_ACKS, "number of early acknowledgements sent to gatewaySenders",
             "operations"),
         f.createIntCounter(EVENTS_RECEIVED,
-            "total number events across the batched received by this GatewayReceiver",
-            "operations"),
+            EVENTS_RECEIVED_COUNTER_DESCRIPTION,
+            EVENTS_RECEIVED_COUNTER_UNITS),
         f.createIntCounter(CREAT_REQUESTS,
             "total number of create operations received by this GatewayReceiver", "operations"),
         f.createIntCounter(UPDATE_REQUESTS,
@@ -118,12 +168,12 @@ public class GatewayReceiverStats extends CacheServerStats {
             "number of exceptions occurred while porcessing the batches", "operations"),
         f.createIntCounter(EVENTS_RETRIED,
             "total number events retried by this GatewayReceiver due to exceptions", "operations")};
-    return new GatewayReceiverStats(f, ownerName, typeName, descriptors);
+    return new GatewayReceiverStats(f, ownerName, typeName, descriptors, meterRegistry);
 
   }
 
   public GatewayReceiverStats(StatisticsFactory f, String ownerName, String typeName,
-      StatisticDescriptor[] descriptiors) {
+      StatisticDescriptor[] descriptiors, MeterRegistry meterRegistry) {
     super(f, ownerName, typeName, descriptiors);
     // Initialize id fields
     // failoverBatchesReceivedId = statType.nameToId(FAILOVER_BATCHES_RECEIVED);
@@ -137,6 +187,13 @@ public class GatewayReceiverStats extends CacheServerStats {
     unknowsOperationsReceivedId = statType.nameToId(UNKNOWN_OPERATIONS_RECEIVED);
     exceptionsOccurredId = statType.nameToId(EXCEPTIONS_OCCURRED);
     eventsRetriedId = statType.nameToId(EVENTS_RETRIED);
+
+    this.meterRegistry = meterRegistry;
+    eventsReceivedCounter = FunctionCounter.builder(EVENTS_RECEIVED_COUNTER_NAME, stats,
+        s -> s.getInt(eventsReceivedId))
+        .description(EVENTS_RECEIVED_COUNTER_DESCRIPTION)
+        .baseUnit(EVENTS_RECEIVED_COUNTER_UNITS)
+        .register(meterRegistry);
   }
 
   // /////////////////// Instance Methods /////////////////////
@@ -271,4 +328,9 @@ public class GatewayReceiverStats extends CacheServerStats {
     return DistributionStats.getStatTime();
   }
 
+  @Override
+  public void close() {
+    meterRegistry.remove(eventsReceivedCounter);
+    super.close();
+  }
 }
