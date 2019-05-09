@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +25,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DiskDirType;
-import org.apache.geode.cache.configuration.DiskDirsType;
 import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
@@ -129,18 +129,15 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     diskStoreType
         .setCompactionThreshold(Integer.toString(diskStoreAttributes.getCompactionThreshold()));
 
-    DiskDirsType diskDirsType = new DiskDirsType();
-    List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
+    List<DiskDirType> diskDirs = new ArrayList<>();
     for (int i = 0; i < diskStoreAttributes.getDiskDirs().length; i++) {
       DiskDirType diskDir = new DiskDirType();
       File diskDirFile = diskStoreAttributes.getDiskDirs()[i];
-      diskDir.setContent(
-          diskDirFile.isAbsolute() ? diskDirFile.getAbsolutePath() : diskDirFile.getName());
+      diskDir.setContent(diskDirFile.toString());
       diskDir.setDirSize(Integer.toString(diskStoreAttributes.getDiskDirSizes()[i]));
-
       diskDirs.add(diskDir);
     }
-    diskStoreType.setDiskDirs(diskDirsType);
+    diskStoreType.setDiskDirs(diskDirs);
     diskStoreType.setDiskUsageCriticalPercentage(
         Integer.toString((int) diskStoreAttributes.getDiskUsageCriticalPercentage()));
     diskStoreType.setDiskUsageWarningPercentage(

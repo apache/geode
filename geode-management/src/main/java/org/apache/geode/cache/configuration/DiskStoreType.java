@@ -18,11 +18,15 @@
 
 package org.apache.geode.cache.configuration;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 
@@ -92,30 +96,9 @@ public class DiskStoreType extends CacheElement {
   protected String diskUsageCriticalPercentage;
 
   @Override
+  @JsonProperty(value = "name")
   public String getId() {
     return getName();
-  }
-
-  /**
-   * Gets the value of the diskDirs property.
-   *
-   * possible object is
-   * {@link DiskDirsType }
-   *
-   */
-  public DiskDirsType getDiskDirs() {
-    return diskDirs;
-  }
-
-  /**
-   * Sets the value of the diskDirs property.
-   *
-   * allowed object is
-   * {@link DiskDirsType }
-   *
-   */
-  public void setDiskDirs(DiskDirsType value) {
-    this.diskDirs = value;
   }
 
   /**
@@ -127,6 +110,18 @@ public class DiskStoreType extends CacheElement {
    */
   public String getName() {
     return name;
+  }
+
+  public List<DiskDirType> getDiskDirs() {
+    if (diskDirs == null) {
+      diskDirs = new DiskDirsType();
+    }
+    return diskDirs.getDiskDirs();
+  }
+
+  public void setDiskDirs(List<DiskDirType> diskDirs) {
+    getDiskDirs().clear();
+    getDiskDirs().addAll(diskDirs);
   }
 
   /**

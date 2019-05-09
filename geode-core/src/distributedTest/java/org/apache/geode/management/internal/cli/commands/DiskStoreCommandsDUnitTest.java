@@ -44,7 +44,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DiskDirType;
-import org.apache.geode.cache.configuration.DiskDirsType;
 import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -522,8 +521,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     List<DiskStoreType> diskStores = config.getDiskStores();
     assertThat(diskStores.size()).isEqualTo(1);
     DiskStoreType diskStore = diskStores.get(0);
-    DiskDirsType diskDirsType = diskStore.getDiskDirs();
-    List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
+    List<DiskDirType> diskDirs = diskStore.getDiskDirs();
     assertThat(diskDirs.size()).isEqualTo(1);
     DiskDirType diskDir = diskDirs.get(0);
     assertThat(diskDir.getContent()).isEqualTo(absoluteDirectoryName);

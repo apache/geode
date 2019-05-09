@@ -176,4 +176,66 @@ public class RegionConfigTest {
     System.out.println(newXml);
     assertThat(newXml).contains("from-clause=");
   }
+
+  @Test
+  public void diskDirTypeInXml() throws Exception {
+    CacheConfig cacheConfig = new CacheConfig();
+    DiskStoreType diskStore = new DiskStoreType();
+    diskStore.setName("diskStore");
+    DiskDirType dir1 = new DiskDirType();
+    DiskDirType dir2 = new DiskDirType();
+    dir1.setContent("./data/persist");
+    dir2.setContent("/data/persist");
+
+    diskStore.getDiskDirs().add(dir1);
+    diskStore.getDiskDirs().add(dir2);
+
+    cacheConfig.getDiskStores().add(diskStore);
+
+    String xml = service.marshall(cacheConfig);
+    System.out.println(xml);
+
+    String diskStoreXml = "<disk-store name=\"diskStore\">\n"
+        + "        <disk-dirs>\n"
+        + "            <disk-dir>./data/persist</disk-dir>\n"
+        + "            <disk-dir>/data/persist</disk-dir>\n"
+        + "        </disk-dirs>\n"
+        + "    </disk-store>";
+    assertThat(xml).contains(diskStoreXml);
+
+    DiskStoreType parsedDiskStore = service.unMarshall(diskStoreXml, DiskStoreType.class);
+    assertThat(parsedDiskStore.getDiskDirs()).hasSize(2);
+
+    cacheConfig.getDiskStores().clear();
+    cacheConfig.getDiskStores().add(parsedDiskStore);
+
+    String xml2 = service.marshall(cacheConfig);
+    System.out.println(xml2);
+    assertThat(xml).contains(diskStoreXml);
+  }
+
+  @Test
+  public void diskDirTypeInJson() throws Exception {
+    DiskStoreType diskStore = new DiskStoreType();
+    diskStore.setName("diskStore");
+    DiskDirType dir1 = new DiskDirType();
+    DiskDirType dir2 = new DiskDirType();
+    dir1.setContent("./data/persist");
+    dir2.setContent("/data/persist");
+
+    diskStore.getDiskDirs().add(dir1);
+    diskStore.getDiskDirs().add(dir2);
+
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
+    String json = mapper.writeValueAsString(diskStore);
+    System.out.println(json);
+
+    String goldenJson =
+        "\"diskDirs\":[{\"content\":\"./data/persist\"},{\"content\":\"/data/persist\"}]";
+    assertThat(json).contains(goldenJson);
+
+    DiskStoreType newDiskStore = mapper.readValue(json, DiskStoreType.class);
+    assertThat(newDiskStore.getDiskDirs()).hasSize(2);
+
+  }
 }
