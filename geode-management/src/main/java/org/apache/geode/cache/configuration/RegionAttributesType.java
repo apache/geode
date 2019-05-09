@@ -1509,7 +1509,7 @@ public class RegionAttributesType implements Serializable {
     evictionAttributes.setLruHeapPercentage(lruHeapPercentage);
   }
 
-  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden = true)
   public void setInterestPolicy(String interestPolicy) {
     if (subscriptionAttributes == null) {
       subscriptionAttributes = new SubscriptionAttributes();
@@ -1517,7 +1517,7 @@ public class RegionAttributesType implements Serializable {
     subscriptionAttributes.setInterestPolicy(interestPolicy);
   }
 
-  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden = true)
   public void setRedundantCopy(String copies) {
     if (partitionAttributes == null) {
       partitionAttributes = new PartitionAttributes();
@@ -1525,7 +1525,7 @@ public class RegionAttributesType implements Serializable {
     partitionAttributes.setRedundantCopies(copies);
   }
 
-  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden = true)
   public void setLocalMaxMemory(String maxMemory) {
     if (partitionAttributes == null) {
       partitionAttributes = new PartitionAttributes();
@@ -2806,7 +2806,7 @@ public class RegionAttributesType implements Serializable {
      * {@link String }
      *
      */
-    @ApiModelProperty(hidden=true)
+    @ApiModelProperty(hidden = true)
     public String getLocalMaxMemory() {
       return localMaxMemory;
     }

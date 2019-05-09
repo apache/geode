@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -164,7 +163,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
 
-  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
 
