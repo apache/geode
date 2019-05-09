@@ -34,7 +34,7 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
 /**
  * CommandManagerTest - Includes tests to check the CommandManager functions
  */
-public class ConnectionsCommandManagerJUnitTest {
+public class ConnectionsCommandManagerTest {
 
   private CommandManager commandManager;
 

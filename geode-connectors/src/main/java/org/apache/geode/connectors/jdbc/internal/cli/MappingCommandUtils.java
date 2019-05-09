@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.connectors.util.internal;
+package org.apache.geode.connectors.jdbc.internal.cli;
 
 import java.util.ArrayList;
 
@@ -22,7 +22,6 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.connectors.jdbc.internal.cli.PreconditionException;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 
