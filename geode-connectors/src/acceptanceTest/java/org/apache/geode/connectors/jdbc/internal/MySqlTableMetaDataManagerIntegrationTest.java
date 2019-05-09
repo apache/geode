@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import org.junit.ClassRule;
 
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
-import org.apache.geode.test.junit.rules.MySqlConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.DatabaseConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.MySqlConnectionRule;
 
 public class MySqlTableMetaDataManagerIntegrationTest extends TableMetaDataManagerIntegrationTest {
 

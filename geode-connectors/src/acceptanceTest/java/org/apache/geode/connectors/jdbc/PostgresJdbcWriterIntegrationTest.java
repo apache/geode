@@ -24,8 +24,8 @@ import java.sql.SQLException;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.test.junit.rules.DatabaseConnectionRule;
-import org.apache.geode.test.junit.rules.PostgresConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.DatabaseConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.PostgresConnectionRule;
 
 public class PostgresJdbcWriterIntegrationTest extends JdbcWriterIntegrationTest {
 

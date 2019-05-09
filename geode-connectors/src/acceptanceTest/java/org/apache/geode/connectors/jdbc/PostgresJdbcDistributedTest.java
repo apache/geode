@@ -23,8 +23,8 @@ import java.sql.Types;
 
 import org.junit.ClassRule;
 
-import org.apache.geode.test.junit.rules.PostgresConnectionRule;
-import org.apache.geode.test.junit.rules.SqlDatabaseConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.PostgresConnectionRule;
+import org.apache.geode.connectors.jdbc.rules.SqlDatabaseConnectionRule;
 
 /**
  * End-to-end dunits for jdbc connector
