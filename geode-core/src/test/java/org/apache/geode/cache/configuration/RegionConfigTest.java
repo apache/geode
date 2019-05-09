@@ -91,4 +91,89 @@ public class RegionConfigTest {
     String xml = service.marshall(cacheConfig);
     assertThat(xml).contains("<region name=\"test\" refid=\"REPLICATE\"");
   }
+
+  @Test
+  public void indexType() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    assertThat(index.isKeyIndex()).isNull();
+    assertThat(index.getType()).isEqualTo("range");
+
+    index.setKeyIndex(true);
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isEqualTo("key");
+
+    index.setKeyIndex(false);
+    assertThat(index.isKeyIndex()).isFalse();
+    assertThat(index.getType()).isEqualTo("range");
+
+    index.setType("hash");
+    assertThat(index.isKeyIndex()).isFalse();
+    assertThat(index.getType()).isEqualTo("hash");
+
+    index.setType("key");
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isEqualTo("key");
+  }
+
+  @Test
+  public void index() throws Exception {
+    String xml = "<region name=\"region1\" refid=\"REPLICATE\">\n"
+        + "<region-attributes data-policy=\"replicate\" scope=\"distributed-ack\" concurrency-checks-enabled=\"true\"/>\n"
+        + "<index name=\"index1\" expression=\"id\" from-clause=\"/region1\" key-index=\"true\"/>\n"
+        + "</region>";
+
+    RegionConfig regionConfig = service.unMarshall(xml, RegionConfig.class);
+
+    RegionConfig.Index index = regionConfig.getIndexes().get(0);
+    assertThat(index.isKeyIndex()).isTrue();
+    assertThat(index.getType()).isEqualTo("key");
+
+    String json = GeodeJsonMapper.getMapper().writeValueAsString(index);
+    System.out.println(json);
+    RegionConfig.Index newIndex =
+        GeodeJsonMapper.getMapper().readValue(json, RegionConfig.Index.class);
+    assertThat(newIndex.isKeyIndex()).isTrue();
+    assertThat(newIndex.getType()).isEqualTo("key");
+
+    CacheConfig cacheConfig = new CacheConfig();
+    regionConfig.getIndexes().clear();
+    regionConfig.getIndexes().add(newIndex);
+    cacheConfig.getRegions().add(regionConfig);
+
+    // the end xml should not have "type" attribute in index definition
+    String newXml = service.marshall(cacheConfig);
+    System.out.println(newXml);
+    assertThat(newXml).doesNotContain("type=");
+  }
+
+  @Test
+  public void invalidRegionName() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setExpression("id");
+    index.setName("index1");
+    index.setFromClause("/regionA");
+
+    assertThatThrownBy(() -> index.setRegionName("regionB"))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void fromClauseInferredByRegionName() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    index.setExpression("id");
+    index.setName("index1");
+    index.setRegionName("regionA");
+
+    assertThat(index.getFromClause()).isEqualTo("/regionA");
+
+    CacheConfig cacheConfig = new CacheConfig();
+    regionConfig.getIndexes().clear();
+    regionConfig.getIndexes().add(index);
+    cacheConfig.getRegions().add(regionConfig);
+
+    // the end xml should not have "type" attribute in index definition
+    String newXml = service.marshall(cacheConfig);
+    System.out.println(newXml);
+    assertThat(newXml).contains("from-clause=");
+  }
 }
