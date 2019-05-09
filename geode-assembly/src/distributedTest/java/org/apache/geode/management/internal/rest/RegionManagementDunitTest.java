@@ -16,6 +16,9 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
@@ -26,13 +29,16 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionManagementDunitTest {
 
@@ -82,30 +88,39 @@ public class RegionManagementDunitTest {
   }
 
   @Test
-  public void createsRegionUsingClusterManagementClient() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
-    regionConfig.setName("customers2");
-    regionConfig.setType(RegionType.REPLICATE);
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
+  public void createRegionWithKeyValueConstraint() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setName("customers2");
+    RegionAttributesType type = new RegionAttributesType();
+    type.setKeyConstraint("java.lang.Boolean");
+    type.setValueConstraint("java.lang.Integer");
+    config.setRegionAttributes(type);
 
-    ClusterManagementResult result =
-        restClient.doPostAndAssert("/regions", json)
-            .hasStatusCode(201)
-            .getClusterManagementResult();
+    restClient.doPostAndAssert("/regions", GeodeJsonMapper.getMapper().writeValueAsString(config))
+        .statusIsOk();
 
-    assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 1);
 
-    // make sure region is created
-    server.invoke(() -> verifyRegionCreated("customers2", "REPLICATE"));
+    List<RuntimeRegionConfig> result =
+        restClient.doGetAndAssert("/regions?id=customers2").statusIsOk()
+            .getClusterManagementResult().getResult(
+                RuntimeRegionConfig.class);
 
-    // make sure region is persisted
-    locator.invoke(() -> verifyRegionPersisted("customers2", "REPLICATE"));
+    assertThat(result).hasSize(1);
+    RuntimeRegionConfig config1 = result.get(0);
+    assertThat(config1.getType()).isEqualTo("PARTITION");
+    assertThat(config1.getRegionAttributes().getDataPolicy().name()).isEqualTo("PARTITION");
+    assertThat(config1.getRegionAttributes().getValueConstraint()).isEqualTo("java.lang.Integer");
+    assertThat(config1.getRegionAttributes().getKeyConstraint()).isEqualTo("java.lang.Boolean");
 
-    // verify that additional server can be started with the cluster configuration
-    cluster.startServerVM(2, locator.getPort());
-    cluster.stop(2);
+    server.invoke(() -> {
+      Region customers2 = ClusterStartupRule.getCache().getRegionByPath("/customers2");
+      assertThatThrownBy(() -> customers2.put("key", 2)).isInstanceOf(ClassCastException.class)
+          .hasMessageContaining("does not satisfy keyConstraint");
+      assertThatThrownBy(() -> customers2.put(Boolean.TRUE, "2"))
+          .isInstanceOf(ClassCastException.class)
+          .hasMessageContaining("does not satisfy valueConstraint");
+    });
   }
 
   @Test
