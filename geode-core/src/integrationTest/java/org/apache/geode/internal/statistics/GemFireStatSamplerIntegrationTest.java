@@ -169,34 +169,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
     ProcessStats processStats = statSampler.getProcessStats();
     AllStatistics allStats = new AllStatistics(statSampler);
 
-    if (osName.equals("SunOS")) {
-      assertThat(processStats)
-          .withFailMessage("ProcessStats were not created on" + osName)
-          .isNotNull();
-      assertThat(osStatsAreAvailable())
-          .as("os stats are available on SunOS")
-          .isTrue();
-      assertThat(allStats.containsStatisticsType("SolarisProcessStats"))
-          .as("SunOS stats include statistics type named SolarisProcessStats")
-          .isTrue();
-      assertThat(allStats.containsStatisticsType("SolarisSystemStats"))
-          .as("SunOS stats include statistics type named SolarisSystemStats")
-          .isTrue();
-    } else if (osName.startsWith("Windows")) {
-      // fails on Windows 7: 45395 "ProcessStats are not created on Windows 7"
-      assertThat(processStats)
-          .withFailMessage("ProcessStats were not created on" + osName)
-          .isNotNull();
-      assertThat(osStatsAreAvailable())
-          .as("os stats are available on Windows")
-          .isTrue();
-      assertThat(allStats.containsStatisticsType("WindowsProcessStats"))
-          .as("Windows stats include statistics type named WindowsProcessStats")
-          .isTrue();
-      assertThat(allStats.containsStatisticsType("WindowsSystemStats"))
-          .as("Windows stats include statistics type named WindowsSystemStats")
-          .isTrue();
-    } else if (osName.startsWith("Linux")) {
+    if (osName.startsWith("Linux")) {
       assertThat(processStats)
           .withFailMessage("ProcessStats were not created on" + osName)
           .isNotNull();
@@ -209,19 +182,6 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
       assertThat(allStats.containsStatisticsType("LinuxSystemStats"))
           .as("Linux stats include statistics type named LinuxSystemStats")
           .isTrue();
-    } else if (osName.equals("Mac OS X")) {
-      assertThat(processStats)
-          .withFailMessage("ProcessStats were created on" + osName)
-          .isNull();
-      assertThat(osStatsAreAvailable())
-          .as("os stats are available on Mac OS X")
-          .isFalse();
-      assertThat(allStats.containsStatisticsType("OSXProcessStats"))
-          .as("Mac OS X stats include statistics type named OSXProcessStats")
-          .isFalse();
-      assertThat(allStats.containsStatisticsType("OSXSystemStats"))
-          .as("Mac OS X stats include statistics type named OSXSystemStats")
-          .isFalse();
     } else {
       assertThat(processStats)
           .withFailMessage("ProcessStats were created on" + osName)

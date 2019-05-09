@@ -24,23 +24,14 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
-import org.apache.geode.internal.statistics.platform.OSXProcessStats;
-import org.apache.geode.internal.statistics.platform.OSXSystemStats;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
-import org.apache.geode.internal.statistics.platform.SolarisProcessStats;
-import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
-import org.apache.geode.internal.statistics.platform.WindowsProcessStats;
-import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 
 /**
  * Provides native methods which fetch operating system statistics.
  */
 public class HostStatHelper {
-  private static final int SOLARIS_CODE = 1; // Sparc Solaris
-  private static final int WINDOWS_CODE = 2;
   private static final int LINUX_CODE = 3; // x86 Linux
-  private static final int OSX_CODE = 4; // Mac OS X
 
   private static final int PROCESS_STAT_FLAG = 1;
   private static final int SYSTEM_STAT_FLAG = 2;
@@ -51,40 +42,18 @@ public class HostStatHelper {
     String osName = System.getProperty("os.name", "unknown");
     if (!PureJavaMode.osStatsAreAvailable()) {
       throw new RuntimeException("HostStatHelper not allowed in pure java mode");
-    } else if (osName.equals("SunOS")) {
-      osCode = SOLARIS_CODE;
-    } else if (osName.startsWith("Windows")) {
-      osCode = WINDOWS_CODE;
     } else if (osName.startsWith("Linux")) {
       osCode = LINUX_CODE;
-    } else if (osName.equals("Mac OS X")) {
-      osCode = OSX_CODE;
     } else {
       throw new InternalGemFireException(
           String.format(
-              "Unsupported OS %s. Supported OSs are: SunOS(sparc Solaris), Linux(x86) and Windows.",
+              "Unsupported OS %s. Only Linux(x86) OSs is supported.",
               osName));
     }
   }
 
-  public static boolean isWindows() {
-    return osCode == WINDOWS_CODE;
-  }
-
-  public static boolean isUnix() {
-    return osCode != WINDOWS_CODE;
-  }
-
-  public static boolean isSolaris() {
-    return osCode == SOLARIS_CODE;
-  }
-
   public static boolean isLinux() {
     return osCode == LINUX_CODE;
-  }
-
-  public static boolean isOSX() {
-    return osCode == OSX_CODE;
   }
 
   private HostStatHelper() {
@@ -185,29 +154,12 @@ public class HostStatHelper {
    */
   static Statistics newProcess(OsStatisticsFactory osStatisticsFactory, long pid, String name) {
     Statistics statistics;
-    switch (osCode) {
-      case SOLARIS_CODE:
-        statistics =
-            osStatisticsFactory.createOsStatistics(SolarisProcessStats.getType(), name, pid,
-                PROCESS_STAT_FLAG);
-        break;
-      case LINUX_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(LinuxProcessStats.getType(), name, pid,
-            PROCESS_STAT_FLAG);
-        break;
-      case OSX_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(OSXProcessStats.getType(), name, pid,
-            PROCESS_STAT_FLAG);
-        break;
-      case WINDOWS_CODE:
-        statistics =
-            osStatisticsFactory.createOsStatistics(WindowsProcessStats.getType(), name, pid,
-                PROCESS_STAT_FLAG);
-        break;
-      default:
-        throw new InternalGemFireException(
-            String.format("unhandled osCode= %s HostStatHelper:newProcess", osCode));
+    if (osCode != LINUX_CODE) {
+      throw new InternalGemFireException(
+          String.format("unhandled osCode= %s HostStatHelper:newProcess", osCode));
     }
+    statistics = osStatisticsFactory.createOsStatistics(LinuxProcessStats.getType(), name, pid,
+        PROCESS_STAT_FLAG);
     // Note we don't call refreshProcess since we only want the manager to do that
     return statistics;
   }
@@ -219,24 +171,11 @@ public class HostStatHelper {
    * @since GemFire 3.5
    */
   static ProcessStats newProcessStats(Statistics statistics) {
-    switch (osCode) {
-      case SOLARIS_CODE:
-        return SolarisProcessStats.createProcessStats(statistics);
-
-      case LINUX_CODE:
-        return LinuxProcessStats.createProcessStats(statistics);
-
-      case WINDOWS_CODE:
-        return WindowsProcessStats.createProcessStats(statistics);
-
-      case OSX_CODE:
-        return OSXProcessStats.createProcessStats(statistics);
-
-      default:
-        throw new InternalGemFireException(
-            String.format("unhandled osCode= %s HostStatHelper:newProcessStats",
-                osCode));
+    if (osCode != LINUX_CODE) {
+      throw new InternalGemFireException(
+          String.format("unhandled osCode= %s HostStatHelper:newProcessStats", osCode));
     }
+    return LinuxProcessStats.createProcessStats(statistics);
   }
 
   /**
@@ -245,27 +184,12 @@ public class HostStatHelper {
    */
   static void newSystem(OsStatisticsFactory osStatisticsFactory, long id) {
     Statistics statistics;
-    switch (osCode) {
-      case SOLARIS_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(SolarisSystemStats.getType(),
-            getHostSystemName(), id, SYSTEM_STAT_FLAG);
-        break;
-      case LINUX_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(LinuxSystemStats.getType(),
-            getHostSystemName(), id, SYSTEM_STAT_FLAG);
-        break;
-      case WINDOWS_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(WindowsSystemStats.getType(),
-            getHostSystemName(), id, SYSTEM_STAT_FLAG);
-        break;
-      case OSX_CODE:
-        statistics = osStatisticsFactory.createOsStatistics(OSXSystemStats.getType(),
-            getHostSystemName(), id, SYSTEM_STAT_FLAG);
-        break;
-      default:
-        throw new InternalGemFireException(
-            String.format("unhandled osCode= %s HostStatHelper:newSystem", osCode));
+    if (osCode != LINUX_CODE) {
+      throw new InternalGemFireException(
+          String.format("unhandled osCode= %s HostStatHelper:newSystem", osCode));
     }
+    statistics = osStatisticsFactory.createOsStatistics(LinuxSystemStats.getType(),
+        getHostSystemName(), id, SYSTEM_STAT_FLAG);
     if (statistics instanceof LocalStatisticsImpl) {
       refreshSystem((LocalStatisticsImpl) statistics);
     } // otherwise its a Dummy implementation so do nothing

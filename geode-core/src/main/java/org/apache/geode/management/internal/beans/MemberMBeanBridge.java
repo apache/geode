@@ -89,8 +89,6 @@ import org.apache.geode.internal.statistics.StatSamplerStats;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
-import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
-import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.GemFireProperties;
@@ -430,14 +428,8 @@ public class MemberMBeanBridge {
     if (PureJavaMode.osStatsAreAvailable()) {
       Statistics[] systemStats = null;
 
-      if (HostStatHelper.isSolaris()) {
-        systemStats = system.findStatisticsByType(SolarisSystemStats.getType());
-      } else if (HostStatHelper.isLinux()) {
+      if (HostStatHelper.isLinux()) {
         systemStats = system.findStatisticsByType(LinuxSystemStats.getType());
-      } else if (HostStatHelper.isOSX()) {
-        systemStats = null;// @TODO once OSX stats are implemented
-      } else if (HostStatHelper.isWindows()) {
-        systemStats = system.findStatisticsByType(WindowsSystemStats.getType());
       }
 
       if (systemStats != null) {
