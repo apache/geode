@@ -134,4 +134,18 @@ public class LogExporterFileIntegrationTest {
     assertThat(logExporter.findStatFiles(workingDir.toPath())).contains(statFile.toPath());
     assertThat(logExporter.findStatFiles(workingDir.toPath())).doesNotContain(notALogFile.toPath());
   }
+
+  @Test
+  // GEODE-6707 - Rolled over GC logs end with names like ".log.1"
+  public void findLogsWhichContainsTheWordLog() throws Exception {
+    File gcLogFile = new File(workingDir, "gc.log");
+    FileUtils.writeStringToFile(gcLogFile, "some gc log line");
+
+    File gcRolledOverLogFile = new File(workingDir, "gc.log.1");
+    FileUtils.writeStringToFile(gcRolledOverLogFile, "some gc log line");
+
+    assertThat(logExporter.findLogFiles(workingDir.toPath())).contains(gcLogFile.toPath());
+    assertThat(logExporter.findLogFiles(workingDir.toPath()))
+        .contains(gcRolledOverLogFile.toPath());
+  }
 }
