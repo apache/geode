@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.internal.cli.functions;
 
 import java.io.PrintWriter;
@@ -32,7 +33,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LogService;
 
-public class ExportConfigFunction implements InternalFunction {
+public class ExportConfigFunction implements InternalFunction<Object> {
   private static final Logger logger = LogService.getLogger();
 
   public static final String ID = ExportConfigFunction.class.getName();
@@ -40,7 +41,7 @@ public class ExportConfigFunction implements InternalFunction {
   private static final long serialVersionUID = 1L;
 
   @Override
-  public void execute(FunctionContext context) {
+  public void execute(FunctionContext<Object> context) {
     // Declared here so that it's available when returning a Throwable
     String memberId = "";
 
@@ -57,14 +58,14 @@ public class ExportConfigFunction implements InternalFunction {
       // Generate the cache XML
       StringWriter xmlWriter = new StringWriter();
       PrintWriter printWriter = new PrintWriter(xmlWriter);
-      CacheXmlGenerator.generate(cache, printWriter, true, false, false);
+      CacheXmlGenerator.generate(cache, printWriter, false, false);
       printWriter.close();
 
       // Generate the properties file
       DistributionConfigImpl config =
           (DistributionConfigImpl) ((InternalDistributedSystem) cache.getDistributedSystem())
               .getConfig();
-      StringBuffer propStringBuf = new StringBuffer();
+      StringBuilder propStringBuf = new StringBuilder();
       String lineSeparator = System.getProperty("line.separator");
       for (Map.Entry entry : config.getConfigPropsFromSource(ConfigSource.runtime()).entrySet()) {
         if (entry.getValue() != null && !entry.getValue().equals("")) {

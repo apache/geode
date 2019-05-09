@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.wan;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -85,8 +86,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     });
 
     System.out.println("running against these versions and attributes: "
-        + result.stream().map(entry -> Arrays.toString(entry)).collect(
-            Collectors.joining(", ")));
+        + result.stream().map(Arrays::toString).collect(Collectors.joining(", ")));
     return result;
   }
 
@@ -139,7 +139,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
   }
 
   @Test
-  public void testMultipleReceiversRemovedDuringRoll() throws Exception {
+  public void testMultipleReceiversRemovedDuringRoll() {
     // Get old locator properties
     VM locator = Host.getHost(0).getVM(oldVersion, 0);
     String hostName = NetworkUtils.getServerHostName();
@@ -158,22 +158,21 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
                 InternalLocator.getLocator().isSharedConfigurationRunning()).isTrue()));
 
     // Add cluster configuration elements containing multiple receivers
-    locator.invoke(
-        () -> addMultipleGatewayReceiverElementsToClusterConfiguration());
+    locator.invoke(this::addMultipleGatewayReceiverElementsToClusterConfiguration);
 
     // Roll old locator to current
     rollLocatorToCurrent(locator, locatorPort, 0, locators,
         null, true);
 
     // Verify cluster configuration contains expected number of receivers
-    locator.invoke(() -> verifyGatewayReceiverClusterConfigurationElements());
+    locator.invoke(this::verifyGatewayReceiverClusterConfigurationElements);
 
     // Start member in current version with cluster configuration enabled
     VM server = Host.getHost(0).getVM(VersionManager.CURRENT_VERSION, 1);
     server.invoke(() -> createCache(locators, true, true));
 
     // Verify member has expected number of receivers
-    server.invoke(() -> verifyGatewayReceivers());
+    server.invoke(this::verifyGatewayReceivers);
   }
 
   private void addMultipleGatewayReceiverElementsToClusterConfiguration()
@@ -182,7 +181,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     CacheCreation creation = new CacheCreation();
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(creation, printWriter, true, false, false);
+    CacheXmlGenerator.generate(creation, printWriter, false, false);
     printWriter.close();
     String baseXml = stringWriter.toString();
     Document document = XmlUtils.createDocumentFromXml(baseXml);
@@ -243,11 +242,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     }
 
     public String toString() {
-      return new StringBuilder()
-          .append(this.name)
-          .append("=")
-          .append(this.value)
-          .toString();
+      return name + "=" + value;
     }
   }
 }
