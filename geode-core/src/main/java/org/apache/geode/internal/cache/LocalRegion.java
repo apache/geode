@@ -53,7 +53,6 @@ import javax.transaction.Status;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 
-import io.micrometer.core.instrument.Timer;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
@@ -358,16 +357,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   private final EntryEventFactory entryEventFactory;
   private final RegionMapConstructor regionMapConstructor;
-  private final Timer createTimer;
-  private final Timer putTimer;
-  private final Timer putIfAbsentTimer;
-  private final Timer replaceTimer;
-  private final Timer getTimer;
-  private final Timer getEntryTimer;
-  private final Timer containsKeyTimer;
-  private final Timer containsValueTimer;
-  private final Timer containsKeyOnServerTimer;
-  private final Timer containsValueForKeyTimer;
 
   /**
    * contains Regions themselves // marked volatile to make sure it is fully initialized before
@@ -657,56 +646,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     eventTracker = createEventTracker();
 
     versionVector = createRegionVersionVector();
-
-    createTimer = Timer.builder("cache.region.operations.puts")
-        .tag("region.name", regionName)
-        .tag("put.type", "create")
-        .register(cache.getMeterRegistry());
-
-    putTimer = Timer.builder("cache.region.operations.puts")
-        .tag("region.name", regionName)
-        .tag("put.type", "put")
-        .register(cache.getMeterRegistry());
-
-    putIfAbsentTimer = Timer.builder("cache.region.operations.puts")
-        .tag("region.name", regionName)
-        .tag("put.type", "put-if-absent")
-        .register(cache.getMeterRegistry());
-
-    replaceTimer = Timer.builder("cache.region.operations.puts")
-        .tag("region.name", regionName)
-        .tag("put.type", "replace")
-        .register(cache.getMeterRegistry());
-
-    getTimer = Timer.builder("cache.region.operations.gets")
-        .tag("region.name", regionName)
-        .tag("get.type", "get")
-        .register(cache.getMeterRegistry());
-
-    getEntryTimer = Timer.builder("cache.region.operations.gets")
-        .tag("region.name", regionName)
-        .tag("get.type", "get-entry")
-        .register(cache.getMeterRegistry());
-
-    containsKeyTimer = Timer.builder("cache.region.operations.contains")
-        .tag("region.name", regionName)
-        .tag("contains.type", "contains-key")
-        .register(cache.getMeterRegistry());
-
-    containsValueTimer = Timer.builder("cache.region.operations.contains")
-        .tag("region.name", regionName)
-        .tag("contains.type", "contains-value")
-        .register(cache.getMeterRegistry());
-
-    containsKeyOnServerTimer = Timer.builder("cache.region.operations.contains")
-        .tag("region.name", regionName)
-        .tag("contains.type", "contains-key-on-server")
-        .register(cache.getMeterRegistry());
-
-    containsValueForKeyTimer = Timer.builder("cache.region.operations.contains")
-        .tag("region.name", regionName)
-        .tag("contains.type", "contains-value-for-key")
-        .register(cache.getMeterRegistry());
   }
 
   private void addCacheServiceProfiles(InternalRegionArguments internalRegionArgs) {
@@ -758,7 +697,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       return new Object();
     } else {
       return fullPath; // avoids creating another sync object - could be anything unique to
-                       // this region
+      // this region
     }
   }
 
@@ -1086,15 +1025,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void create(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, EntryExistsException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    createTimer.record(() -> {
-      @Released
-      EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
-      try {
-        validatedCreate(event, startPut);
-      } finally {
-        event.release();
-      }
-    });
+    @Released
+    EntryEventImpl event = newCreateEntryEvent(key, value, aCallbackArgument);
+    try {
+      validatedCreate(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
   private void validatedCreate(EntryEventImpl event, long startPut)
@@ -1113,7 +1050,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         false, // ifOld
         null, // expectedOldValue
         true // requireOldValue TODO txMerge why is oldValue required for
-             // create? I think so that the EntryExistsException will have it.
+    // create? I think so that the EntryExistsException will have it.
     )) {
       throw new EntryExistsException(event.getKey().toString(), event.getOldValue());
     } else {
@@ -1345,14 +1282,12 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   @Override
   public Object get(Object key, Object aCallbackArgument, boolean generateCallbacks,
       EntryEventImpl clientEvent) throws TimeoutException, CacheLoaderException {
-    return getTimer.record(() -> {
-      Object result =
-          get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
-      if (Token.isInvalid(result)) {
-        result = null;
-      }
-      return result;
-    });
+    Object result =
+        get(key, aCallbackArgument, generateCallbacks, false, false, null, clientEvent, false);
+    if (Token.isInvalid(result)) {
+      result = null;
+    }
+    return result;
   }
 
   /**
@@ -1661,15 +1596,13 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Object put(Object key, Object value, Object aCallbackArgument)
       throws TimeoutException, CacheWriterException {
     long startPut = CachePerfStats.getStatTime();
-    return putTimer.record(() -> {
-      @Released
-      EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
-      try {
-        return validatedPut(event, startPut);
-      } finally {
-        event.release();
-      }
-    });
+    @Released
+    EntryEventImpl event = newUpdateEntryEvent(key, value, aCallbackArgument);
+    try {
+      return validatedPut(event, startPut);
+    } finally {
+      event.release();
+    }
   }
 
   Object validatedPut(EntryEventImpl event, long startPut)
@@ -1819,13 +1752,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public Region.Entry getEntry(Object key) {
-    return getEntryTimer.record(() -> {
-      validateKey(key);
-      checkReadiness();
-      checkForNoAccess();
-      discoverJTA();
-      return getDataView().getEntry(getKeyInfo(key), this, false);
-    });
+    validateKey(key);
+    checkReadiness();
+    checkForNoAccess();
+    discoverJTA();
+    return getDataView().getEntry(getKeyInfo(key), this, false);
   }
 
   /** internally we often need to get an entry whether it is a tombstone or not */
@@ -2014,11 +1945,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean containsKey(Object key) {
-    return containsKeyTimer.record(() -> {
-      checkReadiness();
-      checkForNoAccess();
-      return getDataView().containsKey(getKeyInfo(key), this);
-    });
+    checkReadiness();
+    checkForNoAccess();
+    return getDataView().containsKey(getKeyInfo(key), this);
   }
 
   @Override
@@ -2052,10 +1981,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean containsValueForKey(Object key) {
-    return containsValueForKeyTimer.record(() -> {
-      discoverJTA();
-      return getDataView().containsValueForKey(getKeyInfo(key), this);
-    });
+    discoverJTA();
+    return getDataView().containsValueForKey(getKeyInfo(key), this);
   }
 
   boolean nonTXContainsValueForKey(KeyInfo keyInfo) {
@@ -2787,17 +2714,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       if (hasOwnStats) {
         cachePerfStats.close();
       }
-
-      cache.getMeterRegistry().remove(createTimer);
-      cache.getMeterRegistry().remove(putTimer);
-      cache.getMeterRegistry().remove(putIfAbsentTimer);
-      cache.getMeterRegistry().remove(replaceTimer);
-      cache.getMeterRegistry().remove(getTimer);
-      cache.getMeterRegistry().remove(getEntryTimer);
-      cache.getMeterRegistry().remove(containsKeyTimer);
-      cache.getMeterRegistry().remove(containsValueTimer);
-      cache.getMeterRegistry().remove(containsKeyOnServerTimer);
-      cache.getMeterRegistry().remove(containsValueForKeyTimer);
     }
   }
 
@@ -4107,17 +4023,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean containsKeyOnServer(Object key) {
-    return containsKeyOnServerTimer.record(() -> {
-      checkReadiness();
-      checkForNoAccess();
-      ServerRegionProxy proxy = getServerProxy();
-      if (proxy != null) {
-        return proxy.containsKey(key);
-      } else {
-        throw new UnsupportedOperationException(
-            "Server keySet requires a pool.");
-      }
-    });
+    checkReadiness();
+    checkForNoAccess();
+    ServerRegionProxy proxy = getServerProxy();
+    if (proxy != null) {
+      return proxy.containsKey(key);
+    } else {
+      throw new UnsupportedOperationException(
+          "Server keySet requires a pool.");
+    }
   }
 
   @Override
@@ -8433,24 +8347,22 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    */
   @Override
   public boolean containsValue(final Object value) {
-    return containsValueTimer.record(() -> {
-      if (value == null) {
-        throw new NullPointerException(
-            "Value for containsValue(value) cannot be null");
-      }
-      checkReadiness();
-      checkForNoAccess();
-      boolean result = false;
-      for (Object entry : new EntriesSet(this, false, IteratorType.VALUES, false)) {
-        if (entry != null) {
-          if (value.equals(entry)) {
-            result = true;
-            break;
-          }
+    if (value == null) {
+      throw new NullPointerException(
+          "Value for containsValue(value) cannot be null");
+    }
+    checkReadiness();
+    checkForNoAccess();
+    boolean result = false;
+    for (Object entry : new EntriesSet(this, false, IteratorType.VALUES, false)) {
+      if (entry != null) {
+        if (value.equals(entry)) {
+          result = true;
+          break;
         }
       }
-      return result;
-    });
+    }
+    return result;
   }
 
   /**
@@ -10561,48 +10473,46 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public Object putIfAbsent(Object key, Object value, Object callbackArgument) {
     long startPut = CachePerfStats.getStatTime();
 
-    return putIfAbsentTimer.record(() -> {
-      checkIfConcurrentMapOpsAllowed();
-      validateArguments(key, value, callbackArgument);
+    checkIfConcurrentMapOpsAllowed();
+    validateArguments(key, value, callbackArgument);
 
-      // TODO ConcurrentMap.putIfAbsent() treats null as an invalidation operation
-      // BUT we need to return the old value, which Invalidate isn't currently doing
+    // TODO ConcurrentMap.putIfAbsent() treats null as an invalidation operation
+    // BUT we need to return the old value, which Invalidate isn't currently doing
 
-      checkReadiness();
-      checkForLimitedOrNoAccess();
-      discoverJTA();
+    checkReadiness();
+    checkForLimitedOrNoAccess();
+    discoverJTA();
 
-      // This used to call the constructor which took the old value. It
-      // was modified to call the other EntryEventImpl constructor so that
-      // an id will be generated by default. Null was passed in anyway.
-      // generate EventID
+    // This used to call the constructor which took the old value. It
+    // was modified to call the other EntryEventImpl constructor so that
+    // an id will be generated by default. Null was passed in anyway.
+    // generate EventID
 
-      @Released
-      EntryEventImpl event = entryEventFactory.create(this, Operation.PUT_IF_ABSENT, key, value,
-          callbackArgument, false, getMyId());
+    @Released
+    EntryEventImpl event = entryEventFactory.create(this, Operation.PUT_IF_ABSENT, key, value,
+        callbackArgument, false, getMyId());
 
-      try {
-        if (generateEventID()) {
-          event.setNewEventId(cache.getDistributedSystem());
-        }
-        final Object oldValue = null;
-        final boolean ifNew = true;
-        final boolean ifOld = false;
-        final boolean requireOldValue = true;
-        if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
-          return event.getOldValue();
-        } else {
-          if (!getDataView().isDeferredStats()) {
-            getCachePerfStats().endPut(startPut, false);
-          }
-          return null;
-        }
-      } catch (EntryNotFoundException ignore) {
-        return event.getOldValue();
-      } finally {
-        event.release();
+    try {
+      if (generateEventID()) {
+        event.setNewEventId(cache.getDistributedSystem());
       }
-    });
+      final Object oldValue = null;
+      final boolean ifNew = true;
+      final boolean ifOld = false;
+      final boolean requireOldValue = true;
+      if (!basicPut(event, ifNew, ifOld, oldValue, requireOldValue)) {
+        return event.getOldValue();
+      } else {
+        if (!getDataView().isDeferredStats()) {
+          getCachePerfStats().endPut(startPut, false);
+        }
+        return null;
+      }
+    } catch (EntryNotFoundException ignore) {
+      return event.getOldValue();
+    } finally {
+      event.release();
+    }
   }
 
   @Override
@@ -10657,7 +10567,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public boolean replace(Object key, Object oldValue, Object newValue) {
-    return replaceTimer.record(() -> replace(key, oldValue, newValue, null));
+    return replace(key, oldValue, newValue, null);
   }
 
   /**
@@ -10715,7 +10625,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
   @Override
   public Object replace(Object key, Object value) {
-    return replaceTimer.record(() -> replaceWithCallbackArgument(key, value, null));
+    return replaceWithCallbackArgument(key, value, null);
   }
 
   /**
