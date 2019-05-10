@@ -57,7 +57,7 @@ resources:
     {{ github_access() | indent(4) }}
     branch: ((!geode-build-branch))
     paths:
-    - ci/pipelines/reaper.yml
+    - ci/pipelines/reaper/*
 - name: meta-mini-dockerfile
   type: git
   source:
@@ -316,40 +316,45 @@ jobs:
 
 
 
-
 - name: set-reaper-pipeline
   serial: true
   public: ((!public-pipelines))
   plan:
-  - get: geode-reaper-pipeline
-    trigger: true
-  - task: pipeline-vars
-    config:
-      outputs:
-      - name: pipeline-vars
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: alpine
-      run:
-        path: /bin/sh
-        args:
-          - -c
-          - |
-            cat <<EOF >>pipeline-vars/vars
-            ---
-            gcp-project: "((gcp-project))"
-            pipeline-prefix: "((!pipeline-prefix))"
-            docker-image-prefix: "((!pipeline-prefix))"
-  - put: concourse
-    params:
-      pipelines:
-      - name: ((!pipeline-prefix))reaper
-        team: ((!concourse-team))
-        config_file: geode-reaper-pipeline/ci/pipelines/reaper.yml
-        vars_files:
-        - pipeline-vars/vars
+    - get: geode-reaper-pipeline
+      trigger: true
+    - get: meta-mini-image
+      trigger: true
+      passed: [build-meta-mini-docker-image]
+    - task: create-image-yml
+      image: meta-mini-image
+      config:
+        platform: linux
+        inputs:
+          - name: geode-reaper-pipeline
+        outputs:
+          - name: results
+        params:
+          OUTPUT_DIRECTORY: results
+          GEODE_BRANCH: ((geode-build-branch))
+          GEODE_FORK: ((geode-fork))
+          GEODE_REPO_NAME: ((geode-repo-name))
+          REPOSITORY_PUBLIC: {{ repository.public }}
+          UPSTREAM_FORK: {{ repository.upstream_fork }}
+          PIPELINE_PREFIX: ((pipeline-prefix))
+          SANITIZED_GEODE_BRANCH: ((sanitized-geode-build-branch))
+          SANITIZED_GEODE_FORK: ((sanitized-geode-fork))
+          GCP_PROJECT: ((gcp-project))
+          PUBLIC_PIPELINES: ((public-pipelines))
+        run:
+          path: geode-reaper-pipeline/ci/pipelines/reaper/deploy_reaper_pipeline.sh
+    - put: concourse
+      params:
+        pipelines:
+          - name: ((!pipeline-prefix))reaper
+            team: ((!concourse-team))
+            config_file: results/generated-pipeline.yml
+            vars_files:
+              - results/pipeline-vars.yml
 
 - name: build-meta-mini-docker-image
   public: ((!public-pipelines))
