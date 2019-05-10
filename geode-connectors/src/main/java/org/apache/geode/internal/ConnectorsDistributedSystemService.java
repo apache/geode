@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.internal;
+package org.apache.geode.internal;
 
 import java.io.IOException;
 import java.net.URL;
@@ -20,8 +20,6 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.DistributedSystemService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.InternalDataSerializer;
 
 public class ConnectorsDistributedSystemService implements DistributedSystemService {
   @Override
