@@ -64,6 +64,7 @@ import org.apache.geode.management.internal.cli.functions.RegionCreateFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.util.RegionPath;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -225,6 +226,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
         getConfigurationPersistenceService();
     if (regionShortcut != null) {
       regionConfig.setType(regionShortcut.name());
+      RegionConfigValidator.setShortcutAttributes(regionConfig);
     }
     // get the attributes from the template region
     else {
@@ -263,7 +265,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
       if (templateRegionConfigs.size() == 1) {
         regionConfig = templateRegionConfigs.get(0);
       }
-      // found more than one configuration with this name. fail ff they have different attributes.
+      // found more than one configuration with this name. fail if they have different attributes.
       else {
         RegionConfig first = templateRegionConfigs.get(0);
         for (int i = 1; i < templateRegionConfigs.size(); i++) {

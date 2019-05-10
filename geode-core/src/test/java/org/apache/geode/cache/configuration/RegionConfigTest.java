@@ -16,6 +16,7 @@ package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.net.URL;
@@ -26,7 +27,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionConfigTest {
@@ -68,6 +71,7 @@ public class RegionConfigTest {
       RegionConfig config = new RegionConfig();
       config.setType(shortcut.name());
       config.setName(shortcut.name());
+      RegionConfigValidator.setShortcutAttributes(config);
       RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
@@ -237,5 +241,20 @@ public class RegionConfigTest {
     DiskStoreType newDiskStore = mapper.readValue(json, DiskStoreType.class);
     assertThat(newDiskStore.getDiskDirs()).hasSize(2);
 
+  }
+
+  @Test
+  public void setAttributesAndType() throws Exception {
+    RegionConfig config = new RegionConfig();
+    config.setType("REPLICATE");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setKeyConstraint("java.lang.Boolean");
+    attributes.setValueConstraint("java.lang.Integer");
+    attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    config.setRegionAttributes(attributes);
+
+    RegionConfigValidator validator = new RegionConfigValidator(mock(InternalCache.class));
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }
