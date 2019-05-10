@@ -24,7 +24,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -268,7 +268,7 @@ public class AvailablePortHelperIntegrationTest {
   @Parameters({"true", "false"})
   public void initializeUniquePortRange_willReturnSamePortsForSameRange(
       final boolean useMembershipPortRange) {
-    assumeTrue(
+    assumeFalse(
         "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
         SystemUtils.isWindows());
 
@@ -284,7 +284,7 @@ public class AvailablePortHelperIntegrationTest {
   @Parameters({"true", "false"})
   public void initializeUniquePortRange_willReturnUniquePortsForUniqueRanges(
       final boolean useMembershipPortRange) {
-    assumeTrue(
+    assumeFalse(
         "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
         SystemUtils.isWindows());
 
