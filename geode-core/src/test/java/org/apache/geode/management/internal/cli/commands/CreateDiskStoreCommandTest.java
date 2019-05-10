@@ -58,7 +58,7 @@ public class CreateDiskStoreCommandTest {
     DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
 
     DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
-    assertThat(diskDirType.getContent()).isEqualTo("./data/persist");
+    assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo("./data/persist");
   }
 
   @Test
@@ -73,6 +73,6 @@ public class CreateDiskStoreCommandTest {
     DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
 
     DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
-    assertThat(diskDirType.getContent()).isEqualTo("/data/persist");
+    assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo("/data/persist");
   }
 }

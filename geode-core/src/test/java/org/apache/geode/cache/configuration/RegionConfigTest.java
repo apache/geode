@@ -211,7 +211,7 @@ public class RegionConfigTest {
 
     String xml2 = service.marshall(cacheConfig);
     System.out.println(xml2);
-    assertThat(xml).contains(diskStoreXml);
+    assertThat(xml.replace('\\', '/')).contains(diskStoreXml);
   }
 
   @Test
@@ -232,7 +232,7 @@ public class RegionConfigTest {
 
     String goldenJson =
         "\"diskDirs\":[{\"content\":\"./data/persist\"},{\"content\":\"/data/persist\"}]";
-    assertThat(json).contains(goldenJson);
+    assertThat(json.replace('\\', '/')).contains(goldenJson);
 
     DiskStoreType newDiskStore = mapper.readValue(json, DiskStoreType.class);
     assertThat(newDiskStore.getDiskDirs()).hasSize(2);
