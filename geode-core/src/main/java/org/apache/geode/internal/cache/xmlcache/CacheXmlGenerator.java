@@ -184,10 +184,13 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
   }
 
   /**
+   * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
+   *        this value is ignored and always true.
    * @param includeDefaults set to false to cause generated xml to not have defaults values.
    */
-  public static void generate(Cache cache, PrintWriter pw, boolean includeKeysValues,
-      boolean includeDefaults) {
+  @Deprecated
+  public static void generate(Cache cache, PrintWriter pw, boolean useSchema,
+      boolean includeKeysValues, boolean includeDefaults) {
     new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues, includeDefaults)
         .generate(pw);
   }
@@ -426,6 +429,20 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
     }
     if (creation.hasSearchTimeout()) {
       atts.addAttribute("", "", SEARCH_TIMEOUT, "", String.valueOf(creation.getSearchTimeout()));
+    }
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_5_1) >= 0) {
+      if (creation.hasMessageSyncInterval()) {
+        atts.addAttribute("", "", MESSAGE_SYNC_INTERVAL, "",
+            String.valueOf(creation.getMessageSyncInterval()));
+      }
+    }
+    if (version.compareTo(CacheXmlVersion.GEMFIRE_4_0) >= 0) {
+      if (creation.hasServer()) {
+        atts.addAttribute("", "", IS_SERVER, "", String.valueOf(creation.isServer()));
+      }
+      if (creation.hasCopyOnRead()) {
+        atts.addAttribute("", "", COPY_ON_READ, "", String.valueOf(creation.getCopyOnRead()));
+      }
     }
     if (isClientCache) {
       handler.startElement("", CLIENT_CACHE, CLIENT_CACHE, atts);
