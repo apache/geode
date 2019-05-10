@@ -181,7 +181,7 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     CacheCreation creation = new CacheCreation();
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
-    CacheXmlGenerator.generate(creation, printWriter, false, false);
+    CacheXmlGenerator.generate(creation, printWriter, true, false, false);
     printWriter.close();
     String baseXml = stringWriter.toString();
     Document document = XmlUtils.createDocumentFromXml(baseXml);

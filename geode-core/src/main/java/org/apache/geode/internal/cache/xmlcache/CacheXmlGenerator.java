@@ -187,10 +187,20 @@ public class CacheXmlGenerator extends CacheXml implements XMLReader {
    * @param useSchema Should the generated XML reference a schema (as opposed to a DTD)? As of 8.1
    *        this value is ignored and always true.
    * @param includeDefaults set to false to cause generated xml to not have defaults values.
+   * @deprecated Only used for rolling upgrades
    */
   @Deprecated
   public static void generate(Cache cache, PrintWriter pw, boolean useSchema,
       boolean includeKeysValues, boolean includeDefaults) {
+    new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues, includeDefaults)
+        .generate(pw);
+  }
+
+  /**
+   * @param includeDefaults set to false to cause generated xml to not have defaults values.
+   */
+  public static void generate(Cache cache, PrintWriter pw, boolean includeKeysValues,
+      boolean includeDefaults) {
     new CacheXmlGenerator(cache, true, VERSION_LATEST, includeKeysValues, includeDefaults)
         .generate(pw);
   }
