@@ -28,6 +28,23 @@ repositories {
 
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
+configurations {
+  //Configuration used to download mysql jar
+  jdbcTestingJars
+}
+def jdbcJarsDir = "$buildDir/generated-resources/jdbcJars"
+sourceSets {
+  distributedTest {
+    resources {
+      srcDirs jdbcJarsDir
+    }
+    output.dir(jdbcJarsDir, builtBy: 'downloadJdbcJars')
+  }
+}
+task downloadJdbcJars(type:Copy) {
+  from {configurations.jdbcTestingJars}
+  into jdbcJarsDir
+}
 
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
@@ -100,6 +117,8 @@ dependencies {
   acceptanceTestRuntime('mysql:mysql-connector-java')
   acceptanceTestRuntime('org.apache.derby:derby')
   acceptanceTestRuntime('org.postgresql:postgresql')
+
+  jdbcTestingJars('mysql:mysql-connector-java:8.0.15')
 }
 
 integrationTest.forkEvery 0

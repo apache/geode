@@ -19,19 +19,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.naming.NamingException;
-
-import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
@@ -40,22 +37,25 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
-      throws DataSourceCreateException, NamingException {
-    ResultSender<Object> resultSender = context.getResultSender();
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     Object[] arguments = context.getArguments();
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
+    String driverJarName = (String) arguments[2];
+
     final String TYPE_NAME;
     if (creatingDataSource) {
       TYPE_NAME = "data-source";
     } else {
       TYPE_NAME = "jndi-binding";
     }
-    try {
-      DriverJarUtil util = new DriverJarUtil();
-      util.registerDriver("");
-    } catch (Exception ex){}
+    if (driverJarName != null && configuration.getJdbcDriverClass() == null) {
+      try {
+        DriverJarUtil util = new DriverJarUtil();
+        configuration.setJdbcDriverClass(util.getJdbcDriverName(driverJarName));
+      } catch (Exception ex) {
+      }
+    }
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));
@@ -63,12 +63,12 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
       if (logger.isErrorEnabled()) {
         logger.error("create " + TYPE_NAME + " failed", ex.getWrappedException());
       }
-      throw ex;
-    } catch (NamingException ex) {
+      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
+    } catch (Exception ex) {
       if (logger.isErrorEnabled()) {
         logger.error("create " + TYPE_NAME + " failed", ex);
       }
-      throw ex;
+      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
 
     }
 

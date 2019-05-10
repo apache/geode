@@ -64,6 +64,9 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
   static final String POOLED = "pooled";
   static final String POOLED__HELP =
       "By default a pooled data source is created. If this option is false then a non-pooled data source is created.";
+  static final String DRIVER_JAR_NAME = "driver-jar";
+  static final String DRIVER_JAR_NAME_HELP =
+      "The name of the deployed jar containing the driver to be used with the data source";
   static final String IFNOTEXISTS__HELP =
       "Skip the create operation when a data source with the same name already exists.  Without specifying this option, this command execution results into an error.";
   static final String POOL_PROPERTIES = "pool-properties";
@@ -92,6 +95,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") boolean ifNotExists,
       @CliOption(key = POOLED, help = POOLED__HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "true") boolean pooled,
+      @CliOption(key = DRIVER_JAR_NAME, help = DRIVER_JAR_NAME_HELP) String driverJarName,
       @CliOption(key = POOL_PROPERTIES, optionContext = "splittingRegex=,(?![^{]*\\})",
           help = POOL_PROPERTIES_HELP) PoolProperty[] poolProperties) {
 
@@ -134,7 +138,7 @@ public class CreateDataSourceCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
-      Object[] arguments = new Object[] {configuration, true};
+      Object[] arguments = new Object[] {configuration, true, driverJarName};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
           new CreateJndiBindingFunction(), arguments, targetMembers);
       ResultModel result =

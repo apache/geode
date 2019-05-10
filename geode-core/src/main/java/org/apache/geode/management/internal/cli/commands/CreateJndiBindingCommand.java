@@ -163,7 +163,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
-      Object[] arguments = new Object[] {configuration, false};
+      Object[] arguments = new Object[] {configuration, false, null};
       List<CliFunctionResult> jndiCreationResult = executeAndGetFunctionResult(
           new CreateJndiBindingFunction(), arguments, targetMembers);
       ResultModel result = ResultModel.createMemberStatusResult(jndiCreationResult);
