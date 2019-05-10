@@ -131,7 +131,7 @@ You can modify the `jmx-manager-update-rate` property in `gemfire.properties` to
 
 *This section applies only to UNIX installations.*
 
-gfsh commands such as `query` produce output with wide columns that may become misaligned and require manual reformatting to view the output. If the output cannot fit in the available width of the terminal, gfsh automatically trims the columns widths to fit. You can disable this behavior by setting the gfsh environment variable `GFSH.TRIMSCRWIDTH` to `false`.
+gfsh commands such as `query` produce output with wide columns that may become misaligned and require manual reformatting to view the output. If the output cannot fit in the available width of the terminal, gfsh automatically trims the columns widths to fit. You can disable this behavior by setting the gfsh environment variable `APP_RESULT_VIEWER` to an arbitrary value that is not `external` or `basic`.
 
 You can set the `APP_RESULT_VIEWER` variable to `external` to enable viewing of the output using the UNIX `less` command.
 
