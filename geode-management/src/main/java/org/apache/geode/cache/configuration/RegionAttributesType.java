@@ -1494,7 +1494,7 @@ public class RegionAttributesType implements Serializable {
     this.offHeap = value;
   }
 
-  public void setLruHeapPercentage(EnumActionDestroyOverflow action) {
+  public void setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow action) {
     if (evictionAttributes == null) {
       evictionAttributes = new EvictionAttributes();
     }

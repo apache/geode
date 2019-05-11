@@ -100,11 +100,12 @@ public class RegionAPIDUnitTest {
   }
 
   @Test
-  public void defaultTypeIsPartition() throws Exception {
+  public void createPartitionedRegion() throws Exception {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
+      config.setType(RegionType.PARTITION);
       ClusterManagementResult result = ClusterStartupRule.getLocator().getClusterManagementService()
           .create(config);
       assertThat(result.isSuccessful()).isTrue();

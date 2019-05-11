@@ -28,6 +28,10 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
+import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
@@ -82,14 +86,6 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void defaultsTypeToPartitioned() {
-    config.setName("regionName");
-    validator.validate(config);
-
-    assertThat(config.getType()).isEqualTo("PARTITION");
-  }
-
-  @Test
   public void noName() {
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
@@ -99,6 +95,7 @@ public class RegionConfigValidatorTest {
   @Test
   public void invalidName1() {
     config.setName("__test");
+    config.setType("REPLICATE");
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Region names may not begin with a double-underscore");
@@ -107,10 +104,128 @@ public class RegionConfigValidatorTest {
   @Test
   public void invalidName2() {
     config.setName("a!&b");
+    config.setType("REPLICATE");
     assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Region names may only be alphanumeric and may contain hyphens or underscores");
+  }
+
+  @Test
+  public void missingType() {
+    config.setName("test");
+    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Type of the region has to be specified");
+  }
+
+  @Test
+  public void validatePartition() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validateReplicate() throws Exception {
+    config.setName("test");
+    config.setType("REPLICATE");
+    RegionAttributesType attributes = new RegionAttributesType();
+    config.setRegionAttributes(attributes);
+
+    attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    attributes.setScope(RegionAttributesScope.DISTRIBUTED_NO_ACK);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validatePartition_Redundant() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_REDUNDANT");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validatePartition_Persistent() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_PERSISTENT");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validatePartition_Redundant_Persistent() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_REDUNDANT_PERSISTENT");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+    attributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+    attributes.setRedundantCopy("0");
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    // valid redundancy copy
+    attributes.setRedundantCopy("2");
+    validator.validate(config);
+    assertThat(config.getRegionAttributes().getPartitionAttributes().getRedundantCopies())
+        .isEqualTo("2");
+  }
+
+  @Test
+  public void validatePartition_overflow() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_OVERFLOW");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    attributes.setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void validatePartition_proxy() throws Exception {
+    config.setName("test");
+    config.setType("PARTITION_PROXY");
+    RegionAttributesType attributes = new RegionAttributesType();
+    attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    config.setRegionAttributes(attributes);
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    attributes.setLocalMaxMemory("5000");
+    assertThatThrownBy(() -> validator.validate(config))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    // validator will use the type to set the local max memory to be 0
+    attributes.setLocalMaxMemory(null);
+    validator.validate(config);
+    assertThat(attributes.getPartitionAttributes().getLocalMaxMemory()).isEqualTo("0");
   }
 
 }

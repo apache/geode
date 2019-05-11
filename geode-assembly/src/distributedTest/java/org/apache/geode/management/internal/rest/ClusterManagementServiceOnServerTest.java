@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.GeodeClusterManagementServiceConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -66,6 +67,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
 
     regionConfig = new RegionConfig();
     regionConfig.setName("test");
+    regionConfig.setType(RegionType.PARTITION);
   }
 
   @Test

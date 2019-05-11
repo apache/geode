@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,6 +25,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RegionConfigRealizerIntegrationTest {
@@ -46,7 +46,7 @@ public class RegionConfigRealizerIntegrationTest {
   public void sanityCheck() throws Exception {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-
+    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
     Region<Object, Object> region = server.getCache().getRegion("test");
@@ -59,21 +59,10 @@ public class RegionConfigRealizerIntegrationTest {
   public void create2ndTime() throws Exception {
     config.setName("foo");
     config.setType(RegionType.REPLICATE);
+    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
     // the 2nd time with same name and type will not throw an error
     realizer.create(config, server.getCache());
-  }
-
-  @Test
-  public void createDifferentRegion2ndTime() throws Exception {
-    config.setName("bar");
-    config.setType(RegionType.REPLICATE);
-    realizer.create(config, server.getCache());
-
-    // the 2nd time with different type will throw an error
-    config.setType(RegionType.PARTITION);
-    assertThatThrownBy(() -> realizer.create(config, server.getCache()))
-        .isInstanceOf(IllegalStateException.class);
   }
 }

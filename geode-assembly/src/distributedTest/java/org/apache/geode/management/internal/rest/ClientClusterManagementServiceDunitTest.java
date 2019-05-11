@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.GeodeClusterManagementServiceConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -63,6 +64,7 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegion() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
+    region.setType(RegionType.PARTITION);
 
     ClusterManagementResult result = cmsClient.create(region);
 
@@ -79,6 +81,7 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegionWithNullGroup() {
     RegionConfig region = new RegionConfig();
     region.setName("orders");
+    region.setType(RegionType.PARTITION);
 
     ClusterManagementResult result = cmsClient.create(region);
 
@@ -103,6 +106,7 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegionWithGroup() {
     RegionConfig region = new RegionConfig();
     region.setName("company");
+    region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
 
     ClusterManagementResult result = cmsClient.create(region);
