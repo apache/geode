@@ -36,6 +36,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
@@ -45,6 +46,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
+
 
 public class DistributedEventTrackerTest {
 
@@ -61,6 +63,12 @@ public class DistributedEventTrackerTest {
     when(region.getAttributes()).thenReturn(regionAttributes);
     when(regionAttributes.getDataPolicy()).thenReturn(mock(DataPolicy.class));
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
 
     member = mock(DistributedMember.class);
     eventTracker = new DistributedEventTracker(region.getCache(), mock(CancelCriterion.class),

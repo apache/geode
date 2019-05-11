@@ -47,6 +47,7 @@ import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.index.IndexManager;
 import org.apache.geode.cache.query.internal.index.IndexProtocol;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -1602,10 +1603,15 @@ public class AbstractRegionMapTxApplyDestroyTest {
   }
 
   private void setupLocalRegion() {
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
     when(owner.getCachePerfStats()).thenReturn(cachePerfStats);
-    when(owner.getCache()).thenReturn(mock(InternalCache.class));
+    when(owner.getCache()).thenReturn(cache);
     when(owner.getMyId()).thenReturn(myId);
     when(owner.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
   }
 
   private void doTxApplyDestroy() {

@@ -31,10 +31,12 @@ import org.junit.Test;
 import org.mockito.InOrder;
 
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalDataView;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
@@ -85,6 +87,12 @@ public class PutAllPRMessageTest {
     when(bucketRegion.waitUntilLocked(keys)).thenReturn(true);
     when(bucketRegion.doLockForPrimary(false)).thenThrow(new PrimaryBucketException());
 
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(bucketRegion.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1);
 
     verify(bucketRegion).removeAndNotifyKeys(eq(keys));
@@ -97,6 +105,12 @@ public class PutAllPRMessageTest {
     message.addEntry(entryData);
     doReturn(keys).when(message).getKeysToBeLocked();
     when(bucketRegion.waitUntilLocked(keys)).thenThrow(regionDestroyedException);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(bucketRegion.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
 
     message.doLocalPutAll(partitionedRegion, mock(InternalDistributedMember.class), 1);
 

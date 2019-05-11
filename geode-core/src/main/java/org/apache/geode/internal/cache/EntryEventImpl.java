@@ -47,6 +47,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -184,7 +185,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   public static final Object SUSPECT_TOKEN = new Object();
 
   public EntryEventImpl() {
-    // do nothing
+    this.offHeapLock = null;
   }
 
   /**
@@ -235,6 +236,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   protected EntryEventImpl(InternalRegion region, Operation op, Object key, boolean originRemote,
       DistributedMember distributedMember, boolean generateCallbacks, boolean fromRILocalDestroy) {
     this.region = region;
+    InternalDistributedSystem ds =
+        (InternalDistributedSystem) region.getCache().getDistributedSystem();
+    if (ds.getOffHeapStore() != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
     this.op = op;
     this.keyInfo = region.getKeyInfo(key);
     setOriginRemote(originRemote);
@@ -253,6 +261,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       DistributedMember distributedMember, boolean generateCallbacks, boolean initializeId) {
 
     this.region = region;
+    InternalDistributedSystem ds =
+        (InternalDistributedSystem) region.getCache().getDistributedSystem();
+    if (ds.getOffHeapStore() != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
     this.op = op;
     this.keyInfo = region.getKeyInfo(key, newVal, callbackArgument);
 
@@ -301,6 +316,11 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       @Retained({ENTRY_EVENT_NEW_VALUE, ENTRY_EVENT_OLD_VALUE}) EntryEventImpl other,
       boolean setOldValue) {
     setRegion(other.getRegion());
+    if (other.offHeapLock != null) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
 
     this.eventID = other.eventID;
     basicSetNewValue(other.basicGetNewValue(), false);
@@ -332,8 +352,13 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   }
 
   @Retained
-  public EntryEventImpl(Object key2) {
+  public EntryEventImpl(Object key2, boolean isOffHeap) {
     this.keyInfo = new KeyInfo(key2, null, null);
+    if (isOffHeap) {
+      this.offHeapLock = new Object();
+    } else {
+      this.offHeapLock = null;
+    }
   }
 
   /**
@@ -1086,7 +1111,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     }
   }
 
-  private final Object offHeapLock = new Object();
+  private final Object offHeapLock;
 
   public String getNewValueStringForm() {
     return StringUtils.forceToString(basicGetNewValue());
@@ -2123,20 +2148,29 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(this.getKey());
     if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
       buf.append(";oldValue=");
-      try {
+      if (mayHaveOffHeapReferences()) {
         synchronized (this.offHeapLock) {
-          ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+          try {
+            ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
+          } catch (IllegalStateException ignore) {
+            buf.append("OFFHEAP_VALUE_FREED");
+          }
         }
-      } catch (IllegalStateException ignore) {
-        buf.append("OFFHEAP_VALUE_FREED");
+      } else {
+        ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
       }
+
       buf.append(";newValue=");
-      try {
+      if (mayHaveOffHeapReferences()) {
         synchronized (this.offHeapLock) {
-          ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+          try {
+            ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
+          } catch (IllegalStateException ignore) {
+            buf.append("OFFHEAP_VALUE_FREED");
+          }
         }
-      } catch (IllegalStateException ignore) {
-        buf.append("OFFHEAP_VALUE_FREED");
+      } else {
+        ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
       }
     }
     buf.append(";callbackArg=");
@@ -2871,6 +2905,10 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
    * Return true if this EntryEvent may have off-heap references.
    */
   private boolean mayHaveOffHeapReferences() {
+    if (this.offHeapLock == null) {
+      return false;
+    }
+
     InternalRegion lr = getRegion();
     if (lr != null) {
       return lr.getOffHeap();
@@ -2891,9 +2929,14 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     if (isOffHeapReference(this.newValue) || isOffHeapReference(this.oldValue)) {
       throw new IllegalStateException("This event already has off-heap values");
     }
-    synchronized (this.offHeapLock) {
+    if (mayHaveOffHeapReferences()) {
+      synchronized (this.offHeapLock) {
+        this.offHeapOk = false;
+      }
+    } else {
       this.offHeapOk = false;
     }
+
   }
 
   /**
