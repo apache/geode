@@ -91,6 +91,7 @@ public class RegionManagementDunitTest {
   public void createRegionWithKeyValueConstraint() throws Exception {
     RegionConfig config = new RegionConfig();
     config.setName("customers2");
+    config.setType(RegionType.PARTITION);
     RegionAttributesType type = new RegionAttributesType();
     type.setKeyConstraint("java.lang.Boolean");
     type.setValueConstraint("java.lang.Integer");
@@ -124,8 +125,8 @@ public class RegionManagementDunitTest {
   }
 
   @Test
-  public void createsAPartitionedRegionByDefault() throws Exception {
-    String json = "{\"name\": \"orders\"}";
+  public void createsAPartitionedRegion() throws Exception {
+    String json = "{\"name\": \"orders\", \"type\": \"PARTITION\"}";
 
     ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
         .hasStatusCode(201)

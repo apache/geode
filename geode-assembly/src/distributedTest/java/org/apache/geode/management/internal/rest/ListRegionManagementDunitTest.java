@@ -70,6 +70,7 @@ public class ListRegionManagementDunitTest {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers1");
     regionConfig.setGroup("group1");
+    regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 1);
 
@@ -88,6 +89,7 @@ public class ListRegionManagementDunitTest {
 
     regionConfig = new RegionConfig();
     regionConfig.setName("customers");
+    regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers", 2);
 
@@ -95,6 +97,7 @@ public class ListRegionManagementDunitTest {
     regionConfig = new RegionConfig();
     regionConfig.setName("customers3");
     regionConfig.setGroup("group1");
+    regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     regionConfig.setGroup("group2");
     client.create(regionConfig);
