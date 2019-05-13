@@ -87,11 +87,22 @@ public class PartitionedRegionAttributesMutatorTest {
       CompletableFuture<Void> createBucket =
           CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
       bucketCreated.await();
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setCacheLoader(loader);
       mutationMade.countDown();
       createBucket.get(DEFAULT_WAIT_DURATION, DEFAULT_WAIT_UNIT);
       getAllBucketRegions(pr).forEach(region -> assertEquals(loader, region.getCacheLoader()));
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
+  }
+
+  private static void verifyMetaDataIsOk(PartitionRegionConfig beforeConfig,
+      PartitionRegionConfig afterConfig) {
+    assertEquals(beforeConfig.isColocationComplete(), afterConfig.isColocationComplete());
+    assertEquals(beforeConfig.isFirstDataStoreCreated(), afterConfig.isFirstDataStoreCreated());
+    assertEquals(beforeConfig.getNodes(), afterConfig.getNodes());
+    assertEquals(beforeConfig.getColocatedWith(), afterConfig.getColocatedWith());
   }
 
   @Test
@@ -100,9 +111,12 @@ public class PartitionedRegionAttributesMutatorTest {
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheLoader loader = createTestCacheLoader();
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setCacheLoader(loader);
       verify(pr).updatePRNodeInformation();
       verify(pr, times(1)).updatePRConfig(any(), anyBoolean());
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
@@ -112,9 +126,12 @@ public class PartitionedRegionAttributesMutatorTest {
     server.invoke(() -> {
       PartitionedRegion pr = createRegionSpy();
       CacheWriter writer = createTestCacheWriter();
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setCacheWriter(writer);
       verify(pr).updatePRNodeInformation();
       verify(pr, times(1)).updatePRConfig(any(), anyBoolean());
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
@@ -131,12 +148,15 @@ public class PartitionedRegionAttributesMutatorTest {
       CompletableFuture<Void> createBucket =
           CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
       bucketCreated.await();
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setCustomEntryTimeToLive(customExpiry);
       mutationMade.countDown();
       createBucket.get();
 
       getAllBucketRegions(pr)
           .forEach(region -> assertEquals(customExpiry, region.customEntryTimeToLive));
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
@@ -153,12 +173,15 @@ public class PartitionedRegionAttributesMutatorTest {
       CompletableFuture<Void> createBucket =
           CompletableFuture.runAsync(() -> PartitionRegionHelper.assignBucketsToPartitions(pr));
       bucketCreated.await();
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setCustomEntryIdleTimeout(customExpiry);
       mutationMade.countDown();
       createBucket.get();
 
       getAllBucketRegions(pr)
           .forEach(region -> assertEquals(customExpiry, region.customEntryIdleTimeout));
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
@@ -176,12 +199,15 @@ public class PartitionedRegionAttributesMutatorTest {
       bucketCreated.await();
       ExpirationAttributes expirationAttributes =
           new ExpirationAttributes(1000, ExpirationAction.DESTROY);
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setEntryIdleTimeout(expirationAttributes);
       mutationMade.countDown();
       createBucket.get();
 
       getAllBucketRegions(pr)
           .forEach(region -> assertEquals(expirationAttributes, region.getEntryIdleTimeout()));
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
@@ -198,12 +224,15 @@ public class PartitionedRegionAttributesMutatorTest {
       bucketCreated.await();
       ExpirationAttributes expirationAttributes =
           new ExpirationAttributes(1000, ExpirationAction.DESTROY);
+      PartitionRegionConfig beforeConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
       pr.getAttributesMutator().setEntryTimeToLive(expirationAttributes);
       mutationMade.countDown();
       createBucket.get();
 
       getAllBucketRegions(pr)
           .forEach(region -> assertEquals(expirationAttributes, region.getEntryTimeToLive()));
+      PartitionRegionConfig afterConfig = pr.getPRRoot().get(pr.getRegionIdentifier());
+      verifyMetaDataIsOk(beforeConfig, afterConfig);
     });
   }
 
