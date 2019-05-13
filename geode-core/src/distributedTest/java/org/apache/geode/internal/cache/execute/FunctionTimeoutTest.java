@@ -13,6 +13,7 @@ import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -49,7 +51,7 @@ public class FunctionTimeoutTest implements Serializable {
   private static final int TOTAL_NUM_BUCKETS = 3;
   private static final int REDUNDANT_COPIES = 0;
 
-  private static String regionName = "FunctionTimeoutTest";
+  private static final String regionName = "FunctionTimeoutTest";
 
   private MemberVM locator;
   private MemberVM server1;
@@ -59,8 +61,8 @@ public class FunctionTimeoutTest implements Serializable {
 
   private Logger logger = LogService.getLogger();
 
-  private enum RegionType {
-    PARTITION, REPLICATE
+  private enum HAStatus {
+    NOT_HA, HA
   }
 
   private enum ExecutionTarget {
@@ -72,15 +74,14 @@ public class FunctionTimeoutTest implements Serializable {
   }
 
   private enum ClientMetadataStatus {
-    CLIENT_HAS_METADATA,
-    CLIENT_MISSING_METADATA
+    CLIENT_HAS_METADATA, CLIENT_MISSING_METADATA
   }
 
   @ClassRule
-  public static ClusterStartupRule clusterStartupRule = new ClusterStartupRule(5);
+  public static final ClusterStartupRule clusterStartupRule = new ClusterStartupRule(5);
 
   @Rule
-  public DistributedRule distributedRule = new DistributedRule();
+  public DistributedRule distributedRule = new DistributedRule(5);
 
   @Rule
   public DistributedRestoreSystemProperties restoreSystemProperties =
@@ -104,41 +105,51 @@ public class FunctionTimeoutTest implements Serializable {
   @Test
   // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
-      "false | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 1",
-      "false | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE | 1",
-      "false | CLIENT_MISSING_METADATA | SERVER             | OBJECT_REFERENCE | 1",
-      "true  | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 3",
-      "true  | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | OBJECT_REFERENCE | 3",
-      "true  | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE | 3",
-      "true  | CLIENT_HAS_METADATA     | REGION             | OBJECT_REFERENCE | 3"
+      /*
+       haStatus | clientMetadataStatus    | executionTarget    | functionIdentifierType | expectedCalls
+       */
+      "NOT_HA   | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE       | 1",
+      "NOT_HA   | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE       | 1",
+      "NOT_HA   | CLIENT_MISSING_METADATA | SERVER             | OBJECT_REFERENCE       | 1",
+
+      "HA       | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE       | 3",
+      "HA       | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING                 | 3",
+      "HA       | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE       | 3",
+      "HA       | CLIENT_MISSING_METADATA | REGION             | STRING                 | 3",
+
+      "HA       | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | OBJECT_REFERENCE       | 3",
+      "HA       | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | STRING                 | 3",
+      "HA       | CLIENT_HAS_METADATA     | REGION             | OBJECT_REFERENCE       | 3",
+      "HA       | CLIENT_HAS_METADATA     | REGION             | STRING                 | 3"
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void testAll(
-      final boolean isHA,
+      final HAStatus haStatus,
       final ClientMetadataStatus clientMetadataStatus,
       final ExecutionTarget executionTarget,
       final FunctionIdentifierType functionIdentifierType,
       final int expectedCalls) throws Exception {
 
-    final TheFunction function = new TheFunction(isHA);
+    final TheFunction function = new TheFunction(haStatus);
 
-    client.invoke(() -> {
-      createClientRegion();
-      FunctionService.registerFunction(function);
-    });
     server1.invoke(() -> {
       createServerRegion();
-      FunctionService.registerFunction(function);
+      registerFunctionIfNeeded(functionIdentifierType, function);
     });
     server2.invoke(() -> {
       createServerRegion();
-      FunctionService.registerFunction(function);
+      registerFunctionIfNeeded(functionIdentifierType, function);
     });
     server3.invoke(() -> {
       createServerRegion();
-      FunctionService.registerFunction(function);
+      registerFunctionIfNeeded(functionIdentifierType, function);
     });
 
     client.invoke(() -> {
+
+      createClientRegion();
+      registerFunctionIfNeeded(functionIdentifierType, function);
+
       final Region<Object, Object> region =
           clusterStartupRule.getClientCache().getRegion(regionName);
 
@@ -176,17 +187,6 @@ public class FunctionTimeoutTest implements Serializable {
     client.invoke(() -> {
 
       assertThat(executionTarget).isNotNull();
-
-      switch (functionIdentifierType) {
-        case STRING:
-          FunctionService.registerFunction(function);
-          break;
-        case OBJECT_REFERENCE:
-          // no-op
-          break;
-        default:
-          throw new TestException("unknown FunctionIdentifierType: " + functionIdentifierType);
-      }
 
       final Execution<Integer, Long, List<Long>> execution;
 
@@ -241,37 +241,55 @@ public class FunctionTimeoutTest implements Serializable {
     assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls);
   }
 
-  private int getNumberOfFunctionCalls(String functionId) {
+  private void registerFunctionIfNeeded(
+      final FunctionIdentifierType functionIdentifierType,
+      final TheFunction function) {
+    switch (functionIdentifierType) {
+      case STRING:
+        FunctionService.registerFunction(function);
+        break;
+      case OBJECT_REFERENCE:
+        // no-op: no need to pre-register the fn if we will invoke it by reference
+        break;
+      default:
+        throw new TestException("unknown FunctionIdentifierType: " + functionIdentifierType);
+    }
+  }
+
+  private int getNumberOfFunctionCalls(final String functionId) {
     return getNumberOfFunctionCalls(server1, functionId) +
         getNumberOfFunctionCalls(server2, functionId) +
         getNumberOfFunctionCalls(server3, functionId);
   }
 
-  private int getNumberOfFunctionCalls(MemberVM vm, final String functionId) {
+  private int getNumberOfFunctionCalls(final MemberVM vm, final String functionId) {
     return vm.invoke(() -> {
-      int numExecutions = 0;
-      FunctionStats functionStats = FunctionStats.getFunctionStats(functionId);
-      if (functionStats != null) {
+      final int numExecutions;
+      final FunctionStats functionStats = FunctionStats.getFunctionStats(functionId);
+      if (functionStats == null) {
+        numExecutions = 0;
+      } else {
         GeodeAwaitility.await("Awaiting GatewayReceiverMXBean.isRunning(true)")
             .untilAsserted(() -> assertThat(functionStats.getFunctionExecutionsRunning()).isZero());
         numExecutions = functionStats.getFunctionExecutionCalls();
       }
-      logger.info("#### Number of functions completed: " + numExecutions);
       return numExecutions;
     });
   }
 
-  private ClientVM startClient(int vmIndex) throws Exception {
-    return clusterStartupRule.startClientVM(vmIndex, cacheRule -> cacheRule
-        .withCacheSetup(fnTimeOut ->
-            System
-                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
-        .withLocatorConnection(locator.getPort()));
+  private ClientVM startClient(final int vmIndex) throws Exception {
+    return clusterStartupRule.startClientVM(
+        vmIndex,
+        cacheRule -> cacheRule
+            .withCacheSetup(fnTimeOut -> System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+            .withLocatorConnection(locator.getPort()));
   }
 
-  private MemberVM startServer(int vmIndex) {
-    return clusterStartupRule.startServerVM(vmIndex,
-        x -> x.withConnectionToLocator(locator.getPort())
+  private MemberVM startServer(final int vmIndex) {
+    return clusterStartupRule.startServerVM(
+        vmIndex,
+        cacheRule -> cacheRule
+            .withConnectionToLocator(locator.getPort())
             .withProperty(SERIALIZABLE_OBJECT_FILTER,
                 "org.apache.geode.internal.cache.execute.FunctionTimeoutTest*"));
   }
@@ -291,10 +309,10 @@ public class FunctionTimeoutTest implements Serializable {
 
   private static class TheFunction implements Function<Integer> {
 
-    private boolean isHA;
+    private final HAStatus haStatus;
 
-    public TheFunction(boolean isHA) {
-      this.isHA = isHA;
+    public TheFunction(final HAStatus haStatus) {
+      this.haStatus = haStatus;
     }
 
     @Override
@@ -303,6 +321,11 @@ public class FunctionTimeoutTest implements Serializable {
       final int thinkTimeMillis = context.getArguments();
       final long elapsed = getElapsed(() -> Thread.sleep(thinkTimeMillis));
       context.getResultSender().lastResult(elapsed);
+    }
+
+    @Override
+    public boolean isHA() {
+      return haStatus == HAStatus.HA;
     }
 
     @FunctionalInterface
@@ -319,11 +342,6 @@ public class FunctionTimeoutTest implements Serializable {
       }
       final long end = System.currentTimeMillis();
       return end - start;
-    }
-
-    @Override
-    public boolean isHA() {
-      return isHA;
     }
   }
 
