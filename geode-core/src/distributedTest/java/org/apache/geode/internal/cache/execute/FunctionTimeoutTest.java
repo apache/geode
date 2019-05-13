@@ -34,7 +34,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
@@ -47,8 +46,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 @SuppressWarnings("serial")
 public class FunctionTimeoutTest implements Serializable {
 
-  private static final int TOTAL_NUM_BUCKETS = 4;
-  private static final int REDUNDANT_COPIES = 1;
+  private static final int TOTAL_NUM_BUCKETS = 3;
+  private static final int REDUNDANT_COPIES = 0;
 
   private static String regionName = "FunctionTimeoutTest";
 
@@ -60,13 +59,21 @@ public class FunctionTimeoutTest implements Serializable {
 
   private Logger logger = LogService.getLogger();
 
-
   private enum RegionType {
     PARTITION, REPLICATE
   }
 
   private enum ExecutionTarget {
     REGION, SERVER, REGION_WITH_FILTER
+  }
+
+  private enum FunctionIdentifierType {
+    STRING, OBJECT_REFERENCE
+  }
+
+  private enum ClientMetadataStatus {
+    CLIENT_HAS_METADATA,
+    CLIENT_MISSING_METADATA
   }
 
   @ClassRule
@@ -94,168 +101,144 @@ public class FunctionTimeoutTest implements Serializable {
     IgnoredException.removeAllExpectedExceptions();
   }
 
-
-  /*
-   * @Parameters({
-   * "false, 0, 10, false", // !isHA => no retries, timeout==0 => no timeout
-   * // "true, 1000, 10, false", // isHA => 1 retry, timeout >> thinkTime => no timeout
-   * // "true, 10, 1000, true" // isHA => 1 retry, timeout << thinkTime => timeout
-   * })
-   */
-
-
   @Test
-  @Parameters({"false" /*, "true"*/})
-  public void testClientServerFunction(boolean isHA) throws Exception {
-    client.invoke(() -> createClientRegion());
-    server1.invoke(() -> createServerRegion());
-    server2.invoke(() -> createServerRegion());
-    server3.invoke(() -> createServerRegion());
-    Function function = new TheFunction(isHA);
-    registerFunctionOnServers(function);
-
-    client.invoke(() -> {
-      final Region<Object, Object> region =
-          clusterStartupRule.getClientCache().getRegion(regionName);
-      region.put("k1", "v1");
-    });
-
-    server1.invoke(() -> {
-      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
-      assertThat(region.get("k1")).isEqualTo("v1");
-    });
-
-    logger.info("#### Executing function from client.");
-    IgnoredException.addIgnoredException(FunctionException.class.getName());
-
-    client.invoke(() -> executeFunction(ExecutionTarget.REGION, 1000, null,
-        function, true));
-
-    System.out.println("#### Number of functions executed on all servers :"
-        + getNumberOfFunctionCalls(function.getId()));
-    assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(3);
-  }
-
-  @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
-      //"false",
-      "true"
+      "false | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 1",
+      "false | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE | 1",
+      "false | CLIENT_MISSING_METADATA | SERVER             | OBJECT_REFERENCE | 1",
+      "true  | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 3",
+      "true  | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | OBJECT_REFERENCE | 3",
+      "true  | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE | 3",
+      "true  | CLIENT_HAS_METADATA     | REGION             | OBJECT_REFERENCE | 3"
   })
-  public void testClientServerFunctionWithFilter(boolean isHA) throws Exception {
+  public void testAll(
+      final boolean isHA,
+      final ClientMetadataStatus clientMetadataStatus,
+      final ExecutionTarget executionTarget,
+      final FunctionIdentifierType functionIdentifierType,
+      final int expectedCalls) throws Exception {
+
     final TheFunction function = new TheFunction(isHA);
 
-    client.invoke(() -> createClientRegion());
-    server1.invoke(() -> createServerRegion());
-    server2.invoke(() -> createServerRegion());
-    server3.invoke(() -> createServerRegion());
+    client.invoke(() -> {
+      createClientRegion();
+      FunctionService.registerFunction(function);
+    });
+    server1.invoke(() -> {
+      createServerRegion();
+      FunctionService.registerFunction(function);
+    });
+    server2.invoke(() -> {
+      createServerRegion();
+      FunctionService.registerFunction(function);
+    });
+    server3.invoke(() -> {
+      createServerRegion();
+      FunctionService.registerFunction(function);
+    });
 
     client.invoke(() -> {
       final Region<Object, Object> region =
           clusterStartupRule.getClientCache().getRegion(regionName);
+
       /*
-       with maxRetries set to 3 in ExecuteRegionFunctionOp.execute()...
-       fn retries terminates w/ i < 5 but fails to terminate w/ i < 6
+       Create at least one entry.
+
+       Absence/presence of metadata in the client determines which op variant the product uses
+       e.g. single-hop versus non-single-hop. Those variants have divergent (copypasta) code,
+       so they must each be tested.
+
+       We found empirically that creating more entries caused metadata to be loaded in the client.
+       With few entries (empirically, 4 or fewer) metadata has not been acquired by the time the
+       function is executed. With more than 4 entries, metadata has been acquired.
        */
-      for (int i=1; i < 6; i++) {
-//        region.put("k1", "v1");
-//        region.put("k2", "v2");
-//        region.put("k3", "v3");
+      final int numberOfEntries;
+      switch (clientMetadataStatus) {
+        case CLIENT_HAS_METADATA:
+          numberOfEntries = 10;
+          break;
+        case CLIENT_MISSING_METADATA:
+          numberOfEntries = 1;
+          break;
+        default:
+          throw new TestException("unknown ClientMetadataStatus: " + clientMetadataStatus);
+      }
+
+      for (int i = 0; i < numberOfEntries; i++) {
         region.put("k" + i, "v" + i);
       }
-      //FunctionService.registerFunction(function);
     });
 
-    // not shouldn't strictly be needed in this case because we invoke fn via object ref below
-    registerFunctionOnServers(function);
-
-    logger.info("#### Executing function from client.");
+    // TODO: remove this once this test is passing (it's here for debugging)
     IgnoredException.addIgnoredException(FunctionException.class.getName());
-    final HashSet<String> filter = new HashSet<String>(Arrays.asList("k1"));
+
     client.invoke(() -> {
-      executeFunction(ExecutionTarget.REGION_WITH_FILTER, 200, filter,
-          function, true);
+
+      assertThat(executionTarget).isNotNull();
+
+      switch (functionIdentifierType) {
+        case STRING:
+          FunctionService.registerFunction(function);
+          break;
+        case OBJECT_REFERENCE:
+          // no-op
+          break;
+        default:
+          throw new TestException("unknown FunctionIdentifierType: " + functionIdentifierType);
+      }
+
+      final Execution<Integer, Long, List<Long>> execution;
+
+      switch (executionTarget) {
+        case REGION:
+          execution =
+              FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+                  .setArguments(200);
+          break;
+        case REGION_WITH_FILTER:
+          final HashSet<String> filter = new HashSet<String>(Arrays.asList("k0"));
+          execution =
+              FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+                  .setArguments(200).withFilter(filter);
+          break;
+        case SERVER:
+          execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
+              .setArguments(200);
+          break;
+        default:
+          throw new TestException("unknown ExecutionTarget: " + executionTarget);
+      }
+
+      ResultCollector<Long, List<Long>> resultCollector = null;
+
+      try {
+        switch (functionIdentifierType) {
+          case STRING:
+            resultCollector = execution.execute(function.getId());
+            break;
+          case OBJECT_REFERENCE:
+            resultCollector = execution.execute(function);
+            break;
+          default:
+            throw new TestException("unknown FunctionIdentifierType: " + functionIdentifierType);
+        }
+      } catch (final FunctionException e) {
+        assertThat(e.getCause()).isInstanceOf(ServerConnectivityException.class);
+      }
+
+      if (resultCollector != null) {
+        try {
+          resultCollector.getResult();
+        } catch (Exception ex) {
+          System.out.println("#### Exception while collecting the result: " + ex.getMessage());
+        }
+      }
     });
 
     System.out.println("#### Number of functions executed on all servers :"
         + getNumberOfFunctionCalls(function.getId()));
-    assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(3);
-  }
-
-  @Test
-  @Parameters({"false" /*, "true"*/})
-  public void testClientServerFunctionUsingId(boolean isHA) throws Exception {
-    client.invoke(() -> createClientRegion());
-    server1.invoke(() -> createServerRegion());
-    server2.invoke(() -> createServerRegion());
-    server3.invoke(() -> createServerRegion());
-
-    client.invoke(() -> {
-      final Region<Object, Object> region =
-          clusterStartupRule.getClientCache().getRegion(regionName);
-      region.put("k1", "v1");
-    });
-
-    server1.invoke(() -> {
-      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
-      assertThat(region.get("k1")).isEqualTo("v1");
-    });
-
-    logger.info("#### Executing function from client.");
-    IgnoredException.addIgnoredException(FunctionException.class.getName());
-
-    Function function = client.invoke(() -> executeFunction(ExecutionTarget.REGION, 1000, null,
-        new TheFunction(isHA), false));
-
-    System.out.println("#### Number of functions executed on all servers :"
-        + getNumberOfFunctionCalls(function.getId()));
-    assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(3);
-  }
-
-  @Test
-  @Parameters({
-      //"false",
-      "true"
-  })
-  public void testClientServerFunctionWithFilterUsingId(boolean isHA) throws Exception {
-    final TheFunction function = new TheFunction(isHA);
-
-    client.invoke(() -> createClientRegion());
-    server1.invoke(() -> createServerRegion());
-    server2.invoke(() -> createServerRegion());
-    server3.invoke(() -> createServerRegion());
-
-    client.invoke(() -> {
-      final Region<Object, Object> region =
-          clusterStartupRule.getClientCache().getRegion(regionName);
-      region.put("k1", "v1");
-      //FunctionService.registerFunction(function);
-    });
-
-    server1.invoke(() -> {
-      final Region<Object, Object> region = clusterStartupRule.getCache().getRegion(regionName);
-      assertThat(region.get("k1")).isEqualTo("v1");
-      FunctionService.registerFunction(function);
-    });
-
-    server2.invoke(() -> {
-      FunctionService.registerFunction(function);
-    });
-
-    server3.invoke(() -> {
-      FunctionService.registerFunction(function);
-    });
-
-    logger.info("#### Executing function from client.");
-    IgnoredException.addIgnoredException(FunctionException.class.getName());
-    final HashSet<String> filter = new HashSet<String>(Arrays.asList("k1"));
-    client.invoke(() -> {
-      executeFunction(ExecutionTarget.REGION_WITH_FILTER, 1000, filter,
-          function, false);
-    });
-
-    System.out.println("#### Number of functions executed on all servers :"
-        + getNumberOfFunctionCalls(function.getId()));
-    assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(1);
+    assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls);
   }
 
   private int getNumberOfFunctionCalls(String functionId) {
@@ -278,68 +261,11 @@ public class FunctionTimeoutTest implements Serializable {
     });
   }
 
-  private void registerFunctionOnServers(Function function) {
-    SerializableRunnableIF runnable = () -> FunctionService.registerFunction(function);
-    server1.invoke(runnable);
-    server2.invoke(runnable);
-    server3.invoke(runnable);
-  }
-
-  private Function executeFunction(final ExecutionTarget executionTarget,
-                                   final int thinkTimeMillis, Set filter,
-                                   Function<Integer> function, boolean register) {
-    assertThat(executionTarget).isNotNull();
-
-    if (register) {
-      // This forces execution using function id
-      FunctionService.registerFunction(function);
-    }
-    final Execution<Integer, Long, List<Long>> execution;
-
-    switch (executionTarget) {
-      case REGION:
-        execution =
-            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
-                .setArguments(thinkTimeMillis);
-        break;
-      case REGION_WITH_FILTER:
-        execution =
-            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
-                .setArguments(thinkTimeMillis).withFilter(filter);
-        break;
-      case SERVER:
-        execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
-            .setArguments(thinkTimeMillis);
-        break;
-      default:
-        throw new TestException("unknown ExecutionTarget: " + executionTarget);
-    }
-
-    ResultCollector<Long, List<Long>> resultCollector = null;
-    try {
-      if (register) {
-        resultCollector = execution.execute(function.getId());
-      } else {
-        resultCollector = execution.execute(function);
-      }
-    } catch (FunctionException fe) {
-      assertThat(fe.getCause()).isInstanceOf(ServerConnectivityException.class);
-    }
-
-    if (resultCollector != null) {
-      try {
-        resultCollector.getResult();
-      } catch (Exception ex) {
-        System.out.println("#### Exception while collecting the result: " + ex.getMessage());
-      }
-    }
-    return function;
-  }
-
   private ClientVM startClient(int vmIndex) throws Exception {
     return clusterStartupRule.startClientVM(vmIndex, cacheRule -> cacheRule
         .withCacheSetup(fnTimeOut ->
-            System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+            System
+                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
         .withLocatorConnection(locator.getPort()));
   }
 
@@ -352,8 +278,8 @@ public class FunctionTimeoutTest implements Serializable {
 
   private void createServerRegion() {
     final PartitionAttributesFactory<String, String> paf = new PartitionAttributesFactory<>();
-    paf.setRedundantCopies(0);
-    paf.setTotalNumBuckets(3);
+    paf.setRedundantCopies(REDUNDANT_COPIES);
+    paf.setTotalNumBuckets(TOTAL_NUM_BUCKETS);
     clusterStartupRule.getCache().createRegionFactory(PARTITION)
         .setPartitionAttributes(paf.create())
         .create(regionName);
@@ -389,7 +315,7 @@ public class FunctionTimeoutTest implements Serializable {
       try {
         thunk.apply();
       } catch (final InterruptedException e) {
-        // TODO: do something here
+        // no-op
       }
       final long end = System.currentTimeMillis();
       return end - start;
