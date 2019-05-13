@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.After;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -30,6 +31,15 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 
 public class RegionListenerJUnitTest {
+
+  private GemFireCacheImpl cache;
+
+  @After
+  public void after() {
+    if (cache != null) {
+      cache.close();
+    }
+  }
 
   @Test
   public void test() {
@@ -56,7 +66,7 @@ public class RegionListenerJUnitTest {
       }
     };
 
-    GemFireCacheImpl cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
+    cache = (GemFireCacheImpl) new CacheFactory().set(MCAST_PORT, "0").create();
     cache.addRegionListener(listener);
     Region region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("region");
     assertEquals(DataPolicy.EMPTY, region.getAttributes().getDataPolicy());
