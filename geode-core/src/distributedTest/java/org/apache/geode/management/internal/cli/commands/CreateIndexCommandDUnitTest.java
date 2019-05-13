@@ -31,6 +31,8 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
+import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -44,15 +46,21 @@ public class CreateIndexCommandDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static MemberVM locator, server1;
+  private static MemberVM locator, server1, server2;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator = cluster.startLocatorVM(0);
     server1 = cluster.startServerVM(1, locator.getPort());
+    server2 = cluster.startServerVM(2, "group2", locator.getPort());
     gfsh.connectAndVerify(locator);
 
-    // when locator started, the cacheConfig is null
+    // create a region on server-2 in group 2
+    gfsh.executeAndAssertThat("create region --name=regionB --group=group2 --type=REPLICATE")
+        .statusIsSuccess();
+    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 1);
+
+    // cache config in cluster group is null
     locator.invoke(() -> {
       CacheConfig cacheConfig = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getCacheConfig("cluster");
@@ -61,17 +69,22 @@ public class CreateIndexCommandDUnitTest {
   }
 
   @Test
-  public void regionNotExist() {
+  public void regionNotExistInClusterConfig() {
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=/noExist")
-        .statusIsError().tableHasColumnWithExactValuesInAnyOrder("Status", "ERROR")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Region not found : \"/noExist\"");
+        .statusIsError()
+        .hasInfoSection()
+        .hasOutput().contains("Region /noExist does not exist");
+  }
 
-    locator.invoke(() -> {
-      InternalConfigurationPersistenceService configurationService =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
-      assertThat(cacheConfig.findRegionConfiguration("noExist")).isNull();
-    });
+  @Test
+  public void regionNotExistInThatMember() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create index --name=myIndex --expression=id --region=/regionB --member=server-1")
+        .statusIsError()
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasRow(0)
+        .contains("ERROR", "Region not found : \"/regionB\"");
   }
 
   @Test
@@ -83,48 +96,85 @@ public class CreateIndexCommandDUnitTest {
       cache.createRegionFactory(RegionShortcut.REPLICATE).create("regionA");
     });
 
-    // no region exists in cluster config
-    locator.invoke(() -> {
-      InternalConfigurationPersistenceService configurationService =
-          ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      CacheConfig cacheConfig = configurationService.getCacheConfig("cluster");
-      assertThat(cacheConfig.findRegionConfiguration("regionA")).isNull();
-    });
-
+    // regionA does not exist as far as cluster configuration is concerned
     gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionA")
-        .statusIsSuccess().tableHasColumnWithValuesContaining("Status", "OK")
-        .tableHasColumnWithExactValuesInAnyOrder("Message", "Index successfully created");
+        .statusIsError()
+        .hasInfoSection()
+        .hasOutput().contains("Region /regionA does not exist");
 
-    // after index is created, the cluster config is not udpated with regionA or index
+    // you can only create index on regionA when specifying a --member option
+    gfsh.executeAndAssertThat(
+        "create index --name=myIndex --expression=id --region=regionA --member=server-1")
+        .statusIsSuccess()
+        .hasTableSection()
+        .hasRowSize(1)
+        .hasRow(0)
+        .contains("OK", "Index successfully created");
+
+    // after index is created, the cluster config is not updated with regionA nor index
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      assertThat(configurationService.getCacheConfig("cluster").findRegionConfiguration("regionA"))
-          .isNull();
+      assertThat(
+          configurationService.getCacheConfig("cluster", true).findRegionConfiguration("regionA"))
+              .isNull();
     });
   }
 
   @Test
   public void regionExistInClusterConfig() {
-    gfsh.executeAndAssertThat("create region --name=regionB --type=REPLICATE").statusIsSuccess();
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/regionB", 1);
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
+      assertThat(configurationService.getConfiguration("group2").getCacheXmlContent())
           .contains("<region name=\"regionB\"");
     });
 
-    gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionB")
-        .statusIsSuccess();
+    // make sure index is created on server-2 (which is only in group-2)
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat("create index --name=myIndex --expression=id --region=regionB")
+            .statusIsSuccess();
+    TabularResultModelAssert createIndexTableAssert =
+        commandAssert.hasTableSection("createIndex");
+    createIndexTableAssert.hasRowSize(1).hasRow(0).contains("OK", "Index successfully created");
+    createIndexTableAssert.hasColumn("Member").asList().first().toString().contains("server-2");
 
+    TabularResultModelAssert groupStatusTable =
+        commandAssert.hasTableSection("group-status");
+    groupStatusTable.hasRowSize(1);
+    groupStatusTable.hasRow(0).containsExactly("group2", "cluster configuration updated");
+
+    // make sure index is inserted in group2's cluster configuration
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
-      assertThat(configurationService.getConfiguration("cluster").getCacheXmlContent())
+      assertThat(configurationService.getConfiguration("group2").getCacheXmlContent())
           .contains("<region name=\"regionB\"").contains("<index").contains("expression=\"id\" ")
           .contains("from-clause=\"/regionB\"").contains("name=\"myIndex\"")
           .contains("type=\"range\"");
     });
+  }
+
+  @Test
+  public void regionExistInClusterConfigButDifferentGroup() {
+    // regionB is only in group2, not in group1
+    CommandResultAssert commandAssert =
+        gfsh.executeAndAssertThat(
+            "create index --name=index2 --expression=key --region=regionB --group=group1")
+            .statusIsSuccess();
+
+    commandAssert.hasInfoSection().hasOutput().contains("--groups=group1 is ignored.");
+
+    // index is still created and cluster config updated in group2
+    TabularResultModelAssert createIndexTableAssert =
+        commandAssert.hasTableSection("createIndex");
+    createIndexTableAssert.hasRowSize(1).hasRow(0).contains("OK", "Index successfully created");
+    createIndexTableAssert.hasColumn("Member").asList().first().toString().contains("server-2");
+
+    TabularResultModelAssert groupStatusTable =
+        commandAssert.hasTableSection("group-status");
+    groupStatusTable.hasRowSize(1);
+    groupStatusTable.hasRow(0).containsExactly("group2", "cluster configuration updated");
+
   }
 }

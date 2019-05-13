@@ -176,37 +176,24 @@ public class CommandExecutor {
 
     List<String> groupsToUpdate;
     String groupInput = parseResult.getParamValueAsString("group");
-    TabularResultModel table = null;
+    final TabularResultModel table = resultModel.addTable(GROUP_STATUS_SECTION);
+    table.setColumnHeader("Group", "Status");
 
     if (!StringUtils.isBlank(groupInput)) {
       groupsToUpdate = Arrays.asList(groupInput.split(","));
     } else if (gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
       groupsToUpdate = ccService.getGroups().stream().collect(Collectors.toList());
-      table = resultModel.addTable(GROUP_STATUS_SECTION);
-      table.setColumnHeader("Group", "Status");
     } else {
       groupsToUpdate = Arrays.asList("cluster");
     }
 
-    final TabularResultModel finalTable = table;
     for (String group : groupsToUpdate) {
       ccService.updateCacheConfig(group, cacheConfig -> {
         try {
           if (gfshCommand.updateConfigForGroup(group, cacheConfig, resultModel.getConfigObject())) {
-            if (finalTable != null) {
-              finalTable.addRow(group, "Cluster Configuration Updated");
-            } else {
-              infoResultModel
-                  .addLine("Changes to configuration for group '" + group + "' are persisted.");
-            }
+            table.addRow(group, "Cluster Configuration Updated");
           } else {
-            if (finalTable != null) {
-              finalTable.addRow(group, "Cluster Configuration not updated");
-
-            } else {
-              infoResultModel
-                  .addLine("No changes were made to the configuration for group '" + group + "'");
-            }
+            table.addRow(group, "Cluster Configuration not updated");
           }
         } catch (Exception e) {
           String message = "Failed to update cluster config for " + group;
@@ -216,7 +203,6 @@ public class CommandExecutor {
           infoResultModel.addLine(message + ". Reason: " + e.getMessage());
           return null;
         }
-
         return cacheConfig;
       });
     }

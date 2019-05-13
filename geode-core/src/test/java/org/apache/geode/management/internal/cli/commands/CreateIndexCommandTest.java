@@ -31,10 +31,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
@@ -45,6 +48,8 @@ public class CreateIndexCommandTest {
   private CreateIndexCommand command;
   private CommandResult result;
   private ResultCollector rc;
+  private InternalConfigurationPersistenceService ccService;
+  private ClusterManagementService cms;
 
   @Before
   public void before() throws Exception {
@@ -53,6 +58,8 @@ public class CreateIndexCommandTest {
     when(rc.getResult()).thenReturn(Collections.emptyList());
     doReturn(Collections.emptyList()).when(command).executeAndGetFunctionResult(any(), any(),
         any());
+    ccService = mock(InternalConfigurationPersistenceService.class);
+    cms = mock(ClusterManagementService.class);
   }
 
   @Test
@@ -95,6 +102,14 @@ public class CreateIndexCommandTest {
   }
 
   @Test
+  public void validRegionPath() throws Exception {
+    doReturn(ccService).when(command).getConfigurationPersistenceService();
+    gfshParser.executeAndAssertThat(command,
+        "create index --name=abc --expression=abc --region=\"region.entrySet() z\" --type=range")
+        .statusIsError();
+  }
+
+  @Test
   public void validIndexType2() throws Exception {
     doReturn(Collections.EMPTY_SET).when(command).findMembers(any(), any());
     gfshParser.executeAndAssertThat(command,
@@ -113,7 +128,7 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void defaultInexType() throws Exception {
+  public void defaultIndexType() throws Exception {
     DistributedMember member = mock(DistributedMember.class);
     doReturn(Collections.singleton(member)).when(command).findMembers(any(), any());
 
@@ -130,18 +145,19 @@ public class CreateIndexCommandTest {
 
   @Test
   public void getValidRegionName() {
-    CacheConfig cacheConfig = mock(CacheConfig.class);
-    RegionConfig region = new RegionConfig("regionA.regionB", "REPLICATE");
-    when(cacheConfig.findRegionConfiguration("/regionA.regionB")).thenReturn(region);
+    // the existing configuration has a region named /regionA.B
+    doReturn(mock(RuntimeRegionConfig.class)).when(command).getRuntimeRegionConfig(cms,
+        "/regionA.B");
+    when(cms.list(any())).thenReturn(new ClusterManagementResult());
 
-    assertThat(command.getValidRegionName("regionB", cacheConfig)).isEqualTo("regionB");
-    assertThat(command.getValidRegionName("/regionB", cacheConfig)).isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionB b", cacheConfig)).isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionB.entrySet()", cacheConfig))
+    assertThat(command.getValidRegionName("regionB", cms)).isEqualTo("regionB");
+    assertThat(command.getValidRegionName("/regionB", cms)).isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionB b", cms)).isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionB.entrySet()", cms))
         .isEqualTo("/regionB");
-    assertThat(command.getValidRegionName("/regionA.regionB.entrySet() A", cacheConfig))
-        .isEqualTo("/regionA.regionB");
-    assertThat(command.getValidRegionName("/regionB.regionA.entrySet() B", cacheConfig))
-        .isEqualTo("/regionB");
+    assertThat(command.getValidRegionName("/regionA.B.entrySet() A", cms))
+        .isEqualTo("/regionA.B");
+    assertThat(command.getValidRegionName("/regionA.fieldName.entrySet() B", cms))
+        .isEqualTo("/regionA");
   }
 }

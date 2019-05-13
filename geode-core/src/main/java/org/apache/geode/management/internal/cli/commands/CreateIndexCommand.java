@@ -15,29 +15,38 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
+import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RUN_ON_MEMBER_CHANGE_NOT_PERSISTED;
+import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import joptsimple.internal.Strings;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
-import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class CreateIndexCommand extends SingleGfshCommand {
+public class CreateIndexCommand extends GfshCommand {
   @Immutable
   private static final CreateIndexFunction createIndexFunction = new CreateIndexFunction();
 
@@ -65,9 +74,34 @@ public class CreateIndexCommand extends SingleGfshCommand {
 
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS},
           optionContext = ConverterHint.MEMBERGROUP,
-          help = CliStrings.CREATE_INDEX__GROUP__HELP) final String[] groups) {
+          help = CliStrings.CREATE_INDEX__GROUP__HELP) String[] groups) {
 
-    final Set<DistributedMember> targetMembers = findMembers(groups, memberNameOrID);
+    // first find out what groups this region belongs to when using cluster configuration
+    InternalConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+    ClusterManagementService cms = getClusterManagementService();
+    final Set<DistributedMember> targetMembers;
+    ResultModel resultModel = new ResultModel();
+    InfoResultModel info = resultModel.addInfo();
+    String regionName = null;
+    // if cluster management service is enabled and user did not specify a member id, then
+    // we will find the applicable members based on the what group this region is on
+    if (ccService != null && memberNameOrID == null) {
+      regionName = getValidRegionName(regionPath, cms);
+      RuntimeRegionConfig config = getRuntimeRegionConfig(cms, regionName);
+      if (config == null) {
+        return ResultModel.createError("Region " + regionName + " does not exist.");
+      }
+      String[] calculatedGroups = config.getGroups().toArray(new String[0]);
+      if (groups != null && !Arrays.equals(groups, calculatedGroups)) {
+        info.addLine("--groups=" + Strings.join(groups, ",") + " is ignored.");
+      }
+      groups = calculatedGroups;
+      targetMembers = findMembers(groups, null);
+    }
+    // otherwise use the group/members specified in the option to find the applicable members.
+    else {
+      targetMembers = findMembers(groups, memberNameOrID);
+    }
 
     if (targetMembers.isEmpty()) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
@@ -86,33 +120,76 @@ public class CreateIndexCommand extends SingleGfshCommand {
 
     List<CliFunctionResult> functionResults =
         executeAndGetFunctionResult(createIndexFunction, index, targetMembers);
-    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
-    result.setConfigObject(index);
-    return result;
+    resultModel.addTableAndSetStatus("createIndex", functionResults, true, false);
+
+    if (!resultModel.isSuccessful()) {
+      return resultModel;
+    }
+
+    // update the cluster configuration. Can't use SingleGfshCommand to do the update since in some
+    // cases
+    // groups information is inferred by the region, and the --group option might have the wrong
+    // group
+    // information.
+    if (ccService == null) {
+      info.addLine(SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED);
+      return resultModel;
+    }
+    if (memberNameOrID != null) {
+      info.addLine(RUN_ON_MEMBER_CHANGE_NOT_PERSISTED);
+      return resultModel;
+    }
+
+    final TabularResultModel table = resultModel.addTable(GROUP_STATUS_SECTION);
+    table.setColumnHeader("Group", "Status");
+    String finalRegionName = regionName;
+    // at this point, groups are ones saved by the cluster configuration
+    for (String group : groups) {
+      ccService.updateCacheConfig(group, cacheConfig -> {
+        RegionConfig regionConfig = cacheConfig.findRegionConfiguration(finalRegionName);
+        regionConfig.getIndexes().add(index);
+        table.addRow(group, "cluster configuration updated");
+        return cacheConfig;
+      });
+    }
+    return resultModel;
   }
 
-  String getValidRegionName(String regionPath, CacheConfig cacheConfig) {
+  // find a valid regionName when regionPath passed in is in the form of
+  // "/region1.fieldName.fieldName x"
+  // this also handles the possibility when regionName has "." in it, like "/A.B". It's stripping
+  // . part one by one and check if the remaining part is a valid region name or not. If we
+  // could not find a region with any part of the name, (like, couldn't find A.B or A), then A is
+  // returned.
+  String getValidRegionName(String regionPath, ClusterManagementService cms) {
     // Check to see if the region path contains an alias e.g "/region1 r1"
     // Then the first string will be the regionPath
-    String[] regionPathTokens = regionPath.trim().split(" ");
-    regionPath = regionPathTokens[0];
+    String regionName = regionPath.trim().split(" ")[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
-    while (regionPath.contains(".") && cacheConfig.findRegionConfiguration(regionPath) == null) {
-      regionPath = regionPath.substring(0, regionPath.lastIndexOf("."));
+    while (regionName.contains(".")) {
+      RuntimeRegionConfig region = getRuntimeRegionConfig(cms, regionName);
+      if (region != null) {
+        break;
+      }
+      // otherwise, strip one more . part off the regionName
+      else {
+        regionName = regionName.substring(0, regionName.lastIndexOf("."));
+      }
     }
-    return regionPath;
+    return regionName;
   }
 
-  @Override
-  public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
-    RegionConfig.Index index = (RegionConfig.Index) element;
-    String regionPath = getValidRegionName(index.getFromClause(), config);
-
-    RegionConfig regionConfig = config.findRegionConfiguration(regionPath);
-    if (regionConfig == null) {
-      throw new EntityNotFoundException("Region " + index.getFromClause() + " not found.");
+  RuntimeRegionConfig getRuntimeRegionConfig(ClusterManagementService cms,
+      String regionName) {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName(regionName);
+    List<RuntimeRegionConfig> list = cms.list(regionConfig).getResult(RuntimeRegionConfig.class);
+    if (list.isEmpty()) {
+      return null;
+    } else {
+      return list.get(0);
     }
-    regionConfig.getIndexes().add(index);
-    return true;
   }
+
+
 }
