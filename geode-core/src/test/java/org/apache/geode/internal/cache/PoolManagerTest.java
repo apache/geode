@@ -26,17 +26,19 @@ import org.junit.Test;
 import org.apache.geode.cache.client.internal.PoolImpl;
 
 public class PoolManagerTest {
+  private PoolImpl pool;
   private PoolManagerImpl poolManager;
 
   @Before
   public void setUp() {
+    pool = mock(PoolImpl.class);
     poolManager = spy(new PoolManagerImpl(true));
+
     assertThat(poolManager.getMap()).isEmpty();
   }
 
   @Test
   public void unregisterShouldThrowExceptionWhenPoolHasRegionsStillAssociated() {
-    PoolImpl pool = mock(PoolImpl.class);
     when(pool.getAttachCount()).thenReturn(2);
 
     assertThatThrownBy(() -> poolManager.unregister(pool)).isInstanceOf(IllegalStateException.class)
@@ -45,7 +47,6 @@ public class PoolManagerTest {
 
   @Test
   public void unregisterShouldReturnFalseWhenThePoolIsNotPartOfTheManagedPools() {
-    PoolImpl pool = mock(PoolImpl.class);
     when(pool.getAttachCount()).thenReturn(0);
 
     assertThat(poolManager.unregister(pool)).isFalse();
@@ -53,7 +54,6 @@ public class PoolManagerTest {
 
   @Test
   public void unregisterShouldReturnTrueWhenThePoolIsSuccessfullyRemovedFromTheManagedPools() {
-    PoolImpl pool = mock(PoolImpl.class);
     when(pool.getAttachCount()).thenReturn(0);
     poolManager.register(pool);
     assertThat(poolManager.getMap()).isNotEmpty();
