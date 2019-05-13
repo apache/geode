@@ -18,6 +18,7 @@ package org.apache.geode.internal.util;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.sql.Connection;
@@ -65,17 +66,14 @@ public class DriverJarUtil {
 
 
   public String getJdbcDriverName(String driverJarName) throws IOException {
-    DeployedJar jar = ClassPathLoader.getLatest().getJarDeployer()
-        .findLatestValidDeployedJarFromDisk(driverJarName);
-    return getJdbcDriverName(jar);
+    return getJdbcDriverName(createDeployedJar(driverJarName));
   }
 
-  public String getJdbcDriverName(DeployedJar jar) {
+  public String getJdbcDriverName(DeployedJar jar) throws IOException {
     File jarFile = jar.getFile();
-    try {
-      FileInputStream fileInputStream = new FileInputStream(jarFile.getAbsolutePath());
-      BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
-      ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream);
+      FileInputStream fileInputStream = createFileInputStream(jarFile.getAbsolutePath());
+      BufferedInputStream bufferedInputStream = createBufferedInputStream(fileInputStream);
+      ZipInputStream zipInputStream = createZipInputStream(bufferedInputStream);
       ZipEntry zipEntry;
       while ((zipEntry = zipInputStream.getNextEntry()) != null) {
         // JDBC 4.0 Drivers must include the file META-INF/services/java.sql.Driver. This file
@@ -87,9 +85,8 @@ public class DriverJarUtil {
         int size = (int) zipEntry.getSize();
         if (size == -1) {
           throw new IOException("Invalid zip entry found for META-INF/services/java.sql.Driver " +
-              "within jar. Ensure that the jar containing the driver has been deployed and that the driver "
-              +
-              "is at least JDBC 4.0");
+              "within jar. Ensure that the jar containing the driver has been deployed and that " +
+              "the driver is at least JDBC 4.0");
         }
         byte[] bytes = new byte[size];
         int offset = 0;
@@ -103,10 +100,24 @@ public class DriverJarUtil {
         }
         return new String(bytes);
       }
-      return null;
-    } catch (IOException ex) {
-      return null;
-    }
+      throw new IOException("Could not find JDBC Driver class name in jar file '"
+          + jar.getJarName() + "'");
+  }
+
+  FileInputStream createFileInputStream(String jarFilePath) throws FileNotFoundException {
+    return new FileInputStream(jarFilePath);
+  }
+
+  BufferedInputStream createBufferedInputStream(FileInputStream fileInputStream) {
+    return new BufferedInputStream(fileInputStream);
+  }
+
+  ZipInputStream createZipInputStream(BufferedInputStream bufferedInputStream) {
+    return new ZipInputStream(bufferedInputStream);
+  }
+
+  DeployedJar createDeployedJar(String driverJarName) throws IOException {
+    return ClassPathLoader.getLatest().getJarDeployer().findLatestValidDeployedJarFromDisk(driverJarName);
   }
 
   // DriverManager only uses a driver loaded by system ClassLoader
