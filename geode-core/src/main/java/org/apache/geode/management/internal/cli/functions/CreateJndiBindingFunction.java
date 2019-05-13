@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,13 +36,17 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult.Stat
 public class CreateJndiBindingFunction extends CliFunction<Object[]> {
 
   private static final Logger logger = LogService.getLogger();
+  private static final DriverJarUtil util = new DriverJarUtil();
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     Object[] arguments = context.getArguments();
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
-    String driverJarName = (String) arguments[2];
+    String driverJarName = null;
+    if(arguments.length > 2) {
+      driverJarName = (String) arguments[2];
+    }
 
     final String TYPE_NAME;
     if (creatingDataSource) {
@@ -51,25 +56,19 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     }
     if (driverJarName != null && configuration.getJdbcDriverClass() == null) {
       try {
-        DriverJarUtil util = new DriverJarUtil();
-        configuration.setJdbcDriverClass(util.getJdbcDriverName(driverJarName));
-      } catch (Exception ex) {
+        configuration.setJdbcDriverClass(getDriverJarUtil().getJdbcDriverName(driverJarName));
+      } catch (IOException ex) {
+        return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
       }
     }
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));
-    } catch (DataSourceCreateException ex) {
-      if (logger.isErrorEnabled()) {
-        logger.error("create " + TYPE_NAME + " failed", ex.getWrappedException());
-      }
-      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
     } catch (Exception ex) {
       if (logger.isErrorEnabled()) {
         logger.error("create " + TYPE_NAME + " failed", ex);
       }
       return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
-
     }
 
     return new CliFunctionResult(context.getMemberName(), StatusState.OK,
@@ -95,6 +94,10 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     params.put("user-name", binding.getUserName());
     params.put("xa-datasource-class", binding.getXaDatasourceClass());
     return params;
+  }
+
+  DriverJarUtil getDriverJarUtil() {
+    return util;
   }
 
   static List<ConfigProperty> convert(

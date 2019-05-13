@@ -16,10 +16,12 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
 
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +42,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.ConfigProperty;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LocalLogWriter;
+import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.management.internal.cli.commands.CreateJndiBindingCommand;
 import org.apache.geode.test.junit.categories.GfshTest;
 
@@ -98,7 +101,7 @@ public class CreateJndiBindingFunctionTest {
     final String MEMBER = "mock-member";
     config.setJndiName(NAME);
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
-    config.setJdbcDriverClass("org.apache.derby.jdbc.EmbeddedDriver");
+    config.setJdbcDriverClass(null);
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
     Object[] arguments = new Object[] {config, true};
     when(context.getArguments()).thenReturn(arguments);
@@ -112,6 +115,41 @@ public class CreateJndiBindingFunctionTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.toString())
         .contains("Created data-source \"" + NAME + "\" on \"" + MEMBER + "\".");
+
+    Context ctx = JNDIInvoker.getJNDIContext();
+    Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
+
+    assertThat(bindings.keySet()).containsExactlyInAnyOrder("java:jndi1", "java:UserTransaction",
+        "java:TransactionManager");
+  }
+
+  @Test
+  public void createDataSourceIsSuccessfulWithJarSpecified() throws Exception {
+    DriverJarUtil driverJarUtil = mock(DriverJarUtil.class);
+    JndiBindingsType.JndiBinding config = spy(new JndiBindingsType.JndiBinding());
+    final String NAME = "jndi1";
+    final String MEMBER = "mock-member";
+    final String JAR_NAME = "jar-name.jar";
+    final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
+    config.setJndiName(NAME);
+    config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
+    config.setJdbcDriverClass(null);
+    config.setConnectionUrl("jdbc:derby:newDB;create=true");
+    Object[] arguments = new Object[] {config, true, JAR_NAME};
+    when(context.getArguments()).thenReturn(arguments);
+    when(context.getMemberName()).thenReturn(MEMBER);
+    when(context.getResultSender()).thenReturn(resultSender);
+    doReturn(driverJarUtil).when(createBindingFunction).getDriverJarUtil();
+    when(driverJarUtil.getJdbcDriverName(any(String.class))).thenReturn(DRIVER_CLASS_NAME);
+
+    createBindingFunction.execute(context);
+
+    verify(resultSender).lastResult(resultCaptor.capture());
+    CliFunctionResult result = resultCaptor.getValue();
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.toString())
+        .contains("Created data-source \"" + NAME + "\" on \"" + MEMBER + "\".");
+    verify(config).setJdbcDriverClass(DRIVER_CLASS_NAME);
 
     Context ctx = JNDIInvoker.getJNDIContext();
     Map<String, String> bindings = JNDIInvoker.getBindingNamesRecursively(ctx);
