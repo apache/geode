@@ -16,14 +16,14 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
-import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.GROUP_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 
 import java.io.Serializable;
 import java.sql.Connection;

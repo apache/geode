@@ -12,31 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.junit.rules;
+package org.apache.geode.connectors.jdbc.test.junit.rules;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import org.junit.rules.ExternalResource;
+import org.junit.rules.TestRule;
 
-public class InMemoryDerbyConnectionRule extends ExternalResource
-    implements DatabaseConnectionRule {
-  private static final String CONNECTION_URL = "jdbc:derby:memory:%s;create=true";
+public interface DatabaseConnectionRule extends TestRule {
+  Connection getConnection() throws SQLException;
 
-  private final String dbName;
-
-  public InMemoryDerbyConnectionRule(String dbName) {
-    this.dbName = dbName;
-  }
-
-  @Override
-  public Connection getConnection() throws SQLException {
-    return DriverManager.getConnection(getConnectionUrl());
-  }
-
-  @Override
-  public String getConnectionUrl() {
-    return String.format(CONNECTION_URL, dbName);
-  }
+  String getConnectionUrl();
 }

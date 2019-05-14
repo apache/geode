@@ -14,15 +14,15 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import static org.apache.geode.connectors.util.internal.MappingConstants.CATALOG_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SPECIFIED_ID_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.CATALOG_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SPECIFIED_ID_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -37,9 +37,6 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.connectors.util.internal.DescribeMappingResult;
-import org.apache.geode.connectors.util.internal.MappingCommandUtils;
-import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;

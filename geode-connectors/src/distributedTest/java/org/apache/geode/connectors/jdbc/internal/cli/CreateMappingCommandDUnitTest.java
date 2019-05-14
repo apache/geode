@@ -16,15 +16,15 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand.DESCRIBE_MAPPING;
-import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_CLASS_FILE;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.GROUP_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_CLASS_FILE;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -57,7 +57,6 @@ import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.PdxSerializerObject;
 import org.apache.geode.internal.cache.InternalCache;
@@ -526,7 +525,8 @@ public class CreateMappingCommandDUnitTest {
   private static void assertValidResourcePDXMapping(RegionMapping mapping, String tableName) {
     assertThat(mapping.getDataSourceName()).isEqualTo("connection");
     assertThat(mapping.getTableName()).isEqualTo(tableName);
-    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.internal.ResourcePDX");
+    assertThat(mapping.getPdxName())
+        .isEqualTo("org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     assertThat(mapping.getIds()).isEqualTo("id");
     assertThat(mapping.getCatalog()).isNull();
     assertThat(mapping.getSchema()).isEqualTo("mySchema");
@@ -575,7 +575,8 @@ public class CreateMappingCommandDUnitTest {
 
   private File createJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
-    File source = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
+    File source =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
 
     File outputJar = new File(temporaryFolder.getRoot(), "output.jar");
     jarBuilder.buildJar(outputJar, source);
@@ -584,7 +585,8 @@ public class CreateMappingCommandDUnitTest {
 
   private File createClassFile() throws IOException {
     final JavaCompiler javaCompiler = new JavaCompiler();
-    File source = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
+    File source =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
     List<CompiledSourceCode> compiledSourceCodes = javaCompiler.compile(source);
     String className = compiledSourceCodes.get(0).className;
     String fileName = className.substring(className.lastIndexOf(".") + 1) + ".class";
@@ -604,7 +606,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
     IgnoredException.addIgnoredException(ClassNotFoundException.class);
@@ -622,7 +624,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
 
@@ -651,7 +653,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(PDX_CLASS_FILE, jarFile);
@@ -679,7 +681,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(PDX_CLASS_FILE, "NonExistingJarFile.jar");
@@ -692,13 +694,14 @@ public class CreateMappingCommandDUnitTest {
   public void createMappingWithInvalidJarPdxClassFileFails() {
     String region1Name = "region1";
     setupReplicate(region1Name);
-    File invalidFile = loadTestResource("/org/apache/geode/internal/ResourcePDX.java");
+    File invalidFile =
+        loadTestResource("/org/apache/geode/connectors/jdbc/internal/cli/ResourcePDX.java");
 
     CommandStringBuilder csb = new CommandStringBuilder(CREATE_MAPPING);
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(PDX_CLASS_FILE, invalidFile);
@@ -718,7 +721,7 @@ public class CreateMappingCommandDUnitTest {
     csb.addOption(REGION_NAME, region1Name);
     csb.addOption(DATA_SOURCE_NAME, "connection");
     csb.addOption(TABLE_NAME, "employeeRegion");
-    csb.addOption(PDX_NAME, "org.apache.geode.internal.ResourcePDX");
+    csb.addOption(PDX_NAME, "org.apache.geode.connectors.jdbc.internal.cli.ResourcePDX");
     csb.addOption(ID_NAME, "id");
     csb.addOption(SCHEMA_NAME, "mySchema");
     csb.addOption(PDX_CLASS_FILE, classFile);
