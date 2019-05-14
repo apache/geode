@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult.Stat
 public class CreateJndiBindingFunction extends CliFunction<Object[]> {
 
   private static final Logger logger = LogService.getLogger();
-  private DriverJarUtil util = new DriverJarUtil();
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
@@ -96,7 +95,7 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
   }
 
   DriverJarUtil getDriverJarUtil() {
-    return util;
+    return new DriverJarUtil();
   }
 
   static List<ConfigProperty> convert(
