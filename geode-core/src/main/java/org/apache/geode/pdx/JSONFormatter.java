@@ -127,6 +127,17 @@ public class JSONFormatter {
    * Converts a String JSON document into a PdxInstance
    *
    * @param jsonString The JSON String to convert to PDX
+   * @throws JSONFormatterException if unable to create the PdxInstance
+   * @return The PdxInstance
+   */
+  public static PdxInstance fromJSON(String jsonString) {
+    return new JSONFormatter().toPdxInstance(jsonString);
+  }
+
+  /**
+   * Converts a String JSON document into a PdxInstance
+   *
+   * @param jsonString The JSON String to convert to PDX
    * @param identityFields Any desired identity fields on the JSON object to be used for equals and
    *        hashCode computations
    * @throws JSONFormatterException if unable to create the PdxInstance
@@ -134,6 +145,17 @@ public class JSONFormatter {
    */
   public static PdxInstance fromJSON(String jsonString, String... identityFields) {
     return new JSONFormatter().toPdxInstance(jsonString, identityFields);
+  }
+
+  /**
+   * Converts a Byte Array JSON document into a PdxInstance
+   *
+   * @param jsonByteArray The JSON Object as a byte array to convert to PDX
+   * @throws JSONFormatterException if unable to create the PdxInstance
+   * @return The PdxInstance
+   */
+  public static PdxInstance fromJSON(byte[] jsonByteArray) {
+    return new JSONFormatter().toPdxInstance(jsonByteArray);
   }
 
   /**
