@@ -26,7 +26,6 @@ import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.datasource.ConfigProperty;
-import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.util.DriverJarUtil;
@@ -44,7 +43,7 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
     String driverJarName = null;
-    if(arguments.length > 2) {
+    if (arguments.length > 2) {
       driverJarName = (String) arguments[2];
     }
 

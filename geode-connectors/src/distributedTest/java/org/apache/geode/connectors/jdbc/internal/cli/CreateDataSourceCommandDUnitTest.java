@@ -105,12 +105,12 @@ public class CreateDataSourceCommandDUnitTest {
   @Test
   public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
     String URL = "jdbc:mysql://localhost/";
-     IgnoredException.addIgnoredException(
-     "No suitable driver");
-     IgnoredException.addIgnoredException(
-     "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "No suitable driver");
+    IgnoredException.addIgnoredException(
+        "create data-source failed");
 
-     //aquire the jar to be used
+    // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
@@ -127,10 +127,12 @@ public class CreateDataSourceCommandDUnitTest {
     IgnoredException.removeAllExpectedExceptions();
     IgnoredException.addIgnoredException(
         "create data-source failed");
-     IgnoredException.addIgnoredException(
-     "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
-     IgnoredException.addIgnoredException(
-     "Access denied for user 'mySqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\"");
 
     gfsh.executeAndAssertThat(
         "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""

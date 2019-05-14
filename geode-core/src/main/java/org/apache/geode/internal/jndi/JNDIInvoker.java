@@ -399,9 +399,11 @@ public class JNDIInvoker {
       throws SQLException, ClassNotFoundException, MalformedURLException, InstantiationException,
       IllegalAccessException {
     String driverClassName = null;
-    for (ConfigProperty property : props) {
-      if (property.getName().equals("jdbc-driver-class")) {
-        driverClassName = property.getName();
+    if (props != null) {
+      for (ConfigProperty property : props) {
+        if (property.getName().equals("jdbc-driver-class")) {
+          driverClassName = property.getName();
+        }
       }
     }
     DriverJarUtil util = new DriverJarUtil();

@@ -1,18 +1,20 @@
 package org.apache.geode.internal.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URLClassLoader;
+import java.sql.Driver;
+import java.sql.SQLException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -29,6 +31,21 @@ public class DriverJarUtilTest {
   @Before
   public void setup() {
     util = spy(new DriverJarUtil());
+  }
+
+  @Test
+  public void registerDriverSucceedsWithClassName()
+      throws IllegalAccessException, InstantiationException, ClassNotFoundException, SQLException {
+    URLClassLoader urlClassLoader = mock(URLClassLoader.class);
+    doReturn(urlClassLoader).when(util).createUrlClassLoader();
+
+    String driverName = "driver-name";
+
+    Driver driver = mock(Driver.class);
+    doReturn(driver).when(util).getDriverClassByName(driverName, urlClassLoader);
+
+    util.registerDriver(driverName);
+    verify(util).registerDriverWithDriverManager(any());
   }
 
   @Test
@@ -85,9 +102,10 @@ public class DriverJarUtilTest {
       util.getJdbcDriverName("jarName");
       Assert.fail("Expected IOException not thrown.");
     } catch (IOException ex) {
-      assertThat(ex.getMessage()).isEqualTo("Invalid zip entry found for META-INF/services/java.sql.Driver " +
-          "within jar. Ensure that the jar containing the driver has been deployed and that " +
-          "the driver is at least JDBC 4.0");
+      assertThat(ex.getMessage())
+          .isEqualTo("Invalid zip entry found for META-INF/services/java.sql.Driver " +
+              "within jar. Ensure that the jar containing the driver has been deployed and that " +
+              "the driver is at least JDBC 4.0");
     }
   }
 
