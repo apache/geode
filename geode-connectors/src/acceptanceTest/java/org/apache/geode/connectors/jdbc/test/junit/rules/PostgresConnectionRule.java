@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.connectors.jdbc.rules;
+package org.apache.geode.connectors.jdbc.test.junit.rules;
 
 import com.palantir.docker.compose.DockerComposeRule;
 
