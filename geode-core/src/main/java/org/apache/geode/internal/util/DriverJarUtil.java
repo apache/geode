@@ -35,24 +35,6 @@ import org.apache.geode.internal.DeployedJar;
 
 public class DriverJarUtil {
 
-  // public void registerDriver(String deployedJarName)
-  // {
-  // try {
-  // DeployedJar jar =
-  // ClassPathLoader.getLatest().getJarDeployer().findLatestValidDeployedJarFromDisk(deployedJarName);
-  // String driverClassName = getJdbcDriverName(jar);
-  // File jarFile = jar.getFile();
-  // URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{jarFile.toURI().toURL()});
-  // Driver driver = (Driver) Class.forName(driverClassName, true,
-  // urlClassLoader).newInstance();
-  // Driver d = new DriverWrapper(driver);
-  // DriverManager.registerDriver(d);
-  // } catch (IllegalAccessException | ClassNotFoundException | InstantiationException
-  // | SQLException | IOException e) {
-  // e.printStackTrace();
-  // }
-  // }
-
   public void registerDriver(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException,
       InstantiationException, SQLException {
