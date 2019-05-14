@@ -113,7 +113,7 @@ public class PartitionedRegionAttributesMutatorTest {
     assertEquals(beforeConfig.getColocatedWith(), afterConfig.getColocatedWith());
 
     List<InternalDistributedMember> beforeMembers = getMembers(beforeConfig);
-    List<InternalDistributedMember> afterMembers = getMembers(beforeConfig);
+    List<InternalDistributedMember> afterMembers = getMembers(afterConfig);
     assertEquals(beforeMembers, afterMembers);
   }
 
