@@ -17,6 +17,7 @@ package org.apache.geode.pdx;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -127,13 +128,35 @@ public class JSONFormatter {
    * Converts a String JSON document into a PdxInstance
    *
    * @param jsonString The JSON String to convert to PDX
+   * @throws JSONFormatterException if unable to create the PdxInstance
+   * @return The PdxInstance
+   */
+  public static PdxInstance fromJSON(String jsonString) {
+    return new JSONFormatter().toPdxInstance(jsonString, null);
+  }
+
+  /**
+   * Converts a String JSON document into a PdxInstance
+   *
+   * @param jsonString The JSON String to convert to PDX
    * @param identityFields Any desired identity fields on the JSON object to be used for equals and
    *        hashCode computations
    * @throws JSONFormatterException if unable to create the PdxInstance
    * @return The PdxInstance
    */
-  public static PdxInstance fromJSON(String jsonString, String... identityFields) {
+  public static PdxInstance fromJSON(String jsonString, Set<String> identityFields) {
     return new JSONFormatter().toPdxInstance(jsonString, identityFields);
+  }
+
+  /**
+   * Converts a Byte Array JSON document into a PdxInstance
+   *
+   * @param jsonByteArray The JSON Object as a byte array to convert to PDX
+   * @throws JSONFormatterException if unable to create the PdxInstance
+   * @return The PdxInstance
+   */
+  public static PdxInstance fromJSON(byte[] jsonByteArray) {
+    return new JSONFormatter().toPdxInstance(jsonByteArray, null);
   }
 
   /**
@@ -145,7 +168,7 @@ public class JSONFormatter {
    * @throws JSONFormatterException if unable to create the PdxInstance
    * @return The PdxInstance
    */
-  public static PdxInstance fromJSON(byte[] jsonByteArray, String... identityFields) {
+  public static PdxInstance fromJSON(byte[] jsonByteArray, Set<String> identityFields) {
     return new JSONFormatter().toPdxInstance(jsonByteArray, identityFields);
   }
 
@@ -158,7 +181,7 @@ public class JSONFormatter {
    * @return The PdxInstance
    * @throws JSONFormatterException if unable to create the PdxInstance
    */
-  public PdxInstance toPdxInstance(Object json, String... identityFields) {
+  public PdxInstance toPdxInstance(Object json, Set<String> identityFields) {
     if (regionService != null && regionService instanceof ProxyCache) {
       ProxyCache proxyCache = (ProxyCache) regionService;
       UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
@@ -248,7 +271,7 @@ public class JSONFormatter {
   }
 
   private JSONToPdxMapper createJSONToPdxMapper(String className, JSONToPdxMapper parent,
-      String... identityFields) {
+      Set<String> identityFields) {
     if (Boolean.getBoolean(SORT_JSON_FIELD_NAMES_PROPERTY)) {
       return new PdxInstanceSortedHelper(className, parent, identityFields);
     } else {
@@ -257,7 +280,7 @@ public class JSONFormatter {
   }
 
   private JSONToPdxMapper getPdxInstance(JsonParser jp, states currentState,
-      JSONToPdxMapper currentPdxInstance, String... identityFields) throws IOException {
+      JSONToPdxMapper currentPdxInstance, Set<String> identityFields) throws IOException {
     String currentFieldName = null;
     if (currentState == states.OBJECT_START && currentPdxInstance == null) {
       currentPdxInstance = createJSONToPdxMapper(null, null, identityFields);// from getlist
@@ -477,7 +500,7 @@ public class JSONFormatter {
           // need to create new PdxInstance
           // root object will not name, so create classname lazily from all members.
           // child object will have name; but create this as well lazily from all members
-          JSONToPdxMapper tmp = getPdxInstance(jp, currentState, null);
+          JSONToPdxMapper tmp = getPdxInstance(jp, currentState, null, null);
           currentPdxList.addObjectField(currentFieldName, tmp);
           currentState = states.OBJECT_ENDS;
           break;

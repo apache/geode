@@ -48,7 +48,7 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
   }
 
   public PdxInstanceSortedHelper(String className, JSONToPdxMapper parent,
-      String... identityFields) {
+      Set<String> identityFields) {
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
     }
@@ -57,11 +57,8 @@ public class PdxInstanceSortedHelper implements JSONToPdxMapper {
     initializeIdentityFields(identityFields);
   }
 
-  public void initializeIdentityFields(String... identityFields) {
-    this.identityFields = new HashSet<>();
-    for (String identityField : identityFields) {
-      this.identityFields.add(identityField);
-    }
+  public void initializeIdentityFields(Set<String> identityFields) {
+    this.identityFields = identityFields != null ? identityFields : new HashSet<>();
   }
 
   @Override

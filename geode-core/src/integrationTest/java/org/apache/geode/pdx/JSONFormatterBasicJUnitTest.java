@@ -16,6 +16,8 @@ package org.apache.geode.pdx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.HashSet;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.AfterClass;
@@ -111,6 +113,34 @@ public class JSONFormatterBasicJUnitTest {
 
   @Test
   @Parameters({"true", "false"})
+  public void simpleObjectAsStringParses(String usePdxInstanceSortedHelper) {
+    System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, usePdxInstanceSortedHelper);
+    String testField = "a";
+    String jsonObjectString = "{\"a\":2}";
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString);
+    String deserializedJsonObjectString = JSONFormatter.toJSON(pdxInstance);
+
+    assertThat(pdxInstance.hasField(testField)).isTrue();
+    assertThat(deserializedJsonObjectString).isEqualTo(jsonObjectString);
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void simpleObjectAsBytesParses(String usePdxInstanceSortedHelper) {
+    System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, usePdxInstanceSortedHelper);
+    String testField = "a";
+    String jsonObjectString = "{\"a\":2}";
+
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString);
+    byte[] deserializedJsonObjectString = JSONFormatter.toJSONByteArray(pdxInstance);
+
+    assertThat(pdxInstance.hasField(testField)).isTrue();
+    assertThat(deserializedJsonObjectString).isEqualTo(jsonObjectString.getBytes());
+  }
+
+  @Test
+  @Parameters({"true", "false"})
   public void simpleObjectAsStringParsesWithIdentityField(String usePdxInstanceSortedHelper) {
     System.setProperty(JSONFormatter.SORT_JSON_FIELD_NAMES_PROPERTY, usePdxInstanceSortedHelper);
     String identityField = "a";
@@ -118,7 +148,11 @@ public class JSONFormatterBasicJUnitTest {
     String nonExistentField = "c";
     String jsonObjectString = "{\"a\":2,\"b\":3}";
 
-    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString, identityField);
+    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString, new HashSet<String>() {
+      {
+        add(identityField);
+      }
+    });
     String deserializedJsonObjectString = JSONFormatter.toJSON(pdxInstance);
 
     assertThat(pdxInstance.isIdentityField(identityField)).isTrue();
@@ -139,7 +173,12 @@ public class JSONFormatterBasicJUnitTest {
     String nonExistentField = "c";
     String jsonObjectString = "{\"a\":2,\"b\":3}";
 
-    PdxInstance pdxInstance = JSONFormatter.fromJSON(jsonObjectString.getBytes(), identityField);
+    PdxInstance pdxInstance =
+        JSONFormatter.fromJSON(jsonObjectString.getBytes(), new HashSet<String>() {
+          {
+            add(identityField);
+          }
+        });
     byte[] deserializedJsonObjectString = JSONFormatter.toJSONByteArray(pdxInstance);
 
     assertThat(pdxInstance.isIdentityField(identityField)).isTrue();
