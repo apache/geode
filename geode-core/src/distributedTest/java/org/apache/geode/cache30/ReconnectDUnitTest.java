@@ -851,7 +851,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     File file = new File("RoleRegained.xml");
     try {
       PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      generate(getCache(), pw);
+      CacheXmlGenerator.generate(getCache(), pw);
       pw.close();
     } catch (IOException ex) {
       Assert.fail("IOException during cache.xml generation to " + file, ex);
