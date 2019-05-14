@@ -3449,11 +3449,10 @@ public abstract class CacheXml66DUnitTest extends CacheXmlTestCase {
   public InputStream generate(CacheCreation creation) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-    final boolean useSchema = getUseSchema();
     final String version = getGemFireVersion();
 
     PrintWriter pw = new PrintWriter(new OutputStreamWriter(baos), true);
-    CacheXmlGenerator.generate(creation, pw, useSchema, version);
+    CacheXmlGenerator.generate(creation, pw, getUseSchema(), version);
     pw.close();
 
     byte[] bytes = baos.toByteArray();

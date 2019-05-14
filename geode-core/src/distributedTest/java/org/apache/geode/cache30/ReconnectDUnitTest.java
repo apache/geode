@@ -37,7 +37,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANA
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.Locator.getLocator;
 import static org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper.getMembershipManager;
-import static org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator.generate;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.Host.getHost;
@@ -852,7 +851,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     File file = new File("RoleRegained.xml");
     try {
       PrintWriter pw = new PrintWriter(new FileWriter(file), true);
-      generate(getCache(), pw);
+      CacheXmlGenerator.generate(getCache(), pw);
       pw.close();
     } catch (IOException ex) {
       Assert.fail("IOException during cache.xml generation to " + file, ex);

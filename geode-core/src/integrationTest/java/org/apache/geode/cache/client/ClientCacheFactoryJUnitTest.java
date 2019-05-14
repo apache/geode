@@ -86,7 +86,7 @@ public class ClientCacheFactoryJUnitTest {
 
   @After
   public void tearDown() throws Exception {
-    if (this.clientCache != null && !this.clientCache.isClosed()) {
+    if (clientCache != null && !clientCache.isClosed()) {
       clientCache.close();
     }
   }
@@ -101,11 +101,11 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test000Defaults() throws Exception {
-    this.clientCache = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
-    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
+    Properties dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
 
@@ -118,8 +118,8 @@ public class ClientCacheFactoryJUnitTest {
         new InetSocketAddress(InetAddress.getLocalHost(), CacheServer.DEFAULT_PORT)));
 
     ClientCache cc2 = new ClientCacheFactory().create();
-    assertThat(cc2).as("expected cc2 and cc to be == " + cc2 + this.clientCache)
-        .isSameAs(this.clientCache);
+    assertThat(cc2).as("expected cc2 and cc to be == " + cc2 + clientCache)
+        .isSameAs(clientCache);
     assertThatThrownBy(() -> new ClientCacheFactory().set(LOG_LEVEL, "severe").create())
         .isInstanceOf(IllegalStateException.class);
     assertThatThrownBy(() -> new ClientCacheFactory().addPoolLocator("127.0.0.1", 36666).create())
@@ -133,12 +133,12 @@ public class ClientCacheFactoryJUnitTest {
         .getResource("ClientCacheFactoryJUnitTest_single_pool.xml");
     FileUtils.copyFile(new File(url.getFile()), cacheXmlFile);
 
-    this.clientCache =
+    clientCache =
         new ClientCacheFactory().set(CACHE_XML_FILE, cacheXmlFile.getAbsolutePath()).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
-    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
+    Properties dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
 
@@ -162,8 +162,8 @@ public class ClientCacheFactoryJUnitTest {
     Pool p = PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
         .setSocketConnectTimeout(1400).create("singlePool");
 
-    this.clientCache = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
     Pool defPool = gfc.getDefaultPool();
@@ -174,14 +174,14 @@ public class ClientCacheFactoryJUnitTest {
     // enabled
     Properties suProps = new Properties();
     suProps.setProperty("user", "foo");
-    assertThatThrownBy(() -> this.clientCache.createAuthenticatedView(suProps))
+    assertThatThrownBy(() -> clientCache.createAuthenticatedView(suProps))
         .isInstanceOf(IllegalStateException.class);
 
     // however we should be to to create it by configuring a pool
     Pool pool = PoolManager.createFactory()
         .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
         .setMultiuserAuthentication(true).setSocketConnectTimeout(2345).create("pool1");
-    RegionService cc = this.clientCache.createAuthenticatedView(suProps, pool.getName());
+    RegionService cc = clientCache.createAuthenticatedView(suProps, pool.getName());
     ProxyCache pc = (ProxyCache) cc;
     UserAttributes ua = pc.getUserAttributes();
     Pool proxyDefPool = ua.getPool();
@@ -204,8 +204,8 @@ public class ClientCacheFactoryJUnitTest {
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
         .setSocketConnectTimeout(5200).create("p6");
 
-    this.clientCache = new ClientCacheFactory().create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    clientCache = new ClientCacheFactory().create();
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
     Pool defPool = gfc.getDefaultPool();
@@ -217,14 +217,14 @@ public class ClientCacheFactoryJUnitTest {
     // multiuser enabled
     Properties suProps = new Properties();
     suProps.setProperty("user", "foo");
-    assertThatThrownBy(() -> this.clientCache.createAuthenticatedView(suProps))
+    assertThatThrownBy(() -> clientCache.createAuthenticatedView(suProps))
         .isInstanceOf(IllegalStateException.class);
 
     // however we should be to to create it by configuring a pool
     Pool pool = PoolManager.createFactory()
         .addServer(InetAddress.getLocalHost().getHostName(), CacheServer.DEFAULT_PORT)
         .setMultiuserAuthentication(true).create("pool1");
-    RegionService cc = this.clientCache.createAuthenticatedView(suProps, pool.getName());
+    RegionService cc = clientCache.createAuthenticatedView(suProps, pool.getName());
     ProxyCache pc = (ProxyCache) cc;
     UserAttributes ua = pc.getUserAttributes();
     Pool proxyDefPool = ua.getPool();
@@ -237,16 +237,16 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test004SetMethod() {
-    this.clientCache =
+    clientCache =
         new ClientCacheFactory().set(LOG_LEVEL, "severe").setPoolSocketConnectTimeout(0).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
-    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
+    Properties dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
     assertThat(dsProps.getProperty(LOG_LEVEL)).isEqualTo("severe");
-    assertThat(this.clientCache.getDefaultPool().getSocketConnectTimeout()).isEqualTo(0);
+    assertThat(clientCache.getDefaultPool().getSocketConnectTimeout()).isEqualTo(0);
 
     assertThatThrownBy(() -> new ClientCacheFactory().setPoolSocketConnectTimeout(-1).create())
         .isInstanceOf(IllegalArgumentException.class);
@@ -258,11 +258,11 @@ public class ClientCacheFactoryJUnitTest {
     suProps.setProperty("user", "foo");
     GemFireCacheImpl gfc =
         (GemFireCacheImpl) new ClientCacheFactory().setPoolMultiuserAuthentication(true).create();
-    this.clientCache = gfc;
+    clientCache = gfc;
 
-    RegionService cc1 = this.clientCache.createAuthenticatedView(suProps);
+    RegionService cc1 = clientCache.createAuthenticatedView(suProps);
     assertThat(gfc.isClient()).isTrue();
-    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
+    Properties dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
 
@@ -274,7 +274,7 @@ public class ClientCacheFactoryJUnitTest {
         new InetSocketAddress(InetAddress.getLocalHost(), CacheServer.DEFAULT_PORT)));
 
     // make sure we can create another secure user cache
-    RegionService cc2 = this.clientCache.createAuthenticatedView(suProps);
+    RegionService cc2 = clientCache.createAuthenticatedView(suProps);
     assertThat(gfc.isClient()).isTrue();
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
@@ -291,12 +291,12 @@ public class ClientCacheFactoryJUnitTest {
 
   @Test
   public void test006NonDefaultPool() throws Exception {
-    this.clientCache = new ClientCacheFactory()
+    clientCache = new ClientCacheFactory()
         .addPoolServer(InetAddress.getLocalHost().getHostName(), 55555).create();
-    GemFireCacheImpl gfc = (GemFireCacheImpl) this.clientCache;
+    GemFireCacheImpl gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
-    Properties dsProps = this.clientCache.getDistributedSystem().getProperties();
+    Properties dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
 
@@ -306,10 +306,10 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(defPool.getServers()).isEqualTo(
         Collections.singletonList(new InetSocketAddress(InetAddress.getLocalHost(), 55555)));
 
-    gfc = (GemFireCacheImpl) this.clientCache;
+    gfc = (GemFireCacheImpl) clientCache;
     assertThat(gfc.isClient()).isTrue();
 
-    dsProps = this.clientCache.getDistributedSystem().getProperties();
+    dsProps = clientCache.getDistributedSystem().getProperties();
     assertThat(dsProps.getProperty(LOCATORS)).isEqualTo("");
     assertThat(dsProps.getProperty(MCAST_PORT)).isEqualTo("0");
 
@@ -420,7 +420,7 @@ public class ClientCacheFactoryJUnitTest {
     File cacheXmlFile = temporaryFolder.newFile(testName.getMethodName() + ".xml");
 
     try (PrintWriter printWriter = new PrintWriter(new FileWriter(cacheXmlFile), true)) {
-      CacheXmlGenerator.generate(clientCacheCreation, printWriter, true, false, false);
+      CacheXmlGenerator.generate(clientCacheCreation, printWriter, false, false);
       clientCache = new ClientCacheFactory()
           .set(LOG_LEVEL, "warn")
           .set(LOG_FILE, logFile.getAbsolutePath())
@@ -441,7 +441,7 @@ public class ClientCacheFactoryJUnitTest {
     File logFile = temporaryFolder.newFile(testName.getMethodName() + ".log");
     File cacheXmlFile = temporaryFolder.newFile(testName.getMethodName() + ".xml");
     try (PrintWriter printWriter = new PrintWriter(new FileWriter(cacheXmlFile), true)) {
-      CacheXmlGenerator.generate(clientCacheCreation, printWriter, true, false, false);
+      CacheXmlGenerator.generate(clientCacheCreation, printWriter, false, false);
       clientCache = new ClientCacheFactory()
           .set(LOG_LEVEL, "warn")
           .set(LOG_FILE, logFile.getAbsolutePath())
