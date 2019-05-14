@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,39 +60,45 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
   @Override
   public List<MemberConfig> list(MemberConfig filter, CacheConfig existing) {
-    String coordinatorId = null;
-    List<MemberConfig> results = new ArrayList<>();
 
-    Set<DistributedMember> members = cache.getDistributionManager().getDistributionManagerIds()
-        .stream().filter(m -> (filter.getId() == null || filter.getId().equals(m.getName())))
-        .map(DistributedMember.class::cast).collect(Collectors.toSet());
+    Set<DistributedMember> distributedMembers =
+        cache.getDistributionManager().getDistributionManagerIds()
+            .stream().filter(internalDistributedMember -> (filter.getId() == null
+                || filter.getId().equals(internalDistributedMember.getName())))
+            .map(DistributedMember.class::cast).collect(Collectors.toSet());
 
-    if (members.size() == 0) {
-      return results;
+    if (distributedMembers.size() == 0) {
+      return new ArrayList<>();
     }
 
-    for (DistributedMember member : members) {
-      if (member == getCoordinator()) {
-        coordinatorId = member.getId();
-      }
-    }
+    ArrayList<MemberInformation> memberInformation = getMemberInformation(distributedMembers);
 
+    return generateMemberConfigs(memberInformation);
+  }
+
+  private ArrayList<MemberInformation> getMemberInformation(Set<DistributedMember> members) {
     Execution execution = FunctionService.onMembers(members);
-    ResultCollector<?, ?> rc = execution.execute(new GetMemberInformationFunction());
+    ResultCollector<?, ?> resultCollector = execution.execute(new GetMemberInformationFunction());
+    return (ArrayList<MemberInformation>) resultCollector.getResult();
+  }
 
-    ArrayList<MemberInformation> output = (ArrayList<MemberInformation>) rc.getResult();
+  private List<MemberConfig> generateMemberConfigs(ArrayList<MemberInformation> memberInformation) {
 
-    for (MemberInformation mInfo : output) {
+    final String coordinatorId = getCoordinatorId();
+    List<MemberConfig> memberConfigs = new ArrayList<>();
+    for (MemberInformation information : memberInformation) {
       MemberConfig member = new MemberConfig();
-      member.setId(mInfo.getName());
-      member.setHost(mInfo.getHost());
-      member.setPid(mInfo.getProcessId());
-      member.setStatus(mInfo.getStatus());
-      member.setInitialHeap(mInfo.getInitHeapSize());
-      member.setMaxHeap(mInfo.getMaxHeapSize());
+      member.setId(information.getName());
+      member.setHost(information.getHost());
+      member.setPid(information.getProcessId());
+      member.setStatus(information.getStatus());
+      member.setInitialHeap(information.getInitHeapSize());
+      member.setMaxHeap(information.getMaxHeapSize());
+      member.setGroups(Arrays.asList(information.getGroups().split(",")));
+      member.setCoordinator(information.getId().equals(coordinatorId));
 
-      if (mInfo.isServer() && mInfo.getCacheServeInfo() != null) {
-        for (CacheServerInfo info : mInfo.getCacheServeInfo()) {
+      if (information.isServer() && information.getCacheServeInfo() != null) {
+        for (CacheServerInfo info : information.getCacheServeInfo()) {
           MemberConfig.CacheServerConfig csConfig = new MemberConfig.CacheServerConfig();
           csConfig.setPort(info.getPort());
           csConfig.setMaxConnections(info.getMaxConnections());
@@ -100,23 +107,28 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
         }
         member.setLocator(false);
       } else {
-        member.setPort(mInfo.getLocatorPort());
+        member.setPort(information.getLocatorPort());
         member.setLocator(true);
       }
 
-      member.setCoordinator(mInfo.getId().equals(coordinatorId));
-      results.add(member);
+      memberConfigs.add(member);
     }
 
-    return results;
+    return memberConfigs;
   }
 
-  private DistributedMember getCoordinator() {
-    MembershipManager mmgr = cache.getDistributionManager().getMembershipManager();
-    if (mmgr == null) {
+  private String getCoordinatorId() {
+    final MembershipManager membershipManager =
+        cache.getDistributionManager().getMembershipManager();
+    if (membershipManager == null) {
       return null;
     }
 
-    return mmgr.getCoordinator();
+    final DistributedMember coordinator = membershipManager.getCoordinator();
+    if (coordinator == null) {
+      return null;
+    }
+
+    return coordinator.getId();
   }
 }

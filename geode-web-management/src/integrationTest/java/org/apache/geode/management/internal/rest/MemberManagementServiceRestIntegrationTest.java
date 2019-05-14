@@ -60,7 +60,7 @@ public class MemberManagementServiceRestIntegrationTest {
     webContext = new LocatorWebContext(webApplicationContext);
 
     cluster.setSkipLocalDistributedSystemCleanup(true);
-    cluster.startServerVM(1, webContext.getLocator().getPort());
+    cluster.startServerVM(1, "group-1,group-2", webContext.getLocator().getPort());
   }
 
   @Test
@@ -91,7 +91,9 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(jsonPath("$.result[0].locator", is(false)))
         .andExpect(jsonPath("$.result[0].cacheServers[0].port", greaterThan(0)))
         .andExpect(jsonPath("$.result[0].cacheServers[0].maxConnections", equalTo(800)))
-        .andExpect(jsonPath("$.result[0].cacheServers[0].maxThreads", equalTo(0)));
+        .andExpect(jsonPath("$.result[0].cacheServers[0].maxThreads", equalTo(0)))
+        .andExpect(jsonPath("$.result[0].groups", containsInAnyOrder("group-1", "group-2")))
+        .andExpect(jsonPath("$.result[0].groups[2]").doesNotExist());
   }
 
   @Test
