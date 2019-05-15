@@ -23,6 +23,7 @@ import static org.mockito.Mockito.spy;
 
 import java.util.Collections;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -52,6 +53,8 @@ public class CreateDiskStoreCommandTest {
         any());
     doReturn(Collections.singletonList(mock(CliFunctionResult.class))).when(command)
         .executeAndGetFunctionResult(any(), any(), any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+        any());
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist")
             .getResultModel();
@@ -67,6 +70,8 @@ public class CreateDiskStoreCommandTest {
         any());
     doReturn(Collections.singletonList(mock(CliFunctionResult.class))).when(command)
         .executeAndGetFunctionResult(any(), any(), any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+        any());
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist")
             .getResultModel();
