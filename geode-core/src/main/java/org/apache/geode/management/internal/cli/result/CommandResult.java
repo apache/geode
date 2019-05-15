@@ -105,7 +105,6 @@ public class CommandResult implements Result {
   private void addSpacedRowInTable(TableBuilder.Table resultTable, String row) {
     if (StringUtils.isNotBlank(row)) {
       resultTable.newRow().newLeftCol(row);
-      resultTable.newRow().newLeftCol("");
     }
   }
 
