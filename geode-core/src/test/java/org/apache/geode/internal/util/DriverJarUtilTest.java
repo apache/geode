@@ -27,7 +27,6 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URLClassLoader;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.zip.ZipEntry;
@@ -51,13 +50,10 @@ public class DriverJarUtilTest {
   @Test
   public void registerDriverSucceedsWithClassName()
       throws IllegalAccessException, InstantiationException, ClassNotFoundException, SQLException {
-    URLClassLoader urlClassLoader = mock(URLClassLoader.class);
-    doReturn(urlClassLoader).when(util).createUrlClassLoader();
-
     String driverName = "driver-name";
 
     Driver driver = mock(Driver.class);
-    doReturn(driver).when(util).getDriverClassByName(driverName, urlClassLoader);
+    doReturn(driver).when(util).getDriverInstanceByClassName(driverName);
 
     util.registerDriver(driverName);
     verify(util).registerDriverWithDriverManager(any());

@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -38,8 +37,9 @@ public class DriverJarUtil {
   public void registerDriver(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException,
       InstantiationException, SQLException {
-    URLClassLoader urlClassLoader = createUrlClassLoader();
-    Driver driver = getDriverClassByName(driverClassName, urlClassLoader);
+    // URLClassLoader urlClassLoader = createUrlClassLoader();
+    // Driver driver = getDriverInstanceByClassName(driverClassName, urlClassLoader);
+    Driver driver = getDriverInstanceByClassName(driverClassName);
     Driver d = new DriverWrapper(driver);
     registerDriverWithDriverManager(d);
   }
@@ -103,13 +103,13 @@ public class DriverJarUtil {
         .findLatestValidDeployedJarFromDisk(driverJarName);
   }
 
-  URLClassLoader createUrlClassLoader() {
-    return new URLClassLoader(ClassPathLoader.getLatest().getJarDeployer().getDeployedJarURLs());
-  }
+  // URLClassLoader createUrlClassLoader() {
+  // return new URLClassLoader(ClassPathLoader.getLatest().getJarDeployer().getDeployedJarURLs());
+  // }
 
-  Driver getDriverClassByName(String driverClassName, URLClassLoader urlClassLoader)
+  Driver getDriverInstanceByClassName(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    return (Driver) Class.forName(driverClassName, true, urlClassLoader).newInstance();
+    return (Driver) Class.forName(driverClassName).newInstance();
   }
 
   void registerDriverWithDriverManager(Driver driver) throws SQLException {
