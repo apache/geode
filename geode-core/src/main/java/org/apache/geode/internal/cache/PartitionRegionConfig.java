@@ -324,6 +324,14 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
     partitionedRegion.executeColocationCallbacks();
   }
 
+  public void setEntryIdleTimeout(ExpirationAttributes idleTimeout) {
+    this.entryIdleTimeout = idleTimeout;
+  }
+
+  public void setEntryTimeToLive(ExpirationAttributes timeToLive) {
+    this.entryTimeToLive = timeToLive;
+  }
+
   public boolean isGreaterNodeListVersion(final PartitionRegionConfig other) {
     return this.nodes.isNewerThan(other.nodes);
   }
