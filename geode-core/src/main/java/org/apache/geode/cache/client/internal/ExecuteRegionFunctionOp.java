@@ -18,11 +18,13 @@ package org.apache.geode.cache.client.internal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
@@ -69,143 +71,98 @@ public class ExecuteRegionFunctionOp {
    * @param serverRegionExecutor which will return argument and filter
    * @param resultCollector is used to collect the results from the Server
    */
-  public static void execute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int mRetryAttempts) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
+  public static void execute(final ExecutablePool pool, final String region,
+      final Function function,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector,
+      final byte hasResult, final int maxRetryAttemptsArg) {
+
+    final AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
         resultCollector, hasResult, new HashSet<String>());
 
-    int retryAttempts = 0;
-    boolean reexecute = false;
-    boolean reexecuteForServ = false;
-    Set<String> failedNodes = new HashSet<String>();
-    AbstractOp reexecOp = null;
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
-    }
-
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-
-      try {
-        if (reexecuteForServ) {
-          reexecOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-              (byte) 1/* isReExecute */, failedNodes);
-          pool.execute(reexecOp, 0);
-        } else {
-          pool.execute(op, 0);
-        }
-        reexecute = false;
-        reexecuteForServ = false;
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        retryAttempts++;
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1) /* || !function.isHA() */)
-          throw se;
-
-        reexecuteForServ = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
-      }
-    } while (reexecuteForServ);
-
-    if (reexecute && function.isHA()) {
-      ExecuteRegionFunctionOp.reexecute(pool, region, function, serverRegionExecutor,
-          resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
-    }
+    doExecute(pool, function.isHA(), resultCollector, op,
+        maxRetryAttemptsArg,
+        (maxRetryAttempts, failedNodes) -> ExecuteRegionFunctionOp.reexecute(pool,
+            resultCollector, failedNodes, maxRetryAttempts,
+            new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
+                resultCollector, hasResult, new HashSet<String>())));
   }
 
-  public static void execute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int mRetryAttempts, boolean isHA, boolean optimizeForWrite) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
+  public static void execute(final ExecutablePool pool, final String region,
+      final String functionId,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector,
+      final byte hasResult, final int maxRetryAttemptsArg, final boolean isHA,
+      final boolean optimizeForWrite) {
+
+    final AbstractOp op = new ExecuteRegionFunctionOpImpl(region, functionId, serverRegionExecutor,
         resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
 
-    int retryAttempts = 0;
-    boolean reexecute = false;
-    boolean reexecuteForServ = false;
-    Set<String> failedNodes = new HashSet<String>();
-    AbstractOp reexecOp = null;
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+    doExecute(pool, isHA, resultCollector, op,
+        maxRetryAttemptsArg,
+        (maxRetryAttempts, failedNodes) -> ExecuteRegionFunctionOp.reexecute(pool,
+            resultCollector, failedNodes, maxRetryAttempts,
+            new ExecuteRegionFunctionOpImpl(region, functionId, serverRegionExecutor,
+                resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true)));
+  }
+
+  private static void doExecute(final ExecutablePool pool, final boolean isHA,
+      final ResultCollector resultCollector, final AbstractOp op,
+      final int maxRetryAttemptsArg, final BiConsumer<Integer, Set<String>> retrier) {
+
+    final Set<String> failedNodes = new HashSet<String>();
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      try {
-        if (reexecuteForServ) {
-          reexecOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-              (byte) 1/* isReExecute */, failedNodes);
-          pool.execute(reexecOp, 0);
-        } else {
-          pool.execute(op, 0);
-        }
-        reexecute = false;
-        reexecuteForServ = false;
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1) /* || !isHA */)
-          throw se;
+    int maxRetryAttempts = maxRetryAttemptsArg;
 
-        reexecute = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
+    try {
+      pool.execute(op, 0);
+      return;
+    } catch (InternalFunctionInvocationTargetException e) {
+      if (isDebugEnabled) {
+        logger.debug(
+            "ExecuteRegionFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
+            e.getFailedNodeSet());
       }
-    } while (reexecuteForServ);
+      resultCollector.clearResults();
+      Set<String> failedNodesIds = e.getFailedNodeSet();
 
-    if (reexecute && isHA) {
-      ExecuteRegionFunctionOp.reexecute(pool, region, function, serverRegionExecutor,
-          resultCollector, hasResult, failedNodes, maxRetryAttempts - 1, isHA, optimizeForWrite);
+      if (failedNodesIds != null) {
+        failedNodes.addAll(failedNodesIds);
+      }
+    } catch (final ServerOperationException e) {
+      throw e;
+    } catch (final ServerConnectivityException se) {
+      if (!isHA || maxRetryAttempts == 0) {
+        throw se;
+      }
+
+      if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+        // If the retryAttempt is set to default(-1). Try it on all servers once.
+        // Calculating number of servers when function is re-executed as it involves
+        // messaging locator.
+        maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+      }
+
+      if (maxRetryAttempts < 1) {
+        throw se;
+      }
+
+      if (isDebugEnabled) {
+        logger.debug(
+            "ExecuteRegionFunctionOp#execute : Received ServerConnectivityException. The exception is {}, about to retry {} times",
+            se, maxRetryAttempts);
+      }
+      resultCollector.clearResults();
+    }
+
+    if (isHA) {
+      retrier.accept(maxRetryAttempts, failedNodes);
     }
   }
 
-  public static void reexecute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int maxRetryAttempts) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
+  public static void reexecute(ExecutablePool pool,
+      ResultCollector resultCollector,
+      Set<String> failedNodes, int maxRetryAttempts, AbstractOp op) {
 
     boolean reexecute = true;
     int retryAttempts = 0;
@@ -240,66 +197,19 @@ public class ExecuteRegionFunctionOp {
               .debug("ExecuteRegionFunctionOp#reexecute : Received ServerConnectivity Exception.");
         }
 
-        if (se instanceof ServerOperationException) {
+        if (se instanceof ServerOperationException || maxRetryAttempts == 0) {
           throw se;
         }
+
         retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
-
-        reexecute = true;
-        resultCollector.clearResults();
-        failedNodes.clear();
-      }
-    } while (reexecute);
-  }
-
-  public static void reexecute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int maxRetryAttempts, boolean isHA,
-      boolean optimizeForWrite) {
-    AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
-
-    boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      reexecute = false;
-
-      AbstractOp reExecuteOp = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
-          (byte) 1/* isReExecute */, failedNodes);
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteRegionFunction#reexecute : Sending Function Execution Message: {} to Server using pool: {}",
-            reExecuteOp.getMessage(), pool);
-      }
-      try {
-        pool.execute(reExecuteOp, 0);
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
         }
-        reexecute = true;
-        resultCollector.clearResults();
-        Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes.clear();
-        if (failedNodesIds != null) {
-          failedNodes.addAll(failedNodesIds);
-        }
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteRegionFunctionOp#reexecute : Received ServerConnectivityException. The exception is {} The retryattempt is : {} maxRetryAttempts {}",
-              se, retryAttempts, maxRetryAttempts);
-        }
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
+
+        if (retryAttempts >= maxRetryAttempts /* && maxRetryAttempts != -2 */)
           throw se;
 
         reexecute = true;

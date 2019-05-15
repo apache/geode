@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -25,6 +24,7 @@ import util.TestException;
 
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -35,9 +35,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -46,12 +44,12 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class FunctionTimeoutTest implements Serializable {
+public class FunctionRetryDUnitTest implements Serializable {
 
   private static final int TOTAL_NUM_BUCKETS = 3;
   private static final int REDUNDANT_COPIES = 0;
 
-  private static final String regionName = "FunctionTimeoutTest";
+  private static final String regionName = "FunctionRetryDUnitTest";
 
   private MemberVM locator;
   private MemberVM server1;
@@ -94,7 +92,6 @@ public class FunctionTimeoutTest implements Serializable {
     server1 = startServer(1);
     server2 = startServer(2);
     server3 = startServer(3);
-    client = startClient(4);
   }
 
   @After
@@ -106,21 +103,26 @@ public class FunctionTimeoutTest implements Serializable {
   // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
       /*
-       haStatus | clientMetadataStatus    | executionTarget    | functionIdentifierType | expectedCalls
+       * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
+       * | expectedCalls
        */
-      "NOT_HA   | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE       | 1",
-      "NOT_HA   | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE       | 1",
-      "NOT_HA   | CLIENT_MISSING_METADATA | SERVER             | OBJECT_REFERENCE       | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
 
-      "HA       | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE       | 3",
-      "HA       | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING                 | 3",
-      "HA       | CLIENT_MISSING_METADATA | REGION             | OBJECT_REFERENCE       | 3",
-      "HA       | CLIENT_MISSING_METADATA | REGION             | STRING                 | 3",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 2 | 3",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | -1 | 3",
 
-      "HA       | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | OBJECT_REFERENCE       | 3",
-      "HA       | CLIENT_HAS_METADATA     | REGION_WITH_FILTER | STRING                 | 3",
-      "HA       | CLIENT_HAS_METADATA     | REGION             | OBJECT_REFERENCE       | 3",
-      "HA       | CLIENT_HAS_METADATA     | REGION             | STRING                 | 3"
+      "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // 9
+      "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3", // 9
+
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3", // 2
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | STRING | -1 | 3", // 2
+      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // 6
+      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 3" // 6
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testAll(
@@ -128,7 +130,14 @@ public class FunctionTimeoutTest implements Serializable {
       final ClientMetadataStatus clientMetadataStatus,
       final ExecutionTarget executionTarget,
       final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
       final int expectedCalls) throws Exception {
+
+    if (retryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+      client = startClient(4);
+    } else {
+      client = startClient(4, retryAttempts);
+    }
 
     final TheFunction function = new TheFunction(haStatus);
 
@@ -154,15 +163,15 @@ public class FunctionTimeoutTest implements Serializable {
           clusterStartupRule.getClientCache().getRegion(regionName);
 
       /*
-       Create at least one entry.
-
-       Absence/presence of metadata in the client determines which op variant the product uses
-       e.g. single-hop versus non-single-hop. Those variants have divergent (copypasta) code,
-       so they must each be tested.
-
-       We found empirically that creating more entries caused metadata to be loaded in the client.
-       With few entries (empirically, 4 or fewer) metadata has not been acquired by the time the
-       function is executed. With more than 4 entries, metadata has been acquired.
+       * Create at least one entry.
+       *
+       * Absence/presence of metadata in the client determines which op variant the product uses
+       * e.g. single-hop versus non-single-hop. Those variants have divergent (copypasta) code,
+       * so they must each be tested.
+       *
+       * We found empirically that creating more entries caused metadata to be loaded in the client.
+       * With few entries (empirically, 4 or fewer) metadata has not been acquired by the time the
+       * function is executed. With more than 4 entries, metadata has been acquired.
        */
       final int numberOfEntries;
       switch (clientMetadataStatus) {
@@ -281,8 +290,19 @@ public class FunctionTimeoutTest implements Serializable {
     return clusterStartupRule.startClientVM(
         vmIndex,
         cacheRule -> cacheRule
-            .withCacheSetup(fnTimeOut -> System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+            .withCacheSetup(fnTimeOut -> System
+                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
             .withLocatorConnection(locator.getPort()));
+  }
+
+  private ClientVM startClient(final int vmIndex, final int retryAttempts) throws Exception {
+    return clusterStartupRule.startClientVM(
+        vmIndex,
+        cacheRule -> cacheRule
+            .withCacheSetup(fnTimeOut -> System
+                .setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100"))
+            .withLocatorConnection(locator.getPort())
+            .withCacheSetup(cf -> cf.setPoolRetryAttempts(retryAttempts)));
   }
 
   private MemberVM startServer(final int vmIndex) {
@@ -291,7 +311,7 @@ public class FunctionTimeoutTest implements Serializable {
         cacheRule -> cacheRule
             .withConnectionToLocator(locator.getPort())
             .withProperty(SERIALIZABLE_OBJECT_FILTER,
-                "org.apache.geode.internal.cache.execute.FunctionTimeoutTest*"));
+                "org.apache.geode.internal.cache.execute.FunctionRetryDUnitTest*"));
   }
 
   private void createServerRegion() {

@@ -90,8 +90,11 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (reexecute) {
       resultCollector.clearResults();
       if (function.isHA()) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
+        ExecuteRegionFunctionOp.reexecute(pool,
+            resultCollector, failedNodes, maxRetryAttempts - 1,
+            new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(), function,
+                serverRegionExecutor,
+                resultCollector, hasResult, new HashSet<String>()));
       }
     }
 
@@ -132,9 +135,11 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (reexecute) {
       resultCollector.clearResults();
       if (isHA) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1,
-            isHA, optimizeForWrite);
+        ExecuteRegionFunctionOp.reexecute(pool,
+            resultCollector, failedNodes, maxRetryAttempts - 1,
+            new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
+                functionId, serverRegionExecutor,
+                resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true));
       }
     }
 

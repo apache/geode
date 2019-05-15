@@ -72,9 +72,8 @@ public class ClientCacheRule extends SerializableExternalResource {
    * such as setting system properties, your function can do that.
    *
    * @param setup is a {@link Consumer} that will eventually receive the constructed,
-   * but not-yet-{@code create()}ed {@link ClientCacheFactory}, in the client VM.
+   *        but not-yet-{@code create()}ed {@link ClientCacheFactory}, in the client VM.
    *
-   * @return this
    */
   public ClientCacheRule withCacheSetup(Consumer<ClientCacheFactory> setup) {
     cacheSetups.add(setup);

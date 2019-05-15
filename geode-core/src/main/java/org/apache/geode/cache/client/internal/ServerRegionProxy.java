@@ -682,9 +682,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         serverRegionExecutor, resultCollector, Byte.valueOf(hasResult));
 
     int retryAttempts = pool.getRetryAttempts();
-    if (retryAttempts == -1) {
-      retryAttempts = ((PoolImpl)pool).getConnectionSource().getAllServers().size();
-    }
+    // if (retryAttempts == -1) {
+    // retryAttempts = ((PoolImpl)pool).getConnectionSource().getAllServers().size();
+    // }
     boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
     if (this.pool.getPRSingleHopEnabled() && !inTransaction) {
