@@ -26,6 +26,7 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -33,6 +34,8 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -107,6 +110,9 @@ public class FunctionRetryDUnitTest implements Serializable {
        * | expectedCalls
        */
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
+
+/*deleteme*/      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3", // 2
+
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
       "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
       "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
@@ -155,38 +161,32 @@ public class FunctionRetryDUnitTest implements Serializable {
     });
 
     client.invoke(() -> {
-
       createClientRegion();
       registerFunctionIfNeeded(functionIdentifierType, function);
+      ClientMetadataService cms =
+          ((InternalCache) clusterStartupRule.getClientCache()).getClientMetadataService();
+      cms.setMetadataStable(false);
 
       final Region<Object, Object> region =
           clusterStartupRule.getClientCache().getRegion(regionName);
 
-      /*
-       * Create at least one entry.
-       *
-       * Absence/presence of metadata in the client determines which op variant the product uses
-       * e.g. single-hop versus non-single-hop. Those variants have divergent (copypasta) code,
-       * so they must each be tested.
-       *
-       * We found empirically that creating more entries caused metadata to be loaded in the client.
-       * With few entries (empirically, 4 or fewer) metadata has not been acquired by the time the
-       * function is executed. With more than 4 entries, metadata has been acquired.
-       */
-      final int numberOfEntries;
-      switch (clientMetadataStatus) {
-        case CLIENT_HAS_METADATA:
-          numberOfEntries = 10;
-          break;
-        case CLIENT_MISSING_METADATA:
-          numberOfEntries = 1;
-          break;
-        default:
-          throw new TestException("unknown ClientMetadataStatus: " + clientMetadataStatus);
-      }
-
-      for (int i = 0; i < numberOfEntries; i++) {
+      for (int i = 0; i < 3 /*numberOfEntries*/; i++) {
         region.put("k" + i, "v" + i);
+      }
+    });
+
+    client.invoke(() -> {
+      ClientMetadataService cms = ((InternalCache) clusterStartupRule.getClientCache())
+          .getClientMetadataService();
+
+      if (clientMetadataStatus.equals(clientMetadataStatus.CLIENT_HAS_METADATA)) {
+        final Region<Object, Object> region =
+            clusterStartupRule.getClientCache().getRegion(regionName);
+        cms.scheduleGetPRMetaData((InternalRegion)region, true);
+        GeodeAwaitility.await("Awaiting ClientMetadataService.isMetadataStable()")
+            .untilAsserted(() -> assertThat(cms.isMetadataStable()).isTrue());
+      } else {
+        cms.setMetadataStable(false);
       }
     });
 
