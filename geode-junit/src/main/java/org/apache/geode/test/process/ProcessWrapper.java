@@ -38,6 +38,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -55,7 +56,7 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 4.1.1
  */
-public class ProcessWrapper {
+public class ProcessWrapper implements Consumer<String> {
   private static final Logger logger = LogService.getLogger();
 
   private static final long PROCESS_TIMEOUT_MILLIS = 10 * 60 * 1000L; // 10 minutes
@@ -86,6 +87,7 @@ public class ProcessWrapper {
   private Thread processThread;
   private ProcessStreamReader stdout;
   private ProcessStreamReader stderr;
+  private Consumer<String> consumer;
 
   private ProcessWrapper(final String[] jvmArguments, final Class<?> mainClass,
       final String[] mainArguments, final boolean useMainLauncher, final boolean headless,
@@ -97,8 +99,22 @@ public class ProcessWrapper {
     this.headless = headless;
     this.timeoutMillis = timeoutMillis;
 
-    this.lineBuffer = new LinkedBlockingQueue<String>();
-    this.allLines = Collections.synchronizedList(new ArrayList<String>());
+    this.lineBuffer = new LinkedBlockingQueue<>();
+    this.allLines = Collections.synchronizedList(new ArrayList<>());
+  }
+
+  public void setConsumer(Consumer<String> consumer) {
+    this.consumer = consumer;
+  }
+
+  @Override
+  public void accept(String line) {
+    this.lineBuffer.offer(line);
+    this.allLines.add(line);
+
+    if (consumer != null) {
+      consumer.accept(line);
+    }
   }
 
   public ProcessStreamReader getStandardOutReader() {
@@ -347,9 +363,9 @@ public class ProcessWrapper {
         logger.info("Starting " + commandString);
 
         final ProcessStreamReader stdOut = new ProcessStreamReader(commandString,
-            this.process.getInputStream(), this.lineBuffer, this.allLines);
+            this.process.getInputStream(), this);
         final ProcessStreamReader stdErr = new ProcessStreamReader(commandString,
-            this.process.getErrorStream(), this.lineBuffer, this.allLines);
+            this.process.getErrorStream(), this);
 
         this.stdout = stdOut;
         this.stderr = stdErr;
@@ -498,6 +514,7 @@ public class ProcessWrapper {
     JarOutputStream jos = null;
     try {
       File jarFile = manifestJar.toFile();
+      jarFile.deleteOnExit();
       OutputStream os = new FileOutputStream(jarFile);
       jos = new JarOutputStream(os, manifest);
     } catch (IOException e) {

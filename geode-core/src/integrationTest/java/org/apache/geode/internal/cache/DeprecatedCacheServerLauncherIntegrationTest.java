@@ -446,6 +446,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
       throws InterruptedException, TimeoutException {
     ProcessWrapper processWrapper = new ProcessWrapper.Builder()
         .mainClass(CacheServerLauncher.class).mainArguments(args).build();
+    processWrapper.setConsumer(c -> logger.info(c));
     processWrapper.execute();
     if (regex != null) {
       processWrapper.waitForOutputToMatch(regex, 2 * 60 * 1000);

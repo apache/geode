@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -62,6 +63,8 @@ public class ProcessLogger {
   }
 
   private static LoggerContext createLoggerContext() {
+    LogManager.shutdown();
+
     ConfigurationBuilder<BuiltConfiguration> builder =
         ConfigurationBuilderFactory.newConfigurationBuilder();
     builder.setStatusLevel(Level.ERROR);
