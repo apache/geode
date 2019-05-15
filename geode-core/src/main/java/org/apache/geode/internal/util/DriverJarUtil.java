@@ -15,98 +15,26 @@
 
 package org.apache.geode.internal.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.DeployedJar;
 
 public class DriverJarUtil {
 
   public void registerDriver(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException,
       InstantiationException, SQLException {
-    // URLClassLoader urlClassLoader = createUrlClassLoader();
-    // Driver driver = getDriverInstanceByClassName(driverClassName, urlClassLoader);
     Driver driver = getDriverInstanceByClassName(driverClassName);
     Driver d = new DriverWrapper(driver);
     registerDriverWithDriverManager(d);
   }
 
-
-  public String getJdbcDriverName(String driverJarName) throws IOException {
-    return getJdbcDriverName(createDeployedJar(driverJarName));
-  }
-
-  public String getJdbcDriverName(DeployedJar jar) throws IOException {
-    File jarFile = jar.getFile();
-    FileInputStream fileInputStream = createFileInputStream(jarFile.getAbsolutePath());
-    BufferedInputStream bufferedInputStream = createBufferedInputStream(fileInputStream);
-    ZipInputStream zipInputStream = createZipInputStream(bufferedInputStream);
-    ZipEntry zipEntry;
-    while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-      // JDBC 4.0 Drivers must include the file META-INF/services/java.sql.Driver. This file
-      // contains the name of the JDBC drivers implementation of java.sql.Driver
-      // See https://docs.oracle.com/javase/8/docs/api/java/sql/DriverManager.html
-      if (!zipEntry.getName().equals("META-INF/services/java.sql.Driver")) {
-        continue;
-      }
-      int size = (int) zipEntry.getSize();
-      if (size == -1) {
-        throw new IOException("Invalid zip entry found for META-INF/services/java.sql.Driver " +
-            "within jar. Ensure that the jar containing the driver has been deployed and that " +
-            "the driver is at least JDBC 4.0");
-      }
-      byte[] bytes = new byte[size];
-      int offset = 0;
-      int chunk;
-      while ((size - offset) > 0) {
-        chunk = zipInputStream.read(bytes, offset, size - offset);
-        if (chunk == -1) {
-          break;
-        }
-        offset += chunk;
-      }
-      return new String(bytes);
-    }
-    throw new IOException("Could not find JDBC Driver class name in jar file '"
-        + jar.getJarName() + "'");
-  }
-
   // The methods below are included to facilitate testing and to make the helper methods in this
   // class cleaner
-  FileInputStream createFileInputStream(String jarFilePath) throws FileNotFoundException {
-    return new FileInputStream(jarFilePath);
-  }
-
-  BufferedInputStream createBufferedInputStream(FileInputStream fileInputStream) {
-    return new BufferedInputStream(fileInputStream);
-  }
-
-  ZipInputStream createZipInputStream(BufferedInputStream bufferedInputStream) {
-    return new ZipInputStream(bufferedInputStream);
-  }
-
-  DeployedJar createDeployedJar(String driverJarName) throws IOException {
-    return ClassPathLoader.getLatest().getJarDeployer()
-        .findLatestValidDeployedJarFromDisk(driverJarName);
-  }
-
-  // URLClassLoader createUrlClassLoader() {
-  // return new URLClassLoader(ClassPathLoader.getLatest().getJarDeployer().getDeployedJarURLs());
-  // }
-
   Driver getDriverInstanceByClassName(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
     return (Driver) Class.forName(driverClassName).newInstance();

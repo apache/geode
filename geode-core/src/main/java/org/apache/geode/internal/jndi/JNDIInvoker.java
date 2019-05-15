@@ -15,7 +15,6 @@
 package org.apache.geode.internal.jndi;
 
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -382,7 +381,7 @@ public class JNDIInvoker {
       DataSource dataSource, List<ConfigProperty> props)
       throws NamingException, DataSourceCreateException {
     try (Connection connection = getConnection(dataSource, props)) {
-    } catch (SQLException | ClassNotFoundException | MalformedURLException | InstantiationException
+    } catch (SQLException | ClassNotFoundException | InstantiationException
         | IllegalAccessException sqlEx) {
       closeDataSource(dataSource);
       throw new DataSourceCreateException(
@@ -396,7 +395,7 @@ public class JNDIInvoker {
   }
 
   private static Connection getConnection(DataSource dataSource, List<ConfigProperty> props)
-      throws SQLException, ClassNotFoundException, MalformedURLException, InstantiationException,
+      throws SQLException, ClassNotFoundException, InstantiationException,
       IllegalAccessException {
     String driverClassName = null;
     if (props != null) {
@@ -407,7 +406,7 @@ public class JNDIInvoker {
       }
     }
     DriverJarUtil util = new DriverJarUtil();
-    // Revisit this to give more descriptive exceptions
+
     if (driverClassName != null) {
       util.registerDriver(driverClassName);
     }

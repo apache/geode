@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.cli.functions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -129,18 +128,16 @@ public class CreateJndiBindingFunctionTest {
     JndiBindingsType.JndiBinding config = spy(new JndiBindingsType.JndiBinding());
     final String NAME = "jndi1";
     final String MEMBER = "mock-member";
-    final String JAR_NAME = "jar-name.jar";
     final String DRIVER_CLASS_NAME = "org.apache.derby.jdbc.EmbeddedDriver";
     config.setJndiName(NAME);
     config.setType(CreateJndiBindingCommand.DATASOURCE_TYPE.SIMPLE.getType());
-    config.setJdbcDriverClass(null);
+    config.setJdbcDriverClass(DRIVER_CLASS_NAME);
     config.setConnectionUrl("jdbc:derby:newDB;create=true");
-    Object[] arguments = new Object[] {config, true, JAR_NAME};
+    Object[] arguments = new Object[] {config, true};
     when(context.getArguments()).thenReturn(arguments);
     when(context.getMemberName()).thenReturn(MEMBER);
     when(context.getResultSender()).thenReturn(resultSender);
     doReturn(driverJarUtil).when(createBindingFunction).getDriverJarUtil();
-    when(driverJarUtil.getJdbcDriverName(any(String.class))).thenReturn(DRIVER_CLASS_NAME);
 
     createBindingFunction.execute(context);
 
