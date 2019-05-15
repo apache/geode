@@ -122,7 +122,7 @@ public class CreateIndexCommandDUnitTest {
   }
 
   @Test
-  public void regionExistInClusterConfig() {
+  public void regionExistInGroup2ClusterConfig() {
     locator.invoke(() -> {
       InternalConfigurationPersistenceService configurationService =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService();
@@ -138,11 +138,7 @@ public class CreateIndexCommandDUnitTest {
         commandAssert.hasTableSection("createIndex");
     createIndexTableAssert.hasRowSize(1).hasRow(0).contains("OK", "Index successfully created");
     createIndexTableAssert.hasColumn("Member").asList().first().toString().contains("server-2");
-
-    TabularResultModelAssert groupStatusTable =
-        commandAssert.hasTableSection("group-status");
-    groupStatusTable.hasRowSize(1);
-    groupStatusTable.hasRow(0).containsExactly("group2", "cluster configuration updated");
+    commandAssert.containsOutput("Cluster configuration for group 'group2' is updated.");
 
     // make sure index is inserted in group2's cluster configuration
     locator.invoke(() -> {
@@ -170,11 +166,7 @@ public class CreateIndexCommandDUnitTest {
         commandAssert.hasTableSection("createIndex");
     createIndexTableAssert.hasRowSize(1).hasRow(0).contains("OK", "Index successfully created");
     createIndexTableAssert.hasColumn("Member").asList().first().toString().contains("server-2");
-
-    TabularResultModelAssert groupStatusTable =
-        commandAssert.hasTableSection("group-status");
-    groupStatusTable.hasRowSize(1);
-    groupStatusTable.hasRow(0).containsExactly("group2", "cluster configuration updated");
+    commandAssert.containsOutput("Cluster configuration for group 'group2' is updated.");
 
   }
 }

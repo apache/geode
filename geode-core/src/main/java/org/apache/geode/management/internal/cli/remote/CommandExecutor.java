@@ -191,9 +191,11 @@ public class CommandExecutor {
       ccService.updateCacheConfig(group, cacheConfig -> {
         try {
           if (gfshCommand.updateConfigForGroup(group, cacheConfig, resultModel.getConfigObject())) {
-            table.addRow(group, "Cluster Configuration Updated");
+            infoResultModel
+                .addLine("Cluster configuration for group '" + group + "' is updated.");
           } else {
-            table.addRow(group, "Cluster Configuration not updated");
+            infoResultModel
+                .addLine("Cluster configuration for group '" + group + "' is not updated.");
           }
         } catch (Exception e) {
           String message = "Failed to update cluster config for " + group;

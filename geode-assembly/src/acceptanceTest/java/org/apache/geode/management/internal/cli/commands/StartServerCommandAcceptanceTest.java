@@ -123,7 +123,7 @@ public class StartServerCommandAcceptanceTest {
 
     assertThat(startClusterExecution.getOutputText())
         .contains("Successfully connected to: JMX Manager")
-        .contains("Changes to configuration for group 'cluster' are persisted.")
+        .contains("Cluster configuration for group 'cluster' is updated")
         .containsPattern("Server .* " + testName.getMethodName() + " is currently online.");
 
     // Assert Server Properties.

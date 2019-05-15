@@ -215,7 +215,7 @@ public class CreateJndiBindingCommandTest {
     gfsh.executeAndAssertThat(command,
         COMMAND + " --type=SIMPLE --name=name --jdbc-driver-class=driver --connection-url=url")
         .statusIsSuccess().containsOutput("No members found.")
-        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+        .containsOutput("Cluster configuration for group 'cluster' is updated");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), any());

@@ -144,7 +144,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .hasTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
         .hasRowSize(6);
     assertThat(gfsh.getGfshOutput())
-        .contains("Changes to configuration for group 'cluster' are persisted");
+        .contains("Cluster configuration for group 'cluster' is updated");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();

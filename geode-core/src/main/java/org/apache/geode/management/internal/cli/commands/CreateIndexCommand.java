@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RUN_ON_MEMBER_CHANGE_NOT_PERSISTED;
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
 
@@ -42,7 +41,6 @@ import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -140,15 +138,18 @@ public class CreateIndexCommand extends GfshCommand {
       return resultModel;
     }
 
-    final TabularResultModel table = resultModel.addTable(GROUP_STATUS_SECTION);
-    table.setColumnHeader("Group", "Status");
+    final InfoResultModel groupStatus = resultModel.addInfo("groupStatus");
     String finalRegionName = regionName;
-    // at this point, groups are ones saved by the cluster configuration
+    // at this point, groups should be the regionConfig's groups
+    if (groups.length == 0) {
+      groups = new String[] {"cluster"};
+    }
     for (String group : groups) {
       ccService.updateCacheConfig(group, cacheConfig -> {
         RegionConfig regionConfig = cacheConfig.findRegionConfiguration(finalRegionName);
         regionConfig.getIndexes().add(index);
-        table.addRow(group, "cluster configuration updated");
+        groupStatus
+            .addLine("Cluster configuration for group '" + group + "' is updated.");
         return cacheConfig;
       });
     }
