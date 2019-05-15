@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +35,6 @@ import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -176,8 +173,6 @@ public class CommandExecutor {
 
     List<String> groupsToUpdate;
     String groupInput = parseResult.getParamValueAsString("group");
-    final TabularResultModel table = resultModel.addTable(GROUP_STATUS_SECTION);
-    table.setColumnHeader("Group", "Status");
 
     if (!StringUtils.isBlank(groupInput)) {
       groupsToUpdate = Arrays.asList(groupInput.split(","));

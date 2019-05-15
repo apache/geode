@@ -215,7 +215,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .statusIsSuccess().containsOutput("Index successfully defined");
 
     gfsh.executeAndAssertThat("create defined indexes --group=group1").statusIsSuccess()
-        .containsOutput("Changes to configuration for group 'group1' are persisted.");
+        .containsOutput("Cluster configuration for group 'group1' is updated");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
