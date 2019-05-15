@@ -154,6 +154,10 @@ public class MemberConfig extends CacheElement implements RuntimeCacheElement, R
     return groups;
   }
 
+  public void setGroups(List<String> groups) {
+    this.groups = groups;
+  }
+
   public long getMaxHeap() {
     return maxHeap;
   }
