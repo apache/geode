@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -59,29 +61,33 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
   @Override
   public List<MemberConfig> list(MemberConfig filter, CacheConfig existing) {
-    String coordinatorId = null;
-    List<MemberConfig> results = new ArrayList<>();
 
-    Set<DistributedMember> members = cache.getDistributionManager().getDistributionManagerIds()
-        .stream().filter(m -> (filter.getId() == null || filter.getId().equals(m.getName())))
-        .map(DistributedMember.class::cast).collect(Collectors.toSet());
+    Set<DistributedMember> members =
+        cache.getDistributionManager().getDistributionManagerIds()
+            .stream().filter(internalDistributedMember -> (filter.getId() == null
+                || filter.getId().equals(internalDistributedMember.getName())))
+            .map(DistributedMember.class::cast).collect(Collectors.toSet());
 
     if (members.size() == 0) {
-      return results;
+      return Collections.emptyList();
     }
 
-    for (DistributedMember member : members) {
-      if (member == getCoordinator()) {
-        coordinatorId = member.getId();
-      }
-    }
+    ArrayList<MemberInformation> output = getMemberInformation(members);
 
+    return generateMemberConfigs(output);
+  }
+
+  private ArrayList<MemberInformation> getMemberInformation(Set<DistributedMember> members) {
     Execution execution = FunctionService.onMembers(members);
-    ResultCollector<?, ?> rc = execution.execute(new GetMemberInformationFunction());
+    ResultCollector<?, ?> resultCollector = execution.execute(new GetMemberInformationFunction());
+    return (ArrayList<MemberInformation>) resultCollector.getResult();
+  }
 
-    ArrayList<MemberInformation> output = (ArrayList<MemberInformation>) rc.getResult();
+  private List<MemberConfig> generateMemberConfigs(ArrayList<MemberInformation> memberInformation) {
 
-    for (MemberInformation mInfo : output) {
+    final String coordinatorId = getCoordinatorId();
+    List<MemberConfig> memberConfigs = new ArrayList<>();
+    for (MemberInformation mInfo : memberInformation) {
       MemberConfig member = new MemberConfig();
       member.setId(mInfo.getName());
       member.setHost(mInfo.getHost());
@@ -89,6 +95,8 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
       member.setStatus(mInfo.getStatus());
       member.setInitialHeap(mInfo.getInitHeapSize());
       member.setMaxHeap(mInfo.getMaxHeapSize());
+      member.setGroups(Arrays.asList(mInfo.getGroups().split(",")));
+      member.setCoordinator(mInfo.getId().equals(coordinatorId));
 
       if (mInfo.isServer() && mInfo.getCacheServeInfo() != null) {
         for (CacheServerInfo info : mInfo.getCacheServeInfo()) {
@@ -104,19 +112,24 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
         member.setLocator(true);
       }
 
-      member.setCoordinator(mInfo.getId().equals(coordinatorId));
-      results.add(member);
+      memberConfigs.add(member);
     }
 
-    return results;
+    return memberConfigs;
   }
 
-  private DistributedMember getCoordinator() {
-    MembershipManager mmgr = cache.getDistributionManager().getMembershipManager();
+  private String getCoordinatorId() {
+    final MembershipManager mmgr =
+        cache.getDistributionManager().getMembershipManager();
     if (mmgr == null) {
       return null;
     }
 
-    return mmgr.getCoordinator();
+    final DistributedMember coordinator = mmgr.getCoordinator();
+    if (coordinator == null) {
+      return null;
+    }
+
+    return coordinator.getId();
   }
 }
