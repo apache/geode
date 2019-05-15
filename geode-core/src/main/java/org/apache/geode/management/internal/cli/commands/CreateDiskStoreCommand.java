@@ -25,6 +25,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DiskDirType;
 import org.apache.geode.cache.configuration.DiskStoreType;
@@ -135,7 +136,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     return result;
   }
 
-  private Pair<Boolean, String> validateDiskstoreAttributes(
+  @VisibleForTesting
+  Pair<Boolean, String> validateDiskstoreAttributes(
       DiskStoreAttributes diskStoreAttributes,
       Set<DistributedMember> targetMembers) {
     List<DiskStoreDetails> currentDiskstores = getDiskStoreListing(targetMembers);
