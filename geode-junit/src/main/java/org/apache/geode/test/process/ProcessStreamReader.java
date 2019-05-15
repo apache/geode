@@ -18,8 +18,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.Queue;
+import java.util.function.Consumer;
 
 /**
  * Reads the output from a process stream and stores it for test validation.
@@ -34,17 +33,15 @@ public class ProcessStreamReader extends Thread {
 
   private final String command;
   private final BufferedReader reader;
-  private final Queue<String> lineBuffer;
-  private final List<String> allLines;
+  private final Consumer<String> consumer;
 
   private int lineCount = 0;
 
   public ProcessStreamReader(final String command, final InputStream stream,
-      final Queue<String> lineBuffer, final List<String> allLines) {
+      final Consumer<String> consumer) {
     this.command = command;
     this.reader = new BufferedReader(new InputStreamReader(stream));
-    this.lineBuffer = lineBuffer;
-    this.allLines = allLines;
+    this.consumer = consumer;
   }
 
   @Override
@@ -59,8 +56,7 @@ public class ProcessStreamReader extends Thread {
       String line;
       while ((line = this.reader.readLine()) != null) {
         this.lineCount++;
-        this.lineBuffer.offer(line);
-        this.allLines.add(line);
+        consumer.accept(line);
       }
 
       // EOF
