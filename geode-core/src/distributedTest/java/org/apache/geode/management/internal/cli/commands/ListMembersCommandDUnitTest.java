@@ -18,7 +18,6 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.GROUPS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.LIST_MEMBER;
 import static org.apache.geode.test.junit.rules.GfshCommandRule.PortType.jmxManager;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
 import java.util.Properties;
@@ -63,8 +62,8 @@ public class ListMembersCommandDUnitTest {
   }
 
   @Test
-  public void listMembersWithoutConnection() {
-    assertThatCode(() -> gfsh.disconnect()).doesNotThrowAnyException();
+  public void listMembersWithoutConnection() throws Exception {
+    gfsh.disconnect();
     gfsh.executeAndAssertThat(LIST_MEMBER).statusIsError()
         .containsOutput("Command 'list members' was found but is not currently available");
   }
@@ -120,13 +119,10 @@ public class ListMembersCommandDUnitTest {
   @Test
   @Parameters(value = {"true", "false"})
   @TestCaseName("{method} - Connected to Coordinator: {params}")
-  public void listMembersShouldAlwaysTagTheCoordinatorMember(boolean useCoordinator) {
+  public void listMembersShouldAlwaysTagTheCoordinatorMember(boolean useCoordinator) throws Exception {
     int jmxPort = useCoordinator ? locator1.getJmxPort() : locator2.getJmxPort();
-
-    assertThatCode(() -> {
-      gfsh.disconnect();
-      gfsh.connectAndVerify(jmxPort, jmxManager);
-    }).doesNotThrowAnyException();
+    gfsh.disconnect();
+    gfsh.connectAndVerify(jmxPort, jmxManager);
 
     gfsh.executeAndAssertThat(LIST_MEMBER).statusIsSuccess()
         .hasTableSection(ListMembersCommand.MEMBERS_SECTION).hasColumn("Id")
