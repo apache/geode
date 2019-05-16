@@ -20,6 +20,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.PoolStats;
 import org.apache.geode.internal.cache.tier.sockets.MessageStats;
@@ -36,6 +37,11 @@ public class ConnectionStats implements MessageStats {
   private static final StatisticsType type;
   @Immutable
   private static final StatisticsType sendType;
+
+  @VisibleForTesting
+  static StatisticsType getSendType() {
+    return sendType;
+  }
 
   ///////////////////////////////////////////////////////////////////////
   /*
