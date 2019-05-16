@@ -28,18 +28,10 @@
   - get: geode
     trigger: true
     passed:
-    {%- if test.name.startswith("Windows") %}
-    {{- all_gating_jobs() | indent(4) -}}
-    {% else %}
     - Build
-    {%- endif %}
   - get: geode-build-version
     passed:
-    {%- if test.name.startswith("Windows") %}
-    {{- all_gating_jobs() | indent(4) -}}
-    {% else %}
     - Build
-    {%- endif %}
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -90,7 +82,7 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
 {% macro all_gating_jobs() %}
-{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
+{%- for test in (tests) if not test.name=="StressNew" -%}
   {%- for java_test_version in (java_test_versions) %}
 - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
