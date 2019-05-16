@@ -20,12 +20,12 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,11 +52,8 @@ public class MemberManagementServiceRestIntegrationTest {
 
   private LocatorWebContext webContext;
 
-  private ObjectMapper mapper;
-
   @Before
   public void before() {
-    mapper = new ObjectMapper();
     webContext = new LocatorWebContext(webApplicationContext);
 
     cluster.setSkipLocalDistributedSystemCleanup(true);
@@ -92,7 +89,11 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(jsonPath("$.result[0].cacheServers[0].port", greaterThan(0)))
         .andExpect(jsonPath("$.result[0].cacheServers[0].maxConnections", equalTo(800)))
         .andExpect(jsonPath("$.result[0].cacheServers[0].maxThreads", equalTo(0)))
-        .andExpect(jsonPath("$.result[0].groups", containsInAnyOrder("group-1", "group-2")));
+        .andExpect(jsonPath("$.result[0].groups", containsInAnyOrder("group-1", "group-2")))
+        .andExpect(jsonPath("$.result[0].logFile", notNullValue()))
+        .andExpect(jsonPath("$.result[0].workingDirectory", notNullValue()))
+        .andExpect(jsonPath("$.result[0].clientConnections", equalTo(0)))
+        .andExpect(jsonPath("$.result[0].usedHeap", greaterThan(0)));
   }
 
   @Test

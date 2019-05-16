@@ -106,6 +106,10 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
     member.setMaxHeap(memberInfo.getMaxHeapSize());
     member.setGroups(Arrays.asList(memberInfo.getGroups().split(",")));
     member.setCoordinator(memberInfo.getId().equals(coordinatorId));
+    member.setUsedHeap(memberInfo.getHeapUsage());
+    member.setLogFile(memberInfo.getLogFilePath());
+    member.setWorkingDirectory(memberInfo.getWorkingDirPath());
+    member.setClientConnections(memberInfo.getClientCount());
 
     if (memberInfo.isServer() && memberInfo.getCacheServeInfo() != null) {
       for (CacheServerInfo info : memberInfo.getCacheServeInfo()) {
