@@ -1761,7 +1761,7 @@ public class ConnectionStats implements MessageStats {
       endGetSendId = getSendId;
     }
     this.sendStats.incInt(endGetSendId, 1);
-    this.sendStats.incLong(getSendDurationId, duration);
+    this.stats.incLong(getSendDurationId, duration);
   }
 
   /**
@@ -1827,7 +1827,7 @@ public class ConnectionStats implements MessageStats {
       endPutSendId = putSendId;
     }
     this.sendStats.incInt(endPutSendId, 1);
-    this.sendStats.incLong(putSendDurationId, duration);
+    this.stats.incLong(putSendDurationId, duration);
   }
 
   /**
@@ -1893,7 +1893,7 @@ public class ConnectionStats implements MessageStats {
       endDestroySendId = destroySendId;
     }
     this.sendStats.incInt(endDestroySendId, 1);
-    this.sendStats.incLong(destroySendDurationId, duration);
+    this.stats.incLong(destroySendDurationId, duration);
   }
 
   /**
@@ -1951,7 +1951,7 @@ public class ConnectionStats implements MessageStats {
       endDestroyRegionSendId = destroyRegionSendId;
     }
     this.sendStats.incInt(endDestroyRegionSendId, 1);
-    this.sendStats.incLong(destroyRegionSendDurationId, duration);
+    this.stats.incLong(destroyRegionSendDurationId, duration);
   }
 
   /**
@@ -2009,7 +2009,7 @@ public class ConnectionStats implements MessageStats {
       endClearSendId = clearSendId;
     }
     this.sendStats.incInt(endClearSendId, 1);
-    this.sendStats.incLong(clearSendDurationId, duration);
+    this.stats.incLong(clearSendDurationId, duration);
   }
 
   /**
@@ -2067,7 +2067,7 @@ public class ConnectionStats implements MessageStats {
       endContainsKeySendId = containsKeySendId;
     }
     this.sendStats.incInt(endContainsKeySendId, 1);
-    this.sendStats.incLong(containsKeySendDurationId, duration);
+    this.stats.incLong(containsKeySendDurationId, duration);
   }
 
   /**
@@ -2125,7 +2125,7 @@ public class ConnectionStats implements MessageStats {
       endKeySetSendId = keySetSendId;
     }
     this.sendStats.incInt(endKeySetSendId, 1);
-    this.sendStats.incLong(keySetSendDurationId, duration);
+    this.stats.incLong(keySetSendDurationId, duration);
   }
 
   /**
@@ -2183,7 +2183,7 @@ public class ConnectionStats implements MessageStats {
       endRegisterInterestSendId = registerInterestSendId;
     }
     this.sendStats.incInt(endRegisterInterestSendId, 1);
-    this.sendStats.incLong(registerInterestSendDurationId, duration);
+    this.stats.incLong(registerInterestSendDurationId, duration);
   }
 
   /**
@@ -2241,7 +2241,7 @@ public class ConnectionStats implements MessageStats {
       endUnregisterInterestSendId = unregisterInterestSendId;
     }
     this.sendStats.incInt(endUnregisterInterestSendId, 1);
-    this.sendStats.incLong(unregisterInterestSendDurationId, duration);
+    this.stats.incLong(unregisterInterestSendDurationId, duration);
   }
 
   /**
@@ -2299,7 +2299,7 @@ public class ConnectionStats implements MessageStats {
       endQuerySendId = querySendId;
     }
     this.sendStats.incInt(endQuerySendId, 1);
-    this.sendStats.incLong(querySendDurationId, duration);
+    this.stats.incLong(querySendDurationId, duration);
   }
 
   /**
@@ -2357,7 +2357,7 @@ public class ConnectionStats implements MessageStats {
       endCreateCQSendId = createCQSendId;
     }
     this.sendStats.incInt(endCreateCQSendId, 1);
-    this.sendStats.incLong(createCQSendDurationId, duration);
+    this.stats.incLong(createCQSendDurationId, duration);
   }
 
   /**
@@ -2415,7 +2415,7 @@ public class ConnectionStats implements MessageStats {
       endStopCQSendId = stopCQSendId;
     }
     this.sendStats.incInt(endStopCQSendId, 1);
-    this.sendStats.incLong(stopCQSendDurationId, duration);
+    this.stats.incLong(stopCQSendDurationId, duration);
   }
 
   /**
@@ -2473,7 +2473,7 @@ public class ConnectionStats implements MessageStats {
       endCloseCQSendId = closeCQSendId;
     }
     this.sendStats.incInt(endCloseCQSendId, 1);
-    this.sendStats.incLong(closeCQSendDurationId, duration);
+    this.stats.incLong(closeCQSendDurationId, duration);
   }
 
   /**
@@ -2531,7 +2531,7 @@ public class ConnectionStats implements MessageStats {
       endGetDurableCQsSendId = getDurableCQsSendId;
     }
     this.sendStats.incInt(endGetDurableCQsSendId, 1);
-    this.sendStats.incLong(getDurableCQsSendDurationId, duration);
+    this.stats.incLong(getDurableCQsSendDurationId, duration);
   }
 
   /**
@@ -2589,7 +2589,7 @@ public class ConnectionStats implements MessageStats {
       endGatewayBatchSendId = gatewayBatchSendId;
     }
     this.sendStats.incInt(endGatewayBatchSendId, 1);
-    this.sendStats.incLong(gatewayBatchSendDurationId, duration);
+    this.stats.incLong(gatewayBatchSendDurationId, duration);
   }
 
   /**
@@ -2647,7 +2647,7 @@ public class ConnectionStats implements MessageStats {
       endReadyForEventsSendId = readyForEventsSendId;
     }
     this.sendStats.incInt(endReadyForEventsSendId, 1);
-    this.sendStats.incLong(readyForEventsSendDurationId, duration);
+    this.stats.incLong(readyForEventsSendDurationId, duration);
   }
 
   /**
@@ -2705,7 +2705,7 @@ public class ConnectionStats implements MessageStats {
       endMakePrimarySendId = makePrimarySendId;
     }
     this.sendStats.incInt(endMakePrimarySendId, 1);
-    this.sendStats.incLong(makePrimarySendDurationId, duration);
+    this.stats.incLong(makePrimarySendDurationId, duration);
   }
 
   /**
@@ -2763,7 +2763,7 @@ public class ConnectionStats implements MessageStats {
       endCloseConSendId = closeConSendId;
     }
     this.sendStats.incInt(endCloseConSendId, 1);
-    this.sendStats.incLong(closeConSendDurationId, duration);
+    this.stats.incLong(closeConSendDurationId, duration);
   }
 
   /**
@@ -2821,7 +2821,7 @@ public class ConnectionStats implements MessageStats {
       endPrimaryAckSendId = primaryAckSendId;
     }
     this.sendStats.incInt(endPrimaryAckSendId, 1);
-    this.sendStats.incLong(primaryAckSendDurationId, duration);
+    this.stats.incLong(primaryAckSendDurationId, duration);
   }
 
   /**
@@ -2879,7 +2879,7 @@ public class ConnectionStats implements MessageStats {
       endPingSendId = pingSendId;
     }
     this.sendStats.incInt(endPingSendId, 1);
-    this.sendStats.incLong(pingSendDurationId, duration);
+    this.stats.incLong(pingSendDurationId, duration);
   }
 
   /**
@@ -2944,7 +2944,7 @@ public class ConnectionStats implements MessageStats {
       endRegisterInstantiatorsSendId = registerInstantiatorsSendId;
     }
     this.sendStats.incInt(endRegisterInstantiatorsSendId, 1);
-    this.sendStats.incLong(registerInstantiatorsSendDurationId, duration);
+    this.stats.incLong(registerInstantiatorsSendDurationId, duration);
   }
 
   public void endRegisterDataSerializersSend(long startTime, boolean failed) {
@@ -2958,7 +2958,7 @@ public class ConnectionStats implements MessageStats {
       endDataSerializersSendId = registerDataSerializersSendId;
     }
     this.sendStats.incInt(endDataSerializersSendId, 1);
-    this.sendStats.incLong(registerDataSerializersSendDurationId, duration);
+    this.stats.incLong(registerDataSerializersSendDurationId, duration);
   }
 
   /**
@@ -3032,7 +3032,7 @@ public class ConnectionStats implements MessageStats {
       endPutAllSendId = putAllSendId;
     }
     this.sendStats.incInt(endPutAllSendId, 1);
-    this.sendStats.incLong(putAllSendDurationId, duration);
+    this.stats.incLong(putAllSendDurationId, duration);
   }
 
   /**
@@ -3090,7 +3090,7 @@ public class ConnectionStats implements MessageStats {
       endRemoveAllSendId = removeAllSendId;
     }
     this.sendStats.incInt(endRemoveAllSendId, 1);
-    this.sendStats.incLong(removeAllSendDurationId, duration);
+    this.stats.incLong(removeAllSendDurationId, duration);
   }
 
   /**
@@ -3148,7 +3148,7 @@ public class ConnectionStats implements MessageStats {
       endGetAllSendId = getAllSendId;
     }
     this.sendStats.incInt(endGetAllSendId, 1);
-    this.sendStats.incLong(getAllSendDurationId, duration);
+    this.stats.incLong(getAllSendDurationId, duration);
   }
 
   /**
@@ -3269,7 +3269,7 @@ public class ConnectionStats implements MessageStats {
       endExecuteFunctionSendId = executeFunctionSendId;
     }
     this.sendStats.incInt(endExecuteFunctionSendId, 1);
-    this.sendStats.incLong(executeFunctionSendDurationId, duration);
+    this.stats.incLong(executeFunctionSendDurationId, duration);
   }
 
   /**
@@ -3338,7 +3338,7 @@ public class ConnectionStats implements MessageStats {
       endGetClientPRMetadataSendId = getClientPRMetadataSendId;
     }
     this.sendStats.incInt(endGetClientPRMetadataSendId, 1);
-    this.sendStats.incLong(getClientPRMetadataSendDurationId, duration);
+    this.stats.incLong(getClientPRMetadataSendDurationId, duration);
   }
 
   /**
@@ -3396,7 +3396,7 @@ public class ConnectionStats implements MessageStats {
       endGetClientPartitionAttributesSendId = getClientPartitionAttributesSendId;
     }
     this.sendStats.incInt(endGetClientPartitionAttributesSendId, 1);
-    this.sendStats.incLong(getClientPartitionAttributesSendDurationId, duration);
+    this.stats.incLong(getClientPartitionAttributesSendDurationId, duration);
   }
 
   /**
@@ -3447,7 +3447,7 @@ public class ConnectionStats implements MessageStats {
       endGetPDXTypeByIdSendId = getPDXTypeByIdSendId;
     }
     this.sendStats.incInt(endGetPDXTypeByIdSendId, 1);
-    this.sendStats.incLong(getPDXTypeByIdSendDurationId, duration);
+    this.stats.incLong(getPDXTypeByIdSendDurationId, duration);
   }
 
   public void endGetPDXIdForTypeSend(long startTime, boolean failed) {
@@ -3460,8 +3460,8 @@ public class ConnectionStats implements MessageStats {
     } else {
       endGetPDXIdForTypeSendId = getPDXIdForTypeSendId;
     }
-    this.sendStats.incInt(endGetPDXIdForTypeSendId, 1);
-    this.sendStats.incLong(getPDXIdForTypeSendDurationId, duration);
+    this.stats.incInt(endGetPDXIdForTypeSendId, 1);
+    this.stats.incLong(getPDXIdForTypeSendDurationId, duration);
   }
 
   public void endGetPDXTypeById(long startTime, boolean timedOut, boolean failed) {
@@ -3514,7 +3514,7 @@ public class ConnectionStats implements MessageStats {
       endAddPdxTypeSendId = addPdxTypeSendId;
     }
     this.sendStats.incInt(endAddPdxTypeSendId, 1);
-    this.sendStats.incLong(addPdxTypeSendDurationId, duration);
+    this.stats.incLong(addPdxTypeSendDurationId, duration);
   }
 
   public void endAddPdxType(long startTime, boolean timedOut, boolean failed) {
@@ -3551,7 +3551,7 @@ public class ConnectionStats implements MessageStats {
       endSizeSendId = sizeSendId;
     }
     this.sendStats.incInt(endSizeSendId, 1);
-    this.sendStats.incLong(sizeSendDurationId, duration);
+    this.stats.incLong(sizeSendDurationId, duration);
 
   }
 
@@ -3591,7 +3591,7 @@ public class ConnectionStats implements MessageStats {
       endInvalidateSendId = invalidateSendId;
     }
     this.sendStats.incInt(endInvalidateSendId, 1);
-    this.sendStats.incLong(invalidateSendDurationId, duration);
+    this.stats.incLong(invalidateSendDurationId, duration);
   }
 
   public void endInvalidate(long startTime, boolean timedOut, boolean failed) {
@@ -3628,7 +3628,7 @@ public class ConnectionStats implements MessageStats {
       endcommitSendId = commitSendId;
     }
     this.sendStats.incInt(endcommitSendId, 1);
-    this.sendStats.incLong(commitSendDurationId, duration);
+    this.stats.incLong(commitSendDurationId, duration);
   }
 
   public void endCommit(long startTime, boolean timedOut, boolean failed) {
@@ -3666,7 +3666,7 @@ public class ConnectionStats implements MessageStats {
       endGetEntrySendId = getEntrySendId;
     }
     this.sendStats.incInt(endGetEntrySendId, 1);
-    this.sendStats.incLong(getEntrySendDurationId, duration);
+    this.stats.incLong(getEntrySendDurationId, duration);
   }
 
   public void endGetEntry(long startTime, boolean timedOut, boolean failed) {
@@ -3704,7 +3704,7 @@ public class ConnectionStats implements MessageStats {
       endRollbackSendId = rollbackSendId;
     }
     this.sendStats.incInt(endRollbackSendId, 1);
-    this.sendStats.incLong(rollbackSendDurationId, duration);
+    this.stats.incLong(rollbackSendDurationId, duration);
   }
 
   public void endRollback(long startTime, boolean timedOut, boolean failed) {
@@ -3743,7 +3743,7 @@ public class ConnectionStats implements MessageStats {
       endTxFailoverSendId = txFailoverSendId;
     }
     this.sendStats.incInt(endTxFailoverSendId, 1);
-    this.sendStats.incLong(txFailoverSendDurationId, duration);
+    this.stats.incLong(txFailoverSendDurationId, duration);
   }
 
   public void endTxFailover(long startTime, boolean timedOut, boolean failed) {
@@ -3781,7 +3781,7 @@ public class ConnectionStats implements MessageStats {
       endTxSynchronizationSendId = txSynchronizationSendId;
     }
     this.sendStats.incInt(endTxSynchronizationSendId, 1);
-    this.sendStats.incLong(txSynchronizationSendDurationId, duration);
+    this.stats.incLong(txSynchronizationSendDurationId, duration);
   }
 
   public void endTxSynchronization(long startTime, boolean timedOut, boolean failed) {
