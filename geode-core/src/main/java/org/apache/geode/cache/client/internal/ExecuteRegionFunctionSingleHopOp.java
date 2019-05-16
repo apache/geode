@@ -19,12 +19,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -57,17 +59,16 @@ public class ExecuteRegionFunctionSingleHopOp {
 
   private ExecuteRegionFunctionSingleHopOp() {}
 
-  public static void execute(ExecutablePool pool, Region region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
-      boolean allBuckets) {
+  public static void execute(ExecutablePool pool, Region region,
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      final int mRetryAttempts,
+      boolean isHA,
+      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> executeOpSupplier,
+      final Supplier<AbstractOp> reExecuteOpSupplier) {
 
-    boolean reexecute = false;
     Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
-    }
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -76,82 +77,49 @@ public class ExecuteRegionFunctionSingleHopOp {
           serverToFilterMap);
     }
     List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
-        region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
-        hasResult, resultCollector, cms, allBuckets);
+        serverRegionExecutor, serverToFilterMap, (PoolImpl) pool,
+        cms,
+        executeOpSupplier);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
-        function.isHA(), resultCollector, failedNodes);
+    final boolean reexecute =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+            isHA, resultCollector, failedNodes);
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}",
           callableTasks.size());
     }
 
-    if (reexecute) {
-      resultCollector.clearResults();
-      if (function.isHA()) {
-        ExecuteRegionFunctionOp.reexecute(pool,
-            resultCollector, failedNodes, maxRetryAttempts - 1,
-            new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(), function,
-                serverRegionExecutor,
-                resultCollector, hasResult, new HashSet<String>()));
-      }
-    }
-
-    resultCollector.endResults();
-  }
-
-  public static void execute(ExecutablePool pool, Region region, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
-      boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
-
-    boolean reexecute = false;
-    Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
-    ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
-
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    if (isDebugEnabled) {
-      logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The serverToFilterMap is : {}",
-          serverToFilterMap);
-    }
-    List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
-        region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
-        hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
-
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-        resultCollector, failedNodes);
-
-    if (isDebugEnabled) {
-      logger.debug(
-          "ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is: {}, reexecute={}",
-          callableTasks.size(), reexecute);
-    }
-
-    if (reexecute) {
+    if (reexecute && mRetryAttempts > 0) {
       resultCollector.clearResults();
       if (isHA) {
+        int maxRetryAttempts = mRetryAttempts;
+        if (mRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+        }
+        if (maxRetryAttempts < 1) {
+          return;
+        }
+
         ExecuteRegionFunctionOp.reexecute(pool,
-            resultCollector, failedNodes, maxRetryAttempts - 1,
-            new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
-                functionId, serverRegionExecutor,
-                resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true));
+            resultCollector, failedNodes, maxRetryAttempts,
+            reExecuteOpSupplier.get());
       }
     }
 
     resultCollector.endResults();
   }
 
-
-  static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
+  static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(
       ServerRegionFunctionExecutor serverRegionExecutor,
-      final Map<ServerLocation, ? extends HashSet> serverToFilterMap, final PoolImpl pool,
-      final Function function, byte hasResult, ResultCollector rc, ClientMetadataService cms,
-      boolean allBucket) {
+      final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      final PoolImpl pool,
+      ClientMetadataService cms,
+      java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> function) {
+
     final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
     ArrayList<ServerLocation> servers = new ArrayList<ServerLocation>(serverToFilterMap.keySet());
 
@@ -162,33 +130,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       ServerRegionFunctionExecutor executor = (ServerRegionFunctionExecutor) serverRegionExecutor
           .withFilter(serverToFilterMap.get(server));
 
-      AbstractOp op = new ExecuteRegionFunctionSingleHopOpImpl(region, function, executor, rc,
-          hasResult, new HashSet<String>(), allBucket);
-      SingleHopOperationCallable task =
-          new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
-              pool, op, UserAttributes.userAttributes.get());
-      tasks.add(task);
-    }
-    return tasks;
-  }
-
-  static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
-      ServerRegionFunctionExecutor serverRegionExecutor,
-      final Map<ServerLocation, ? extends HashSet> serverToFilterMap, final PoolImpl pool,
-      final String functionId, byte hasResult, ResultCollector rc, ClientMetadataService cms,
-      boolean allBucket, boolean isHA, boolean optimizeForWrite) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = new ArrayList<ServerLocation>(serverToFilterMap.keySet());
-
-    if (logger.isDebugEnabled()) {
-      logger.debug("Constructing tasks for the servers {}", servers);
-    }
-    for (ServerLocation server : servers) {
-      ServerRegionFunctionExecutor executor = (ServerRegionFunctionExecutor) serverRegionExecutor
-          .withFilter(serverToFilterMap.get(server));
-
-      AbstractOp op = new ExecuteRegionFunctionSingleHopOpImpl(region, functionId, executor, rc,
-          hasResult, new HashSet<String>(), allBucket, isHA, optimizeForWrite);
+      AbstractOp op = function.apply(executor);
       SingleHopOperationCallable task =
           new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
               pool, op, UserAttributes.userAttributes.get());

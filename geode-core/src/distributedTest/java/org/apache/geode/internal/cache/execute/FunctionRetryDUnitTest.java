@@ -110,12 +110,9 @@ public class FunctionRetryDUnitTest implements Serializable {
        * | expectedCalls
        */
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
-
-/*deleteme*/      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3", // 2
-
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
       "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
 
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3",
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 0 | 1",
@@ -125,10 +122,10 @@ public class FunctionRetryDUnitTest implements Serializable {
       "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // 9
       "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3", // 9
 
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3", // 2
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | STRING | -1 | 3", // 2
-      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // 6
-      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 3" // 6
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | STRING | -1 | 1",
+      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 3"
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testAll(
@@ -170,7 +167,7 @@ public class FunctionRetryDUnitTest implements Serializable {
       final Region<Object, Object> region =
           clusterStartupRule.getClientCache().getRegion(regionName);
 
-      for (int i = 0; i < 3 /*numberOfEntries*/; i++) {
+      for (int i = 0; i < 3 /* numberOfEntries */; i++) {
         region.put("k" + i, "v" + i);
       }
     });
@@ -182,7 +179,7 @@ public class FunctionRetryDUnitTest implements Serializable {
       if (clientMetadataStatus.equals(clientMetadataStatus.CLIENT_HAS_METADATA)) {
         final Region<Object, Object> region =
             clusterStartupRule.getClientCache().getRegion(regionName);
-        cms.scheduleGetPRMetaData((InternalRegion)region, true);
+        cms.scheduleGetPRMetaData((InternalRegion) region, true);
         GeodeAwaitility.await("Awaiting ClientMetadataService.isMetadataStable()")
             .untilAsserted(() -> assertThat(cms.isMetadataStable()).isTrue());
       } else {
