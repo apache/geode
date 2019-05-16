@@ -111,20 +111,28 @@ public class FunctionRetryDUnitTest implements Serializable {
        */
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 2 | 1",
+
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3",
-      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | STRING | -1 | 1",
       "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
       "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | -1            | 3",
+
+      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | STRING | -1 | 1",
 
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 3",
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 0 | 1",
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 2 | 3",
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 2 | 3",
 
-      "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // 9
-      "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3", // 9
+      "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 9", // 9
+      "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 9", // 9
 
       "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
       "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER | STRING | -1 | 1",
@@ -234,7 +242,10 @@ public class FunctionRetryDUnitTest implements Serializable {
             throw new TestException("unknown FunctionIdentifierType: " + functionIdentifierType);
         }
       } catch (final FunctionException e) {
+        logger.info("#### Got FunctionException ", e);
         assertThat(e.getCause()).isInstanceOf(ServerConnectivityException.class);
+      } catch (ServerConnectivityException ex) {
+        // Expected.
       }
 
       if (resultCollector != null) {
