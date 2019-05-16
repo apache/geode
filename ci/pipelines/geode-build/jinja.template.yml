@@ -101,7 +101,11 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-  {{- all_gating_jobs() | indent(2) }}
+  {%- for test in (tests) if not test.name=="StressNew" -%}
+    {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") %}
+  - {{test.name}}Test{{java_test_version.name}}
+    {%- endfor -%}
+  {%- endfor -%}
   {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
