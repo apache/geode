@@ -123,11 +123,55 @@ public class FunctionRetryDUnitTest implements Serializable {
        * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
        * | expectedCalls
        */
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
+
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
+      "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void testAllOnServer(final HAStatus haStatus,
+  final ClientMetadataStatus clientMetadataStatus,
+  final FunctionIdentifierType functionIdentifierType,
+  final int retryAttempts,
+  final int expectedCalls) throws Exception {
+    // TODO - Add expected exception.
+    try {
+      testAll(haStatus,
+          clientMetadataStatus,
+          ExecutionTarget.SERVER,
+          functionIdentifierType,
+          retryAttempts,
+          expectedCalls);
+    } catch (ServerConnectivityException sce) {
+
+    }
+  }
+
+    @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
+  @Parameters({
+      /*
+       * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
+       * | expectedCalls
+       */
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 0 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 0 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER | STRING | 2 | 1",
 
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
@@ -244,6 +288,7 @@ public class FunctionRetryDUnitTest implements Serializable {
 
       ResultCollector<Long, List<Long>> resultCollector = null;
 
+      // TODO - Add expected exception.
       try {
         switch (functionIdentifierType) {
           case STRING:
@@ -258,8 +303,6 @@ public class FunctionRetryDUnitTest implements Serializable {
       } catch (final FunctionException e) {
         logger.info("#### Got FunctionException ", e);
         assertThat(e.getCause()).isInstanceOf(ServerConnectivityException.class);
-      } catch (ServerConnectivityException ex) {
-        // Expected.
       }
 
       if (resultCollector != null) {
