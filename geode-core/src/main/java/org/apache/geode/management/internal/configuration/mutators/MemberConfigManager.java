@@ -62,23 +62,24 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
   @Override
   public List<MemberConfig> list(MemberConfig filter, CacheConfig existing) {
 
-    Set<DistributedMember> members =
+    Set<DistributedMember> distributedMembers =
         cache.getDistributionManager().getDistributionManagerIds()
             .stream().filter(internalDistributedMember -> (filter.getId() == null
                 || filter.getId().equals(internalDistributedMember.getName())))
             .map(DistributedMember.class::cast).collect(Collectors.toSet());
 
-    if (members.size() == 0) {
+    if (distributedMembers.size() == 0) {
       return Collections.emptyList();
     }
 
-    ArrayList<MemberInformation> output = getMemberInformation(members);
+    ArrayList<MemberInformation> memberInformation = getMemberInformation(distributedMembers);
 
-    return generateMemberConfigs(output);
+    return generateMemberConfigs(memberInformation);
   }
 
-  private ArrayList<MemberInformation> getMemberInformation(Set<DistributedMember> members) {
-    Execution execution = FunctionService.onMembers(members);
+  private ArrayList<MemberInformation> getMemberInformation(
+      Set<DistributedMember> distributedMembers) {
+    Execution execution = FunctionService.onMembers(distributedMembers);
     ResultCollector<?, ?> resultCollector = execution.execute(new GetMemberInformationFunction());
     return (ArrayList<MemberInformation>) resultCollector.getResult();
   }
@@ -87,45 +88,49 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
     final String coordinatorId = getCoordinatorId();
     List<MemberConfig> memberConfigs = new ArrayList<>();
-    for (MemberInformation mInfo : memberInformation) {
-      MemberConfig member = new MemberConfig();
-      member.setId(mInfo.getName());
-      member.setHost(mInfo.getHost());
-      member.setPid(mInfo.getProcessId());
-      member.setStatus(mInfo.getStatus());
-      member.setInitialHeap(mInfo.getInitHeapSize());
-      member.setMaxHeap(mInfo.getMaxHeapSize());
-      member.setGroups(Arrays.asList(mInfo.getGroups().split(",")));
-      member.setCoordinator(mInfo.getId().equals(coordinatorId));
-
-      if (mInfo.isServer() && mInfo.getCacheServeInfo() != null) {
-        for (CacheServerInfo info : mInfo.getCacheServeInfo()) {
-          MemberConfig.CacheServerConfig csConfig = new MemberConfig.CacheServerConfig();
-          csConfig.setPort(info.getPort());
-          csConfig.setMaxConnections(info.getMaxConnections());
-          csConfig.setMaxThreads(info.getMaxThreads());
-          member.addCacheServer(csConfig);
-        }
-        member.setLocator(false);
-      } else {
-        member.setPort(mInfo.getLocatorPort());
-        member.setLocator(true);
-      }
-
+    for (MemberInformation memberInfo : memberInformation) {
+      MemberConfig member = generateMemberConfig(coordinatorId, memberInfo);
       memberConfigs.add(member);
     }
 
     return memberConfigs;
   }
 
+  private MemberConfig generateMemberConfig(String coordinatorId, MemberInformation memberInfo) {
+    MemberConfig member = new MemberConfig();
+    member.setId(memberInfo.getName());
+    member.setHost(memberInfo.getHost());
+    member.setPid(memberInfo.getProcessId());
+    member.setStatus(memberInfo.getStatus());
+    member.setInitialHeap(memberInfo.getInitHeapSize());
+    member.setMaxHeap(memberInfo.getMaxHeapSize());
+    member.setGroups(Arrays.asList(memberInfo.getGroups().split(",")));
+    member.setCoordinator(memberInfo.getId().equals(coordinatorId));
+
+    if (memberInfo.isServer() && memberInfo.getCacheServeInfo() != null) {
+      for (CacheServerInfo info : memberInfo.getCacheServeInfo()) {
+        MemberConfig.CacheServerConfig csConfig = new MemberConfig.CacheServerConfig();
+        csConfig.setPort(info.getPort());
+        csConfig.setMaxConnections(info.getMaxConnections());
+        csConfig.setMaxThreads(info.getMaxThreads());
+        member.addCacheServer(csConfig);
+      }
+      member.setLocator(false);
+    } else {
+      member.setPort(memberInfo.getLocatorPort());
+      member.setLocator(true);
+    }
+    return member;
+  }
+
   private String getCoordinatorId() {
-    final MembershipManager mmgr =
+    final MembershipManager membershipManager =
         cache.getDistributionManager().getMembershipManager();
-    if (mmgr == null) {
+    if (membershipManager == null) {
       return null;
     }
 
-    final DistributedMember coordinator = mmgr.getCoordinator();
+    final DistributedMember coordinator = membershipManager.getCoordinator();
     if (coordinator == null) {
       return null;
     }
