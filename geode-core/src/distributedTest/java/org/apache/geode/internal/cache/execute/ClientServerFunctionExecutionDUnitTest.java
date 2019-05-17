@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -37,6 +38,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Execution;
@@ -430,6 +432,42 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
             Boolean.FALSE));
   }
 
+  @Test
+  public void onRegionShouldThrowExceptionWhenThePoolAssociatedWithTheRegionCanNotBeFound() {
+    function = new TestFunction(true, TEST_FUNCTION1);
+    createScenario();
+    registerFunctionAtServer(function);
+
+    server1.invoke(ClientServerFunctionExecutionDUnitTest::createReplicatedRegion);
+    server2.invoke(ClientServerFunctionExecutionDUnitTest::createReplicatedRegion);
+    server3.invoke(ClientServerFunctionExecutionDUnitTest::createReplicatedRegion);
+
+    client.invoke(() -> {
+      ClientServerFunctionExecutionDUnitTest
+          .createProxyRegion(NetworkUtils.getServerHostName(server1.getHost()));
+      assertThatThrownBy(() -> HijackedFunctionService.onRegion(metaDataRegion).execute(function))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageMatching("Could not find a pool named (.*)");
+    });
+  }
+
+  private static class HijackedFunctionService extends FunctionService {
+    public HijackedFunctionService(FunctionExecutionService functionExecutionService) {
+      super(functionExecutionService);
+    }
+
+    public static Execution onRegion(Region region) {
+      return new HijackedInternalFunctionServiceImpl().onRegion(region);
+    }
+  }
+
+  private static class HijackedInternalFunctionServiceImpl
+      extends InternalFunctionExecutionServiceImpl {
+    @Override
+    protected Pool findPool(String poolName) {
+      return null;
+    }
+  }
 
   private void createScenario() {
     LogWriterUtils.getLogWriter()

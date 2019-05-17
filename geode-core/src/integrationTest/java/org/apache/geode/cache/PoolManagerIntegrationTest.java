@@ -14,10 +14,12 @@
  */
 package org.apache.geode.cache;
 
+import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
@@ -26,11 +28,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.cache.client.ClientCache;
+import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
+import org.apache.geode.internal.cache.PoolManagerImpl;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -38,9 +43,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  *
  * @since GemFire 5.7
  */
-@Category({ClientServerTest.class})
-public class PoolManagerJUnitTest {
-
+@Category(ClientServerTest.class)
+public class PoolManagerIntegrationTest {
   private DistributedSystem ds;
 
   @Before
@@ -49,7 +53,7 @@ public class PoolManagerJUnitTest {
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     ds = DistributedSystem.connect(props);
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
   }
 
   @After
@@ -60,29 +64,31 @@ public class PoolManagerJUnitTest {
 
   @Test
   public void testCreateFactory() {
-    assertNotNull(PoolManager.createFactory());
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.createFactory()).isNotNull();
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
   }
 
   @Test
   public void testGetMap() {
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
     {
       PoolFactory cpf = PoolManager.createFactory();
       ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
-    assertEquals(1, PoolManager.getAll().size());
+
+    assertThat(PoolManager.getAll().size()).isEqualTo(1);
     {
       PoolFactory cpf = PoolManager.createFactory();
       ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool2");
     }
-    assertEquals(2, PoolManager.getAll().size());
-    assertNotNull(PoolManager.getAll().get("mypool"));
-    assertNotNull(PoolManager.getAll().get("mypool2"));
-    assertEquals("mypool", (PoolManager.getAll().get("mypool")).getName());
-    assertEquals("mypool2", (PoolManager.getAll().get("mypool2")).getName());
+
+    assertThat(PoolManager.getAll().size()).isEqualTo(2);
+    assertThat(PoolManager.getAll().get("mypool")).isNotNull();
+    assertThat(PoolManager.getAll().get("mypool2")).isNotNull();
+    assertThat((PoolManager.getAll().get("mypool")).getName()).isEqualTo("mypool");
+    assertThat((PoolManager.getAll().get("mypool2")).getName()).isEqualTo("mypool2");
   }
 
   @Test
@@ -92,9 +98,9 @@ public class PoolManagerJUnitTest {
       ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
-    assertNotNull(PoolManager.find("mypool"));
-    assertEquals("mypool", (PoolManager.find("mypool")).getName());
-    assertEquals(null, PoolManager.find("bogus"));
+    assertThat(PoolManager.find("mypool")).isNotNull();
+    assertThat((PoolManager.find("mypool")).getName()).isEqualTo("mypool");
+    assertThat(PoolManager.find("bogus")).isNull();
   }
 
   @Test
@@ -103,34 +109,62 @@ public class PoolManagerJUnitTest {
     ((PoolFactoryImpl) cpf).setStartDisabled(true);
     Pool pool = cpf.addLocator("localhost", 12345).create("mypool");
     Cache cache = CacheFactory.create(ds);
-    AttributesFactory fact = new AttributesFactory();
+    AttributesFactory<Object, Object> fact = new AttributesFactory<>();
     fact.setPoolName(pool.getName());
     Region region = cache.createRegion("myRegion", fact.create());
-    assertEquals(pool, PoolManager.find(region));
+    assertThat(PoolManager.find(region)).isEqualTo(pool);
   }
 
   @Test
   public void testClose() {
     PoolManager.close();
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
     {
       PoolFactory cpf = PoolManager.createFactory();
       ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
-    assertEquals(1, PoolManager.getAll().size());
+
+    assertThat(PoolManager.getAll().size()).isEqualTo(1);
     PoolManager.close();
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
     {
       PoolFactory cpf = PoolManager.createFactory();
       ((PoolFactoryImpl) cpf).setStartDisabled(true);
       cpf.addLocator("localhost", 12345).create("mypool");
     }
-    assertEquals(1, PoolManager.getAll().size());
+
+    assertThat(PoolManager.getAll().size()).isEqualTo(1);
     PoolManager.find("mypool").destroy();
-    assertEquals(null, PoolManager.find("mypool"));
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.find("mypool")).isNull();
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
     PoolManager.close();
-    assertEquals(0, PoolManager.getAll().size());
+    assertThat(PoolManager.getAll().size()).isEqualTo(0);
+  }
+
+  @Test
+  public void unregisterShouldThrowExceptionWhenThePoolHasRegionsStillAssociated() {
+    PoolManager.createFactory().addLocator("localhost", 12345).create("poolOne");
+    ClientCache clientCache = new ClientCacheFactory().create();
+    assertThat(
+        clientCache.createClientRegionFactory(PROXY).setPoolName("poolOne").create("regionOne"))
+            .isNotNull();
+    assertThatThrownBy(() -> PoolManagerImpl.getPMI().unregister(PoolManager.find("poolOne")))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Pool could not be destroyed because it is still in use by 1 regions");
+  }
+
+  @Test
+  public void unregisterShouldCompleteSuccessfullyWhenThePoolDoesNotHaveRegionsAssociated() {
+    PoolManager.createFactory().addLocator("localhost", 12345).create("poolOne");
+    ClientCache clientCache = new ClientCacheFactory().create();
+    assertThat(
+        clientCache.createClientRegionFactory(PROXY).setPoolName("poolOne").create("regionOne"))
+            .isNotNull();
+
+    Pool poolOne = PoolManager.find("poolOne");
+    clientCache.getRegion("regionOne").localDestroyRegion();
+    assertThatCode(() -> PoolManagerImpl.getPMI().unregister(poolOne)).doesNotThrowAnyException();
+    assertThat(PoolManager.find("poolOne")).isNull();
   }
 }

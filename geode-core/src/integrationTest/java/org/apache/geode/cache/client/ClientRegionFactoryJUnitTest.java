@@ -25,10 +25,9 @@ import static org.apache.geode.cache.client.ClientRegionShortcut.LOCAL_PERSISTEN
 import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -67,26 +66,17 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
  *
  * @since GemFire 6.5
  */
-@Category({ClientServerTest.class})
+@Category(ClientServerTest.class)
 public class ClientRegionFactoryJUnitTest {
 
   @Rule
   public TestName testName = new TestName();
 
-  private static final String key = "key";
-  private static final Integer val = new Integer(1);
-  private final String r1Name = "r1";
-  private final String sr1Name = "sr1";
-  private final String r2Name = "r2";
-  private final String r3Name = "r3";
-
+  private Region r1;
+  private Region sr1;
   private Cache cache;
   private DistributedSystem distSys;
-
-  private Region r1;
-  private Region r2;
-  private Region r3;
-  private Region sr1;
+  private final String r1Name = "r1";
 
   @After
   public void tearDown() throws Exception {
@@ -95,15 +85,10 @@ public class ClientRegionFactoryJUnitTest {
       if (r1 != null) {
         this.cleanUpRegion(r1);
       }
-      if (r2 != null) {
-        this.cleanUpRegion(r2);
-      }
-      if (r3 != null) {
-        this.cleanUpRegion(r3);
-      }
       if (sr1 != null) {
         this.cleanUpRegion(sr1);
       }
+
       ids.disconnect();
     }
     this.distSys = null;
@@ -111,308 +96,310 @@ public class ClientRegionFactoryJUnitTest {
   }
 
   @Test
-  public void testLOCAL() throws Exception {
+  public void testLOCAL() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
   }
 
   @Test
-  public void testLOCAL_HEAP_LRU() throws Exception {
+  public void testLOCAL_HEAP_LRU() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_HEAP_LRU);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
-    assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-        c.getResourceManager().getEvictionHeapPercentage(), 0);
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
+    assertThat(ra.getEvictionAttributes()).isEqualTo(EvictionAttributes.createLRUHeapAttributes());
+    assertThat(c.getResourceManager().getEvictionHeapPercentage())
+        .isEqualTo(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE);
   }
 
   @Test
-  public void testLOCAL_OVERFLOW() throws Exception {
+  public void testLOCAL_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_OVERFLOW);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
-        ra.getEvictionAttributes());
-    assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-        c.getResourceManager().getEvictionHeapPercentage(), 0);
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
+    assertThat(ra.getEvictionAttributes()).isEqualTo(
+        EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
+    assertThat(c.getResourceManager().getEvictionHeapPercentage())
+        .isEqualTo(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE);
   }
 
   @Test
-  public void testLOCAL_PERSISTENT() throws Exception {
+  public void testLOCAL_PERSISTENT() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
   }
 
   @Test
-  public void testLOCAL_PERSISTENT_OVERFLOW() throws Exception {
+  public void testLOCAL_PERSISTENT_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT_OVERFLOW);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.PERSISTENT_REPLICATE, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
-        ra.getEvictionAttributes());
-    assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-        c.getResourceManager().getEvictionHeapPercentage(), 0);
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.PERSISTENT_REPLICATE);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
+    assertThat(ra.getEvictionAttributes()).isEqualTo(
+        EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
+    assertThat(c.getResourceManager().getEvictionHeapPercentage())
+        .isEqualTo(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE);
   }
 
   @Test
-  public void testPROXY() throws Exception {
+  public void testPROXY() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.EMPTY, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals("DEFAULT", ra.getPoolName());
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.EMPTY);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
   }
 
   @Test
-  public void testCACHING_PROXY() throws Exception {
+  public void testCACHING_PROXY() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals("DEFAULT", ra.getPoolName());
-    assertEquals(0, (int) c.getResourceManager().getEvictionHeapPercentage());
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
+    assertThat(c.getResourceManager().getEvictionHeapPercentage()).isEqualTo(0);
   }
 
   @Test
-  public void testCACHING_PROXY_LRU() throws Exception {
+  public void testCACHING_PROXY_LRU() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_HEAP_LRU);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals("DEFAULT", ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(), ra.getEvictionAttributes());
-    assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-        c.getResourceManager().getEvictionHeapPercentage(), 0);
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
+    assertThat(ra.getEvictionAttributes())
+        .isEqualTo(EvictionAttributes.createLRUHeapAttributes());
+    assertThat(c.getResourceManager().getEvictionHeapPercentage())
+        .isEqualTo(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE);
   }
 
   @Test
-  public void testCACHING_PROXY_OVERFLOW() throws Exception {
+  public void testCACHING_PROXY_OVERFLOW() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY_OVERFLOW);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals("DEFAULT", ra.getPoolName());
-    assertEquals(EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK),
-        ra.getEvictionAttributes());
-    assertEquals(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE,
-        c.getResourceManager().getEvictionHeapPercentage(), 0);
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
+    assertThat(ra.getEvictionAttributes()).isEqualTo(
+        EvictionAttributes.createLRUHeapAttributes(null, EvictionAction.OVERFLOW_TO_DISK));
+    assertThat(c.getResourceManager().getEvictionHeapPercentage())
+        .isEqualTo(LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE);
   }
 
   @Test
-  public void testAddCacheListener() throws Exception {
+  public void testAddCacheListener() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
-    CacheListener cl = new MyCacheListener();
+    ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(PROXY);
+    CacheListener<Object, Object> cl = new MyCacheListener();
     r1 = factory.addCacheListener(cl).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(cl, ra.getCacheListener());
+    assertThat(ra.getCacheListeners()[0]).isEqualTo(cl);
   }
 
   @Test
-  public void testInitCacheListener() throws Exception {
+  public void testInitCacheListener() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
-    CacheListener cl1 = new MyCacheListener();
-    CacheListener cl2 = new MyCacheListener();
+    ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(PROXY);
+    CacheListener<Object, Object> cl1 = new MyCacheListener();
+    CacheListener<Object, Object> cl2 = new MyCacheListener();
     r1 = factory.initCacheListeners(new CacheListener[] {cl1, cl2}).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(true, Arrays.equals(new CacheListener[] {cl1, cl2}, ra.getCacheListeners()));
+    assertThat(Arrays.equals(new CacheListener[] {cl1, cl2}, ra.getCacheListeners())).isTrue();
   }
 
   @Test
-  public void testSetEvictionAttributes() throws Exception {
+  public void testSetEvictionAttributes() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setEvictionAttributes(EvictionAttributes.createLRUEntryAttributes(77))
         .create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(EvictionAttributes.createLRUEntryAttributes(77), ra.getEvictionAttributes());
+    assertThat(ra.getEvictionAttributes())
+        .isEqualTo(EvictionAttributes.createLRUEntryAttributes(77));
   }
 
   @Test
-  public void testSetEntryIdleTimeout() throws Exception {
+  public void testSetEntryIdleTimeout() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
     r1 = factory.setEntryIdleTimeout(ea).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ea, ra.getEntryIdleTimeout());
+    assertThat(ra.getEntryIdleTimeout()).isEqualTo(ea);
   }
 
   @Test
-  public void testSetCustomEntryIdleTimeout() throws Exception {
+  public void testSetCustomEntryIdleTimeout() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
+    ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(CACHING_PROXY);
     MyCustomExpiry ce = new MyCustomExpiry();
     r1 = factory.setCustomEntryIdleTimeout(ce).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ce, ra.getCustomEntryIdleTimeout());
+    assertThat(ra.getCustomEntryIdleTimeout()).isEqualTo(ce);
   }
 
   @Test
-  public void testSetEntryTimeToLive() throws Exception {
+  public void testSetEntryTimeToLive() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
     r1 = factory.setEntryTimeToLive(ea).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ea, ra.getEntryTimeToLive());
+    assertThat(ra.getEntryTimeToLive()).isEqualTo(ea);
   }
 
   @Test
-  public void testSetCustomEntryTimeToLive() throws Exception {
+  public void testSetCustomEntryTimeToLive() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
+    ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(CACHING_PROXY);
     MyCustomExpiry ce = new MyCustomExpiry();
     r1 = factory.setCustomEntryTimeToLive(ce).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ce, ra.getCustomEntryTimeToLive());
+    assertThat(ra.getCustomEntryTimeToLive()).isEqualTo(ce);
   }
 
   @Test
-  public void testSetRegionIdleTimeout() throws Exception {
+  public void testSetRegionIdleTimeout() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
     r1 = factory.setRegionIdleTimeout(ea).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ea, ra.getRegionIdleTimeout());
+    assertThat(ra.getRegionIdleTimeout()).isEqualTo(ea);
   }
 
   @Test
-  public void testSetRegionTimeToLive() throws Exception {
+  public void testSetRegionTimeToLive() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     ExpirationAttributes ea = new ExpirationAttributes(7);
     r1 = factory.setRegionTimeToLive(ea).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(ea, ra.getRegionTimeToLive());
+    assertThat(ra.getRegionTimeToLive()).isEqualTo(ea);
   }
 
   @Test
-  public void testSetKeyConstraint() throws Exception {
+  public void testSetKeyConstraint() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
+    ClientRegionFactory<String, String> factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setKeyConstraint(String.class).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(String.class, ra.getKeyConstraint());
+    assertThat(ra.getKeyConstraint()).isEqualTo(String.class);
   }
 
   @Test
-  public void testSetValueConstraint() throws Exception {
+  public void testSetValueConstraint() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
+    ClientRegionFactory<String, String> factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setValueConstraint(String.class).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(String.class, ra.getValueConstraint());
+    assertThat(ra.getValueConstraint()).isEqualTo(String.class);
   }
 
   @Test
-  public void testSetInitialCapacity() throws Exception {
+  public void testSetInitialCapacity() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setInitialCapacity(777).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(777, ra.getInitialCapacity());
+    assertThat(ra.getInitialCapacity()).isEqualTo(777);
   }
 
   @Test
-  public void testSetLoadFactor() throws Exception {
+  public void testSetLoadFactor() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setLoadFactor(77.7f).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(77.7f, ra.getLoadFactor(), 0);
+    assertThat(ra.getLoadFactor()).isEqualTo(77.7f);
   }
 
   @Test
-  public void testSetConcurrencyLevel() throws Exception {
+  public void testSetConcurrencyLevel() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setConcurrencyLevel(7).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(7, ra.getConcurrencyLevel());
+    assertThat(ra.getConcurrencyLevel()).isEqualTo(7);
   }
 
   @Test
-  public void testSetDiskStoreName() throws Exception {
+  public void testSetDiskStoreName() {
     ClientCache c = new ClientCacheFactory().create();
     c.createDiskStoreFactory().create("ds");
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
     r1 = factory.setDiskStoreName("ds").create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals("ds", ra.getDiskStoreName());
+    assertThat(ra.getDiskStoreName()).isEqualTo("ds");
   }
 
   @Test
-  public void testSetDiskSynchronous() throws Exception {
+  public void testSetDiskSynchronous() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL_PERSISTENT);
     r1 = factory.setDiskSynchronous(true).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(true, ra.isDiskSynchronous());
+    assertThat(ra.isDiskSynchronous()).isTrue();
   }
 
   @Test
-  public void testSetStatisticsEnabled() throws Exception {
+  public void testSetStatisticsEnabled() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setStatisticsEnabled(true).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(true, ra.getStatisticsEnabled());
+    assertThat(ra.getStatisticsEnabled()).isTrue();
   }
 
   @Test
-  public void testSetCloningEnabled() throws Exception {
+  public void testSetCloningEnabled() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(CACHING_PROXY);
     r1 = factory.setCloningEnabled(true).create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(true, ra.getCloningEnabled());
+    assertThat(ra.getCloningEnabled()).isTrue();
   }
 
   @Test
-  public void testSetPoolName() throws Exception {
+  public void testSetPoolName() {
     ClientCache c = new ClientCacheFactory().create();
     ClientRegionFactory factory = c.createClientRegionFactory(PROXY);
     r1 = factory.setPoolName("DEFAULT").create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals("DEFAULT", ra.getPoolName());
+    assertThat(ra.getPoolName()).isEqualTo("DEFAULT");
   }
 
   @Test
   public void testMultiUserRootRegions() throws Exception {
-    DistributedSystem ds = DistributedSystem.connect(createGemFireProperties());
+    DistributedSystem.connect(createGemFireProperties());
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
         .setMultiuserAuthentication(true).create("muPool");
     PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
@@ -421,26 +408,18 @@ public class ClientRegionFactoryJUnitTest {
     cc.createClientRegionFactory(PROXY).setPoolName("muPool").create("p");
     cc.createClientRegionFactory(CACHING_PROXY).setPoolName("suPool").create("cp");
     cc.createClientRegionFactory(LOCAL).create("l");
-    assertEquals(3, cc.rootRegions().size());
+    assertThat(cc.rootRegions().size()).isEqualTo(3);
 
     {
       Properties muProps = new Properties();
       muProps.setProperty("user", "foo");
       RegionService rs = cc.createAuthenticatedView(muProps, "muPool");
-      assertNotNull(rs.getRegion("p"));
-      try {
-        rs.getRegion("cp");
-        fail("expected IllegalStateException");
-      } catch (IllegalStateException expected) {
-      }
-      try {
-        rs.getRegion("l");
-        fail("expected IllegalStateException");
-      } catch (IllegalStateException expected) {
-      }
-      assertEquals(1, rs.rootRegions().size());
-      assertEquals(true, rs.getRegion("p") instanceof ProxyRegion);
-      assertEquals(true, rs.rootRegions().iterator().next() instanceof ProxyRegion);
+      assertThat(rs.getRegion("p")).isNotNull();
+      assertThatThrownBy(() -> rs.getRegion("cp")).isInstanceOf(IllegalStateException.class);
+      assertThatThrownBy(() -> rs.getRegion("l")).isInstanceOf(IllegalStateException.class);
+      assertThat(rs.rootRegions().size()).isEqualTo(1);
+      assertThat(rs.getRegion("p")).isInstanceOf(ProxyRegion.class);
+      assertThat(rs.rootRegions().iterator().next()).isInstanceOf(ProxyRegion.class);
     }
   }
 
@@ -448,47 +427,57 @@ public class ClientRegionFactoryJUnitTest {
    * Make sure getLocalQueryService works.
    */
   @Test
-  public void testBug42294() throws Exception {
+  public void testBug42294() {
     ClientCache c = new ClientCacheFactory().create();
     QueryService qs = c.getLocalQueryService();
     ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create("localRegion");
     Query q = qs.newQuery("SELECT * from /localRegion");
-    q.execute();
+    assertThatCode(q::execute).doesNotThrowAnyException();
   }
 
   @Test
-  public void testSubregionCreate() throws Exception {
+  public void testSubregionCreate() {
     ClientCache c = new ClientCacheFactory().create();
-    ClientRegionFactory factory = c.createClientRegionFactory(LOCAL);
+    ClientRegionFactory<Object, Object> factory = c.createClientRegionFactory(LOCAL);
     r1 = factory.create(this.r1Name);
     RegionAttributes ra = r1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, ra.getScope());
-    assertEquals(null, ra.getPoolName());
+    assertThat(ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(ra.getPoolName()).isNull();
 
+    String sr1Name = "sr1";
     sr1 = factory.createSubregion(r1, sr1Name);
     RegionAttributes sr1ra = sr1.getAttributes();
-    assertEquals(DataPolicy.NORMAL, sr1ra.getDataPolicy());
-    assertEquals(Scope.LOCAL, sr1ra.getScope());
-    assertEquals(null, sr1ra.getPoolName());
+    assertThat(sr1ra.getDataPolicy()).isEqualTo(DataPolicy.NORMAL);
+    assertThat(sr1ra.getScope()).isEqualTo(Scope.LOCAL);
+    assertThat(sr1ra.getPoolName()).isNull();
+    assertThatThrownBy(() -> factory.createSubregion(r1, sr1Name))
+        .isInstanceOf(RegionExistsException.class);
 
-    try {
-      factory.createSubregion(r1, sr1Name);
-      fail("Expected RegionExistsException");
-    } catch (RegionExistsException expected) {
-    }
     cleanUpRegion(sr1);
     cleanUpRegion(r1);
-    try {
-      factory.createSubregion(r1, sr1Name);
-      fail("Expected RegionDestroyedException");
-    } catch (RegionDestroyedException expected) {
-    }
+    assertThatThrownBy(() -> factory.createSubregion(r1, sr1Name))
+        .isInstanceOf(RegionDestroyedException.class);
   }
 
-  private String getName() {
-    return getClass().getSimpleName() + "_" + this.testName.getMethodName();
+  @Test
+  public void setPoolNameShouldThrowExceptionWhenPoolDoesNotExist() throws Exception {
+    DistributedSystem.connect(createGemFireProperties());
+    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 7777)
+        .create("poolOne");
+    PoolManager.createFactory().addServer(InetAddress.getLocalHost().getHostName(), 6666)
+        .create("poolTwo");
+
+    ClientCache cc = new ClientCacheFactory().create();
+    assertThat(cc.createClientRegionFactory(PROXY).setPoolName("poolOne")
+        .create("regionOne")).isNotNull();
+    assertThat(cc.createClientRegionFactory(CACHING_PROXY).setPoolName("poolTwo")
+        .create("regionTwo")).isNotNull();
+    assertThatThrownBy(() -> cc.createClientRegionFactory(CACHING_PROXY)
+        .setPoolName("nonExistingPool").create("regionThree"))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("The connection pool nonExistingPool has not been created");
   }
 
   private Properties createGemFireProperties() {
@@ -507,32 +496,10 @@ public class ClientRegionFactoryJUnitTest {
     }
   }
 
-  private void assertBasicRegionFunctionality(Region r, String name) {
-    assertEquals(r.getName(), name);
-    r.put(key, val);
-    assertEquals(r.getEntry(key).getValue(), val);
+  public static class MyCacheListener extends CacheListenerAdapter<Object, Object> {
   }
 
-  private static void assertRegionAttributes(RegionAttributes ra1, RegionAttributes ra2) {
-    assertEquals(ra1.getScope(), ra2.getScope());
-    assertEquals(ra1.getKeyConstraint(), ra2.getKeyConstraint());
-    assertEquals(ra1.getValueConstraint(), ra2.getValueConstraint());
-    assertEquals(ra1.getCacheListener(), ra2.getCacheListener());
-    assertEquals(ra1.getCacheWriter(), ra2.getCacheWriter());
-    assertEquals(ra1.getCacheLoader(), ra2.getCacheLoader());
-    assertEquals(ra1.getStatisticsEnabled(), ra2.getStatisticsEnabled());
-    assertEquals(ra1.getConcurrencyLevel(), ra2.getConcurrencyLevel());
-    assertEquals(ra1.getInitialCapacity(), ra2.getInitialCapacity());
-    assertTrue(ra1.getLoadFactor() == ra2.getLoadFactor());
-    assertEquals(ra1.getEarlyAck(), ra2.getEarlyAck());
-    assertEquals(ra1.isDiskSynchronous(), ra2.isDiskSynchronous());
-    assertEquals(ra1.getDiskStoreName(), ra2.getDiskStoreName());
-  }
-
-  public static class MyCacheListener extends CacheListenerAdapter {
-  }
-
-  public static class MyCustomExpiry implements CustomExpiry {
+  public static class MyCustomExpiry implements CustomExpiry<Object, Object> {
     @Override
     public ExpirationAttributes getExpiry(Region.Entry entry) {
       return null;

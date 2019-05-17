@@ -15,11 +15,9 @@
 package org.apache.geode.internal.cache.xmlcache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -33,7 +31,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
@@ -71,28 +68,26 @@ public class CacheXmlParserJUnitTest {
   @Test
   public void testGetDelegate() {
     final TestCacheXmlParser cacheXmlParser = new TestCacheXmlParser();
-
-    assertTrue("delegates should be empty.", cacheXmlParser.getDelegates().isEmpty());
+    assertThat(cacheXmlParser.getDelegates()).as("delegates should be empty.").isEmpty();
 
     final MockXmlParser delegate = (MockXmlParser) cacheXmlParser.getDelegate(NAMESPACE_URI);
-
-    assertNotNull("Delegate should be found in classpath.", delegate);
-
-    assertSame("Should have same stack as cacheXmlParser.", cacheXmlParser.stack, delegate.stack);
-    assertSame("Should have same stack as cacheXmlParser.", cacheXmlParser.documentLocator,
-        delegate.documentLocator);
-
-    assertEquals("Should be exactly 1 delegate.", 1, cacheXmlParser.getDelegates().size());
-    assertNotNull("There should be an entry in delegates cache.",
-        cacheXmlParser.getDelegates().get(NAMESPACE_URI));
-    assertSame("Cached delegate should match the one from get.", delegate,
-        cacheXmlParser.getDelegates().get(NAMESPACE_URI));
+    assertThat(delegate).as("Delegate should be found in classpath.").isNotNull();
+    assertThat(cacheXmlParser.stack).as("Should have same stack as cacheXmlParser.")
+        .isSameAs(delegate.stack);
+    assertThat(cacheXmlParser.documentLocator).as("Should have same stack as cacheXmlParser.")
+        .isSameAs(delegate.documentLocator);
+    assertThat(cacheXmlParser.getDelegates().size()).as("Should be exactly 1 delegate.")
+        .isEqualTo(1);
+    assertThat(cacheXmlParser.getDelegates().get(NAMESPACE_URI))
+        .as("There should be an entry in delegates cache.").isNotNull();
+    assertThat(cacheXmlParser.getDelegates().get(NAMESPACE_URI))
+        .as("Cached delegate should match the one from get.").isSameAs(delegate);
 
     final MockXmlParser delegate2 = (MockXmlParser) cacheXmlParser.getDelegate(NAMESPACE_URI);
-    assertSame("Delegate should be the same between gets.", delegate, delegate2);
-    assertEquals("Should still be exactly 1 delegate.", 1, cacheXmlParser.getDelegates().size());
-
-    assertNull(cacheXmlParser.getDelegate("--nothing-should-use-this-namespace--"));
+    assertThat(delegate2).as("Delegate should be the same between gets.").isSameAs(delegate);
+    assertThat(cacheXmlParser.getDelegates().size()).as("Should still be exactly 1 delegate.")
+        .isEqualTo(1);
+    assertThat(cacheXmlParser.getDelegate("--nothing-should-use-this-namespace--")).isNull();
   }
 
   /**
@@ -102,15 +97,14 @@ public class CacheXmlParserJUnitTest {
    */
   @Test
   public void testCacheXmlParserWithSimplePool() {
-    assertNotNull("Did not find simple config.xml file", getClass()
-        .getResourceAsStream("CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml"));
-
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
-    ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
-        "xmlcache/CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml").create();
-    cache.close();
+    assertThatCode(() -> {
+      ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
+          "xmlcache/CacheXmlParserJUnitTest.testSimpleClientCacheXml.cache.xml").create();
+      cache.close();
+    }).doesNotThrowAnyException();
   }
 
   /**
@@ -125,6 +119,30 @@ public class CacheXmlParserJUnitTest {
         "org.apache.xerces.jaxp.SAXParserFactoryImpl");
 
     testCacheXmlParserWithSimplePool();
+  }
+
+  @Test
+  public void cacheXmlParserShouldCorrectlyHandleWithMultiplePools() {
+    Properties nonDefault = new Properties();
+    nonDefault.setProperty(MCAST_PORT, "0"); // loner
+
+    ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
+        "xmlcache/CacheXmlParserJUnitTest.testMultiplePools.cache.xml").create();
+
+    assertThat(cache.getRegion("regionOne").getAttributes().getPoolName()).isEqualTo("poolOne");
+    assertThat(cache.getRegion("regionTwo").getAttributes().getPoolName()).isEqualTo("poolTwo");
+    cache.close();
+  }
+
+  @Test
+  public void cacheXmlParserShouldShouldThrowExceptionWhenPoolDoesNotExist() {
+    Properties nonDefault = new Properties();
+    nonDefault.setProperty(MCAST_PORT, "0"); // loner
+
+    assertThatThrownBy(() -> new ClientCacheFactory(nonDefault).set("cache-xml-file",
+        "xmlcache/CacheXmlParserJUnitTest.testRegionWithNonExistingPool.cache.xml").create())
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("The connection pool nonExistingPool has not been created");
   }
 
   /**
@@ -167,7 +185,6 @@ public class CacheXmlParserJUnitTest {
    * @since GemFire 8.1
    */
   private static class TestCacheXmlParser extends CacheXmlParser {
-
     static Field delegatesField;
     static Method getDelegateMethod;
 
@@ -188,7 +205,7 @@ public class CacheXmlParserJUnitTest {
      * @since GemFire 8.1
      */
     @SuppressWarnings("unchecked")
-    public HashMap<String, XmlParser> getDelegates() {
+    HashMap<String, XmlParser> getDelegates() {
       try {
         return (HashMap<String, XmlParser>) delegatesField.get(this);
       } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -201,7 +218,7 @@ public class CacheXmlParserJUnitTest {
      *
      * @since GemFire 8.1
      */
-    public XmlParser getDelegate(final String namespaceUri) {
+    XmlParser getDelegate(final String namespaceUri) {
       try {
         return (XmlParser) getDelegateMethod.invoke(this, namespaceUri);
       } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
@@ -218,13 +235,12 @@ public class CacheXmlParserJUnitTest {
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes atts)
-        throws SAXException {
+    public void startElement(String uri, String localName, String qName, Attributes atts) {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void endElement(String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) {
       throw new UnsupportedOperationException();
     }
   }
