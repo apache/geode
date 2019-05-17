@@ -36,11 +36,13 @@ Performance statistics are collected for each Java application or cache server t
 
 -   **[Client Connection Pool (PoolStats)](#section_6C247F61DB834C079A16BE92789D4692)**
 
--   **[Continuous Querying (CQStatistics)](#section_66C0E7748501480B85209D57D24256D5)**
+-   **[Continuous Querying (CqQueryStats)](#section_66C0E7748501480B85209D57D24256D5)**
 
 -   **[Delta Propagation (DeltaPropagationStatistics)](#section_D4ABED3FF94245C0BEE0F6FC9481E867)**
 
 -   **[Disk Space Usage (DiskDirStatistics)](#section_6C2BECC63A83456190B029DEDB8F4BE3)**
+
+-   **[Disk Store Statistics (DiskStoreStatistics)](#section_3456190B026C2BECC63A89DEDB8F4BE3)**
 
 -   **[Disk Usage and Performance (DiskRegionStatistics)](#section_983BFC6D53C74829A04A91C39E06315F)**
 
@@ -50,13 +52,13 @@ Performance statistics are collected for each Java application or cache server t
 
 -   **[Function Execution (FunctionServiceStatistics)](#section_5E211DDB0E8640689AD0A4659511E17A)**
 
--   **[Gateway Queue (GatewayStatistics)](#section_C4199A541B1F4B82B6178C416C0FAE4B)**
+-   **[Gateway Queue (GatewaySenderStatistics)](#section_C4199A541B1F4B82B6178C416C0FAE4B)**
 
 -   **[Indexes (IndexStats)](#section_86A61860024B480592DAC67FFB882538)**
 
 -   **[JVM Performance](#section_607C3867602E410CAE5FAB26A7FF1CB9)**
 
--   **[Locator (LocatorStatistics)](#section_C48B654F973E4B44AD825D459C23A6CD)**
+-   **[Locator (LocatorStats)](#section_C48B654F973E4B44AD825D459C23A6CD)**
 
 -   **[Lucene Indexes (LuceneIndexStats)](#LuceneStats)**
 
@@ -68,7 +70,9 @@ Performance statistics are collected for each Java application or cache server t
 
 -   **[Region Entry Eviction – Count-Based (LRUStatistics)](#section_374FBD92A3B74F6FA08AA23047929B4F)**
 
--   **[Region Entry Eviction – Size-based (LRUStatistics)](#section_3D2AA2BCE5B6485699A7B6ADD1C49FF7)**
+-   **[Region Entry Eviction - Heap-based eviction (HeapLRUStatistics)]()#section_3B74F6FA08A374FBD92AA23047929B4F)**
+
+-   **[Region Entry Eviction – Size-based (MemLRUStatistics)](#section_3D2AA2BCE5B6485699A7B6ADD1C49FF7)**
 
 -   **[Server Notifications for All Clients (CacheClientNotifierStatistics)](#section_5362EF9AECBC48D69475697109ABEDFA)**
 
@@ -469,7 +473,7 @@ These statistics are in a client and they describe one of the client’s connect
 | `REQUESTS_TO_LOCATOR`       | Number of requests from this connection pool to a locator.                                                           |
 | `RESPONSES_FROM_LOCATOR`    | Number of responses from the locator to this connection pool.                                                        |
 
-## <a id="section_66C0E7748501480B85209D57D24256D5" class="no-quick-link"></a>Continuous Querying (CQStatistics)
+## <a id="section_66C0E7748501480B85209D57D24256D5" class="no-quick-link"></a>Continuous Querying (CqQueryStats)
 
 These statistics are for continuous querying information. The statistics are:
 
@@ -561,6 +565,55 @@ These statistics pertain to the disk usage for a region’s disk directory. The 
 | `volumeFreeSpaceChecks` | The total number of disk space checks.                                                                                                                     |
 | `volumeFreeSpaceTime`   | The total time, in nanseconds, spent checking disk usage.                                                                                                  |
 | `volumeSize`            | The total size in bytes of the disk volume.                                                                                                                |
+
+## <a id="section_3456190B026C2BECC63A89DEDB8F4BE3" class="no-quick-link"></a>Disk Store Statistics (DiskStoreStatistics)
+
+Statistics about a Region's use of the disk. The primary statistics are:
+
+| Statistic                        | Description                                                                                                                                                            |
+|----------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `backupsCompleted`               | The number of backups of this disk store that have been taking while this VM was alive.                                                                                |
+| `backupsInProgress`              | The current number of backups in progress on this disk store.                                                                                                          |
+| `compactableOplogs`              | Current number of oplogs ready to be compacted.                                                                                                                        |
+| `compactDeletes`                 | Total number of times an oplog compact did a delete.                                                                                                                   |
+| `compactDeleteTime`              | Total amount of time, in nanoseconds, spent doing deletes during a compact.                                                                                            |
+| `compactInserts`                 | Total number of times an oplog compact did a db insert.                                                                                                                |
+| `compactInsertTime`              | Total amount of time, in nanoseconds, spent doing inserts during a compact.                                                                                            |
+| `compacts`                       | Total number of completed oplog compacts.                                                                                                                              |
+| `compactsInProgress`             | Current number of oplog compacts that are in progress.                                                                                                                 |
+| `compactTime`                    | Total amount of time, in nanoseconds, spent compacting oplogs.                                                                                                         |
+| `compactUpdates`                 | Total number of times an oplog compact did an update.                                                                                                                  |
+| `compactUpdateTime`              | Total amount of time, in nanoseconds, spent doing updates during a compact.                                                                                            |
+| `flushedBytes`                   | The total number of bytes written to disk by async queue flushes.                                                                                                      |
+| `flushes`                        | The total number of times the an entry has been flushed from the async queue.                                                                                          |
+| `flushesInProgress`              | Current number of oplog flushes that are in progress.                                                                                                                  |
+| `flushTime`                      | The total amount of time spent doing an async queue flush.                                                                                                             |
+| `inactiveOplogs`                 | Current number of oplogs that are no longer being written but are not ready ready to compact.                                                                          |
+| `openOplogs`                     | Current number of oplogs this disk store has open.                                                                                                                     |
+| `oplogReads`                     | Total number of oplog reads.                                                                                                                                           |
+| `oplogRecoveries`                | The total number of oplogs recovered.                                                                                                                                  |
+| `oplogRecoveryTime`              | The total amount of time spent doing an oplog recovery.                                                                                                                |
+| `oplogRecoveredBytes`            | The total number of bytes that have been read from oplogs during a recovery.                                                                                           |
+| `oplogSeeks`                     | Total number of oplog seeks.                                                                                                                                           |
+| `queueSize`                      | The current number of entries in the async queue waiting to be flushed to disk.                                                                                        |
+| `readBytes`                      | The total number of bytes that have been read from disk.                                                                                                               |
+| `reads`                          | The total number of region entries that have been read from disk.                                                                                                      |
+| `readTime`                       | The total amount of time spent reading from disk.                                                                                                                      |
+| `recoveriesInProgress`           | Current number of persistent regions being recovered from disk.                                                                                                        |
+| `recoveredBytes`                 | The total number of bytes that have been read from disk during a recovery.                                                                                             |
+| `recoveredEntryCreates`          | The total number of entry create records processed while recovering oplog data.                                                                                        |
+| `recoveredEntryDestroys`         | The total number of entry destroy records processed while recovering oplog data.                                                                                       |
+| `recoveredEntryUpdates`          | The total number of entry update records processed while recovering oplog data.                                                                                        |
+| `recoveredValuesSkippedDueToLRU` | The total number of entry values that did not need to be recovered due to the LRU.                                                                                     |
+| `recoveryRecordsSkipped`         | The total number of oplog records skipped during recovery.                                                                                                             |
+| `recoveryTime`                   | The total amount of time spent doing a recovery.                                                                                                                       |
+| `removes`                        | The total number of region entries that have been removed from disk.                                                                                                   |
+| `removeTime`                     | The total amount of time spent removing from disk.                                                                                                                     |
+| `uncreatedRecoveredRegions`      | The current number of regions that have been recovered but have not yet been created.                                                                                  |
+| `writes`                         | The total number of region entries that have been written to disk. A write is done every time an entry is created on disk or every time its value is modified on disk. |
+| `writesInProgress`               | Current number of oplog writes that are in progress.                                                                                                                   |
+| `writeTime`                      | The total amount of time spent writing to disk.                                                                                                                        |
+| `writtenBytes`                   | The total number of bytes that have been written to disk.                                                                                                              |
 
 ## <a id="section_983BFC6D53C74829A04A91C39E06315F" class="no-quick-link"></a>Disk Usage and Performance (DiskRegionStatistics)
 
@@ -860,7 +913,7 @@ These statistics are for distributed lock services. The primary statistics are:
 | `waitingQueueSizeDesc`                       | The number of distribution messages currently waiting for some other resource before they can be processed. |
 | `waitingThreadsDesc`                         | The number of threads currently processing messages that had to wait for a resource.                        |
 
-## <a id="section_5E211DDB0E8640689AD0A4659511E17A" class="no-quick-link"></a>Function Execution (FunctionServiceStatistics)
+## <a id="section_5E211DDB0E8640689AD0A4659511E17A" class="no-quick-link"></a>Function Execution (FunctionStatistics)
 
 These are the statistics for each execution of the function. The primary statistics are:
 
@@ -876,7 +929,7 @@ These are the statistics for each execution of the function. The primary statist
 | `resultsReceived`                                    | Total number of results received and passed to the ResultCollector.                                             |
 | `resultsSentToResultCollector`                       | Total number of results sent to the ResultCollector.                                                            |
 
-## <a id="section_C4199A541B1F4B82B6178C416C0FAE4B" class="no-quick-link"></a>Gateway Queue (GatewayStatistics)
+## <a id="section_C4199A541B1F4B82B6178C416C0FAE4B" class="no-quick-link"></a>Gateway Queue (GatewaySenderStatistics)
 
 These statistics are for outgoing gateway queue and its connection. The primary statistics are:
 
@@ -996,7 +1049,23 @@ Show details on how the Java heap memory is being used. The primary statistics a
 | `maxMemory`       | The maximum amount of memory, measured in bytes, this area can have.      |
 | `usedMemory`      | The amount of used memory, measured in bytes, for this area.              |
 
-## <a id="section_C48B654F973E4B44AD825D459C23A6CD" class="no-quick-link"></a>Locator (LocatorStatistics)
+## JVM Thread stats (VMThreadStats)
+
+Show details about the JVM thread. The primary statistics are:
+
+| Statistic     | Description                                                                                                                                                                           |
+|---------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|                                                                                                           |
+| `blocked`     | Total number of times this thread blocked to enter or reenter a monitor.                                                                                                              |
+| `blockedTime` | Total amount of elapsed time, approximately, that this thread has spent blocked to enter or reenter a monitor. May need to be enabled by setting `-Dgemfire.enableContentionTime=true`|
+| `cpuTime`     | Total cpu time for this thread.  May need to be enabled by setting `-Dgemfire.enableCpuTime=true`.                                                                                    |
+| `inNative`    | 1 if the thread is in native code.                                                                                                                                                    |
+| `lockOwner`   | The thread id that owns the lock that this thread is blocking on.                                                                                                                     |
+| `suspended`   | 1 if the thread is suspended.                                                                                                                                                         |
+| `userTime`    | Total user time for this thread. May need to be enabled by setting `-Dgemfire.enableCpuTime=true`.                                                                                    |
+| `waited`      | Total number of times this thread waited for notification.                                                                                                                            |
+| `waitedTime`  | Total amount of elapsed time, approximately, that this thread has spent waiting for notification. May need to be enabled by setting `-Dgemfire.enableContentionTime=true`             |
+
+## <a id="section_C48B654F973E4B44AD825D459C23A6CD" class="no-quick-link"></a>Locator (LocatorStats)
 
 These statistics are on the <%=vars.product_name%> locator. The primary statistics are:
 
@@ -1239,7 +1308,19 @@ The entry-count least recently used (LRU) eviction mechanism records these LRUSt
 | `lruEvictions`     | Number of total entry evictions triggered by an LRU.                       |
 | `lruGreedyReturns` | Number of non-LRU entries evicted during LRU operations.                   |
 
-## <a id="section_3D2AA2BCE5B6485699A7B6ADD1C49FF7" class="no-quick-link"></a>Region Entry Eviction – Size-based (LRUStatistics)
+## <a id="section_3B74F6FA08A374FBD92AA23047929B4F" class="no-quick-link"></a>Region Entry Eviction – Heap-based eviction (HeapLRUStatistics)
+
+The least recently used (LRU) mechanism that keeps the JVM heap size under a given set point records these LRUStatistics. The primary statistics are:
+
+| Statistic          | Description                                                                |
+|--------------------|----------------------------------------------------------------------------|
+| `entryBites`       | The amount of memory currently used by regions configured for eviction.    |
+| `lruDestroys`      | Number of entry destroys triggered by an LRU.                              |
+| `lruEvaluations`   | Number of entries evaluated during LRU operations                          |
+| `lruEvictions`     | Total number of entry evictions triggered by an LRU.                       |
+| `lruGreedyReturns` | Number of non-LRU entries evicted during LRU operations.                   |
+
+## <a id="section_3D2AA2BCE5B6485699A7B6ADD1C49FF7" class="no-quick-link"></a>Region Entry Eviction – Size-based (MemLRUStatistics)
 
 The least recently used (LRU) mechanism that keeps the size of a region under a given set point records these MemLRUStatistics. The primary statistics are:
 
@@ -1248,7 +1329,6 @@ The least recently used (LRU) mechanism that keeps the size of a region under a 
 | `byteCount`        | Number of bytes in region                                               |
 | `bytesAllowed`     | Total number of bytes allowed in this region.                           |
 | `lruDestroys`      | Number of entry destroys triggered by LRU.                              |
-| `lruDestroysLimit` | Maximum number of entry destroys triggered by LRU before a scan occurs. |
 | `lruEvaluations`   | Number of entries evaluated during LRU operations.                      |
 | `lruEvictions`     | Total number of entry evictions triggered by LRU.                       |
 | `lruGreedyReturns` | Number of non-LRU entries evicted during LRU operations.                |
@@ -1309,5 +1389,3 @@ These statistics show how much time is spent collecting statistics. The primary 
 |---------------|------------------------------------------------|
 | `sampleCount` | Total number of samples taken by this sampler. |
 | `sampleTime`  | Total amount of time spent taking samples.     |
-
-
