@@ -119,7 +119,8 @@ public class ListMembersCommandDUnitTest {
   @Test
   @Parameters(value = {"true", "false"})
   @TestCaseName("{method} - Connected to Coordinator: {params}")
-  public void listMembersShouldAlwaysTagTheCoordinatorMember(boolean useCoordinator) throws Exception {
+  public void listMembersShouldAlwaysTagTheCoordinatorMember(boolean useCoordinator)
+      throws Exception {
     int jmxPort = useCoordinator ? locator1.getJmxPort() : locator2.getJmxPort();
     gfsh.disconnect();
     gfsh.connectAndVerify(jmxPort, jmxManager);
