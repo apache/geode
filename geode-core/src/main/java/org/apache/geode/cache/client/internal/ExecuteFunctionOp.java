@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -82,8 +83,11 @@ public class ExecuteFunctionOp {
             "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to all servers using pool: {}",
             op.getMessage(), pool);
       }
-      List callableTasks = constructAndGetFunctionTasks(pool, function, args, memberMappedArg,
-          hasResult, rc, isFnSerializationReqd, attributes);
+      List callableTasks = constructAndGetFunctionTasks(pool,
+          attributes, () -> new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
+              rc, isFnSerializationReqd, (byte) 0,
+              null/* onGroups does not use single-hop for now */,
+              false, false));
 
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
@@ -168,8 +172,10 @@ public class ExecuteFunctionOp {
             "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to all servers using pool: {}",
             op.getMessage(), pool);
       }
-      List callableTasks = constructAndGetFunctionTasks(pool, functionId, args, memberMappedArg,
-          hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, properties);
+      List callableTasks = constructAndGetFunctionTasks(pool,
+          properties, () -> new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
+              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
+              null/* onGroups does not use single-hop for now */, false, false));
 
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
@@ -331,33 +337,14 @@ public class ExecuteFunctionOp {
     } while (reexecute);
   }
 
-  static List constructAndGetFunctionTasks(final PoolImpl pool, final Function function,
-      Object args, MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
-      boolean isFnSerializationReqd, UserAttributes attributes) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
+  static List constructAndGetFunctionTasks(final PoolImpl pool,
+                                           UserAttributes properties,
+                                           final Supplier<AbstractOp> executeFunctionOpSupplier) {
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
     for (ServerLocation server : servers) {
-      final AbstractOp op = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
-          rc, isFnSerializationReqd, (byte) 0, null/* onGroups does not use single-hop for now */,
-          false, false);
-      SingleHopOperationCallable task =
-          new SingleHopOperationCallable(server, pool, op, attributes);
-      tasks.add(task);
-    }
-    return tasks;
-  }
-
-  static List constructAndGetFunctionTasks(final PoolImpl pool, final String functionId,
-      Object args, MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
-      boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite,
-      UserAttributes properties) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
-    for (ServerLocation server : servers) {
-      final AbstractOp op = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
-          rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
-          null/* onGroups does not use single-hop for now */, false, false);
-      SingleHopOperationCallable task =
+      final AbstractOp op = executeFunctionOpSupplier.get();
+      final SingleHopOperationCallable task =
           new SingleHopOperationCallable(server, pool, op, properties);
       tasks.add(task);
     }

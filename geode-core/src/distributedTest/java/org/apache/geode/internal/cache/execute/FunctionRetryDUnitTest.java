@@ -147,17 +147,12 @@ public class FunctionRetryDUnitTest implements Serializable {
   final FunctionIdentifierType functionIdentifierType,
   final int retryAttempts,
   final int expectedCalls) throws Exception {
-    // TODO - Add expected exception.
-    try {
       testAll(haStatus,
           clientMetadataStatus,
           ExecutionTarget.SERVER,
           functionIdentifierType,
           retryAttempts,
           expectedCalls);
-    } catch (ServerConnectivityException sce) {
-
-    }
   }
 
     @Test
@@ -303,6 +298,8 @@ public class FunctionRetryDUnitTest implements Serializable {
       } catch (final FunctionException e) {
         logger.info("#### Got FunctionException ", e);
         assertThat(e.getCause()).isInstanceOf(ServerConnectivityException.class);
+      } catch (ServerConnectivityException sce) {
+        assertThat(executionTarget).isSameAs(ExecutionTarget.SERVER);
       }
 
       if (resultCollector != null) {
