@@ -143,19 +143,19 @@ public class FunctionRetryDUnitTest implements Serializable {
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testAllOnServer(final HAStatus haStatus,
-  final ClientMetadataStatus clientMetadataStatus,
-  final FunctionIdentifierType functionIdentifierType,
-  final int retryAttempts,
-  final int expectedCalls) throws Exception {
-      testAll(haStatus,
-          clientMetadataStatus,
-          ExecutionTarget.SERVER,
-          functionIdentifierType,
-          retryAttempts,
-          expectedCalls);
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAll(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.SERVER,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
   }
 
-    @Test
+  @Test
   // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
       /*

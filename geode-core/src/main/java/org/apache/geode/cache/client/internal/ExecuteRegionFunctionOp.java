@@ -78,14 +78,14 @@ public class ExecuteRegionFunctionOp {
       final byte hasResult, final int maxRetryAttemptsArg) {
 
     final AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
+        resultCollector, hasResult, new HashSet<>());
 
     doExecute(pool, function.isHA(), resultCollector, op,
         maxRetryAttemptsArg,
         (maxRetryAttempts, failedNodes) -> ExecuteRegionFunctionOp.reexecute(pool,
             resultCollector, failedNodes, maxRetryAttempts,
             new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-                resultCollector, hasResult, new HashSet<String>())));
+                resultCollector, hasResult, new HashSet<>())));
   }
 
   public static void execute(final ExecutablePool pool, final String region,
@@ -96,21 +96,21 @@ public class ExecuteRegionFunctionOp {
       final boolean optimizeForWrite) {
 
     final AbstractOp op = new ExecuteRegionFunctionOpImpl(region, functionId, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
+        resultCollector, hasResult, new HashSet<>(), isHA, optimizeForWrite, true);
 
     doExecute(pool, isHA, resultCollector, op,
         maxRetryAttemptsArg,
         (maxRetryAttempts, failedNodes) -> ExecuteRegionFunctionOp.reexecute(pool,
             resultCollector, failedNodes, maxRetryAttempts,
             new ExecuteRegionFunctionOpImpl(region, functionId, serverRegionExecutor,
-                resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true)));
+                resultCollector, hasResult, new HashSet<>(), isHA, optimizeForWrite, true)));
   }
 
   private static void doExecute(final ExecutablePool pool, final boolean isHA,
       final ResultCollector resultCollector, final AbstractOp op,
       final int maxRetryAttemptsArg, final BiConsumer<Integer, Set<String>> retrier) {
 
-    final Set<String> failedNodes = new HashSet<String>();
+    final Set<String> failedNodes = new HashSet<>();
     final boolean isDebugEnabled = logger.isDebugEnabled();
     int maxRetryAttempts = maxRetryAttemptsArg;
 
@@ -136,7 +136,7 @@ public class ExecuteRegionFunctionOp {
         throw se;
       }
 
-      if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+      if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
         // If the retryAttempt is set to default(-1). Try it on all servers once.
         // Calculating number of servers when function is re-executed as it involves
         // messaging locator.
@@ -204,14 +204,14 @@ public class ExecuteRegionFunctionOp {
         }
 
         retryAttempts++;
-        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
           // If the retryAttempt is set to default(-1). Try it on all servers once.
           // Calculating number of servers when function is re-executed as it involves
           // messaging locator.
           maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
         }
 
-        if (retryAttempts >= maxRetryAttempts /* && maxRetryAttempts != -2 */)
+        if (retryAttempts >= maxRetryAttempts)
           throw se;
 
         reexecute = true;

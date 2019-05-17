@@ -686,33 +686,33 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     int retryAttempts = pool.getRetryAttempts();
     boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
-    if (this.pool.getPRSingleHopEnabled() && !inTransaction) {
+    if (pool.getPRSingleHopEnabled() && !inTransaction) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
 
         final Supplier<AbstractOp> reExecuteOpSupplier =
             () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(
-                this.region.getFullPath(), function,
+                region.getFullPath(), function,
                 serverRegionExecutor,
                 resultCollector, hasResult, new HashSet<String>());
 
         if (serverRegionExecutor.getFilter().isEmpty()) {
           HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
-              cms.groupByServerToAllBuckets(this.region, function.optimizeForWrite());
+              cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
           logger.info("#### In ServerRegionProxy.executeFunction for no filter. ServerToBuckets :"
               + serverToBuckets + " retryAttempts:" + retryAttempts);
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
             logger.info("#### Execute using ExecuteRegionFunctionOp.execute()");
-            ExecuteRegionFunctionOp.execute(this.pool, rgnName, function, serverRegionExecutor,
+            ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
                 resultCollector, hasResult, retryAttempts);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             logger.info("#### execute using ExecuteRegionFunctionSingleHopOp.execute()");
-            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts,
                 function.isHA(),
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    this.region.getFullPath(), function,
+                    region.getFullPath(), function,
                     executor, resultCollector,
                     hasResult, new HashSet<String>(), true),
                 reExecuteOpSupplier);
@@ -728,16 +728,16 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
             logger.info("#### Execute using ExecuteRegionFunctionOp.execute()");
-            ExecuteRegionFunctionOp.execute(this.pool, rgnName, function, serverRegionExecutor,
+            ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
                 resultCollector, hasResult, retryAttempts);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             logger.info("#### execute using ExecuteRegionFunctionSingleHopOp.execute()");
-            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
                 function.isHA(),
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    this.region.getFullPath(), function,
+                    region.getFullPath(), function,
                     executor, resultCollector,
                     hasResult, new HashSet<String>(), isBucketFilter),
                 reExecuteOpSupplier);
@@ -745,11 +745,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         }
       } else {
         cms.scheduleGetPRMetaData(region, false);
-        ExecuteRegionFunctionOp.execute(this.pool, rgnName, function, serverRegionExecutor,
+        ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
             resultCollector, hasResult, retryAttempts);
       }
     } else {
-      ExecuteRegionFunctionOp.execute(this.pool, rgnName, function, serverRegionExecutor,
+      ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
           resultCollector, hasResult, retryAttempts);
     }
   }
@@ -764,28 +764,28 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         Boolean.valueOf(optimizeForWrite));
 
     int retryAttempts = pool.getRetryAttempts();
-    if (this.pool.getPRSingleHopEnabled()) {
-      ClientMetadataService cms = this.region.getCache().getClientMetadataService();
+    if (pool.getPRSingleHopEnabled()) {
+      ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
         Supplier<AbstractOp> reExecuteOpSupplier =
             () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(
-                this.region.getFullPath(),
+                region.getFullPath(),
                 functionId, serverRegionExecutor,
                 resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite,
                 true);
         if (serverRegionExecutor.getFilter().isEmpty()) {
           HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
-              cms.groupByServerToAllBuckets(this.region, optimizeForWrite);
+              cms.groupByServerToAllBuckets(region, optimizeForWrite);
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
-            ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId, serverRegionExecutor,
+            ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
                 resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
-            cms.scheduleGetPRMetaData(this.region, false);
+            cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts,
                 isHA,
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    this.region.getFullPath(), functionId,
+                    region.getFullPath(), functionId,
                     executor, resultCollector,
                     hasResult, new HashSet<String>(), true, isHA, optimizeForWrite),
                 reExecuteOpSupplier);
@@ -795,15 +795,15 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(
               serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
-            ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId, serverRegionExecutor,
+            ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
                 resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region,
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
                 isHA,
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    this.region.getFullPath(), functionId,
+                    region.getFullPath(), functionId,
                     executor, resultCollector,
                     hasResult, new HashSet<String>(), false, isHA, optimizeForWrite),
                 reExecuteOpSupplier);
@@ -811,11 +811,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         }
       } else {
         cms.scheduleGetPRMetaData(region, false);
-        ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId, serverRegionExecutor,
+        ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
             resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
       }
     } else {
-      ExecuteRegionFunctionOp.execute(this.pool, rgnName, functionId, serverRegionExecutor,
+      ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
           resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
     }
   }
