@@ -21,11 +21,19 @@ import static org.mockito.Mockito.mock;
 
 import java.nio.ByteBuffer;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DMStats;
 
-public class BuffersTest {
+public class BufferPoolTest {
+
+  private BufferPool bufferPool;
+
+  @Before
+  public void setup() {
+    bufferPool = new BufferPool(mock(DMStats.class));
+  }
 
   @Test
   public void expandBuffer() throws Exception {
@@ -50,8 +58,7 @@ public class BuffersTest {
   private void createAndVerifyNewWriteBuffer(ByteBuffer buffer, boolean useDirectBuffer) {
     buffer.position(buffer.capacity());
     ByteBuffer newBuffer =
-        Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
-            mock(DMStats.class));
+        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
     assertEquals(buffer.position(), newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     newBuffer.flip();
@@ -66,8 +73,7 @@ public class BuffersTest {
     buffer.position(0);
     buffer.limit(256);
     ByteBuffer newBuffer =
-        Buffers.expandReadBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer, 500,
-            mock(DMStats.class));
+        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer, 500);
     assertEquals(0, newBuffer.position());
     assertEquals(500, newBuffer.capacity());
     for (int i = 0; i < 256; i++) {
@@ -84,8 +90,9 @@ public class BuffersTest {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(7);
     buffer.limit(16384);
-    ByteBuffer newBuffer = Buffers.expandReadBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer,
-        40899, mock(DMStats.class));
+    ByteBuffer newBuffer =
+        bufferPool.expandReadBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+            40899);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should be ready to read the same amount of data
     assertThat(newBuffer.position()).isEqualTo(0);
@@ -98,8 +105,9 @@ public class BuffersTest {
     ByteBuffer buffer = ByteBuffer.allocate(33842);
     buffer.position(16384);
     buffer.limit(buffer.capacity());
-    ByteBuffer newBuffer = Buffers.expandWriteBufferIfNeeded(Buffers.BufferType.UNTRACKED, buffer,
-        40899, mock(DMStats.class));
+    ByteBuffer newBuffer =
+        bufferPool.expandWriteBufferIfNeeded(BufferPool.BufferType.UNTRACKED, buffer,
+            40899);
     assertThat(newBuffer.capacity()).isGreaterThanOrEqualTo(40899);
     // buffer should have the same amount of data as the old one
     assertThat(newBuffer.position()).isEqualTo(16384);

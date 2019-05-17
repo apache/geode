@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -52,10 +53,12 @@ public class ConnectionJUnitTest {
     DistributionManager distMgr = mock(DistributionManager.class);
     MembershipManager membership = mock(MembershipManager.class);
     TCPConduit conduit = mock(TCPConduit.class);
+    DMStats stats = mock(DMStats.class);
 
     // mock the connection table and conduit
 
     when(table.getConduit()).thenReturn(conduit);
+    when(table.getBufferPool()).thenReturn(new BufferPool(stats));
 
     CancelCriterion stopper = mock(CancelCriterion.class);
     when(stopper.cancelInProgress()).thenReturn(null);
@@ -67,7 +70,7 @@ public class ConnectionJUnitTest {
     // mock the distribution manager and membership manager
     when(distMgr.getMembershipManager()).thenReturn(membership);
     when(conduit.getDM()).thenReturn(distMgr);
-    when(conduit.getStats()).thenReturn(mock(DMStats.class));
+    when(conduit.getStats()).thenReturn(stats);
     when(table.getDM()).thenReturn(distMgr);
     SocketCloser closer = mock(SocketCloser.class);
     when(table.getSocketCloser()).thenReturn(closer);

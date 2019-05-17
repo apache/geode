@@ -18,8 +18,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER
 
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InterruptedIOException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -78,7 +76,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.net.Buffers;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
 import org.apache.geode.internal.net.SocketCreator;
@@ -593,7 +591,7 @@ public class Connection implements Runnable {
     bytes[MSG_HEADER_BYTES] = REPLY_CODE_OK;
     int allocSize = bytes.length;
     ByteBuffer bb;
-    if (Buffers.useDirectBuffers) {
+    if (BufferPool.useDirectBuffers) {
       bb = ByteBuffer.allocateDirect(allocSize);
     } else {
       bb = ByteBuffer.allocate(allocSize);
@@ -637,7 +635,7 @@ public class Connection implements Runnable {
     if (this.isReceiver) {
       DistributionConfig cfg = owner.getConduit().config;
       ByteBuffer bb;
-      if (Buffers.useDirectBuffers) {
+      if (BufferPool.useDirectBuffers) {
         bb = ByteBuffer.allocateDirect(128);
       } else {
         bb = ByteBuffer.allocate(128);
@@ -1200,7 +1198,7 @@ public class Connection implements Runnable {
   private BatchBufferFlusher batchFlusher;
 
   private void createBatchSendBuffer() {
-    if (Buffers.useDirectBuffers) {
+    if (BufferPool.useDirectBuffers) {
       this.fillBatchBuffer = ByteBuffer.allocateDirect(BATCH_BUFFER_SIZE);
       this.sendBatchBuffer = ByteBuffer.allocateDirect(BATCH_BUFFER_SIZE);
     } else {
@@ -1613,8 +1611,12 @@ public class Connection implements Runnable {
     if (tmp != null) {
       this.inputBuffer = null;
       final DMStats stats = this.owner.getConduit().getStats();
-      Buffers.releaseReceiveBuffer(tmp, stats);
+      getBufferPool().releaseReceiveBuffer(tmp);
     }
+  }
+
+  BufferPool getBufferPool() {
+    return owner.getBufferPool();
   }
 
   private String p2pReaderName() {
@@ -1840,9 +1842,9 @@ public class Connection implements Runnable {
           || (inputBuffer.capacity() < packetBufferSize)) {
         // TLS has a minimum input buffer size constraint
         if (inputBuffer != null) {
-          Buffers.releaseReceiveBuffer(inputBuffer, getConduit().getStats());
+          getBufferPool().releaseReceiveBuffer(inputBuffer);
         }
-        inputBuffer = Buffers.acquireReceiveBuffer(packetBufferSize, getConduit().getStats());
+        inputBuffer = getBufferPool().acquireReceiveBuffer(packetBufferSize);
       }
       if (channel.socket().getReceiveBufferSize() < packetBufferSize) {
         channel.socket().setReceiveBufferSize(packetBufferSize);
@@ -1851,9 +1853,10 @@ public class Connection implements Runnable {
         channel.socket().setSendBufferSize(packetBufferSize);
       }
       ioFilter = getConduit().getSocketCreator().handshakeSSLSocketChannel(channel, engine,
-          getConduit().idleConnectionTimeout, clientSocket, inputBuffer, getConduit().getStats());
+          getConduit().idleConnectionTimeout, clientSocket, inputBuffer,
+          getBufferPool());
     } else {
-      ioFilter = new NioPlainEngine();
+      ioFilter = new NioPlainEngine(getBufferPool());
     }
   }
 
@@ -1958,42 +1961,6 @@ public class Connection implements Runnable {
   }
 
 
-  @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "DE_MIGHT_IGNORE")
-  void readFully(InputStream input, byte[] buffer, int len) throws IOException {
-    int bytesSoFar = 0;
-    while (bytesSoFar < len) {
-      this.owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-      try {
-        synchronized (stateLock) {
-          connectionState = STATE_READING;
-        }
-        int bytesThisTime = input.read(buffer, bytesSoFar, len - bytesSoFar);
-        if (bytesThisTime < 0) {
-          this.readerShuttingDown = true;
-          try {
-            requestClose("Stream read returned non-positive length");
-          } catch (Exception ignored) {
-          }
-          return;
-        }
-        bytesSoFar += bytesThisTime;
-      } catch (InterruptedIOException io) {
-        // Current thread has been interrupted. Regard it similar to an EOF
-        this.readerShuttingDown = true;
-        try {
-          requestClose("Current thread interrupted");
-        } catch (Exception ignored) {
-        }
-        Thread.currentThread().interrupt();
-        this.owner.getConduit().getCancelCriterion().checkCancelInProgress(null);
-      } finally {
-        synchronized (stateLock) {
-          connectionState = STATE_IDLE;
-        }
-      }
-    } // while
-  }
-
   /**
    * sends a serialized message to the other end of this connection. This is used by the
    * DirectChannel in GemFire when the message is going to be sent to multiple recipients.
@@ -2011,7 +1978,7 @@ public class Connection implements Runnable {
       return;
     }
     final boolean origSocketInUse = this.socketInUse;
-    byte originalState = -1;
+    byte originalState;
     synchronized (stateLock) {
       originalState = this.connectionState;
       this.connectionState = STATE_SENDING;
@@ -2237,7 +2204,6 @@ public class Connection implements Runnable {
                 ck.setBuffer(oldBuffer);
               } else {
                 // old buffer was not large enough
-                oldBuffer = null;
                 ByteBuffer newbb = ByteBuffer.allocate(newBytes);
                 newbb.put(buffer);
                 newbb.flip();
@@ -2787,7 +2753,7 @@ public class Connection implements Runnable {
       if (allocSize == -1) {
         allocSize = this.owner.getConduit().tcpBufferSize;
       }
-      inputBuffer = Buffers.acquireReceiveBuffer(allocSize, this.owner.getConduit().getStats());
+      inputBuffer = getBufferPool().acquireReceiveBuffer(allocSize);
     }
     return inputBuffer;
   }
@@ -3398,13 +3364,13 @@ public class Connection implements Runnable {
       logger.info("Allocating larger network read buffer, new size is {} old size was {}.",
           allocSize, oldBufferSize);
       ByteBuffer oldBuffer = inputBuffer;
-      inputBuffer = Buffers.acquireReceiveBuffer(allocSize, stats);
+      inputBuffer = getBufferPool().acquireReceiveBuffer(allocSize);
 
       if (oldBuffer != null) {
         int oldByteCount = oldBuffer.remaining();
         inputBuffer.put(oldBuffer);
         inputBuffer.position(oldByteCount);
-        Buffers.releaseReceiveBuffer(oldBuffer, stats);
+        getBufferPool().releaseReceiveBuffer(oldBuffer);
       }
     } else {
       if (inputBuffer.position() != 0) {

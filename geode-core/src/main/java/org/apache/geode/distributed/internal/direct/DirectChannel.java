@@ -373,7 +373,8 @@ public class DirectChannel {
           DMStats stats = getDMStats();
           List<?> sentCons; // used for cons we sent to this time
 
-          final BaseMsgStreamer ms = MsgStreamer.create(cons, msg, directReply, stats);
+          final BaseMsgStreamer ms =
+              MsgStreamer.create(cons, msg, directReply, stats, getConduit().getBufferPool());
           try {
             startTime = 0;
             if (ackTimeout > 0) {

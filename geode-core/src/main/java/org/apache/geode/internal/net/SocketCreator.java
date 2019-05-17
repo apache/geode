@@ -84,7 +84,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -940,7 +939,7 @@ public class SocketCreator {
       int timeout,
       boolean clientSocket,
       ByteBuffer peerNetBuffer,
-      DMStats stats)
+      BufferPool bufferPool)
       throws IOException {
     engine.setUseClientMode(clientSocket);
     while (!socketChannel.finishConnect()) {
@@ -954,7 +953,7 @@ public class SocketCreator {
       }
     }
 
-    NioSslEngine nioSslEngine = new NioSslEngine(engine, stats);
+    NioSslEngine nioSslEngine = new NioSslEngine(engine, bufferPool);
 
     boolean blocking = socketChannel.isBlocking();
     if (blocking) {
