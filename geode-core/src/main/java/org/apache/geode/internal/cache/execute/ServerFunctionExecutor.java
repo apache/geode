@@ -142,6 +142,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
+
       ExecuteFunctionOp.execute(this.pool, this, this.allServers,
           rc, function.isHA(), UserAttributes.userAttributes.get(), groups,
           () -> () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, this.getArguments(),
@@ -156,6 +157,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
           new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
               rc,
               this.isFnSerializationReqd, (byte) 0, groups, this.allServers, this.isIgnoreDepartedMembers()));
+
+
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;

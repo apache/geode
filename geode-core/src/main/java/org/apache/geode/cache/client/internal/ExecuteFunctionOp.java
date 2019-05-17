@@ -22,6 +22,7 @@ import java.util.function.Supplier;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
@@ -101,29 +102,29 @@ public class ExecuteFunctionOp {
         maxRetryAttempts = pool.getRetryAttempts();
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
-      do {
+      //do {
         try {
-          if (reexecuteForServ) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteFunctionOp#execute.reexecuteForServ : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
-                  op.getMessage(), pool, Arrays.toString(groups), allServers,
-                  executor.isIgnoreDepartedMembers());
-            }
-            reexecOp = reExecuteFunctionOpSupplier.get().get();
-            pool.execute(reexecOp, 0);
-          } else {
-            if (isDebugEnabled) {
+//          if (reexecuteForServ) {
+//            if (isDebugEnabled) {
+//              logger.debug(
+//                  "ExecuteFunctionOp#execute.reexecuteForServ : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
+//                  op.getMessage(), pool, Arrays.toString(groups), allServers,
+//                  executor.isIgnoreDepartedMembers());
+//            }
+//            reexecOp = reExecuteFunctionOpSupplier.get().get();
+//            pool.execute(reexecOp, 0);
+//          } else {
+//            if (isDebugEnabled) {
               logger.debug(
                   "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
                   op.getMessage(), pool, Arrays.toString(groups), allServers,
                   executor.isIgnoreDepartedMembers());
-            }
+//            }
 
             pool.execute(op, 0);
-          }
+//          }
           reexecute = false;
-          reexecuteForServ = false;
+//          reexecuteForServ = false;
         } catch (InternalFunctionInvocationTargetException e) {
           if (isDebugEnabled) {
             logger.debug(
@@ -132,24 +133,43 @@ public class ExecuteFunctionOp {
           }
           reexecute = true;
           rc.clearResults();
+        } catch (final ServerOperationException e) {
+          throw e;
         } catch (ServerConnectivityException se) {
-          retryAttempts++;
+          if (!isHa || maxRetryAttempts == 0) {
+            throw se;
+          }
+
+          if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+            // If the retryAttempt is set to default(-1). Try it on all servers once.
+            // Calculating number of servers when function is re-executed as it involves
+            // messaging locator.
+            maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+          }
+
+          if (maxRetryAttempts < 1) {
+            throw se;
+          }
 
           if (isDebugEnabled) {
             logger.debug(
-                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryAttempt is : {} maxRetryAttempts  {}",
-                se, retryAttempts, maxRetryAttempts);
+                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {}, about to retry {} times",
+                se, maxRetryAttempts);
           }
-          if (se instanceof ServerOperationException) {
-            throw se;
-          }
-          if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1))
-            throw se;
 
+//          if (isDebugEnabled) {
+//            logger.debug(
+//                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryAttempt is : {} maxRetryAttempts  {}",
+//                se, retryAttempts, maxRetryAttempts);
+//          }
+
+//          if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1))
+//            throw se;
+//
           reexecuteForServ = true;
           rc.clearResults();
         }
-      } while (reexecuteForServ);
+//      } while (reexecuteForServ);
 
       if (reexecute && isHa) {
         ExecuteFunctionOp.reexecute(pool, executor, rc,
@@ -187,17 +207,31 @@ public class ExecuteFunctionOp {
         }
         reexecute = true;
         resultCollector.clearResults();
+      } catch (ServerOperationException se) {
+        throw se;
       } catch (ServerConnectivityException se) {
         if (isDebugEnabled) {
           logger.debug("ExecuteFunctionOp#reexecute : Received ServerConnectivity Exception.");
         }
 
-        if (se instanceof ServerOperationException) {
+        if (maxRetryAttempts == 0) {
           throw se;
         }
+
         retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS /* && maxRetryAttempts == 0 */) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+        }
+
+        if (retryAttempts >= maxRetryAttempts /* && maxRetryAttempts != -2 */)
           throw se;
+
+//        retryAttempts++;
+//        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
+//          throw se;
 
         reexecute = true;
         resultCollector.clearResults();

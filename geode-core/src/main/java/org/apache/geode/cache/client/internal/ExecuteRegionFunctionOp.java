@@ -191,13 +191,15 @@ public class ExecuteRegionFunctionOp {
         if (failedNodesIds != null) {
           failedNodes.addAll(failedNodesIds);
         }
+      } catch (ServerOperationException se) {
+        throw se;
       } catch (ServerConnectivityException se) {
         if (isDebugEnabled) {
           logger
               .debug("ExecuteRegionFunctionOp#reexecute : Received ServerConnectivity Exception.");
         }
 
-        if (se instanceof ServerOperationException || maxRetryAttempts == 0) {
+        if (maxRetryAttempts == 0) {
           throw se;
         }
 
