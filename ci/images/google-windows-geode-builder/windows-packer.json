@@ -17,7 +17,7 @@
       "project_id": "{{user `gcp_project`}}",
       "network": "{{user `gcp_network`}}",
       "subnetwork": "{{user `gcp_subnetwork`}}",
-      "source_image_family": "windows-1709-core-for-containers",
+      "source_image_family": "windows-1809-core-for-containers",
       "disk_size": "100",
       "machine_type": "n1-standard-1",
       "communicator": "winrm",
