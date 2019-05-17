@@ -208,7 +208,7 @@ jobs:
 
 
 {% for test in tests if not test.name.startswith("Windows")%}
-  {%- for java_test_version in (java_test_versions) %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
