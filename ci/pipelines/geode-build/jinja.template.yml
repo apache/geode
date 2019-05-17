@@ -22,16 +22,24 @@
 
 ---
 
-{% macro plan_resource_gets(test) %}
+{% macro plan_resource_gets(java_test_version) %}
 - get: geode-ci
 - aggregate:
   - get: geode
     trigger: true
     passed:
+    {%- if not java_test_version.name.endswith("JDK8") %}
+    - ColumnSeparator
+    {%- else %}
     - Build
+    {%- endif %}
   - get: geode-build-version
     passed:
+    {%- if not java_test_version.name.endswith("JDK8") %}
+    - ColumnSeparator
+    {%- else %}
     - Build
+    {%- endif %}
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -101,6 +109,7 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
+  - ColumnSeparator
 - name: complete
   jobs:
   - {{ build_test.name }}
@@ -116,6 +125,7 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
+  - ColumnSeparator
   - Benchmark
 - name: linux
   jobs:
@@ -125,7 +135,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor %}
-  - Benchmark
+  - ColumnSeparator
 - name: windows
   jobs:
   - {{ build_test.name }}
@@ -134,6 +144,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor %}
+  - ColumnSeparator
 {%- for java_test_version in (java_test_versions) %}
 - name: {{java_test_version.name}}
   jobs:
@@ -142,6 +153,9 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
 {%- endfor %}
+- name: Benchmark
+  jobs:
+  - Benchmark
 - name: Semver Management
   jobs:
   {%- for semverPiece in ['major', 'minor', 'patch'] %}
@@ -214,6 +228,16 @@ jobs:
     params:
       file: geode-build-version/number
 {% endfor %}
+- name: ColumnSeparator
+  serial: false
+  plan:
+  - get: geode
+    trigger: true
+    passed: [Build]
+  - get: geode-build-version
+    params:
+      pre: ((semver-prerelease-token))
+    passed: [Build]
 - name: {{build_test.name}}
   public: true
   serial: true
@@ -512,7 +536,7 @@ jobs:
   public: true
   plan:
   - do:
-    {{- plan_resource_gets(test) |indent(4) }}
+    {{- plan_resource_gets(java_test_version) |indent(4) }}
       - put: concourse-metadata-resource
     - aggregate:
       - do:
