@@ -142,8 +142,20 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      ExecuteFunctionOp.execute(this.pool, function, this, args, memberMappedArg, this.allServers,
-          hasResult, rc, this.isFnSerializationReqd, UserAttributes.userAttributes.get(), groups);
+      ExecuteFunctionOp.execute(this.pool, this, this.allServers,
+          rc, function.isHA(), UserAttributes.userAttributes.get(), groups,
+          () -> () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, this.getArguments(),
+              this.getMemberMappedArgument(), hasResult, rc,
+              this.isFnSerializationReqd, (byte) 1, groups, this.allServers,
+              this.isIgnoreDepartedMembers()),
+          () -> () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, args, memberMappedArg,
+              hasResult,
+              rc, this.isFnSerializationReqd, (byte) 0,
+              null/* onGroups does not use single-hop for now */,
+              false, false),
+          new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
+              rc,
+              this.isFnSerializationReqd, (byte) 0, groups, this.allServers, this.isIgnoreDepartedMembers()));
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;
@@ -165,9 +177,21 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      ExecuteFunctionOp.execute(this.pool, functionId, this, args, memberMappedArg, this.allServers,
-          hasResult, rc, this.isFnSerializationReqd, isHA, optimizeForWrite,
-          UserAttributes.userAttributes.get(), groups);
+      ExecuteFunctionOp.execute(this.pool, this, this.allServers,
+          rc, isHA,
+          UserAttributes.userAttributes.get(), groups,
+          () -> () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(functionId, args,
+              this.getMemberMappedArgument(),
+              hasResult, rc, this.isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
+              groups, this.allServers, this.isIgnoreDepartedMembers()),
+          () -> () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(functionId, args, memberMappedArg,
+              hasResult,
+              rc, this.isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
+              null/* onGroups does not use single-hop for now */, false, false),
+          new ExecuteFunctionOp.ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
+              rc, this.isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups,
+              this.allServers,
+              this.isIgnoreDepartedMembers()));
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;

@@ -67,15 +67,19 @@ public class ExecuteFunctionOp {
    * the server.
    *
    * @param pool the pool to use to communicate with the server.
-   * @param function of the function to be executed
-   * @param args specified arguments to the application function
+   * @param isHa
+   * @param reExecuteFunctionOpSupplier
+   * @param executeFunctionOpSupplier
+   * @param executeFunctionOp
    */
-  public static void execute(final PoolImpl pool, Function function,
-      ServerFunctionExecutor executor, Object args, MemberMappedArgument memberMappedArg,
-      boolean allServers, byte hasResult, ResultCollector rc, boolean isFnSerializationReqd,
-      UserAttributes attributes, String[] groups) {
-    final AbstractOp op = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult, rc,
-        isFnSerializationReqd, (byte) 0, groups, allServers, executor.isIgnoreDepartedMembers());
+  public static void execute(final PoolImpl pool,
+                             ServerFunctionExecutor executor,
+                             boolean allServers, ResultCollector rc,
+                             final boolean isHa, UserAttributes attributes, String[] groups,
+                             final Supplier<Supplier<AbstractOp>> reExecuteFunctionOpSupplier,
+                             final Supplier<Supplier<AbstractOp>> executeFunctionOpSupplier,
+                             final ExecuteFunctionOpImpl executeFunctionOp) {
+    final AbstractOp op = executeFunctionOp;
 
     if (allServers && groups.length == 0) {
       if (logger.isDebugEnabled()) {
@@ -84,10 +88,7 @@ public class ExecuteFunctionOp {
             op.getMessage(), pool);
       }
       List callableTasks = constructAndGetFunctionTasks(pool,
-          attributes, () -> new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
-              rc, isFnSerializationReqd, (byte) 0,
-              null/* onGroups does not use single-hop for now */,
-              false, false));
+          attributes, executeFunctionOpSupplier.get());
 
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
@@ -96,7 +97,7 @@ public class ExecuteFunctionOp {
       int retryAttempts = 0;
       boolean reexecute = false;
       int maxRetryAttempts = 0;
-      if (function.isHA())
+      if (isHa)
         maxRetryAttempts = pool.getRetryAttempts();
 
       final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -109,9 +110,7 @@ public class ExecuteFunctionOp {
                   op.getMessage(), pool, Arrays.toString(groups), allServers,
                   executor.isIgnoreDepartedMembers());
             }
-            reexecOp = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult, rc,
-                isFnSerializationReqd, (byte) 1/* isReExecute */, groups, allServers,
-                executor.isIgnoreDepartedMembers());
+            reexecOp = reExecuteFunctionOpSupplier.get().get();
             pool.execute(reexecOp, 0);
           } else {
             if (isDebugEnabled) {
@@ -152,108 +151,26 @@ public class ExecuteFunctionOp {
         }
       } while (reexecuteForServ);
 
-      if (reexecute && function.isHA()) {
-        ExecuteFunctionOp.reexecute(pool, function, executor, rc, hasResult, isFnSerializationReqd,
-            maxRetryAttempts - 1, groups, allServers);
+      if (reexecute && isHa) {
+        ExecuteFunctionOp.reexecute(pool, executor, rc,
+            maxRetryAttempts - 1, groups, allServers,
+            reExecuteFunctionOpSupplier.get());
       }
     }
   }
 
-  public static void execute(final PoolImpl pool, String functionId,
-      ServerFunctionExecutor executor, Object args, MemberMappedArgument memberMappedArg,
-      boolean allServers, byte hasResult, ResultCollector rc, boolean isFnSerializationReqd,
-      boolean isHA, boolean optimizeForWrite, UserAttributes properties, String[] groups) {
-    final AbstractOp op = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
-        rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups, allServers,
-        executor.isIgnoreDepartedMembers());
-    if (allServers && groups.length == 0) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to all servers using pool: {}",
-            op.getMessage(), pool);
-      }
-      List callableTasks = constructAndGetFunctionTasks(pool,
-          properties, () -> new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
-              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
-              null/* onGroups does not use single-hop for now */, false, false));
-
-      SingleHopClientExecutor.submitAll(callableTasks);
-    } else {
-      boolean reexecuteForServ = false;
-      AbstractOp reexecOp = null;
-      int retryAttempts = 0;
-      boolean reexecute = false;
-      int maxRetryAttempts = 0;
-      if (isHA) {
-        maxRetryAttempts = pool.getRetryAttempts();
-      }
-
-      final boolean isDebugEnabled = logger.isDebugEnabled();
-      do {
-        try {
-          if (reexecuteForServ) {
-            reexecOp = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult, rc,
-                isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1, groups, allServers,
-                executor.isIgnoreDepartedMembers());
-            pool.execute(reexecOp, 0);
-          } else {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
-                  op.getMessage(), pool, Arrays.toString(groups), allServers,
-                  executor.isIgnoreDepartedMembers());
-            }
-            pool.execute(op, 0);
-          }
-          reexecute = false;
-          reexecuteForServ = false;
-        } catch (InternalFunctionInvocationTargetException e) {
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed node is {}",
-                e.getFailedNodeSet());
-          }
-          reexecute = true;
-          rc.clearResults();
-        } catch (ServerConnectivityException se) {
-          retryAttempts++;
-
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryAttempt is : {} maxRetryAttempts {}",
-                se, retryAttempts, maxRetryAttempts);
-          }
-          if (se instanceof ServerOperationException) {
-            throw se;
-          }
-          if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1))
-            throw se;
-
-          reexecuteForServ = true;
-          rc.clearResults();
-        }
-      } while (reexecuteForServ);
-
-      if (reexecute && isHA) {
-        ExecuteFunctionOp.reexecute(pool, functionId, executor, rc, hasResult,
-            isFnSerializationReqd, maxRetryAttempts - 1, args, isHA, optimizeForWrite, groups,
-            allServers);
-      }
-    }
-  }
-
-  public static void reexecute(ExecutablePool pool, Function function,
-      ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
-      boolean isFnSerializationReqd, int maxRetryAttempts, String[] groups, boolean allMembers) {
+  public static void reexecute(ExecutablePool pool,
+                               ServerFunctionExecutor serverExecutor,
+                               ResultCollector resultCollector,
+                               int maxRetryAttempts, String[] groups,
+                               boolean allMembers,
+                               final Supplier<AbstractOp> executeFunctionOpSupplier) {
     boolean reexecute = true;
     int retryAttempts = 0;
     final boolean isDebugEnabled = logger.isDebugEnabled();
     do {
       reexecute = false;
-      AbstractOp reExecuteOp = new ExecuteFunctionOpImpl(function, serverExecutor.getArguments(),
-          serverExecutor.getMemberMappedArgument(), hasResult, resultCollector,
-          isFnSerializationReqd, (byte) 1, groups, allMembers,
-          serverExecutor.isIgnoreDepartedMembers());
+      AbstractOp reExecuteOp = executeFunctionOpSupplier.get();
       if (isDebugEnabled) {
         logger.debug(
             "ExecuteFunction#reexecute : Sending Function Execution Message:{} to Server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
@@ -262,55 +179,6 @@ public class ExecuteFunctionOp {
       }
       try {
         pool.execute(reExecuteOp, 0);
-      } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
-        reexecute = true;
-        resultCollector.clearResults();
-      } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug("ExecuteFunctionOp#reexecute : Received ServerConnectivity Exception.");
-        }
-
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
-
-        reexecute = true;
-        resultCollector.clearResults();
-      }
-    } while (reexecute);
-  }
-
-  public static void reexecute(ExecutablePool pool, String functionId,
-      ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
-      boolean isFnSerializationReqd, int maxRetryAttempts, Object args, boolean isHA,
-      boolean optimizeForWrite, String[] groups, boolean allMembers) {
-    boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
-    do {
-      reexecute = false;
-
-      final AbstractOp op =
-          new ExecuteFunctionOpImpl(functionId, args, serverExecutor.getMemberMappedArgument(),
-              hasResult, resultCollector, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
-              groups, allMembers, serverExecutor.isIgnoreDepartedMembers());
-
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteFunction#reexecute : Sending Function Execution Message:{} to Server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
-            op.getMessage(), pool, Arrays.toString(groups), allMembers,
-            serverExecutor.isIgnoreDepartedMembers());
-      }
-      try {
-        pool.execute(op, 0);
       } catch (InternalFunctionInvocationTargetException e) {
         if (isDebugEnabled) {
           logger.debug(
@@ -366,7 +234,7 @@ public class ExecuteFunctionOp {
     return retVal;
   }
 
-  static class ExecuteFunctionOpImpl extends AbstractOp {
+  public static class ExecuteFunctionOpImpl extends AbstractOp {
 
     private ResultCollector resultCollector;
 
