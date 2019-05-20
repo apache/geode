@@ -121,10 +121,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   @Before
   public void setUp() throws Exception {
-//    assumeThat(
-//        "AnalyzeSerializables requires Java 8 but tests are running with v"
-//            + SystemUtils.JAVA_VERSION,
-//        isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
+    // assumeThat(
+    // "AnalyzeSerializables requires Java 8 but tests are running with v"
+    // + SystemUtils.JAVA_VERSION,
+    // isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
     TypeRegistry.init();
   }
 
@@ -150,8 +150,8 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   @Test
   public void testDataSerializables() throws Exception {
-//    assumeTrue("Ignoring this test when java version is 9 and above",
-//        !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
+    // assumeTrue("Ignoring this test when java version is 9 and above",
+    // !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
     System.out.println(this.testName.getMethodName() + " starting");
     findClasses();
     loadExpectedDataSerializables();
