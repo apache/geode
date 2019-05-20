@@ -19,6 +19,7 @@ import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RU
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -90,7 +91,7 @@ public class CreateIndexCommand extends GfshCommand {
         return ResultModel.createError("Region " + regionName + " does not exist.");
       }
       String[] calculatedGroups = config.getGroups().toArray(new String[0]);
-      if (groups != null && !Arrays.equals(groups, calculatedGroups)) {
+      if (groups != null && !containsExactlyInAnyOrder(groups, calculatedGroups)) {
         info.addLine("--groups=" + Strings.join(groups, ",") + " is ignored.");
       }
       groups = calculatedGroups;
@@ -154,6 +155,10 @@ public class CreateIndexCommand extends GfshCommand {
       });
     }
     return resultModel;
+  }
+
+  private static boolean containsExactlyInAnyOrder(String[] a, String[] b) {
+    return new HashSet(Arrays.asList(a)).equals(new HashSet(Arrays.asList(b)));
   }
 
   // find a valid regionName when regionPath passed in is in the form of
