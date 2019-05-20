@@ -82,6 +82,7 @@ import org.apache.geode.rest.internal.web.util.IdentifiableUtils;
 import org.apache.geode.rest.internal.web.util.JSONUtils;
 import org.apache.geode.rest.internal.web.util.NumberUtils;
 import org.apache.geode.rest.internal.web.util.ValidationUtils;
+import org.apache.geode.util.internal.GeodeConverter;
 
 /**
  * AbstractBaseController class contains common functionalities required for other controllers.
@@ -546,7 +547,7 @@ public abstract class AbstractBaseController implements InitializingBean {
     Object actualValue = value;
     if (valueType != null) {
       try {
-        actualValue = NumberUtils.convertToActualType(value, valueType);
+        actualValue = GeodeConverter.convertToActualType(value, valueType);
       } catch (IllegalArgumentException ie) {
         throw new GemfireRestException(ie.getMessage(), ie);
       }
@@ -705,7 +706,7 @@ public abstract class AbstractBaseController implements InitializingBean {
         if (NumberUtils.isPrimitiveOrObject(typeValue)) {
           final Object primitiveValue = rawDataBinding.get("@value");
           try {
-            return (T) NumberUtils.convertToActualType(primitiveValue.toString(), typeValue);
+            return (T) GeodeConverter.convertToActualType(primitiveValue.toString(), typeValue);
           } catch (IllegalArgumentException e) {
             throw new GemfireRestException(
                 "Server has encountered error (illegal or inappropriate arguments).", e);
