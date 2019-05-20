@@ -90,11 +90,8 @@ public class ExecuteFunctionOp {
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
       boolean reexecute = false;
-      int maxRetryAttempts = 0;
-      if (isHa)
-        maxRetryAttempts = pool.getRetryAttempts();
-
       final boolean isDebugEnabled = logger.isDebugEnabled();
+      int maxRetryAttempts = pool.getRetryAttempts();
       try {
         logger.debug(
             "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
@@ -135,13 +132,13 @@ public class ExecuteFunctionOp {
               "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {}, about to retry {} times",
               se, maxRetryAttempts);
         }
-
+        reexecute = true;
         rc.clearResults();
       }
 
       if (reexecute && isHa) {
         ExecuteFunctionOp.reexecute(pool, executor, rc,
-            maxRetryAttempts - 1, groups, allServers,
+            maxRetryAttempts, groups, allServers,
             reExecuteOpSupplier);
       }
     }
