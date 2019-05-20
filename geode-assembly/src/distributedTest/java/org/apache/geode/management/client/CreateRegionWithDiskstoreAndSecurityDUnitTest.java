@@ -30,8 +30,6 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -81,14 +79,10 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     attributes.setDiskStoreName("DISKSTORE");
     regionConfig.setRegionAttributes(attributes);
 
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setHost("localhost")
-        .setPort(locator.getHttpPort())
-        .setUsername("user")
-        .setPassword("user")
-        .build();
-    ClusterManagementService client = new ClientClusterManagementService(config);
-
+    ClusterManagementService client =
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("user", "user").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
@@ -108,14 +102,10 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     attributes.setDiskStoreName("DISKSTORE");
     regionConfig.setRegionAttributes(attributes);
 
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setHost("localhost")
-        .setPort(locator.getHttpPort())
-        .setUsername("data")
-        .setPassword("data")
-        .build();
-    ClusterManagementService client = new ClientClusterManagementService(config);
-
+    ClusterManagementService client =
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("data", "data").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
@@ -137,14 +127,10 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     attributes.setDiskSynchronous(false);
     regionConfig.setRegionAttributes(attributes);
 
-    ClusterManagementServiceConfig config = JavaClientClusterManagementServiceConfig.builder()
-        .setHost("localhost")
-        .setPort(locator.getHttpPort())
-        .setUsername("data,cluster")
-        .setPassword("data,cluster")
-        .build();
-    ClusterManagementService client = new ClientClusterManagementService(config);
-
+    ClusterManagementService client =
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("data,cluster", "data,cluster").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 

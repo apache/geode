@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -30,10 +31,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.management.GeodeClusterManagementServiceConfig;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ClusterManagementServiceConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -67,10 +65,8 @@ public class GeodeClientClusterManagementSSLTest {
   @Test
   public void getServiceUseClientSSLConfig() throws Exception {
     client.invoke(() -> {
-      ClusterManagementServiceConfig config = GeodeClusterManagementServiceConfig.builder()
-          .setClientCache(ClusterStartupRule.getClientCache())
-          .build();
-      ClusterManagementService service = new ClientClusterManagementService(config);
+      ClusterManagementService service = buildWithCache()
+          .setCache(ClusterStartupRule.getClientCache()).build();
       assertThat(service.isConnected()).isTrue();
     });
   }

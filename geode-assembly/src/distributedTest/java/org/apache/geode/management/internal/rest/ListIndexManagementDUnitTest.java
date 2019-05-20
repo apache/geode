@@ -30,10 +30,9 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.JavaClientClusterManagementServiceConfig;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
-import org.apache.geode.management.internal.ClientClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -56,9 +55,9 @@ public class ListIndexManagementDUnitTest {
     locator = lsRule.startLocatorVM(0, l -> l.withHttpService());
     server = lsRule.startServerVM(1, locator.getPort());
 
-    cms = new ClientClusterManagementService(
-        JavaClientClusterManagementServiceConfig.builder().setHost("localhost")
-            .setPort(locator.getHttpPort()).build());
+    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
+        .setHostAddress("localhost", locator.getHttpPort())
+        .build();
 
     RegionConfig config = new RegionConfig();
     config.setName("region1");

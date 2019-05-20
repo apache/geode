@@ -13,35 +13,31 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.rest.controllers;
+package org.apache.geode.management.internal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.apache.geode.management.internal.PlainClusterManagementServiceBuilder.DEFAULT_ERROR_HANDLER;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-public class ClusterManagementRestLoggingTest {
-  @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withHttpService()
-      .withSystemProperty("geode.management.request.logging", "false").withAutoStart();
+public class SpringClusterManagemnetServiceBuilder implements
+    ClusterManagementServiceBuilder.HttpRequestFactoryBuilder {
 
-  private static ClusterManagementService cms;
+  protected ClientHttpRequestFactory requestFactory;
 
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort())
-        .build();
+  public ClusterManagementService build() {
+    RestTemplate restTemplate = new RestTemplate();
+    restTemplate.setErrorHandler(DEFAULT_ERROR_HANDLER);
+    restTemplate.setRequestFactory(requestFactory);
+    return new ClientClusterManagementService(restTemplate);
   }
 
-  @Test
-  public void ping() throws Exception {
-    assertThat(cms.isConnected()).isTrue();
+  public SpringClusterManagemnetServiceBuilder setRequestFactory(
+      ClientHttpRequestFactory httpRequestFactory) {
+    this.requestFactory = httpRequestFactory;
+    return this;
   }
-
 }
