@@ -23,17 +23,62 @@ public class GeodeConverterTest {
   @Test
   public void coercesInt() {
     assertThat(GeodeConverter.convertToActualType("8", "int")).isEqualTo(8);
+    assertThat(GeodeConverter.convertToActualType("8", Integer.class.getName())).isEqualTo(8);
+    assertThat(GeodeConverter.convertToActualType("-8", "int")).isEqualTo(-8);
+    assertThat(GeodeConverter.convertToActualType("-8", Integer.class.getName())).isEqualTo(-8);
   }
 
   @Test
   public void coercesBoolean() {
     assertThat(GeodeConverter.convertToActualType("true", "boolean")).isEqualTo(true);
+    assertThat(GeodeConverter.convertToActualType("true", Boolean.class.getName())).isEqualTo(true);
     assertThat(GeodeConverter.convertToActualType("false", "boolean")).isEqualTo(false);
+    assertThat(GeodeConverter.convertToActualType("false", Boolean.class.getName()))
+        .isEqualTo(false);
   }
 
   @Test
-  public void coercesBooleanObject() {
-    assertThat(GeodeConverter.convertToActualType("true", "Boolean")).isEqualTo(true);
-    assertThat(GeodeConverter.convertToActualType("false", "Boolean")).isEqualTo(false);
+  public void coercesString() {
+    assertThat(GeodeConverter.convertToActualType("foo", "string")).isEqualTo("foo");
+    assertThat(GeodeConverter.convertToActualType("foo", String.class.getName())).isEqualTo("foo");
+  }
+
+  @Test
+  public void coercesChar() {
+    assertThat(GeodeConverter.convertToActualType("C", "char")).isEqualTo('C');
+    assertThat(GeodeConverter.convertToActualType("C", Character.class.getName())).isEqualTo('C');
+  }
+
+  @Test
+  public void coercesByte() {
+    assertThat(GeodeConverter.convertToActualType("5", "byte")).isEqualTo((byte) 5);
+    assertThat(GeodeConverter.convertToActualType("5", Byte.class.getName())).isEqualTo((byte) 5);
+  }
+
+  @Test
+  public void coercesShort() {
+    assertThat(GeodeConverter.convertToActualType("5", "short")).isEqualTo((short) 5);
+    assertThat(GeodeConverter.convertToActualType("5", Short.class.getName())).isEqualTo((short) 5);
+  }
+
+  @Test
+  public void coercesLong() {
+    assertThat(GeodeConverter.convertToActualType("555555555555555555", "long"))
+        .isEqualTo(555555555555555555L);
+    assertThat(GeodeConverter.convertToActualType("5", Long.class.getName())).isEqualTo((long) 5);
+  }
+
+  @Test
+  public void coercesFloat() {
+    assertThat(GeodeConverter.convertToActualType("5.0", "float")).isEqualTo((float) 5);
+    assertThat(GeodeConverter.convertToActualType("5.0", Float.class.getName()))
+        .isEqualTo((float) 5);
+  }
+
+  @Test
+  public void coercesDouble() {
+    assertThat(GeodeConverter.convertToActualType("5.0", "double")).isEqualTo((double) 5);
+    assertThat(GeodeConverter.convertToActualType("5.0", Double.class.getName()))
+        .isEqualTo((double) 5);
   }
 }
