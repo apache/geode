@@ -24,7 +24,7 @@ groups:
   jobs:
   - {{ build_test.name }}
 {%- for test in tests if not test.name.startswith("Windows") %}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
 {%- endfor %}
@@ -208,7 +208,7 @@ jobs:
 
 
 {% for test in tests if not test.name.startswith("Windows")%}
-  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") %}
+  {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
   plan:
