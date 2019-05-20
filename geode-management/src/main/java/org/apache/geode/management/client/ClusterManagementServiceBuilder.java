@@ -25,6 +25,10 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.PlainClusterManagementServiceBuilder;
 import org.apache.geode.management.internal.SpringClusterManagemnetServiceBuilder;
 
+/**
+ * this builder allows you to build a ClusterManagementService using host address or
+ * an HttpRequestFactory
+ */
 @Experimental
 public class ClusterManagementServiceBuilder {
 

@@ -18,6 +18,10 @@ package org.apache.geode.management.builder;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.management.internal.api.GeodeClusterManagementServiceBuilder;
 
+/**
+ * this builder allows you to build a ClusterManagementService using a Geode Cache (either
+ * ClientCache or server Cache)
+ */
 public class ClusterManagementServiceBuilder {
 
   public static GeodeBuilder buildWithCache() {
