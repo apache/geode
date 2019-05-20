@@ -35,6 +35,7 @@ import org.apache.geode.management.internal.cli.domain.Stock;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.CommandResultAssert;
 import org.apache.geode.test.junit.categories.OQLIndexTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
@@ -74,12 +75,16 @@ public class DestroyIndexCommandsDUnitTest {
     gfsh.executeAndAssertThat(String.format("create region --name=%s --type=REPLICATE", REGION_1))
         .statusIsSuccess();
 
-    gfsh.executeAndAssertThat(
+    CommandResultAssert createIndex1Assert = gfsh.executeAndAssertThat(
         String.format("create index --name=%s --expression=key --region=%s", INDEX_1, REGION_1))
         .statusIsSuccess();
-    gfsh.executeAndAssertThat(
+    createIndex1Assert.hasTableSection("createIndex").hasRowSize(2);
+    createIndex1Assert.containsOutput("Cluster configuration for group 'cluster' is updated");
+    CommandResultAssert createIndex2Assert = gfsh.executeAndAssertThat(
         String.format("create index --name=%s --expression=id --region=%s", INDEX_2, REGION_1))
         .statusIsSuccess();
+    createIndex2Assert.hasTableSection("createIndex").hasRowSize(2);
+    createIndex2Assert.containsOutput("Cluster configuration for group 'cluster' is updated");
 
     assertIndexCount(REGION_1, 2);
   }

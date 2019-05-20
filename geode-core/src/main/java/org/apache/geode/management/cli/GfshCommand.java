@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.ManagementService;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -85,6 +86,11 @@ public abstract class GfshCommand implements CommandMarker {
   public <T extends ConfigurationPersistenceService> T getConfigurationPersistenceService() {
     InternalLocator locator = InternalLocator.getLocator();
     return locator == null ? null : (T) locator.getConfigurationPersistenceService();
+  }
+
+  public ClusterManagementService getClusterManagementService() {
+    InternalLocator locator = InternalLocator.getLocator();
+    return locator == null ? null : locator.getClusterManagementService();
   }
 
   public void setCache(Cache cache) {

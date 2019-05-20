@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.remote;
 
-import static org.apache.geode.management.internal.cli.commands.AlterAsyncEventQueueCommand.GROUP_STATUS_SECTION;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,7 +35,6 @@ import org.apache.geode.management.internal.cli.exceptions.UserErrorException;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
-import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
@@ -176,37 +173,24 @@ public class CommandExecutor {
 
     List<String> groupsToUpdate;
     String groupInput = parseResult.getParamValueAsString("group");
-    TabularResultModel table = null;
 
     if (!StringUtils.isBlank(groupInput)) {
       groupsToUpdate = Arrays.asList(groupInput.split(","));
     } else if (gfshCommand instanceof UpdateAllConfigurationGroupsMarker) {
       groupsToUpdate = ccService.getGroups().stream().collect(Collectors.toList());
-      table = resultModel.addTable(GROUP_STATUS_SECTION);
-      table.setColumnHeader("Group", "Status");
     } else {
       groupsToUpdate = Arrays.asList("cluster");
     }
 
-    final TabularResultModel finalTable = table;
     for (String group : groupsToUpdate) {
       ccService.updateCacheConfig(group, cacheConfig -> {
         try {
           if (gfshCommand.updateConfigForGroup(group, cacheConfig, resultModel.getConfigObject())) {
-            if (finalTable != null) {
-              finalTable.addRow(group, "Cluster Configuration Updated");
-            } else {
-              infoResultModel
-                  .addLine("Changes to configuration for group '" + group + "' are persisted.");
-            }
+            infoResultModel
+                .addLine("Cluster configuration for group '" + group + "' is updated.");
           } else {
-            if (finalTable != null) {
-              finalTable.addRow(group, "Cluster Configuration not updated");
-
-            } else {
-              infoResultModel
-                  .addLine("No changes were made to the configuration for group '" + group + "'");
-            }
+            infoResultModel
+                .addLine("Cluster configuration for group '" + group + "' is not updated.");
           }
         } catch (Exception e) {
           String message = "Failed to update cluster config for " + group;
@@ -216,7 +200,6 @@ public class CommandExecutor {
           infoResultModel.addLine(message + ". Reason: " + e.getMessage());
           return null;
         }
-
         return cacheConfig;
       });
     }
