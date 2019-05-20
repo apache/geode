@@ -235,8 +235,6 @@ jobs:
     trigger: true
     passed: [Build]
   - get: geode-build-version
-    params:
-      pre: ((semver-prerelease-token))
     passed: [Build]
 - name: {{build_test.name}}
   public: true
