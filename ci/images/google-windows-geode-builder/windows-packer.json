@@ -64,7 +64,6 @@
         "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
         "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
-        "Install-Module -Name ProcessMitigations -Force",
         "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
         "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
 
