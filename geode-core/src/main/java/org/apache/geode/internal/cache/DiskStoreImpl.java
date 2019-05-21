@@ -116,6 +116,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.util.BlobHelper;
+import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.pdx.internal.EnumInfo;
 import org.apache.geode.pdx.internal.PdxField;
 import org.apache.geode.pdx.internal.PdxType;
@@ -289,6 +290,9 @@ public class DiskStoreImpl implements DiskStore {
   /** max of all the dir sizes given stored in bytes* */
   private final long maxDirSize;
 
+  /** total sum of dir sizes in bytes* */
+  private long totalDiskStoreSpace;
+
   /** disk dir to be used by info file * */
   private int infoFileDirIndex;
 
@@ -454,12 +458,19 @@ public class DiskStoreImpl implements DiskStore {
     int length = dirs.length;
     this.directories = new DirectoryHolder[length];
     long tempMaxDirSize = 0;
+
+    this.totalDiskStoreSpace = 0;
     for (int i = 0; i < length; i++) {
       directories[i] =
           new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
 
       if (tempMaxDirSize < dirSizes[i]) {
         tempMaxDirSize = dirSizes[i];
+      }
+      if (dirSizes[i] == DiskStoreFactory.DEFAULT_DISK_DIR_SIZE) {
+        this.totalDiskStoreSpace = ManagementConstants.NOT_AVAILABLE_LONG;
+      } else if (this.totalDiskStoreSpace != ManagementConstants.NOT_AVAILABLE_LONG) {
+        this.totalDiskStoreSpace += dirSizes[i] * (1024 * 1024);
       }
     }
     // stored in bytes
@@ -4562,6 +4573,27 @@ public class DiskStoreImpl implements DiskStore {
 
   public StatisticsFactory getStatisticsFactory() {
     return this.cache.getDistributedSystem();
+  }
+
+  public long getTotalBytesOnDisk() {
+    long diskSpace = 0;
+    for (DirectoryHolder dr : this.directories) {
+      diskSpace += dr.getDiskDirectoryStats().getDiskSpace();
+    }
+    return diskSpace;
+  }
+
+  /**
+   * Returns the disk usage percentage of the disk store, or -1 in case
+   * one or more directories have unlimited storage.
+   */
+  public float getDiskUsagePercentage() {
+    if (this.totalDiskStoreSpace == ManagementConstants.NOT_AVAILABLE_LONG) {
+      return ManagementConstants.NOT_AVAILABLE_FLOAT;
+    }
+    long totalDiskSpace = getTotalBytesOnDisk();
+    float usage = (float) (totalDiskSpace * 100 / this.totalDiskStoreSpace);
+    return usage;
   }
 
 }

@@ -236,11 +236,7 @@ public class DiskStoreMBeanBridge {
   }
 
   public long getTotalBytesOnDisk() {
-    long diskSpace = 0;
-    for (DirectoryHolder dr : this.directoryHolders) {
-      diskSpace += dr.getDiskDirectoryStats().getDiskSpace();
-    }
-    return diskSpace;
+    return diskStore.getTotalBytesOnDisk();
   }
 
   public int getTotalQueueSize() {
@@ -272,5 +268,9 @@ public class DiskStoreMBeanBridge {
 
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     diskStore.setDiskUsageCriticalPercentage(criticalPercent);
+  }
+
+  public float getDiskUsagePercentage() {
+    return diskStore.getDiskUsagePercentage();
   }
 }
