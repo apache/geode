@@ -774,8 +774,8 @@ public class SocketCreator {
               "Unable to find a free port in the membership-port-range");
         }
       }
+      ServerSocket socket = null;
       try {
-        ServerSocket socket;
         if (useNIO) {
           ServerSocketChannel channel = ServerSocketChannel.open();
           socket = channel.socket();
@@ -788,21 +788,12 @@ public class SocketCreator {
         }
         return socket;
       } catch (java.net.SocketException ex) {
-        if (useNIO || SocketCreator.treatAsBindException(ex)) {
-          localPort++;
-        } else {
-          throw ex;
+        if (socket != null && !socket.isClosed()) {
+          socket.close();
         }
+        localPort++;
       }
     }
-  }
-
-  private static boolean treatAsBindException(SocketException se) {
-    if (se instanceof BindException) {
-      return true;
-    }
-    final String msg = se.getMessage();
-    return (msg != null && msg.contains("Invalid argument: listen failed"));
   }
 
   /**
