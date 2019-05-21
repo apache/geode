@@ -19,11 +19,12 @@ import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
 
-public class Buffers {
+public class BufferPool {
+  private final DMStats stats;
+
   /**
    * Buffers may be acquired from the Buffers pool
    * or they may be allocated using Buffer.allocate(). This enum is used
@@ -34,11 +35,15 @@ public class Buffers {
     UNTRACKED, TRACKED_SENDER, TRACKED_RECEIVER
   }
 
+
+  public BufferPool(DMStats stats) {
+    this.stats = stats;
+  }
+
   /**
    * A list of soft references to byte buffers.
    */
-  @MakeNotStatic
-  private static final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
+  private final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
       new ConcurrentLinkedQueue<>();
 
   /**
@@ -51,15 +56,15 @@ public class Buffers {
    *
    * @return a byte buffer to be used for sending on this connection.
    */
-  public static ByteBuffer acquireSenderBuffer(int size, DMStats stats) {
-    return acquireBuffer(size, stats, true);
+  public ByteBuffer acquireSenderBuffer(int size) {
+    return acquireBuffer(size, true);
   }
 
-  public static ByteBuffer acquireReceiveBuffer(int size, DMStats stats) {
-    return acquireBuffer(size, stats, false);
+  public ByteBuffer acquireReceiveBuffer(int size) {
+    return acquireBuffer(size, false);
   }
 
-  private static ByteBuffer acquireBuffer(int size, DMStats stats, boolean send) {
+  private ByteBuffer acquireBuffer(int size, boolean send) {
     ByteBuffer result;
     if (useDirectBuffers) {
       IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
@@ -109,19 +114,19 @@ public class Buffers {
     return result;
   }
 
-  public static void releaseSenderBuffer(ByteBuffer bb, DMStats stats) {
-    releaseBuffer(bb, stats, true);
+  public void releaseSenderBuffer(ByteBuffer bb) {
+    releaseBuffer(bb, true);
   }
 
-  public static void releaseReceiveBuffer(ByteBuffer bb, DMStats stats) {
-    releaseBuffer(bb, stats, false);
+  public void releaseReceiveBuffer(ByteBuffer bb) {
+    releaseBuffer(bb, false);
   }
 
   /**
    * expand a buffer that's currently being read from
    */
-  static ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
-      int desiredCapacity, DMStats stats) {
+  ByteBuffer expandReadBufferIfNeeded(BufferType type, ByteBuffer existing,
+      int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       if (existing.position() > 0) {
         existing.compact();
@@ -129,51 +134,51 @@ public class Buffers {
       }
       return existing;
     }
-    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
     newBuffer.clear();
     newBuffer.put(existing);
     newBuffer.flip();
-    releaseBuffer(type, existing, stats);
+    releaseBuffer(type, existing);
     return newBuffer;
   }
 
   /**
    * expand a buffer that's currently being written to
    */
-  static ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
-      int desiredCapacity, DMStats stats) {
+  ByteBuffer expandWriteBufferIfNeeded(BufferType type, ByteBuffer existing,
+      int desiredCapacity) {
     if (existing.capacity() >= desiredCapacity) {
       return existing;
     }
-    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity, stats);
+    ByteBuffer newBuffer = acquireBuffer(type, desiredCapacity);
     newBuffer.clear();
     existing.flip();
     newBuffer.put(existing);
-    releaseBuffer(type, existing, stats);
+    releaseBuffer(type, existing);
     return newBuffer;
   }
 
-  static ByteBuffer acquireBuffer(Buffers.BufferType type, int capacity, DMStats stats) {
+  ByteBuffer acquireBuffer(BufferPool.BufferType type, int capacity) {
     switch (type) {
       case UNTRACKED:
         return ByteBuffer.allocate(capacity);
       case TRACKED_SENDER:
-        return Buffers.acquireSenderBuffer(capacity, stats);
+        return acquireSenderBuffer(capacity);
       case TRACKED_RECEIVER:
-        return Buffers.acquireReceiveBuffer(capacity, stats);
+        return acquireReceiveBuffer(capacity);
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
   }
 
-  static void releaseBuffer(Buffers.BufferType type, ByteBuffer buffer, DMStats stats) {
+  void releaseBuffer(BufferPool.BufferType type, ByteBuffer buffer) {
     switch (type) {
       case UNTRACKED:
         return;
       case TRACKED_SENDER:
-        Buffers.releaseSenderBuffer(buffer, stats);
+        releaseSenderBuffer(buffer);
         return;
       case TRACKED_RECEIVER:
-        Buffers.releaseReceiveBuffer(buffer, stats);
+        releaseReceiveBuffer(buffer);
         return;
     }
     throw new IllegalArgumentException("Unexpected buffer type " + type.toString());
@@ -183,7 +188,7 @@ public class Buffers {
   /**
    * Releases a previously acquired buffer.
    */
-  private static void releaseBuffer(ByteBuffer bb, DMStats stats, boolean send) {
+  private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (useDirectBuffers) {
       BBSoftReference bbRef = new BBSoftReference(bb, send);
       bufferQueue.offer(bbRef);
@@ -192,20 +197,6 @@ public class Buffers {
         stats.incSenderBufferSize(-bb.capacity(), false);
       } else {
         stats.incReceiverBufferSize(-bb.capacity(), false);
-      }
-    }
-  }
-
-  public static void initBufferStats(DMStats stats) { // fixes 46773
-    if (useDirectBuffers) {
-      for (BBSoftReference ref : bufferQueue) {
-        if (ref.getBB() != null) {
-          if (ref.getSend()) { // fix bug 46773
-            stats.incSenderBufferSize(ref.getSize(), true);
-          } else {
-            stats.incReceiverBufferSize(ref.getSize(), true);
-          }
-        }
       }
     }
   }

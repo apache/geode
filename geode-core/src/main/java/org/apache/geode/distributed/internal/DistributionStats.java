@@ -25,7 +25,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.Buffers;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 import org.apache.geode.internal.util.Breadcrumbs;
 
@@ -954,7 +953,6 @@ public class DistributionStats implements DMStats {
     // this.replyWaitHistogram = new HistogramStats("ReplyWait", "nanoseconds", f,
     // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
     // false);
-    Buffers.initBufferStats(this);
   }
 
   /**

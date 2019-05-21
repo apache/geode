@@ -388,7 +388,7 @@ org/apache/geode/internal/jta/TransactionManagerImpl,true,5033392316185449821,gl
 org/apache/geode/internal/jta/TransactionManagerImpl$GlobalTransactionComparator,false
 org/apache/geode/internal/jta/UserTransactionImpl,true,2994652455204901910,storedTimeOut:int,tm:javax/transaction/TransactionManager
 org/apache/geode/internal/monitoring/ThreadsMonitoring$Mode,false
-org/apache/geode/internal/net/Buffers$BufferType,false
+org/apache/geode/internal/net/BufferPool$BufferType,false
 org/apache/geode/internal/offheap/MemoryBlock$State,false
 org/apache/geode/internal/offheap/OffHeapStorage$1,false
 org/apache/geode/internal/offheap/OffHeapStorage$2,false
