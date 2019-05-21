@@ -46,7 +46,7 @@ public class MemberInformation implements Serializable {
   private int httpServicePort;
   private String httpServiceBindAddress;
   private boolean isServer;
-  private List<CacheServerInfo> cacheServerList;
+  private List<CacheServerInfo> cacheServerList = new ArrayList<>();
   private int clientCount;
   private double cpuUsage;
   private Set<String> hostedRegions;
@@ -229,9 +229,6 @@ public class MemberInformation implements Serializable {
   public void addCacheServerInfo(CacheServerInfo cacheServerInfo) {
     if (cacheServerInfo == null)
       return;
-    if (cacheServerList == null) {
-      cacheServerList = new ArrayList<CacheServerInfo>();
-    }
     cacheServerList.add(cacheServerInfo);
   }
 

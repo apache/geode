@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
@@ -57,7 +58,11 @@ public class MemberManagementServiceRestIntegrationTest {
     webContext = new LocatorWebContext(webApplicationContext);
 
     cluster.setSkipLocalDistributedSystemCleanup(true);
-    cluster.startServerVM(1, "group-1,group-2", webContext.getLocator().getPort());
+    int locatorPort = webContext.getLocator().getPort();
+
+    cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
+        .withProperty("groups", "group-1,group-2")
+        .withLogFile());
   }
 
   @Test
@@ -72,7 +77,10 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(jsonPath("$.result[0].port", greaterThan(0)))
         .andExpect(jsonPath("$.result[0].locator", is(true)))
         .andExpect(jsonPath("$.result[0].status", is("online")))
-        .andExpect(jsonPath("$.result[0].cacheServers").doesNotExist());
+        .andExpect(jsonPath("$.result[0].cacheServers").doesNotExist())
+        .andExpect(jsonPath("$.result[0].logFile", endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result[0].workingDirectory", notNullValue()))
+        .andExpect(jsonPath("$.result[0].usedHeap", greaterThan(0)));
   }
 
   @Test
@@ -90,8 +98,8 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(jsonPath("$.result[0].cacheServers[0].maxConnections", equalTo(800)))
         .andExpect(jsonPath("$.result[0].cacheServers[0].maxThreads", equalTo(0)))
         .andExpect(jsonPath("$.result[0].groups", containsInAnyOrder("group-1", "group-2")))
-        .andExpect(jsonPath("$.result[0].logFile", notNullValue()))
-        .andExpect(jsonPath("$.result[0].workingDirectory", notNullValue()))
+        .andExpect(jsonPath("$.result[0].logFile", endsWith("server-1.log")))
+        .andExpect(jsonPath("$.result[0].workingDirectory", endsWith("vm1")))
         .andExpect(jsonPath("$.result[0].clientConnections", equalTo(0)))
         .andExpect(jsonPath("$.result[0].usedHeap", greaterThan(0)));
   }
