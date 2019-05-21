@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.util;
 
+import org.apache.geode.internal.ClassPathLoader;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -37,7 +39,7 @@ public class DriverJarUtil {
   // class cleaner
   Driver getDriverInstanceByClassName(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    return (Driver) Class.forName(driverClassName).newInstance();
+    return (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
   }
 
   void registerDriverWithDriverManager(Driver driver) throws SQLException {
