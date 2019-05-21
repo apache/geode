@@ -18,6 +18,7 @@ package org.apache.geode.management.internal;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
@@ -66,7 +67,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult delete(CacheElement config) {
-    throw new NotImplementedException("Not Implemented");
+    String endPoint = getEndpoint(config);
+    return restTemplate
+        .exchange(VERSION + endPoint + "/{id}?group={group}",
+            HttpMethod.DELETE,
+            null,
+            ClusterManagementResult.class,
+            config.getId(), config.getGroup())
+        .getBody();
   }
 
   @Override

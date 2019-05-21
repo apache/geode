@@ -36,6 +36,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class RegionConfigValidatorTest {
@@ -57,7 +58,7 @@ public class RegionConfigValidatorTest {
   public void checkSecurityForDiskAccess() {
     config.setName("regionName");
     config.setType(RegionType.REPLICATE_PERSISTENT);
-    validator.validate(config);
+    validator.validate(CacheElementOperation.CREATE, config);
 
     verify(securityService).authorize(ResourcePermission.Resource.CLUSTER,
         ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
@@ -68,7 +69,7 @@ public class RegionConfigValidatorTest {
   public void noChangesWhenTypeIsSet() {
     config.setName("regionName");
     config.setType(RegionType.REPLICATE);
-    validator.validate(config);
+    validator.validate(CacheElementOperation.CREATE, config);
 
     verify(securityService, times(0)).authorize(
         any(ResourcePermission.Resource.class),
@@ -80,14 +81,14 @@ public class RegionConfigValidatorTest {
   public void invalidType() throws Exception {
     config.setName("regionName");
     config.setType("LOCAL");
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessage("Type LOCAL is not supported in Management V2 API.");
   }
 
   @Test
   public void noName() {
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Name of the region has to be specified");
   }
@@ -96,7 +97,7 @@ public class RegionConfigValidatorTest {
   public void invalidName1() {
     config.setName("__test");
     config.setType("REPLICATE");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining("Region names may not begin with a double-underscore");
   }
@@ -105,7 +106,7 @@ public class RegionConfigValidatorTest {
   public void invalidName2() {
     config.setName("a!&b");
     config.setType("REPLICATE");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Region names may only be alphanumeric and may contain hyphens or underscores");
@@ -114,7 +115,7 @@ public class RegionConfigValidatorTest {
   @Test
   public void missingType() {
     config.setName("test");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Type of the region has to be specified");
@@ -127,7 +128,7 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -139,12 +140,12 @@ public class RegionConfigValidatorTest {
     config.setRegionAttributes(attributes);
 
     attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
 
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     attributes.setScope(RegionAttributesScope.DISTRIBUTED_NO_ACK);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -155,7 +156,7 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -166,7 +167,7 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -177,16 +178,16 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
     attributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
     attributes.setRedundantCopy("0");
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
 
     // valid redundancy copy
     attributes.setRedundantCopy("2");
-    validator.validate(config);
+    validator.validate(CacheElementOperation.CREATE, config);
     assertThat(config.getRegionAttributes().getPartitionAttributes().getRedundantCopies())
         .isEqualTo("2");
   }
@@ -198,12 +199,12 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
 
     attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
     attributes.setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
@@ -214,17 +215,17 @@ public class RegionConfigValidatorTest {
     RegionAttributesType attributes = new RegionAttributesType();
     attributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
     config.setRegionAttributes(attributes);
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
 
     attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
     attributes.setLocalMaxMemory("5000");
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
 
     // validator will use the type to set the local max memory to be 0
     attributes.setLocalMaxMemory(null);
-    validator.validate(config);
+    validator.validate(CacheElementOperation.CREATE, config);
     assertThat(attributes.getPartitionAttributes().getLocalMaxMemory()).isEqualTo("0");
   }
 

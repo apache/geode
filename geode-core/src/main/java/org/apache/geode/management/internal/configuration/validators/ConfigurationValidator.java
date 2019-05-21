@@ -14,8 +14,8 @@
  */
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.internal.CacheElementOperation;
 
 public interface ConfigurationValidator<T extends CacheElement> {
 
@@ -25,17 +25,12 @@ public interface ConfigurationValidator<T extends CacheElement> {
    * This will be called after the ClusterManagementService received the configuration object from
    * the api call and before passing it to the realizers and mutators.
    *
-   *
+   * @param operation the operation being performed. Different validation may be required depending
+   *        on the operation.
    * @param config the user defined configuration object. It is mutable. you can modify the
    *        values in the configuration object. e.g. add default values
    *
    */
-  void validate(T config) throws IllegalArgumentException;
+  void validate(CacheElementOperation operation, T config) throws IllegalArgumentException;
 
-  /**
-   * check to see if this configuration already exists
-   *
-   * @return true if this config already exists in the persisted cache configuration
-   */
-  boolean exists(T config, CacheConfig persistedConfig);
 }

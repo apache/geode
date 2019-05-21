@@ -17,10 +17,9 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections.map.HashedMap;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
@@ -28,18 +27,16 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
   @Immutable
-  private static final Map<Class, ConfigurationRealizer> realizers = new HashedMap();
+  private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
+
   static {
     realizers.put(RegionConfig.class, new RegionConfigRealizer());
-  }
-
-  public enum CacheElementOperation {
-    ADD, DELETE, UPDATE
   }
 
   @Override
@@ -50,7 +47,7 @@ public class UpdateCacheFunction extends CliFunction<List> {
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
     switch (operation) {
-      case ADD:
+      case CREATE:
         realizer.create(cacheElement, cache);
         break;
       case DELETE:

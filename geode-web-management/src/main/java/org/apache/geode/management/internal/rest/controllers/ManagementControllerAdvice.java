@@ -39,7 +39,7 @@ public class ManagementControllerAdvice {
     logger.error(e.getMessage(), e);
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ERROR,
-            e.getMessage()),
+            e.toString()),
         HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
@@ -47,7 +47,7 @@ public class ManagementControllerAdvice {
   public ResponseEntity<ClusterManagementResult> entityExists(final Exception e) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_EXISTS,
-            e.getMessage()),
+            e.toString()),
         HttpStatus.CONFLICT);
   }
 
@@ -55,7 +55,7 @@ public class ManagementControllerAdvice {
   public ResponseEntity<ClusterManagementResult> entityNotFound(final Exception e) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND,
-            e.getMessage()),
+            e.toString()),
         HttpStatus.NOT_FOUND);
   }
 
@@ -63,14 +63,14 @@ public class ManagementControllerAdvice {
   public ResponseEntity<ClusterManagementResult> unauthorized(Exception e) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHENTICATED,
-            e.getMessage()),
+            e.toString()),
         HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler({NotAuthorizedException.class, SecurityException.class})
   public ResponseEntity<ClusterManagementResult> forbidden(Exception e) {
     return new ResponseEntity<>(new ClusterManagementResult(
-        ClusterManagementResult.StatusCode.UNAUTHORIZED, e.getMessage()),
+        ClusterManagementResult.StatusCode.UNAUTHORIZED, e.toString()),
         HttpStatus.FORBIDDEN);
   }
 
@@ -78,7 +78,7 @@ public class ManagementControllerAdvice {
   public ResponseEntity<ClusterManagementResult> badRequest(final IllegalArgumentException e) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT,
-            e.getMessage()),
+            e.toString()),
         HttpStatus.BAD_REQUEST);
   }
 
@@ -96,7 +96,7 @@ public class ManagementControllerAdvice {
       final AccessDeniedException cause) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.UNAUTHORIZED,
-            cause.getMessage()),
+            cause.toString()),
         HttpStatus.FORBIDDEN);
   }
 

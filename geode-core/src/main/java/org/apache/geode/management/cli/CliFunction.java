@@ -22,6 +22,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 /**
  * An abstract function implementation to be extended by cli functions. Any cli function extending
@@ -34,6 +35,8 @@ public abstract class CliFunction<T> implements InternalFunction<T> {
   public final void execute(FunctionContext<T> context) {
     try {
       context.getResultSender().lastResult(executeFunction(context));
+    } catch (EntityNotFoundException nfe) {
+      context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), nfe));
     } catch (Exception e) {
       logger.error(e.getMessage(), e);
       context.getResultSender().lastResult(new CliFunctionResult(context.getMemberName(), e));

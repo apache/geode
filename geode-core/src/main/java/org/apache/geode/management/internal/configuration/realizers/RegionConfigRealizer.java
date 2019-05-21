@@ -79,7 +79,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     factory.createSubregion(parentRegion, regionName);
   }
 
-  RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
+  private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
     RegionFactory factory = cache.createRegionFactory();
 
     factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
@@ -298,7 +298,14 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
   public void update(RegionConfig config, Cache cache) {}
 
   @Override
-  public void delete(RegionConfig config, Cache cache) {}
+  public void delete(RegionConfig config, Cache cache) {
+    Region region = cache.getRegion(config.getName());
+    if (region == null) {
+      // Since we are trying to delete this region, we can return early
+      return;
+    }
 
+    region.destroyRegion();
+  }
 
 }

@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -254,7 +255,7 @@ public class RegionConfigTest {
     config.setRegionAttributes(attributes);
 
     RegionConfigValidator validator = new RegionConfigValidator(mock(InternalCache.class));
-    assertThatThrownBy(() -> validator.validate(config))
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
 }
