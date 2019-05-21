@@ -41,6 +41,6 @@ public class CacheElementValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "cluster is a reserved group name");
+            "'cluster' is a reserved group name");
   }
 }

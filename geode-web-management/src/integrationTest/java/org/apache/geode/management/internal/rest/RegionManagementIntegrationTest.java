@@ -67,7 +67,7 @@ public class RegionManagementIntegrationTest {
     assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
-        .containsStatusMessage("no members found in cluster to create cache element");
+        .containsStatusMessage("No members found in group 'cluster' to create cache element");
   }
 
   @Test
@@ -92,7 +92,7 @@ public class RegionManagementIntegrationTest {
     assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("cluster is a reserved group name");
+        .containsStatusMessage("'cluster' is a reserved group name");
   }
 
   @Test

@@ -99,7 +99,7 @@ public class RegionManagementSecurityIntegrationTest {
         .andExpect(status().isInternalServerError())
         .andExpect(jsonPath("$.statusCode", is("ERROR")))
         .andExpect(jsonPath("$.statusMessage",
-            is("no members found in cluster to create cache element")));
+            is("No members found in group 'cluster' to create cache element")));
   }
 
 }
