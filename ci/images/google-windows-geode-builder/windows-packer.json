@@ -64,9 +64,6 @@
         "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
         "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
-        "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
-        "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
-
         "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
         "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8",
         "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
