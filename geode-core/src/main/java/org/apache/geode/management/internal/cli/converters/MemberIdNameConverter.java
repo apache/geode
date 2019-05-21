@@ -37,7 +37,7 @@ public class MemberIdNameConverter extends BaseStringConverter {
   public Set<String> getCompletionValues() {
     final Set<String> nonLocatorMembers = new TreeSet<>();
 
-    final Gfsh gfsh = Gfsh.getCurrentInstance();
+    final Gfsh gfsh = getGfsh();
 
     if (gfsh != null && gfsh.isConnectedAndReady()) {
       nonLocatorMembers.addAll(
@@ -52,6 +52,10 @@ public class MemberIdNameConverter extends BaseStringConverter {
     }
 
     return nonLocatorMembers;
+  }
+
+  Gfsh getGfsh() {
+    return Gfsh.getCurrentInstance();
   }
 
 }

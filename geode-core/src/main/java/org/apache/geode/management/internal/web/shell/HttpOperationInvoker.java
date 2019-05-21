@@ -52,8 +52,6 @@ import org.apache.geode.management.internal.web.shell.support.HttpMBeanProxyFact
  * @see org.apache.geode.management.internal.cli.shell.Gfsh
  * @see org.apache.geode.management.internal.cli.shell.OperationInvoker
  * @see org.apache.geode.management.internal.web.shell.HttpOperationInvoker
- * @see org.springframework.http.client.SimpleClientHttpRequestFactory
- * @see org.springframework.web.client.RestTemplate
  * @since GemFire 8.0
  */
 @SuppressWarnings("unused")
@@ -293,8 +291,6 @@ public class HttpOperationInvoker implements OperationInvoker {
    *
    * @return a proxy instance of the GemFire Manager's DistributedSystem MXBean.
    * @see #getMBeanProxy(javax.management.ObjectName, Class)
-   * @see org.apache.geode.management.DistributedSystemMXBean
-   * @see org.apache.geode.management.internal.MBeanJMXAdapter#getDistributedSystemName()
    */
   @Override
   public DistributedSystemMXBean getDistributedSystemMXBean() {
@@ -335,7 +331,7 @@ public class HttpOperationInvoker implements OperationInvoker {
       final String[] signatures) {
     final URI link = HttpRequester.createURI(baseUrl, "/mbean/operation");
 
-    MultiValueMap<String, Object> content = new LinkedMultiValueMap<String, Object>();
+    MultiValueMap<String, Object> content = new LinkedMultiValueMap<>();
 
     content.add("resourceName", resourceName);
     content.add("operationName", operationName);
