@@ -26,6 +26,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
@@ -305,7 +306,12 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
       return;
     }
 
-    region.destroyRegion();
+    try {
+      region.destroyRegion();
+    } catch (RegionDestroyedException dex) {
+      // Probably happened as a distirbuted op but it still reflects our current desired action
+      // which is why it can be ignored here.
+    }
   }
 
 }
