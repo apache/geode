@@ -108,7 +108,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
     Process process = launchClientProcess(outputJar, httpPort);
 
-    boolean exited = process.waitFor(10, TimeUnit.SECONDS);
+    boolean exited = process.waitFor(30, TimeUnit.SECONDS);
     assertThat(exited).as("Process did not exit within 10 seconds").isTrue();
     assertThat(process.exitValue()).as("Process did not exit with 0 return code").isEqualTo(0);
 
