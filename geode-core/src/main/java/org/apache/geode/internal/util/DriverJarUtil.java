@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.util;
 
+import org.apache.geode.internal.ClassPathLoader;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
