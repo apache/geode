@@ -40,10 +40,6 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     Object[] arguments = context.getArguments();
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
-    // String driverJarName = null;
-    // if (arguments.length > 2) {
-    // driverJarName = (String) arguments[2];
-    // }
 
     final String TYPE_NAME;
     if (creatingDataSource) {
@@ -51,13 +47,7 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     } else {
       TYPE_NAME = "jndi-binding";
     }
-    // if (driverJarName != null && configuration.getJdbcDriverClass() == null) {
-    // try {
-    // configuration.setJdbcDriverClass(getDriverJarUtil().getJdbcDriverName(driverJarName));
-    // } catch (IOException ex) {
-    // return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
-    // }
-    // }
+
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));

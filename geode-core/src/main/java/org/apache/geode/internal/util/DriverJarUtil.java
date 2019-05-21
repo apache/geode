@@ -22,6 +22,8 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 
+import org.apache.geode.internal.ClassPathLoader;
+
 
 public class DriverJarUtil {
 
@@ -37,7 +39,7 @@ public class DriverJarUtil {
   // class cleaner
   Driver getDriverInstanceByClassName(String driverClassName)
       throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    return (Driver) Class.forName(driverClassName).newInstance();
+    return (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
   }
 
   void registerDriverWithDriverManager(Driver driver) throws SQLException {
