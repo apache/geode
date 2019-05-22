@@ -50,8 +50,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -617,6 +619,25 @@ public class GMSHealthMonitorJUnitTest {
     assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
+  @Test
+  public void testFailedSelfCheckRemovesMemberAsSuspect() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    gmsHealthMonitor.stopServer();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
+    assertTrue(available);
+    verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
+    assertTrue(((GMSHealthMonitorTest) gmsHealthMonitor).availabilityCheckedMembers
+        .contains(memberToCheck));
+    assertTrue(((GMSHealthMonitorTest) gmsHealthMonitor).availabilityCheckedMembers
+        .contains(joinLeave.getMemberID()));
+  }
+
   /**
    * a failed availablility check should initiate suspect processing
    */
@@ -901,10 +922,12 @@ public class GMSHealthMonitorJUnitTest {
 
   public class GMSHealthMonitorTest extends GMSHealthMonitor {
     public boolean useBlockingSocket = false;
+    public Set<InternalDistributedMember> availabilityCheckedMembers = new HashSet<>();
 
     @Override
     boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port,
         boolean retryIfConnectFails) {
+      availabilityCheckedMembers.add(suspectMember);
       if (useGMSHealthMonitorTestClass) {
         if (simulateHeartbeatInGMSHealthMonitorTestClass) {
           HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();

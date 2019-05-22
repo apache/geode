@@ -925,6 +925,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       checkExecutor.shutdown();
     }
 
+    stopServer();
+  }
+
+  void stopServer() {
     if (serverSocketExecutor != null) {
       if (serverSocket != null && !serverSocket.isClosed()) {
         try {
@@ -1321,9 +1325,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             // make sure it is still suspected
             memberSuspected(localAddress, mbr, reason);
           } else {
+            failed = true;
             // if this node can survive an availability check then initiate suspicion about
             // the node that failed the availability check
+            logger.info("BRUCE: invoking self-check on {}", localAddress);
             if (doTCPCheckMember(localAddress, this.socketPort, false)) {
+              logger.info("BRUCE: self-check passed");
               membersInFinalCheck.remove(mbr);
               // tell peers about this member and then perform another availability check
               memberSuspected(localAddress, mbr, reason);
@@ -1335,9 +1342,13 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               suspectMembersMessage.setSender(localAddress);
               logger.debug("Performing local processing on suspect request");
               processSuspectMembersRequest(suspectMembersMessage);
+            } else {
+              logger.info(
+                  "Self-check for availability failed - will not continue to suspect {} for now",
+                  mbr);
+              failed = false;
             }
           }
-          failed = true;
         } else {
           logger.info(
               "Availability check failed but detected recent message traffic for suspect member "
