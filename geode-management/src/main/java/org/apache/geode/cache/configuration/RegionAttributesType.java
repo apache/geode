@@ -348,7 +348,6 @@ public class RegionAttributesType implements Serializable {
 
   @XmlElement(name = "key-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected String keyConstraint;
-
   @XmlElement(name = "value-constraint", namespace = "http://geode.apache.org/schema/cache")
   protected String valueConstraint;
   @XmlElement(name = "region-time-to-live", namespace = "http://geode.apache.org/schema/cache")
@@ -1499,7 +1498,7 @@ public class RegionAttributesType implements Serializable {
     this.offHeap = value;
   }
 
-  @ApiModelProperty(hidden=true)
+  @ApiModelProperty(hidden = true)
   public void setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow action) {
     if (evictionAttributes == null) {
       evictionAttributes = new EvictionAttributes();
@@ -2807,7 +2806,6 @@ public class RegionAttributesType implements Serializable {
      * {@link String }
      *
      */
-    @ApiModelProperty(hidden = true)
     public String getLocalMaxMemory() {
       return localMaxMemory;
     }

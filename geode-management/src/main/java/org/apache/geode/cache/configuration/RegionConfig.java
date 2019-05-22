@@ -162,8 +162,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
 
   @XmlElement(name = "region-attributes", namespace = "http://geode.apache.org/schema/cache")
   protected RegionAttributesType regionAttributes;
-
-  @ApiModelProperty(hidden = true)
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
 
