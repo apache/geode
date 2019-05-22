@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import java.io.File;
@@ -26,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MalformedObjectNameException;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -34,10 +34,8 @@ import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
-import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -256,10 +254,6 @@ public class StartServerCommand extends OfflineGfshCommand {
               gemfireSecurityPropertiesFile.getAbsolutePath()));
     }
 
-    File serverPidFile = new File(workingDirectory, ProcessType.SERVER.getPidFileName());
-
-    final int oldPid = StartMemberUtils.readPid(serverPidFile);
-
     Properties gemfireProperties = new Properties();
 
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.BIND_ADDRESS,
@@ -341,8 +335,8 @@ public class StartServerCommand extends OfflineGfshCommand {
       getGfsh().logInfo(StringUtils.join(serverCommandLine, StringUtils.SPACE), null);
     }
 
-    Process serverProcess = new ProcessBuilder(serverCommandLine)
-        .directory(new File(serverLauncher.getWorkingDirectory())).start();
+    Process serverProcess =
+        getProcess(serverLauncher.getWorkingDirectory(), serverCommandLine);
 
     serverProcess.getInputStream().close();
     serverProcess.getOutputStream().close();
@@ -355,7 +349,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
-        message.append(StringUtils.LINE_SEPARATOR);
+        message.append(SystemUtils.getLineSeparator());
       }
     };
 
@@ -377,7 +371,6 @@ public class StartServerCommand extends OfflineGfshCommand {
           .tryGetCanonicalPathElseGetAbsolutePath(new File(serverLauncher.getWorkingDirectory()))),
           null);
 
-      serverState = ServerLauncher.ServerState.fromDirectory(workingDirectory, memberName);
       do {
         if (serverProcess.isAlive()) {
           Gfsh.print(".");
@@ -425,6 +418,11 @@ public class StartServerCommand extends OfflineGfshCommand {
     } else {
       return ResultModel.createInfo(serverState.toString());
     }
+  }
+
+  Process getProcess(String workingDir, String[] serverCommandLine) throws IOException {
+    return new ProcessBuilder(serverCommandLine)
+        .directory(new File(workingDir)).start();
   }
 
   String[] createStartServerCommandLine(final ServerLauncher launcher,
@@ -559,7 +557,7 @@ public class StartServerCommand extends OfflineGfshCommand {
           + launcher.getHostNameForClients());
     }
 
-    return commandLine.toArray(new String[commandLine.size()]);
+    return commandLine.toArray(new String[] {});
   }
 
   String getServerClasspath(final boolean includeSystemClasspath, final String userClasspath) {
@@ -574,7 +572,7 @@ public class StartServerCommand extends OfflineGfshCommand {
     }
 
     return StartMemberUtils.toClasspath(includeSystemClasspath,
-        jarFilePathnames.toArray(new String[jarFilePathnames.size()]), userClasspath);
+        jarFilePathnames.toArray(new String[] {}), userClasspath);
   }
 
   private String[] getExtensionsJars() {
@@ -583,7 +581,7 @@ public class StartServerCommand extends OfflineGfshCommand {
 
     if (extensionsJars != null) {
       // assume `extensions` directory does not contain any subdirectories. It only contains jars.
-      return Arrays.stream(extensionsJars).filter(file -> file.isFile()).map(
+      return Arrays.stream(extensionsJars).filter(File::isFile).map(
           file -> IOUtils.appendToPath(StartMemberUtils.GEODE_HOME, "extensions", file.getName()))
           .toArray(String[]::new);
     } else {

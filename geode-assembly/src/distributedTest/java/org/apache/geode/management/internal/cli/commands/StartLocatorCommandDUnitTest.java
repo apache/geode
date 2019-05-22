@@ -16,7 +16,9 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.GEODE_0_PROPERTIES_1_NOT_FOUND_MESSAGE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__CONNECT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__DIR;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__HOSTNAME_FOR_CLIENTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__LOCATORS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__MEMBER_NAME;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_LOCATOR__PORT;
@@ -31,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,6 +44,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
+import org.apache.geode.cache.client.internal.locator.LocatorListResponse;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
@@ -222,5 +230,35 @@ public class StartLocatorCommandDUnitTest {
     gfsh.executeAndAssertThat(command.getCommandString()).statusIsSuccess()
         .hasOutput()
         .doesNotContain(unexpectedMessage).containsPattern(expectedMessage);
+  }
+
+  @Test
+  public void startLocatorRespectsHostnameForClients() throws IOException {
+    File workingDir = temporaryFolder.newFolder();
+    String expectedMessagePattern = "Locator (.*) is currently online";
+
+    String command = new CommandStringBuilder(START_LOCATOR)
+        .addOption(START_LOCATOR__MEMBER_NAME, memberName)
+        .addOption(START_LOCATOR__LOCATORS, locatorConnectionString)
+        .addOption(START_LOCATOR__DIR, workingDir.getAbsolutePath())
+        .addOption(START_LOCATOR__PORT, "10339")
+        .addOption(START_LOCATOR__HOSTNAME_FOR_CLIENTS, "fakeLocatorName")
+        .addOption(START_LOCATOR__CONNECT, "true").getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasOutput().containsPattern(expectedMessagePattern);
+
+    // Verify that the ServerLocation contains the specified hostname-for-clients.
+    locator.invoke(() -> {
+      InternalLocator internalLocator = InternalLocator.getLocator();
+      final ServerLocator serverLocator = internalLocator.getServerLocatorAdvisee();
+      LocatorListResponse locatorListResponse =
+          (LocatorListResponse) serverLocator.processRequest(new LocatorListRequest());
+
+      List<ServerLocation> locators = locatorListResponse.getLocators();
+      assertThat(locators.stream().filter(
+          serverLocation -> "fakeLocatorName".equals(serverLocation.getHostName())))
+              .isNotEmpty().hasSize(1);
+    });
   }
 }

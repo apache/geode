@@ -28,6 +28,7 @@ import javax.management.MalformedObjectNameException;
 import javax.net.ssl.SSLException;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -36,10 +37,8 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.process.ProcessStreamReader;
-import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -181,10 +180,6 @@ public class StartLocatorCommand extends OfflineGfshCommand {
               gemfireSecurityPropertiesFile.getAbsolutePath()));
     }
 
-    File locatorPidFile = new File(workingDirectory, ProcessType.LOCATOR.getPidFileName());
-
-    final int oldPid = StartMemberUtils.readPid(locatorPidFile);
-
     Properties gemfireProperties = new Properties();
 
     StartMemberUtils.setPropertyIfNotNull(gemfireProperties, ConfigurationProperties.GROUPS, group);
@@ -239,7 +234,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     ProcessStreamReader.InputListener inputListener = line -> {
       message.append(line);
       if (readingMode == ProcessStreamReader.ReadingMode.BLOCKING) {
-        message.append(StringUtils.LINE_SEPARATOR);
+        message.append(SystemUtils.getLineSeparator());
       }
     };
 
@@ -514,7 +509,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
       commandLine.add("--redirect-output");
     }
 
-    return commandLine.toArray(new String[commandLine.size()]);
+    return commandLine.toArray(new String[] {});
   }
 
   String getLocatorClasspath(final boolean includeSystemClasspath, final String userClasspath) {
@@ -528,7 +523,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
     }
 
     return StartMemberUtils.toClasspath(includeSystemClasspath,
-        jarFilePathnames.toArray(new String[jarFilePathnames.size()]), userClasspath);
+        jarFilePathnames.toArray(new String[] {}), userClasspath);
   }
 
   private String[] getExtensionsJars() {
@@ -537,7 +532,7 @@ public class StartLocatorCommand extends OfflineGfshCommand {
 
     if (extensionsJars != null) {
       // assume `extensions` directory does not contain any subdirectories. It only contains jars.
-      return Arrays.stream(extensionsJars).filter(file -> file.isFile()).map(
+      return Arrays.stream(extensionsJars).filter(File::isFile).map(
           file -> IOUtils.appendToPath(StartMemberUtils.GEODE_HOME, "extensions", file.getName()))
           .toArray(String[]::new);
     } else {
