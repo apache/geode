@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -74,8 +75,8 @@ public class ManagementControllerAdvice {
         HttpStatus.FORBIDDEN);
   }
 
-  @ExceptionHandler(IllegalArgumentException.class)
-  public ResponseEntity<ClusterManagementResult> badRequest(final IllegalArgumentException e) {
+  @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
+  public ResponseEntity<ClusterManagementResult> badRequest(final Exception e) {
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT,
             e.getMessage()),

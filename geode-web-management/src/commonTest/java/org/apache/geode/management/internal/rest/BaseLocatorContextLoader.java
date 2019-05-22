@@ -27,21 +27,18 @@ import org.apache.geode.internal.cache.HttpService;
  * ServletContext so that it can be retrieved and cleaned up in the LocatorCleanupEventListener.
  * There has to be a better way...
  */
-public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoader {
-
-  public abstract GeodeComponent getLocator();
+public abstract class BaseLocatorContextLoader extends GenericXmlWebContextLoader
+    implements GeodeComponent {
 
   @Override
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
       WebMergedContextConfiguration webMergedConfig) {
-
-    getLocator().start();
-
+    start();
     super.loadBeanDefinitions(context, webMergedConfig);
     context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-        getLocator().getSecurityService());
+        getSecurityService());
     context.getServletContext().setAttribute(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-        getLocator().getClusterManagementService());
-    context.getServletContext().setAttribute("locator", getLocator());
+        getClusterManagementService());
+    context.getServletContext().setAttribute("locator", this);
   }
 }

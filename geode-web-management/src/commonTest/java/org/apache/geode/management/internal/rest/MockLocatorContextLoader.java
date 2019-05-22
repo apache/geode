@@ -15,39 +15,43 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.mockito.Mockito.mock;
+
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
+import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 
-public class WrappedLocatorStarterRule implements GeodeComponent {
-  private final LocatorStarterRule rule;
+public class MockLocatorContextLoader extends BaseLocatorContextLoader {
+  private SecurityService securityService;
+  private LocatorClusterManagementService cms;
 
-  public WrappedLocatorStarterRule(LocatorStarterRule rule) {
-    this.rule = rule;
+  public MockLocatorContextLoader() {
+    securityService = mock(SecurityService.class);
+    cms = mock(LocatorClusterManagementService.class);
   }
 
   @Override
   public void start() {
-    rule.before();
+
   }
 
   @Override
   public void stop() {
-    rule.after();
+
   }
 
   @Override
   public int getPort() {
-    return rule.getPort();
+    return 0;
   }
 
   @Override
   public SecurityService getSecurityService() {
-    return rule.getLocator().getCache().getSecurityService();
+    return securityService;
   }
 
   @Override
   public ClusterManagementService getClusterManagementService() {
-    return rule.getLocator().getClusterManagementService();
+    return cms;
   }
 }
