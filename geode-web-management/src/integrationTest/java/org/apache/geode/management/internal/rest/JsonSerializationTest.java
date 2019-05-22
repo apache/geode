@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -81,7 +82,7 @@ public class JsonSerializationTest {
     when(cms.create(any())).thenReturn(new ClusterManagementResult());
     context.perform(post("/v2/regions").content(json))
         .andExpect(status().isCreated());
-    verify(cms).create(regionConfigCaptor.capture());
+    verify(cms, atLeastOnce()).create(regionConfigCaptor.capture());
     RegionConfig value = regionConfigCaptor.getValue();
     assertThat(value.getGroup()).isEqualTo("group1");
   }
