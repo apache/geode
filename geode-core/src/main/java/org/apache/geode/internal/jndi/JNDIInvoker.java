@@ -53,6 +53,7 @@ import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.DriverJarUtil;
 
 /**
  * <p>
@@ -353,12 +354,13 @@ public class JNDIInvoker {
     jndiName = (String) map.get("jndi-name");
     if (value.equals("PooledDataSource")) {
       validateAndBindDataSource(context, jndiName,
-          dataSourceFactory.getPooledDataSource(map, props));
+          dataSourceFactory.getPooledDataSource(map, props), props);
     } else if (value.equals("XAPooledDataSource")) {
       validateAndBindDataSource(context, jndiName,
-          dataSourceFactory.getTranxDataSource(map, props));
+          dataSourceFactory.getTranxDataSource(map, props), props);
     } else if (value.equals("SimpleDataSource")) {
-      validateAndBindDataSource(context, jndiName, dataSourceFactory.getSimpleDataSource(map));
+      validateAndBindDataSource(context, jndiName, dataSourceFactory.getSimpleDataSource(map),
+          props);
     } else if (value.equals("ManagedDataSource")) {
       ClientConnectionFactoryWrapper wrapper = dataSourceFactory.getManagedDataSource(map, props);
       ctx.rebind("java:/" + jndiName, wrapper.getClientConnFactory());
@@ -376,9 +378,11 @@ public class JNDIInvoker {
   }
 
   private static void validateAndBindDataSource(Context context, String jndiName,
-      DataSource dataSource) throws NamingException, DataSourceCreateException {
-    try (Connection connection = dataSource.getConnection()) {
-    } catch (SQLException sqlEx) {
+      DataSource dataSource, List<ConfigProperty> props)
+      throws NamingException, DataSourceCreateException {
+    try (Connection connection = getConnection(dataSource, props)) {
+    } catch (SQLException | ClassNotFoundException | InstantiationException
+        | IllegalAccessException sqlEx) {
       closeDataSource(dataSource);
       throw new DataSourceCreateException(
           "Failed to connect to \"" + jndiName + "\". See log for details", sqlEx);
@@ -388,6 +392,25 @@ public class JNDIInvoker {
     if (logger.isDebugEnabled()) {
       logger.debug("Bound java:/" + jndiName + " to Context");
     }
+  }
+
+  private static Connection getConnection(DataSource dataSource, List<ConfigProperty> props)
+      throws SQLException, ClassNotFoundException, InstantiationException,
+      IllegalAccessException {
+    String driverClassName = null;
+    if (props != null) {
+      for (ConfigProperty property : props) {
+        if (property.getName().equals("jdbc-driver-class")) {
+          driverClassName = property.getName();
+        }
+      }
+    }
+    DriverJarUtil util = new DriverJarUtil();
+
+    if (driverClassName != null) {
+      util.registerDriver(driverClassName);
+    }
+    return dataSource.getConnection();
   }
 
   public static void unMapDatasource(String jndiName) throws NamingException {

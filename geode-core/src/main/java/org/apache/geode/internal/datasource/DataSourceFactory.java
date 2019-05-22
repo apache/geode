@@ -89,7 +89,7 @@ public class DataSourceFactory {
   }
 
   /**
-   * This function creats a data dource from the ManagedConnectionFactory class using the
+   * This function creates a data source from the ManagedConnectionFactory class using the
    * connectionManager.
    *
    * @return javax.sql.DataSource
