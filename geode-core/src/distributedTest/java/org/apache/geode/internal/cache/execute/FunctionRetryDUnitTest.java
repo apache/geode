@@ -127,7 +127,6 @@ public class FunctionRetryDUnitTest implements Serializable {
        * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
        * | expectedCalls
        */
-      /*
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
@@ -136,7 +135,7 @@ public class FunctionRetryDUnitTest implements Serializable {
       "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 1",
       "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
       "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
-*/
+
       "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3", // 11
       "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
       "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3", // 3
@@ -173,14 +172,15 @@ public class FunctionRetryDUnitTest implements Serializable {
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 0 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 2 | 1",
-
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
       "NOT_HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1            | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | -1            | 3",
 
-      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | SERVER | STRING | -1 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1           | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | 0            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | 2            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | -1            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | 0            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | 2            | 3",
 
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 3", // Infinite
       "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 0 | 1",
@@ -192,10 +192,14 @@ public class FunctionRetryDUnitTest implements Serializable {
       "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 9", // Infinite
       "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 9", // Infinite
 
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 1", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 1", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 3" // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 0 | 1", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 2 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 9", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 9", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION | STRING | 0 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA | REGION | STRING | 2 | 9", // Infinite
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testAny(
