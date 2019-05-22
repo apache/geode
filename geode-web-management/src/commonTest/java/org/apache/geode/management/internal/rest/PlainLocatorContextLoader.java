@@ -21,24 +21,29 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
 
-  private final LocatorStarterRule locator = new LocatorStarterRule();
+  private final LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
+  @Override
   public void start() {
     locator.before();
   }
 
+  @Override
   public void stop() {
     locator.after();
   }
 
+  @Override
   public int getPort() {
     return locator.getPort();
   }
 
+  @Override
   public SecurityService getSecurityService() {
     return locator.getCache().getSecurityService();
   }
 
+  @Override
   public ClusterManagementService getClusterManagementService() {
     return locator.getLocator().getClusterManagementService();
   }

@@ -48,25 +48,29 @@ public class LocatorLauncherContextLoader extends BaseLocatorContextLoader {
     this.locator = builder.build();
   }
 
+  @Override
   public void start() {
     locator.start();
   }
 
+  @Override
   public void stop() {
     locator.stop();
     temp.delete();
   }
 
 
+  @Override
   public int getPort() {
     return locator.getPort();
   }
 
-
+  @Override
   public SecurityService getSecurityService() {
     return ((InternalLocator) locator.getLocator()).getCache().getSecurityService();
   }
 
+  @Override
   public ClusterManagementService getClusterManagementService() {
     return ((InternalLocator) locator.getLocator()).getClusterManagementService();
   }

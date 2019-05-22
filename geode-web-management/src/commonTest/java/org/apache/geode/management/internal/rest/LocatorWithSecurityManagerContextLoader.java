@@ -23,7 +23,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
 
   private final LocatorStarterRule locator =
-      new LocatorStarterRule().withSecurityManager(SimpleSecurityManager.class);
+      new LocatorStarterRule().withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
   public void start() {
     locator.before();
