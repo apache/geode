@@ -43,6 +43,10 @@ public class MemberConfig extends CacheElement implements RuntimeCacheElement, R
   private List<CacheServerConfig> cacheServers = new ArrayList<>();
   private long maxHeap;
   private long initialHeap;
+  private long usedHeap;
+  private String logFile;
+  private String workingDirectory;
+  private int clientConnections;
 
   public static class CacheServerConfig {
     private int port;
@@ -172,5 +176,37 @@ public class MemberConfig extends CacheElement implements RuntimeCacheElement, R
 
   public void setInitialHeap(long initialHeap) {
     this.initialHeap = initialHeap;
+  }
+
+  public long getUsedHeap() {
+    return usedHeap;
+  }
+
+  public void setUsedHeap(long usedHeap) {
+    this.usedHeap = usedHeap;
+  }
+
+  public String getLogFile() {
+    return logFile;
+  }
+
+  public void setLogFile(String logFile) {
+    this.logFile = logFile;
+  }
+
+  public String getWorkingDirectory() {
+    return workingDirectory;
+  }
+
+  public void setWorkingDirectory(String workingDirectory) {
+    this.workingDirectory = workingDirectory;
+  }
+
+  public int getClientConnections() {
+    return clientConnections;
+  }
+
+  public void setClientConnections(int clientConnections) {
+    this.clientConnections = clientConnections;
   }
 }
