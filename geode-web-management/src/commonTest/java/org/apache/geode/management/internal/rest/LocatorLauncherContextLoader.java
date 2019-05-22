@@ -15,23 +15,63 @@
 
 package org.apache.geode.management.internal.rest;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
+import org.junit.rules.TemporaryFolder;
+
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.api.ClusterManagementService;
 
 public class LocatorLauncherContextLoader extends BaseLocatorContextLoader {
 
-  private final GeodeComponent locator;
+  private final LocatorLauncher locator;
+
+  private final TemporaryFolder temp;
 
   public LocatorLauncherContextLoader() {
     LocatorLauncher.Builder builder = new LocatorLauncher.Builder()
         .setPort(0)
         .setMemberName("locator-0")
         .set(ConfigurationProperties.LOG_LEVEL, "config");
-    locator = new WrappedLocatorLauncher(builder);
+    temp = new TemporaryFolder();
+    try {
+      temp.create();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    builder.setWorkingDirectory(temp.getRoot().getAbsolutePath());
+    this.locator = builder.build();
   }
 
   @Override
-  public GeodeComponent getLocator() {
-    return locator;
+  public void start() {
+    locator.start();
+  }
+
+  @Override
+  public void stop() {
+    locator.stop();
+    temp.delete();
+  }
+
+
+  @Override
+  public int getPort() {
+    return locator.getPort();
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return ((InternalLocator) locator.getLocator()).getCache().getSecurityService();
+  }
+
+  @Override
+  public ClusterManagementService getClusterManagementService() {
+    return ((InternalLocator) locator.getLocator()).getClusterManagementService();
   }
 }
