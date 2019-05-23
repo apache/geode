@@ -29,8 +29,6 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.apache.logging.log4j.Logger;
-import org.awaitility.Awaitility;
-import org.awaitility.core.ConditionTimeoutException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -85,7 +83,15 @@ public class FunctionRetryDUnitTest implements Serializable {
   }
 
   private enum ExecutionTarget {
-    REGION, SERVER, REGION_WITH_FILTER_1_KEY /*SERVERS, MEMBER, MEMBERS, REGION_WITH_FILTER_2_KEYS*/
+    REGION,
+    REGION_WITH_FILTER_1_KEY,
+    REGION_WITH_FILTER_2_KEYS,
+    SERVER,
+    SERVERS,
+    SERVER_REGION_SERVICE,
+    SERVERS_REGION_SERVICE,
+    MEMBER,
+    MEMBERS
   }
 
   private enum FunctionIdentifierType {
@@ -108,7 +114,7 @@ public class FunctionRetryDUnitTest implements Serializable {
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100");
+    // System.setProperty(DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", "100");
     locator = clusterStartupRule.startLocatorVM(0);
     server1 = startServer(1);
     server2 = startServer(2);
@@ -124,8 +130,7 @@ public class FunctionRetryDUnitTest implements Serializable {
   // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
       /*
-       * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
-       * | expectedCalls
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
        */
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
@@ -147,10 +152,10 @@ public class FunctionRetryDUnitTest implements Serializable {
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testOnServer(final HAStatus haStatus,
-                           final ClientMetadataStatus clientMetadataStatus,
-                           final FunctionIdentifierType functionIdentifierType,
-                           final int retryAttempts,
-                           final int expectedCalls) throws Exception {
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
     testAny(haStatus,
         clientMetadataStatus,
         ExecutionTarget.SERVER,
@@ -160,48 +165,198 @@ public class FunctionRetryDUnitTest implements Serializable {
   }
 
   @Test
-  // TODO: redundancy 1
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
   @Parameters({
       /*
-       * haStatus | clientMetadataStatus | executionTarget | functionIdentifierType | retryAttempts
-       * | expectedCalls
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
        */
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 2 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 2 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 3",
-      "NOT_HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 3",
 
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | -1           | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | 0            | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | OBJECT_REFERENCE       | 2            | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | -1            | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | 0            | 3",
-      "NOT_HA | CLIENT_HAS_METADATA | REGION             | STRING       | 2            | 3",
-
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 3", // Infinite
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 0 | 1",
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 2 | 3",
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 3", // Infinite
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 0 | 1",
-      "HA | CLIENT_MISSING_METADATA | REGION_WITH_FILTER_1_KEY | STRING | 2 | 3",
-
-      "HA | CLIENT_MISSING_METADATA | REGION | OBJECT_REFERENCE | -1 | 9", // Infinite
-      "HA | CLIENT_MISSING_METADATA | REGION | STRING | -1 | 9", // Infinite
-
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | -1 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 0 | 1", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | OBJECT_REFERENCE | 2 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION_WITH_FILTER_1_KEY | STRING | -1 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | OBJECT_REFERENCE | -1 | 9", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | STRING | -1 | 9", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | STRING | 0 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA | REGION | STRING | 2 | 9", // Infinite
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
+      "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_HAS_METADATA | STRING | -1 | 3",
   })
   @TestCaseName("[{index}] {method}: {params}")
+  public void testOnServers(final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAny(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.SERVERS,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
+  }
+
+  @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
+  @Parameters({
+      /*
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
+       */
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
+
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3", // 11
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3", // 3
+      "HA | CLIENT_MISSING_METADATA | STRING | -1 | 3", // 7, 11
+      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | STRING | 2 | 3", // 3
+      "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3", // 9, 11
+      "HA | CLIENT_HAS_METADATA | STRING | -1 | 3", // 7, 9
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void testOnServerWithRegionService(final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAny(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.SERVER_REGION_SERVICE,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
+  }
+
+  @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
+  @Parameters({
+      /*
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
+       */
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
+
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
+      "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "HA | CLIENT_HAS_METADATA | STRING | -1 | 3",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void testOnServersWithRegionService(final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAny(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.SERVERS_REGION_SERVICE,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
+  }
+
+
+  @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
+  @Parameters({
+      /*
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
+       */
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+
+      "NOT_HA | CLIENT_HAS_METADATA             | OBJECT_REFERENCE       | -1           | 3",
+      "NOT_HA | CLIENT_HAS_METADATA             | OBJECT_REFERENCE       | 0            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA             | OBJECT_REFERENCE       | 2            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA             | STRING       | -1            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA             | STRING       | 0            | 3",
+      "NOT_HA | CLIENT_HAS_METADATA             | STRING       | 2            | 3",
+
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 9", // Infinite
+      "HA | CLIENT_MISSING_METADATA | STRING | -1 | 9", // Infinite
+
+      "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 9", // Infinite
+      "HA | CLIENT_HAS_METADATA | STRING | -1 | 9", // Infinite
+      "HA | CLIENT_HAS_METADATA | STRING | 0 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA | STRING | 2 | 9", // Infinite
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void testOnRegion(final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAny(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.REGION,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
+  }
+
+
+  @Test
+  // TODO: 2 keys matching filter; redundancy 1; 2 retry attempts
+  @Parameters({
+      /*
+       * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
+       */
+      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 2 | 1",
+      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
+      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 3",
+      "HA | CLIENT_MISSING_METADATA  | STRING | -1 | 3", // Infinite
+      "HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA  | STRING | 2 | 3",
+
+      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 0 | 1", // Infinite
+      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 2 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA  | STRING | -1 | 3", // Infinite
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void testOnRegionWithSingleKeyFilter(final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectedCalls) throws Exception {
+    testAny(haStatus,
+        clientMetadataStatus,
+        ExecutionTarget.REGION_WITH_FILTER_1_KEY,
+        functionIdentifierType,
+        retryAttempts,
+        expectedCalls);
+  }
+
+
   public void testAny(
       final HAStatus haStatus,
       final ClientMetadataStatus clientMetadataStatus,
@@ -268,27 +423,7 @@ public class FunctionRetryDUnitTest implements Serializable {
 
       assertThat(executionTarget).isNotNull();
 
-      final Execution<Integer, Long, List<Long>> execution;
-
-      switch (executionTarget) {
-        case REGION:
-          execution =
-              FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
-                  .setArguments(200);
-          break;
-        case REGION_WITH_FILTER_1_KEY:
-          final HashSet<String> filter = new HashSet<String>(Arrays.asList("k0"));
-          execution =
-              FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
-                  .setArguments(200).withFilter(filter);
-          break;
-        case SERVER:
-          execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
-              .setArguments(200);
-          break;
-        default:
-          throw new TestException("unknown ExecutionTarget: " + executionTarget);
-      }
+      final Execution<Integer, Long, List<Long>> execution = getExecutionTarget(executionTarget);
 
       ResultCollector<Long, List<Long>> resultCollector = null;
 
@@ -308,7 +443,8 @@ public class FunctionRetryDUnitTest implements Serializable {
         logger.info("#### Got FunctionException ", e);
         assertThat(e.getCause()).isInstanceOf(ServerConnectivityException.class);
       } catch (ServerConnectivityException sce) {
-        assertThat(executionTarget).isSameAs(ExecutionTarget.SERVER);
+        assertThat(executionTarget).isInstanceOfAny(ExecutionTarget.SERVER.getClass(),
+            ExecutionTarget.SERVERS.getClass());
       }
 
       if (resultCollector != null) {
@@ -323,6 +459,49 @@ public class FunctionRetryDUnitTest implements Serializable {
     System.out.println("#### Number of functions executed on all servers :"
         + getNumberOfFunctionCalls(function.getId()));
     assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls);
+
+    clientExecuteAsync.join();
+  }
+
+  private Execution getExecutionTarget(ExecutionTarget executionTarget) {
+    assertThat(executionTarget).isNotNull();
+
+    final Execution<Integer, Long, List<Long>> execution;
+
+    switch (executionTarget) {
+      case REGION:
+        execution =
+            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+                .setArguments(200);
+        break;
+      case REGION_WITH_FILTER_1_KEY:
+        final HashSet<String> filter = new HashSet<String>(Arrays.asList("k0"));
+        execution =
+            FunctionService.onRegion(clusterStartupRule.getClientCache().getRegion(regionName))
+                .setArguments(200).withFilter(filter);
+        break;
+      case SERVER:
+        execution = FunctionService.onServer(clusterStartupRule.getClientCache().getDefaultPool())
+            .setArguments(200);
+        break;
+      case SERVER_REGION_SERVICE:
+        execution = FunctionService
+            .onServer(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .setArguments(200);
+        break;
+      case SERVERS:
+        execution = FunctionService.onServers(clusterStartupRule.getClientCache().getDefaultPool())
+            .setArguments(200);
+        break;
+      case SERVERS_REGION_SERVICE:
+        execution = FunctionService
+            .onServer(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .setArguments(200);
+        break;
+      default:
+        throw new TestException("unknown ExecutionTarget: " + executionTarget);
+    }
+    return execution;
   }
 
   private void registerFunctionIfNeeded(
@@ -356,9 +535,11 @@ public class FunctionRetryDUnitTest implements Serializable {
         try {
           GeodeAwaitility.await("Awaiting functionStats.getFunctionExecutionsRunning().isZero()")
               .atMost(30 * 4, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertThat(functionStats.getFunctionExecutionsRunning()).isZero());
+              .untilAsserted(
+                  () -> assertThat(functionStats.getFunctionExecutionsRunning()).isZero());
         } catch (final Exception e) {
-          logger.info("#### numExecutions after timeout: " + functionStats.getFunctionExecutionCalls());
+          logger.info(
+              "#### numExecutions after timeout: " + functionStats.getFunctionExecutionCalls());
           throw e;
         }
 

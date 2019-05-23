@@ -27,7 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.execute.Function;
@@ -62,18 +61,19 @@ public class ExecuteRegionFunctionSingleHopOp {
   private ExecuteRegionFunctionSingleHopOp() {}
 
   public static void execute(final ExecutablePool pool,
-                             final Region region,
-                             final ServerRegionFunctionExecutor serverRegionExecutor,
-                             final ResultCollector resultCollector,
-                             final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
-                             final int mRetryAttempts,
-                             final boolean isHA,
-                             final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> singleHopExecuteOpFactory,
-                             final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl> reExecuteOpFactory,
-                             final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier) {
+      final Region region,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector,
+      final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      final int mRetryAttempts,
+      final boolean isHA,
+      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> singleHopExecuteOpFactory,
+      final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl> reExecuteOpFactory,
+      final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier) {
 
     final Set<String> failedNodes = new HashSet<String>();
-    final ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
+    final ClientMetadataService cms =
+        ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -101,7 +101,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         ExecuteRegionFunctionOp.execute(
             pool,
             resultCollector,
-            failedNodes,  // don't try again on nodes we know have already failed
+            failedNodes, // don't try again on nodes we know have already failed
             mRetryAttempts,
             true,
             multiHopExecuteOpSupplier.get(),

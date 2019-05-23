@@ -267,7 +267,6 @@ public class ConnectionImpl implements Connection {
 
   @Override
   public Object execute(Op op) throws Exception {
-    logger.info("#### ConnectionImpl.execute: " + op);
     Object result;
     // Do not synchronize when used for GatewaySender
     // as the same connection is being used

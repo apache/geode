@@ -18,11 +18,9 @@ package org.apache.geode.cache.client.internal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.IntSupplier;
-import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -75,28 +73,29 @@ public class ExecuteRegionFunctionOp {
       final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl> reExecuteOpFactory,
       final int iterationArg) {
 
-    int                         iteration   = iterationArg;
-    boolean                     done        = false;
+    int iteration = iterationArg;
+    boolean done = false;
 
     /*
-     If maxRetriesArg is set to the default then we should try on all servers once, i.e. retry N-1.
-     We strive to defer calculation of number of servers until function is re-executed
-     since the calculation involves messaging a locator which is expensive.
-     This AtomicInteger and its the associated IntSupplier are a tiny (single-entry) cache
-     that aids in deferring (and remembering) that computation.
+     * If maxRetriesArg is set to the default then we should try on all servers once, i.e. retry
+     * N-1.
+     * We strive to defer calculation of number of servers until function is re-executed
+     * since the calculation involves messaging a locator which is expensive.
+     * This AtomicInteger and its the associated IntSupplier are a tiny (single-entry) cache
+     * that aids in deferring (and remembering) that computation.
      */
-    final AtomicInteger         computedMaxRetries = new AtomicInteger(maxRetriesArg);
+    final AtomicInteger computedMaxRetries = new AtomicInteger(maxRetriesArg);
     /*
-     Be careful: don't invoke this supplier on the hot path (zeroth iteration)
+     * Be careful: don't invoke this supplier on the hot path (zeroth iteration)
      */
-    final IntSupplier           cachedMaxRetries = () -> {
+    final IntSupplier cachedMaxRetries = () -> {
       if (computedMaxRetries.get() == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
         computedMaxRetries.set(((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1);
       }
       return computedMaxRetries.get();
     };
 
-    ExecuteRegionFunctionOpImpl op          = executeOp;
+    ExecuteRegionFunctionOpImpl op = executeOp;
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
 

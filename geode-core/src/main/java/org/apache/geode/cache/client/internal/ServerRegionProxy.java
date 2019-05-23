@@ -33,9 +33,9 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ContainsKeyOp.MODE;
-import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
+import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.ClientServerObserver;
 import org.apache.geode.internal.cache.ClientServerObserverHolder;
@@ -692,8 +692,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     final boolean optimizeForWrite = function.optimizeForWrite();
     final boolean isHA = function.isHA();
 
-    final Supplier<ExecuteRegionFunctionOpImpl>
-        multiHopExecuteOpSupplier =
+    final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier =
         () -> new ExecuteRegionFunctionOpImpl(
             rgnName,
             function,
@@ -702,10 +701,9 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             hasResult,
             new HashSet<>());
 
-    Function<Boolean, Function<ServerRegionFunctionExecutor,AbstractOp>>
-        singleHopExecuteOpFactoryFactory =
-        (allBuckets) -> (final ServerRegionFunctionExecutor executor) ->
-            new ExecuteRegionFunctionSingleHopOpImpl(
+    Function<Boolean, Function<ServerRegionFunctionExecutor, AbstractOp>> singleHopExecuteOpFactoryFactory =
+        (allBuckets) -> (
+            final ServerRegionFunctionExecutor executor) -> new ExecuteRegionFunctionSingleHopOpImpl(
                 region.getFullPath(),
                 function,
                 executor,
@@ -737,8 +735,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         serverRegionExecutor, resultCollector, Byte.valueOf(hasResult), Boolean.valueOf(isHA),
         Boolean.valueOf(optimizeForWrite));
 
-    final Supplier<ExecuteRegionFunctionOpImpl>
-        multiHopExecuteOpSupplier =
+    final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier =
         () -> new ExecuteRegionFunctionOpImpl(
             rgnName,
             functionId,
@@ -750,17 +747,15 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             optimizeForWrite,
             true);
 
-    final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl>
-        reExecuteOpFactory =
+    final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl> reExecuteOpFactory =
         (previousOp, failedNodes) -> new ExecuteRegionFunctionOpImpl(
             previousOp,
             (byte) 1 /* isReExecute */,
             failedNodes);
 
-    Function<Boolean, Function<ServerRegionFunctionExecutor,AbstractOp>>
-        singleHopExecuteOpFactoryFactory =
-        (allBuckets) -> (final ServerRegionFunctionExecutor executor) ->
-            new ExecuteRegionFunctionSingleHopOpImpl(
+    Function<Boolean, Function<ServerRegionFunctionExecutor, AbstractOp>> singleHopExecuteOpFactoryFactory =
+        (allBuckets) -> (
+            final ServerRegionFunctionExecutor executor) -> new ExecuteRegionFunctionSingleHopOpImpl(
                 region.getFullPath(),
                 functionId,
                 executor,
@@ -830,18 +825,17 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   }
 
   private void doExecuteFunction(final ServerRegionFunctionExecutor serverRegionExecutor,
-                                 final ResultCollector resultCollector,
-                                 final boolean optimizeForWrite,
-                                 final boolean isHA,
-                                 final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier,
-                                 final Function<Boolean, Function<ServerRegionFunctionExecutor, AbstractOp>> singleHopExecuteOpFactoryFactory) {
+      final ResultCollector resultCollector,
+      final boolean optimizeForWrite,
+      final boolean isHA,
+      final Supplier<ExecuteRegionFunctionOpImpl> multiHopExecuteOpSupplier,
+      final Function<Boolean, Function<ServerRegionFunctionExecutor, AbstractOp>> singleHopExecuteOpFactoryFactory) {
 
     final int retryAttempts = pool.getRetryAttempts();
 
     final boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
-    final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl>
-        reExecuteOpFactory =
+    final BiFunction<ExecuteRegionFunctionOpImpl, Set<String>, ExecuteRegionFunctionOpImpl> reExecuteOpFactory =
         (previousOp, failedNodes) -> new ExecuteRegionFunctionOpImpl(
             previousOp,
             (byte) 1 /* isReExecute */,
