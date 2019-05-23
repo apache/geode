@@ -105,7 +105,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       validator.validate(CacheElementOperation.CREATE, config);
       // exit early if config element already exists in cache config
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      if (CacheElement.exists(currentPersistedConfig.getRegions(), config.getId())) {
+      if (validator.exists(config.getId(), currentPersistedConfig)) {
         throw new EntityExistsException("Cache element '" + config.getId() + "' already exists");
       }
     }
@@ -141,7 +141,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       try {
         configurationManager.add(config, cacheConfigForGroup);
         result.setStatus(true,
-            "Successfully added config for " + finalGroup);
+            "Successfully updated config for " + finalGroup);
       } catch (Exception e) {
         String message = "Failed to update cluster config for " + finalGroup;
         logger.error(message, e);
@@ -166,10 +166,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // first validate common attributes of all configuration object
     validators.get(CacheElement.class).validate(CacheElementOperation.DELETE, config);
 
+    ConfigurationValidator validator = validators.get(config.getClass());
+    validator.validate(CacheElementOperation.DELETE, config);
+
     List<String> relevantGroups = persistenceService.getGroups().stream().filter(g -> {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(g);
-      if (currentPersistedConfig != null) {
-        return CacheElement.exists(currentPersistedConfig.getRegions(), config.getId());
+      if (currentPersistedConfig != null && validator != null) {
+        return validator.exists(config.getId(), currentPersistedConfig);
       } else {
         return false;
       }

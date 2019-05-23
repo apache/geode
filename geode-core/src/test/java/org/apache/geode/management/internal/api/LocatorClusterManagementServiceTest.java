@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -78,6 +79,7 @@ public class LocatorClusterManagementServiceTest {
   @Before
   public void before() throws Exception {
     regionValidator = mock(RegionConfigValidator.class);
+    doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(RegionConfigManager.class);
     cacheElementValidator = spy(CacheElementValidator.class);
     validators.put(RegionConfig.class, regionValidator);
@@ -201,12 +203,22 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void delete_unknownRegion() {
+  public void delete_unknownRegionFails() {
     RegionConfig config = new RegionConfig();
     config.setName("unknown");
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(EntityNotFoundException.class)
         .hasMessage("Cache element 'unknown' does not exist");
+  }
+
+  @Test
+  public void delete_usingGroupFails() {
+    RegionConfig config = new RegionConfig();
+    config.setName("test");
+    config.setGroup("group1");
+    assertThatThrownBy(() -> service.delete(config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Group is invalid option when deleting a region");
   }
 
   @Test
@@ -223,6 +235,7 @@ public class LocatorClusterManagementServiceTest {
     regionConfig.setName("test");
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
+    when(regionValidator.exists(eq("test"), any())).thenReturn(true);
 
     result = service.delete(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
@@ -249,6 +262,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(null).when(persistenceService).getConfiguration(any());
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
+    when(regionValidator.exists(eq("test"), any())).thenReturn(true);
 
     result = service.delete(regionConfig);
     assertThat(result.isSuccessful()).isTrue();

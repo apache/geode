@@ -16,6 +16,10 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
@@ -81,7 +85,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   }
 
   private void validateDelete(RegionConfig config) {
-    if (config.getGroup() != null) {
+    if (StringUtils.isNotBlank(config.getGroup())) {
       throw new IllegalArgumentException("Group is invalid option when deleting a region");
     }
   }
@@ -292,4 +296,8 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     }
   }
 
+  @Override
+  public boolean exists(String id, CacheConfig existing) {
+    return CacheElement.exists(existing.getRegions(), id);
+  }
 }

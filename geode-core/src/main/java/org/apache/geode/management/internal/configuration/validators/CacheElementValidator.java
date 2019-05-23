@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -35,5 +36,10 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
       throw new IllegalArgumentException(
           "'cluster' is a reserved group name. Do not use it for member groups.");
     }
+  }
+
+  @Override
+  public boolean exists(String id, CacheConfig persistedConfig) {
+    return false;
   }
 }

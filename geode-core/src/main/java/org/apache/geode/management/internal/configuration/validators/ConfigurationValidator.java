@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -33,4 +34,10 @@ public interface ConfigurationValidator<T extends CacheElement> {
    */
   void validate(CacheElementOperation operation, T config) throws IllegalArgumentException;
 
+  /**
+   * check to see if this configuration already exists
+   *
+   * @return true if this config already exists in the persisted cache configuration
+   */
+  boolean exists(String id, CacheConfig persistedConfig);
 }
