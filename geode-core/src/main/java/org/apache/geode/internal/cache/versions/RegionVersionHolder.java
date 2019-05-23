@@ -63,6 +63,8 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   private List<RVVException> exceptions;
   boolean isDepartedMember;
 
+  private transient boolean regionSynchronizeScheduledOrDone;
+
   // non final for tests
   @MutableForTesting
   public static int BIT_SET_WIDTH = 64 * 16; // should be a multiple of 4 64-bit longs
@@ -140,8 +142,6 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     return getExceptions().toString();
   }
 
-
-  /* test only method */
   public void setVersion(long ver) {
     this.version = ver;
   }
@@ -383,7 +383,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /**
    * Add an exception that is older than this.bitSetVersion.
    */
-  protected synchronized void addException(long previousVersion, long nextVersion) {
+  synchronized void addException(long previousVersion, long nextVersion) {
     if (this.exceptions == null) {
       this.exceptions = new LinkedList<RVVException>();
     }
@@ -791,4 +791,19 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     return canon;
   }
 
+  private synchronized boolean isRegionSynchronizeScheduledOrDone() {
+    return regionSynchronizeScheduledOrDone;
+  }
+
+  public synchronized void setRegionSynchronizeScheduled() {
+    regionSynchronizeScheduledOrDone = true;
+  }
+
+  public synchronized boolean setRegionSynchronizeScheduledOrDoneIfNot() {
+    if (!isRegionSynchronizeScheduledOrDone()) {
+      regionSynchronizeScheduledOrDone = true;
+      return true;
+    }
+    return false;
+  }
 }

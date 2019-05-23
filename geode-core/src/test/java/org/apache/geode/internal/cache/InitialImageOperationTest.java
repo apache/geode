@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,6 +28,8 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.versions.VersionSource;
 
 public class InitialImageOperationTest {
 
@@ -34,6 +37,10 @@ public class InitialImageOperationTest {
   private String path;
   private LocalRegion region;
   private InternalCache cache;
+  private InitialImageOperation.RequestImageMessage message;
+  private DistributedRegion distributedRegion;
+  private InternalDistributedMember lostMember;
+  private VersionSource versionSource;
 
   @Before
   public void setUp() {
@@ -42,6 +49,10 @@ public class InitialImageOperationTest {
     cache = mock(InternalCache.class);
     dm = mock(ClusterDistributionManager.class);
     region = mock(LocalRegion.class);
+    message = spy(new InitialImageOperation.RequestImageMessage());
+    distributedRegion = mock(DistributedRegion.class);
+    lostMember = mock(InternalDistributedMember.class);
+    versionSource = mock(VersionSource.class);
 
     when(dm.getExistingCache()).thenReturn(cache);
     when(cache.getRegion(path)).thenReturn(region);
@@ -57,13 +68,30 @@ public class InitialImageOperationTest {
 
   @Test
   public void processRequestImageMessageWillSendFailureMessageIfGotCancelException() {
-    InitialImageOperation.RequestImageMessage message =
-        spy(new InitialImageOperation.RequestImageMessage());
     message.regionPath = "regionPath";
     when(dm.getExistingCache()).thenThrow(new CacheClosedException());
 
     message.process(dm);
 
     verify(message).sendFailureMessage(eq(dm), eq(null));
+  }
+
+  @Test
+  public void synchronizeForLostMemberIsInvokedIfRegionHasNotScheduledOrDoneSynchronization() {
+    when(distributedRegion.setRegionSynchronizedWithIfNotScheduled(versionSource)).thenReturn(true);
+
+    message.synchronizeIfNotScheduled(distributedRegion, lostMember, versionSource);
+
+    verify(distributedRegion).synchronizeForLostMember(lostMember, versionSource);
+  }
+
+  @Test
+  public void synchronizeForLostMemberIsNotInvokedIfRegionHasScheduledOrDoneSynchronization() {
+    when(distributedRegion.setRegionSynchronizedWithIfNotScheduled(versionSource))
+        .thenReturn(false);
+
+    message.synchronizeIfNotScheduled(distributedRegion, lostMember, versionSource);
+
+    verify(distributedRegion, never()).synchronizeForLostMember(lostMember, versionSource);
   }
 }

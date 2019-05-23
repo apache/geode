@@ -117,6 +117,7 @@ import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersion
 import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1296,6 +1297,24 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       InternalDistributedMember lostMember) {
     InitialImageOperation op = new InitialImageOperation(this, entries);
     op.synchronizeWith(target, versionMember, lostMember);
+  }
+
+
+  public void setRegionSynchronizeScheduled(VersionSource lostMemberVersionID) {
+    RegionVersionHolder regionVersionHolder =
+        getVersionVector().getHolderForMember(lostMemberVersionID);
+    if (regionVersionHolder != null) {
+      regionVersionHolder.setRegionSynchronizeScheduled();
+    }
+  }
+
+  public boolean setRegionSynchronizedWithIfNotScheduled(VersionSource lostMemberVersionID) {
+    RegionVersionHolder regionVersionHolder =
+        getVersionVector().getHolderForMember(lostMemberVersionID);
+    if (regionVersionHolder != null) {
+      return regionVersionHolder.setRegionSynchronizeScheduledOrDoneIfNot();
+    }
+    return false;
   }
 
   /** remove any partial entries received in a failed GII */

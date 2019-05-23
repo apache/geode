@@ -808,7 +808,6 @@ public class InitialImageOperation {
   boolean processChunk(List entries, InternalDistributedMember sender, Version remoteVersion)
       throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
-    final boolean isTraceEnabled = logger.isTraceEnabled();
 
     // one volatile read of test flag
     int slow = slowImageProcessing;
@@ -896,8 +895,8 @@ public class InitialImageOperation {
         if (diskRegion != null) {
           // verify if entry from GII is the same as the one from recovery
           RegionEntry regionEntry = this.entries.getEntry(entry.key);
-          if (isTraceEnabled) {
-            logger.trace("processChunk:entry={},tag={},re={}", entry, tag, regionEntry);
+          if (isDebugEnabled) {
+            logger.debug("processChunk:entry={},tag={},re={}", entry, tag, regionEntry);
           }
           // re will be null if the gii chunk gives us a create
           if (regionEntry != null) {
@@ -974,8 +973,8 @@ public class InitialImageOperation {
             if (tag != null) {
               tag.replaceNullIDs(sender);
             }
-            if (isTraceEnabled) {
-              logger.trace(
+            if (isDebugEnabled) {
+              logger.debug(
                   "processChunk:initialImagePut:key={},lastModified={},tmpValue={},wasRecovered={},tag={}",
                   entry.key, lastModified, tmpValue, wasRecovered, tag);
             }
@@ -1619,12 +1618,15 @@ public class InitialImageOperation {
       final boolean lclAbortTest = abortTest;
       if (lclAbortTest)
         abortTest = false;
-
+      DistributedRegion targetRegion = null;
       boolean sendFailureMessage = true;
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
         final DistributedRegion rgn =
             (DistributedRegion) getGIIRegion(dm, this.regionPath, this.targetReinitialized);
+        if (lostMemberID != null) {
+          targetRegion = rgn;
+        }
         if (rgn == null) {
           return;
         }
@@ -1878,6 +1880,16 @@ public class InitialImageOperation {
           sendFailureMessage(dm, rex);
         } // !success
 
+        if (lostMemberID != null && targetRegion != null) {
+          if (lostMemberVersionID == null) {
+            lostMemberVersionID = lostMemberID;
+          }
+          // check to see if the region in this cache needs to synchronize with others
+          // it is possible that the cache is recover/restart of a member and not
+          // scheduled to synchronize with others
+          synchronizeIfNotScheduled(targetRegion, lostMemberID, lostMemberVersionID);
+        }
+
         if (internalAfterSentImageReply != null
             && regionPath.endsWith(internalAfterSentImageReply.getRegionName())) {
           internalAfterSentImageReply.run();
@@ -1891,6 +1903,15 @@ public class InitialImageOperation {
           null, null);
     }
 
+    void synchronizeIfNotScheduled(DistributedRegion region,
+        InternalDistributedMember lostMember, VersionSource lostVersionSource) {
+      if (region.setRegionSynchronizedWithIfNotScheduled(lostVersionSource)) {
+        // if region synchronization has not been scheduled or performed,
+        // we do synchronization with others right away as we received the synchronization request
+        // indicating timed task has been triggered on other nodes
+        region.synchronizeForLostMember(lostMember, lostVersionSource);
+      }
+    }
 
     /**
      * Serialize the entries into byte[] chunks, calling proc for each one. proc args: the byte[]
