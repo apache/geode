@@ -431,7 +431,7 @@ public class ConnectCommand extends OfflineGfshCommand {
   }
 
   private ResultModel handleException(Exception e) {
-    return handleException(e, e.getMessage());
+    return handleException(e, e.toString());
   }
 
   private ResultModel handleException(Exception e, String errorMessage) {
@@ -444,7 +444,7 @@ public class ConnectCommand extends OfflineGfshCommand {
       return handleException(e);
     }
     return handleException(e, CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
-        hostPortToConnect.toString(false), e.getMessage()));
+        hostPortToConnect.toString(false), e.toString()));
   }
 
   private static Properties loadPropertiesFromFile(File propertyFile) {

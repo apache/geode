@@ -50,4 +50,11 @@ public class ConnectCommandAcceptanceTest {
     assertThat(connect.getOutputText()).contains("Cannot use a")
         .contains("gfsh client to connect to this cluster.");
   }
+
+  @Test
+  public void invalidHostname() throws Exception {
+    GfshExecution connect = GfshScript.of("connect --locator=l192.168.99.1[52326]").expectFailure()
+        .execute(gfshDefault);
+    assertThat(connect.getOutputText()).contains("UnknownHostException");
+  }
 }
