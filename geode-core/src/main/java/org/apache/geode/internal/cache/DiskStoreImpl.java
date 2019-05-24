@@ -2309,10 +2309,6 @@ public class DiskStoreImpl implements DiskStore {
         currentAsyncValueRecoveryMap.notifyAll();
       }
 
-      // don't block the shutdown hook
-      if (Thread.currentThread() != InternalDistributedSystem.shutdownHook) {
-        waitForBackgroundTasks();
-      }
       try {
         overflowOplogs.closeOverflow();
       } catch (RuntimeException e) {
@@ -2338,6 +2334,34 @@ public class DiskStoreImpl implements DiskStore {
 
         getDiskInitFile().close();
       }
+
+      this.diskStoreTaskPool.shutdown();
+      this.delayedWritePool.shutdown();
+
+      final int secToWait = 60;
+      try {
+        this.diskStoreTaskPool.awaitTermination(secToWait, TimeUnit.SECONDS);
+      } catch (InterruptedException x) {
+        Thread.currentThread().interrupt();
+        logger.debug("Failed in interrupting the DiskStoreTask Thread due to interrupt");
+      }
+      try {
+        this.delayedWritePool.awaitTermination(secToWait, TimeUnit.SECONDS);
+      } catch (InterruptedException x) {
+        Thread.currentThread().interrupt();
+        logger.debug("Failed in interrupting the DelayedWrite Thread due to interrupt");
+      }
+      if (!this.diskStoreTaskPool.isTerminated()) {
+        logger.warn("Failed to stop DiskStoreTask threads in {} seconds", secToWait);
+      }
+      if (!this.delayedWritePool.isTerminated()) {
+        logger.warn("Failed to stop DelayedWrite threads in {} seconds", secToWait);
+      }
+      // don't block the shutdown hook
+      if (Thread.currentThread() != InternalDistributedSystem.shutdownHook) {
+        waitForBackgroundTasks();
+      }
+
       try {
         statsClose();
       } catch (RuntimeException e) {
@@ -4387,6 +4411,10 @@ public class DiskStoreImpl implements DiskStore {
 
   private Future<?> executeTask(final Runnable runnable, ExecutorService executor) {
     // schedule another thread to do it
+    if (executor.isShutdown()) {
+      logger.warn("Submitting task to shutdown pool");
+      return null;
+    }
     incBackgroundTasks();
     Future<?> result = executeDiskStoreTask(new DiskStoreTask() {
       @Override
