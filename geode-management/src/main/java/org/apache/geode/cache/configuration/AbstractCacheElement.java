@@ -15,28 +15,48 @@
  * limitations under the License.
  */
 
-package org.apache.geode.management.internal.configuration.mutators;
+package org.apache.geode.cache.configuration;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 
-/**
- * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
- * locator
- * {@link org.apache.geode.distributed.ConfigurationPersistenceService}. Created with an object of
- * type {@link CacheElement}, which represents the configuration change.
- */
 @Experimental
-public interface ConfigurationManager<T extends CacheElement> {
-  void add(T config, CacheConfig existing);
+public abstract class AbstractCacheElement implements CacheElement {
+  protected List<String> groups = new ArrayList<>();
 
-  void update(T config, CacheConfig existing);
+  /**
+   * this returns a non-null value
+   * for cluster level element, it will return "cluster" for sure.
+   */
+  public String getConfigGroup() {
+    String group = getGroup();
+    if (StringUtils.isBlank(group)) {
+      return "cluster";
+    }
+    return group;
+  }
 
-  void delete(T config, CacheConfig existing);
+  /**
+   * this returns the first group set by the user
+   * if no group is set, this returns null
+   */
+  public String getGroup() {
+    if (groups.size() == 0) {
+      return null;
+    }
+    return groups.get(0);
+  }
 
-  List<? extends RuntimeCacheElement> list(T filterConfig, CacheConfig existing);
+  public void setGroup(String group) {
+    groups.clear();
+
+    if (StringUtils.isBlank(group)) {
+      return;
+    }
+    groups.add(group);
+  }
 }

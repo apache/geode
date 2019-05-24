@@ -21,11 +21,12 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.AbstractCacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RuntimeCacheElement, RestfulEndpoint {
+public class MemberConfig extends AbstractCacheElement
+    implements RuntimeCacheElement, RestfulEndpoint {
 
   private static final long serialVersionUID = -6262538068604902018L;
 
