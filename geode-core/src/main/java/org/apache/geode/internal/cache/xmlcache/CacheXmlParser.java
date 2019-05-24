@@ -18,6 +18,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EmptyStackException;
@@ -3036,7 +3037,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         Map map = bc.getGFSpecificMap();
         try {
           JNDIInvoker.mapDatasource(map, bc.getVendorSpecificList());
-        } catch (NamingException | DataSourceCreateException ex) {
+        } catch (NamingException | DataSourceCreateException | ClassNotFoundException | SQLException | InstantiationException | IllegalAccessException ex) {
           if (logger.isWarnEnabled()) {
             logger.warn("jndi-binding creation of {} failed with: {}", map.get("jndi-name"), ex);
           }

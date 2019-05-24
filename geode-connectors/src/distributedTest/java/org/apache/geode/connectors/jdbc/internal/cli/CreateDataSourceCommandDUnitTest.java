@@ -136,7 +136,7 @@ public class CreateDataSourceCommandDUnitTest {
         "Failed to connect to \"mySqlDataSource\"");
 
     gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
             + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
         .statusIsError().doesNotContainOutput("No suitable driver");
 

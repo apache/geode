@@ -190,6 +190,9 @@ public class DataSourceFactory {
         if (entry.getKey().equals("type")) {
           continue;
         }
+        if (entry.getKey().equals("jdbc-driver-class")) {
+          continue;
+        }
         if (entry.getKey().equals("jndi-name")) {
           continue;
         }

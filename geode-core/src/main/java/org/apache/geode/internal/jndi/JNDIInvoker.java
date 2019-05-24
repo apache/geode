@@ -342,13 +342,22 @@ public class JNDIInvoker {
    * @param map contains Datasource configuration properties.
    */
   public static void mapDatasource(Map map, List<ConfigProperty> props)
-      throws NamingException, DataSourceCreateException {
+          throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
     mapDatasource(map, props, dataSourceFactory, ctx);
   }
 
   static void mapDatasource(Map map, List<ConfigProperty> props,
       DataSourceFactory dataSourceFactory, Context context)
-      throws NamingException, DataSourceCreateException {
+          throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    String driverClassName = null;
+    if (map != null) {
+      driverClassName = (String) map.get("jdbc-driver-class");
+      DriverJarUtil util = new DriverJarUtil();
+      if (driverClassName != null) {
+        util.registerDriver(driverClassName);
+      }
+    }
+
     String value = (String) map.get("type");
     String jndiName = "";
     jndiName = (String) map.get("jndi-name");
@@ -381,8 +390,7 @@ public class JNDIInvoker {
       DataSource dataSource, List<ConfigProperty> props)
       throws NamingException, DataSourceCreateException {
     try (Connection connection = getConnection(dataSource, props)) {
-    } catch (SQLException | ClassNotFoundException | InstantiationException
-        | IllegalAccessException sqlEx) {
+    } catch (SQLException sqlEx) {
       closeDataSource(dataSource);
       throw new DataSourceCreateException(
           "Failed to connect to \"" + jndiName + "\". See log for details", sqlEx);
@@ -395,21 +403,7 @@ public class JNDIInvoker {
   }
 
   private static Connection getConnection(DataSource dataSource, List<ConfigProperty> props)
-      throws SQLException, ClassNotFoundException, InstantiationException,
-      IllegalAccessException {
-    String driverClassName = null;
-    if (props != null) {
-      for (ConfigProperty property : props) {
-        if (property.getName().equals("jdbc-driver-class")) {
-          driverClassName = property.getName();
-        }
-      }
-    }
-    DriverJarUtil util = new DriverJarUtil();
-
-    if (driverClassName != null) {
-      util.registerDriver(driverClassName);
-    }
+      throws SQLException {
     return dataSource.getConnection();
   }
 
