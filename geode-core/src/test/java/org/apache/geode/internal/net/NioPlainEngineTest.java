@@ -56,7 +56,6 @@ public class NioPlainEngineTest {
   }
 
   @Test
-  @Ignore("Pending fix of GEODE-6733 to remove static from Buffers implementation")
   public void ensureWrappedCapacity() {
     ByteBuffer wrappedBuffer = bufferPool.acquireReceiveBuffer(100);
     verify(mockStats, times(1)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
