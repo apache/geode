@@ -109,6 +109,8 @@ public class CreateDataSourceCommandDUnitTest {
         "No suitable driver");
     IgnoredException.addIgnoredException(
         "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\"");
 
     // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
