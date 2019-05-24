@@ -129,7 +129,7 @@ public class CreateDataSourceCommandDUnitTest {
     IgnoredException.addIgnoredException(
         "create data-source failed");
     IgnoredException.addIgnoredException(
-        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+        "Communications link failure");
     IgnoredException.addIgnoredException(
         "Access denied for user 'mySqlUser'@'localhost'");
     IgnoredException.addIgnoredException(
