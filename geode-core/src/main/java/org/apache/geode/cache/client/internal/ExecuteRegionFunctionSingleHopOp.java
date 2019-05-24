@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -62,12 +63,8 @@ public class ExecuteRegionFunctionSingleHopOp {
       byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
       boolean allBuckets) {
 
-    boolean reexecute = false;
     Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -79,7 +76,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
         hasResult, resultCollector, cms, allBuckets);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+    boolean reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
         function.isHA(), resultCollector, failedNodes);
 
     if (isDebugEnabled) {
@@ -90,8 +87,20 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (reexecute) {
       resultCollector.clearResults();
       if (function.isHA()) {
+        int maxRetryAttempts = mRetryAttempts;
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+        }
+
+        if (maxRetryAttempts > 0) {
+          maxRetryAttempts--;
+        }
+
         ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
+            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts);
       }
     }
 
@@ -103,12 +112,8 @@ public class ExecuteRegionFunctionSingleHopOp {
       byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
       boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
 
-    boolean reexecute = false;
     Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -120,7 +125,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
         hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+    boolean reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
         resultCollector, failedNodes);
 
     if (isDebugEnabled) {
@@ -132,8 +137,20 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (reexecute) {
       resultCollector.clearResults();
       if (isHA) {
+        int maxRetryAttempts = mRetryAttempts;
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
+        }
+
+        if (maxRetryAttempts > 0) {
+          maxRetryAttempts--;
+        }
+
         ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1,
+            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts,
             isHA, optimizeForWrite);
       }
     }
