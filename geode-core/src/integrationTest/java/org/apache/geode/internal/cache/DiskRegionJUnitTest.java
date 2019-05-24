@@ -1903,11 +1903,12 @@ public class DiskRegionJUnitTest {
       @Override
       public void afterHavingCompacted() {
         try {
-          compactorCompletedLatch.countDown();
           DiskRegion diskRegion = getDiskRegion(region);
           assertThat(diskRegion.getOplogIdToOplog()).hasSize(oplogSizeBeforeRolling);
         } catch (AssertionError | Exception e) {
           errorCollector.addError(e);
+        } finally {
+          compactorCompletedLatch.countDown();
         }
       }
     });
@@ -2010,6 +2011,7 @@ public class DiskRegionJUnitTest {
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
     CacheObserverHolder.setInstance(new CacheObserverAdapter() {
       private final CountDownLatch compactorSignalledLatch = new CountDownLatch(1);
+      private final CountDownLatch compactorCompletedLatch = new CountDownLatch(1);
       private volatile int oplogSizeBeforeRolling;
 
       @Override
@@ -2023,15 +2025,12 @@ public class DiskRegionJUnitTest {
           assertThat(oplogSizeBeforeRolling).isGreaterThan(0);
 
           closeRegionFuture.set(executorServiceRule.runAsync(() -> {
+            closeThreadStartedLatch.countDown();
             DiskStoreImpl diskStore = getDiskStore(region);
             region.close();
             diskStore.close();
           }));
 
-          closeThreadStartedLatch.countDown();
-
-          // wait for th to call afterSignallingCompactor
-          awaitLatch(compactorSignalledLatch);
         } catch (AssertionError | Exception e) {
           errorCollector.addError(e);
         }
@@ -2047,12 +2046,24 @@ public class DiskRegionJUnitTest {
       }
 
       @Override
+      public void afterStoppingCompactor() {
+        try {
+          awaitLatch(compactorCompletedLatch);
+        } catch (AssertionError | Exception e) {
+          errorCollector.addError(e);
+        }
+      }
+
+      @Override
       public void afterHavingCompacted() {
         try {
+          awaitLatch(compactorSignalledLatch);
           DiskRegion diskRegion = getDiskRegion(region);
           assertThat(diskRegion.getOplogIdToOplog()).hasSize(oplogSizeBeforeRolling);
         } catch (AssertionError | Exception e) {
           errorCollector.addError(e);
+        } finally {
+          compactorCompletedLatch.countDown();
         }
       }
     });
