@@ -264,7 +264,7 @@ public class ExecuteRegionFunctionOp {
           failedNodes.addAll(failedNodesIds);
         }
       } catch (ServerOperationException | NoAvailableServersException failedException) {
-         throw failedException;
+        throw failedException;
       } catch (ServerConnectivityException se) {
 
         if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {

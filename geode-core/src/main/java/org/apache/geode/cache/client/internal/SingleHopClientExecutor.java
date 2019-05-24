@@ -87,8 +87,8 @@ public class SingleHopClientExecutor {
   }
 
   static int submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
-                         ResultCollector rc, Set<String> failedNodes, final int retryAttemptsArg,
-                         final PoolImpl pool) {
+      ResultCollector rc, Set<String> failedNodes, final int retryAttemptsArg,
+      final PoolImpl pool) {
 
     ClientMetadataService cms = region.getCache().getClientMetadataService();
     int maxRetryAttempts = 0;

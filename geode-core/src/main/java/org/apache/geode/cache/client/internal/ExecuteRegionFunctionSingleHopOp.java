@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -76,8 +75,9 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
         hasResult, resultCollector, cms, allBuckets);
 
-    final int retryAttempts = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
-        function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+            function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}",
@@ -85,8 +85,8 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     if (retryAttempts > 0) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1);
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1);
     }
 
     resultCollector.endResults();
@@ -110,8 +110,9 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
         hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
 
-    final int retryAttempts = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-        resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+            resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug(
@@ -121,9 +122,9 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     if (retryAttempts > 0) {
       resultCollector.clearResults();
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts,
-            isHA, optimizeForWrite);
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts,
+          isHA, optimizeForWrite);
     }
 
     resultCollector.endResults();
