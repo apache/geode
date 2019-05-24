@@ -3037,7 +3037,8 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
         Map map = bc.getGFSpecificMap();
         try {
           JNDIInvoker.mapDatasource(map, bc.getVendorSpecificList());
-        } catch (NamingException | DataSourceCreateException | ClassNotFoundException | SQLException | InstantiationException | IllegalAccessException ex) {
+        } catch (NamingException | DataSourceCreateException | ClassNotFoundException | SQLException
+            | InstantiationException | IllegalAccessException ex) {
           if (logger.isWarnEnabled()) {
             logger.warn("jndi-binding creation of {} failed with: {}", map.get("jndi-name"), ex);
           }

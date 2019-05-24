@@ -342,13 +342,15 @@ public class JNDIInvoker {
    * @param map contains Datasource configuration properties.
    */
   public static void mapDatasource(Map map, List<ConfigProperty> props)
-          throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+      throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException,
+      InstantiationException, IllegalAccessException {
     mapDatasource(map, props, dataSourceFactory, ctx);
   }
 
   static void mapDatasource(Map map, List<ConfigProperty> props,
       DataSourceFactory dataSourceFactory, Context context)
-          throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+      throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException,
+      InstantiationException, IllegalAccessException {
     String driverClassName = null;
     if (map != null) {
       driverClassName = (String) map.get("jdbc-driver-class");
