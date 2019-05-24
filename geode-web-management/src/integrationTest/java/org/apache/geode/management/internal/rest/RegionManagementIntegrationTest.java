@@ -64,10 +64,10 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
+    // if run multiple times, this could either be OK or ENTITY_EXISTS
     assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
-        .containsStatusMessage("No members found in group 'cluster' to create cache element");
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK,
+            ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
 
   @Test

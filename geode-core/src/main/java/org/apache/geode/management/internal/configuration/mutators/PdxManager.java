@@ -13,24 +13,32 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.management.internal.configuration.mutators;
 
-import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlTransient;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.PdxType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+public class PdxManager implements ConfigurationManager<PdxType> {
+  @Override
+  public void add(PdxType config, CacheConfig existing) {
+    existing.setPdx(config);
+  }
 
-import org.apache.geode.lang.Identifiable;
+  @Override
+  public void update(PdxType config, CacheConfig existing) {
+    existing.setPdx(config);
+  }
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface RuntimeCacheElement extends Identifiable<String>, Serializable {
-  @XmlTransient
-  List<String> getGroups();
+  @Override
+  public void delete(PdxType config, CacheConfig existing) {
 
-  @XmlTransient
-  @JsonIgnore
-  String getGroup();
+  }
+
+  @Override
+  public List<PdxType> list(PdxType filterConfig, CacheConfig existing) {
+    return Collections.singletonList(existing.getPdx());
+  }
 }

@@ -132,6 +132,7 @@ org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding,false,blocking
 org/apache/geode/cache/configuration/JndiBindingsType$JndiBinding$ConfigProperty,false,configPropertyName:java/lang/String,configPropertyType:java/lang/String,configPropertyValue:java/lang/String
 org/apache/geode/cache/configuration/ObjectType,false,declarable:org/apache/geode/cache/configuration/DeclarableType,string:java/lang/String
 org/apache/geode/cache/configuration/ParameterType,false,name:java/lang/String
+org/apache/geode/cache/configuration/PdxType,false
 org/apache/geode/cache/configuration/RegionAttributesDataPolicy,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesIndexUpdateType,false,value:java/lang/String
 org/apache/geode/cache/configuration/RegionAttributesMirrorType,false,value:java/lang/String

@@ -22,14 +22,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementTest {
 
   private CacheElement element;
-  private RuntimeCacheElement runtime;
+  private MultiGroupCacheElement runtime;
 
   private static ObjectMapper mapper;
   private String json;

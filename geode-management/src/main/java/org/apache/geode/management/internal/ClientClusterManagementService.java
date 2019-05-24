@@ -17,9 +17,7 @@ package org.apache.geode.management.internal;
 
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
-import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
@@ -44,10 +42,6 @@ import org.apache.geode.management.api.RestfulEndpoint;
  * exists.
  */
 public class ClientClusterManagementService implements ClusterManagementService {
-
-  private static final ResponseErrorHandler DEFAULT_ERROR_HANDLER =
-      new RestTemplateResponseErrorHandler();
-
   private static final String VERSION = "/v2";
 
   private final RestTemplate restTemplate;
@@ -93,26 +87,37 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   public ClusterManagementResult get(CacheElement config) {
-    if (StringUtils.isBlank(config.getId())) {
-      throw new IllegalArgumentException("Id is required.");
-    }
-    String endPoint = getEndpoint(config);
     return restTemplate
-        .getForEntity(VERSION + endPoint + "/{id}", ClusterManagementResult.class, config.getId())
+        .getForEntity(VERSION + getUri(config), ClusterManagementResult.class)
         .getBody();
   }
 
-  public RestTemplate getRestTemplate() {
-    return restTemplate;
+  private String getEndpoint(CacheElement config) {
+    checkIsRestful(config);
+    String endpoint = ((RestfulEndpoint) config).getEndpoint();
+    if (endpoint == null) {
+      throw new IllegalArgumentException(
+          "unable to construct the uri with the current configuration.");
+    }
+    return endpoint;
   }
 
-  private String getEndpoint(CacheElement config) {
+  private String getUri(CacheElement config) {
+    checkIsRestful(config);
+    String uri = ((RestfulEndpoint) config).getUri();
+    if (uri == null) {
+      throw new IllegalArgumentException(
+          "unable to construct the uri with the current configuration.");
+    }
+    return uri;
+  }
+
+  private void checkIsRestful(CacheElement config) {
     if (!(config instanceof RestfulEndpoint)) {
       throw new IllegalArgumentException(
           String.format("The config type %s does not have a RESTful endpoint defined",
               config.getClass().getName()));
     }
-    return ((RestfulEndpoint) config).getEndpoint();
   }
 
   public boolean isConnected() {

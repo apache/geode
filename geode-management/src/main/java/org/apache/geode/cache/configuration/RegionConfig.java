@@ -205,6 +205,14 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     return REGION_CONFIG_ENDPOINT;
   }
 
+  @Override
+  public String getUri() {
+    if (StringUtils.isBlank(getId())) {
+      return null;
+    }
+    return REGION_CONFIG_ENDPOINT + "/" + getId();
+  }
+
   public RegionAttributesType getRegionAttributes() {
     return regionAttributes;
   }
@@ -719,6 +727,10 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
 
     public void setRegionName(String regionName) {
       this.regionName = regionName;
+      if (StringUtils.isBlank(regionName)) {
+        return;
+      }
+
       if (fromClause == null) {
         fromClause = "/" + regionName;
       } else if (!fromClause.contains(regionName)) {
@@ -736,9 +748,17 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     @Override
     public String getEndpoint() {
       if (StringUtils.isBlank(regionName)) {
-        throw new IllegalArgumentException("regionName is required.");
+        return null;
       }
       return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
+    }
+
+    @Override
+    public String getUri() {
+      if (getEndpoint() == null || StringUtils.isBlank(getId())) {
+        return null;
+      }
+      return getEndpoint() + "/" + getId();
     }
   }
 

@@ -22,7 +22,6 @@ import java.util.List;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 /**
  * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
@@ -38,5 +37,5 @@ public interface ConfigurationManager<T extends CacheElement> {
 
   void delete(T config, CacheConfig existing);
 
-  <R extends RuntimeCacheElement> List<R> list(T filterConfig, CacheConfig existing);
+  List<? extends T> list(T filterConfig, CacheConfig existing);
 }

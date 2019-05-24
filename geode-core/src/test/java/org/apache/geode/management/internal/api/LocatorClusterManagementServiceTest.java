@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -113,11 +112,11 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void create_validatorIsCalledCorrectly() throws Exception {
     doReturn(Collections.emptySet()).when(service).findMembers(anyString());
-    assertManagementResult(service.create(regionConfig))
-        .failed().hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
-        .containsStatusMessage("No members found in group");
+    doNothing().when(persistenceService).updateCacheConfig(any(), any());
+    service.create(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.CREATE, regionConfig);
+    verify(regionValidator).exists(eq(regionConfig.getId()), any());
   }
 
   @Test

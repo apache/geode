@@ -24,7 +24,10 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.RestfulEndpoint;
 
 
 /**
@@ -72,8 +75,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlType(name = "pdx-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"pdxSerializer"})
 @Experimental
-public class PdxType {
-
+public class PdxType extends CacheElement implements RestfulEndpoint {
   @XmlElement(name = "pdx-serializer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType pdxSerializer;
   @XmlAttribute(name = "read-serialized")
@@ -195,4 +197,28 @@ public class PdxType {
     this.diskStoreName = value;
   }
 
+  public static final String PDX_ID = "PDX";
+  public static final String PDX_ENDPOINT = "/configurations/pdx";
+
+  @Override
+  @JsonIgnore
+  public String getId() {
+    return PDX_ID;
+  }
+
+  @Override
+  public String getEndpoint() {
+    return PDX_ENDPOINT;
+  }
+
+  @Override
+  public String getUri() {
+    return PDX_ENDPOINT;
+  }
+
+  public void setGroup(String group) {
+    if (group != null) {
+      throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
+    }
+  }
 }

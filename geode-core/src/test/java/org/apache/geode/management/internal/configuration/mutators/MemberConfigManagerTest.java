@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 
@@ -138,7 +139,7 @@ public class MemberConfigManagerTest {
     memberInformation.setLogFilePath(somePath);
     memberInformation.setWorkingDirPath(somePath);
 
-    MemberConfig memberConfig =
+    RuntimeMemberConfig memberConfig =
         memberConfigManager.generateMemberConfig("coordinatorId", memberInformation);
     assertThat(memberConfig.getId()).isEqualTo(someName);
     assertThat(memberConfig.getHost()).isEqualTo(someHost);
@@ -171,12 +172,12 @@ public class MemberConfigManagerTest {
     memberInformation.setId(memberId);
 
     String coordinatorId = "coordinatorId";
-    MemberConfig memberConfig =
+    RuntimeMemberConfig memberConfig =
         memberConfigManager.generateMemberConfig(coordinatorId, memberInformation);
 
     assertThat(memberConfig.isLocator()).isFalse();
     assertThat(memberConfig.isCoordinator()).isFalse();
-    MemberConfig.CacheServerConfig cacheServerConfig = memberConfig.getCacheServers().get(0);
+    RuntimeMemberConfig.CacheServerConfig cacheServerConfig = memberConfig.getCacheServers().get(0);
     assertThat(cacheServerConfig).isNotNull();
     assertThat(cacheServerConfig.getPort()).isEqualTo(somePort);
     assertThat(cacheServerConfig.getMaxConnections()).isEqualTo(someConnectionNumber);
@@ -193,7 +194,7 @@ public class MemberConfigManagerTest {
     memberInformation.setId(memberId);
 
     String coordinatorId = "coordinatorId";
-    MemberConfig memberConfig =
+    RuntimeMemberConfig memberConfig =
         memberConfigManager.generateMemberConfig(coordinatorId, memberInformation);
     assertThat(memberConfig.getPort()).isEqualTo(someLocatorPort);
     assertThat(memberConfig.isLocator()).isTrue();
@@ -207,7 +208,7 @@ public class MemberConfigManagerTest {
     String coordinatorId = "coordinatorId";
     memberInformation.setId(coordinatorId);
 
-    MemberConfig memberConfig =
+    RuntimeMemberConfig memberConfig =
         memberConfigManager.generateMemberConfig(coordinatorId, memberInformation);
     assertThat(memberConfig.isCoordinator()).isTrue();
   }

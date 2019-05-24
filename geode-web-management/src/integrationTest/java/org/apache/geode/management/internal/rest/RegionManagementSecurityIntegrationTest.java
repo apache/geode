@@ -37,7 +37,7 @@ import org.apache.geode.cache.configuration.RegionType;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
-    loader = LocatorWithSecurityManagerContextLoader.class)
+    loader = SecuredLocatorContextLoader.class)
 @WebAppConfiguration
 public class RegionManagementSecurityIntegrationTest {
 
@@ -52,7 +52,7 @@ public class RegionManagementSecurityIntegrationTest {
   @Before
   public void before() throws JsonProcessingException {
     regionConfig = new RegionConfig();
-    regionConfig.setName("customers");
+    regionConfig.setName("products");
     regionConfig.setType(RegionType.REPLICATE);
     ObjectMapper mapper = new ObjectMapper();
     json = mapper.writeValueAsString(regionConfig);
@@ -93,13 +93,23 @@ public class RegionManagementSecurityIntegrationTest {
 
   @Test
   public void sanityCheck_success() throws Exception {
-    context.perform(post("/v2/regions")
-        .with(httpBasic("dataManage", "dataManage"))
-        .content(json))
-        .andExpect(status().isInternalServerError())
-        .andExpect(jsonPath("$.statusCode", is("ERROR")))
-        .andExpect(jsonPath("$.statusMessage",
-            is("No members found in group 'cluster' to create cache element")));
+    try {
+      context.perform(post("/v2/regions")
+          .with(httpBasic("dataManage", "dataManage"))
+          .content(json))
+          .andExpect(status().isCreated())
+          .andExpect(jsonPath("$.statusCode", is("OK")))
+          .andExpect(jsonPath("$.statusMessage",
+              is("Successfully updated config for cluster")));
+    } catch (AssertionError e) {
+      context.perform(post("/v2/regions")
+          .with(httpBasic("dataManage", "dataManage"))
+          .content(json))
+          .andExpect(status().isConflict())
+          .andExpect(jsonPath("$.statusCode", is("ENTITY_EXISTS")))
+          .andExpect(jsonPath("$.statusMessage",
+              is("Cache element 'products' already exists")));
+    }
   }
 
 }

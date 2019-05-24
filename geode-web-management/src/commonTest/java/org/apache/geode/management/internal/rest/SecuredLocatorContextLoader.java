@@ -20,7 +20,7 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-public class LocatorWithSecurityManagerContextLoader extends BaseLocatorContextLoader {
+public class SecuredLocatorContextLoader extends BaseLocatorContextLoader {
 
   private final LocatorStarterRule locator =
       new LocatorStarterRule().withSecurityManager(SimpleSecurityManager.class).withAutoStart();

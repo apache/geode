@@ -20,11 +20,23 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface RestfulEndpoint {
 
   /**
-   * this needs to return the uri portion after the /geode-management/v2
+   * this needs to return the uri portion after the /geode-management/v2 that points to the
+   * list of entities
    *
    * @return e.g. /regions
    */
   @JsonIgnore
   // @ApiModelProperty(hidden = true)
   String getEndpoint();
+
+  /**
+   * this needs to return the uri portion after the /geode-management/v2 that points to a single
+   * entity. If the id is not available for the object, this will return null
+   *
+   * @return e.g. /regions/regionA
+   */
+  String getUri();
+
+  // exists for json serialization purpose
+  default void setUri(String uri) {};
 }
