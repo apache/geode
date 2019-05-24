@@ -76,32 +76,17 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
         hasResult, resultCollector, cms, allBuckets);
 
-    boolean reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
-        function.isHA(), resultCollector, failedNodes);
+    final int retryAttempts = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+        function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}",
           callableTasks.size());
     }
 
-    if (reexecute) {
-      resultCollector.clearResults();
-      if (function.isHA()) {
-        int maxRetryAttempts = mRetryAttempts;
-        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
-          // If the retryAttempt is set to default(-1). Try it on all servers once.
-          // Calculating number of servers when function is re-executed as it involves
-          // messaging locator.
-          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
-        }
-
-        if (maxRetryAttempts > 0) {
-          maxRetryAttempts--;
-        }
-
+    if (retryAttempts > 0) {
         ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts);
-      }
+            serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1);
     }
 
     resultCollector.endResults();
@@ -125,34 +110,20 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
         hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
 
-    boolean reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-        resultCollector, failedNodes);
+    final int retryAttempts = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+        resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug(
           "ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is: {}, reexecute={}",
-          callableTasks.size(), reexecute);
+          callableTasks.size(), retryAttempts);
     }
 
-    if (reexecute) {
+    if (retryAttempts > 0) {
       resultCollector.clearResults();
-      if (isHA) {
-        int maxRetryAttempts = mRetryAttempts;
-        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
-          // If the retryAttempt is set to default(-1). Try it on all servers once.
-          // Calculating number of servers when function is re-executed as it involves
-          // messaging locator.
-          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
-        }
-
-        if (maxRetryAttempts > 0) {
-          maxRetryAttempts--;
-        }
-
         ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts,
+            serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts,
             isHA, optimizeForWrite);
-      }
     }
 
     resultCollector.endResults();
