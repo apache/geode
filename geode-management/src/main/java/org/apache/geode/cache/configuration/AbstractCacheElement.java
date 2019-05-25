@@ -20,6 +20,8 @@ package org.apache.geode.cache.configuration;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.bind.annotation.XmlTransient;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
@@ -32,6 +34,7 @@ public abstract class AbstractCacheElement implements CacheElement {
    * this returns a non-null value
    * for cluster level element, it will return "cluster" for sure.
    */
+  @XmlTransient
   public String getConfigGroup() {
     String group = getGroup();
     if (StringUtils.isBlank(group)) {
@@ -44,6 +47,7 @@ public abstract class AbstractCacheElement implements CacheElement {
    * this returns the first group set by the user
    * if no group is set, this returns null
    */
+  @XmlTransient
   public String getGroup() {
     if (groups.size() == 0) {
       return null;
