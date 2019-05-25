@@ -31,78 +31,78 @@ import org.apache.geode.CancelCriterion;
  * with a CancellationException.
  *
  */
-public class FutureResult implements Future {
+public class FutureResult<V> implements Future<V> {
   private final StoppableCountDownLatch latch;
-  private Object value;
+  private V value;
   private volatile boolean isCancelled = false;
 
   /** Creates a new instance of FutureResult */
   public FutureResult(CancelCriterion crit) {
-    this.latch = new StoppableCountDownLatch(crit, 1);
+    latch = new StoppableCountDownLatch(crit, 1);
   }
 
   /** Creates a new instance of FutureResult with the value available immediately */
-  public FutureResult(Object value) {
+  public FutureResult(V value) {
     this.value = value;
-    this.latch = null;
+    latch = null;
   }
 
   @Override
   public boolean cancel(boolean mayInterruptIfRunning) {
-    if (this.isCancelled)
+    if (isCancelled)
       return false; // already cancelled
-    this.isCancelled = true;
-    if (this.latch != null)
-      this.latch.countDown();
+    isCancelled = true;
+    if (latch != null)
+      latch.countDown();
     return true;
   }
 
   @Override
-  public Object get() throws InterruptedException {
+  public V get() throws InterruptedException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
-    if (this.isCancelled) {
+    if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
     }
-    if (this.latch != null)
-      this.latch.await();
-    if (this.isCancelled) {
+    if (latch != null)
+      latch.await();
+    if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
     }
-    return this.value;
+    return value;
   }
 
   @Override
-  public Object get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+  public V get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
     if (Thread.interrupted())
       throw new InterruptedException(); // check in case latch is null
-    if (this.isCancelled) {
+    if (isCancelled) {
       throw new CancellationException(
           "Future was cancelled");
     }
-    if (this.latch != null) {
-      if (!this.latch.await(unit.toMillis(timeout))) {
+    if (latch != null) {
+      if (!latch.await(unit.toMillis(timeout))) {
         throw new TimeoutException();
       }
     }
-    return this.value;
+    return value;
   }
 
   @Override
   public boolean isCancelled() {
-    return this.isCancelled;
+    return isCancelled;
   }
 
   @Override
   public boolean isDone() {
-    return this.latch == null || this.latch.getCount() == 0L || this.isCancelled;
+    return latch == null || latch.getCount() == 0L || isCancelled;
   }
 
-  public void set(Object value) {
+  public void set(V value) {
     this.value = value;
-    if (this.latch != null)
-      this.latch.countDown();
+    if (latch != null)
+      latch.countDown();
   }
 }

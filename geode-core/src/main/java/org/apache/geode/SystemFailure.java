@@ -158,12 +158,8 @@ public final class SystemFailure {
    **/
   static final String JVM_CORRUPTION =
       "JVM corruption has been detected";
-  static final String CALLING_SYSTEM_EXIT =
+  private static final String CALLING_SYSTEM_EXIT =
       "Since this is a dedicated cache server and the JVM has been corrupted, this process will now terminate. Permission to call System#exit(int) was given in the following context.";
-  public static final String DISTRIBUTION_HALTED_MESSAGE =
-      "Distribution halted due to JVM corruption";
-  public static final String DISTRIBUTED_SYSTEM_DISCONNECTED_MESSAGE =
-      "Distributed system disconnected due to JVM corruption";
 
   /**
    * the underlying failure
@@ -270,8 +266,8 @@ public final class SystemFailure {
    * This can be set with the system property <code>gemfire.WATCHDOG_WAIT</code>. The default is 15
    * sec.
    */
-  public static final int WATCHDOG_WAIT =
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15).intValue();
+  private static final int WATCHDOG_WAIT =
+      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "WATCHDOG_WAIT", 15);
 
   /**
    * This is the watchdog thread
@@ -347,7 +343,7 @@ public final class SystemFailure {
   /**
    * This is the run loop for the watchdog thread.
    */
-  protected static void runWatchDog() {
+  private static void runWatchDog() {
 
     boolean warned = false;
 
@@ -376,10 +372,7 @@ public final class SystemFailure {
       logWarning(WATCHDOG_NAME, "Unable to initialize watchdog", t);
       return;
     }
-    for (;;) {
-      if (stopping) {
-        return;
-      }
+    while (!stopping) {
       try {
         if (isCacheClosing) {
           break;
@@ -451,7 +444,6 @@ public final class SystemFailure {
           ExitCode.FATAL.doSystemExit();
         }
 
-
         logInfo(WATCHDOG_NAME, "exiting");
         return;
       } catch (Throwable t) {
@@ -486,7 +478,7 @@ public final class SystemFailure {
    * @guarded.By {@link #memorySync}
    */
   @MakeNotStatic
-  static long minimumMemoryThreshold = Long.getLong(
+  private static long minimumMemoryThreshold = Long.getLong(
       DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.chronic_memory_threshold", 1048576);
 
   /**
@@ -498,7 +490,7 @@ public final class SystemFailure {
    *
    * @see #setFailureMemoryThreshold(long)
    */
-  public static final long MEMORY_POLL_INTERVAL =
+  private static final long MEMORY_POLL_INTERVAL =
       Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MEMORY_POLL_INTERVAL", 1);
 
   /**
@@ -524,7 +516,7 @@ public final class SystemFailure {
    *
    * @since GemFire 6.5
    */
-  public static final boolean MONITOR_MEMORY =
+  private static final boolean MONITOR_MEMORY =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "SystemFailure.MONITOR_MEMORY");
 
   /**
@@ -584,7 +576,7 @@ public final class SystemFailure {
   /**
    * This is the run loop for the proctor thread
    */
-  protected static void runProctor() {
+  private static void runProctor() {
     // Note that the javadocs say this can return Long.MAX_VALUE.
     final long maxMemory = Runtime.getRuntime().maxMemory();
 
@@ -592,15 +584,11 @@ public final class SystemFailure {
     final OutOfMemoryError oome = new OutOfMemoryError(
         String.format(
             "%s : memory has remained chronically below %s bytes (out of a maximum of %s ) for %s sec.",
-            new Object[] {PROCTOR_NAME, Long.valueOf(minimumMemoryThreshold),
-                Long.valueOf(maxMemory), Integer.valueOf(WATCHDOG_WAIT)}));
+            PROCTOR_NAME, minimumMemoryThreshold, maxMemory, WATCHDOG_WAIT));
 
     logFine(PROCTOR_NAME,
         "Starting, threshold = " + minimumMemoryThreshold + "; max = " + maxMemory);
-    for (;;) {
-      if (isCacheClosing) {
-        break;
-      }
+    while (!isCacheClosing) {
       if (stopping) {
         return;
       }
@@ -723,14 +711,9 @@ public final class SystemFailure {
    */
   private static final boolean DEBUG = false;
 
-  /**
-   * If true, we track the progress of emergencyClose on System.err
-   */
-  public static final boolean TRACE_CLOSE = false;
+  private static final String WATCHDOG_NAME = "SystemFailure Watchdog";
 
-  protected static final String WATCHDOG_NAME = "SystemFailure Watchdog";
-
-  protected static final String PROCTOR_NAME = "SystemFailure Proctor";
+  private static final String PROCTOR_NAME = "SystemFailure Proctor";
 
   /**
    * break any potential circularity in {@link #loadEmergencyClasses()}
@@ -776,22 +759,12 @@ public final class SystemFailure {
    * system.
    */
   public static void emergencyClose() {
-    if (TRACE_CLOSE) {
-      System.err.println("SystemFailure: closing GemFireCache");
-    }
     GemFireCacheImpl.emergencyClose();
 
-    if (TRACE_CLOSE) {
-      System.err.println("SystemFailure: closing admins");
-    }
     RemoteGfManagerAgent.emergencyClose();
 
     // If memory was the problem, make an explicit attempt at this point to clean up.
     System.gc();
-
-    if (TRACE_CLOSE) {
-      System.err.println("SystemFailure: end of emergencyClose");
-    }
   }
 
   /**
@@ -804,7 +777,7 @@ public final class SystemFailure {
    * have, instead of wrapping it with one pertinent to the current context. See bug 38394.
    *
    */
-  private static void throwFailure() throws InternalGemFireError, Error {
+  private static void throwFailure() throws Error {
     if (failure != null)
       throw failure;
   }

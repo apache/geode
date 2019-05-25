@@ -185,8 +185,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   protected Set<String> gatewaySenderIds;
 
-  private boolean isGatewaySenderEnabled = false;
-
   protected Set<String> asyncEventQueueIds;
 
   private Set<String> visibleAsyncEventQueueIds;
@@ -274,108 +272,108 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private final PoolFinder poolFinder;
 
   /** Creates a new instance of AbstractRegion */
-  protected AbstractRegion(InternalCache cache, RegionAttributes attrs, String regionName,
+  protected AbstractRegion(InternalCache cache, RegionAttributes<?, ?> attrs, String regionName,
       InternalRegionArguments internalRegionArgs, PoolFinder poolFinder) {
     this.poolFinder = poolFinder;
 
     this.cache = cache;
-    this.serialNumber = DistributionAdvisor.createSerialNumber();
-    this.isPdxTypesRegion = PeerTypeRegistration.REGION_NAME.equals(regionName);
-    this.lastAccessedTime = new AtomicLong(cacheTimeMillis());
-    this.lastModifiedTime = new AtomicLong(this.lastAccessedTime.get());
-    this.dataPolicy = attrs.getDataPolicy(); // do this one first
-    this.scope = attrs.getScope();
+    serialNumber = DistributionAdvisor.createSerialNumber();
+    isPdxTypesRegion = PeerTypeRegistration.REGION_NAME.equals(regionName);
+    lastAccessedTime = new AtomicLong(cacheTimeMillis());
+    lastModifiedTime = new AtomicLong(lastAccessedTime.get());
+    dataPolicy = attrs.getDataPolicy(); // do this one first
+    scope = attrs.getScope();
 
-    this.offHeap = attrs.getOffHeap();
+    offHeap = attrs.getOffHeap();
 
     // fix bug #52033 by invoking setOffHeap now (localMaxMemory may now be the temporary
     // placeholder for off-heap until DistributedSystem is created
     // found non-null PartitionAttributes and offHeap is true so let's setOffHeap on PA now
     PartitionAttributes<?, ?> partitionAttributes1 = attrs.getPartitionAttributes();
-    if (this.offHeap && partitionAttributes1 != null) {
+    if (offHeap && partitionAttributes1 != null) {
       PartitionAttributesImpl impl = (PartitionAttributesImpl) partitionAttributes1;
       impl.setOffHeap(true);
     }
 
     evictionAttributes = new EvictionAttributesImpl(attrs.getEvictionAttributes());
-    if (attrs.getPartitionAttributes() != null && this.evictionAttributes.getAlgorithm()
+    if (attrs.getPartitionAttributes() != null && evictionAttributes.getAlgorithm()
         .isLRUMemory() && attrs.getPartitionAttributes().getLocalMaxMemory() != 0
-        && this.evictionAttributes
+        && evictionAttributes
             .getMaximum() != attrs.getPartitionAttributes().getLocalMaxMemory()) {
       logger.warn(
           "For region {} with data policy PARTITION, memory LRU eviction attribute maximum has been reset from {}MB to local-max-memory {}MB",
-          new Object[] {regionName, this.evictionAttributes.getMaximum(),
+          new Object[] {regionName, evictionAttributes.getMaximum(),
               attrs.getPartitionAttributes().getLocalMaxMemory()});
-      this.evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
+      evictionAttributes.setMaximum(attrs.getPartitionAttributes().getLocalMaxMemory());
     }
 
     storeCacheListenersField(attrs.getCacheListeners());
     assignCacheLoader(attrs.getCacheLoader());
     assignCacheWriter(attrs.getCacheWriter());
-    this.regionTimeToLive = attrs.getRegionTimeToLive().getTimeout();
-    this.regionTimeToLiveExpirationAction = attrs.getRegionTimeToLive().getAction();
+    regionTimeToLive = attrs.getRegionTimeToLive().getTimeout();
+    regionTimeToLiveExpirationAction = attrs.getRegionTimeToLive().getAction();
     setRegionTimeToLiveAtts();
-    this.regionIdleTimeout = attrs.getRegionIdleTimeout().getTimeout();
-    this.regionIdleTimeoutExpirationAction = attrs.getRegionIdleTimeout().getAction();
+    regionIdleTimeout = attrs.getRegionIdleTimeout().getTimeout();
+    regionIdleTimeoutExpirationAction = attrs.getRegionIdleTimeout().getAction();
     setRegionIdleTimeoutAttributes();
-    this.entryTimeToLive = attrs.getEntryTimeToLive().getTimeout();
-    this.entryTimeToLiveExpirationAction = attrs.getEntryTimeToLive().getAction();
+    entryTimeToLive = attrs.getEntryTimeToLive().getTimeout();
+    entryTimeToLiveExpirationAction = attrs.getEntryTimeToLive().getAction();
     setEntryTimeToLiveAttributes();
-    this.customEntryTimeToLive = attrs.getCustomEntryTimeToLive();
-    this.entryIdleTimeout = attrs.getEntryIdleTimeout().getTimeout();
-    this.entryIdleTimeoutExpirationAction = attrs.getEntryIdleTimeout().getAction();
+    customEntryTimeToLive = attrs.getCustomEntryTimeToLive();
+    entryIdleTimeout = attrs.getEntryIdleTimeout().getTimeout();
+    entryIdleTimeoutExpirationAction = attrs.getEntryIdleTimeout().getAction();
     setEntryIdleTimeoutAttributes();
-    this.customEntryIdleTimeout = attrs.getCustomEntryIdleTimeout();
+    customEntryIdleTimeout = attrs.getCustomEntryIdleTimeout();
     updateEntryExpiryPossible();
-    this.statisticsEnabled = attrs.getStatisticsEnabled();
-    this.ignoreJTA = attrs.getIgnoreJTA();
-    this.isLockGrantor = attrs.isLockGrantor();
-    this.keyConstraint = attrs.getKeyConstraint();
-    this.valueConstraint = attrs.getValueConstraint();
-    this.initialCapacity = attrs.getInitialCapacity();
-    this.loadFactor = attrs.getLoadFactor();
-    this.concurrencyLevel = attrs.getConcurrencyLevel();
-    this.setConcurrencyChecksEnabled(
+    statisticsEnabled = attrs.getStatisticsEnabled();
+    ignoreJTA = attrs.getIgnoreJTA();
+    isLockGrantor = attrs.isLockGrantor();
+    keyConstraint = attrs.getKeyConstraint();
+    valueConstraint = attrs.getValueConstraint();
+    initialCapacity = attrs.getInitialCapacity();
+    loadFactor = attrs.getLoadFactor();
+    concurrencyLevel = attrs.getConcurrencyLevel();
+    setConcurrencyChecksEnabled(
         attrs.getConcurrencyChecksEnabled() && supportsConcurrencyChecks());
-    this.earlyAck = attrs.getEarlyAck();
-    this.gatewaySenderIds = attrs.getGatewaySenderIds();
-    this.asyncEventQueueIds = attrs.getAsyncEventQueueIds();
+    earlyAck = attrs.getEarlyAck();
+    gatewaySenderIds = attrs.getGatewaySenderIds();
+    asyncEventQueueIds = attrs.getAsyncEventQueueIds();
     initializeVisibleAsyncEventQueueIds(internalRegionArgs);
     setAllGatewaySenderIds();
-    this.enableSubscriptionConflation = attrs.getEnableSubscriptionConflation();
-    this.publisher = attrs.getPublisher();
-    this.enableAsyncConflation = attrs.getEnableAsyncConflation();
-    this.indexMaintenanceSynchronous = attrs.getIndexMaintenanceSynchronous();
-    this.mcastEnabled = attrs.getMulticastEnabled();
-    this.partitionAttributes = attrs.getPartitionAttributes();
-    this.membershipAttributes = attrs.getMembershipAttributes();
-    this.subscriptionAttributes = attrs.getSubscriptionAttributes();
-    this.cloningEnable = attrs.getCloningEnabled();
-    this.poolName = attrs.getPoolName();
-    if (this.poolName != null) {
+    enableSubscriptionConflation = attrs.getEnableSubscriptionConflation();
+    publisher = attrs.getPublisher();
+    enableAsyncConflation = attrs.getEnableAsyncConflation();
+    indexMaintenanceSynchronous = attrs.getIndexMaintenanceSynchronous();
+    mcastEnabled = attrs.getMulticastEnabled();
+    partitionAttributes = attrs.getPartitionAttributes();
+    membershipAttributes = attrs.getMembershipAttributes();
+    subscriptionAttributes = attrs.getSubscriptionAttributes();
+    cloningEnable = attrs.getCloningEnabled();
+    poolName = attrs.getPoolName();
+    if (poolName != null) {
       PoolImpl cp = getPool();
       if (cp == null) {
         throw new IllegalStateException(
             String.format("The connection pool %s has not been created",
-                this.poolName));
+                poolName));
       }
       cp.attach();
-      if (cp.getMultiuserAuthentication() && !this.getDataPolicy().isEmpty()) {
+      if (cp.getMultiuserAuthentication() && !getDataPolicy().isEmpty()) {
         throw new IllegalStateException(
             "Region must have empty data-policy " + "when multiuser-authentication is true.");
       }
     }
 
-    this.diskStoreName = attrs.getDiskStoreName();
-    this.isDiskSynchronous = attrs.isDiskSynchronous();
-    if (this.diskStoreName == null) {
-      this.diskWriteAttributes = attrs.getDiskWriteAttributes();
-      this.isDiskSynchronous = this.diskWriteAttributes.isSynchronous(); // fixes bug 41313
-      this.diskDirs = attrs.getDiskDirs();
-      this.diskSizes = attrs.getDiskDirSizes();
+    diskStoreName = attrs.getDiskStoreName();
+    isDiskSynchronous = attrs.isDiskSynchronous();
+    if (diskStoreName == null) {
+      diskWriteAttributes = attrs.getDiskWriteAttributes();
+      isDiskSynchronous = diskWriteAttributes.isSynchronous(); // fixes bug 41313
+      diskDirs = attrs.getDiskDirs();
+      diskSizes = attrs.getDiskDirSizes();
     }
 
-    this.compressor = attrs.getCompressor();
+    compressor = attrs.getCompressor();
     // enable concurrency checks for persistent regions
     if (!attrs.getConcurrencyChecksEnabled() && attrs.getDataPolicy().withPersistence()
         && supportsConcurrencyChecks()) {
@@ -386,11 +384,11 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @VisibleForTesting
   AbstractRegion() {
-    this.cache = null;
-    this.serialNumber = 0;
-    this.isPdxTypesRegion = false;
-    this.lastAccessedTime = new AtomicLong(0);
-    this.lastModifiedTime = new AtomicLong(0);
+    cache = null;
+    serialNumber = 0;
+    isPdxTypesRegion = false;
+    lastAccessedTime = new AtomicLong(0);
+    lastModifiedTime = new AtomicLong(0);
     evictionAttributes = new EvictionAttributesImpl();
     poolFinder = (a) -> null;
   }
@@ -404,9 +402,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Deprecated
   public void setIgnoreJTA(boolean ignore) {
-    this.ignoreJTA = ignore;
+    ignoreJTA = ignore;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void create(Object key, Object value)
       throws TimeoutException, EntryExistsException, CacheWriterException {
@@ -424,6 +423,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return get(key, null, true, null);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public Object put(Object key, Object value) throws TimeoutException, CacheWriterException {
     return put(key, value, null);
@@ -523,8 +523,8 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     StringBuilder buf = new StringBuilder();
     buf.append(getClass().getName());
     buf.append("[path='").append(getFullPath()).append("';scope=").append(getScope())
-        .append("';dataPolicy=").append(this.getDataPolicy());
-    if (this.getConcurrencyChecksEnabled()) {
+        .append("';dataPolicy=").append(getDataPolicy());
+    if (getConcurrencyChecksEnabled()) {
       buf.append("; concurrencyChecksEnabled");
     }
     return buf;
@@ -539,7 +539,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   public CacheLoader getCacheLoader() {
     readWriteLockForCacheLoader.readLock().lock();
     try {
-      return this.cacheLoader;
+      return cacheLoader;
     } finally {
       readWriteLockForCacheLoader.readLock().unlock();
     }
@@ -549,7 +549,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   public CacheWriter getCacheWriter() {
     readWriteLockForCacheWriter.readLock().lock();
     try {
-      return this.cacheWriter;
+      return cacheWriter;
     } finally {
       readWriteLockForCacheWriter.readLock().unlock();
     }
@@ -562,7 +562,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * @since GemFire 5.7
    */
   CacheLoader basicGetLoader() {
-    return this.cacheLoader;
+    return cacheLoader;
   }
 
   /**
@@ -573,104 +573,104 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public CacheWriter basicGetWriter() {
-    return this.cacheWriter;
+    return cacheWriter;
   }
 
   @Override
   public Class getKeyConstraint() {
-    return this.keyConstraint;
+    return keyConstraint;
   }
 
   @Override
   public Class getValueConstraint() {
-    return this.valueConstraint;
+    return valueConstraint;
   }
 
   private volatile ExpirationAttributes regionTimeToLiveAtts;
 
   private void setRegionTimeToLiveAtts() {
-    this.regionTimeToLiveAtts =
-        new ExpirationAttributes(this.regionTimeToLive, this.regionTimeToLiveExpirationAction);
+    regionTimeToLiveAtts =
+        new ExpirationAttributes(regionTimeToLive, regionTimeToLiveExpirationAction);
   }
 
   @Override
   public ExpirationAttributes getRegionTimeToLive() {
-    return this.regionTimeToLiveAtts;
+    return regionTimeToLiveAtts;
   }
 
   private volatile ExpirationAttributes regionIdleTimeoutAttributes;
 
   private void setRegionIdleTimeoutAttributes() {
-    this.regionIdleTimeoutAttributes =
-        new ExpirationAttributes(this.regionIdleTimeout, this.regionIdleTimeoutExpirationAction);
+    regionIdleTimeoutAttributes =
+        new ExpirationAttributes(regionIdleTimeout, regionIdleTimeoutExpirationAction);
   }
 
   @Override
   public ExpirationAttributes getRegionIdleTimeout() {
-    return this.regionIdleTimeoutAttributes;
+    return regionIdleTimeoutAttributes;
   }
 
   private volatile ExpirationAttributes entryTimeToLiveAtts;
 
   void setEntryTimeToLiveAttributes() {
-    this.entryTimeToLiveAtts =
-        new ExpirationAttributes(this.entryTimeToLive, this.entryTimeToLiveExpirationAction);
+    entryTimeToLiveAtts =
+        new ExpirationAttributes(entryTimeToLive, entryTimeToLiveExpirationAction);
   }
 
   @Override
   public ExpirationAttributes getEntryTimeToLive() {
-    return this.entryTimeToLiveAtts;
+    return entryTimeToLiveAtts;
   }
 
   @Override
   public CustomExpiry getCustomEntryTimeToLive() {
-    return this.customEntryTimeToLive;
+    return customEntryTimeToLive;
   }
 
   private volatile ExpirationAttributes entryIdleTimeoutAttributes;
 
   private void setEntryIdleTimeoutAttributes() {
-    this.entryIdleTimeoutAttributes =
-        new ExpirationAttributes(this.entryIdleTimeout, this.entryIdleTimeoutExpirationAction);
+    entryIdleTimeoutAttributes =
+        new ExpirationAttributes(entryIdleTimeout, entryIdleTimeoutExpirationAction);
   }
 
   @Override
   public ExpirationAttributes getEntryIdleTimeout() {
-    return this.entryIdleTimeoutAttributes;
+    return entryIdleTimeoutAttributes;
   }
 
   @Override
   public CustomExpiry getCustomEntryIdleTimeout() {
-    return this.customEntryIdleTimeout;
+    return customEntryIdleTimeout;
   }
 
   @Override
   public MirrorType getMirrorType() {
-    if (this.getDataPolicy().isNormal() || this.getDataPolicy().isPreloaded()
-        || this.getDataPolicy().isEmpty() || this.getDataPolicy().withPartitioning()) {
+    if (getDataPolicy().isNormal() || getDataPolicy().isPreloaded()
+        || getDataPolicy().isEmpty() || getDataPolicy().withPartitioning()) {
       return MirrorType.NONE;
-    } else if (this.getDataPolicy().withReplication()) {
+    } else if (getDataPolicy().withReplication()) {
       return MirrorType.KEYS_VALUES;
     } else {
       throw new IllegalStateException(
           String.format("No mirror type corresponds to data policy %s",
-              this.getDataPolicy()));
+              getDataPolicy()));
     }
   }
 
   @Override
   public String getPoolName() {
-    return this.poolName;
+    return poolName;
   }
 
   @Override
   public DataPolicy getDataPolicy() {
-    return this.dataPolicy;
+    return dataPolicy;
   }
 
   @Override
   public Scope getScope() {
-    return this.scope;
+    return scope;
   }
 
   @Override
@@ -688,26 +688,26 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   public boolean isPdxTypesRegion() {
-    return this.isPdxTypesRegion;
+    return isPdxTypesRegion;
   }
 
   @Override
   public Set<String> getGatewaySenderIds() {
-    return this.gatewaySenderIds;
+    return gatewaySenderIds;
   }
 
   @Override
   public Set<String> getAsyncEventQueueIds() {
-    return this.asyncEventQueueIds;
+    return asyncEventQueueIds;
   }
 
   Set<String> getVisibleAsyncEventQueueIds() {
-    return this.visibleAsyncEventQueueIds;
+    return visibleAsyncEventQueueIds;
   }
 
   @Override
   public Set<String> getAllGatewaySenderIds() {
-    return this.allGatewaySenderIds;
+    return allGatewaySenderIds;
   }
 
   /**
@@ -717,12 +717,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   List<Integer> getRemoteDsIds(Set<String> allGatewaySenderIds) throws IllegalStateException {
     int sz = allGatewaySenderIds.size();
-    Set<GatewaySender> allGatewaySenders = this.cache.getAllGatewaySenders();
-    if ((sz > 0 || this.isPdxTypesRegion) && !allGatewaySenders.isEmpty()) {
+    Set<GatewaySender> allGatewaySenders = cache.getAllGatewaySenders();
+    if ((sz > 0 || isPdxTypesRegion) && !allGatewaySenders.isEmpty()) {
       List<Integer> allRemoteDSIds = new ArrayList<>(sz);
       for (GatewaySender sender : allGatewaySenders) {
         // This is for all regions except pdx Region
-        if (!this.isPdxTypesRegion) {
+        if (!isPdxTypesRegion) {
           // Make sure we are distributing to only those senders whose id
           // is available on this region
           if (allGatewaySenderIds.contains(sender.getId())) {
@@ -738,7 +738,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   boolean isGatewaySenderEnabled() {
-    return this.isGatewaySenderEnabled;
+    return false;
   }
 
   @Immutable
@@ -760,7 +760,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * Sets the cacheListeners field.
    */
   private void storeCacheListenersField(CacheListener[] value) {
-    synchronized (this.clSync) {
+    synchronized (clSync) {
       if (value != null && value.length != 0) {
         CacheListener[] cacheListeners = new CacheListener[value.length];
         System.arraycopy(value, 0, cacheListeners, 0, cacheListeners.length);
@@ -768,7 +768,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       } else {
         value = EMPTY_LISTENERS;
       }
-      this.cacheListeners = value;
+      cacheListeners = value;
     }
   }
 
@@ -777,24 +777,24 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * the returned array.
    */
   CacheListener[] fetchCacheListenersField() {
-    return this.cacheListeners;
+    return cacheListeners;
   }
 
   @Override
   public int getInitialCapacity() {
-    return this.initialCapacity;
+    return initialCapacity;
   }
 
   @Override
   public float getLoadFactor() {
-    return this.loadFactor;
+    return loadFactor;
   }
 
   abstract boolean isCurrentlyLockGrantor();
 
   @Override
   public boolean isLockGrantor() {
-    return this.isLockGrantor;
+    return isLockGrantor;
   }
 
   /**
@@ -803,27 +803,27 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean getMulticastEnabled() {
-    return this.mcastEnabled;
+    return mcastEnabled;
   }
 
   @Override
   public boolean getStatisticsEnabled() {
-    return this.statisticsEnabled;
+    return statisticsEnabled;
   }
 
   @Override
   public boolean getIgnoreJTA() {
-    return this.ignoreJTA;
+    return ignoreJTA;
   }
 
   @Override
   public int getConcurrencyLevel() {
-    return this.concurrencyLevel;
+    return concurrencyLevel;
   }
 
   @Override
   public boolean getConcurrencyChecksEnabled() {
-    return this.concurrencyChecksEnabled;
+    return concurrencyChecksEnabled;
   }
 
   public void setConcurrencyChecksEnabled(boolean concurrencyChecksEnabled) {
@@ -837,7 +837,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public boolean getEarlyAck() {
-    return this.earlyAck;
+    return earlyAck;
   }
 
   /*
@@ -846,7 +846,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Deprecated
   @Override
   public boolean getPublisher() {
-    return this.publisher;
+    return publisher;
   }
 
   @Override
@@ -861,12 +861,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public boolean getEnableSubscriptionConflation() {
-    return this.enableSubscriptionConflation;
+    return enableSubscriptionConflation;
   }
 
   @Override
   public boolean getEnableAsyncConflation() {
-    return this.enableAsyncConflation;
+    return enableAsyncConflation;
   }
 
   /*
@@ -875,7 +875,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Deprecated
   @Override
   public DiskWriteAttributes getDiskWriteAttributes() {
-    return this.diskWriteAttributes;
+    return diskWriteAttributes;
   }
 
   @Override
@@ -883,32 +883,32 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public String getDiskStoreName() {
-    return this.diskStoreName;
+    return diskStoreName;
   }
 
   @Override
   public boolean isDiskSynchronous() {
-    return this.isDiskSynchronous;
+    return isDiskSynchronous;
   }
 
   @Override
   public boolean getIndexMaintenanceSynchronous() {
-    return this.indexMaintenanceSynchronous;
+    return indexMaintenanceSynchronous;
   }
 
   @Override
   public PartitionAttributes getPartitionAttributes() {
-    return this.partitionAttributes;
+    return partitionAttributes;
   }
 
   @Override
   public MembershipAttributes getMembershipAttributes() {
-    return this.membershipAttributes;
+    return membershipAttributes;
   }
 
   @Override
   public SubscriptionAttributes getSubscriptionAttributes() {
-    return this.subscriptionAttributes;
+    return subscriptionAttributes;
   }
 
   /**
@@ -916,18 +916,16 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public IndexManager getIndexManager() {
-    return this.indexManager;
+    return indexManager;
   }
 
   /**
    * This method call is guarded by imSync lock created for each region. Set IndexManger for region.
    */
   @Override
-  public IndexManager setIndexManager(IndexManager indexManager) {
+  public void setIndexManager(IndexManager indexManager) {
     checkReadiness();
-    IndexManager oldIdxManager = this.indexManager;
     this.indexManager = indexManager;
-    return oldIdxManager;
   }
 
   /**
@@ -937,7 +935,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public Object getIMSync() {
-    return this.imSync;
+    return imSync;
   }
 
   // The ThreadLocal is used to identify if the thread is an
@@ -999,19 +997,17 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private void setAllGatewaySenderIds() {
     if (getGatewaySenderIds().isEmpty() && getAsyncEventQueueIds().isEmpty()) {
-      this.allGatewaySenderIds = Collections.emptySet(); // fix for bug 45774
+      allGatewaySenderIds = Collections.emptySet(); // fix for bug 45774
     }
-    Set<String> tmp = new HashSet<String>(this.getGatewaySenderIds());
-    for (String asyncQueueId : this.getAsyncEventQueueIds()) {
+    Set<String> tmp = new HashSet<>(getGatewaySenderIds());
+    for (String asyncQueueId : getAsyncEventQueueIds()) {
       tmp.add(AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId(asyncQueueId));
     }
-    this.allGatewaySenderIds = Collections.unmodifiableSet(tmp);
+    allGatewaySenderIds = Collections.unmodifiableSet(tmp);
   }
 
   private void initializeVisibleAsyncEventQueueIds(InternalRegionArguments internalRegionArgs) {
-    Set<String> visibleAsyncEventQueueIds = new CopyOnWriteArraySet<>();
-    // Add all configured aeqIds
-    visibleAsyncEventQueueIds.addAll(getAsyncEventQueueIds());
+    Set<String> visibleAsyncEventQueueIds = new CopyOnWriteArraySet<>(getAsyncEventQueueIds());
     // Remove all internal aeqIds from internal region args if necessary
     if (internalRegionArgs.getInternalAsyncEventQueueIds() != null) {
       visibleAsyncEventQueueIds.removeAll(internalRegionArgs.getInternalAsyncEventQueueIds());
@@ -1028,15 +1024,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     }
     CacheListener wcl = wrapRegionMembershipListener(aListener);
     boolean changed = false;
-    synchronized (this.clSync) {
-      CacheListener[] oldListeners = this.cacheListeners;
+    synchronized (clSync) {
+      CacheListener[] oldListeners = cacheListeners;
       if (oldListeners == null || oldListeners.length == 0) {
-        this.cacheListeners = new CacheListener[] {wcl};
+        cacheListeners = new CacheListener[] {wcl};
         changed = true;
       } else {
         List<CacheListener> listeners = Arrays.asList(oldListeners);
         if (!listeners.contains(aListener)) {
-          this.cacheListeners =
+          cacheListeners =
               (CacheListener[]) ArrayUtils.insert(oldListeners, oldListeners.length, wcl);
         }
       }
@@ -1064,29 +1060,28 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * Initialize any wrapped RegionMembershipListeners in the cache listener list
    */
   void initPostCreateRegionMembershipListeners(Set initialMembers) {
-    synchronized (this.clSync) {
+    synchronized (clSync) {
       DistributedMember[] members = null;
       CacheListener[] newListeners = null;
-      for (int i = 0; i < this.cacheListeners.length; i++) {
-        CacheListener cl = this.cacheListeners[i];
+      for (int i = 0; i < cacheListeners.length; i++) {
+        CacheListener cl = cacheListeners[i];
         if (cl instanceof WrappedRegionMembershipListener) {
           WrappedRegionMembershipListener wrml = (WrappedRegionMembershipListener) cl;
           if (!wrml.isInitialized()) {
             if (members == null) {
-              members = (DistributedMember[]) initialMembers
-                  .toArray(new DistributedMember[initialMembers.size()]);
+              members = (DistributedMember[]) initialMembers.toArray(new DistributedMember[0]);
             }
             wrml.initialMembers(this, members);
             if (newListeners == null) {
-              newListeners = new CacheListener[this.cacheListeners.length];
-              System.arraycopy(this.cacheListeners, 0, newListeners, 0, newListeners.length);
+              newListeners = new CacheListener[cacheListeners.length];
+              System.arraycopy(cacheListeners, 0, newListeners, 0, newListeners.length);
             }
             newListeners[i] = wrml.getWrappedListener();
           }
         }
       }
       if (newListeners != null) {
-        this.cacheListeners = newListeners;
+        cacheListeners = newListeners;
       }
     }
   }
@@ -1102,10 +1097,10 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       }
     }
     CacheListener[] oldListeners;
-    synchronized (this.clSync) {
-      oldListeners = this.cacheListeners;
+    synchronized (clSync) {
+      oldListeners = cacheListeners;
       if (listenersToAdd == null || listenersToAdd.length == 0) {
-        this.cacheListeners = EMPTY_LISTENERS;
+        cacheListeners = EMPTY_LISTENERS;
       } else { // we have some listeners to add
         if (Arrays.asList(listenersToAdd).contains(null)) {
           throw new IllegalArgumentException(
@@ -1113,7 +1108,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
         }
         CacheListener[] newCacheListeners = new CacheListener[listenersToAdd.length];
         System.arraycopy(listenersToAdd, 0, newCacheListeners, 0, newCacheListeners.length);
-        this.cacheListeners = newCacheListeners;
+        cacheListeners = newCacheListeners;
       }
     }
     // moved the following out of the sync for bug 34512
@@ -1143,17 +1138,17 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
           "removeCacheListener parameter was null");
     }
     boolean changed = false;
-    synchronized (this.clSync) {
-      CacheListener[] oldListeners = this.cacheListeners;
+    synchronized (clSync) {
+      CacheListener[] oldListeners = cacheListeners;
       if (oldListeners != null && oldListeners.length > 0) {
-        List newListeners = new ArrayList(Arrays.asList(oldListeners));
+        List<CacheListener> newListeners = new ArrayList<>(Arrays.asList(oldListeners));
         if (newListeners.remove(aListener)) {
           if (newListeners.isEmpty()) {
-            this.cacheListeners = EMPTY_LISTENERS;
+            cacheListeners = EMPTY_LISTENERS;
           } else {
             CacheListener[] newCacheListeners = new CacheListener[newListeners.size()];
             newListeners.toArray(newCacheListeners);
-            this.cacheListeners = newCacheListeners;
+            cacheListeners = newCacheListeners;
           }
           closeCacheCallback(aListener);
           if (newListeners.isEmpty()) {
@@ -1184,7 +1179,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private void assignCacheLoader(CacheLoader cl) {
     readWriteLockForCacheLoader.writeLock().lock();
     try {
-      this.cacheLoader = cl;
+      cacheLoader = cl;
     } finally {
       readWriteLockForCacheLoader.writeLock().unlock();
     }
@@ -1214,7 +1209,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   void checkEntryTimeoutAction(String mode, ExpirationAction ea) {
-    if ((this.getDataPolicy().withReplication() || this.getDataPolicy().withPartitioning())
+    if ((getDataPolicy().withReplication() || getDataPolicy().withPartitioning())
         && (ea == ExpirationAction.LOCAL_DESTROY || ea == ExpirationAction.LOCAL_INVALIDATE)) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
@@ -1230,14 +1225,14 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
           "idleTimeout must not be null");
     }
     checkEntryTimeoutAction("idleTimeout", idleTimeout.getAction());
-    if (!this.statisticsEnabled) {
+    if (!statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set idle timeout when statistics are disabled.");
     }
 
     ExpirationAttributes oldAttrs = getEntryIdleTimeout();
-    this.entryIdleTimeout = idleTimeout.getTimeout();
-    this.entryIdleTimeoutExpirationAction = idleTimeout.getAction();
+    entryIdleTimeout = idleTimeout.getTimeout();
+    entryIdleTimeoutExpirationAction = idleTimeout.getAction();
     setEntryIdleTimeoutAttributes();
     updateEntryExpiryPossible();
     idleTimeoutChanged(oldAttrs);
@@ -1247,13 +1242,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public CustomExpiry setCustomEntryIdleTimeout(CustomExpiry custom) {
     checkReadiness();
-    if (custom != null && !this.statisticsEnabled) {
+    if (custom != null && !statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set idle timeout when statistics are disabled.");
     }
 
     CustomExpiry old = getCustomEntryIdleTimeout();
-    this.customEntryIdleTimeout = custom;
+    customEntryIdleTimeout = custom;
     updateEntryExpiryPossible();
     idleTimeoutChanged(getEntryIdleTimeout());
     return old;
@@ -1267,13 +1262,13 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
           "timeToLive must not be null");
     }
     checkEntryTimeoutAction("timeToLive", timeToLive.getAction());
-    if (!this.statisticsEnabled) {
+    if (!statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set time to live when statistics are disabled");
     }
     ExpirationAttributes oldAttrs = getEntryTimeToLive();
-    this.entryTimeToLive = timeToLive.getTimeout();
-    this.entryTimeToLiveExpirationAction = timeToLive.getAction();
+    entryTimeToLive = timeToLive.getTimeout();
+    entryTimeToLiveExpirationAction = timeToLive.getAction();
     setEntryTimeToLiveAttributes();
     updateEntryExpiryPossible();
     timeToLiveChanged(oldAttrs);
@@ -1283,12 +1278,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public CustomExpiry setCustomEntryTimeToLive(CustomExpiry custom) {
     checkReadiness();
-    if (custom != null && !this.statisticsEnabled) {
+    if (custom != null && !statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set custom time to live when statistics are disabled");
     }
     CustomExpiry old = getCustomEntryTimeToLive();
-    this.customEntryTimeToLive = custom;
+    customEntryTimeToLive = custom;
     updateEntryExpiryPossible();
     timeToLiveChanged(getEntryTimeToLive());
     return old;
@@ -1314,23 +1309,23 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalArgumentException(
           "idleTimeout must not be null");
     }
-    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+    if (getAttributes().getDataPolicy().withPartitioning()) {
       validatePRRegionExpirationAttributes(idleTimeout);
     }
     if (idleTimeout.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.getDataPolicy().withReplication()) {
+        && getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
               "idleTimeout"));
     }
-    if (!this.statisticsEnabled) {
+    if (!statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set idle timeout when statistics are disabled.");
     }
     ExpirationAttributes oldAttrs = getRegionIdleTimeout();
-    this.regionIdleTimeout = idleTimeout.getTimeout();
-    this.regionIdleTimeoutExpirationAction = idleTimeout.getAction();
-    this.setRegionIdleTimeoutAttributes();
+    regionIdleTimeout = idleTimeout.getTimeout();
+    regionIdleTimeoutExpirationAction = idleTimeout.getAction();
+    setRegionIdleTimeoutAttributes();
     regionIdleTimeoutChanged(oldAttrs);
     return oldAttrs;
   }
@@ -1342,24 +1337,24 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
       throw new IllegalArgumentException(
           "timeToLive must not be null");
     }
-    if (this.getAttributes().getDataPolicy().withPartitioning()) {
+    if (getAttributes().getDataPolicy().withPartitioning()) {
       validatePRRegionExpirationAttributes(timeToLive);
     }
     if (timeToLive.getAction() == ExpirationAction.LOCAL_INVALIDATE
-        && this.getDataPolicy().withReplication()) {
+        && getDataPolicy().withReplication()) {
       throw new IllegalArgumentException(
           String.format("%s action is incompatible with this region's data policy.",
               "timeToLive"));
     }
-    if (!this.statisticsEnabled) {
+    if (!statisticsEnabled) {
       throw new IllegalStateException(
           "Cannot set time to live when statistics are disabled");
     }
 
     ExpirationAttributes oldAttrs = getRegionTimeToLive();
-    this.regionTimeToLive = timeToLive.getTimeout();
-    this.regionTimeToLiveExpirationAction = timeToLive.getAction();
-    this.setRegionTimeToLiveAtts();
+    regionTimeToLive = timeToLive.getTimeout();
+    regionTimeToLiveExpirationAction = timeToLive.getAction();
+    setRegionTimeToLiveAtts();
     regionTimeToLiveChanged(timeToLive);
     return oldAttrs;
   }
@@ -1368,20 +1363,20 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   public void becomeLockGrantor() {
     checkReadiness();
     checkForLimitedOrNoAccess();
-    if (this.scope != Scope.GLOBAL) {
+    if (scope != Scope.GLOBAL) {
       throw new IllegalStateException(
           "Cannot set lock grantor when scope is not global");
     }
     if (isCurrentlyLockGrantor())
       return; // nothing to do... already lock grantor
-    this.isLockGrantor = true;
+    isLockGrantor = true;
   }
 
   @Override
   public CacheStatistics getStatistics() {
     // prefer region destroyed exception over statistics disabled exception
     checkReadiness();
-    if (!this.statisticsEnabled) {
+    if (!statisticsEnabled) {
       throw new StatisticsDisabledException(
           String.format("Statistics disabled for region ' %s '",
               getFullPath()));
@@ -1419,19 +1414,19 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   private long basicGetLastModifiedTime() {
-    return this.lastModifiedTime.get();
+    return lastModifiedTime.get();
   }
 
   private long basicGetLastAccessedTime() {
-    return this.lastAccessedTime.get();
+    return lastAccessedTime.get();
   }
 
   private void basicSetLastModifiedTime(long t) {
-    this.lastModifiedTime.set(t);
+    lastModifiedTime.set(t);
   }
 
   private void basicSetLastAccessedTime(long t) {
-    this.lastAccessedTime.set(t);
+    lastAccessedTime.set(t);
   }
 
   /**
@@ -1491,23 +1486,23 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   protected void setLastModifiedTime(long time) {
-    if (time > this.lastModifiedTime.get()) {
-      this.lastModifiedTime.set(time);
+    if (time > lastModifiedTime.get()) {
+      lastModifiedTime.set(time);
     }
-    if (time > this.lastAccessedTime.get()) {
-      this.lastAccessedTime.set(time);
+    if (time > lastAccessedTime.get()) {
+      lastAccessedTime.set(time);
     }
   }
 
   void setLastAccessedTime(long time, boolean hit) {
-    this.lastAccessedTime.set(time);
+    lastAccessedTime.set(time);
     if (hit) {
       if (trackHits) {
-        this.hitCount.getAndIncrement();
+        hitCount.getAndIncrement();
       }
     } else {
       if (trackMisses) {
-        this.missCount.getAndIncrement();
+        missCount.getAndIncrement();
       }
     }
   }
@@ -1521,21 +1516,21 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public long getHitCount() {
-    return this.hitCount.get();
+    return hitCount.get();
   }
 
   @Override
   public long getMissCount() {
-    return this.missCount.get();
+    return missCount.get();
   }
 
   @Override
   public void resetCounts() {
     if (trackMisses) {
-      this.missCount.set(0);
+      missCount.set(0);
     }
     if (trackHits) {
-      this.hitCount.set(0);
+      hitCount.set(0);
     }
   }
 
@@ -1553,7 +1548,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected void cacheLoaderChanged(CacheLoader oldLoader) {
     readWriteLockForCacheLoader.readLock().lock();
     try {
-      if (this.cacheLoader != oldLoader) {
+      if (cacheLoader != oldLoader) {
         closeCacheCallback(oldLoader);
       }
     } finally {
@@ -1575,7 +1570,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   protected void cacheWriterChanged(CacheWriter oldWriter) {
     readWriteLockForCacheWriter.readLock().lock();
     try {
-      if (this.cacheWriter != oldWriter) {
+      if (cacheWriter != oldWriter) {
         closeCacheCallback(oldWriter);
       }
     } finally {
@@ -1634,15 +1629,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   private boolean entryExpiryPossible = false;
 
   protected void updateEntryExpiryPossible() {
-    this.entryExpiryPossible = !isProxy() && (hasTimeToLive() || hasIdleTimeout());
+    entryExpiryPossible = !isProxy() && (hasTimeToLive() || hasIdleTimeout());
   }
 
   private boolean hasTimeToLive() {
-    return this.entryTimeToLive > 0 || this.customEntryTimeToLive != null;
+    return entryTimeToLive > 0 || customEntryTimeToLive != null;
   }
 
   private boolean hasIdleTimeout() {
-    return this.entryIdleTimeout > 0 || this.customEntryIdleTimeout != null;
+    return entryIdleTimeout > 0 || customEntryIdleTimeout != null;
   }
 
   /**
@@ -1650,15 +1645,15 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean isEntryExpiryPossible() {
-    return this.entryExpiryPossible;
+    return entryExpiryPossible;
   }
 
   ExpirationAction getEntryExpirationAction() {
-    if (this.entryIdleTimeoutExpirationAction != null) {
-      return this.entryIdleTimeoutExpirationAction;
+    if (entryIdleTimeoutExpirationAction != null) {
+      return entryIdleTimeoutExpirationAction;
     }
-    if (this.entryTimeToLiveExpirationAction != null) {
-      return this.entryTimeToLiveExpirationAction;
+    if (entryTimeToLiveExpirationAction != null) {
+      return entryTimeToLiveExpirationAction;
     }
     return null;
   }
@@ -1668,7 +1663,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public boolean isEntryEvictionPossible() {
-    return this.evictionAttributes != null && !this.evictionAttributes.getAlgorithm().isNone();
+    return evictionAttributes != null && !evictionAttributes.getAlgorithm().isNone();
   }
 
   /** is this a region that supports versioning? */
@@ -1710,12 +1705,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public EvictionAttributes getEvictionAttributes() {
-    return this.evictionAttributes;
+    return evictionAttributes;
   }
 
   @Override
   public EvictionAttributesMutator getEvictionAttributesMutator() {
-    return new EvictionAttributesMutatorImpl(this, this.evictionAttributes);
+    return new EvictionAttributesMutatorImpl(this, evictionAttributes);
   }
 
   /**
@@ -1764,22 +1759,22 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    * relation to other regions or other instances of this region during the life of this JVM.
    */
   public int getSerialNumber() {
-    return this.serialNumber;
+    return serialNumber;
   }
 
   @Override
   public InternalCache getCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
   public long cacheTimeMillis() {
-    return this.cache.getInternalDistributedSystem().getClock().cacheTimeMillis();
+    return cache.getInternalDistributedSystem().getClock().cacheTimeMillis();
   }
 
   @Override
   public RegionService getRegionService() {
-    return this.cache;
+    return cache;
   }
 
   @Override
@@ -1819,7 +1814,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public boolean getCloningEnabled() {
-    return this.cloningEnable;
+    return cloningEnable;
   }
 
   @Override
@@ -1835,7 +1830,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   }
 
   public InternalCache getGemFireCache() {
-    return this.cache;
+    return cache;
   }
 
   @Override
@@ -1843,6 +1838,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return cache;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public RegionSnapshotService getSnapshotService() {
     return new RegionSnapshotServiceImpl(this);
@@ -1850,7 +1846,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public Compressor getCompressor() {
-    return this.compressor;
+    return compressor;
   }
 
   /**
@@ -1858,12 +1854,12 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
    */
   @Override
   public ExtensionPoint<Region<?, ?>> getExtensionPoint() {
-    return this.extensionPoint;
+    return extensionPoint;
   }
 
   @Override
   public boolean getOffHeap() {
-    return this.offHeap;
+    return offHeap;
   }
 
   @Override
