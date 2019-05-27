@@ -80,7 +80,8 @@ public class StartupConfigurationLoggingIntegrationTest {
 
     DistributionConfig distributionConfig = system.getConfig();
     startupConfiguration = StringUtils
-        .split(STARTUP_CONFIGURATION + distributionConfig.toLoggerString(), lineSeparator());
+        .split(STARTUP_CONFIGURATION + lineSeparator() + distributionConfig.toLoggerString(),
+            lineSeparator());
 
     geodeLogger = LogService.getLogger();
     logMessage = "Logging in " + testName.getMethodName();
