@@ -160,7 +160,8 @@ public class LoggingWithReconnectDistributedTest implements Serializable {
 
       // Startup Config must be logged only once
       String[] startupConfiguration = StringUtils
-          .split(STARTUP_CONFIGURATION + system.getConfig().toLoggerString(), lineSeparator());
+          .split(STARTUP_CONFIGURATION + lineSeparator() + system.getConfig().toLoggerString(),
+              lineSeparator());
 
       LogFileAssert.assertThat(logFile).containsOnlyOnce(startupConfiguration);
     });
