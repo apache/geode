@@ -33,6 +33,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
@@ -996,6 +998,7 @@ public class RegionAttributesType implements Serializable {
   /**
    * turn the comma separated ids into a set of id
    */
+  @JsonIgnore
   public Set<String> getGatewaySenderIdsAsSet() {
     if (gatewaySenderIds == null) {
       return null;
@@ -1030,6 +1033,7 @@ public class RegionAttributesType implements Serializable {
   /**
    * turn the comma separated id into a set of ids
    */
+  @JsonIgnore
   public Set<String> getAsyncEventQueueIdsAsSet() {
     if (asyncEventQueueIds == null) {
       return null;
@@ -1494,6 +1498,7 @@ public class RegionAttributesType implements Serializable {
     this.offHeap = value;
   }
 
+  @ApiModelProperty(hidden = true)
   public void setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow action) {
     if (evictionAttributes == null) {
       evictionAttributes = new EvictionAttributes();
@@ -1504,6 +1509,7 @@ public class RegionAttributesType implements Serializable {
     evictionAttributes.setLruHeapPercentage(lruHeapPercentage);
   }
 
+  @ApiModelProperty(hidden = true)
   public void setInterestPolicy(String interestPolicy) {
     if (subscriptionAttributes == null) {
       subscriptionAttributes = new SubscriptionAttributes();
@@ -1511,6 +1517,7 @@ public class RegionAttributesType implements Serializable {
     subscriptionAttributes.setInterestPolicy(interestPolicy);
   }
 
+  @ApiModelProperty(hidden = true)
   public void setRedundantCopy(String copies) {
     if (partitionAttributes == null) {
       partitionAttributes = new PartitionAttributes();
@@ -1518,6 +1525,7 @@ public class RegionAttributesType implements Serializable {
     partitionAttributes.setRedundantCopies(copies);
   }
 
+  @ApiModelProperty(hidden = true)
   public void setLocalMaxMemory(String maxMemory) {
     if (partitionAttributes == null) {
       partitionAttributes = new PartitionAttributes();

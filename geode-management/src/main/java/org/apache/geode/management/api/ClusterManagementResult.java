@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
@@ -61,6 +62,8 @@ public class ClusterManagementResult {
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
 
+  // Override the mapper setting so that we always show result
+  @JsonInclude
   @JsonProperty
   private List<? extends RuntimeCacheElement> result = new ArrayList<>();
 
