@@ -375,7 +375,7 @@ org/apache/geode/internal/datasource/AbstractPoolCache,false,INIT_LIMIT:int,MAX_
 org/apache/geode/internal/datasource/ConfiguredDataSourceProperties,true,1241739895646314739,connPoolDSClass:java/lang/String,expirationTime:int,initialPoolSize:int,jdbcDriver:java/lang/String,loginTimeOut:int,maxPoolSize:int,mcfClass:java/lang/String,password:java/lang/String,timeOut:int,txnType:java/lang/String,url:java/lang/String,user:java/lang/String,xadsClass:java/lang/String
 org/apache/geode/internal/datasource/ConnectionPoolCacheImpl,true,-3096029291871746431,m_cpds:javax/sql/ConnectionPoolDataSource
 org/apache/geode/internal/datasource/ConnectionProviderException,true,-7406652144153958227,excep:java/lang/Exception
-org/apache/geode/internal/datasource/DataSourceCreateException,true,8759147832954825309,excep:java/lang/Exception
+org/apache/geode/internal/datasource/DataSourceCreateException,true,5107756585306908219
 org/apache/geode/internal/datasource/GemFireBasicDataSource,true,-4010116024816908360
 org/apache/geode/internal/datasource/GemFireConnPooledDataSource,true,1177231744410855158,provider:org/apache/geode/internal/datasource/ConnectionProvider
 org/apache/geode/internal/datasource/GemFireConnectionPoolManager,true,23723212980453813,connPoolCache:org/apache/geode/internal/datasource/ConnectionPoolCache
