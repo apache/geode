@@ -808,6 +808,7 @@ public class InitialImageOperation {
   boolean processChunk(List entries, InternalDistributedMember sender, Version remoteVersion)
       throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
+    final boolean isTraceEnabled = logger.isTraceEnabled();
 
     // one volatile read of test flag
     int slow = slowImageProcessing;
@@ -895,8 +896,8 @@ public class InitialImageOperation {
         if (diskRegion != null) {
           // verify if entry from GII is the same as the one from recovery
           RegionEntry regionEntry = this.entries.getEntry(entry.key);
-          if (isDebugEnabled) {
-            logger.debug("processChunk:entry={},tag={},re={}", entry, tag, regionEntry);
+          if (isTraceEnabled) {
+            logger.trace("processChunk:entry={},tag={},re={}", entry, tag, regionEntry);
           }
           // re will be null if the gii chunk gives us a create
           if (regionEntry != null) {
@@ -973,8 +974,8 @@ public class InitialImageOperation {
             if (tag != null) {
               tag.replaceNullIDs(sender);
             }
-            if (isDebugEnabled) {
-              logger.debug(
+            if (isTraceEnabled) {
+              logger.trace(
                   "processChunk:initialImagePut:key={},lastModified={},tmpValue={},wasRecovered={},tag={}",
                   entry.key, lastModified, tmpValue, wasRecovered, tag);
             }
