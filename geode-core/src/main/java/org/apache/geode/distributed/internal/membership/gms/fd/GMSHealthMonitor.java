@@ -1314,6 +1314,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
 
       if (!pinged && !isStopping) {
+        failed = true;
         TimeStamp ts = memberTimeStamps.get(mbr);
         if (ts == null || ts.getTime() < startTime) {
           logger.info("Availability check failed for member {}", mbr);
@@ -1325,7 +1326,6 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
             // make sure it is still suspected
             memberSuspected(localAddress, mbr, reason);
           } else {
-            failed = true;
             // if this node can survive an availability check then initiate suspicion about
             // the node that failed the availability check
             logger.info("BRUCE: invoking self-check on {}", localAddress);
@@ -1353,6 +1353,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
           logger.info(
               "Availability check failed but detected recent message traffic for suspect member "
                   + mbr);
+          failed = false;
         }
       }
 
