@@ -205,7 +205,29 @@ public class JoinQueriesIntegrationTest {
     assertThat(resultsWithoutIndex).isEqualTo(resultsSizeWithIndex);
   }
 
-  private void populateTripleJointRegions(int expectedMatches, int extraEntitiesPerRegion,
+  private void populateTripleJointRegionsWithSerializables(
+      int expectedMatches, int extraEntitiesPerRegion,
+      Region<String, Object> orderRegion, Region<String, Object> validationIssueRegion,
+      Region<String, Object> validationIssueXRefRegion) {
+    for (int i = 0; i < expectedMatches; i++) {
+      orderRegion.put("orderId_" + i, new Order("orderId_" + i, i));
+      validationIssueRegion.put("validationIssueID_" + i,
+          new ValidationIssue("issueId_" + i, Calendar.getInstance().getTime()));
+      validationIssueXRefRegion.put("validationIssueXRefID_" + i, new OrderValidationIssueXRef(
+          "validationIssueXRefID_" + i, "issueId_" + i, "orderId_" + i, i));
+    }
+
+    for (int i = 0; i < extraEntitiesPerRegion; i++) {
+      orderRegion.put("orderId#" + i, new Order("orderId#" + i, i));
+      validationIssueRegion.put("referenceIssueId#" + i,
+          new ValidationIssue("referenceIssueId#" + i, Calendar.getInstance().getTime()));
+      validationIssueXRefRegion.put("validationIssueXRefID#" + i, new OrderValidationIssueXRef(
+          "validationIssueXRefID#" + i, "validationIssueID2#" + i, "orderId#2" + i, i));
+    }
+  }
+
+  private void populateTripleJointRegionsWithPdxInstances(
+      int expectedMatches, int extraEntitiesPerRegion,
       Cache cache, Region<String, Object> orderRegion, Region<String, Object> validationIssueRegion,
       Region<String, Object> validationIssueXRefRegion) {
     for (int i = 0; i < expectedMatches; i++) {
@@ -257,26 +279,6 @@ public class JoinQueriesIntegrationTest {
     }
   }
 
-  private void populateTripleJointRegions(int expectedMatches, int extraEntitiesPerRegion,
-      Region<String, Object> orderRegion, Region<String, Object> validationIssueRegion,
-      Region<String, Object> validationIssueXRefRegion) {
-    for (int i = 0; i < expectedMatches; i++) {
-      orderRegion.put("orderId_" + i, new Order("orderId_" + i, i));
-      validationIssueRegion.put("validationIssueID_" + i,
-          new ValidationIssue("issueId_" + i, Calendar.getInstance().getTime()));
-      validationIssueXRefRegion.put("validationIssueXRefID_" + i, new OrderValidationIssueXRef(
-          "validationIssueXRefID_" + i, "issueId_" + i, "orderId_" + i, i));
-    }
-
-    for (int i = 0; i < extraEntitiesPerRegion; i++) {
-      orderRegion.put("orderId#" + i, new Order("orderId#" + i, i));
-      validationIssueRegion.put("referenceIssueId#" + i,
-          new ValidationIssue("referenceIssueId#" + i, Calendar.getInstance().getTime()));
-      validationIssueXRefRegion.put("validationIssueXRefID#" + i, new OrderValidationIssueXRef(
-          "validationIssueXRefID#" + i, "validationIssueID2#" + i, "orderId#2" + i, i));
-    }
-  }
-
   @Test
   @Parameters({"true", "false"})
   @TestCaseName("{method} - Using PDX: {params}")
@@ -295,6 +297,7 @@ public class JoinQueriesIntegrationTest {
         + "AND "
         + "xRef.referenceOrderVersion = o.version ";
 
+    // Create Regions
     Region<String, Object> orderRegion = cache.<String, Object>createRegionFactory()
         .setDataPolicy(DataPolicy.REPLICATE).create("Order");
     Region<String, Object> validationIssueRegion = cache.<String, Object>createRegionFactory()
@@ -303,10 +306,11 @@ public class JoinQueriesIntegrationTest {
         .setDataPolicy(DataPolicy.REPLICATE).create("OrderValidationIssueXRef");
 
     if (!usePdx) {
-      populateTripleJointRegions(matches, extraEntitiesPerRegion, orderRegion,
+      populateTripleJointRegionsWithSerializables(matches, extraEntitiesPerRegion, orderRegion,
           validationIssueRegion, validationIssueXRefRegion);
     } else {
-      populateTripleJointRegions(matches, extraEntitiesPerRegion, cache, orderRegion,
+      populateTripleJointRegionsWithPdxInstances(matches, extraEntitiesPerRegion, cache,
+          orderRegion,
           validationIssueRegion, validationIssueXRefRegion);
     }
 
@@ -318,8 +322,36 @@ public class JoinQueriesIntegrationTest {
     assertThat(baseResults.size()).isEqualTo(matches);
     assertThat(resultsWithLimitOne.size()).isEqualTo(2);
     assertThat(resultsWithLimitTwo.size()).isEqualTo(5);
+  }
 
-    // Add Indexes and test again
+
+  @Test
+  @Parameters({"true", "false"})
+  @TestCaseName("{method} - Using PDX: {params}")
+  public void joiningThreeRegionsWithIndexesWhenIntermediateResultSizeIsHigherThanLimitClauseShouldNotTrimResults(
+      boolean usePdx) throws Exception {
+    int matches = 10;
+    int extraEntitiesPerRegion = 25;
+    InternalCache cache = serverRule.getCache();
+    QueryService queryService = cache.getQueryService();
+    String queryString = "SELECT issue.issueId, issue.createdTime, o.orderId, o.version "
+        + "FROM /ValidationIssue issue, /OrderValidationIssueXRef xRef, /Order o "
+        + "WHERE "
+        + "issue.issueId = xRef.referenceIssueId "
+        + "AND "
+        + "xRef.referenceOrderId = o.orderId "
+        + "AND "
+        + "xRef.referenceOrderVersion = o.version ";
+
+    // Create Regions
+    Region<String, Object> orderRegion = cache.<String, Object>createRegionFactory()
+        .setDataPolicy(DataPolicy.REPLICATE).create("Order");
+    Region<String, Object> validationIssueRegion = cache.<String, Object>createRegionFactory()
+        .setDataPolicy(DataPolicy.REPLICATE).create("ValidationIssue");
+    Region<String, Object> validationIssueXRefRegion = cache.<String, Object>createRegionFactory()
+        .setDataPolicy(DataPolicy.REPLICATE).create("OrderValidationIssueXRef");
+
+    // Create Indexes
     cache.getQueryService().createIndex("order_orderID", "orderId", "/Order", null);
     cache.getQueryService().createIndex("validationIssue_issueID", "issueId", "/ValidationIssue",
         null);
@@ -327,6 +359,15 @@ public class JoinQueriesIntegrationTest {
         "referenceOrderId", "/OrderValidationIssueXRef", null);
     cache.getQueryService().createIndex("orderValidationIssueXRef_referenceIssueId",
         "referenceIssueId", "/OrderValidationIssueXRef", null);
+
+    if (!usePdx) {
+      populateTripleJointRegionsWithSerializables(matches, extraEntitiesPerRegion, orderRegion,
+          validationIssueRegion, validationIssueXRefRegion);
+    } else {
+      populateTripleJointRegionsWithPdxInstances(matches, extraEntitiesPerRegion, cache,
+          orderRegion,
+          validationIssueRegion, validationIssueXRefRegion);
+    }
 
     SelectResults baseResultsWithIndexes =
         (SelectResults) queryService.newQuery(queryString).execute();
