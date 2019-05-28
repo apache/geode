@@ -73,6 +73,9 @@ class ClientRegistrationEventQueueManager {
         // registering since there is a small race where it may have finished registering
         // after we pulled the queue out of the registeringProxyEventQueues collection
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          logger.info("RYAN: Adding event to client registration queue. Event ID: "
+              + event.getEventId() + "; Proxy ID: " + clientProxyMembershipID);
+
           // If the event value is off-heap, copy it to heap so we are guaranteed the value
           // is available when we drain the registration queue
           copyOffHeapToHeapForRegistrationQueue(event);
@@ -86,6 +89,10 @@ class ClientRegistrationEventQueueManager {
           // if it exists.
           originalFilterClientIDs.remove(clientProxyMembershipID);
         } else {
+          logger.info(
+              "RYAN: Client done registering when event add attempted to client registration queue. Event ID: "
+                  + event.getEventId() + "; Proxy ID: " + clientProxyMembershipID);
+
           // The client is no longer registering, but we want to reprocess the filter info on
           // this event and potentially deliver the conflatable to handle the edge case where
           // the original client filter IDs generated in the "normal" put processing path did
@@ -170,6 +177,11 @@ class ClientRegistrationEventQueueManager {
     while ((queuedEvent = registrationEventQueue.poll()) != null) {
       InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
       Conflatable conflatable = queuedEvent.conflatable;
+
+      logger.info("RYAN: Draining event from client registration queue. Event ID: "
+          + internalCacheEvent.getEventId()
+          + "; Proxy ID: " + proxyID);
+
       processEventAndDeliverConflatable(proxyID, cacheClientNotifier, internalCacheEvent,
           conflatable, null);
     }

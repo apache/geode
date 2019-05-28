@@ -1504,8 +1504,13 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       int size = size();
       InternalDataSerializer.writeArrayLength(size, out);
       if (size > 0) {
+        logger.info("RYAN: CqNameToOp name: " + this.name[0]);
+        logger.info("RYAN: CqNameToOp value: " + Integer.valueOf(this.op));
+
         DataSerializer.writeObject(this.name[0], out);
         DataSerializer.writeObject(Integer.valueOf(this.op), out);
+      } else {
+        logger.info("RYAN: CqNameToOp size was zero");
       }
     }
 

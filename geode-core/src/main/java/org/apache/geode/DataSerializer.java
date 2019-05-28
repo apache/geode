@@ -2484,6 +2484,8 @@ public abstract class DataSerializer {
     }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : entrySnapshot) {
+        logger.info("RYAN: Writing concurrent hashmap key: " + entry.getKey());
+        logger.info("RYAN: Writing concurrent hashmap value: " + entry.getValue());
         writeObject(entry.getKey(), out);
         writeObject(entry.getValue(), out);
       }
