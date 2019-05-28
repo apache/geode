@@ -286,6 +286,9 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       cum = new ClientUpdateMessageImpl(EnumListenerEvent.AFTER_CREATE,
           new ClientProxyMembershipID(), null);
     }
+
+    logger.info("RYAN: Event ID when Serializing: " + cum.getEventId());
+
     InternalDataSerializer.invokeToData(cum, out);
     if (cum.hasCqs()) {
       DataSerializer.writeConcurrentHashMap(cum.getClientCqs(), out);
@@ -305,6 +308,9 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
       this.eventIdentifier = (EventID) DataSerializer.readObject(in);
       this.clientUpdateMessage = new ClientUpdateMessageImpl();
       InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
+
+      logger.info("RYAN: Event ID when deserializing: " + this.eventIdentifier);
+
       ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
       if (this.clientUpdateMessage.hasCqs()) {
         {
