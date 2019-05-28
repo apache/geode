@@ -170,7 +170,7 @@ public class ClassPathLoader {
   public Class<?> forName(final String name) throws ClassNotFoundException {
     final boolean isDebugEnabled = logger.isTraceEnabled();
     if (isDebugEnabled) {
-      logger.debug("forName({})", name);
+      logger.trace("forName({})", name);
     }
 
     Class<?> clazz = forName(name, isDebugEnabled);
@@ -183,9 +183,15 @@ public class ClassPathLoader {
   private Class<?> forName(String name, boolean isDebugEnabled) {
     for (ClassLoader classLoader : this.getClassLoaders()) {
       if (isDebugEnabled) {
-        logger.debug("forName trying: {}", classLoader);
+        logger.trace("forName trying: {}", classLoader);
       }
       try {
+        // Do not look up class definitions in jars that have been unloaded or are old
+        if (classLoader instanceof DeployJarChildFirstClassLoader) {
+          if (((DeployJarChildFirstClassLoader) classLoader).thisIsOld()) {
+            return null;
+          }
+        }
         Class<?> clazz = Class.forName(name, true, classLoader);
         if (clazz != null) {
           if (isDebugEnabled) {
@@ -336,11 +342,7 @@ public class ClassPathLoader {
       }
     }
 
-    if (leafLoader == null) {
-      classLoaders.add(ClassPathLoader.class.getClassLoader());
-    } else {
-      classLoaders.add(leafLoader);
-    }
+    classLoaders.add(getLeafLoader());
     return classLoaders;
   }
 

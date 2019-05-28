@@ -110,10 +110,7 @@ public class DeployJarChildFirstClassLoader extends ChildFirstClassLoader {
     }
   }
 
-  private boolean thisIsOld() {
-    new Exception(
-        "thisIsOld lookup:" + latestJarNamesToClassLoader.get(jarName) + ":" + jarName + ":" + this)
-            .printStackTrace();
+  boolean thisIsOld() {
     return latestJarNamesToClassLoader.get(jarName) != this;
   }
 
