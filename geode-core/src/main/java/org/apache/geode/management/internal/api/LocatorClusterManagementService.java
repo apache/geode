@@ -185,8 +185,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<RuntimeCacheElement> resultList = new ArrayList<>();
 
     // get a list of all the resultList from all groups that satisfy the filter criteria (all
-    // filters
-    // have been applied except the group)
+    // filters have been applied except the group)
     for (String group : persistenceService.getGroups()) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);

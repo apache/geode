@@ -156,7 +156,7 @@ import org.apache.geode.management.api.RestfulEndpoint;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
-public class RegionConfig extends CacheElement implements RestfulEndpoint {
+public class RegionConfig extends AbstractCacheElement implements RestfulEndpoint {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -530,7 +530,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Index extends CacheElement implements RestfulEndpoint {
+  public static class Index extends AbstractCacheElement implements RestfulEndpoint {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

@@ -15,18 +15,15 @@
 
 package org.apache.geode.management.configuration;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import org.apache.geode.lang.Identifiable;
+import org.apache.geode.cache.configuration.CacheElement;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface RuntimeCacheElement extends Identifiable<String>, Serializable {
+public interface RuntimeCacheElement extends CacheElement {
   @XmlTransient
   List<String> getGroups();
 

@@ -38,5 +38,5 @@ public interface ConfigurationManager<T extends CacheElement> {
 
   void delete(T config, CacheConfig existing);
 
-  <R extends RuntimeCacheElement> List<R> list(T filterConfig, CacheConfig existing);
+  List<? extends RuntimeCacheElement> list(T filterConfig, CacheConfig existing);
 }
