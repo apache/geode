@@ -63,6 +63,21 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   private List<RVVException> exceptions;
   boolean isDepartedMember;
 
+  // This flag is used to to determine if region sync is needed when receiving region sync requests
+  // from other members hosting the region.
+  //
+  // It is set to true when region sync is being scheduled when triggered by the
+  // member departed event, if the lost member is the holding member by this holder.
+  // It can also be set to true, if region sync is not scheduled (this member joins the
+  // cluster after the lost member departed event has occurred) but this member receives
+  // request for region sync from other existing members. If this is the case, this member
+  // will send region sync request to other existing members hosting the region.
+  //
+  // The flag will be always set to true once region sync is scheduled or done for the holding
+  // member. If the holding member by the holder is lost multiples times and this member is
+  // never lost, the timed task would schedule region sync for the lost member (bypassing this
+  // condition check). If this member is also lost, when this member is restarted this
+  // flag will be initialized as false.
   private transient boolean regionSynchronizeScheduledOrDone;
 
   // non final for tests
@@ -799,6 +814,12 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     regionSynchronizeScheduledOrDone = true;
   }
 
+
+  /**
+   * Check to see if regionSynchronizeScheduledOrDone is set to true. If it is not,
+   * the regionSynchronizeScheduledOrDone variable is set to true and returns true.
+   * If it is already set to true, do nothing and returns false.
+   */
   public synchronized boolean setRegionSynchronizeScheduledOrDoneIfNot() {
     if (!isRegionSynchronizeScheduledOrDone()) {
       regionSynchronizeScheduledOrDone = true;

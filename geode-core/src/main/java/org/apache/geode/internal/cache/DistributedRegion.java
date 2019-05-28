@@ -1300,6 +1300,12 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   }
 
 
+  /**
+   * This is invoked by syncForCrashedMember when scheduling region synchronization
+   * triggered by member departed event. It sets the regionSynchronizeScheduledOrDone
+   * flag in region version holder to true. This indicates that no additional region sync for
+   * the lost member is needed, when it receives requests for region sync for the lost member.
+   */
   public void setRegionSynchronizeScheduled(VersionSource lostMemberVersionID) {
     RegionVersionHolder regionVersionHolder =
         getVersionVector().getHolderForMember(lostMemberVersionID);
@@ -1308,6 +1314,11 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
   }
 
+  /**
+   * This method checks region version holder to see if regionSynchronizeScheduledOrDone is
+   * set to true for the lost member. If it is not, the regionSynchronizeScheduledOrDone variable
+   * is set to true and returns true. If it is already set to true, do nothing and returns false.
+   */
   public boolean setRegionSynchronizedWithIfNotScheduled(VersionSource lostMemberVersionID) {
     RegionVersionHolder regionVersionHolder =
         getVersionVector().getHolderForMember(lostMemberVersionID);

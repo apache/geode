@@ -1904,6 +1904,16 @@ public class InitialImageOperation {
           null, null);
     }
 
+    /**
+     * If there is no region sync scheduled after checking region version holder holding the
+     * lost member. Region sync requests are sent to members hosting the region.
+     * This is only executed when processing region sync requests from other members hosting the
+     * region.
+     * Region sync is triggered by a member departed event. If this member exists during the
+     * event, region sync would be scheduled. This method is only handles the case when
+     * node is recently joining the cluster or restarted, and does not get the member departed
+     * event.
+     */
     void synchronizeIfNotScheduled(DistributedRegion region,
         InternalDistributedMember lostMember, VersionSource lostVersionSource) {
       if (region.setRegionSynchronizedWithIfNotScheduled(lostVersionSource)) {
