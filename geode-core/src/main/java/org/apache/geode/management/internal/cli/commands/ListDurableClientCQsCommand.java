@@ -56,7 +56,7 @@ public class ListDurableClientCQsCommand extends GfshCommand {
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
     if (targetMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     final ResultCollector<?, ?> rc =
@@ -72,7 +72,7 @@ public class ListDurableClientCQsCommand extends GfshCommand {
         table.accumulate("Status", oneResult.getStatus());
         table.accumulate("CQ Name", oneResult.getStatusMessage());
 
-        if (!oneResult.isSuccessful()) {
+        if (!(oneResult.isSuccessful() || oneResult.isIgnorableFailure())) {
           result.setStatus(Result.Status.ERROR);
         }
       }

@@ -135,10 +135,10 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
     String commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsError()
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
         .hasTableSection()
-        .hasColumn("CQ Name")
-        .containsExactlyInAnyOrder(
+        .hasColumn("Status").containsExactlyInAnyOrder("IGNORED", "IGNORED")
+        .hasColumn("CQ Name").containsExactlyInAnyOrder(
             CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME),
             CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, CLIENT_NAME));
   }

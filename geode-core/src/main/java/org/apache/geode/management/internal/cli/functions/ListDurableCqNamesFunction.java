@@ -68,28 +68,28 @@ public class ListDurableCqNamesFunction implements InternalFunction {
     try {
       CacheClientNotifier ccn = CacheClientNotifier.getInstance();
       if (ccn == null) {
-        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.IGNORABLE,
             CliStrings.NO_CLIENT_FOUND));
         return results;
       }
 
       CacheClientProxy ccp = ccn.getClientProxy(durableClientId);
       if (ccp == null) {
-        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.IGNORABLE,
             CliStrings.format(CliStrings.NO_CLIENT_FOUND_WITH_CLIENT_ID, durableClientId)));
         return results;
       }
 
       CqService cqService = ccp.getCache().getCqService();
       if (cqService == null || !cqService.isRunning()) {
-        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.IGNORABLE,
             CliStrings.LIST_DURABLE_CQS__NO__CQS__REGISTERED));
         return results;
       }
 
       List<String> durableCqNames = cqService.getAllDurableClientCqs(ccp.getProxyID());
       if (durableCqNames == null || durableCqNames.isEmpty()) {
-        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.ERROR,
+        results.add(new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.IGNORABLE,
             CliStrings
                 .format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, durableClientId)));
         return results;
