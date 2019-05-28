@@ -18,25 +18,17 @@
 
 package org.apache.geode.cache.configuration;
 
-import static org.apache.geode.cache.configuration.CacheElement.findElement;
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.internal.config.VersionAdapter;
+import org.w3c.dom.Element;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-
-import org.w3c.dom.Element;
-
-import org.apache.geode.annotations.Experimental;
-import org.apache.geode.internal.config.VersionAdapter;
+import static org.apache.geode.cache.configuration.CacheElement.findElement;
 
 /**
  * <p>
@@ -280,7 +272,7 @@ public class CacheConfig {
   @XmlElement(name = "gateway-sender", namespace = "http://geode.apache.org/schema/cache")
   protected List<GatewaySender> gatewaySenders;
   @XmlElement(name = "gateway-receiver", namespace = "http://geode.apache.org/schema/cache")
-  protected CacheConfig.GatewayReceiver gatewayReceiver;
+  protected GatewayReceiverConfig gatewayReceiver;
   @XmlElement(name = "gateway-conflict-resolver",
       namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType gatewayConflictResolver;
@@ -446,10 +438,10 @@ public class CacheConfig {
    * Gets the value of the gatewayReceiver property.
    *
    * possible object is
-   * {@link CacheConfig.GatewayReceiver }
+   * {@link GatewayReceiverConfig }
    *
    */
-  public CacheConfig.GatewayReceiver getGatewayReceiver() {
+  public GatewayReceiverConfig getGatewayReceiver() {
     return gatewayReceiver;
   }
 
@@ -457,10 +449,10 @@ public class CacheConfig {
    * Sets the value of the gatewayReceiver property.
    *
    * allowed object is
-   * {@link CacheConfig.GatewayReceiver }
+   * {@link GatewayReceiverConfig }
    *
    */
-  public void setGatewayReceiver(CacheConfig.GatewayReceiver value) {
+  public void setGatewayReceiver(GatewayReceiverConfig value) {
     this.gatewayReceiver = value;
   }
 
@@ -2519,243 +2511,6 @@ public class CacheConfig {
 
       }
 
-    }
-
-  }
-
-
-  /**
-   * <p>
-   * Java class for anonymous complex type.
-   *
-   * <p>
-   * The following schema fragment specifies the expected content contained within this class.
-   *
-   * <pre>
-   * &lt;complexType>
-   *   &lt;complexContent>
-   *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
-   *       &lt;sequence>
-   *         &lt;element name="gateway-transport-filter" type="{http://geode.apache.org/schema/cache}class-with-parameters-type" maxOccurs="unbounded" minOccurs="0"/>
-   *       &lt;/sequence>
-   *       &lt;attribute name="start-port" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="end-port" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="bind-address" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="maximum-time-between-pings" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="socket-buffer-size" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="hostname-for-senders" type="{http://www.w3.org/2001/XMLSchema}string" />
-   *       &lt;attribute name="manual-start" type="{http://www.w3.org/2001/XMLSchema}boolean" />
-   *     &lt;/restriction>
-   *   &lt;/complexContent>
-   * &lt;/complexType>
-   * </pre>
-   *
-   *
-   */
-  @XmlAccessorType(XmlAccessType.FIELD)
-  @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
-  public static class GatewayReceiver {
-
-    @XmlElement(name = "gateway-transport-filter",
-        namespace = "http://geode.apache.org/schema/cache")
-    protected List<DeclarableType> gatewayTransportFilters;
-    @XmlAttribute(name = "start-port")
-    protected String startPort;
-    @XmlAttribute(name = "end-port")
-    protected String endPort;
-    @XmlAttribute(name = "bind-address")
-    protected String bindAddress;
-    @XmlAttribute(name = "maximum-time-between-pings")
-    protected String maximumTimeBetweenPings;
-    @XmlAttribute(name = "socket-buffer-size")
-    protected String socketBufferSize;
-    @XmlAttribute(name = "hostname-for-senders")
-    protected String hostnameForSenders;
-    @XmlAttribute(name = "manual-start")
-    protected Boolean manualStart;
-
-    /**
-     * Gets the value of the gatewayTransportFilters property.
-     *
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the gatewayTransportFilters property.
-     *
-     * <p>
-     * For example, to add a new item, do as follows:
-     *
-     * <pre>
-     * getGatewayTransportFilters().add(newItem);
-     * </pre>
-     *
-     *
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link DeclarableType }
-     *
-     *
-     */
-    public List<DeclarableType> getGatewayTransportFilters() {
-      if (gatewayTransportFilters == null) {
-        gatewayTransportFilters = new ArrayList<DeclarableType>();
-      }
-      return this.gatewayTransportFilters;
-    }
-
-    /**
-     * Gets the value of the startPort property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getStartPort() {
-      return startPort;
-    }
-
-    /**
-     * Sets the value of the startPort property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setStartPort(String value) {
-      this.startPort = value;
-    }
-
-    /**
-     * Gets the value of the endPort property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getEndPort() {
-      return endPort;
-    }
-
-    /**
-     * Sets the value of the endPort property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setEndPort(String value) {
-      this.endPort = value;
-    }
-
-    /**
-     * Gets the value of the bindAddress property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getBindAddress() {
-      return bindAddress;
-    }
-
-    /**
-     * Sets the value of the bindAddress property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setBindAddress(String value) {
-      this.bindAddress = value;
-    }
-
-    /**
-     * Gets the value of the maximumTimeBetweenPings property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getMaximumTimeBetweenPings() {
-      return maximumTimeBetweenPings;
-    }
-
-    /**
-     * Sets the value of the maximumTimeBetweenPings property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setMaximumTimeBetweenPings(String value) {
-      this.maximumTimeBetweenPings = value;
-    }
-
-    /**
-     * Gets the value of the socketBufferSize property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getSocketBufferSize() {
-      return socketBufferSize;
-    }
-
-    /**
-     * Sets the value of the socketBufferSize property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setSocketBufferSize(String value) {
-      this.socketBufferSize = value;
-    }
-
-    /**
-     * Gets the value of the hostnameForSenders property.
-     *
-     * possible object is
-     * {@link String }
-     *
-     */
-    public String getHostnameForSenders() {
-      return hostnameForSenders;
-    }
-
-    /**
-     * Sets the value of the hostnameForSenders property.
-     *
-     * allowed object is
-     * {@link String }
-     *
-     */
-    public void setHostnameForSenders(String value) {
-      this.hostnameForSenders = value;
-    }
-
-    /**
-     * Gets the value of the manualStart property.
-     *
-     * possible object is
-     * {@link Boolean }
-     *
-     */
-    public Boolean isManualStart() {
-      return manualStart;
-    }
-
-    /**
-     * Sets the value of the manualStart property.
-     *
-     * allowed object is
-     * {@link Boolean }
-     *
-     */
-    public void setManualStart(Boolean value) {
-      this.manualStart = value;
     }
 
   }

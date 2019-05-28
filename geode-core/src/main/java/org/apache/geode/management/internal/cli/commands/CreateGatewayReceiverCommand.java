@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -84,7 +85,7 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.IFNOTEXISTS, help = CliStrings.IFNOTEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean ifNotExists) {
 
-    CacheConfig.GatewayReceiver configuration =
+    GatewayReceiverConfig configuration =
         buildConfiguration(manualStart, startPort, endPort, bindAddress, maximumTimeBetweenPings,
             socketBufferSize, gatewayTransportFilters, hostnameForSenders);
 
@@ -104,14 +105,14 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
-    config.setGatewayReceiver((CacheConfig.GatewayReceiver) configObject);
+    config.setGatewayReceiver((GatewayReceiverConfig) configObject);
     return true;
   }
 
-  private CacheConfig.GatewayReceiver buildConfiguration(Boolean manualStart, Integer startPort,
-      Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
-      Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
-    CacheConfig.GatewayReceiver configuration = new CacheConfig.GatewayReceiver();
+  private GatewayReceiverConfig buildConfiguration(Boolean manualStart, Integer startPort,
+                                                   Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
+                                                   Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
+    GatewayReceiverConfig configuration = new GatewayReceiverConfig();
 
     if (gatewayTransportFilters != null) {
       List<DeclarableType> filters =

@@ -21,6 +21,7 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -62,7 +63,7 @@ public class DestroyGatewayReceiverCommand extends SingleGfshCommand {
         executeAndGetFunctionResult(DestroyGatewayReceiverFunction.INSTANCE, null, members);
 
     ResultModel result = ResultModel.createMemberStatusResult(functionResults, ifExists);
-    result.setConfigObject(new CacheConfig.GatewayReceiver());
+    result.setConfigObject(new GatewayReceiverConfig());
 
 
     return result;

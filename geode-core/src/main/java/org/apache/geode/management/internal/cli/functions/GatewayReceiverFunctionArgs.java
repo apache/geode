@@ -16,8 +16,8 @@ package org.apache.geode.management.internal.cli.functions;
 
 import java.io.Serializable;
 
-import org.apache.geode.cache.configuration.CacheConfig.GatewayReceiver;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 
 /**
  * This class stores the arguments provided in the create gateway-receiver command.
@@ -43,7 +43,7 @@ public class GatewayReceiverFunctionArgs implements Serializable {
 
   private final Boolean ifNotExists;
 
-  public GatewayReceiverFunctionArgs(GatewayReceiver configuration, Boolean ifNotExists) {
+  public GatewayReceiverFunctionArgs(GatewayReceiverConfig configuration, Boolean ifNotExists) {
     this.manualStart = configuration.isManualStart();
     this.startPort =
         configuration.getStartPort() != null ? Integer.valueOf(configuration.getStartPort()) : null;

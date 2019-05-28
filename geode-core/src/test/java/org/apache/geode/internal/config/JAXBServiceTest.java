@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 
@@ -209,7 +210,7 @@ public class JAXBServiceTest {
 
   public static void setBasicValues(CacheConfig cache) {
     cache.setCopyOnRead(true);
-    CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
+    GatewayReceiverConfig receiver = new GatewayReceiverConfig();
     receiver.setBindAddress("localhost");
     receiver.setEndPort("8080");
     receiver.setManualStart(false);
