@@ -121,8 +121,9 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
     commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsError()
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
         .hasTableSection()
+        .hasColumn("Status").containsExactly("IGNORED", "IGNORED")
         .hasColumn("CQ Name")
         .containsExactlyInAnyOrder(
             CliStrings.format(CliStrings.LIST_DURABLE_CQS__NO__CQS__FOR__CLIENT, CLIENT_NAME),
@@ -151,8 +152,9 @@ public class DurableClientCommandsDUnitTest {
     csb.addOption(CliStrings.LIST_DURABLE_CQS__DURABLECLIENTID, CLIENT_NAME);
     String commandString = csb.toString();
 
-    gfsh.executeAndAssertThat(commandString).statusIsError()
+    gfsh.executeAndAssertThat(commandString).statusIsSuccess()
         .hasTableSection()
+        .hasColumn("Status").containsExactlyInAnyOrder("IGNORED", "OK", "OK", "OK")
         .hasColumn("CQ Name")
         .containsExactlyInAnyOrder("cq1", "cq2", "cq3", "No client found with client-id : dc1");
 

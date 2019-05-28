@@ -82,7 +82,7 @@ public class DestroyGatewaySenderCommandDUnitTest {
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 
-    gfsh.executeAndAssertThat("list gateways").statusIsError()
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");
   }
 
@@ -100,7 +100,7 @@ public class DestroyGatewaySenderCommandDUnitTest {
 
     locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
 
-    gfsh.executeAndAssertThat("list gateways").statusIsError()
+    gfsh.executeAndAssertThat("list gateways").statusIsSuccess()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");
   }
 }

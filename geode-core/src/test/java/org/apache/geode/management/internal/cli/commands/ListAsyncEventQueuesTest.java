@@ -66,7 +66,7 @@ public class ListAsyncEventQueuesTest {
     doReturn(Collections.emptySet()).when(command).getAllNormalMembers();
 
     // Command should succeed with one row of data
-    gfsh.executeAndAssertThat(command, COMMAND).statusIsError()
+    gfsh.executeAndAssertThat(command, COMMAND).statusIsSuccess()
         .containsOutput(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
   }
 
