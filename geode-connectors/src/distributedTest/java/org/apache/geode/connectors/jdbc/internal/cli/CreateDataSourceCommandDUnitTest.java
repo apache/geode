@@ -109,6 +109,8 @@ public class CreateDataSourceCommandDUnitTest {
         "No suitable driver");
     IgnoredException.addIgnoredException(
         "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\"");
 
     // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
@@ -129,14 +131,14 @@ public class CreateDataSourceCommandDUnitTest {
     IgnoredException.addIgnoredException(
         "create data-source failed");
     IgnoredException.addIgnoredException(
-        "com.mysql.cj.jdbc.exceptions.CommunicationsException: Communications link failure");
+        "Communications link failure");
     IgnoredException.addIgnoredException(
         "Access denied for user 'mySqlUser'@'localhost'");
     IgnoredException.addIgnoredException(
         "Failed to connect to \"mySqlDataSource\"");
 
     gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
             + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
         .statusIsError().doesNotContainOutput("No suitable driver");
 
