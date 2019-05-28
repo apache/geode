@@ -53,7 +53,7 @@ public class ListMembersCommand extends GfshCommand {
       crm.addInfo().addLine(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
       return crm;
     }
-
+    crm.addInfo().addLine("Member Count : " + memberSet.size());
     TabularResultModel resultData = crm.addTable(MEMBERS_SECTION);
     final String coordinatorMemberId = getCoordinatorId();
     for (DistributedMember member : memberSet) {
