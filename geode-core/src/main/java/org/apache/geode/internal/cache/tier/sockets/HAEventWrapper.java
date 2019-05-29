@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.SerializationException;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -303,77 +304,84 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    if (DataSerializer.readPrimitiveBoolean(in)) {
-      // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
-      this.eventIdentifier = (EventID) DataSerializer.readObject(in);
-      this.clientUpdateMessage = new ClientUpdateMessageImpl();
-      InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
+    try {
+      if (DataSerializer.readPrimitiveBoolean(in)) {
+        // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
+        this.eventIdentifier = (EventID) DataSerializer.readObject(in);
+        this.clientUpdateMessage = new ClientUpdateMessageImpl();
+        InternalDataSerializer.invokeFromData(this.clientUpdateMessage, in);
 
-      logger.info("RYAN: Event ID when deserializing: " + this.eventIdentifier);
+        logger.info("RYAN: Event ID when deserializing: " + this.eventIdentifier);
 
-      ((ClientUpdateMessageImpl) this.clientUpdateMessage).setEventIdentifier(this.eventIdentifier);
-      if (this.clientUpdateMessage.hasCqs()) {
-        {
-          ClientCqConcurrentMap cqMap;
-          int size = InternalDataSerializer.readArrayLength(in);
-          if (size == -1) {
-            cqMap = null;
-          } else {
-            cqMap = new ClientCqConcurrentMap(size, 1.0f, 1);
-            for (int i = 0; i < size; i++) {
-              ClientProxyMembershipID key = DataSerializer.<ClientProxyMembershipID>readObject(in);
-              CqNameToOp value;
-              {
-                byte typeByte = in.readByte();
-                if (typeByte == DSCODE.HASH_MAP.toByte()) {
-                  int cqNamesSize = InternalDataSerializer.readArrayLength(in);
-                  if (cqNamesSize == -1) {
-                    throw new IllegalStateException(
-                        "The value of a ConcurrentHashMap is not allowed to be null.");
-                  } else if (cqNamesSize == 1) {
-                    String cqNamesKey = DataSerializer.<String>readObject(in);
-                    Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
-                    value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
-                  } else if (cqNamesSize == 0) {
-                    value = new CqNameToOpSingleEntry(null, 0);
-                  } else {
-                    value = new CqNameToOpHashMap(cqNamesSize);
-                    for (int j = 0; j < cqNamesSize; j++) {
+        ((ClientUpdateMessageImpl) this.clientUpdateMessage)
+            .setEventIdentifier(this.eventIdentifier);
+        if (this.clientUpdateMessage.hasCqs()) {
+          {
+            ClientCqConcurrentMap cqMap;
+            int size = InternalDataSerializer.readArrayLength(in);
+            if (size == -1) {
+              cqMap = null;
+            } else {
+              cqMap = new ClientCqConcurrentMap(size, 1.0f, 1);
+              for (int i = 0; i < size; i++) {
+                ClientProxyMembershipID key =
+                    DataSerializer.<ClientProxyMembershipID>readObject(in);
+                CqNameToOp value;
+                {
+                  byte typeByte = in.readByte();
+                  if (typeByte == DSCODE.HASH_MAP.toByte()) {
+                    int cqNamesSize = InternalDataSerializer.readArrayLength(in);
+                    if (cqNamesSize == -1) {
+                      throw new IllegalStateException(
+                          "The value of a ConcurrentHashMap is not allowed to be null.");
+                    } else if (cqNamesSize == 1) {
                       String cqNamesKey = DataSerializer.<String>readObject(in);
                       Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
-                      value.add(cqNamesKey, cqNamesValue);
+                      value = new CqNameToOpSingleEntry(cqNamesKey, cqNamesValue);
+                    } else if (cqNamesSize == 0) {
+                      value = new CqNameToOpSingleEntry(null, 0);
+                    } else {
+                      value = new CqNameToOpHashMap(cqNamesSize);
+                      for (int j = 0; j < cqNamesSize; j++) {
+                        String cqNamesKey = DataSerializer.<String>readObject(in);
+                        Integer cqNamesValue = DataSerializer.<Integer>readObject(in);
+                        value.add(cqNamesKey, cqNamesValue);
+                      }
                     }
+                  } else if (typeByte == DSCODE.NULL.toByte()) {
+                    throw new IllegalStateException(
+                        "The value of a ConcurrentHashMap is not allowed to be null.");
+                  } else {
+                    throw new IllegalStateException(
+                        "Expected DSCODE.NULL or DSCODE.HASH_MAP but read " + typeByte);
                   }
-                } else if (typeByte == DSCODE.NULL.toByte()) {
-                  throw new IllegalStateException(
-                      "The value of a ConcurrentHashMap is not allowed to be null.");
-                } else {
-                  throw new IllegalStateException(
-                      "Expected DSCODE.NULL or DSCODE.HASH_MAP but read " + typeByte);
                 }
+                cqMap.put(key, value);
               }
-              cqMap.put(key, value);
             }
+            this.clientCqs = cqMap;
           }
-          this.clientCqs = cqMap;
+          ((ClientUpdateMessageImpl) this.clientUpdateMessage).setClientCqs(this.clientCqs);
         }
-        ((ClientUpdateMessageImpl) this.clientUpdateMessage).setClientCqs(this.clientCqs);
+        this.regionName = this.clientUpdateMessage.getRegionName();
+        this.keyOfInterest = this.clientUpdateMessage.getKeyOfInterest();
+        this.shouldConflate = this.clientUpdateMessage.shouldBeConflated();
+        rcUpdater.set(this, 0);
+      } else {
+        // Read and ignore dummy eventIdentifier instance.
+        DataSerializer.readObject(in);
+        // Read and ignore dummy ClientUpdateMessageImpl instance.
+        InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
+        // hasCq will be false here, so client CQs are not read from this input
+        // stream.
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
+        }
       }
-      this.regionName = this.clientUpdateMessage.getRegionName();
-      this.keyOfInterest = this.clientUpdateMessage.getKeyOfInterest();
-      this.shouldConflate = this.clientUpdateMessage.shouldBeConflated();
-      rcUpdater.set(this, 0);
-    } else {
-      // Read and ignore dummy eventIdentifier instance.
-      DataSerializer.readObject(in);
-      // Read and ignore dummy ClientUpdateMessageImpl instance.
-      InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
-      // hasCq will be false here, so client CQs are not read from this input
-      // stream.
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
-      }
+    } catch (SerializationException ex) {
+      logger.info("RYAN: Serialization exception caught", ex);
+      throw ex;
     }
   }
 
