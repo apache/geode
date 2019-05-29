@@ -49,6 +49,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the
@@ -59,7 +60,7 @@ import org.apache.geode.internal.logging.LogService;
 public class ProcessWrapper implements Consumer<String> {
   private static final Logger logger = LogService.getLogger();
 
-  private static final long PROCESS_TIMEOUT_MILLIS = 10 * 60 * 1000L; // 10 minutes
+  private static final long PROCESS_TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
   private static final long DELAY = 10;
 
   private final boolean headless;
@@ -253,8 +254,9 @@ public class ProcessWrapper implements Consumer<String> {
     while (true) {
       final String line = this.lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
       if (line == null) {
-        fail("Timed out waiting for output \"" + patternString + "\" after " + timeoutMillis
-            + " ms. Output: " + new OutputFormatter(this.allLines));
+        fail("Timed out waiting for output \"" + patternString + "\" after " + timeoutMillis +
+            " ms from process \"" + toString(process) + "\" in \"" + this + "\". Output: " +
+            new OutputFormatter(allLines));
       }
 
       if (pattern.matcher(line).matches()) {
@@ -269,6 +271,14 @@ public class ProcessWrapper implements Consumer<String> {
       }
     }
     return this;
+  }
+
+  private String toString(Process process) {
+    StringBuilder sb = new StringBuilder(process.getClass().getSimpleName());
+    sb.append("@").append(System.identityHashCode(this)).append("{");
+    sb.append("alive=").append(process.isAlive());
+    sb.append("}");
+    return sb.toString();
   }
 
   /*
@@ -375,11 +385,11 @@ public class ProcessWrapper implements Consumer<String> {
 
       this.outputReader.start();
       this.outputReader.waitFor(PROCESS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-      int code = this.process.waitFor();
+      boolean exited = process.waitFor(PROCESS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
 
       synchronized (this.exitValue) {
-        this.exitValue.set(code);
-        this.stopped = true;
+        this.exitValue.set(exited ? process.exitValue() : 0);
+        this.stopped = exited;
       }
 
     } catch (InterruptedException e) {
@@ -465,9 +475,11 @@ public class ProcessWrapper implements Consumer<String> {
 
   @Override
   public String toString() {
-    final StringBuilder sb = new StringBuilder(getClass().getSimpleName());
+    StringBuilder sb = new StringBuilder(getClass().getSimpleName());
     sb.append("@").append(System.identityHashCode(this)).append("{");
-    sb.append(this.mainClass);
+    sb.append("mainClass=").append(mainClass).append(", ");
+    sb.append("jvmArguments=").append(Arrays.toString(jvmArguments)).append(", ");
+    sb.append("mainArguments=").append(Arrays.toString(mainArguments));
     sb.append("}");
     return sb.toString();
   }
