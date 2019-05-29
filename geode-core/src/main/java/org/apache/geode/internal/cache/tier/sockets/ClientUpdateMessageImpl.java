@@ -1577,6 +1577,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
+      logger.info("RYAN: Writing CqNameToOp HashMap");
+
       out.writeByte(DSCODE.HASH_MAP.toByte());
       DataSerializer.writeHashMap(this, out);
     }

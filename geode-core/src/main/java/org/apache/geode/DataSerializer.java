@@ -2326,19 +2326,24 @@ public abstract class DataSerializer {
 
     int size;
     if (map == null) {
+      logger.info("RYGUY: Map was null");
       size = -1;
     } else {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HashMap with {} elements: {}", size, map);
-    }
+    // if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+    logger.info("RYAN: Writing HashMap with {} elements: {}", size, map);
+    // }
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
+        logger.info("RYAN: Writing key: " + entry.getKey());
         writeObject(entry.getKey(), out);
+        logger.info("RYAN: Writing value: " + entry.getValue());
         writeObject(entry.getValue(), out);
       }
+    } else {
+      logger.info("RYAN: Size of entrySet was zero");
     }
   }
 
