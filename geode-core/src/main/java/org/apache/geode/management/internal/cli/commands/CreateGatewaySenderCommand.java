@@ -25,6 +25,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
@@ -165,7 +166,8 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   /*
    * Wait for up tp 2 seconds for the proxy MBeans to be created.
    */
-  private boolean waitForGatewaySenderMBeanCreation(String id,
+  @VisibleForTesting
+  boolean waitForGatewaySenderMBeanCreation(String id,
       Set<DistributedMember> membersToCreateGatewaySenderOn) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
     long startWaitTime = System.currentTimeMillis();
@@ -192,12 +194,14 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   private boolean gatewaySenderBeanExists(DistributedSystemMXBean dsMXBean, String member,
       String id) {
     try {
-      if (dsMXBean.fetchGatewaySenderObjectName(member, id) != null) {
-        return true;
-      }
+      // Throw a vanilla Exception if this call does not find anything
+      dsMXBean.fetchGatewaySenderObjectName(member, id);
+      return true;
     } catch (Exception e) {
-      logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
-          member, id, e.getMessage());
+      if (!e.getMessage().toLowerCase().contains("not found")) {
+        logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
+            member, id, e.getMessage());
+      }
     }
     return false;
   }

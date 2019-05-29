@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
@@ -80,7 +81,8 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   /*
    * Wait for up tp 2 seconds for the proxy MBeans to be deleted.
    */
-  private boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
+  @VisibleForTesting
+  boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
     long startWaitTime = System.currentTimeMillis();
     long waitedFor;
@@ -106,14 +108,16 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   private boolean gatewaySenderBeanDoesNotExist(DistributedSystemMXBean dsMXBean, String member,
       String id) {
     try {
-      if (dsMXBean.fetchGatewaySenderObjectName(member, id) == null) {
-        return true;
-      }
+      // Throw a vanilla Exception if this call does not find anything
+      dsMXBean.fetchGatewaySenderObjectName(member, id);
+      return false;
     } catch (Exception e) {
-      logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
-          member, id, e.getMessage());
+      if (!e.getMessage().toLowerCase().contains("not found")) {
+        logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
+            member, id, e.getMessage());
+      }
     }
-    return false;
+    return true;
   }
 
   @Override
