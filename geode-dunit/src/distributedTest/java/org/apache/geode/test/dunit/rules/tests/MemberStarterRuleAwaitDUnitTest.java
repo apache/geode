@@ -128,11 +128,4 @@ public class MemberStarterRuleAwaitDUnitTest {
                     + existingDiskStoreName);
   }
 
-  @Test
-  public void nonexistingGatewayTimeout() {
-    assertThatThrownBy(
-        () -> memberToTest.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(3))
-            .hasCauseInstanceOf(ConditionTimeoutException.class)
-            .hasStackTraceContaining("Expecting to find exactly 3 gateway sender beans");
-  }
 }

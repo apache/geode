@@ -97,6 +97,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   @Test
   public void testCreateDestroyGatewaySenderWithDefault() {
     gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
@@ -116,6 +117,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
@@ -156,6 +158,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + CliStrings.CREATE_GATEWAYSENDER__ORDERPOLICY + "=THREAD";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
@@ -169,6 +172,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
@@ -203,6 +207,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + "=org.apache.geode.cache30.MyGatewayEventFilter1,org.apache.geode.cache30.MyGatewayEventFilter2";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
@@ -220,6 +225,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
@@ -254,6 +260,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
         + "=org.apache.geode.cache30.MyGatewayTransportFilter1";
 
     gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
@@ -270,6 +277,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",
@@ -285,6 +293,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   @Test
   public void testCreateDestroyGatewaySender_OnMember() {
     gfsh.executeAndAssertThat(CREATE + " --member=" + server1.getName()).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(1).hasColumn("Message")
         .containsOnly("GatewaySender \"ln\" created on \"" + SERVER_3 + "\"");
 
@@ -292,6 +301,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --member=" + server1.getName()).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(1).hasColumn("Message")
         .containsOnly("GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
@@ -304,6 +314,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   @Test
   public void testCreateDestroyGatewaySender_Group() {
     gfsh.executeAndAssertThat(CREATE + " --group=senderGroup1").statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(1).hasColumn("Message")
         .containsOnly("GatewaySender \"ln\" created on \"" + SERVER_3 + "\"");
 
@@ -311,6 +322,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
     VMProvider.invokeInEveryMember(() -> verifySenderDoesNotExist("ln", false), server2, server3);
 
     gfsh.executeAndAssertThat(DESTROY + " --group=senderGroup1").statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(1).hasColumn("Message")
         .containsOnly("GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"");
 
@@ -323,6 +335,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
   @Test
   public void testCreateDestroyParallelGatewaySender() {
     gfsh.executeAndAssertThat(CREATE + " --parallel").statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" created on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" created on \"" + SERVER_4 + "\"",
@@ -330,6 +343,7 @@ public class CreateDestroyGatewaySenderCommandDUnitTest implements Serializable 
 
     // destroy gateway sender and verify AEQs cleaned up
     gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
         .hasTableSection().hasRowSize(3).hasColumn("Message").containsOnly(
             "GatewaySender \"ln\" destroyed on \"" + SERVER_3 + "\"",
             "GatewaySender \"ln\" destroyed on \"" + SERVER_4 + "\"",

@@ -435,17 +435,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return managementService.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
   }
 
-  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(int exactGatewaySenderCount)
-      throws Exception {
-    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    String predicateDescription = String.format(
-        "Expecting to find exactly %d gateway sender beans.", exactGatewaySenderCount);
-
-    waitUntilEqual(() -> dsMXBean.listGatewaySenderObjectNames(),
-        array -> array.length, exactGatewaySenderCount, predicateDescription, WAIT_UNTIL_TIMEOUT,
-        TimeUnit.SECONDS);
-  }
-
   public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskStoreName,
       int exactServerCount) throws Exception {
     final Supplier<DistributedSystemMXBean> distributedSystemMXBeanSupplier =

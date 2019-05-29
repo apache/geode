@@ -71,16 +71,18 @@ public class DestroyGatewaySenderCommandDUnitTest {
 
   @Test
   public void testCreateDestroySerialGatewaySenderWithDefault() throws Exception {
-    gfsh.executeAndAssertThat(CREATE).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Message", "GatewaySender \"sender\" created on \"happyserver1\"");
-
-    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+    gfsh.executeAndAssertThat(CREATE).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender\" created on \"happyserver1\"");
 
     // destroy gateway sender and verify AEQs cleaned up
-    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Message", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
-
-    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
+    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsError()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");
@@ -89,16 +91,17 @@ public class DestroyGatewaySenderCommandDUnitTest {
   @Test
   public void testCreateDestroyParallellGatewaySenderWithDefault() throws Exception {
     gfsh.executeAndAssertThat(CREATE + " --parallel").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Message",
-            "GatewaySender \"sender\" created on \"happyserver1\"");
-
-    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender\" created on \"happyserver1\"");
 
     // destroy gateway sender and verify AEQs cleaned up
-    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess().tableHasColumnWithExactValuesInAnyOrder(
-        "Message", "GatewaySender \"sender\" destroyed on \"happyserver1\"");
-
-    locatorSite1.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(0);
+    gfsh.executeAndAssertThat(DESTROY).statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting")
+        .hasTableSection()
+        .hasColumn("Message")
+        .containsExactly("GatewaySender \"sender\" destroyed on \"happyserver1\"");
 
     gfsh.executeAndAssertThat("list gateways").statusIsError()
         .containsOutput("GatewaySenders or GatewayReceivers are not available in cluster");

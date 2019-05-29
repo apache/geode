@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -67,7 +68,52 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
 
     ResultModel resultModel = ResultModel.createMemberStatusResult(functionResults);
     resultModel.setConfigObject(id);
+
+    if (!waitForGatewaySenderMBeanDeletion(id, members)) {
+      resultModel.addInfo()
+          .addLine("Did not complete waiting for GatewaySenderMBean proxy deletion");
+    }
+
     return resultModel;
+  }
+
+  /*
+   * Wait for up tp 2 seconds for the proxy MBeans to be deleted.
+   */
+  private boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
+    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+    long startWaitTime = System.currentTimeMillis();
+    long waitedFor;
+
+    do {
+      try {
+        if (members.stream()
+            .allMatch(m -> gatewaySenderBeanDoesNotExist(dsMXBean, m.getName(), id))) {
+          return true;
+        }
+
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        // ignored
+      }
+
+      waitedFor = System.currentTimeMillis() - startWaitTime;
+    } while (waitedFor < 2000);
+
+    return false;
+  }
+
+  private boolean gatewaySenderBeanDoesNotExist(DistributedSystemMXBean dsMXBean, String member,
+      String id) {
+    try {
+      if (dsMXBean.fetchGatewaySenderObjectName(member, id) == null) {
+        return true;
+      }
+    } catch (Exception e) {
+      logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
+          member, id, e.getMessage());
+    }
+    return false;
   }
 
   @Override
