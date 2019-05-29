@@ -59,6 +59,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetView;
@@ -198,6 +199,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
   private DMStats stats;
 
   /**
+   * Interval to run the Monitor task
+   */
+  private long monitorInterval;
+
+  /**
+   * /**
    * this class is to avoid garbage
    */
   private static class TimeStamp {
@@ -226,6 +233,12 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * member in last interval(member-timeout)
    */
   private class Monitor implements Runnable {
+    /**
+     * Here we use the same threshold for detecting JVM pauses as the StatSampler
+     */
+    private final long MONITOR_DELAY_THRESHOLD =
+        Long.getLong(DistributionConfig.GEMFIRE_PREFIX + "statSamplerDelayThreshold", 3000);
+
 
     final long memberTimeoutInMillis;
 
@@ -245,6 +258,26 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       long currentTime = System.currentTimeMillis();
       // this is the start of interval to record member activity
       GMSHealthMonitor.this.currentTimeStamp = currentTime;
+
+
+      long oldTimeStamp = currentTimeStamp;
+      currentTimeStamp = System.currentTimeMillis();
+
+      NetView myView = GMSHealthMonitor.this.currentView;
+      if (myView == null) {
+        return;
+      }
+
+      if (currentTimeStamp - oldTimeStamp > monitorInterval + MONITOR_DELAY_THRESHOLD) {
+        // delay in running this task - don't suspect anyone for a while
+        logger.info(
+            "Failure detector has noticed a JVM pause and is giving all members a heartbeat in view {}",
+            currentView);
+        for (InternalDistributedMember member : myView.getMembers()) {
+          contactedBy(member);
+        }
+        return;
+      }
 
       if (neighbour != null) {
         TimeStamp nextNeighborTS;
@@ -629,8 +662,9 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     scheduler = LoggingExecutors.newScheduledThreadPool("Geode Failure Detection Scheduler", 1);
     checkExecutor = LoggingExecutors.newCachedThreadPool("Geode Failure Detection thread ", true);
     Monitor m = this.new Monitor(memberTimeout);
-    long delay = memberTimeout / LOGICAL_INTERVAL;
-    monitorFuture = scheduler.scheduleAtFixedRate(m, delay, delay, TimeUnit.MILLISECONDS);
+    monitorInterval = memberTimeout / LOGICAL_INTERVAL;
+    monitorFuture =
+        scheduler.scheduleAtFixedRate(m, monitorInterval, monitorInterval, TimeUnit.MILLISECONDS);
     serverSocketExecutor =
         LoggingExecutors.newCachedThreadPool("Geode Failure Detection Server thread ", true);
   }
