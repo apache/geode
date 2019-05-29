@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
+import static java.util.Arrays.asList;
+import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
+import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.GEODE_NAMESPACE;
 import static org.apache.geode.internal.cache.xmlcache.CacheXml.LATEST_SCHEMA_LOCATION;
@@ -37,7 +41,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
@@ -65,7 +69,6 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
-import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
@@ -76,7 +79,7 @@ import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.process.ProcessWrapper;
 
 /**
- * Tests the CacheServerLauncher. Extracted/renamed from CacheServerLauncherDUnitTest.
+ * Tests the deprecated CacheServerLauncher.
  *
  * @since GemFire 6.0
  */
@@ -84,10 +87,6 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   private static final Logger logger = LogService.getLogger();
 
   private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
-
-  private static final String START = "start";
-  private static final String STATUS = "status";
-  private static final String STOP = "stop";
 
   private static final String CLASSNAME =
       DeprecatedCacheServerLauncherIntegrationTest.class.getSimpleName();
@@ -178,22 +177,16 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   public void testStartStatusStop() throws Exception {
     createCacheXml(this.directory, this.cacheXmlFileName, this.serverPort);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath());
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath));
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS,
-        "-dir=" + this.directoryPath);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    execAndValidate(".*The CacheServer has stopped\\.", STOP, "-dir=" + this.directoryPath);
+    execWithDirAndValidate(Operation.STOP, ".*The CacheServer has stopped\\.");
   }
 
   @Test
@@ -202,24 +195,19 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     createCacheXml(this.directory, this.cacheXmlFileName, this.serverPort, 0);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "cache-xml-file=" + this.cacheXmlFile.getAbsolutePath(),
-        "log-file=" + this.logFile.getAbsolutePath(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "-server-port=" + this.serverPort,
-        "-dir=" + this.directory.getAbsolutePath(),
-        "-classpath=" + getManifestJarFromClasspath());
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFile.getAbsolutePath(),
+            "log-file=" + this.logFile.getAbsolutePath(),
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directory.getAbsolutePath(),
+            "-server-port=" + this.serverPort));
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS,
-        "-dir=" + this.directory.getAbsolutePath());
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    execAndValidate(".*The CacheServer has stopped\\.", STOP,
-        "-dir=" + this.directory.getAbsolutePath());
+    execWithDirAndValidate(Operation.STOP, ".*The CacheServer has stopped\\.");
 
-    await()
-        .untilAsserted(() -> assertThat(cacheServerDotSerFile).doesNotExist());
+    await().untilAsserted(() -> assertThat(cacheServerDotSerFile).doesNotExist());
   }
 
   @Ignore("This test needs to be reworked")
@@ -230,13 +218,14 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     createCacheXml(this.directory, this.cacheXmlFileName, this.serverPort, 0);
 
     this.processWrapper = new ProcessWrapper.Builder().mainClass(CacheServerLauncher.class)
-        .mainArguments(new String[] {START,
+        .mainArguments(new String[] {
+            Operation.START.value(),
             "cache-xml-file=" + this.cacheXmlFileName,
             "log-file=" + this.logFileName,
             "log-level=info",
-            "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-            "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-            "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
+            "-J-Dgemfire." + USE_CLUSTER_CONFIGURATION + "=false",
+            "-J-Dgemfire." + HTTP_SERVICE_PORT + "=0",
+            "-J-Dgemfire." + LOCATORS + "=\"\"",
             "-server-port=" + this.serverPort,
             "-dir=" + this.directoryPath,
             "-classpath=" + getManifestJarFromClasspath()})
@@ -270,14 +259,19 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     await()
         .until(() -> execAndWaitForOutputToMatch("CacheServer pid: " + pid + " status: stopped",
-            STATUS, "-dir=" + this.directory.getName()));
+            Operation.STATUS.value(), "-dir=" + this.directory.getName()));
 
     assertThat(this.processWrapper.getOutput()).isNull();
 
-    execAndValidate("The CacheServer has stopped.", STOP, "-dir=" + this.directory.getName());
+    execAndValidate("The CacheServer has stopped.",
+        new String[] {
+            Operation.STOP.value(),
+            "-dir=" + this.directory.getName()});
 
-    execAndValidate("CacheServer pid: 0 status: stopped", STATUS,
-        "-dir=" + this.directory.getName());
+    execAndValidate("CacheServer pid: 0 status: stopped",
+        new String[] {
+            Operation.STATUS.value(),
+            "-dir=" + this.directory.getName()});
 
     assertThat(dotCacheServerDotSerFile).doesNotExist();
   }
@@ -290,25 +284,20 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     createCacheXml(this.directory, this.cacheXmlFileName, this.serverPort);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath(),
-        "-rebalance");
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath,
+            "-rebalance"));
 
     await().untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
     await().untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    execAndValidate(".*The CacheServer has stopped\\.", STOP, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STOP, ".*The CacheServer has stopped\\.");
   }
 
   @Test
@@ -319,45 +308,35 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     createCacheXml(this.directory, this.cacheXmlFileName, this.serverPort);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-D" + CacheServerLauncher.ASSIGN_BUCKETS + "=true",
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath(),
-        "-rebalance");
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "-J-D" + CacheServerLauncher.ASSIGN_BUCKETS + "=true",
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath,
+            "-rebalance"));
 
     await().untilAsserted(() -> assertThat(this.status.isStarted()).isTrue());
     await().untilAsserted(() -> assertThat(this.status.isFinished()).isTrue());
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    execAndValidate(".*The CacheServer has stopped\\.", STOP, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STOP, ".*The CacheServer has stopped\\.");
   }
 
   @Test
   public void testWithoutServerPort() throws Exception {
     createCacheXml(this.directory, this.cacheXmlFileName, this.xmlPort, 1);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath());
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath));
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
     ClientCache cache = new ClientCacheFactory().create();
     ClientRegionFactory<Integer, Integer> regionFactory =
@@ -372,27 +351,22 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     region.put(1, 1); // put should be successful
 
-    execAndValidate("The CacheServer has stopped\\.", STOP, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
 
   @Test
   public void testServerPortOneCacheServer() throws Exception {
     createCacheXml(this.directory, this.cacheXmlFileName, this.xmlPort, 1);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath(),
-        "-server-port=" + this.commandPort);
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath,
+            "-server-port=" + this.commandPort));
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
     ClientCache cache = new ClientCacheFactory().create();
 
@@ -409,28 +383,23 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     region.put(1, 1); // put should be successful
 
-    execAndValidate("The CacheServer has stopped\\.", STOP, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
 
   @Test
   public void testServerPortNoCacheServer() throws Exception {
     createCacheXml(this.directory, this.cacheXmlFileName, 0, 0);
 
-    execAndValidate("CacheServer pid: \\d+ status: running", START,
-        "-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + this.controllerNamingPort,
-        "-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + this.cacheServerNamingPort,
-        "-J-Xmx" + Runtime.getRuntime().maxMemory(),
-        "-J-Dgemfire." + ConfigurationProperties.USE_CLUSTER_CONFIGURATION + "=false",
-        "-J-Dgemfire." + ConfigurationProperties.HTTP_SERVICE_PORT + "=0",
-        "-J-Dgemfire." + ConfigurationProperties.LOCATORS + "=\"\"",
-        "log-file=" + this.logFileName,
-        "cache-xml-file=" + this.cacheXmlFileName,
-        "-dir=" + this.directoryPath,
-        "-classpath=" + getManifestJarFromClasspath(),
-        "-server-port=" + this.commandPort,
-        "-server-bind-address=" + InetAddress.getLocalHost().getHostName());
+    execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
+        asList(
+            "cache-xml-file=" + this.cacheXmlFileName,
+            "log-file=" + this.logFileName,
+            "-classpath=" + getManifestJarFromClasspath(),
+            "-dir=" + this.directoryPath,
+            "-server-bind-address=" + InetAddress.getLocalHost().getHostName(),
+            "-server-port=" + this.commandPort));
 
-    execAndValidate("CacheServer pid: \\d+ status: running", STATUS, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
     ClientCache cache = new ClientCacheFactory().create();
     ClientRegionFactory<Integer, Integer> regionFactory =
@@ -446,11 +415,11 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     region.put(1, 1); // put should be successful
 
-    execAndValidate("The CacheServer has stopped\\.", STOP, "-dir=" + this.directory);
+    execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
 
   private String getManifestJarFromClasspath() throws IOException {
-    List<String> parts = Arrays.asList(this.classpath.split(File.pathSeparator));
+    List<String> parts = asList(this.classpath.split(File.pathSeparator));
     return ProcessWrapper.createManifestJar(parts, temporaryFolder.newFolder().getAbsolutePath());
   }
 
@@ -487,7 +456,31 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     }
   }
 
-  private void execAndValidate(final String regex, final String... args)
+  private void execWithArgsAndValidate(Operation operation, String regex, List<String> arguments)
+      throws TimeoutException, InterruptedException {
+    List<String> newArguments = new ArrayList<>();
+    newArguments.add(operation.value);
+    newArguments.add("-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + controllerNamingPort);
+    newArguments.add("-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + cacheServerNamingPort);
+    newArguments.add("-J-Xmx" + Runtime.getRuntime().maxMemory());
+    newArguments.add("-J-Dgemfire." + USE_CLUSTER_CONFIGURATION + "=false");
+    newArguments.add("-J-Dgemfire." + HTTP_SERVICE_PORT + "=0");
+    newArguments.add("-J-Dgemfire." + LOCATORS + "=\"\"");
+    newArguments.addAll(arguments);
+    execAndValidate(regex, newArguments);
+  }
+
+  private void execWithDirAndValidate(Operation operation, String regex)
+      throws TimeoutException, InterruptedException {
+    execAndValidate(regex, asList(operation.value(), "-dir=" + directoryPath));
+  }
+
+  private void execAndValidate(String regex, List<String> arguments)
+      throws InterruptedException, TimeoutException {
+    execAndValidate(regex, arguments.toArray(new String[0]));
+  }
+
+  private void execAndValidate(final String regex, final String[] args)
       throws InterruptedException, TimeoutException {
     ProcessWrapper processWrapper = new ProcessWrapper.Builder()
         .mainClass(CacheServerLauncher.class).mainArguments(args).build();
@@ -561,6 +554,22 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
       writer.write("<region name=\"rgn\" />\n");
       writer.write("</cache>\n");
       writer.flush();
+    }
+  }
+
+  private enum Operation {
+    START("start"),
+    STATUS("status"),
+    STOP("stop");
+
+    private final String value;
+
+    Operation(String value) {
+      this.value = value;
+    }
+
+    String value() {
+      return value;
     }
   }
 
