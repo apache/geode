@@ -23,3 +23,6 @@ org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListDataSourceCommand
 org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand
 org.apache.geode.connectors.jdbc.internal.cli.DestroyDataSourceCommand
+org.apache.geode.connectors.jdbc.internal.cli.RegisterDriverCommand
+org.apache.geode.connectors.jdbc.internal.cli.DeregisterDriverCommand
+org.apache.geode.connectors.jdbc.internal.cli.ListDriversCommand
