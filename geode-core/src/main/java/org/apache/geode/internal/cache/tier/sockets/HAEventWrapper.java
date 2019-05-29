@@ -379,7 +379,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
               "HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
         }
       }
-    } catch (SerializationException ex) {
+    } catch (SerializationException | ClassCastException ex) {
       logger.info("RYAN: Serialization exception caught", ex);
       throw ex;
     }
