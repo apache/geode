@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.internal.CacheElementOperation;
 
 public class CacheElementValidatorTest {
 
@@ -37,9 +38,9 @@ public class CacheElementValidatorTest {
   public void invalidGroup_cluster() throws Exception {
     config.setName("test");
     config.setGroup("cluster");
-    assertThatThrownBy(() -> validator.validate(config)).isInstanceOf(
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "cluster is a reserved group name");
+            "'cluster' is a reserved group name");
   }
 }

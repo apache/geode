@@ -15,23 +15,31 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.internal.CacheElementOperation;
 
 /**
  * this is used to validate all the common attributes of CacheElement, eg. group
  */
 public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
   @Override
-  public void validate(CacheElement config) throws IllegalArgumentException {
+  public void validate(CacheElementOperation operation, CacheElement config)
+      throws IllegalArgumentException {
+    if (StringUtils.isBlank(config.getId())) {
+      throw new IllegalArgumentException("id cannot be null or blank");
+    }
+
     if ("cluster".equalsIgnoreCase(config.getGroup())) {
       throw new IllegalArgumentException(
-          "cluster is a reserved group name. Do not use it for member groups.");
+          "'cluster' is a reserved group name. Do not use it for member groups.");
     }
   }
 
   @Override
-  public boolean exists(CacheElement config, CacheConfig persistedConfig) {
+  public boolean exists(String id, CacheConfig persistedConfig) {
     return false;
   }
 }

@@ -65,4 +65,20 @@ public class RegionConfigRealizerIntegrationTest {
     // the 2nd time with same name and type will not throw an error
     realizer.create(config, server.getCache());
   }
+
+  @Test
+  public void deleteRegion() {
+    config.setName("foo");
+    config.setType(RegionType.REPLICATE);
+    RegionConfigValidator.setShortcutAttributes(config);
+    realizer.create(config, server.getCache());
+
+    Region region = server.getCache().getRegion(config.getName());
+    assertThat(region).isNotNull();
+
+    realizer.delete(config, server.getCache());
+
+    region = server.getCache().getRegion(config.getName());
+    assertThat(region).isNull();
+  }
 }

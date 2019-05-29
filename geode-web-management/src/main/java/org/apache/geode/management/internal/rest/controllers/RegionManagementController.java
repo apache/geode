@@ -89,6 +89,15 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
+  @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
+  @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
+  @ResponseBody
+  public ClusterManagementResult deleteRegion(@PathVariable(name = "id") String id) {
+    RegionConfig config = new RegionConfig();
+    config.setName(id);
+    return clusterManagementService.delete(config);
+  }
+
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody

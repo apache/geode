@@ -440,6 +440,7 @@ org/apache/geode/management/cli/CommandProcessingException,true,-139877952163957
 org/apache/geode/management/cli/CommandServiceException,true,7316102209844678329
 org/apache/geode/management/cli/Result$Status,false,code:int
 org/apache/geode/management/internal/BackupStatusImpl,true,3704172840296221840,backedUpDiskStores:java/util/Map,offlineDiskStores:java/util/Set
+org/apache/geode/management/internal/CacheElementOperation,false
 org/apache/geode/management/internal/ContextAwareSSLRMIClientSocketFactory,true,8159615071011918570
 org/apache/geode/management/internal/JmxManagerLocator$StartJmxManagerFunction,true,-2860286061903069789
 org/apache/geode/management/internal/ManagementAgent$GemFireRMIServerSocketFactory,true,-811909050641332716,bindAddr:java/net/InetAddress
@@ -547,7 +548,6 @@ org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
 org/apache/geode/management/internal/cli/functions/UpdateCacheFunction,false
-org/apache/geode/management/internal/cli/functions/UpdateCacheFunction$CacheElementOperation,false
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
 org/apache/geode/management/internal/cli/result/TableBuilder$Align,false

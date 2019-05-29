@@ -26,6 +26,7 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
@@ -79,7 +80,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     factory.createSubregion(parentRegion, regionName);
   }
 
-  RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
+  private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
     RegionFactory factory = cache.createRegionFactory();
 
     factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
@@ -298,7 +299,19 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
   public void update(RegionConfig config, Cache cache) {}
 
   @Override
-  public void delete(RegionConfig config, Cache cache) {}
+  public void delete(RegionConfig config, Cache cache) {
+    Region region = cache.getRegion(config.getName());
+    if (region == null) {
+      // Since we are trying to delete this region, we can return early
+      return;
+    }
 
+    try {
+      region.destroyRegion();
+    } catch (RegionDestroyedException dex) {
+      // Probably happened as a distirbuted op but it still reflects our current desired action
+      // which is why it can be ignored here.
+    }
+  }
 
 }

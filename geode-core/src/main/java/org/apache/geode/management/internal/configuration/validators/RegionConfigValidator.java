@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
+
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
@@ -25,6 +28,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
+import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
@@ -35,13 +39,26 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   }
 
   @Override
-  public void validate(RegionConfig config)
+  public void validate(CacheElementOperation operation, RegionConfig config)
       throws IllegalArgumentException {
 
     if (config.getName() == null) {
       throw new IllegalArgumentException("Name of the region has to be specified.");
     }
 
+    switch (operation) {
+      case UPDATE:
+      case CREATE:
+        validateCreate(config);
+        break;
+      case DELETE:
+        validateDelete(config);
+        break;
+      default:
+    }
+  }
+
+  private void validateCreate(RegionConfig config) {
     if (config.getType() == null) {
       throw new IllegalArgumentException("Type of the region has to be specified.");
     }
@@ -50,7 +67,6 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     // by management v2 api.
     try {
       RegionType.valueOf(config.getType());
-
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
           String.format("Type %s is not supported in Management V2 API.", config.getType()));
@@ -65,6 +81,12 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
       cache.getSecurityService()
           .authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
               ResourcePermission.Target.DISK);
+    }
+  }
+
+  private void validateDelete(RegionConfig config) {
+    if (StringUtils.isNotBlank(config.getGroup())) {
+      throw new IllegalArgumentException("Group is invalid option when deleting a region");
     }
   }
 
@@ -274,9 +296,8 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     }
   }
 
-
   @Override
-  public boolean exists(RegionConfig config, CacheConfig existing) {
-    return CacheElement.exists(existing.getRegions(), config.getId());
+  public boolean exists(String id, CacheConfig existing) {
+    return CacheElement.exists(existing.getRegions(), id);
   }
 }
