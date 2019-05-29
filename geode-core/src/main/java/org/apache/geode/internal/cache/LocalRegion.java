@@ -1408,8 +1408,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
-    CachePerfStats stats = getCachePerfStats();
-    long start = stats.startGet();
+    long start = startGet();
     boolean isMiss = true;
     try {
       KeyInfo keyInfo = getKeyInfo(key, aCallbackArgument);
@@ -1443,8 +1442,16 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       }
       return value;
     } finally {
-      stats.endGet(start, isMiss);
+      endGet(start, isMiss);
     }
+  }
+
+  protected long startGet() {
+    return getCachePerfStats().startGet();
+  }
+
+  protected void endGet(long start, boolean isMiss) {
+    getCachePerfStats().endGet(start, isMiss);
   }
 
   /**

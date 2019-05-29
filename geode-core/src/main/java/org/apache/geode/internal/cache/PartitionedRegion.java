@@ -3210,15 +3210,32 @@ public class PartitionedRegion extends LocalRegion
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
+    long start = startGet();
     boolean miss = true;
-
-    Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
-        true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
-        preferCD, requestingClient, clientEvent, returnTombstones);
-    if (value != null && !Token.isInvalid(value)) {
-      miss = false;
+    try {
+      // if scope is local and there is no loader, then
+      // don't go further to try and get value
+      Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
+          true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
+          preferCD, requestingClient, clientEvent, returnTombstones);
+      if (value != null && !Token.isInvalid(value)) {
+        miss = false;
+      }
+      return value;
+    } finally {
+      endGet(start, miss);
     }
-    return value;
+  }
+
+  @Override
+  protected long startGet() {
+    return 0;
+  }
+
+  @Override
+  protected void endGet(long start, boolean isMiss) {
+    // get stats are recorded by the BucketRegion
+    // so nothing is needed on the PartitionedRegion.
   }
 
   public InternalDistributedMember getOrCreateNodeForBucketRead(int bucketId) {
