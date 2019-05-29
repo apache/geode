@@ -71,6 +71,7 @@ public class ListMembersCommandDUnitTest {
   @Test
   public void listAllMembers() {
     gfsh.executeAndAssertThat(LIST_MEMBER).statusIsSuccess()
+        .containsOutput("Member Count : 5")
         .hasTableSection(ListMembersCommand.MEMBERS_SECTION).hasColumn("Name")
         .containsExactlyInAnyOrder("locator-0", "locator-1", "server-2", "server-3", "server-4");
 
@@ -82,6 +83,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=locatorGroup").statusIsSuccess();
     String output = gfsh.getGfshOutput();
 
+    assertThat(output).contains("Member Count : 2");
     assertThat(output).contains("locator-0");
     assertThat(output).doesNotContain("server-1");
     assertThat(output).doesNotContain("server-2");
@@ -93,6 +95,7 @@ public class ListMembersCommandDUnitTest {
   public void listMembersInServerGroupOne() {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup1").statusIsSuccess();
     String output = gfsh.getGfshOutput();
+    assertThat(output).contains("Member Count : 2");
     assertThat(output).contains("server-2");
     assertThat(output).contains("server-3");
     assertThat(output).doesNotContain("server-4");
@@ -102,7 +105,7 @@ public class ListMembersCommandDUnitTest {
   public void listMembersInServerGroupTwo() {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=serverGroup2").statusIsSuccess();
     String output = gfsh.getGfshOutput();
-
+    assertThat(output).contains("Member Count : 1");
     assertThat(output).doesNotContain("server-2");
     assertThat(output).doesNotContain("server-3");
     assertThat(output).contains("server-4");
@@ -113,6 +116,7 @@ public class ListMembersCommandDUnitTest {
     gfsh.executeAndAssertThat(LIST_MEMBER + " --group=foo")
         .statusIsSuccess()
         .containsOutput("No Members Found")
+        .doesNotContainOutput(("Member Count :"))
         .doesNotContainOutput("locator-0", "server-1", "server-2", "server-3");
   }
 
