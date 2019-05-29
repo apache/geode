@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.RuntimeCacheElement;
 
 @Experimental
 public class ClusterManagementResult {
@@ -65,7 +65,7 @@ public class ClusterManagementResult {
   // Override the mapper setting so that we always show result
   @JsonInclude
   @JsonProperty
-  private List<? extends CacheElement> result = new ArrayList<>();
+  private List<? extends RuntimeCacheElement> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -115,11 +115,11 @@ public class ClusterManagementResult {
     return statusCode;
   }
 
-  public <R extends CacheElement> List<R> getResult(Class<R> clazz) {
+  public <R extends RuntimeCacheElement> List<R> getResult(Class<R> clazz) {
     return result.stream().map(clazz::cast).collect(Collectors.toList());
   }
 
-  public void setResult(List<? extends CacheElement> result) {
+  public void setResult(List<? extends RuntimeCacheElement> result) {
     this.result = result;
   }
 }

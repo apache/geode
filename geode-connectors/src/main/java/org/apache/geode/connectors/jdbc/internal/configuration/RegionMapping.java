@@ -28,7 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.AbstractCacheElement;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.XSDRootElement;
 
 /**
@@ -40,7 +40,7 @@ import org.apache.geode.cache.configuration.XSDRootElement;
 @XmlRootElement(name = "mapping", namespace = "http://geode.apache.org/schema/jdbc")
 @XSDRootElement(namespace = "http://geode.apache.org/schema/jdbc",
     schemaLocation = "http://geode.apache.org/schema/jdbc/jdbc-1.0.xsd")
-public class RegionMapping extends AbstractCacheElement {
+public class RegionMapping extends CacheElement {
 
   @XmlElement(name = "field-mapping", namespace = "http://geode.apache.org/schema/jdbc")
   protected final List<FieldMapping> fieldMappings = new ArrayList<>();

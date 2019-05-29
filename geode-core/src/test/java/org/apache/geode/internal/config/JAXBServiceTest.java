@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.AbstractCacheElement;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 
@@ -226,7 +226,7 @@ public class JAXBServiceTest {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-one", namespace = "http://geode.apache.org/schema/CustomOne")
-  public static class ElementOne extends AbstractCacheElement {
+  public static class ElementOne extends CacheElement {
     @XmlElement(name = "id", namespace = "http://geode.apache.org/schema/CustomOne")
     private String id;
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomOne")
@@ -259,7 +259,7 @@ public class JAXBServiceTest {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"id", "value"})
   @XmlRootElement(name = "custom-two", namespace = "http://geode.apache.org/schema/CustomTwo")
-  public static class ElementTwo extends AbstractCacheElement {
+  public static class ElementTwo extends CacheElement {
     @XmlElement(name = "id", namespace = "http://geode.apache.org/schema/CustomTwo")
     private String id;
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomTwo")

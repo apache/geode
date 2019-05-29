@@ -202,7 +202,7 @@ public class JndiBindingsType {
   @XmlAccessorType(XmlAccessType.FIELD)
   @XmlType(name = "", propOrder = {"configProperties"})
   @Experimental
-  public static class JndiBinding extends AbstractCacheElement {
+  public static class JndiBinding extends CacheElement {
 
     @XmlElement(name = "config-property", namespace = "http://geode.apache.org/schema/cache")
     protected List<ConfigProperty> configProperties;
@@ -628,7 +628,7 @@ public class JndiBindingsType {
     @XmlAccessorType(XmlAccessType.FIELD)
     @XmlType(name = "",
         propOrder = {"configPropertyName", "configPropertyType", "configPropertyValue"})
-    public static class ConfigProperty extends AbstractCacheElement {
+    public static class ConfigProperty extends CacheElement {
 
       @XmlElement(name = "config-property-name", namespace = "http://geode.apache.org/schema/cache",
           required = true)

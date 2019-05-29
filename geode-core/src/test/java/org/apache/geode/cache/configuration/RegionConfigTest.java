@@ -258,17 +258,4 @@ public class RegionConfigTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
   }
-
-  @Test
-  public void regionWithGroup() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
-    regionConfig.setName("test");
-    regionConfig.setType("REPLICATE");
-    regionConfig.setGroup("group");
-
-    CacheConfig cacheConfig = new CacheConfig();
-    cacheConfig.getRegions().add(regionConfig);
-    String xml = service.marshall(cacheConfig);
-    assertThat(xml).doesNotContain("group");
-  }
 }
