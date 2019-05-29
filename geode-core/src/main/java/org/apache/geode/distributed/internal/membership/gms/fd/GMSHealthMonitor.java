@@ -925,6 +925,10 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       checkExecutor.shutdown();
     }
 
+    stopServer();
+  }
+
+  void stopServer() {
     if (serverSocketExecutor != null) {
       if (serverSocket != null && !serverSocket.isClosed()) {
         try {
@@ -1310,6 +1314,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
       }
 
       if (!pinged && !isStopping) {
+        failed = true;
         TimeStamp ts = memberTimeStamps.get(mbr);
         if (ts == null || ts.getTime() < startTime) {
           logger.info("Availability check failed for member {}", mbr);
@@ -1335,13 +1340,18 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
               suspectMembersMessage.setSender(localAddress);
               logger.debug("Performing local processing on suspect request");
               processSuspectMembersRequest(suspectMembersMessage);
+            } else {
+              logger.info(
+                  "Self-check for availability failed - will not continue to suspect {} for now",
+                  mbr);
+              failed = false;
             }
           }
-          failed = true;
         } else {
           logger.info(
               "Availability check failed but detected recent message traffic for suspect member "
                   + mbr);
+          failed = false;
         }
       }
 
