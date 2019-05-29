@@ -94,7 +94,7 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
   - UpdatePassingBuild
@@ -109,7 +109,7 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
-  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
   - UpdatePassingBuild
@@ -330,7 +330,7 @@ jobs:
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
 - name: UpdatePassingRef
   public: true
   serial: true
