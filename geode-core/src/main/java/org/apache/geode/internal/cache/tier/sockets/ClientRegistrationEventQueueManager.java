@@ -31,6 +31,7 @@ import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;
 
 /**
  * This class is responsible for queueing events for clients while they are registering. Once the

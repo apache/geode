@@ -288,11 +288,28 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
           new ClientProxyMembershipID(), null);
     }
 
-    logger.info("RYAN: Event ID when Serializing: " + cum.getEventId());
+    logger.info("RYAN: Event ID when serializing: " + cum.getEventId());
 
     InternalDataSerializer.invokeToData(cum, out);
     if (cum.hasCqs()) {
-      DataSerializer.writeConcurrentHashMap(cum.getClientCqs(), out);
+      ClientCqConcurrentMap clientCqs = cum.getClientCqs();
+
+      logger.info("RYAN: Size of ClientCqConcurrentMap: " + clientCqs.size());
+
+      for (Map.Entry<ClientProxyMembershipID, CqNameToOp> e : clientCqs.entrySet()) {
+        logger.info("RYAN: ClientCqConcurrentMap entry: " + e);
+        final CqNameToOp cqNameToOp = e.getValue();
+        if (cqNameToOp instanceof CqNameToOpHashMap) {
+          logger.info("RYAN: CqNameToOpHashMap size: " + cqNameToOp);
+          for (Map.Entry<String, Integer> j : ((CqNameToOpHashMap) cqNameToOp).entrySet()) {
+            logger.info("RYAN: CqNameToOpHashMap entry: " + j);
+          }
+        }
+      }
+
+      logger.info("RYAN: Writing concurrent map...");
+
+      DataSerializer.writeConcurrentHashMap(clientCqs, out);
     }
   }
 
@@ -374,10 +391,10 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
         InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
         // hasCq will be false here, so client CQs are not read from this input
         // stream.
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
-        }
+        //if (logger.isDebugEnabled()) {
+          logger.info(
+              "RYAN: HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
+        //}
       }
     } catch (SerializationException | ClassCastException ex) {
       logger.info("RYAN: Serialization exception caught", ex);
