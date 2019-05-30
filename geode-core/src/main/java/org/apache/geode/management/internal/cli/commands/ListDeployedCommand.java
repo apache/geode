@@ -51,7 +51,7 @@ public class ListDeployedCommand extends GfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(group, null);
     if (targetMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     ResultModel result = new ResultModel();

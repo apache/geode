@@ -62,7 +62,7 @@ public class ListGatewayCommand extends GfshCommand {
     Set<DistributedMember> dsMembers = findMembers(onGroup, onMember);
 
     if (dsMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     Map<String, Map<String, GatewaySenderMXBean>> gatewaySenderBeans = new TreeMap<>();
@@ -104,7 +104,7 @@ public class ListGatewayCommand extends GfshCommand {
       }
     }
     if (gatewaySenderBeans.isEmpty() && gatewayReceiverBeans.isEmpty()) {
-      return ResultModel.createError(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
+      return ResultModel.createInfo(CliStrings.GATEWAYS_ARE_NOT_AVAILABLE_IN_CLUSTER);
     }
 
     accumulateListGatewayResult(result, gatewaySenderBeans, gatewayReceiverBeans);

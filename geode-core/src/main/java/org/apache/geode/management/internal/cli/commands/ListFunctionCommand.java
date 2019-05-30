@@ -53,7 +53,7 @@ public class ListFunctionCommand extends GfshCommand {
     Set<DistributedMember> targetMembers = findMembers(groups, members);
 
     if (targetMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     List<CliFunctionResult> results = executeAndGetFunctionResult(this.listFunctionFunction,

@@ -48,7 +48,7 @@ public class ListAsyncEventQueuesCommand extends GfshCommand {
   public ResultModel listAsyncEventQueues() {
     Set<DistributedMember> targetMembers = getAllNormalMembers();
     if (targetMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     // Each (successful) member returns a list of AsyncEventQueueDetails.

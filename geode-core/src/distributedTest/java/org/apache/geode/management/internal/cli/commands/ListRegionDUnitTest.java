@@ -123,6 +123,13 @@ public class ListRegionDUnitTest {
         REGION2, REGION3, SUBREGION1A);
   }
 
+  @Test
+  public void listNoMembersIsSuccess() {
+    CommandStringBuilder csb = new CommandStringBuilder(LIST_REGION);
+    csb.addOption(GROUP, "unknown");
+    gfsh.executeAndAssertThat(csb.toString()).statusIsSuccess();
+  }
+
   private static void createLocalRegion(final String regionName) {
     final Cache cache = CacheFactory.getAnyInstance();
     // Create the data region
