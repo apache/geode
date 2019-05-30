@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
@@ -37,6 +37,7 @@ import org.junit.Before;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link ServerLauncher} as an application main in a
@@ -46,6 +47,8 @@ import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
  */
 public abstract class ServerLauncherRemoteIntegrationTestCase
     extends ServerLauncherIntegrationTestCase implements UsesServerCommand {
+
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
 
   private final AtomicBoolean threwBindException = new AtomicBoolean();
 
@@ -84,8 +87,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     List<String> jvmArguments = new ArrayList<>();
     jvmArguments.add("-D" + GEMFIRE_PREFIX + LOG_LEVEL + "=config");
     jvmArguments.add("-D" + GEMFIRE_PREFIX + MCAST_PORT + "=0");
-    jvmArguments
-        .add("-D" + TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + String.valueOf(defaultServerPort));
+    jvmArguments.add("-D" + TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + defaultServerPort);
     return jvmArguments;
   }
 
@@ -129,9 +131,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
     return awaitStart(command);
   }
 
-  protected ServerLauncher startServer(final ServerCommand command,
-      final ProcessStreamReader.InputListener outListener,
-      final ProcessStreamReader.InputListener errListener) throws IOException {
+  protected ServerLauncher startServer(final ServerCommand command, final InputListener outListener,
+      final InputListener errListener) throws IOException {
     executeCommandWithReaders(command.create(), outListener, errListener);
     ServerLauncher launcher = awaitStart(getWorkingDirectory());
     assertThat(process.isAlive()).isTrue();
@@ -144,7 +145,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
 
   protected void startServerShouldFail(final ServerCommand command)
       throws IOException, InterruptedException {
-    startServerShouldFail(command, createBindExceptionListener("sysout", threwBindException),
+    startServerShouldFail(command,
+        createBindExceptionListener("sysout", threwBindException),
         createBindExceptionListener("syserr", threwBindException));
   }
 
@@ -175,7 +177,8 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   private ServerLauncher awaitStart(final File workingDirectory) {
     try {
       launcher = new ServerLauncher.Builder()
-          .setWorkingDirectory(workingDirectory.getCanonicalPath()).build();
+          .setWorkingDirectory(workingDirectory.getCanonicalPath())
+          .build();
       awaitStart(launcher);
       assertThat(process.isAlive()).isTrue();
       return launcher;
@@ -226,18 +229,28 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   private void executeCommandWithReaders(final List<String> command) throws IOException {
     process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
     processOutReader = new ProcessStreamReader.Builder(process)
-        .inputStream(process.getInputStream()).build().start();
+        .inputStream(process.getInputStream())
+        .build()
+        .start();
     processErrReader = new ProcessStreamReader.Builder(process)
-        .inputStream(process.getErrorStream()).build().start();
+        .inputStream(process.getErrorStream())
+        .build()
+        .start();
   }
 
   private void executeCommandWithReaders(final List<String> command,
       final InputListener outListener, final InputListener errListener) throws IOException {
     process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
     processOutReader = new ProcessStreamReader.Builder(process)
-        .inputStream(process.getInputStream()).inputListener(outListener).build().start();
+        .inputStream(process.getInputStream())
+        .inputListener(outListener)
+        .build()
+        .start();
     processErrReader = new ProcessStreamReader.Builder(process)
-        .inputStream(process.getErrorStream()).inputListener(errListener).build().start();
+        .inputStream(process.getErrorStream())
+        .inputListener(errListener)
+        .build()
+        .start();
   }
 
   private void executeCommandWithReaders(final ServerCommand command) throws IOException {
@@ -247,7 +260,7 @@ public abstract class ServerLauncherRemoteIntegrationTestCase
   private void startServerShouldFail(final ServerCommand command, final InputListener outListener,
       final InputListener errListener) throws IOException, InterruptedException {
     executeCommandWithReaders(command.create(), outListener, errListener);
-    process.waitFor(2, MINUTES);
+    process.waitFor(TIMEOUT_MILLIS, MILLISECONDS);
     assertThat(process.isAlive()).isFalse();
     assertThat(process.exitValue()).isEqualTo(1);
   }

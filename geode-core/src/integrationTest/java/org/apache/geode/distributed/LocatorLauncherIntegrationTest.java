@@ -62,7 +62,9 @@ public class LocatorLauncherIntegrationTest {
     givenGemFirePropertiesFile(withMemberName());
 
     // when: starting with null MemberName
-    LocatorLauncher launcher = new Builder().setCommand(Command.START).build();
+    LocatorLauncher launcher = new Builder()
+        .setCommand(Command.START)
+        .build();
 
     // then: name in gemfire.properties file should be used for MemberName
     assertThat(launcher.getMemberName()).isNull(); // name will be read during start()
@@ -74,10 +76,13 @@ public class LocatorLauncherIntegrationTest {
     givenGemFirePropertiesFile(withoutMemberName());
 
     // when: no MemberName is specified
-    Throwable thrown = catchThrowable(() -> new Builder().setCommand(Command.START).build());
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setCommand(Command.START)
+        .build());
 
     // then: throw IllegalStateException
-    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(memberNameValidationErrorMessage());
   }
 
@@ -86,9 +91,11 @@ public class LocatorLauncherIntegrationTest {
     // given: using LocatorLauncher in-process
 
     // when: setting WorkingDirectory to non-current directory
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setCommand(Command.START).setMemberName("memberOne")
-            .setWorkingDirectory(getWorkingDirectoryPath()).build());
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setCommand(Command.START)
+        .setMemberName("memberOne")
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build());
 
     // then: throw IllegalStateException
     then(thrown).isExactlyInstanceOf(IllegalStateException.class)
@@ -204,11 +211,12 @@ public class LocatorLauncherIntegrationTest {
     File nonDirectory = temporaryFolder.newFile();
 
     // when: setting WorkingDirectory to that file
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setWorkingDirectory(nonDirectory.getCanonicalPath()));
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setWorkingDirectory(nonDirectory.getCanonicalPath()));
 
     // then: throw IllegalArgumentException
-    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException(nonDirectory.getCanonicalPath()));
   }
@@ -218,11 +226,12 @@ public class LocatorLauncherIntegrationTest {
     // given:
 
     // when: setting WorkingDirectory to non-existing directory
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setWorkingDirectory("/path/to/non_existing/directory"));
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setWorkingDirectory("/path/to/non_existing/directory"));
 
     // then: throw IllegalArgumentException
-    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException("/path/to/non_existing/directory"));
   }
@@ -282,7 +291,7 @@ public class LocatorLauncherIntegrationTest {
   /**
    * Creates a gemfire properties file in temporaryFolder:
    * <ol>
-   * <li>creates gemfire.properties in <code>temporaryFolder</code></li>
+   * <li>creates gemfire.properties in {@code temporaryFolder}</li>
    * <li>writes config to the file</li>
    * <li>sets "gemfirePropertyFile" system property</li>
    * </ol>

@@ -15,7 +15,7 @@
 package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,7 +47,12 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
   public void statusWithPidReturnsOnlineWithDetails() {
     givenRunningServer();
 
-    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().status())
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setPid(getServerPid())
+        .build()
+        .status());
+
+    assertThat(thrown)
         .isInstanceOf(AttachAPINotFoundException.class);
   }
 
@@ -59,7 +64,12 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
   public void stopWithPidDeletesPidFile() {
     givenRunningServer();
 
-    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop());
+
+    assertThat(thrown)
         .isInstanceOf(AttachAPINotFoundException.class);
   }
 
@@ -71,7 +81,12 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
   public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
-    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop());
+
+    assertThat(thrown)
         .isInstanceOf(AttachAPINotFoundException.class);
   }
 
@@ -83,7 +98,12 @@ public class ServerLauncherRemoteFileIntegrationTest extends ServerLauncherRemot
   public void stopWithPidStopsServerProcess() {
     givenRunningServer();
 
-    assertThatThrownBy(() -> new Builder().setPid(getServerPid()).build().stop())
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop());
+
+    assertThat(thrown)
         .isInstanceOf(AttachAPINotFoundException.class);
   }
 }

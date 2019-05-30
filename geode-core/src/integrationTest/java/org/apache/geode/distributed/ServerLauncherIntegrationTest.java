@@ -14,9 +14,11 @@
  */
 package org.apache.geode.distributed;
 
+import static java.net.InetAddress.getLocalHost;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.DistributedSystem.PROPERTIES_FILE_PROPERTY;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.cache.AbstractCacheServer.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -27,7 +29,6 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.net.InetAddress;
 import java.util.Properties;
 
 import org.junit.Rule;
@@ -38,7 +39,6 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
-import org.apache.geode.internal.AvailablePortHelper;
 
 /**
  * Integration tests for using {@link ServerLauncher} as an in-process API within an existing JVM.
@@ -62,7 +62,9 @@ public class ServerLauncherIntegrationTest {
     givenGemFirePropertiesFile(withMemberName());
 
     // when: starting with null MemberName
-    ServerLauncher launcher = new Builder().setCommand(Command.START).build();
+    ServerLauncher launcher = new Builder()
+        .setCommand(Command.START)
+        .build();
 
     // then: name in gemfire.properties file should be used for MemberName
     assertThat(launcher.getMemberName()).isNull(); // name will be read during start()
@@ -74,10 +76,13 @@ public class ServerLauncherIntegrationTest {
     givenGemFirePropertiesFile(withoutMemberName());
 
     // when: no MemberName is specified
-    Throwable thrown = catchThrowable(() -> new Builder().setCommand(Command.START).build());
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setCommand(Command.START)
+        .build());
 
     // then: throw IllegalStateException
-    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(memberNameValidationErrorMessage());
   }
 
@@ -86,12 +91,15 @@ public class ServerLauncherIntegrationTest {
     // given: using LocatorLauncher in-process
 
     // when: setting WorkingDirectory to non-current directory
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setCommand(Command.START).setMemberName("memberOne")
-            .setWorkingDirectory(getWorkingDirectoryPath()).build());
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setCommand(Command.START)
+        .setMemberName("memberOne")
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build());
 
     // then: throw IllegalStateException
-    then(thrown).isExactlyInstanceOf(IllegalStateException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalStateException.class)
         .hasMessage(workingDirectoryOptionNotValidErrorMessage());
   }
 
@@ -102,7 +110,7 @@ public class ServerLauncherIntegrationTest {
 
     // when: parsing many arguments
     builder.parseArguments("start", "memberOne", "--server-bind-address",
-        InetAddress.getLocalHost().getHostAddress(), "--dir", getWorkingDirectoryPath(),
+        getLocalHost().getHostAddress(), "--dir", getWorkingDirectoryPath(),
         "--hostname-for-clients", "Tucows", "--pid", "1234", "--server-port", "11235",
         "--redirect-output", "--force", "--debug");
 
@@ -112,9 +120,9 @@ public class ServerLauncherIntegrationTest {
     assertThat(builder.getForce()).isTrue();
     assertThat(builder.getHostNameForClients()).isEqualTo("Tucows");
     assertThat(builder.getPid().intValue()).isEqualTo(1234);
-    assertThat(builder.getServerBindAddress()).isEqualTo(InetAddress.getLocalHost());
-    assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
     assertThat(builder.getRedirectOutput()).isTrue();
+    assertThat(builder.getServerBindAddress()).isEqualTo(getLocalHost());
+    assertThat(builder.getServerPort().intValue()).isEqualTo(11235);
     assertThat(builder.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
 
@@ -204,11 +212,12 @@ public class ServerLauncherIntegrationTest {
     File nonDirectory = temporaryFolder.newFile();
 
     // when: setting WorkingDirectory to that file
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setWorkingDirectory(nonDirectory.getCanonicalPath()));
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setWorkingDirectory(nonDirectory.getCanonicalPath()));
 
     // then: throw IllegalArgumentException
-    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException(nonDirectory.getCanonicalPath()));
   }
@@ -218,11 +227,12 @@ public class ServerLauncherIntegrationTest {
     // given:
 
     // when: setting WorkingDirectory to non-existing directory
-    Throwable thrown =
-        catchThrowable(() -> new Builder().setWorkingDirectory("/path/to/non_existing/directory"));
+    Throwable thrown = catchThrowable(() -> new Builder()
+        .setWorkingDirectory("/path/to/non_existing/directory"));
 
     // then: throw IllegalArgumentException
-    then(thrown).isExactlyInstanceOf(IllegalArgumentException.class)
+    then(thrown)
+        .isExactlyInstanceOf(IllegalArgumentException.class)
         .hasMessage(workingDirectoryNotFoundErrorMessage())
         .hasCause(new FileNotFoundException("/path/to/non_existing/directory"));
   }
@@ -230,11 +240,12 @@ public class ServerLauncherIntegrationTest {
   @Test
   public void serverPortCanBeOverriddenBySystemProperty() {
     // given: overridden default port
-    int overriddenPort = AvailablePortHelper.getRandomAvailableTCPPort();
+    int overriddenPort = getRandomAvailableTCPPort();
     System.setProperty(TEST_OVERRIDE_DEFAULT_PORT_PROPERTY, String.valueOf(overriddenPort));
 
     // when: creating new ServerLauncher
-    ServerLauncher launcher = new Builder().build();
+    ServerLauncher launcher = new Builder()
+        .build();
 
     // then: server port should be the overridden default port
     assertThat(launcher.getServerPort()).isEqualTo(overriddenPort);
@@ -253,7 +264,8 @@ public class ServerLauncherIntegrationTest {
   }
 
   private String workingDirectoryNotFoundErrorMessage() {
-    return String.format(AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
+    return String.format(
+        AbstractLauncher.WORKING_DIRECTORY_NOT_FOUND_ERROR_MESSAGE,
         "Server");
   }
 
@@ -282,7 +294,7 @@ public class ServerLauncherIntegrationTest {
   /**
    * Creates a gemfire properties file in temporaryFolder:
    * <ol>
-   * <li>creates gemfire.properties in <code>temporaryFolder</code></li>
+   * <li>creates gemfire.properties in {@code temporaryFolder}</li>
    * <li>writes config to the file</li>
    * <li>sets "gemfirePropertyFile" system property</li>
    * </ol>
