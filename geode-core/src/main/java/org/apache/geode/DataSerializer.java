@@ -62,6 +62,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
@@ -2331,20 +2332,15 @@ public abstract class DataSerializer {
       size = map.size();
     }
     InternalDataSerializer.writeArrayLength(size, out);
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Writing HashMap with {} elements: {}", size, map);
+//    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+    if (map instanceof ClientUpdateMessageImpl.CqNameToOpHashMap) {
+      logger.info("Writing CqNameToOpHashMap with {} elements: {}", size, map);
     }
+//    }
     if (size > 0) {
-      boolean wroteSomeEntries = false;
-
       for (Map.Entry<?, ?> entry : map.entrySet()) {
         writeObject(entry.getKey(), out);
         writeObject(entry.getValue(), out);
-        wroteSomeEntries = true;
-      }
-
-      if (!wroteSomeEntries) {
-        logger.info("RYGUY: Size was non-zero but wrote no entries");
       }
     }
   }
