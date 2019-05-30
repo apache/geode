@@ -737,10 +737,6 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     return null;
   }
 
-  boolean isGatewaySenderEnabled() {
-    return false;
-  }
-
   @Immutable
   private static final CacheListener[] EMPTY_LISTENERS = new CacheListener[0];
 
