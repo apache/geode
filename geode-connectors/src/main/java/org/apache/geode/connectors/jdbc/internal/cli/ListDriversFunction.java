@@ -14,7 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.sql.Driver;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
@@ -36,9 +35,14 @@ public class ListDriversFunction extends CliFunction<Object[]> {
   }
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
-      throws Exception {
-    List<Driver> listOfDrivers = (new DriverJarUtil()).getRegisteredDrivers();
-    return new CliFunctionResult(context.getMemberName(), listOfDrivers);
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
+    try {
+      List<String> driverNames;
+      driverNames = (new DriverJarUtil()).getRegisteredDriverNames();
+      return new CliFunctionResult(context.getMemberName(), driverNames);
+    } catch (Exception ex) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
+          ex.getMessage());
+    }
   }
 }

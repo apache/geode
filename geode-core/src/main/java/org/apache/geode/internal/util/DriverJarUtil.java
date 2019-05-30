@@ -21,6 +21,7 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -52,6 +53,15 @@ public class DriverJarUtil {
   public List<Driver> getRegisteredDrivers() {
     Enumeration<Driver> drivers = DriverManager.getDrivers();
     return Collections.list(drivers);
+  }
+
+  public List<String> getRegisteredDriverNames() {
+    List<String> listOfDriverNames = new ArrayList<>();
+    for (Driver driver : getRegisteredDrivers()) {
+      listOfDriverNames.add(driver.getClass().getName());
+    }
+    return listOfDriverNames;
+
   }
 
   // The methods below are included to facilitate testing and to make the helper methods in this

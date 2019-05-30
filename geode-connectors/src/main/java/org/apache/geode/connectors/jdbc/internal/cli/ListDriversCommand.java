@@ -47,38 +47,35 @@ public class ListDriversCommand extends SingleGfshCommand {
 
   public ResultModel listDrivers() {
     ResultModel resultModel = new ResultModel();
-    boolean driversExist =
-        fillTabularResultData((getRegisteredDrivers()), resultModel.addTable(LIST_DRIVERS_SECTION));
-    if (driversExist) {
-      resultModel.setHeader(EXPERIMENTAL);
-      return resultModel;
-    } else {
-      return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MEMBERS_FOUND);
-    }
+    return createTabularResultDataAndGetResult(resultModel);
   }
 
-  private boolean fillTabularResultData(List<String> drivers,
-      TabularResultModel tableModel) {
-    if (drivers == null) {
-      return false;
-    }
-    for (String driver : drivers) {
-      tableModel.accumulate(LIST_OF_DRIVERS, driver);
-    }
-    return true;
-  }
+  private ResultModel createTabularResultDataAndGetResult(ResultModel resultModel) {
+    TabularResultModel tableModel = resultModel.addTable(LIST_DRIVERS_SECTION);
+    List<String> drivers;
 
-  List<String> getRegisteredDrivers() {
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       DistributedMember targetMember = targetMembers.iterator().next();
       Object[] arguments = new Object[] {};
-      CliFunctionResult listDriversResult = executeFunctionAndGetFunctionResult(
-          new ListDriversFunction(), arguments, targetMember);
-      return getListOfDrivers(listDriversResult);
+      CliFunctionResult listDriversResult = executeAndGetFunctionResult(
+          new ListDriversFunction(), arguments, targetMembers).get(0);
+
+      if (listDriversResult.isSuccessful()) {
+        drivers = getListOfDrivers(listDriversResult);
+      } else {
+        return ResultModel
+            .createError("Error when listing drivers: " + listDriversResult.getStatusMessage());
+      }
+
     } else {
-      return null;
+      return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MEMBERS_FOUND);
     }
+
+    for (String driver : drivers) {
+      tableModel.accumulate(LIST_OF_DRIVERS, driver);
+    }
+    return resultModel;
   }
 
   List<String> getListOfDrivers(CliFunctionResult listDriversResult) {
