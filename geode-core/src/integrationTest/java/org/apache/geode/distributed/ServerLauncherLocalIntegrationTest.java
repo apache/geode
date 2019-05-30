@@ -22,12 +22,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
+import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
 import java.net.BindException;
-import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
@@ -78,23 +78,26 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
 
   @Test
   public void startWithPortUsesPort() {
-    ServerLauncher launcher =
-        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(defaultServerPort));
+    ServerLauncher launcher = startServer(newBuilder()
+        .setDisableDefaultServer(false)
+        .setServerPort(defaultServerPort));
 
     assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isEqualTo(defaultServerPort);
   }
 
   @Test
   public void startWithPortZeroUsesAnEphemeralPort() {
-    ServerLauncher launcher =
-        startServer(newBuilder().setDisableDefaultServer(false).setServerPort(0));
+    ServerLauncher launcher = startServer(newBuilder()
+        .setDisableDefaultServer(false)
+        .setServerPort(0));
 
     assertThat(launcher.getCache().getCacheServers().get(0).getPort()).isGreaterThan(0);
   }
 
   @Test
   public void startUsesBuilderValues() {
-    ServerLauncher launcher = startServer(newBuilder().set(DISABLE_AUTO_RECONNECT, "true"));
+    ServerLauncher launcher = startServer(newBuilder()
+        .set(DISABLE_AUTO_RECONNECT, "true"));
 
     Cache cache = launcher.getCache();
     assertThat(cache).isNotNull();
@@ -168,7 +171,8 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     int startPort = freePorts[1];
     givenCacheXmlFileWithServerPort(cacheXmlPort);
 
-    launcher = startServer(new Builder().setServerPort(startPort));
+    launcher = startServer(newBuilder()
+        .setServerPort(startPort));
 
     // server should use --server-port instead of port in cache.xml
     assertThatServerPortIsInUse(startPort);
@@ -180,9 +184,8 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void startWithServerPortOverridesDefaultWithCacheXml() {
     givenCacheXmlFile();
 
-    launcher = awaitStart(new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
-        .setServerPort(defaultServerPort).setWorkingDirectory(getWorkingDirectoryPath())
-        .set(LOG_LEVEL, "config").set(MCAST_PORT, "0"));
+    launcher = awaitStart(newBuilder()
+        .setServerPort(defaultServerPort));
 
     // verify server used --server-port instead of default
     assertThatServerPortIsInUse(defaultServerPort);
@@ -192,20 +195,27 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   @Test
   public void startWithDefaultPortInUseFailsWithBindException() {
     givenServerPortInUse(defaultServerPort);
+    launcher = newBuilder()
+        .build();
 
-    launcher = new Builder().build();
+    Throwable thrown = catchThrowable(() -> launcher.start());
 
-    assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
+    assertThat(thrown)
+        .isInstanceOf(RuntimeException.class)
         .hasCauseInstanceOf(BindException.class);
   }
 
   @Test
   public void startWithServerPortInUseFailsWithBindException() {
     givenServerPortInUse(nonDefaultServerPort);
+    launcher = newBuilder()
+        .setServerPort(nonDefaultServerPort)
+        .build();
 
-    launcher = new Builder().setServerPort(nonDefaultServerPort).build();
+    Throwable thrown = catchThrowable(() -> launcher.start());
 
-    assertThatThrownBy(() -> launcher.start()).isInstanceOf(RuntimeException.class)
+    assertThat(thrown)
+        .isInstanceOf(RuntimeException.class)
         .hasCauseInstanceOf(BindException.class);
   }
 
@@ -214,18 +224,24 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     int[] freePorts = getRandomAvailableTCPPorts(2);
     int xmlPort = freePorts[0];
     int serverPort = freePorts[1];
-    Integer maxThreads = 100;
-    Integer maxConnections = 1200;
-    Integer maxMessageCount = 500000;
-    Integer socketBufferSize = 342768;
-    Integer messageTimeToLive = 120;
+    int maxThreads = 100;
+    int maxConnections = 1200;
+    int maxMessageCount = 500000;
+    int socketBufferSize = 342768;
+    int messageTimeToLive = 120;
     String hostnameForClients = "hostName4Clients";
     String serverBindAddress = "127.0.0.1";
 
-    ServerLauncher.Builder launcherBuilder = new Builder().setServerBindAddress(serverBindAddress)
-        .setServerPort(serverPort).setMaxThreads(maxThreads).setMaxConnections(maxConnections)
-        .setMaxMessageCount(maxMessageCount).setMessageTimeToLive(messageTimeToLive)
-        .setSocketBufferSize(socketBufferSize).setHostNameForClients(hostnameForClients);
+    ServerLauncher.Builder launcherBuilder = newBuilder()
+        .setHostNameForClients(hostnameForClients)
+        .setMaxConnections(maxConnections)
+        .setMaxMessageCount(maxMessageCount)
+        .setMaxThreads(maxThreads)
+        .setMessageTimeToLive(messageTimeToLive)
+        .setServerBindAddress(serverBindAddress)
+        .setServerPort(serverPort)
+        .setSocketBufferSize(socketBufferSize);
+
     givenCacheXmlFileWithServerProperties(xmlPort, CacheServer.DEFAULT_BIND_ADDRESS,
         CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS, CacheServer.DEFAULT_MAX_CONNECTIONS,
         CacheServer.DEFAULT_MAX_THREADS, CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT,
@@ -236,23 +252,27 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
     assertThatServerPortIsInUse(serverPort);
     assertThatServerPortIsFree(xmlPort);
     assertThat(Integer.valueOf(launcher.status().getPort())).isEqualTo(serverPort);
+
     List<CacheServer> servers = launcher.getCache().getCacheServers();
     assertThat(servers.size()).isEqualTo(1);
+
     CacheServer server = servers.get(0);
-    assertThat(server.getMaxThreads()).isEqualTo(maxThreads);
-    assertThat(server.getMaxConnections()).isEqualTo(maxConnections);
-    assertThat(server.getMaximumMessageCount()).isEqualTo(maxMessageCount);
-    assertThat(server.getSocketBufferSize()).isEqualTo(socketBufferSize);
-    assertThat(server.getMessageTimeToLive()).isEqualTo(messageTimeToLive);
-    assertThat(server.getHostnameForClients()).isEqualTo(hostnameForClients);
     assertThat(server.getBindAddress()).isEqualTo(serverBindAddress);
+    assertThat(server.getHostnameForClients()).isEqualTo(hostnameForClients);
+    assertThat(server.getMaxConnections()).isEqualTo(maxConnections);
+    assertThat(server.getMaxThreads()).isEqualTo(maxThreads);
+    assertThat(server.getMaximumMessageCount()).isEqualTo(maxMessageCount);
+    assertThat(server.getMessageTimeToLive()).isEqualTo(messageTimeToLive);
+    assertThat(server.getSocketBufferSize()).isEqualTo(socketBufferSize);
   }
 
   @Test
   public void statusForDisableDefaultServerHasEmptyPort() {
     givenServerPortIsFree(defaultServerPort);
 
-    ServerState serverState = startServer(newBuilder().setDisableDefaultServer(true)).status();
+    ServerState serverState = startServer(newBuilder()
+        .setDisableDefaultServer(true))
+            .status();
 
     assertThat(serverState.getPort()).isEqualTo("");
   }
@@ -261,17 +281,20 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void statusWithPidReturnsOnlineWithDetails() throws UnknownHostException {
     givenRunningServer();
 
-    ServerState serverState = new Builder().setPid(localPid).build().status();
+    ServerState serverState = new Builder()
+        .setPid(localPid)
+        .build()
+        .status();
 
-    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getLogFile()).isEqualTo(getLogFilePath());
     assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
     assertThat(serverState.getPid().intValue()).isEqualTo(localPid);
+    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getUptime()).isGreaterThan(0);
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
@@ -280,18 +303,20 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws UnknownHostException {
     givenRunningServer();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
-    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getClasspath()).isEqualTo(getClassPath());
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getLogFile()).isEqualTo(getLogFilePath());
     assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
     assertThat(serverState.getPid().intValue()).isEqualTo(readPidFile());
+    assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getUptime()).isGreaterThan(0);
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
@@ -299,10 +324,14 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   @Test
   public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
+    ServerLauncher launcher = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build();
 
-    ServerLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
+    Throwable thrown = catchThrowable(() -> launcher.status());
 
-    assertThatThrownBy(() -> launcher.status()).isInstanceOf(IllegalArgumentException.class)
+    assertThat(thrown)
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid pid 'null' found in");
   }
 
@@ -311,18 +340,20 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
       throws UnknownHostException {
     givenEmptyWorkingDirectory();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
-    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(serverState.getClasspath()).isNull();
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getJvmArguments()).isEqualTo(getJvmArguments());
     assertThat(serverState.getLogFile()).isNull();
     assertThat(serverState.getMemberName()).isNull();
     assertThat(serverState.getPid()).isNull();
+    assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(serverState.getUptime().intValue()).isEqualTo(0);
     assertThat(serverState.getWorkingDirectory()).isEqualTo(getWorkingDirectoryPath());
   }
@@ -334,8 +365,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
     assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
@@ -344,7 +377,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
-    ServerState serverState = new Builder().setPid(localPid).build().stop();
+    ServerState serverState = new Builder()
+        .setPid(localPid)
+        .build()
+        .stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
@@ -353,7 +389,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void stopWithPidDeletesPidFile() {
     givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
-    new Builder().setPid(localPid).build().stop();
+    new Builder()
+        .setPid(localPid)
+        .build()
+        .stop();
 
     assertDeletionOf(getPidFile());
   }
@@ -362,8 +401,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningServer();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
@@ -372,7 +413,10 @@ public class ServerLauncherLocalIntegrationTest extends ServerLauncherLocalInteg
   public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningServer(newBuilder().setDeletePidFileOnStop(true));
 
-    new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertDeletionOf(getPidFile());
   }

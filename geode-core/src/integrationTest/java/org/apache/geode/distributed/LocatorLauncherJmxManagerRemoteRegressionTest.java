@@ -22,12 +22,11 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import org.junit.Before;
 import org.junit.Test;
 
-
 /**
  * Regression tests for stopping a JMX Manager process launched with {@link LocatorLauncher}.
  *
  * <p>
- * Confirms fix for <bold>GEODE-528: Locator not stopping correctly if jmx-manager-port=0</bold>
+ * Confirms fix for <bold>Locator not stopping correctly if jmx-manager-port=0</bold>
  *
  * <p>
  * Refactored from LocatorLauncherAssemblyIntegrationTest which used to be in geode-assembly.
@@ -40,29 +39,37 @@ public class LocatorLauncherJmxManagerRemoteRegressionTest
   @Before
   public void before() throws Exception {
     int[] ports = getRandomAvailableTCPPorts(3);
-    this.defaultLocatorPort = ports[0];
-    this.nonDefaultLocatorPort = ports[1];
-    this.jmxManagerPort = ports[2];
+    defaultLocatorPort = ports[0];
+    nonDefaultLocatorPort = ports[1];
+    jmxManagerPort = ports[2];
   }
 
   @Test
-  public void locatorProcessWithZeroJmxPortExitsWhenStopped() throws Exception {
-    givenRunningLocator(addJvmArgument("-D" + JMX_MANAGER + "=true")
-        .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
-        .addJvmArgument("-D" + JMX_MANAGER_PORT + "=0"));
+  public void locatorProcessWithZeroJmxPortExitsWhenStopped() {
+    givenRunningLocator(
+        addJvmArgument("-D" + JMX_MANAGER + "=true")
+            .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
+            .addJvmArgument("-D" + JMX_MANAGER_PORT + "=0"));
 
-    new LocatorLauncher.Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    new LocatorLauncher.Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertStopOf(getLocatorProcess());
   }
 
   @Test
-  public void locatorProcessWithNonZeroJmxPortExitsWhenStopped() throws Exception {
-    givenRunningLocator(addJvmArgument("-D" + JMX_MANAGER + "=true")
-        .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
-        .addJvmArgument("-D" + JMX_MANAGER_PORT + "=" + jmxManagerPort));
+  public void locatorProcessWithNonZeroJmxPortExitsWhenStopped() {
+    givenRunningLocator(
+        addJvmArgument("-D" + JMX_MANAGER + "=true")
+            .addJvmArgument("-D" + JMX_MANAGER_START + "=true")
+            .addJvmArgument("-D" + JMX_MANAGER_PORT + "=" + jmxManagerPort));
 
-    new LocatorLauncher.Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    new LocatorLauncher.Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertStopOf(getLocatorProcess());
   }

@@ -19,13 +19,13 @@ import static org.apache.geode.distributed.AbstractLauncher.Status.ONLINE;
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
+import static org.apache.geode.internal.net.SocketCreator.getLocalHost;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
-import java.net.InetAddress;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -176,8 +176,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusForDisableDefaultServerHasEmptyPort() {
     givenRunningServer(withDisableDefaultServer());
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
     assertThat(serverState.getPort()).isEmpty();
   }
@@ -186,7 +188,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusWithPidReturnsOnlineWithDetails() throws IOException {
     givenRunningServer();
 
-    ServerState serverState = new Builder().setPid(getServerPid()).build().status();
+    ServerState serverState = new Builder()
+        .setPid(getServerPid())
+        .build()
+        .status();
 
     assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getPid().intValue()).isEqualTo(getServerPid());
@@ -197,7 +202,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isEqualTo(getLogFile().getCanonicalPath());
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
   }
 
@@ -205,8 +210,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusWithWorkingDirectoryReturnsOnlineWithDetails() throws IOException {
     givenRunningServer();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
     assertThat(serverState.getStatus()).isEqualTo(ONLINE);
     assertThat(serverState.getPid().intValue()).isEqualTo(readPidFile());
@@ -217,7 +224,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isEqualTo(getLogFile().getCanonicalPath());
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getMemberName()).isEqualTo(getUniqueName());
   }
 
@@ -225,9 +232,14 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusWithEmptyPidFileThrowsIllegalArgumentException() {
     givenEmptyPidFile();
 
-    ServerLauncher launcher = new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build();
+    ServerLauncher launcher = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build();
 
-    assertThatThrownBy(() -> launcher.status()).isInstanceOf(IllegalArgumentException.class)
+    Throwable thrown = catchThrowable(() -> launcher.status());
+
+    assertThat(thrown)
+        .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Invalid pid 'null' found in");
   }
 
@@ -235,8 +247,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusWithEmptyWorkingDirectoryReturnsNotRespondingWithDetails() throws IOException {
     givenEmptyWorkingDirectory();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
     assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
     assertThat(serverState.getPid()).isNull();
@@ -246,7 +260,7 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
     assertThat(serverState.getGemFireVersion()).isEqualTo(GemFireVersion.getGemFireVersion());
     assertThat(serverState.getJavaVersion()).isEqualTo(System.getProperty("java.version"));
     assertThat(serverState.getLogFile()).isNull();
-    assertThat(serverState.getHost()).isEqualTo(InetAddress.getLocalHost().getCanonicalHostName());
+    assertThat(serverState.getHost()).isEqualTo(getLocalHost().getCanonicalHostName());
     assertThat(serverState.getMemberName()).isNull();
   }
 
@@ -254,8 +268,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void statusWithStalePidFileReturnsNotResponding() {
     givenPidFile(fakePid);
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().status();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .status();
 
     assertThat(serverState.getStatus()).isEqualTo(NOT_RESPONDING);
   }
@@ -264,7 +280,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithPidReturnsStopped() {
     givenRunningServer();
 
-    ServerState serverState = new Builder().setPid(getServerPid()).build().stop();
+    ServerState serverState = new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
@@ -273,7 +292,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithPidStopsServerProcess() {
     givenRunningServer();
 
-    new Builder().setPid(getServerPid()).build().stop();
+    new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop();
 
     assertStopOf(getServerProcess());
   }
@@ -282,7 +304,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithPidDeletesPidFile() {
     givenRunningServer();
 
-    new Builder().setPid(getServerPid()).build().stop();
+    new Builder()
+        .setPid(getServerPid())
+        .build()
+        .stop();
 
     assertDeletionOf(getPidFile());
   }
@@ -291,8 +316,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithWorkingDirectoryReturnsStopped() {
     givenRunningServer();
 
-    ServerState serverState =
-        new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    ServerState serverState = new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertThat(serverState.getStatus()).isEqualTo(STOPPED);
   }
@@ -301,7 +328,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithWorkingDirectoryStopsServerProcess() {
     givenRunningServer();
 
-    new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertStopOf(getServerProcess());
   }
@@ -310,7 +340,10 @@ public class ServerLauncherRemoteIntegrationTest extends ServerLauncherRemoteInt
   public void stopWithWorkingDirectoryDeletesPidFile() {
     givenRunningServer();
 
-    new Builder().setWorkingDirectory(getWorkingDirectoryPath()).build().stop();
+    new Builder()
+        .setWorkingDirectory(getWorkingDirectoryPath())
+        .build()
+        .stop();
 
     assertDeletionOf(getPidFile());
   }
