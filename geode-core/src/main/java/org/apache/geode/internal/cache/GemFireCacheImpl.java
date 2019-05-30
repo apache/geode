@@ -1366,16 +1366,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
               url.toString(), ex));
 
     } catch (CacheXmlException ex) {
-      CacheXmlException newEx =
-          new CacheXmlException(String.format("While reading Cache XML %s. %s",
-              url, ex.getMessage()), ex.getCause());
-      /*
-       * TODO: why use setStackTrace and initCause? removal breaks several tests: OplogRVVJUnitTest,
-       * NewDeclarativeIndexCreationJUnitTest CacheXml70DUnitTest, CacheXml80DUnitTest,
-       * CacheXml81DUnitTest, CacheXmlGeode10DUnitTest RegionManagementDUnitTest
-       */
-      newEx.setStackTrace(ex.getStackTrace());
-      throw newEx;
+      throw new CacheXmlException(String.format("While reading Cache XML %s. %s",
+          url, ex.getMessage()), ex.getCause());
 
     } finally {
       closeQuietly(stream);
