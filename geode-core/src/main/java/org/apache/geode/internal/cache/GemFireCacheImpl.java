@@ -2126,15 +2126,13 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
 
           // no need to track PR instances since we won't create any more
           // cacheServers or gatewayHubs
-          if (partitionedRegions != null) {
-            if (isDebugEnabled) {
-              logger.debug("{}: clearing partitioned regions...", this);
-            }
-            synchronized (partitionedRegions) {
-              int prSize = -partitionedRegions.size();
-              partitionedRegions.clear();
-              getCachePerfStats().incPartitionedRegions(prSize);
-            }
+          if (isDebugEnabled) {
+            logger.debug("{}: clearing partitioned regions...", this);
+          }
+          synchronized (partitionedRegions) {
+            int prSize = -partitionedRegions.size();
+            partitionedRegions.clear();
+            getCachePerfStats().incPartitionedRegions(prSize);
           }
 
           prepareDiskStoresForClose();
