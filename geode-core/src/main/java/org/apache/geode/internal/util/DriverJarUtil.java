@@ -21,7 +21,9 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 
 import org.apache.geode.internal.ClassPathLoader;
 
@@ -45,6 +47,11 @@ public class DriverJarUtil {
         deregisterDriverWithDriverManager(driver);
       }
     }
+  }
+
+  public List<Driver> getRegisteredDrivers() {
+    Enumeration<Driver> drivers = DriverManager.getDrivers();
+    return Collections.list(drivers);
   }
 
   // The methods below are included to facilitate testing and to make the helper methods in this
