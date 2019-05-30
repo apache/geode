@@ -300,7 +300,7 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
         logger.info("RYAN: ClientCqConcurrentMap entry: " + e);
         final CqNameToOp cqNameToOp = e.getValue();
         if (cqNameToOp instanceof CqNameToOpHashMap) {
-          logger.info("RYAN: CqNameToOpHashMap size: " + cqNameToOp);
+          logger.info("RYAN: CqNameToOpHashMap size: " + cqNameToOp.size());
           for (Map.Entry<String, Integer> j : ((CqNameToOpHashMap) cqNameToOp).entrySet()) {
             logger.info("RYAN: CqNameToOpHashMap entry: " + j);
           }

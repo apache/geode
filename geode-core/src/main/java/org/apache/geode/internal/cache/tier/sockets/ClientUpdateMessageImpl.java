@@ -1605,6 +1605,12 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
 
     @Override
+    public Integer remove(final Object key) {
+      logger.info("RYAN: Removing " + key, new Exception());
+      return super.remove(key);
+    }
+
+    @Override
     public void add(String name, Integer op) {
       put(name, op);
     }
