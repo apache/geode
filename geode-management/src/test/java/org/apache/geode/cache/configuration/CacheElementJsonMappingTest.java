@@ -26,20 +26,20 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
 import org.apache.geode.management.configuration.RuntimeIndex;
+import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementJsonMappingTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
-  private static MemberConfig member;
+  private static RuntimeMemberConfig member;
   private static RuntimeRegionConfig region;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    member = new MemberConfig();
+    member = new RuntimeMemberConfig();
     member.setId("server");
     member.setPid(123);
 
@@ -82,7 +82,7 @@ public class CacheElementJsonMappingTest {
   @Test
   public void serializeResult() throws Exception {
     ClusterManagementResult result = new ClusterManagementResult();
-    List<RuntimeCacheElement> elements = new ArrayList<>();
+    List<CacheElement> elements = new ArrayList<>();
     elements.add(region);
     elements.add(member);
     result.setResult(elements);
@@ -91,10 +91,10 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
 
     ClusterManagementResult result1 = mapper.readValue(json, ClusterManagementResult.class);
-    assertThat(result1.getResult(RuntimeCacheElement.class)).hasSize(2);
-    assertThat(result1.getResult(RuntimeCacheElement.class).get(0))
+    assertThat(result1.getResult(CacheElement.class)).hasSize(2);
+    assertThat(result1.getResult(CacheElement.class).get(0))
         .isInstanceOf(RegionConfig.class);
-    assertThat(result1.getResult(RuntimeCacheElement.class).get(1))
+    assertThat(result1.getResult(CacheElement.class).get(1))
         .isInstanceOf(MemberConfig.class);
   }
 
@@ -159,6 +159,7 @@ public class CacheElementJsonMappingTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName("index1");
     index.setFromClause("/region1 r");
+    index.setRegionName("region1");
     index.setExpression("id");
     config.getIndexes().add(index);
     RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);

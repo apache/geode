@@ -26,7 +26,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 @Experimental
-public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheElement {
+public class RuntimeRegionConfig extends RegionConfig implements MultiGroupCacheElement {
   private long entryCount;
 
   public RuntimeRegionConfig() {}

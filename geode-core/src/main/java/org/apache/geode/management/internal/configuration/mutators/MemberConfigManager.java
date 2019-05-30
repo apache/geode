@@ -36,6 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
@@ -64,7 +65,7 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
   }
 
   @Override
-  public List<MemberConfig> list(MemberConfig filter, CacheConfig existing) {
+  public List<RuntimeMemberConfig> list(MemberConfig filter, CacheConfig existing) {
     Set<DistributedMember> distributedMembers = getDistributedMembers(filter);
     if (distributedMembers.size() == 0) {
       return Collections.emptyList();
@@ -97,15 +98,15 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
   }
 
   @VisibleForTesting
-  List<MemberConfig> generateMemberConfigs(ArrayList<MemberInformation> memberInformation) {
+  List<RuntimeMemberConfig> generateMemberConfigs(ArrayList<MemberInformation> memberInformation) {
     final String coordinatorId = getCoordinatorId();
     return memberInformation.stream().map(
         memberInfo -> generateMemberConfig(coordinatorId, memberInfo)).collect(Collectors.toList());
   }
 
   @VisibleForTesting
-  MemberConfig generateMemberConfig(String coordinatorId, MemberInformation memberInfo) {
-    MemberConfig member = new MemberConfig();
+  RuntimeMemberConfig generateMemberConfig(String coordinatorId, MemberInformation memberInfo) {
+    RuntimeMemberConfig member = new RuntimeMemberConfig();
     member.setId(memberInfo.getName());
     member.setHost(memberInfo.getHost());
     member.setPid(memberInfo.getProcessId());
@@ -119,7 +120,8 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
     if (memberInfo.isServer()) {
       for (CacheServerInfo info : memberInfo.getCacheServeInfo()) {
-        MemberConfig.CacheServerConfig cacheServerConfig = new MemberConfig.CacheServerConfig();
+        RuntimeMemberConfig.CacheServerConfig cacheServerConfig =
+            new RuntimeMemberConfig.CacheServerConfig();
         cacheServerConfig.setPort(info.getPort());
         cacheServerConfig.setMaxConnections(info.getMaxConnections());
         cacheServerConfig.setMaxThreads(info.getMaxThreads());

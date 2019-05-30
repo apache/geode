@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
@@ -44,13 +46,14 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeCacheElement;
+import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.MemberConfigManager;
+import org.apache.geode.management.internal.configuration.mutators.PdxManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
@@ -62,7 +65,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static final Logger logger = LogService.getLogger();
   private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
-  private Map<Class, ConfigurationManager> managers;
+  private Map<Class, ConfigurationManager<? extends CacheElement>> managers;
   private Map<Class, ConfigurationValidator> validators;
 
   public LocatorClusterManagementService(InternalCache cache,
@@ -71,6 +74,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager(cache));
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
+    managers.put(PdxType.class, new PdxManager());
 
     // initialize the list of validators
     validators.put(CacheElement.class, new CacheElementValidator());
@@ -113,11 +117,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     Set<DistributedMember> targetedMembers = findMembers(group);
 
-    if (targetedMembers.size() == 0) {
-      return new ClusterManagementResult(false,
-          "No members found in group '" + group + "' to create cache element");
-    }
-
     ClusterManagementResult result = new ClusterManagementResult();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
@@ -150,6 +149,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
       return cacheConfigForGroup;
     });
+
+    // add the config object which includes the HATOS information of the element created
+    if (result.isSuccessful()) {
+      result.setResult(Collections.singletonList(config));
+    }
     return result;
   }
 
@@ -241,12 +245,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult list(CacheElement filter) {
-    ConfigurationManager manager = managers.get(filter.getClass());
+  public <T extends CacheElement> ClusterManagementResult list(T filter) {
+    ConfigurationManager<T> manager = (ConfigurationManager<T>) managers.get(filter.getClass());
+
     ClusterManagementResult result = new ClusterManagementResult();
 
     if (filter instanceof MemberConfig) {
-      List<RuntimeCacheElement> listResults = manager.list(filter, null);
+      List<? extends T> listResults = manager.list(filter, null);
       result.setResult(listResults);
       return result;
     }
@@ -256,38 +261,56 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled");
     }
 
-    List<RuntimeCacheElement> resultList = new ArrayList<>();
-
-    // get a list of all the resultList from all groups that satisfy the filter criteria (all
-    // filters
-    // have been applied except the group)
+    List<T> resultList = new ArrayList<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      List<RuntimeCacheElement> listInGroup = manager.list(filter, currentPersistedConfig);
-      for (RuntimeCacheElement element : listInGroup) {
-        element.getGroups().add(group);
-        int index = resultList.indexOf(element);
-        if (index >= 0) {
-          RuntimeCacheElement exist = resultList.get(index);
-          exist.getGroups().add(group);
-        } else {
+      List<? extends T> listInGroup = manager.list(filter, currentPersistedConfig);
+      for (T element : listInGroup) {
+        if (group.equals(element.getConfigGroup()) || element instanceof MultiGroupCacheElement) {
+          element.setGroup(group);
           resultList.add(element);
         }
       }
     }
 
-    // filtering by group. Do this after iterating through all the groups because some region might
-    // belong to multiple groups and we want the "group" field to show that.
-    if (StringUtils.isNotBlank(filter.getGroup())) {
-      resultList =
-          resultList.stream().filter(e -> e.getGroups().contains(filter.getConfigGroup()))
-              .collect(Collectors.toList());
+    // if empty result, return immediately
+    if (resultList.size() == 0) {
+      return result;
     }
 
-    // if "cluster" is the only group of the element, remove it
-    for (RuntimeCacheElement element : resultList) {
-      if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
-        element.getGroups().clear();
+    // right now the list contains [{regionA, group1}, {regionA, group2}...], if the elements are
+    // MultiGroupCacheElement, we need to consolidate the list into [{regionA, [group1, group2]}
+    if (resultList.get(0) instanceof MultiGroupCacheElement) {
+      List<MultiGroupCacheElement> multiGroupList = new ArrayList<>();
+      for (T element : resultList) {
+        int index = multiGroupList.indexOf(element);
+        if (index >= 0) {
+          MultiGroupCacheElement exist = multiGroupList.get(index);
+          exist.getGroups().add(element.getGroup());
+        } else {
+          multiGroupList.add((MultiGroupCacheElement) element);
+        }
+      }
+      if (StringUtils.isNotBlank(filter.getGroup())) {
+        multiGroupList = multiGroupList.stream()
+            .filter(e -> e.getGroups().contains(filter.getConfigGroup()))
+            .collect(Collectors.toList());
+      }
+      // if "cluster" is the only group, clear it
+      for (MultiGroupCacheElement element : multiGroupList) {
+        if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
+          element.getGroups().clear();
+        }
+      }
+      resultList =
+          (List<T>) multiGroupList.stream().map(CacheElement.class::cast)
+              .collect(Collectors.toList());
+    } else {
+      // for non-MultiGroup CacheElement, just clear out the "cluster" group
+      for (T element : resultList) {
+        if ("cluster".equals(element.getGroup())) {
+          element.setGroup(null);
+        }
       }
     }
 
@@ -298,7 +321,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public ClusterManagementResult get(CacheElement config) {
     ClusterManagementResult list = list(config);
-    List<RuntimeCacheElement> result = list.getResult(RuntimeCacheElement.class);
+    List<CacheElement> result = list.getResult(CacheElement.class);
     if (result.size() == 0) {
       throw new EntityNotFoundException(
           config.getClass().getSimpleName() + " with id = " + config.getId() + " not found.");
@@ -331,6 +354,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @VisibleForTesting
   List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
       Set<DistributedMember> targetMembers) {
+    if (targetMembers.size() == 0) {
+      return Collections.emptyList();
+    }
+
     ResultCollector rc = CliUtil.executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
   }

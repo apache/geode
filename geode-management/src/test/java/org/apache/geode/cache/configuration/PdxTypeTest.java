@@ -13,21 +13,18 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.cache.configuration;
 
-import java.util.List;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.junit.Test;
 
-public class RuntimeIndex extends RegionConfig.Index implements MultiGroupCacheElement {
-  @Override
-  public List<String> getGroups() {
-    return groups;
-  }
+public class PdxTypeTest {
 
-  public RuntimeIndex() {};
-
-  public RuntimeIndex(RegionConfig.Index index) {
-    super(index);
+  @Test
+  public void setGroup() throws Exception {
+    PdxType type = new PdxType();
+    assertThatThrownBy(() -> type.setGroup("test"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

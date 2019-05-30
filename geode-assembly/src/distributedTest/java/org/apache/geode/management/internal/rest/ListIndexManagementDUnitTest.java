@@ -132,7 +132,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Id is required");
+        .hasMessageContaining("unable to construct the uri ");
   }
 
   @Test
@@ -140,7 +140,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName("index1");
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("regionName is required");
+        .hasMessageContaining("unable to construct the uri ");
   }
 
   @Test

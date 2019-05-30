@@ -46,6 +46,12 @@ public class UpdateCacheFunction extends CliFunction<List> {
     Cache cache = context.getCache();
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
+
+    if (realizer == null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          "Server needs to be restarted for this configuration change to be realized.");
+    }
+
     switch (operation) {
       case CREATE:
         realizer.create(cacheElement, cache);
