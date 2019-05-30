@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.StoredObject;
 
 public class SearchLoadAndWriteProcessorTest {
@@ -61,6 +62,14 @@ public class SearchLoadAndWriteProcessorTest {
     KeyInfo keyInfo = new KeyInfo(key, value, cbArg);
     when(lr.getKeyInfo(any(), any(), any())).thenReturn(keyInfo);
     processor.region = lr;
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(lr.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     EntryEventImpl event =
         EntryEventImpl.create(lr, Operation.REPLACE, key, value, cbArg, false, null);
 
