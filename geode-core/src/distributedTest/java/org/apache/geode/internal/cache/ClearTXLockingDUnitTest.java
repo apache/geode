@@ -72,9 +72,9 @@ public class ClearTXLockingDUnitTest implements Serializable {
   private static final String REGION_NAME1 = "testRegion1";
   private static final String REGION_NAME2 = "testRegion2";
 
-  private static final CountDownLatch opsLatch = new CountDownLatch(1);
-  private static final CountDownLatch regionLatch = new CountDownLatch(1);
-  private static final CountDownLatch verifyLatch = new CountDownLatch(1);
+  private static CountDownLatch opsLatch;
+  private static CountDownLatch regionLatch;
+  private static CountDownLatch verifyLatch;
 
   private static volatile InternalCache cache;
 
@@ -93,6 +93,15 @@ public class ClearTXLockingDUnitTest implements Serializable {
 
     createCache(vm0);
     createCache(vm1);
+
+    for (VM vm : VM.toArray(vm0, vm1, getController())) {
+      vm.invoke(() -> {
+        opsLatch = new CountDownLatch(1);
+        regionLatch = new CountDownLatch(1);
+        verifyLatch = new CountDownLatch(1);
+      });
+    }
+
   }
 
   @After
