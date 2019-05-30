@@ -503,6 +503,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throws Exception {
     try {
       await(assertionConsumerDescription)
+          .atMost(timeout, unit)
           .untilAsserted(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
     } catch (ConditionTimeoutException e) {
       // There is a very slight race condition here, where the above could conceivably time out,
