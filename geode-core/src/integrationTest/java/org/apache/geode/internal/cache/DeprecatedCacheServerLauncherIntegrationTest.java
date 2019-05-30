@@ -226,7 +226,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
 
     execWithArgsAndValidate(Operation.START, "CacheServer pid: \\d+ status: running",
         asList(
-            "-J-D" + CacheServerLauncher.ASSIGN_BUCKETS + "=true",
+            "-J-D" + CacheServerLauncher.ASSIGN_BUCKETS_PROPERTY + "=true",
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
             "-classpath=" + getManifestJarFromClasspath(),
