@@ -79,18 +79,18 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   }
 
   /*
-   * Wait for up tp 2 seconds for the proxy MBeans to be deleted.
+   * Wait for up tp 3 seconds for the proxy MBeans to be deleted.
    */
   @VisibleForTesting
   boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
     long startWaitTime = System.currentTimeMillis();
-    long waitedFor;
 
     do {
       try {
         if (members.stream()
-            .allMatch(m -> gatewaySenderBeanDoesNotExist(dsMXBean, m.getName(), id))) {
+            .noneMatch(m -> CreateGatewaySenderCommand.gatewaySenderBeanExists(dsMXBean,
+                m.getName(), id))) {
           return true;
         }
 
@@ -99,25 +99,9 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
         // ignored
       }
 
-      waitedFor = System.currentTimeMillis() - startWaitTime;
-    } while (waitedFor < 2000);
+    } while (System.currentTimeMillis() - startWaitTime < 3000);
 
     return false;
-  }
-
-  private boolean gatewaySenderBeanDoesNotExist(DistributedSystemMXBean dsMXBean, String member,
-      String id) {
-    try {
-      // Throw a vanilla Exception if this call does not find anything
-      dsMXBean.fetchGatewaySenderObjectName(member, id);
-      return false;
-    } catch (Exception e) {
-      if (!e.getMessage().toLowerCase().contains("not found")) {
-        logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
-            member, id, e.getMessage());
-      }
-    }
-    return true;
   }
 
   @Override

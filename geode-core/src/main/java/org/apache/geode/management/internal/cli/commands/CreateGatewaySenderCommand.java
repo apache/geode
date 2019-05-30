@@ -164,14 +164,13 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   }
 
   /*
-   * Wait for up tp 2 seconds for the proxy MBeans to be created.
+   * Wait for up tp 3 seconds for the proxy MBeans to be created.
    */
   @VisibleForTesting
   boolean waitForGatewaySenderMBeanCreation(String id,
       Set<DistributedMember> membersToCreateGatewaySenderOn) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
     long startWaitTime = System.currentTimeMillis();
-    long waitedFor;
 
     do {
       try {
@@ -185,16 +184,15 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
         // ignored
       }
 
-      waitedFor = System.currentTimeMillis() - startWaitTime;
-    } while (waitedFor < 2000);
+    } while (System.currentTimeMillis() - startWaitTime < 3000);
 
     return false;
   }
 
-  private boolean gatewaySenderBeanExists(DistributedSystemMXBean dsMXBean, String member,
+  static boolean gatewaySenderBeanExists(DistributedSystemMXBean dsMXBean, String member,
       String id) {
     try {
-      // Throw a vanilla Exception if this call does not find anything
+      // This throws a vanilla Exception if this call does not find anything
       dsMXBean.fetchGatewaySenderObjectName(member, id);
       return true;
     } catch (Exception e) {
