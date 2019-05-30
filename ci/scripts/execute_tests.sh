@@ -54,7 +54,7 @@ scp ${SSH_OPTIONS} ${SCRIPTDIR}/capture-call-stacks.sh geode@${INSTANCE_IP_ADDRE
 
 
 if [[ -n "${PARALLEL_DUNIT}" && "${PARALLEL_DUNIT}" == "true" ]]; then
-  PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode"
+  PARALLEL_DUNIT="-PparallelDunit -PdunitDockerUser=geode -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}')"
   if [ -n "${DUNIT_PARALLEL_FORKS}" ]; then
     DUNIT_PARALLEL_FORKS="-PdunitParallelForks=${DUNIT_PARALLEL_FORKS}"
   fi
@@ -90,7 +90,6 @@ GRADLE_ARGS=" \
     -PtestJVMVer=${JAVA_TEST_VERSION} \
     ${PARALLEL_DUNIT} \
     ${DUNIT_PARALLEL_FORKS} \
-    -PdunitDockerImage=\$(docker images --format '{{.Repository}}:{{.Tag}}') \
     ${DEFAULT_GRADLE_TASK_OPTIONS} \
     ${GRADLE_SKIP_TASK_OPTIONS} \
     ${GRADLE_TASK} \

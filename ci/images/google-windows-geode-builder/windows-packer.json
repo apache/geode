@@ -17,9 +17,9 @@
       "project_id": "{{user `gcp_project`}}",
       "network": "{{user `gcp_network`}}",
       "subnetwork": "{{user `gcp_subnetwork`}}",
-      "source_image_family": "windows-1809-core-for-containers",
+      "source_image_family": "windows-2016",
       "disk_size": "100",
-      "machine_type": "n1-standard-1",
+      "machine_type": "n1-standard-4",
       "communicator": "winrm",
       "winrm_username": "geode",
       "winrm_insecure": true,
@@ -40,7 +40,20 @@
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-
+        "Install-WindowsFeature Containers",
+        "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force",
+        "Install-Module DockerMsftProvider -Force",
+        "Install-Package Docker -ProviderName DockerMsftProvider -Force"
+        ]
+    },
+    {
+      "type": "windows-restart"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression",
         "choco install -y git rsync adoptopenjdk11",
         "Move-Item \"C:\\Program Files\\AdoptOpenJDK\\jdk-11*\" c:\\java11",
@@ -67,10 +80,10 @@
         "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
         "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8",
         "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
-        "docker pull openjdk:8u181-jdk-windowsservercore-1709",
+        "docker pull openjdk:8u212-jdk-windowsservercore-1809",
         "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
-        "docker rmi microsoft/windowsservercore:1709",
-        "docker rmi microsoft/nanoserver:1709",
+        "docker rmi microsoft/windowsservercore:1809",
+        "docker rmi microsoft/nanoserver:1809",
 
         "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'",
 
