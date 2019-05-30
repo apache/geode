@@ -2903,6 +2903,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
   @Released({ENTRY_EVENT_NEW_VALUE, ENTRY_EVENT_OLD_VALUE})
   public void copyOffHeapToHeap() {
     if (!mayHaveOffHeapReferences()) {
+      logger.info("RYAN: Off-heap was not enabled");
       this.offHeapOk = false;
       return;
     }

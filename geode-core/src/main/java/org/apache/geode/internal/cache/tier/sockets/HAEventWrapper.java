@@ -391,10 +391,10 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
         InternalDataSerializer.invokeFromData(new ClientUpdateMessageImpl(), in);
         // hasCq will be false here, so client CQs are not read from this input
         // stream.
-        //if (logger.isDebugEnabled()) {
-          logger.info(
-              "RYAN: HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
-        //}
+        // if (logger.isDebugEnabled()) {
+        logger.info(
+            "RYAN: HAEventWrapper.fromData(): The event has already been sent to the client by the primary server.");
+        // }
       }
     } catch (SerializationException | ClassCastException ex) {
       logger.info("RYAN: Serialization exception caught", ex);
