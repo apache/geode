@@ -497,11 +497,12 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
-      ElderState es = null;
+      final ElderState es;
       try {
-        dm.getElderState(true);
+        es = dm.getElderState(true);
       } catch (InterruptedException e) {
         logger.info("Interrupted while processing {}", this);
+        return;
       }
       switch (this.opCode) {
         case GET_OP:
