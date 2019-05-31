@@ -82,6 +82,10 @@ public class ExecuteRegionFunctionOpTest {
    * Test retry logic
    */
 
+  private enum HAStatus {
+    NOT_HA, HA
+  }
+
   private enum ExecutionTarget {
     REGION_NO_FILTER,
     REGION_WITH_FILTER_1_KEY,
@@ -89,34 +93,43 @@ public class ExecuteRegionFunctionOpTest {
     SERVER,
   }
 
+  private enum FunctionIdentifierType {
+    STRING, OBJECT_REFERENCE
+  }
+
+  private enum ClientMetadataStatus {
+    CLIENT_HAS_METADATA, CLIENT_MISSING_METADATA
+  }
+
   private enum FailureMode {
     NO_FAILURE,
     THROW_SERVER_CONNECTIVITY_EXCEPTION
   }
 
-  private enum HAStatus {
-    HA,
-    NO_HA
-  }
-
-  static final byte FUNCTION_HAS_RESULT = (byte) 1;
-  static final int NUMBER_OF_SERVERS = 2;
+  private static final byte FUNCTION_HAS_RESULT = (byte) 1;
+  private static final int NUMBER_OF_SERVERS = 2;
+  private static final boolean OPTIMIZE_FOR_WRITE_SETTING = false;
+  private static final String REGION_NAME = "REGION1";
+  private static final String FUNCTION_NAME = "FUNCTION1";
 
   @Test
   @Parameters({
-      "0,NO_FAILURE,REGION_NO_FILTER,HA,1",
-      "-1,THROW_SERVER_CONNECTIVITY_EXCEPTION,REGION_NO_FILTER,HA,2",
-      "0,THROW_SERVER_CONNECTIVITY_EXCEPTION,REGION_NO_FILTER,HA,1",
-      "1,THROW_SERVER_CONNECTIVITY_EXCEPTION,REGION_NO_FILTER,HA,2",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, -1, 2",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 1, 2",
   })
   @TestCaseName("[{index}] {method}: {params}")
   @SuppressWarnings("unchecked")
   public void foo(
-      final int retryAttempts,
-      final FailureMode failureMode,
-      final ExecutionTarget executionTarget,
       final HAStatus haStatus,
+      final ClientMetadataStatus _ignoredClientMetadataStatus,
+      final ExecutionTarget executionTarget,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
       final int expectTries) {
+
+    final FailureMode failureMode = FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION;
 
     final List<ServerLocation> servers = mock(List.class);
 
@@ -165,7 +178,7 @@ public class ExecuteRegionFunctionOpTest {
     final Function<Integer> function =
         (Function<Integer>) mock(Function.class);
 
-    when(function.isHA()).thenReturn(haStatus == HAStatus.HA ? true : false);
+    when(function.isHA()).thenReturn(toBoolean(haStatus));
 
     final ServerRegionFunctionExecutor executor = mock(ServerRegionFunctionExecutor.class);
     final ResultCollector<Integer, Collection<Integer>> resultCollector =
@@ -175,13 +188,15 @@ public class ExecuteRegionFunctionOpTest {
       case REGION_NO_FILTER:
         switch (failureMode) {
           case NO_FAILURE:
-            ExecuteRegionFunctionOp.execute(executablePool, "REGION1", function,
-                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts);
+            executeFunctionForSideEffects(haStatus, functionIdentifierType, retryAttempts,
+                failureMode,
+                executablePool, function, executor, resultCollector);
             break;
           case THROW_SERVER_CONNECTIVITY_EXCEPTION:
             try {
-              ExecuteRegionFunctionOp.execute(executablePool, "REGION1", function,
-                  executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts);
+              executeFunctionForSideEffects(haStatus, functionIdentifierType, retryAttempts,
+                  failureMode,
+                  executablePool, function, executor, resultCollector);
               throw new AssertionError("expected execute() to throw exception but it didn't");
             } catch (final ServerConnectivityException e) {
               // expected
@@ -192,8 +207,11 @@ public class ExecuteRegionFunctionOpTest {
         }
         break;
       case REGION_WITH_FILTER_1_KEY:
+        // TODO
       case REGION_WITH_FILTER_2_KEYS:
+        // TODO
       case SERVER:
+        // TODO
         throw new AssertionError(
             "execution target type not yet supported by test: " + executionTarget);
       default:
@@ -204,4 +222,32 @@ public class ExecuteRegionFunctionOpTest {
         ArgumentMatchers.anyInt());
 
   }
+
+  private void executeFunctionForSideEffects(final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final FailureMode failureMode,
+      final PoolImpl executablePool,
+      final Function<Integer> function,
+      final ServerRegionFunctionExecutor executor,
+      final ResultCollector<Integer, Collection<Integer>> resultCollector) {
+    switch (functionIdentifierType) {
+      case STRING:
+        ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, FUNCTION_NAME,
+            executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts, toBoolean(haStatus),
+            OPTIMIZE_FOR_WRITE_SETTING);
+        break;
+      case OBJECT_REFERENCE:
+        ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, function,
+            executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts);
+        break;
+      default:
+        throw new AssertionError("unknown FunctionIdentifierType type: " + failureMode);
+    }
+  }
+
+  private boolean toBoolean(final HAStatus haStatus) {
+    return haStatus == HAStatus.HA;
+  }
+
 }
