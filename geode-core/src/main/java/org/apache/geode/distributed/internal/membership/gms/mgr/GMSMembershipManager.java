@@ -2620,7 +2620,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   @Override
   public boolean isShutdownStarted() {
     ClusterDistributionManager dm = listener.getDM();
-    return shutdownInProgress || (dm != null && dm.isShutdownStarted());
+    return shutdownInProgress || (dm != null && dm.isCloseInProgress());
   }
 
   @Override

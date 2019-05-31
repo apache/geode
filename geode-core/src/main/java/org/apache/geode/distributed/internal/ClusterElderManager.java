@@ -82,7 +82,7 @@ public class ClusterElderManager {
     return clusterDistributionManager.getId().equals(getElderCandidate());
   }
 
-  public ElderState getElderState(boolean waitToBecomeElder) {
+  public ElderState getElderState(boolean waitToBecomeElder) throws InterruptedException {
     if (waitToBecomeElder) {
       // This should always return true.
       waitForElder(clusterDistributionManager.getId());
@@ -121,22 +121,16 @@ public class ClusterElderManager {
    * @return true if desiredElder is the elder; false if it is no longer a member or the local
    *         member is the elder
    */
-  public boolean waitForElder(final InternalDistributedMember desiredElder) {
+  public boolean waitForElder(final InternalDistributedMember desiredElder)
+      throws InterruptedException {
     MembershipChangeListener changeListener =
         new MembershipChangeListener();
 
     clusterDistributionManager.addMembershipListener(changeListener);
 
-    boolean interrupted = false;
     InternalDistributedMember currentElder;
 
     try {
-      if (logger.isDebugEnabled()) {
-        currentElder = getElderCandidate();
-        logger.debug("Waiting for Elder to change. Expecting Elder to be {}, is {}.",
-            desiredElder, currentElder);
-      }
-
       while (true) {
         if (clusterDistributionManager.isCloseInProgress()) {
           return false;
@@ -144,6 +138,10 @@ public class ClusterElderManager {
         currentElder = getElderCandidate();
         if (desiredElder.equals(currentElder)) {
           return true;
+        }
+        if (logger.isDebugEnabled()) {
+          logger.debug("Expecting Elder to be {} but it is {}.",
+              desiredElder, currentElder);
         }
         if (!clusterDistributionManager.isCurrentMember(desiredElder)) {
           return false; // no longer present
@@ -155,18 +153,13 @@ public class ClusterElderManager {
           return false;
         }
 
-        try {
-          changeListener.waitForMembershipChange();
-        } catch (InterruptedException e) {
-          interrupted = true;
+        if (logger.isDebugEnabled()) {
+          logger.debug("Waiting for membership to change");
         }
+        changeListener.waitForMembershipChange();
       }
     } finally {
       clusterDistributionManager.removeMembershipListener(changeListener);
-
-      if (interrupted) {
-        Thread.currentThread().interrupt();
-      }
     }
   }
 
