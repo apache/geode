@@ -14,6 +14,7 @@
  */
 package org.apache.geode.test.process;
 
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.junit.Assert.fail;
 
@@ -34,7 +35,6 @@ import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -51,8 +51,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
- * Wraps spawned {@link java.lang.Process} to capture output and provide interaction with the
- * process.
+ * Wraps spawned {@link Process} to capture output and provide interaction with the process.
  *
  * @since GemFire 4.1.1
  */
@@ -81,10 +80,10 @@ public class ProcessWrapper implements Consumer<String> {
   private final BlockingQueue<String> lineBuffer;
 
   private final AtomicInteger exitValue = new AtomicInteger(-1);
-  private boolean starting = false;
-  private boolean started = false;
-  private boolean stopped = false;
-  private boolean interrupted = false;
+  private boolean starting;
+  private boolean started;
+  private boolean stopped;
+  private boolean interrupted;
   private Thread processThread;
   private ProcessStreamReader stdout;
   private ProcessStreamReader stderr;
@@ -101,8 +100,8 @@ public class ProcessWrapper implements Consumer<String> {
     this.timeoutMillis = timeoutMillis;
     this.directory = directory;
 
-    this.lineBuffer = new LinkedBlockingQueue<>();
-    this.allLines = Collections.synchronizedList(new ArrayList<>());
+    lineBuffer = new LinkedBlockingQueue<>();
+    allLines = Collections.synchronizedList(new ArrayList<>());
   }
 
   public void setConsumer(Consumer<String> consumer) {
@@ -111,8 +110,8 @@ public class ProcessWrapper implements Consumer<String> {
 
   @Override
   public void accept(String line) {
-    this.allLines.add(line);
-    this.lineBuffer.offer(line);
+    allLines.add(line);
+    lineBuffer.offer(line);
 
     if (consumer != null) {
       consumer.accept(line);
@@ -120,13 +119,13 @@ public class ProcessWrapper implements Consumer<String> {
   }
 
   public ProcessStreamReader getStandardOutReader() {
-    synchronized (this.exitValue) {
+    synchronized (exitValue) {
       return stdout;
     }
   }
 
   public ProcessStreamReader getStandardErrorReader() {
-    synchronized (this.exitValue) {
+    synchronized (exitValue) {
       return stderr;
     }
   }
@@ -135,9 +134,9 @@ public class ProcessWrapper implements Consumer<String> {
     final long start = System.currentTimeMillis();
     boolean done = false;
     while (!done) {
-      synchronized (this.exitValue) {
-        done = (this.process != null || this.processException != null)
-            && (this.started || this.exitValue.get() > -1 || this.interrupted);
+      synchronized (exitValue) {
+        done = (process != null || processException != null)
+            && (started || exitValue.get() > -1 || interrupted);
       }
       if (!done && System.currentTimeMillis() > start + timeoutMillis) {
         throw new TimeoutException("Timed out launching process");
@@ -150,18 +149,18 @@ public class ProcessWrapper implements Consumer<String> {
     checkStarting();
     waitForProcessStart();
 
-    synchronized (this.exitValue) {
-      if (this.interrupted) { // TODO: do we want to do this?
+    synchronized (exitValue) {
+      if (interrupted) {
         throw new InterruptedException("Process was interrupted");
       }
-      return this.exitValue.get() == -1 && this.started && !this.stopped && !this.interrupted
-          && this.processThread.isAlive();
+      return exitValue.get() == -1 && started && !stopped && !interrupted
+          && processThread.isAlive();
     }
   }
 
   public ProcessWrapper destroy() {
-    if (this.process != null) {
-      this.process.destroy();
+    if (process != null) {
+      process.destroy();
     }
     return this;
   }
@@ -170,11 +169,11 @@ public class ProcessWrapper implements Consumer<String> {
     checkStarting();
     final Thread thread = getThread();
     thread.join(timeout);
-    synchronized (this.exitValue) {
+    synchronized (exitValue) {
       if (throwOnTimeout) {
         checkStopped();
       }
-      return this.exitValue.get();
+      return exitValue.get();
     }
   }
 
@@ -200,9 +199,9 @@ public class ProcessWrapper implements Consumer<String> {
       checkStopped();
     }
     final StringBuffer sb = new StringBuffer();
-    final Iterator<String> iterator = this.allLines.iterator();
+    final Iterator<String> iterator = allLines.iterator();
     while (iterator.hasNext()) {
-      sb.append(iterator.next() + "\n");
+      sb.append(iterator.next() + System.lineSeparator());
     }
     return sb.toString();
   }
@@ -215,7 +214,7 @@ public class ProcessWrapper implements Consumer<String> {
 
   public ProcessWrapper sendInput(final String input) {
     checkStarting();
-    final PrintStream ps = new PrintStream(this.process.getOutputStream());
+    final PrintStream ps = new PrintStream(process.getOutputStream());
     ps.println(input);
     ps.flush();
     return this;
@@ -231,10 +230,10 @@ public class ProcessWrapper implements Consumer<String> {
     final long start = System.currentTimeMillis();
 
     while (System.currentTimeMillis() <= start + timeoutMillis) {
-      final String line = lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+      final String line = lineBuffer.poll(timeoutMillis, MILLISECONDS);
       if (line != null && pattern.matcher(line).matches()) {
         fail("failIfOutputMatches Matched pattern \"" + patternString + "\" against output \""
-            + line + "\". Output: " + this.allLines);
+            + line + "\". Output: " + allLines);
       }
     }
     return this;
@@ -249,11 +248,11 @@ public class ProcessWrapper implements Consumer<String> {
     checkStarting();
     checkOk();
 
-    final Pattern pattern = Pattern.compile(patternString);
     logger.debug("ProcessWrapper:waitForOutputToMatch waiting for \"{}\"...", patternString);
+    final Pattern pattern = Pattern.compile(patternString);
 
     while (true) {
-      final String line = this.lineBuffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
+      final String line = lineBuffer.poll(timeoutMillis, MILLISECONDS);
       if (line == null) {
         fail("Timed out waiting for output \"" + patternString + "\" after " + timeoutMillis +
             " ms from process \"" + toString(process) + "\" in \"" + this + "\". Output: " +
@@ -265,11 +264,10 @@ public class ProcessWrapper implements Consumer<String> {
             "ProcessWrapper:waitForOutputToMatch Matched pattern \"{}\" against output \"{}\"",
             patternString, line);
         break;
-      } else {
-        logger.debug(
-            "ProcessWrapper:waitForOutputToMatch Did not match pattern \"{}\" against output \"{}\"",
-            patternString, line);
       }
+      logger.debug(
+          "ProcessWrapper:waitForOutputToMatch Did not match pattern \"{}\" against output \"{}\"",
+          patternString, line);
     }
     return this;
   }
@@ -302,37 +300,34 @@ public class ProcessWrapper implements Consumer<String> {
 
   public ProcessWrapper execute(final Properties properties, final File workingDirectory)
       throws InterruptedException, TimeoutException {
-    synchronized (this.exitValue) {
-      if (this.starting) {
+    synchronized (exitValue) {
+      if (starting) {
         throw new IllegalStateException("ProcessWrapper can only be executed once");
       }
-      this.starting = true;
-      this.processThread = new Thread(new Runnable() {
-        @Override
-        public void run() {
-          start(properties, workingDirectory);
-        }
-      }, "ProcessWrapper Process Thread");
+      starting = true;
+      processThread =
+          new Thread(() -> start(properties, workingDirectory), "ProcessWrapper Process Thread");
     }
-    this.processThread.start();
+    processThread.start();
 
     waitForProcessStart();
 
-    synchronized (this.exitValue) {
-      if (this.processException != null) {
-        logger.error("ProcessWrapper:execute failed with " + this.processException);
-        this.processException.printStackTrace();
+    synchronized (exitValue) {
+      if (processException != null) {
+        logger.error("ProcessWrapper:execute failed with " + processException);
+        processException.printStackTrace();
       }
     }
 
-    if (this.useMainLauncher) {
-      sendInput(); // to trigger MainLauncher delegation to inner main
+    if (useMainLauncher) {
+      // to trigger MainLauncher delegation to inner main
+      sendInput();
     }
     return this;
   }
 
   private void start(final Properties properties, final File workingDirectory) {
-    final List<String> jvmArgumentsList = new ArrayList<String>();
+    final List<String> jvmArgumentsList = new ArrayList<>();
 
     if (properties != null) {
       for (Map.Entry<Object, Object> entry : properties.entrySet()) {
@@ -342,22 +337,20 @@ public class ProcessWrapper implements Consumer<String> {
       }
     }
 
-    if (this.headless) {
+    if (headless) {
       jvmArgumentsList.add("-Djava.awt.headless=true");
     }
 
-    if (this.jvmArguments != null) {
-      for (String jvmArgument : this.jvmArguments) {
-        jvmArgumentsList.add(jvmArgument);
-      }
+    if (jvmArguments != null) {
+      Collections.addAll(jvmArgumentsList, jvmArguments);
     }
 
     try {
-      synchronized (this.exitValue) {
+      synchronized (exitValue) {
         final String[] command =
             defineCommand(jvmArgumentsList.toArray(new String[jvmArgumentsList.size()]),
                 workingDirectory.getCanonicalPath());
-        this.process = new ProcessBuilder(command).directory(workingDirectory).start();
+        process = new ProcessBuilder(command).directory(workingDirectory).start();
 
         final StringBuilder processCommand = new StringBuilder();
         boolean addSpace = false;
@@ -374,33 +367,33 @@ public class ProcessWrapper implements Consumer<String> {
         logger.info("Starting " + commandString);
 
         final ProcessStreamReader stdOut = new ProcessStreamReader(commandString,
-            this.process.getInputStream(), this);
+            process.getInputStream(), this);
         final ProcessStreamReader stdErr = new ProcessStreamReader(commandString,
-            this.process.getErrorStream(), this);
+            process.getErrorStream(), this);
 
-        this.stdout = stdOut;
-        this.stderr = stdErr;
-        this.outputReader = new ProcessOutputReader(this.process, stdOut, stdErr);
-        this.started = true;
+        stdout = stdOut;
+        stderr = stdErr;
+        outputReader = new ProcessOutputReader(process, stdOut, stdErr);
+        started = true;
       }
 
-      this.outputReader.start();
-      this.outputReader.waitFor(PROCESS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-      boolean exited = process.waitFor(PROCESS_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+      outputReader.start();
+      outputReader.waitFor(PROCESS_TIMEOUT_MILLIS, MILLISECONDS);
+      boolean exited = process.waitFor(PROCESS_TIMEOUT_MILLIS, MILLISECONDS);
 
-      synchronized (this.exitValue) {
-        this.exitValue.set(exited ? process.exitValue() : 0);
-        this.stopped = exited;
+      synchronized (exitValue) {
+        exitValue.set(exited ? process.exitValue() : 0);
+        stopped = exited;
       }
 
     } catch (InterruptedException e) {
-      synchronized (this.exitValue) {
-        this.interrupted = true;
-        this.processException = e;
+      synchronized (exitValue) {
+        interrupted = true;
+        processException = e;
       }
     } catch (Throwable t) {
-      synchronized (this.exitValue) {
-        this.processException = t;
+      synchronized (exitValue) {
+        processException = t;
       }
     }
   }
@@ -421,8 +414,8 @@ public class ProcessWrapper implements Consumer<String> {
 
     // -d64 is not a valid option for windows and results in failure
     // -d64 is not a valid option for java 9 and above
-    final int bits = Integer.getInteger("sun.arch.data.model", 0).intValue();
-    if (bits == 64 && !(System.getProperty("os.name").toLowerCase().contains("windows"))
+    final int bits = Integer.getInteger("sun.arch.data.model", 0);
+    if (bits == 64 && !System.getProperty("os.name").toLowerCase().contains("windows")
         && !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9)) {
       argumentList.add("-d64");
     }
@@ -433,7 +426,7 @@ public class ProcessWrapper implements Consumer<String> {
       argumentList.addAll(Arrays.asList(jvmArguments));
     }
 
-    if (this.useMainLauncher) {
+    if (useMainLauncher) {
       argumentList.add(MainLauncher.class.getName());
     }
     argumentList.add(mainClass.getName());
@@ -442,35 +435,34 @@ public class ProcessWrapper implements Consumer<String> {
       argumentList.addAll(Arrays.asList(mainArguments));
     }
 
-    final String[] command = argumentList.toArray(new String[argumentList.size()]);
-    return command;
+    return argumentList.toArray(new String[0]);
   }
 
   private void checkStarting() throws IllegalStateException {
-    synchronized (this.exitValue) {
-      if (!this.starting) {
+    synchronized (exitValue) {
+      if (!starting) {
         throw new IllegalStateException("Process has not been launched");
       }
     }
   }
 
   private void checkStopped() throws IllegalStateException {
-    synchronized (this.exitValue) {
-      if (!this.stopped) {
+    synchronized (exitValue) {
+      if (!stopped) {
         throw new IllegalStateException("Process has not stopped");
       }
     }
   }
 
   private void checkOk() throws RuntimeException {
-    if (this.processException != null) {
-      throw new RuntimeException("Failed to launch process", this.processException);
+    if (processException != null) {
+      throw new RuntimeException("Failed to launch process", processException);
     }
   }
 
   private Thread getThread() {
-    synchronized (this.exitValue) {
-      return this.processThread;
+    synchronized (exitValue) {
+      return processThread;
     }
   }
 
@@ -486,7 +478,7 @@ public class ProcessWrapper implements Consumer<String> {
   }
 
   public Process getProcess() {
-    return this.process;
+    return process;
   }
 
   /**
@@ -536,18 +528,15 @@ public class ProcessWrapper implements Consumer<String> {
   }
 
   public static class Builder {
-    private String[] jvmArguments = null;
+
+    private String[] jvmArguments;
     private Class<?> mainClass;
-    private String[] mainArguments = null;
+    private String[] mainArguments;
     private boolean useMainLauncher = true;
     private boolean headless = true;
     private long timeoutMillis = PROCESS_TIMEOUT_MILLIS;
-    private boolean inline = false;
+    private boolean inline;
     private File directory = new File(System.getProperty("user.dir"));
-
-    public Builder() {
-      // nothing
-    }
 
     public Builder jvmArguments(final String[] jvmArguments) {
       this.jvmArguments = jvmArguments;

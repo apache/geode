@@ -279,7 +279,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(xmlPort);
 
-    region.put(1, 1); // put should be successful
+    // put should be successful
+    region.put(1, 1);
 
     execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
@@ -311,7 +312,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(commandPort);
 
-    region.put(1, 1); // put should be successful
+    // put should be successful
+    region.put(1, 1);
 
     execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
@@ -344,7 +346,8 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(commandPort);
 
-    region.put(1, 1); // put should be successful
+    // put should be successful
+    region.put(1, 1);
 
     execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
