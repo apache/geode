@@ -126,7 +126,7 @@ public class IndexUsageInNestedQueryJUnitTest {
 
   class QueryObserverImpl extends QueryObserverAdapter {
     boolean isIndexesUsed = false;
-    ArrayList indexesUsed = new ArrayList();
+    ArrayList<String> indexesUsed = new ArrayList<>();
 
     @Override
     public void beforeIndexLookup(Index index, int oper, Object key) {

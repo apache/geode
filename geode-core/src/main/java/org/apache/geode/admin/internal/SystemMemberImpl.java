@@ -483,11 +483,11 @@ public class SystemMemberImpl implements org.apache.geode.admin.SystemMember,
   /** Wrap the internal stats with impls of {@link StatisticResource} */
   protected StatisticResource[] getStatsImpl(StatResource[] stats)
       throws org.apache.geode.admin.AdminException {
-    List statList = new ArrayList();
+    List<StatisticResource> statList = new ArrayList<>();
     for (int i = 0; i < stats.length; i++) {
       statList.add(createStatisticResource(stats[i]));
     }
-    return (StatisticResource[]) statList.toArray(new StatisticResource[0]);
+    return statList.toArray(new StatisticResource[0]);
   }
 
   @Override
