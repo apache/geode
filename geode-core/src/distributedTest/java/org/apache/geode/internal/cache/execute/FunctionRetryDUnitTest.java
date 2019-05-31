@@ -208,8 +208,8 @@ public class FunctionRetryDUnitTest implements Serializable {
       /*
        * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
        */
-      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
-      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 1",
       "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
