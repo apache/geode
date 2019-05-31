@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static java.lang.System.lineSeparator;
 import static java.util.Arrays.asList;
+import static org.apache.geode.cache.client.ClientRegionShortcut.PROXY;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -42,6 +44,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -59,8 +62,6 @@ import org.apache.geode.cache.Declarable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
-import org.apache.geode.cache.client.ClientRegionFactory;
-import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.util.CacheListenerAdapter;
@@ -100,6 +101,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   private File directory;
   private File logFile;
   private File cacheXmlFile;
+  private File configPropertiesFile;
 
   private String directoryPath;
   private String logFileName;
@@ -115,7 +117,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   public TestName testName = new TestName();
 
   @Before
-  public void setUp() {
+  public void setUp() throws Exception {
     classpath = System.getProperty("java.class.path");
     assertThat(classpath).isNotEmpty();
 
@@ -123,7 +125,9 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     directoryPath = directory.getAbsolutePath();
     logFileName = testName.getMethodName() + ".log";
     cacheXmlFileName = testName.getMethodName() + ".xml";
+    String configPropertiesFileName = testName.getMethodName() + ".properties";
 
+    configPropertiesFile = new File(directory, configPropertiesFileName);
     cacheXmlFile = new File(directory, cacheXmlFileName);
     logFile = new File(directory, logFileName);
 
@@ -133,6 +137,14 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     cacheServerNamingPort = tcpPorts[2];
     commandPort = tcpPorts[3];
     xmlPort = tcpPorts[4];
+
+    Properties configProperties = new Properties();
+    configProperties.setProperty(HTTP_SERVICE_PORT, "0");
+    configProperties.setProperty(LOCATORS, "");
+    configProperties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
+    try (FileOutputStream fileOutputStream = new FileOutputStream(configPropertiesFile)) {
+      configProperties.store(fileOutputStream, null);
+    }
   }
 
   @After
@@ -163,7 +175,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath));
 
     execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
@@ -181,7 +193,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFile.getAbsolutePath(),
             "log-file=" + logFile.getAbsolutePath(),
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directory.getAbsolutePath(),
             "-server-port=" + serverPort));
 
@@ -204,7 +216,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath,
             "-rebalance"));
 
@@ -229,7 +241,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
             "-J-D" + CacheServerLauncher.ASSIGN_BUCKETS_PROPERTY + "=true",
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath,
             "-rebalance"));
 
@@ -249,19 +261,21 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath));
 
     execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    ClientCache cache = new ClientCacheFactory().create();
-    ClientRegionFactory<Integer, Integer> regionFactory =
-        cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-    Pool pool = PoolManager.createFactory().addServer("localhost", xmlPort).create("cslPool");
-    regionFactory.setPoolName(pool.getName());
-    Region<Integer, Integer> region = regionFactory.create("rgn");
-    List<InetSocketAddress> servers = pool.getServers();
+    ClientCache cache = new ClientCacheFactory()
+        .create();
+    Pool pool = PoolManager.createFactory()
+        .addServer("localhost", xmlPort)
+        .create("cslPool");
+    Region<Integer, Integer> region = cache.<Integer, Integer>createClientRegionFactory(PROXY)
+        .setPoolName(pool.getName())
+        .create("rgn");
 
+    List<InetSocketAddress> servers = pool.getServers();
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(xmlPort);
 
@@ -278,22 +292,22 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath,
             "-server-port=" + commandPort));
 
     execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    ClientCache cache = new ClientCacheFactory().create();
+    ClientCache cache = new ClientCacheFactory()
+        .create();
+    Pool pool = PoolManager.createFactory()
+        .addServer("localhost", commandPort)
+        .create("cslPool");
+    Region<Integer, Integer> region = cache.<Integer, Integer>createClientRegionFactory(PROXY)
+        .setPoolName(pool.getName())
+        .create("rgn");
 
-    ClientRegionFactory<Integer, Integer> regionFactory =
-        cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
-    Pool pool =
-        PoolManager.createFactory().addServer("localhost", commandPort).create("cslPool");
-    regionFactory.setPoolName(pool.getName());
-    Region<Integer, Integer> region = regionFactory.create("rgn");
     List<InetSocketAddress> servers = pool.getServers();
-
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(commandPort);
 
@@ -310,22 +324,23 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
         asList(
             "cache-xml-file=" + cacheXmlFileName,
             "log-file=" + logFileName,
-            "-classpath=" + getManifestJarFromClasspath(),
+            "-classpath=" + createManifestJar(),
             "-dir=" + directoryPath,
             "-server-bind-address=" + InetAddress.getLocalHost().getHostName(),
             "-server-port=" + commandPort));
 
     execWithDirAndValidate(Operation.STATUS, "CacheServer pid: \\d+ status: running");
 
-    ClientCache cache = new ClientCacheFactory().create();
-    ClientRegionFactory<Integer, Integer> regionFactory =
-        cache.createClientRegionFactory(ClientRegionShortcut.PROXY);
+    ClientCache cache = new ClientCacheFactory()
+        .create();
     Pool pool = PoolManager.createFactory()
-        .addServer(InetAddress.getLocalHost().getHostName(), commandPort).create("cslPool");
-    regionFactory.setPoolName(pool.getName());
-    Region<Integer, Integer> region = regionFactory.create("rgn");
-    List<InetSocketAddress> servers = pool.getServers();
+        .addServer(InetAddress.getLocalHost().getHostName(), commandPort)
+        .create("cslPool");
+    Region<Integer, Integer> region = cache.<Integer, Integer>createClientRegionFactory(PROXY)
+        .setPoolName(pool.getName())
+        .create("rgn");
 
+    List<InetSocketAddress> servers = pool.getServers();
     assertThat(servers).hasSize(1);
     assertThat(servers.iterator().next().getPort()).isEqualTo(commandPort);
 
@@ -334,9 +349,9 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
     execWithDirAndValidate(Operation.STOP, "The CacheServer has stopped\\.");
   }
 
-  private String getManifestJarFromClasspath() throws IOException {
+  private String createManifestJar() throws IOException {
     List<String> parts = asList(classpath.split(File.pathSeparator));
-    return ProcessWrapper.createManifestJar(parts, temporaryFolder.newFolder().getAbsolutePath());
+    return ProcessWrapper.createManifestJar(parts, directoryPath);
   }
 
   private void unexportObject(final Remote object) {
@@ -361,7 +376,7 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
       FailSafeRemote failSafe = (FailSafeRemote) registry.lookup(FAIL_SAFE_BINDING);
       failSafe.kill();
     } catch (RemoteException | NotBoundException ignore) {
-      // cacheserver was probably stopped already
+      // cacheserver process was probably stopped already
     }
   }
 
@@ -369,12 +384,10 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
       throws TimeoutException, InterruptedException {
     List<String> newArguments = new ArrayList<>();
     newArguments.add(operation.value);
+    newArguments.add("-J-Xmx" + Runtime.getRuntime().maxMemory());
     newArguments.add("-J-D" + CONTROLLER_NAMING_PORT_PROP + "=" + controllerNamingPort);
     newArguments.add("-J-D" + CACHESERVER_NAMING_PORT_PROP + "=" + cacheServerNamingPort);
-    newArguments.add("-J-Xmx" + Runtime.getRuntime().maxMemory());
-    newArguments.add("-J-Dgemfire." + USE_CLUSTER_CONFIGURATION + "=false");
-    newArguments.add("-J-Dgemfire." + HTTP_SERVICE_PORT + "=0");
-    newArguments.add("-J-Dgemfire." + LOCATORS + "=\"\"");
+    newArguments.add("-J-DgemfirePropertyFile=" + configPropertiesFile.getAbsolutePath());
     newArguments.addAll(arguments);
     execAndValidate(regex, newArguments);
   }
@@ -392,7 +405,10 @@ public class DeprecatedCacheServerLauncherIntegrationTest {
   private void execAndValidate(final String regex, final String[] args)
       throws InterruptedException, TimeoutException {
     ProcessWrapper processWrapper = new ProcessWrapper.Builder()
-        .mainClass(CacheServerLauncher.class).mainArguments(args).build();
+        .mainClass(CacheServerLauncher.class)
+        .mainArguments(args)
+        .directory(directory)
+        .build();
     processWrapper.setConsumer(c -> logger.info(c));
     processWrapper.execute();
     if (regex != null) {

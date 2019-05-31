@@ -20,7 +20,6 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -65,6 +64,7 @@ public class ProcessWrapper implements Consumer<String> {
 
   private final boolean headless;
   private final long timeoutMillis;
+  private final File directory;
 
   private final String[] jvmArguments;
 
@@ -92,13 +92,14 @@ public class ProcessWrapper implements Consumer<String> {
 
   private ProcessWrapper(final String[] jvmArguments, final Class<?> mainClass,
       final String[] mainArguments, final boolean useMainLauncher, final boolean headless,
-      final long timeoutMillis) {
+      final long timeoutMillis, final File directory) {
     this.jvmArguments = jvmArguments;
     this.mainClass = mainClass;
     this.mainArguments = mainArguments;
     this.useMainLauncher = useMainLauncher;
     this.headless = headless;
     this.timeoutMillis = timeoutMillis;
+    this.directory = directory;
 
     this.lineBuffer = new LinkedBlockingQueue<>();
     this.allLines = Collections.synchronizedList(new ArrayList<>());
@@ -110,8 +111,8 @@ public class ProcessWrapper implements Consumer<String> {
 
   @Override
   public void accept(String line) {
-    this.lineBuffer.offer(line);
     this.allLines.add(line);
+    this.lineBuffer.offer(line);
 
     if (consumer != null) {
       consumer.accept(line);
@@ -291,12 +292,12 @@ public class ProcessWrapper implements Consumer<String> {
   }
 
   public ProcessWrapper execute() throws InterruptedException, TimeoutException {
-    return execute(null, new File(System.getProperty("user.dir")));
+    return execute(null, directory);
   }
 
   public ProcessWrapper execute(final Properties properties)
       throws InterruptedException, TimeoutException {
-    return execute(properties, new File(System.getProperty("user.dir")));
+    return execute(properties, directory);
   }
 
   public ProcessWrapper execute(final Properties properties, final File workingDirectory)
@@ -505,39 +506,33 @@ public class ProcessWrapper implements Consumer<String> {
     Files.createDirectories(locationPath);
 
     List<String> manifestEntries = new ArrayList<>();
-    for (String jar : entries) {
-      Path absPath = Paths.get(jar).toAbsolutePath();
-      Path relPath = locationPath.relativize(absPath);
-      if (absPath.toFile().isDirectory()) {
-        manifestEntries.add(relPath.toString() + "/");
+    for (String jarEntry : entries) {
+      Path jarEntryAbsolutePath = Paths.get(jarEntry).toAbsolutePath();
+      Path jarEntryRelativizedPath = locationPath.relativize(jarEntryAbsolutePath);
+      if (jarEntryAbsolutePath.toFile().isDirectory()) {
+        manifestEntries.add(jarEntryRelativizedPath + File.separator);
       } else {
-        manifestEntries.add(relPath.toString());
+        manifestEntries.add(jarEntryRelativizedPath.toString());
       }
     }
 
     Manifest manifest = new Manifest();
-    Attributes global = manifest.getMainAttributes();
-    global.put(Attributes.Name.MANIFEST_VERSION, "1.0.0");
-    global.put(new Attributes.Name("Class-Path"), String.join(" ", manifestEntries));
+    Attributes attributes = manifest.getMainAttributes();
+    attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0.0");
+    attributes.put(new Attributes.Name("Class-Path"), String.join(" ", manifestEntries));
 
     // Generate a 'unique' 8 char name
     String uuid = UUID.randomUUID().toString().substring(0, 8);
-    Path manifestJar = Paths.get(location, "manifest-" + uuid + ".jar");
-    JarOutputStream jos = null;
-    try {
-      File jarFile = manifestJar.toFile();
-      jarFile.deleteOnExit();
-      OutputStream os = new FileOutputStream(jarFile);
-      jos = new JarOutputStream(os, manifest);
-    } catch (IOException e) {
-      e.printStackTrace();
-    } finally {
-      if (jos != null) {
-        jos.close();
-      }
+    Path manifestJarPath = Paths.get(location, "manifest-" + uuid + ".jar");
+    File manifestJarFile = manifestJarPath.toFile();
+    manifestJarFile.deleteOnExit();
+
+    try (JarOutputStream jos =
+        new JarOutputStream(new FileOutputStream(manifestJarFile), manifest)) {
+      // the above try-with-resource writes the manifest to the manifestJarFile
     }
 
-    return manifestJar.toString();
+    return manifestJarPath.toFile().getAbsolutePath();
   }
 
   public static class Builder {
@@ -548,6 +543,7 @@ public class ProcessWrapper implements Consumer<String> {
     private boolean headless = true;
     private long timeoutMillis = PROCESS_TIMEOUT_MILLIS;
     private boolean inline = false;
+    private File directory = new File(System.getProperty("user.dir"));
 
     public Builder() {
       // nothing
@@ -588,9 +584,14 @@ public class ProcessWrapper implements Consumer<String> {
       return this;
     }
 
+    public Builder directory(final File directory) {
+      this.directory = directory;
+      return this;
+    }
+
     public ProcessWrapper build() {
       return new ProcessWrapper(jvmArguments, mainClass, mainArguments, useMainLauncher, headless,
-          timeoutMillis);
+          timeoutMillis, directory);
     }
   }
 }
