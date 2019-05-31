@@ -57,12 +57,12 @@ public class GemFireHealthEvaluator {
   /**
    * The most recent <code>OKAY_HEALTH</code> diagnoses of the GemFire system
    */
-  private List okayDiagnoses;
+  private List<String> okayDiagnoses;
 
   /**
    * The most recent <code>POOR_HEALTH</code> diagnoses of the GemFire system
    */
-  private List poorDiagnoses;
+  private List<String> poorDiagnoses;
 
   /////////////////////// Constructors ///////////////////////
 
@@ -81,8 +81,8 @@ public class GemFireHealthEvaluator {
     this.config = config;
     this.memberHealth = new MemberHealthEvaluator(config, dm);
     this.cacheHealth = new CacheHealthEvaluator(config, dm);
-    this.okayDiagnoses = new ArrayList();
-    this.poorDiagnoses = new ArrayList();
+    this.okayDiagnoses = new ArrayList<>();
+    this.poorDiagnoses = new ArrayList<>();
   }
 
   ////////////////////// Instance Methods //////////////////////
