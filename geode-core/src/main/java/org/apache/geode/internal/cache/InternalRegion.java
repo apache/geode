@@ -213,7 +213,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   void waitOnInitialization(StoppableCountDownLatch latch);
 
-  Set basicSubregions(boolean recursive);
+  Set<InternalRegion> basicSubregions(boolean recursive);
 
   boolean isSecret();
 
@@ -394,7 +394,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
 
   Object getIMSync();
 
-  IndexManager setIndexManager(IndexManager idxMgr);
+  void setIndexManager(IndexManager idxMgr);
 
   RegionTTLExpiryTask getRegionTTLExpiryTask();
 

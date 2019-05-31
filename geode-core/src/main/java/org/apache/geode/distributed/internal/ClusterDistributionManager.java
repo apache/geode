@@ -3387,7 +3387,7 @@ public class ClusterDistributionManager implements DistributionManager {
     public void membershipFailure(String reason, Throwable t) {
       exceptionInThreads = true;
       rootCause = t;
-      getSystem().disconnect(reason, t, true);
+      getSystem().disconnect(reason, true);
     }
 
     @Override

@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
@@ -27,8 +28,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.Logger;
-
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.LogWriter;
 import org.apache.geode.StatisticsFactory;
@@ -42,7 +41,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.IOUtils;
 
@@ -91,17 +89,13 @@ public abstract class DistributedSystem implements StatisticsFactory {
    */
   @MakeNotStatic
   protected static volatile List<InternalDistributedSystem> existingSystems =
-      Collections.EMPTY_LIST;
+      Collections.emptyList();
   /**
    * This lock must be changed to add or remove a system. It is notified when a system is removed.
    *
    * @see #existingSystems
    */
   protected static final Object existingSystemsLock = new Object();
-
-  private static final Logger logger = LogService.getLogger();
-
-  //////////////////////// Static Methods ////////////////////////
 
   /**
    * Connects to a GemFire distributed system with a configuration supplemented by the given
@@ -170,7 +164,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
       if (size == 0) {
         existingSystems = Collections.singletonList(newSystem);
       } else {
-        ArrayList l = new ArrayList(size + 1);
+        ArrayList<InternalDistributedSystem> l = new ArrayList<>(size + 1);
         l.addAll(existingSystems);
         l.add(0, newSystem);
         existingSystems = Collections.unmodifiableList(l);
@@ -178,21 +172,20 @@ public abstract class DistributedSystem implements StatisticsFactory {
     }
   }
 
-  protected static boolean removeSystem(InternalDistributedSystem oldSystem) {
+  protected static void removeSystem(InternalDistributedSystem oldSystem) {
     synchronized (existingSystemsLock) {
       List<InternalDistributedSystem> listOfSystems = new ArrayList<>(existingSystems);
       boolean result = listOfSystems.remove(oldSystem);
       if (result) {
         int size = listOfSystems.size();
         if (size == 0) {
-          existingSystems = Collections.EMPTY_LIST;
+          existingSystems = Collections.emptyList();
         } else if (size == 1) {
           existingSystems = Collections.singletonList(listOfSystems.get(0));
         } else {
           existingSystems = Collections.unmodifiableList(listOfSystems);
         }
       }
-      return result;
     }
   }
 
@@ -294,6 +287,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @throws IllegalStateException This VM has {@linkplain #disconnect() disconnected} from the
    *         distributed system.
    */
+  @Deprecated
   public abstract LogWriter getLogWriter();
 
   /**
@@ -304,6 +298,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    *         distributed system.
    * @since GemFire 5.5
    */
+  @Deprecated
   public abstract LogWriter getSecurityLogWriter();
 
   /**
@@ -591,6 +586,7 @@ public abstract class DistributedSystem implements StatisticsFactory {
    * @since GemFire 5.0
    * @deprecated As of 9.0, please use {@link #getPropertiesFileURL()}
    */
+  @Deprecated
   public static URL getPropertyFileURL() {
     return getPropertiesFileURL();
   }

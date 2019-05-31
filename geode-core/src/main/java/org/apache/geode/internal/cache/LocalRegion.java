@@ -200,7 +200,6 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
-import org.apache.geode.internal.cache.wan.GatewaySenderEventCallbackArgument;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -5099,13 +5098,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     Object theCallbackArg = callbackArg;
 
     long startPut = CachePerfStats.getStatTime();
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        theCallbackArg = new GatewaySenderEventCallbackArgument(theCallbackArg);
-      }
-    }
 
     @Released
     final EntryEventImpl event =
@@ -5174,14 +5166,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     EventID eventID = clientEvent.getEventId();
     Object theCallbackArg = callbackArg;
     long startPut = CachePerfStats.getStatTime();
-
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        theCallbackArg = new GatewaySenderEventCallbackArgument(theCallbackArg);
-      }
-    }
 
     @Released
     final EntryEventImpl event = entryEventFactory.create(this, Operation.UPDATE, key,
@@ -5433,20 +5417,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       boolean fromClient, EntryEventImpl clientEvent)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
 
-    Object theCallbackArg = callbackArg;
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        theCallbackArg = new GatewaySenderEventCallbackArgument(theCallbackArg);
-      }
-    }
-
     // Create an event and put the entry
     @Released
     final EntryEventImpl event =
         entryEventFactory.create(this, Operation.DESTROY, key, null,
-            theCallbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
+            callbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
 
     try {
       event.setContext(memberId);
@@ -5472,20 +5447,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
 
-    Object theCallbackArg = callbackArg;
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        theCallbackArg = new GatewaySenderEventCallbackArgument(theCallbackArg);
-      }
-    }
-
     // Create an event and put the entry
     @Released
     final EntryEventImpl event =
         entryEventFactory.create(this, Operation.INVALIDATE, key, null,
-            theCallbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
+            callbackArg, false, memberId.getDistributedMember(), true, clientEvent.getEventId());
 
     try {
       event.setContext(memberId);
@@ -8381,14 +8347,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       boolean fromClient, EventID eventId)
       throws TimeoutException, EntryExistsException, CacheWriterException {
 
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
-
     RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_DESTROY, callbackArg,
         false, client.getDistributedMember(), client, eventId);
 
@@ -8398,14 +8356,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void basicBridgeClear(Object callbackArg, final ClientProxyMembershipID client,
       boolean fromClient, EventID eventId)
       throws TimeoutException, EntryExistsException, CacheWriterException {
-
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
 
     RegionEventImpl event = new ClientRegionEventImpl(this, Operation.REGION_CLEAR, callbackArg,
         false, client.getDistributedMember(), client, eventId);
@@ -8792,9 +8742,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       throws TimeoutException, CacheWriterException {
 
     long startPut = CachePerfStats.getStatTime();
-    if (isGatewaySenderEnabled()) {
-      callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-    }
 
     @Released
     final EntryEventImpl event =
@@ -8831,9 +8778,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Object callbackArg) throws TimeoutException, CacheWriterException {
 
     long startOp = CachePerfStats.getStatTime();
-    if (isGatewaySenderEnabled()) {
-      callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-    }
 
     @Released
     final EntryEventImpl event =
@@ -10621,13 +10565,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     EventID eventId = clientEvent.getEventId();
     long startPut = CachePerfStats.getStatTime();
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
 
     @Released
     final EntryEventImpl event =
@@ -10704,13 +10641,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     EventID eventId = clientEvent.getEventId();
     long startPut = CachePerfStats.getStatTime();
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
 
     @Released
     final EntryEventImpl event =
@@ -10765,13 +10695,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     EventID eventId = clientEvent.getEventId();
     long startPut = CachePerfStats.getStatTime();
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
 
     @Released
     final EntryEventImpl event =
@@ -10829,14 +10752,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   public void basicBridgeRemove(Object key, Object expectedOldValue, Object callbackArg,
       ClientProxyMembershipID memberId, boolean fromClient, EntryEventImpl clientEvent)
       throws TimeoutException, EntryNotFoundException, CacheWriterException {
-
-    if (fromClient) {
-      // If this region is also wan-enabled, then wrap that callback arg in a
-      // GatewayEventCallbackArgument to store the event id.
-      if (isGatewaySenderEnabled()) {
-        callbackArg = new GatewaySenderEventCallbackArgument(callbackArg);
-      }
-    }
 
     // Create an event and put the entry
     @Released

@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.offheap;
 
 import static org.mockito.Mockito.mock;
@@ -66,7 +67,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
     DisconnectingOutOfOffHeapMemoryListener listener =
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.outOfOffHeapMemory(ex);
-    verify(ids, never()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, never()).disconnect(ex.getMessage(), false);
   }
 
   @Test
@@ -75,7 +76,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.close();
     listener.outOfOffHeapMemory(ex);
-    verify(ids, never()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, never()).disconnect(ex.getMessage(), false);
   }
 
   @Test
@@ -101,7 +102,7 @@ public class DisconnectingOutOfOffHeapMemoryListenerJUnitTest {
     DisconnectingOutOfOffHeapMemoryListener listener =
         new DisconnectingOutOfOffHeapMemoryListener(ids);
     listener.outOfOffHeapMemory(ex);
-    verify(ids, timeout(5000).atLeastOnce()).disconnect(ex.getMessage(), ex, false);
+    verify(ids, timeout(5000).atLeastOnce()).disconnect(ex.getMessage(), false);
     verify(lw).info("OffHeapStorage about to invoke disconnect on " + ids);
   }
 
