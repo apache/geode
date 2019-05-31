@@ -643,6 +643,26 @@ public class CacheClientNotifier {
     Set<ClientProxyMembershipID> filterClients =
         getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
 
+    Conflatable conflatable = getConflatable(clientMessage, filterClients);
+
+    registrationQueueManager.add(event, clientMessage, filterClients, this);
+
+    singletonRouteClientMessage(conflatable, filterClients);
+
+    statistics.endEvent(startTime);
+
+    // Cleanup destroyed events in CQ result cache.
+    // While maintaining the CQ results key caching. the destroy event
+    // keys are marked as destroyed instead of removing them, this is
+    // to take care, arrival of duplicate events. The key marked as
+    // destroyed are removed after the event is placed in clients HAQueue.
+    if (filterInfo.filterProcessedLocally) {
+      removeDestroyTokensFromCqResultKeys(event, filterInfo);
+    }
+  }
+
+  Conflatable getConflatable(final ClientUpdateMessageImpl clientMessage,
+      final Set<ClientProxyMembershipID> filterClients) {
     Conflatable conflatable;
 
     if (clientMessage instanceof ClientTombstoneMessage) {
@@ -670,21 +690,7 @@ public class CacheClientNotifier {
 
       conflatable = wrapper;
     }
-
-    registrationQueueManager.add(event, conflatable, filterClients, this);
-
-    singletonRouteClientMessage(conflatable, filterClients);
-
-    statistics.endEvent(startTime);
-
-    // Cleanup destroyed events in CQ result cache.
-    // While maintaining the CQ results key caching. the destroy event
-    // keys are marked as destroyed instead of removing them, this is
-    // to take care, arrival of duplicate events. The key marked as
-    // destroyed are removed after the event is placed in clients HAQueue.
-    if (filterInfo.filterProcessedLocally) {
-      removeDestroyTokensFromCqResultKeys(event, filterInfo);
-    }
+    return conflatable;
   }
 
   Set<ClientProxyMembershipID> getFilterClientIDs(final InternalCacheEvent event,

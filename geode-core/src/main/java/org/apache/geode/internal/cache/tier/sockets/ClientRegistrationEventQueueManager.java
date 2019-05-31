@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -43,11 +44,14 @@ class ClientRegistrationEventQueueManager {
       new ConcurrentHashMap<>();
 
   void add(final InternalCacheEvent event,
-      final Conflatable conflatable,
+      final ClientUpdateMessageImpl clientUpdateMessage,
       final Set<ClientProxyMembershipID> originalFilterClientIDs,
       final CacheClientNotifier cacheClientNotifier) {
     if (registeringProxyEventQueues.isEmpty())
       return;
+
+    Conflatable conflatable =
+        cacheClientNotifier.getConflatable(clientUpdateMessage, originalFilterClientIDs);
 
     ClientRegistrationEvent clientRegistrationEvent =
         new ClientRegistrationEvent(event, conflatable);
