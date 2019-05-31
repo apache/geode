@@ -2,6 +2,8 @@ org/apache/geode/connectors/jdbc/JdbcConnectorException,true,1
 org/apache/geode/connectors/jdbc/internal/RegionMappingExistsException,false
 org/apache/geode/connectors/jdbc/internal/RegionMappingNotFoundException,false
 org/apache/geode/connectors/jdbc/internal/cli/CreateMappingFunction,false
+org/apache/geode/connectors/jdbc/internal/cli/RegisterDriverFunction,false
+org/apache/geode/connectors/jdbc/internal/cli/DeregisterDriverFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/ListDriversFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/CreateMappingPreconditionCheckFunction,false
 org/apache/geode/connectors/jdbc/internal/cli/DestroyMappingFunction,false

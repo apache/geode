@@ -28,7 +28,7 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.util.test.TestUtil;
 
-public class RegisterDriverCommandDUnitTest {
+public class DeregisterDriverCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
 
@@ -50,7 +50,7 @@ public class RegisterDriverCommandDUnitTest {
 
 
   @Test
-  public void testRegisterDriverDoesNotThrowException() {
+  public void testDeregisterDriverDoesNotThrowException() {
 
     // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
@@ -61,14 +61,16 @@ public class RegisterDriverCommandDUnitTest {
 
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
-        .doesNotContainOutput(jdbcDriverClassName);
-
     gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
         .statusIsSuccess();
 
     gfsh.executeAndAssertThat("list drivers").statusIsSuccess().containsOutput(jdbcDriverClassName);
 
+    gfsh.executeAndAssertThat("deregister driver --driver-class=" + jdbcDriverClassName)
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
+        .doesNotContainOutput(jdbcDriverClassName);
   }
 
   private File loadTestResource(String fileName) {

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
-import java.util.List;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.util.DriverJarUtil;
@@ -28,18 +26,20 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
  * The second element must be a Boolean that is true if synchronous.
  */
 @Experimental
-public class ListDriversFunction extends CliFunction<Object[]> {
+public class DeregisterDriverFunction extends CliFunction<Object[]> {
 
-  ListDriversFunction() {
+  DeregisterDriverFunction() {
     super();
   }
 
   @Override
   public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     try {
-      List<String> driverNames;
-      driverNames = (getDriverJarUtil()).getRegisteredDriverNames();
-      return new CliFunctionResult(context.getMemberName(), driverNames);
+      String driverClassName = (String) context.getArguments()[0];
+      DriverJarUtil util = getDriverJarUtil();
+      util.deregisterDriver(driverClassName);
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          driverClassName + " was succesfully deregistered.");
     } catch (Exception ex) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           ex.getMessage());

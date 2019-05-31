@@ -58,7 +58,11 @@ public class DriverJarUtil {
   public List<String> getRegisteredDriverNames() {
     List<String> listOfDriverNames = new ArrayList<>();
     for (Driver driver : getRegisteredDrivers()) {
-      listOfDriverNames.add(driver.getClass().getName());
+      if (driver instanceof DriverWrapper) {
+        listOfDriverNames.add(((DriverWrapper) driver).getWrappedDriverName());
+      } else {
+        listOfDriverNames.add(driver.getClass().getName());
+      }
     }
     return listOfDriverNames;
 
@@ -76,7 +80,11 @@ public class DriverJarUtil {
   }
 
   boolean compareDriverClassName(Driver driver, String driverClassName) {
-    return driver.getClass().getName().equals(driverClassName);
+    if (driver instanceof DriverWrapper) {
+      return ((DriverWrapper) driver).getWrappedDriverName().equals(driverClassName);
+    } else {
+      return driver.getClass().getName().equals(driverClassName);
+    }
   }
 
   void registerDriverWithDriverManager(Driver driver) throws SQLException {
@@ -94,6 +102,10 @@ public class DriverJarUtil {
 
     DriverWrapper(Driver jdbcDriver) {
       this.jdbcDriver = jdbcDriver;
+    }
+
+    public String getWrappedDriverName() {
+      return this.jdbcDriver.getClass().getName();
     }
 
     public Connection connect(String url, java.util.Properties info)

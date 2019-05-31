@@ -51,7 +51,6 @@ public class ListDriversCommandDUnitTest {
 
   @Test
   public void testListDriversDoesNotThrowException() {
-    String URL = "jdbc:mysql://localhost/";
 
     // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
@@ -62,12 +61,10 @@ public class ListDriversCommandDUnitTest {
 
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
-    gfsh.executeAndAssertThat(
-        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
-            + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
-        .statusIsError();
+    gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
+        .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list drivers").statusIsSuccess();
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess().containsOutput(jdbcDriverClassName);
 
   }
 

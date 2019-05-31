@@ -56,7 +56,6 @@ public class ListDriversCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
-      DistributedMember targetMember = targetMembers.iterator().next();
       Object[] arguments = new Object[] {};
       CliFunctionResult listDriversResult = executeAndGetFunctionResult(
           new ListDriversFunction(), arguments, targetMembers).get(0);

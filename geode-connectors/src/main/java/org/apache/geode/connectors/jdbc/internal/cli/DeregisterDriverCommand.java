@@ -14,12 +14,19 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.connectors.jdbc.internal.cli.ListDriversCommand.NO_MEMBERS_FOUND;
+
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
+import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -42,8 +49,22 @@ public class DeregisterDriverCommand extends SingleGfshCommand {
   public ResultModel deregisterDriver(
       @CliOption(key = DRIVER_CLASS_NAME, help = DRIVER_CLASS_NAME_HELP,
           mandatory = true) String driverClassName) {
+    try {
+      Set<DistributedMember> targetMembers = findMembers(null, null);
 
-    return null;
+      if (targetMembers.size() > 0) {
+        Object[] arguments = new Object[] {driverClassName};
+        List<CliFunctionResult> deregisterDriverResults = executeAndGetFunctionResult(
+            new DeregisterDriverFunction(), arguments, targetMembers);
+        return ResultModel.createMemberStatusResult(deregisterDriverResults, EXPERIMENTAL, null,
+            false, true);
+      } else {
+        return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MEMBERS_FOUND);
+      }
+    } catch (Exception ex) {
+      return ResultModel.createError(
+          "Failed to deregister driver \"" + driverClassName + "\": " + ex.getMessage());
+    }
   }
 
 }
