@@ -1529,14 +1529,14 @@ public abstract class DistributedCacheOperation {
       this.hasOldValue = true;
     }
 
-    protected boolean _mayAddToSerialGateway(ClusterDistributionManager dm) {
+    protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
       int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
       try {
         LocalRegion lr = getLocalRegionForProcessing(dm);
         if (lr == null) {
           return false;
         }
-        return lr.notifiesSerialGateway();
+        return lr.notifiesSerialGatewaySender();
       } catch (RuntimeException ignore) {
         return false;
       } finally {

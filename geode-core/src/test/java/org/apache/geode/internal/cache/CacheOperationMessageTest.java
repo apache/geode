@@ -34,7 +34,7 @@ public class CacheOperationMessageTest {
     ClusterDistributionManager mockDistributionManager = mock(ClusterDistributionManager.class);
 
     when(mockCacheOperationMessage.supportsDirectAck()).thenReturn(true);
-    when(mockCacheOperationMessage._mayAddToSerialGateway(eq(mockDistributionManager)))
+    when(mockCacheOperationMessage.notifiesSerialGatewaySender(eq(mockDistributionManager)))
         .thenReturn(true);
 
     mockCacheOperationMessage.process(mockDistributionManager);
@@ -42,7 +42,7 @@ public class CacheOperationMessageTest {
     verify(mockCacheOperationMessage, times(1)).process(mockDistributionManager);
 
     assertThat(mockCacheOperationMessage.supportsDirectAck()).isTrue();
-    assertThat(mockCacheOperationMessage._mayAddToSerialGateway(mockDistributionManager))
+    assertThat(mockCacheOperationMessage.notifiesSerialGatewaySender(mockDistributionManager))
         .isTrue();
   }
 }

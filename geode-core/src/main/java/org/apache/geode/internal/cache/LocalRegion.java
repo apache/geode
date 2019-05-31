@@ -6077,9 +6077,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Returns true if this region notifies any serial gateways.
+   * Returns true if this region notifies any serial gateway senders.
    */
-  public boolean notifiesSerialGateway() {
+  public boolean notifiesSerialGatewaySender() {
     if (isPdxTypesRegion()) {
       return false;
     }
