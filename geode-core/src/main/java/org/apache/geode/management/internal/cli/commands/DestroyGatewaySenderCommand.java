@@ -40,6 +40,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
+  private static int MBEAN_DELETION_WAIT_TIME = 10000;
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
       help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
@@ -99,7 +100,7 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
         // ignored
       }
 
-    } while (System.currentTimeMillis() - startWaitTime < 3000);
+    } while (System.currentTimeMillis() - startWaitTime < MBEAN_DELETION_WAIT_TIME);
 
     return false;
   }
