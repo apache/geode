@@ -823,7 +823,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToSerialGateway(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 

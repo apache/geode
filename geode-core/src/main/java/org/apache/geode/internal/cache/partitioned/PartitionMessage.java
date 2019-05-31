@@ -710,7 +710,7 @@ public abstract class PartitionMessage extends DistributionMessage
       if (pr == null) {
         return false;
       }
-      return pr.notifiesMultipleSerialGateways();
+      return pr.notifiesSerialGateway();
     } catch (PRLocallyDestroyedException ignore) {
       return false;
     } catch (RuntimeException ignore) {

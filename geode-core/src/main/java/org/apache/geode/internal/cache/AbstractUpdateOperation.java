@@ -327,8 +327,8 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
     }
 
     @Override
-    protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-      return _mayAddToMultipleSerialGateways(dm);
+    protected boolean mayAddToSerialGateway(ClusterDistributionManager dm) {
+      return _mayAddToSerialGateway(dm);
     }
   }
 }

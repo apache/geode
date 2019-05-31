@@ -680,7 +680,7 @@ public class RemoveAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToSerialGateway(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 

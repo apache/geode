@@ -413,7 +413,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       // If processing this message may need to add
       // to more than one serial gateway then don't
       // do it inline.
-      if (mayAddToMultipleSerialGateways(dm)) {
+      if (mayAddToSerialGateway(dm)) {
         inlineProcess = false;
       }
     }
@@ -465,7 +465,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     } // not inline
   }
 
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToSerialGateway(ClusterDistributionManager dm) {
     // subclasses should override this method if processing
     // them may add to multiple serial gateways.
     return false;

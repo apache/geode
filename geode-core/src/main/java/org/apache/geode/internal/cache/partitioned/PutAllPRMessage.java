@@ -687,7 +687,7 @@ public class PutAllPRMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean mayAddToSerialGateway(ClusterDistributionManager dm) {
     return _mayAddToMultipleSerialGateways(dm);
   }
 
