@@ -18,7 +18,6 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.VM.getHostName;
-import static org.junit.Assert.fail;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -31,6 +30,7 @@ import java.util.stream.Stream;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -83,17 +83,36 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
+  private boolean exceptionOccurred = false;
+
   private static final Random RANDOM = new Random();
 
   private static final int NUM_THREADS = 20;
 
   private static final long TIME_TO_RUN = 30000; // milliseconds
 
-  private static final long TIME_TO_WAIT = 1; // minutes
+  private static final long TIME_TO_WAIT = 5; // minutes
+
+  @After
+  public void tearDown() {
+    if (exceptionOccurred) {
+      // An exception occurred. Since this could be a deadlock, dump the stacks and kill the
+      // servers.
+      addIgnoredException("Possible loss of quorum");
+      addIgnoredException(ForcedDisconnectException.class);
+      server1.invoke(() -> dumpStacks());
+      server2.invoke(() -> dumpStacks());
+      server3.invoke(() -> dumpStacks());
+      clusterRule.crashVM(1);
+      clusterRule.crashVM(2);
+      clusterRule.crashVM(3);
+    }
+  }
 
   @Test
   @Parameters({"REPLICATE", "PARTITION", "PARTITION_REDUNDANT"})
-  public void testMultithreadedFunctionExecutionsDoingRegionOperations(RegionShortcut shortcut) {
+  public void testMultithreadedFunctionExecutionsDoingRegionOperations(RegionShortcut shortcut)
+      throws Exception {
     // This is a test for GEODE-6821.
     //
     // 3 servers each with:
@@ -139,12 +158,12 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
     // Create region attached to AEQ1 in all servers
     String aeg1RegionName = testName.getMethodName() + "_1";
     Stream.of(server1, server2, server3)
-        .forEach(server -> server.invoke(() -> createRegion(aeg1RegionName, REPLICATE, aeq1Id)));
+        .forEach(server -> server.invoke(() -> createRegion(aeg1RegionName, shortcut, aeq1Id)));
 
     // Create region attached to AEQ2 in all servers
     String aeg2RegionName = testName.getMethodName() + "_2";
     Stream.of(server1, server2, server3)
-        .forEach(server -> server.invoke(() -> createRegion(aeg2RegionName, REPLICATE, aeq2Id)));
+        .forEach(server -> server.invoke(() -> createRegion(aeg2RegionName, shortcut, aeq2Id)));
 
     // Create Client cache and proxy function region
     createClientCacheAndRegion(locatorPort, functionExecutionRegionName);
@@ -179,7 +198,8 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
 
   private void createClientCacheAndRegion(int port, String regionName) {
     ClientCacheFactory clientCacheFactory =
-        new ClientCacheFactory().addPoolLocator(getHostName(), port).setPoolRetryAttempts(0);
+        new ClientCacheFactory().addPoolLocator(getHostName(), port).setPoolRetryAttempts(0)
+            .setPoolMinConnections(0);
     clientCacheRule.createClientCache(clientCacheFactory);
     clientCacheRule.getClientCache().createClientRegionFactory(ClientRegionShortcut.PROXY)
         .create(regionName);
@@ -213,23 +233,15 @@ public class SerialAsyncEventListenersDifferentPrimariesDistributedTest implemen
     }
   }
 
-  private void waitForFuturesToComplete(List<CompletableFuture<Void>> futures) {
+  private void waitForFuturesToComplete(List<CompletableFuture<Void>> futures) throws Exception {
     try {
       CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[futures.size()])).get(
           TIME_TO_WAIT,
           MINUTES);
     } catch (Exception e) {
-      // An exception occurred. Since this could be a deadlock, dump the stacks and kill the
-      // servers.
-      addIgnoredException("Possible loss of quorum");
-      addIgnoredException(ForcedDisconnectException.class);
-      server1.invoke(() -> dumpStacks());
-      server2.invoke(() -> dumpStacks());
-      server3.invoke(() -> dumpStacks());
-      clusterRule.crashVM(1);
-      clusterRule.crashVM(2);
-      clusterRule.crashVM(3);
-      fail(e.toString());
+      // An exception occurred. Set the boolean to cause the servers to be killed in tearDown.
+      exceptionOccurred = true;
+      throw e;
     }
   }
 

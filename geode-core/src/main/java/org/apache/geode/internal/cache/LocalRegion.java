@@ -6077,7 +6077,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   /**
-   * Returns true if this region notifies any serial gateway senders.
+   * Returns true if this region notifies any serial gateway senders including internal async event
+   * queues.
    */
   public boolean notifiesSerialGatewaySender() {
     if (isPdxTypesRegion()) {
@@ -6085,13 +6086,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     Set<String> allGatewaySenderIds = getAllGatewaySenderIds();
     if (!allGatewaySenderIds.isEmpty()) {
-      List<Integer> allRemoteDSIds = getRemoteDsIds(allGatewaySenderIds);
-      if (allRemoteDSIds != null) {
-        for (GatewaySender sender : getCache().getAllGatewaySenders()) {
-          if (allGatewaySenderIds.contains(sender.getId())) {
-            if (!sender.isParallel()) {
-              return true;
-            }
+      for (GatewaySender sender : getCache().getAllGatewaySenders()) {
+        if (allGatewaySenderIds.contains(sender.getId())) {
+          if (!sender.isParallel()) {
+            return true;
           }
         }
       }
