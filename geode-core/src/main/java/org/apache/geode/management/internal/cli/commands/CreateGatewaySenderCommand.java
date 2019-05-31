@@ -49,7 +49,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class CreateGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
-  private static int MBEAN_CREATION_WAIT_TIME = 10000;
+  private static final int MBEAN_CREATION_WAIT_TIME = 10000;
 
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN,
