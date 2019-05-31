@@ -346,8 +346,9 @@ public class InternalResourceManager implements ResourceManager {
       logger.debug("Failed in interrupting the Resource Manager Thread due to interrupt");
     }
     if (!executor.isTerminated()) {
-      logger.warn("Failed to stop resource manager threads in {} seconds",
+      logger.warn("Failed to stop resource manager threads in {} seconds, forcing shutdown",
           secToWait);
+      executor.shutdownNow();
     }
   }
 
