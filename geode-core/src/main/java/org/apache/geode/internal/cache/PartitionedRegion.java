@@ -3220,7 +3220,6 @@ public class PartitionedRegion extends LocalRegion
     checkForNoAccess();
     discoverJTA();
     boolean miss = true;
-
     Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
         true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
         preferCD, requestingClient, clientEvent, returnTombstones);
@@ -3228,6 +3227,17 @@ public class PartitionedRegion extends LocalRegion
       miss = false;
     }
     return value;
+  }
+
+  @Override
+  protected long startGet() {
+    return 0;
+  }
+
+  @Override
+  protected void endGet(long start, boolean isMiss) {
+    // get stats are recorded by the BucketRegion
+    // so nothing is needed on the PartitionedRegion.
   }
 
   public InternalDistributedMember getOrCreateNodeForBucketRead(int bucketId) {
