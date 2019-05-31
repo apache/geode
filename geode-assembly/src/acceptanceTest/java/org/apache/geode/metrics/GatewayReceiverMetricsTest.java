@@ -197,12 +197,6 @@ public class GatewayReceiverMetricsTest {
 
   @Test
   public void whenPerformingOperations_thenGatewayReceiverEventsReceivedIncreases() {
-    // TODO: perform put
-    // TODO: perform all ops that can go through a gateway
-
-    // TODO: assert that eventsReceived in receiver reflects number of puts
-    // and all ops
-
     String connectToSenderLocatorCommand = "connect --locator=localhost[" + senderLocatorPort + "]";
 
     String doPutCommand = String.join(GFSH_COMMAND_SEPARATOR,
