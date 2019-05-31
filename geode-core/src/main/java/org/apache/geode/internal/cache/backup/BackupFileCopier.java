@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.Oplog;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.logging.LogService;
 
 class BackupFileCopier {
@@ -167,7 +168,13 @@ class BackupFileCopier {
 
     Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
     try {
-      createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+      if (SystemUtils.isWindows()) {
+        // Hard links cannot be deleted on Windows if the process is still running, so prefer to
+        // actually copy the files.
+        FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
+      } else {
+        createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+      }
     } catch (IOException e) {
       logger.warn("Unable to create hard link for {}. Reverting to file copy",
           tempDiskDir.toString());
