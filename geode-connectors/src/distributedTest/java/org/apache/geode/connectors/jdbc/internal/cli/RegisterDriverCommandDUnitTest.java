@@ -19,6 +19,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import java.io.File;
 
 import org.assertj.core.api.Assertions;
+import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.apache.geode.util.test.TestUtil;
 public class RegisterDriverCommandDUnitTest {
 
   private static MemberVM locator, server1, server2;
+  final String JDBC_DRIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
@@ -48,13 +50,17 @@ public class RegisterDriverCommandDUnitTest {
     gfsh.connectAndVerify(locator);
   }
 
+  @After
+  public void cleanUp() {
+    gfsh.executeAndAssertThat("deregister driver --driver-class=" + JDBC_DRIVER_CLASS_NAME)
+        .statusIsSuccess();
+  }
 
   @Test
   public void testRegisterDriverDoesNotThrowException() {
 
     // aquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
-    final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
     assertThat(mySqlDriverFile).exists();
     String jarFile = mySqlDriverFile.getAbsolutePath();
@@ -62,13 +68,13 @@ public class RegisterDriverCommandDUnitTest {
     gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
 
     gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
-        .doesNotContainOutput(jdbcDriverClassName);
+        .doesNotContainOutput(JDBC_DRIVER_CLASS_NAME);
 
-    gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
+    gfsh.executeAndAssertThat("register driver --driver-class=" + JDBC_DRIVER_CLASS_NAME)
         .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list drivers").statusIsSuccess().containsOutput(jdbcDriverClassName);
-
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess()
+        .containsOutput(JDBC_DRIVER_CLASS_NAME);
   }
 
   private File loadTestResource(String fileName) {
