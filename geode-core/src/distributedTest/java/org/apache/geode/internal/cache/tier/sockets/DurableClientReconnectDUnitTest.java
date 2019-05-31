@@ -268,7 +268,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
 
-    List redundantServersHistory = new ArrayList();
+    List<String> redundantServersHistory = new ArrayList<>();
     redundantServersHistory.addAll(redundantServersAfterReconnect);
     redundantServersHistory.add(rServer1);
     instance.determineAndVerfiyNonRedundantServers(redundantServersHistory);
@@ -309,7 +309,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
 
-    List redundantServersHistory = new ArrayList();
+    List<String> redundantServersHistory = new ArrayList<>();
     redundantServersHistory.addAll(redundantServersAfterReconnect);
     redundantServersHistory.add(rServer1);
     redundantServersHistory.add(rServer2);

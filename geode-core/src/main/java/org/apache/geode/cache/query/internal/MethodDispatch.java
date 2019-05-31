@@ -105,7 +105,7 @@ public class MethodDispatch {
   private void resolveGeneral() throws NameResolutionException {
     Method[] allMethods = _targetClass.getMethods();
     // keep only ones whose method names match and have the same number of args
-    List candidates = new ArrayList();
+    List<Method> candidates = new ArrayList<>();
     for (int i = 0; i < allMethods.length; i++) {
       Method meth = allMethods[i];
       /*
@@ -134,7 +134,7 @@ public class MethodDispatch {
     // now we have a list of accessible and applicable method,
     // choose the most specific
     if (candidates.size() == 1) {
-      _method = (Method) candidates.get(0);
+      _method = candidates.get(0);
       return;
     }
 
@@ -142,8 +142,8 @@ public class MethodDispatch {
     sortByDecreasingSpecificity(candidates);
     // get the first two methods in the sorted list,
     // if they are equally specific, then throw AmbiguousMethodException
-    Method meth1 = (Method) candidates.get(0);
-    Method meth2 = (Method) candidates.get(1);
+    Method meth1 = candidates.get(0);
+    Method meth2 = candidates.get(1);
     // if meth1 cannot be type-converted to meth2, then meth1 is not more
     // specific than meth2 and the invocation is ambiguous.
     // special case a null argument type in this case, since there should
