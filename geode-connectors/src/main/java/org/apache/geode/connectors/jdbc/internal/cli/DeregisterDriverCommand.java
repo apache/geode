@@ -23,6 +23,9 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.JndiBindingsType;
+import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -50,6 +53,21 @@ public class DeregisterDriverCommand extends SingleGfshCommand {
       @CliOption(key = DRIVER_CLASS_NAME, help = DRIVER_CLASS_NAME_HELP,
           mandatory = true) String driverClassName) {
     try {
+      ConfigurationPersistenceService ccService = getConfigurationPersistenceService();
+      if (ccService == null) {
+        return ResultModel.createError("Cluster configuration service must be enabled.");
+      }
+
+      CacheConfig cacheConfig = ccService.getCacheConfig(null);
+      if (cacheConfig != null) {
+        for (JndiBindingsType.JndiBinding dataSource : cacheConfig.getJndiBindings()) {
+          if (dataSource.getJdbcDriverClass().equals(driverClassName)) {
+            return ResultModel
+                .createError("Driver is currently in use by " + dataSource.getJndiName());
+          }
+        }
+      }
+
       Set<DistributedMember> targetMembers = findMembers(null, null);
 
       if (targetMembers.size() > 0) {

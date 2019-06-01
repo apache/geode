@@ -31,24 +31,43 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 
 public class DeregisterDriverCommandTest {
   private DeregisterDriverCommand command;
+  private JndiBindingsType.JndiBinding dataSource;
+  private List<JndiBindingsType.JndiBinding> dataSources;
   private Set<DistributedMember> memberSet;
+  private InternalConfigurationPersistenceService clusterConfigService;
+  private CacheConfig cacheConfig;
   private List<CliFunctionResult> resultList = new ArrayList<>();
   private CliFunctionResult result;
   private final String DRIVER_CLASS_NAME = "test-jdbc-driver-class-name";
+  private final String DATA_SOURCE_NAME = "data-source-name";
 
   @Before
   public void setUp() {
     command = spy(new DeregisterDriverCommand());
     memberSet = mock(HashSet.class);
+    dataSource = new JndiBindingsType.JndiBinding();
+    dataSource.setJndiName(DATA_SOURCE_NAME);
+    dataSource.setJdbcDriverClass("driver name");
+    dataSources = new ArrayList<>();
+    dataSources.add(dataSource);
     doReturn(memberSet).when(command).findMembers(any(), any());
     doReturn(resultList).when(command).executeAndGetFunctionResult(any(), any(), any());
+    clusterConfigService = mock(InternalConfigurationPersistenceService.class);
+    cacheConfig = mock(CacheConfig.class);
+    when(cacheConfig.getJndiBindings()).thenReturn(dataSources);
+
+    doReturn(clusterConfigService).when(command).getConfigurationPersistenceService();
+    doReturn(cacheConfig).when(clusterConfigService).getCacheConfig(any());
   }
 
   @Test
@@ -66,6 +85,26 @@ public class DeregisterDriverCommandTest {
     assertThat(resultModel.getStatus()).isEqualTo(Result.Status.OK);
 
     resultList.clear();
+  }
+
+  @Test
+  public void testDeregisterDriverWithNoClusterConfigurationServerFails() {
+    doReturn(null).when(command).getConfigurationPersistenceService();
+
+    ResultModel result = command.deregisterDriver(DRIVER_CLASS_NAME);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.toString()).contains("Cluster configuration service must be enabled.");
+  }
+
+  @Test
+  public void testDeregisterDriverFailsWhenDriverIsInUse() {
+    this.dataSource.setJdbcDriverClass(DRIVER_CLASS_NAME);
+
+    ResultModel result = command.deregisterDriver(DRIVER_CLASS_NAME);
+
+    assertThat(result.getStatus()).isEqualTo(Result.Status.ERROR);
+    assertThat(result.toString()).contains("Driver is currently in use by " + DATA_SOURCE_NAME);
   }
 
   @Test
