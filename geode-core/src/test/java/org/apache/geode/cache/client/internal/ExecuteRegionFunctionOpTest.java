@@ -21,7 +21,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -37,6 +39,8 @@ import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -111,40 +115,48 @@ public class ExecuteRegionFunctionOpTest {
   private static final boolean OPTIMIZE_FOR_WRITE_SETTING = false;
   private static final String REGION_NAME = "REGION1";
   private static final String FUNCTION_NAME = "FUNCTION1";
+  private static final boolean ALL_BUCKETS_SETTING = true;
 
-  @Test
-  @Parameters({
-      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
-      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, -1, 2",
-      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
-      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 1, 2",
-  })
-  @TestCaseName("[{index}] {method}: {params}")
+  private List<ServerLocation> servers;
+  private ConnectionSource connectionSource;
+
+  /*
+   * It would be nice to make this variable have type ExecutablePool (an interface) but that
+   * won't work because the methods we are testing cast the reference to a PoolImpl.
+   */
+  private PoolImpl executablePool;
+
+  private Function<Integer> function;
+  private ServerRegionFunctionExecutor executor;
+  private ResultCollector<Integer, Collection<Integer>> resultCollector;
+
+  /*
+   * It would be nice to make this variable have type Cache (an interface) but that
+   * won't work because the methods we are testing cast the reference to a InternalCache.
+   */
+  private InternalCache cache;
+
+  /*
+   * It would be nice to make this variable have type Region (an interface) but that
+   * won't work because the methods we are testing cast the reference to a LocalRegion.
+   */
+  private LocalRegion region;
+
+  private SingleHopClientExecutor singleHopClientExecutor;
+  private Map<ServerLocation, ? extends HashSet> serverToFilterMap;
+
   @SuppressWarnings("unchecked")
-  public void foo(
-      final HAStatus haStatus,
-      final ClientMetadataStatus _ignoredClientMetadataStatus,
-      final ExecutionTarget executionTarget,
-      final FunctionIdentifierType functionIdentifierType,
-      final int retryAttempts,
-      final int expectTries) {
+  private void createMocks(final HAStatus haStatus) {
 
     final FailureMode failureMode = FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION;
 
-    final List<ServerLocation> servers = mock(List.class);
-
+    servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(NUMBER_OF_SERVERS);
 
-    final ConnectionSource connectionSource = mock(ConnectionSource.class);
-
+    connectionSource = mock(ConnectionSource.class);
     when(connectionSource.getAllServers()).thenReturn(servers);
 
-    /*
-     * It would be nice to make this variable have type ExecutablePool (an interface) but that
-     * won't work because the method we are testing casts the reference to a PoolImpl.
-     */
-    final PoolImpl executablePool = mock(PoolImpl.class);
-
+    executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
 
     /*
@@ -175,79 +187,160 @@ public class ExecuteRegionFunctionOpTest {
         throw new AssertionError("unknown FailureMode type: " + failureMode);
     }
 
-    final Function<Integer> function =
-        (Function<Integer>) mock(Function.class);
-
+    function = (Function<Integer>) mock(Function.class);
     when(function.isHA()).thenReturn(toBoolean(haStatus));
 
-    final ServerRegionFunctionExecutor executor = mock(ServerRegionFunctionExecutor.class);
-    final ResultCollector<Integer, Collection<Integer>> resultCollector =
-        (ResultCollector<Integer, Collection<Integer>>) mock(ResultCollector.class);
+    executor = mock(ServerRegionFunctionExecutor.class);
+
+    resultCollector = (ResultCollector<Integer, Collection<Integer>>) mock(ResultCollector.class);
+
+    cache = mock(InternalCache.class);
+    when(cache.getClientMetadataService()).thenReturn(mock(ClientMetadataService.class));
+
+    region = mock(LocalRegion.class);
+    when(region.getCache()).thenReturn(cache);
+
+    singleHopClientExecutor = mock(SingleHopClientExecutor.class);
+
+    serverToFilterMap = (Map<ServerLocation, ? extends HashSet>) mock(Map.class);
+  }
+
+  @Test
+  @Parameters({
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, -1, 2",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 0, 1",
+      "HA, CLIENT_HAS_METADATA, REGION_NO_FILTER, OBJECT_REFERENCE, 1, 2",
+      "HA, CLIENT_HAS_METADATA, REGION_WITH_FILTER_1_KEY, OBJECT_REFERENCE, 1, 2",
+      "HA, CLIENT_HAS_METADATA, REGION_WITH_FILTER_1_KEY, STRING, 1, 2",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  @SuppressWarnings("unchecked")
+  public void retryTest(
+      final HAStatus haStatus,
+      final ClientMetadataStatus clientMetadataStatus,
+      final ExecutionTarget executionTarget,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectTries) {
+
+    createMocks(haStatus);
 
     switch (executionTarget) {
       case REGION_NO_FILTER:
-        switch (failureMode) {
-          case NO_FAILURE:
-            executeFunctionForSideEffects(haStatus, functionIdentifierType, retryAttempts,
-                failureMode,
-                executablePool, function, executor, resultCollector);
-            break;
-          case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-            try {
-              executeFunctionForSideEffects(haStatus, functionIdentifierType, retryAttempts,
-                  failureMode,
-                  executablePool, function, executor, resultCollector);
-              throw new AssertionError("expected execute() to throw exception but it didn't");
-            } catch (final ServerConnectivityException e) {
-              // expected
-            }
-            break;
-          default:
-            throw new AssertionError("unknown FailureMode type: " + failureMode);
-        }
+        executeFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
+            executablePool,
+            function,
+            executor, resultCollector, expectTries);
         break;
       case REGION_WITH_FILTER_1_KEY:
-        // TODO
       case REGION_WITH_FILTER_2_KEYS:
-        // TODO
+        switch (clientMetadataStatus) {
+          case CLIENT_HAS_METADATA:
+            switch (functionIdentifierType) {
+              case STRING:
+                ignoreServerConnectivityException(() -> ExecuteRegionFunctionSingleHopOp.execute(
+                    executablePool, region, FUNCTION_NAME,
+                    executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
+                    retryAttempts,
+                    ALL_BUCKETS_SETTING, toBoolean(haStatus), OPTIMIZE_FOR_WRITE_SETTING,
+                    singleHopClientExecutor));
+                break;
+              case OBJECT_REFERENCE:
+                ignoreServerConnectivityException(
+                    () -> ExecuteRegionFunctionSingleHopOp.execute(executablePool, region, function,
+                        executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
+                        retryAttempts,
+                        ALL_BUCKETS_SETTING, singleHopClientExecutor));
+                break;
+              default:
+                throw new AssertionError(
+                    "unknown FunctionIdentifierType type: " + functionIdentifierType);
+            }
+            verify(singleHopClientExecutor, times(1))
+                .submitAllHA(ArgumentMatchers.anyList(), ArgumentMatchers.any(),
+                    ArgumentMatchers.anyBoolean(), ArgumentMatchers.any(),
+                    ArgumentMatchers.any(), ArgumentMatchers.anyInt(), ArgumentMatchers.any());
+            final int extraTries = expectTries - NUMBER_OF_SERVERS;
+            if (extraTries > 0) {
+              verify(this.executablePool, times(extraTries))
+                  .execute(ArgumentMatchers.<AbstractOp>any(),
+                      ArgumentMatchers.anyInt());
+            }
+            break;
+          case CLIENT_MISSING_METADATA:
+            executeFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
+                executablePool,
+                function,
+                executor, resultCollector, expectTries);
+            break;
+          default:
+            throw new AssertionError("unknown ClientMetadataStatus type: " + clientMetadataStatus);
+        }
+        break;
       case SERVER:
-        // TODO
-        throw new AssertionError(
-            "execution target type not yet supported by test: " + executionTarget);
+        // switch (functionIdentifierType) {
+        // case STRING:
+        // ExecuteFunctionOp.execute(executablePool,FUNCTION_NAME,executor,new Object(),new
+        // MemberMappedArgument(),false,FUNCTION_HAS_RESULT,resultCollector,false,toBoolean(haStatus),OPTIMIZE_FOR_WRITE_SETTING,new
+        // UserAttributes(),new String[]{});
+        // break;
+        // case OBJECT_REFERENCE:
+        // ExecuteFunctionOp.execute(executablePool,function,executor,new Object(),new
+        // MemberMappedArgument(),false,FUNCTION_HAS_RESULT,resultCollector,false,new
+        // UserAttributes(),new String[]{});
+        // break;
+        // default:
+        // throw new AssertionError("unknown FunctionIdentifierType type: " +
+        // functionIdentifierType);
+        // }
+        // break;
+        throw new AssertionError("unsupported ExecutionTarget type: " + executionTarget);
       default:
         throw new AssertionError("unknown ExecutionTarget type: " + executionTarget);
     }
-
-    verify(executablePool, times(expectTries)).execute(ArgumentMatchers.<AbstractOp>any(),
-        ArgumentMatchers.anyInt());
-
   }
 
-  private void executeFunctionForSideEffects(final HAStatus haStatus,
+  private void executeFunctionMultiHopAndValidate(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
-      final FailureMode failureMode,
       final PoolImpl executablePool,
       final Function<Integer> function,
       final ServerRegionFunctionExecutor executor,
-      final ResultCollector<Integer, Collection<Integer>> resultCollector) {
+      final ResultCollector<Integer, Collection<Integer>> resultCollector,
+      final int expectTries) {
     switch (functionIdentifierType) {
       case STRING:
-        ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, FUNCTION_NAME,
-            executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts, toBoolean(haStatus),
-            OPTIMIZE_FOR_WRITE_SETTING);
+        ignoreServerConnectivityException(
+            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, FUNCTION_NAME,
+                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts, toBoolean(haStatus),
+                OPTIMIZE_FOR_WRITE_SETTING));
         break;
       case OBJECT_REFERENCE:
-        ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, function,
-            executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts);
+        ignoreServerConnectivityException(
+            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, function,
+                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts));
         break;
       default:
-        throw new AssertionError("unknown FunctionIdentifierType type: " + failureMode);
+        throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
     }
+
+    verify(this.executablePool, times(expectTries)).execute(ArgumentMatchers.<AbstractOp>any(),
+        ArgumentMatchers.anyInt());
   }
 
   private boolean toBoolean(final HAStatus haStatus) {
     return haStatus == HAStatus.HA;
   }
 
+  /*
+   * We could be pedantic about this exception but that's not the purpose of the retryTest()
+   */
+  private void ignoreServerConnectivityException(final Runnable runnable) {
+    try {
+      runnable.run();
+    } catch (final ServerConnectivityException e) {
+      // ok
+    }
+  }
 }

@@ -108,8 +108,9 @@ public class RemoveAllOp {
         new HashMap<ServerLocation, RuntimeException>();
     PutAllPartialResult result = new PutAllPartialResult(keys.size());
     try {
-      Map<ServerLocation, Object> results = SingleHopClientExecutor.submitBulkOp(callableTasks, cms,
-          (LocalRegion) region, failedServers);
+      Map<ServerLocation, Object> results = SingleHopClientExecutorImpl.getInstance()
+          .submitBulkOp(callableTasks, cms,
+              (LocalRegion) region, failedServers);
       for (Map.Entry<ServerLocation, Object> entry : results.entrySet()) {
         Object value = entry.getValue();
         if (value instanceof PutAllPartialResultException) {

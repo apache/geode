@@ -82,7 +82,7 @@ public class ExecuteFunctionOp {
       List callableTasks = constructAndGetFunctionTasks(pool, function, args, memberMappedArg,
           hasResult, rc, isFnSerializationReqd, attributes);
 
-      SingleHopClientExecutor.submitAll(callableTasks);
+      SingleHopClientExecutorImpl.getInstance().submitAll(callableTasks);
 
     } else {
       AbstractOp reexecOp = null;
@@ -149,7 +149,7 @@ public class ExecuteFunctionOp {
       List callableTasks = constructAndGetFunctionTasks(pool, functionId, args, memberMappedArg,
           hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, properties);
 
-      SingleHopClientExecutor.submitAll(callableTasks);
+      SingleHopClientExecutorImpl.getInstance().submitAll(callableTasks);
     } else {
       AbstractOp reexecOp = null;
       boolean reexecuteForServ = false;
