@@ -138,4 +138,9 @@ class IndexCreationData implements Index {
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public void setMaintenanceOngoing(boolean b) {
+    // TODO
+  }
 }

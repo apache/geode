@@ -44,9 +44,13 @@ public class ListIndexCommand extends GfshCommand {
   @CliMetaData(relatedTopic = {CliStrings.TOPIC_GEODE_REGION, CliStrings.TOPIC_GEODE_DATA})
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.READ, target = ResourcePermission.Target.QUERY)
-  public ResultModel listIndex(@CliOption(key = CliStrings.LIST_INDEX__STATS,
-      specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-      help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
+  public ResultModel listIndex(
+      @CliOption(key = CliStrings.LIST_INDEX__STATS,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats,
+      @CliOption(key = CliStrings.LIST_INDEX__MAINT,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.LIST_INDEX__MAINT__HELP) final boolean maintStatus) {
 
     ResultModel result = new ResultModel();
     TabularResultModel indexTable = result.addTable("indices");
@@ -79,6 +83,10 @@ public class ListIndexCommand extends GfshCommand {
         indexTable.accumulate("Update Time", adapter.getTotalUpdateTime());
         indexTable.accumulate("Keys", adapter.getNumberOfKeys());
         indexTable.accumulate("Values", adapter.getNumberOfValues());
+      }
+
+      if (maintStatus) {
+        indexTable.accumulate("Index Maintenance Status", indexDetails.getIndexMaintenance());
       }
     }
 

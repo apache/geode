@@ -141,6 +141,9 @@ public abstract class AbstractIndex implements IndexProtocol {
   /** Flag to indicate if the index is populated with data */
   volatile boolean isPopulated = false;
 
+  /** Flag to indicate if the asynchrone maintenance of index is ongoing */
+  volatile boolean isMaintenanceOngoing = false;
+
   AbstractIndex(InternalCache cache, String indexName, Region region, String fromClause,
       String indexedExpression, String projectionAttributes, String originalFromClause,
       String originalIndexedExpression, String[] defintions, IndexStatistics stats) {
@@ -2101,5 +2104,15 @@ public abstract class AbstractIndex implements IndexProtocol {
 
   boolean isIndexOnPdxKeys() {
     return isIndexedPdxKeys;
+  }
+
+  @Override
+  public synchronized boolean isMaintenanceOngoing() {
+    return this.isMaintenanceOngoing;
+  }
+
+  @Override
+  public void setMaintenanceOngoing(boolean maintenanceongoing) {
+    this.isMaintenanceOngoing = maintenanceongoing;
   }
 }

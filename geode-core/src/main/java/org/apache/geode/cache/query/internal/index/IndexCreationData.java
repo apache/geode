@@ -157,5 +157,4 @@ public class IndexCreationData implements DataSerializableFixedID {
       this.importStr = in.readUTF();
     }
   }
-
 }

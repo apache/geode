@@ -115,4 +115,16 @@ public interface Index {
    * @return the projectionAttributes, or "*" if there were none specified at index creation.
    */
   String getCanonicalizedProjectionAttributes();
+
+  /**
+   * Set whether maintenance of index is ongoing.
+   */
+  void setMaintenanceOngoing(boolean b);
+
+  /**
+   * Get whether maintenance of index is ongoing.
+   */
+  default boolean isMaintenanceOngoing() {
+    return false;
+  }
 }

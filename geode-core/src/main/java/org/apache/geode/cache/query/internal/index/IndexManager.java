@@ -1392,6 +1392,19 @@ public class IndexManager {
     return ((String) (this.canonicalizedIteratorNameMap.get(definition)));
   }
 
+  /**
+   * Update all indexes with maintenance status
+   *
+   */
+  public void updateIndexMaintenanceStatus(boolean ongoing) {
+    Collection<Index> allindexes = getIndexes();
+    for (Index index : allindexes) {
+      if (index.isMaintenanceOngoing() != ongoing) {
+        index.setMaintenanceOngoing(ongoing);
+      }
+    }
+  }
+
   ////////////////////// Inner Classes //////////////////////
 
   public class IndexUpdaterThread extends LoggingThread {
@@ -1418,6 +1431,9 @@ public class IndexManager {
     }
 
     public void addTask(int action, RegionEntry entry, int opCode) {
+      if (isDone()) {
+        updateIndexMaintenanceStatus(true);
+      }
       Object[] task = new Object[3];
       task[0] = action;
       task[1] = entry;
@@ -1433,6 +1449,7 @@ public class IndexManager {
         return;
       }
       this.shutdownRequested = true;
+      updateIndexMaintenanceStatus(false);
       this.interrupt();
       try {
         this.join();
@@ -1452,6 +1469,7 @@ public class IndexManager {
           // Termination checks
           SystemFailure.checkFailure();
           if (stopper.isCancelInProgress()) {
+            updateIndexMaintenanceStatus(false);
             break;
           }
           try {
@@ -1460,6 +1478,9 @@ public class IndexManager {
               break;
             }
             updateIndexes(task);
+            if (isDone()) {
+              updateIndexMaintenanceStatus(false);
+            }
           } catch (InterruptedException ignore) {
             return; // give up (exit the thread)
           }
