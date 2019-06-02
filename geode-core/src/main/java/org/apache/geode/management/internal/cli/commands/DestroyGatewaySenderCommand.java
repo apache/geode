@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -85,24 +86,10 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   @VisibleForTesting
   boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    long startWaitTime = System.currentTimeMillis();
 
-    do {
-      try {
-        if (members.stream()
-            .noneMatch(m -> CreateGatewaySenderCommand.gatewaySenderBeanExists(dsMXBean,
-                m.getName(), id))) {
-          return true;
-        }
-
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        // ignored
-      }
-
-    } while (System.currentTimeMillis() - startWaitTime < MBEAN_DELETION_WAIT_TIME);
-
-    return false;
+    return poll(MBEAN_DELETION_WAIT_TIME, TimeUnit.MILLISECONDS, () -> members.stream()
+        .noneMatch(m -> CreateGatewaySenderCommand.gatewaySenderBeanExists(dsMXBean,
+            m.getName(), id)));
   }
 
   @Override

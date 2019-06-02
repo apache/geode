@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
@@ -171,23 +172,10 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
   boolean waitForGatewaySenderMBeanCreation(String id,
       Set<DistributedMember> membersToCreateGatewaySenderOn) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    long startWaitTime = System.currentTimeMillis();
 
-    do {
-      try {
-        if (membersToCreateGatewaySenderOn.stream()
-            .allMatch(m -> gatewaySenderBeanExists(dsMXBean, m.getName(), id))) {
-          return true;
-        }
-
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        // ignored
-      }
-
-    } while (System.currentTimeMillis() - startWaitTime < MBEAN_CREATION_WAIT_TIME);
-
-    return false;
+    return poll(MBEAN_CREATION_WAIT_TIME, TimeUnit.MILLISECONDS,
+        () -> membersToCreateGatewaySenderOn.stream()
+            .allMatch(m -> gatewaySenderBeanExists(dsMXBean, m.getName(), id)));
   }
 
   static boolean gatewaySenderBeanExists(DistributedSystemMXBean dsMXBean, String member,
