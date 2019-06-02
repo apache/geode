@@ -18,6 +18,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.locks.TXRegionLockRequest;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -116,7 +118,12 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
       if (cache != null && size > 0) {
         this.r = (LocalRegion) cache.getRegion(this.regionPath);
       }
-      this.entryKeys = readEntryKeyMap(size, in);
+      if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_10_0) >= 0) {
+        this.entryKeys = readEntryKeyMap(size, in);
+      } else {
+        this.entryKeys = readEntryKeySet(size, in);
+      }
+
     } catch (CacheClosedException ignore) {
       // don't throw in deserialization
       this.entryKeys = null;
@@ -149,10 +156,38 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
     return map;
   }
 
+  private Map<Object, Boolean> readEntryKeySet(final int size, final DataInput in)
+      throws IOException, ClassNotFoundException {
+
+    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
+      logger.trace(LogMarker.SERIALIZER_VERBOSE, "Reading HashSet with size {}", size);
+    }
+
+    final HashMap<Object, Boolean> map = new HashMap<Object, Boolean>(size);
+    Object key;
+    Boolean value;
+    for (int i = 0; i < size; i++) {
+      key = DataSerializer.readObject(in);
+      value = true;
+      map.put(key, value);
+    }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Read HashSet with {} elements: {}", size, map);
+    }
+
+    return map;
+  }
+
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeString(getRegionFullPath(), out);
-    InternalDataSerializer.writeHashMap(this.entryKeys, out);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_10_0) >= 0) {
+      InternalDataSerializer.writeHashMap(this.entryKeys, out);
+    } else {
+      HashSet hashset = new HashSet(this.entryKeys.keySet());
+      InternalDataSerializer.writeHashSet(hashset, out);
+    }
   }
 
   public static TXRegionLockRequestImpl createFromData(DataInput in)
