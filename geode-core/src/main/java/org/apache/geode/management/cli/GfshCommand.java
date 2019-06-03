@@ -226,7 +226,8 @@ public abstract class GfshCommand implements CommandMarker {
    * function that may have an unbounded runtime. The timeout is very coarse and will not account
    * for the function overrunning the given time.
    *
-   * @param function a {@link Supplier<Boolean>} function that will poll for the condition
+   * @param function a {@link Supplier Supplier&lt;Boolean&gt;} function that will poll for the
+   *        condition
    * @return true if the function returns true within the timeout period; false otherwise
    */
   public boolean poll(long timeout, TimeUnit unit, Supplier<Boolean> function) {
