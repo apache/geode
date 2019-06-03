@@ -19,17 +19,22 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -44,6 +49,9 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateGatewaySenderCommand extends SingleGfshCommand {
+  private static final Logger logger = LogService.getLogger();
+  private static final int MBEAN_CREATION_WAIT_TIME = 10000;
+
   @CliCommand(value = CliStrings.CREATE_GATEWAYSENDER, help = CliStrings.CREATE_GATEWAYSENDER__HELP)
   @CliMetaData(relatedTopic = CliStrings.TOPIC_GEODE_WAN,
       interceptor = "org.apache.geode.management.internal.cli.commands.CreateGatewaySenderCommand$Interceptor")
@@ -149,7 +157,40 @@ public class CreateGatewaySenderCommand extends SingleGfshCommand {
     ResultModel resultModel = ResultModel.createMemberStatusResult(gatewaySenderCreateResults);
     resultModel.setConfigObject(configuration);
 
+    if (!waitForGatewaySenderMBeanCreation(id, membersToCreateGatewaySenderOn)) {
+      resultModel.addInfo()
+          .addLine("Did not complete waiting for GatewaySenderMBean proxy creation");
+    }
+
     return resultModel;
+  }
+
+  /*
+   * Wait for up tp 3 seconds for the proxy MBeans to be created.
+   */
+  @VisibleForTesting
+  boolean waitForGatewaySenderMBeanCreation(String id,
+      Set<DistributedMember> membersToCreateGatewaySenderOn) {
+    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+
+    return poll(MBEAN_CREATION_WAIT_TIME, TimeUnit.MILLISECONDS,
+        () -> membersToCreateGatewaySenderOn.stream()
+            .allMatch(m -> gatewaySenderBeanExists(dsMXBean, m.getName(), id)));
+  }
+
+  static boolean gatewaySenderBeanExists(DistributedSystemMXBean dsMXBean, String member,
+      String id) {
+    try {
+      // This throws a vanilla Exception if this call does not find anything
+      dsMXBean.fetchGatewaySenderObjectName(member, id);
+      return true;
+    } catch (Exception e) {
+      if (!e.getMessage().toLowerCase().contains("not found")) {
+        logger.warn("Unable to retrieve GatewaySender ObjectName for member: {}, id: {} - {}",
+            member, id, e.getMessage());
+      }
+    }
+    return false;
   }
 
   @Override

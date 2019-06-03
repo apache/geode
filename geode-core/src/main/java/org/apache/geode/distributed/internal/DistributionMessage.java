@@ -410,10 +410,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     boolean forceInline = this.acker != null || getInlineProcess() || Connection.isDominoThread();
 
     if (inlineProcess && !forceInline && isSharedReceiver()) {
-      // If processing this message may need to add
-      // to more than one serial gateway then don't
-      // do it inline.
-      if (mayAddToMultipleSerialGateways(dm)) {
+      // If processing this message notify a serial gateway sender then don't do it inline.
+      if (mayNotifySerialGatewaySender(dm)) {
         inlineProcess = false;
       }
     }
@@ -465,9 +463,8 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     } // not inline
   }
 
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-    // subclasses should override this method if processing
-    // them may add to multiple serial gateways.
+  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+    // subclasses should override this method if processing them may notify a serial gateway sender.
     return false;
   }
 

@@ -704,13 +704,13 @@ public abstract class PartitionMessage extends DistributionMessage
     return true;
   }
 
-  protected boolean _mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
+  protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
     try {
       PartitionedRegion pr = PartitionedRegion.getPRFromId(this.regionId);
       if (pr == null) {
         return false;
       }
-      return pr.notifiesMultipleSerialGateways();
+      return pr.notifiesSerialGatewaySender();
     } catch (PRLocallyDestroyedException ignore) {
       return false;
     } catch (RuntimeException ignore) {

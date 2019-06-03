@@ -457,8 +457,8 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-    return _mayAddToMultipleSerialGateways(dm);
+  protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+    return notifiesSerialGatewaySender(dm);
   }
 
   public static class DestroyReplyMessage extends ReplyMessage {

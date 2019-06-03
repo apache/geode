@@ -164,12 +164,6 @@ public class MemberVM extends VMProvider implements Member {
         .waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers(queueId, serverCount));
   }
 
-  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(
-      int expectedGatewayObjectCount) {
-    vm.invoke(() -> ClusterStartupRule.memberStarter
-        .waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(expectedGatewayObjectCount));
-  }
-
   public void waitTillCacheClientProxyHasBeenPaused() {
     vm.invoke(() -> ClusterStartupRule.memberStarter.waitTillCacheClientProxyHasBeenPaused());
   }
