@@ -49,6 +49,7 @@ public class DestroyGatewaySenderCommandTest {
     command = spy(DestroyGatewaySenderCommand.class);
     cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
+    doReturn(true).when(command).waitForGatewaySenderMBeanDeletion(any(), any());
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(),
         any(Set.class));

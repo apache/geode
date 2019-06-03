@@ -17,6 +17,8 @@ package org.apache.geode.management.cli;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
@@ -216,5 +218,36 @@ public abstract class GfshCommand implements CommandMarker {
       Set<DistributedMember> targetMembers) {
     ResultCollector rc = executeFunction(function, args, targetMembers);
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
+  }
+
+  /**
+   * Very basic polling functionality that executes a function until it returns true or the timeout
+   * is reached. The polling call is performed on the calling thread. Do not use it with a
+   * function that may have an unbounded runtime. The timeout is very coarse and will not account
+   * for the function overrunning the given time.
+   *
+   * @param function a {@link Supplier Supplier&lt;Boolean&gt;} function that will poll for the
+   *        condition
+   * @return true if the function returns true within the timeout period; false otherwise
+   */
+  public boolean poll(long timeout, TimeUnit unit, Supplier<Boolean> function) {
+    long startWaitTime = System.currentTimeMillis();
+    long waitTime = unit.toMillis(timeout);
+
+    do {
+      try {
+        if (function.get()) {
+          return true;
+        }
+
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return false;
+      }
+    } while (System.currentTimeMillis() - startWaitTime < waitTime);
+
+    return false;
+
   }
 }
