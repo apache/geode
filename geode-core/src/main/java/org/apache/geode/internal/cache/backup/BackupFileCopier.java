@@ -167,19 +167,20 @@ class BackupFileCopier {
     }
 
     Path tempDiskDir = temporaryFiles.getDiskStoreDirectory(diskStore, dirHolder);
-    try {
-      if (SystemUtils.isWindows()) {
-        // Hard links cannot be deleted on Windows if the process is still running, so prefer to
-        // actually copy the files.
-        FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
-      } else {
+    if (!SystemUtils.isWindows()) {
+      try {
         createLink(tempDiskDir.resolve(file.getName()), file.toPath());
+      } catch (IOException e) {
+        logger.warn("Unable to create hard link for {}. Reverting to file copy",
+            tempDiskDir.toString());
+        FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
       }
-    } catch (IOException e) {
-      logger.warn("Unable to create hard link for {}. Reverting to file copy",
-          tempDiskDir.toString());
+    } else {
+      // Hard links cannot be deleted on Windows if the process is still running, so prefer to
+      // actually copy the files.
       FileUtils.copyFileToDirectory(file, tempDiskDir.toFile());
     }
+
     backupDefinition.addOplogFileToBackup(diskStore, tempDiskDir.resolve(file.getName()));
   }
 
