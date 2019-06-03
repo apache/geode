@@ -17,6 +17,7 @@ package org.apache.geode.management.internal;
 
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
@@ -62,6 +63,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @Override
   public ClusterManagementResult delete(CacheElement config) {
     String endPoint = getEndpoint(config);
+    if (StringUtils.isNotBlank(config.getGroup())) {
+      throw new IllegalArgumentException("Group is an invalid option when deleting an element.");
+    }
     return restTemplate
         .exchange(VERSION + endPoint + "/{id}?group={group}",
             HttpMethod.DELETE,

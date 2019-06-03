@@ -190,11 +190,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     Set<DistributedMember> targetedMembers = new HashSet<>();
     relevantGroups.forEach(g -> targetedMembers.addAll(findMembers(g)));
 
-    if (targetedMembers.size() == 0) {
-      return new ClusterManagementResult(false,
-          "No members found to delete cache element");
-    }
-
     ClusterManagementResult result = new ClusterManagementResult();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
