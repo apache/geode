@@ -14,12 +14,9 @@
  */
 package org.apache.geode.cache30;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
@@ -28,9 +25,8 @@ import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheStatistics;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.internal.cache.InternalRegion;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
@@ -72,8 +68,6 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     Object key3 = "KEY3"; // entry, invalid
     Object value = "VALUE";
 
-    final int MSECS = 1000;
-
     AttributesFactory factory = new AttributesFactory();
     factory.setStatisticsEnabled(true);
 
@@ -83,63 +77,53 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     assertEquals(0, rStats.getMissCount());
     assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
-    assertNull(region.get(key));
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 1 == rStats.getMissCount());
+    region.get(key);
+    assertEquals(1, rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
-    assertNull(region.get(key));
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 2 == rStats.getMissCount());
+    region.get(key);
+    assertEquals(2, rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
     rStats.resetCounts();
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 0 == rStats.getMissCount());
+    assertEquals(0, rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
     region.put(key, value);
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 0 == rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(0, rStats.getMissCount());
+    assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
     region.get(key);
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 1 == rStats.getHitCount());
+    assertEquals(1, rStats.getHitCount());
     assertEquals(0, rStats.getMissCount());
     assertEquals(1.0f, rStats.getHitRatio(), 0.0f);
 
     region.get(key2);
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 1 == rStats.getMissCount());
+    assertEquals(1, rStats.getMissCount());
     assertEquals(1, rStats.getHitCount());
     assertEquals(0.5f, rStats.getHitRatio(), 0.0f);
 
     region.create(key3, null);
     region.get(key3); // miss on existing entry
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 2 == rStats.getMissCount());
-    assertEquals(1, rStats.getHitCount());
     assertEquals(2, rStats.getMissCount());
+    assertEquals(1, rStats.getHitCount());
     assertEquals(0.33f, rStats.getHitRatio(), 0.01f);
 
     rStats.resetCounts();
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 0 == rStats.getMissCount());
+    assertEquals(0, rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
 
     region.invalidate(key);
     region.get(key);
 
-    GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-        .until(() -> 1 == rStats.getMissCount());
     assertEquals(0, rStats.getHitCount());
     assertEquals(1, rStats.getMissCount());
+    assertEquals(0.0f, rStats.getHitRatio(), 0.0f);
   }
 
   /**
@@ -151,15 +135,14 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   public void testTimeStats() throws CacheException, InterruptedException {
     final long ESTAT_RES = 100; // the resolution, in ms, of entry stats
     String name = this.getUniqueName();
-    Object key = "KEY";
-    Object key2 = "KEY2";
+    Object key1 = Integer.valueOf(1);
+    Object key2 = Integer.valueOf(2);
+    Object missingKey = Integer.valueOf(999);
     Object value = "VALUE";
     long before;
     long after;
     long oldBefore;
     long oldAfter;
-
-    final int MSECS = 1000;
 
     AttributesFactory factory = new AttributesFactory();
     // factory.setScope(Scope.LOCAL);
@@ -168,46 +151,37 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     Region region = createPartitionedRegion(name, factory.create());
     CacheStatistics rStats = region.getStatistics();
 
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    // In order for the stats to have a value, an entry must be accessed first.
-    region.get(key);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    assertEquals(0, rStats.getLastAccessedTime());
+    assertEquals(0, rStats.getLastModifiedTime());
 
-    {
-      final long localBefore = before;
-      final long localAfter = after;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> (localBefore <= rStats.getLastAccessedTime()
-              && localAfter >= rStats.getLastAccessedTime()));
-    }
+    before = ((InternalRegion) region).cacheTimeMillis();
+    // When the get is invoked, the lastAccessedTime and lastModified time
+    // are updated as a new BucketRegion is created.
+    region.get(missingKey);
+
+    after = ((InternalRegion) region).cacheTimeMillis();
+
+    assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(before, after, rStats.getLastModifiedTime());
 
     oldBefore = before;
     oldAfter = after;
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    region.get(key);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    waitForClockToChange(region);
+    before = ((InternalRegion) region).cacheTimeMillis();
+    region.get(missingKey);
 
-    {
-      final long localBefore = before;
-      final long localAfter = after;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localBefore <= rStats.getLastAccessedTime()
-              && localAfter >= rStats.getLastAccessedTime());
-    }
+    after = ((InternalRegion) region).cacheTimeMillis();
+
+    assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
 
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    region.put(key, value);
-    CacheStatistics eStats = region.getEntry(key).getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    {
-      final long localBefore = before;
-      final long localAfter = after;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localBefore <= rStats.getLastModifiedTime()
-              && localAfter >= rStats.getLastModifiedTime());
-    }
+    waitForClockToChange(region);
+    before = ((InternalRegion) region).cacheTimeMillis();
+    region.put(key1, value);
+    CacheStatistics eStats = region.getEntry(key1).getStatistics();
+    after = ((InternalRegion) region).cacheTimeMillis();
+
+    assertInRange(before, after, rStats.getLastModifiedTime());
     assertInRange(before, after, rStats.getLastAccessedTime());
 
     assertInRange(before - ESTAT_RES, after + ESTAT_RES, eStats.getLastAccessedTime());
@@ -215,19 +189,15 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
 
     oldBefore = before;
     oldAfter = after;
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    region.get(key);
+    waitForClockToChange(region);
+    before = ((InternalRegion) region).cacheTimeMillis();
+    region.get(key1);
     // eStats must be obtained again. The previous object is not updated.
     // Seems it just provides a snapshot at the moment it is received.
-    eStats = region.getEntry(key).getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    {
-      final long localBefore = before;
-      final long localAfter = after;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localBefore <= rStats.getLastAccessedTime()
-              && localAfter >= rStats.getLastAccessedTime());
-    }
+    eStats = region.getEntry(key1).getStatistics();
+    after = ((InternalRegion) region).cacheTimeMillis();
+
+    assertInRange(before, after, rStats.getLastAccessedTime());
     assertInRange(oldBefore, oldAfter, rStats.getLastModifiedTime());
     assertInRange(before - ESTAT_RES, after + ESTAT_RES, eStats.getLastAccessedTime());
     assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats.getLastModifiedTime());
@@ -236,18 +206,15 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     long oldOldAfter = oldAfter;
     oldBefore = before;
     oldAfter = after;
-    before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
+    waitForClockToChange(region, ESTAT_RES);
+    before = ((InternalRegion) region).cacheTimeMillis();
     region.create(key2, null);
+    region.get(key2);
     CacheStatistics eStats2 = region.getEntry(key2).getStatistics();
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-    {
-      final long localBefore = before;
-      final long localAfter = after;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localBefore <= rStats.getLastModifiedTime()
-              && localAfter >= rStats.getLastModifiedTime());
-      assertInRange(before, after, rStats.getLastAccessedTime());
-    }
+    after = ((InternalRegion) region).cacheTimeMillis();
+
+    assertInRange(before, after, rStats.getLastModifiedTime());
+    assertInRange(before, after, rStats.getLastAccessedTime());
 
     assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats.getLastAccessedTime());
     assertInRange(oldOldBefore - ESTAT_RES, oldOldAfter + ESTAT_RES, eStats.getLastModifiedTime());
@@ -257,35 +224,34 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
 
     // Invalidation does not update the modification/access
     // times
-    oldBefore = before;
-    oldAfter = after;
     region.invalidate(key2);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
 
-    {
-      final long localOldBefore = oldBefore;
-      final long localOldAfter = oldAfter;
-
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localOldBefore <= rStats.getLastModifiedTime()
-              && localOldAfter >= rStats.getLastModifiedTime());
-    }
-    assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats2.getLastAccessedTime());
-    assertInRange(oldBefore - ESTAT_RES, oldAfter + ESTAT_RES, eStats2.getLastModifiedTime());
-    assertInRange(oldBefore, oldAfter, rStats.getLastAccessedTime());
+    assertInRange(before, after, rStats.getLastModifiedTime());
+    assertInRange(before - ESTAT_RES, after + ESTAT_RES, eStats2.getLastAccessedTime());
+    assertInRange(before - ESTAT_RES, after + ESTAT_RES, eStats2.getLastModifiedTime());
+    assertInRange(before, after, rStats.getLastAccessedTime());
 
     region.destroy(key2);
-    after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
 
-    {
-      final long localOldBefore = oldBefore;
-      final long localOldAfter = oldAfter;
-      GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-          .until(() -> localOldBefore <= rStats.getLastModifiedTime()
-              && localOldAfter >= rStats.getLastModifiedTime());
-    }
-    assertInRange(oldBefore, oldAfter, rStats.getLastAccessedTime());
+    assertInRange(before, after, rStats.getLastModifiedTime());
+    assertInRange(before, after, rStats.getLastAccessedTime());
   }
+
+  private void waitForClockToChange(Region region) {
+    waitForClockToChange(region, 0);
+  }
+
+  /**
+   * Waits for the time in the <code>region</code> to step up
+   * beyond the current time in the region plus the number of
+   * milliseconds passed in the <code>millisecs</code> argument.
+   */
+  private void waitForClockToChange(Region region, long millisecs) {
+    long time = ((InternalRegion) region).cacheTimeMillis();
+    while (time >= ((InternalRegion) region).cacheTimeMillis() + millisecs) {
+    }
+  }
+
 
   /** The last time an entry was accessed */
   protected static volatile long lastAccessed;
@@ -303,10 +269,10 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
   @Test
   public void testDistributedStats() {
     final String name = this.getUniqueName();
-    final Object key = "KEY";
-    final Object key1 = "KEY1";
-    final Object key2 = "KEY2";
-    final Object key3 = "KEY3";
+    final Object key0 = Integer.valueOf(0);
+    final Object key1 = Integer.valueOf(1);
+    final Object key2 = Integer.valueOf(2);
+    final Object key3 = Integer.valueOf(3);
     final Object value = "VALUE";
     final Object value1 = "VALUE1";
     final Object value2 = "VALUE2";
@@ -316,220 +282,158 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     final Object notPresentKey3 = "NOT_PRESENT_3";
     final Object notPresentKey4 = "NOT_PRESENT_4";
 
-    final int MSECS = 1000;
-
-    SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
-      @Override
-      public void run2() throws CacheException {
-        AttributesFactory factory = new AttributesFactory();
-        factory.setEarlyAck(false);
-        factory.setStatisticsEnabled(true);
-        createPartitionedRegion(name, factory.create());
-      }
-    };
-
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
+
+    SerializableRunnableIF create = () -> {
+      AttributesFactory factory = new AttributesFactory();
+      factory.setEarlyAck(false);
+      factory.setStatisticsEnabled(true);
+      createPartitionedRegion(name, factory.create());
+    };
 
     vm0.invoke(create);
     vm1.invoke(create);
 
-    vm0.invoke(new CacheSerializableRunnable("Define entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        region.put(key, value);
-        region.put(key1, value1);
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      region.put(key0, value);
+      region.put(key1, value1);
 
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastModifiedTime() > lastModified);
-        assertEquals(0, stats.getHitCount());
-        assertEquals(0, stats.getMissCount());
-      }
+      assertTrue(stats.getLastModifiedTime() > lastModified);
+      assertEquals(0, stats.getHitCount());
+      assertEquals(0, stats.getMissCount());
     });
 
-    waitForOp();
+    vm1.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      region.put(key2, value3);
+      region.put(key3, value3);
 
-    vm1.invoke(new CacheSerializableRunnable("Define entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        region.put(key2, value3);
-        region.put(key3, value3);
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastModifiedTime() > lastModified);
-        assertEquals(0, stats.getHitCount());
-        assertEquals(0, stats.getMissCount());
-
-      }
+      assertTrue(stats.getLastModifiedTime() > lastModified);
+      assertEquals(0, stats.getHitCount());
+      assertEquals(0, stats.getMissCount());
     });
 
-    vm0.invoke(new CacheSerializableRunnable("Net search") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastAccessed = stats.getLastAccessedTime();
-        lastModified = stats.getLastModifiedTime();
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastAccessed = stats.getLastAccessedTime();
+      lastModified = stats.getLastModifiedTime();
 
-        Object result = region.get(key);
-        region.get(key1);
-        region.get(key2);
-        region.get(key3);
-        region.get(notPresentKey1);
-        region.get(notPresentKey2);
-        region.get(notPresentKey3);
-        region.get(notPresentKey4);
+      Object result = region.get(key0);
+      region.get(key1);
+      region.get(key2);
+      region.get(key3);
+      region.get(notPresentKey1);
+      region.get(notPresentKey2);
+      region.get(notPresentKey3);
+      region.get(notPresentKey4);
 
-        assertEquals(value, result);
-        GeodeAwaitility.await().atMost(MSECS * 1000, TimeUnit.MILLISECONDS)
-            .until(() -> 2 == stats.getMissCount());
-        assertEquals(2, stats.getHitCount());
-        assertTrue(stats.getLastAccessedTime() > lastAccessed);
-      }
+      assertEquals(value, result);
+      assertEquals(2, stats.getMissCount());
+      assertEquals(2, stats.getHitCount());
+      assertTrue(stats.getLastAccessedTime() > lastAccessed);
     });
 
-    waitForOp();
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastAccessed = stats.getLastAccessedTime();
 
-    vm1.invoke(new CacheSerializableRunnable("Net search") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastAccessed = stats.getLastAccessedTime();
+      Object result = region.get(key0);
+      region.get(key1);
+      region.get(key2);
+      region.get(key3);
+      region.get(notPresentKey1);
+      region.get(notPresentKey2);
+      region.get(notPresentKey3);
+      region.get(notPresentKey4);
 
-        Object result = region.get(key);
-        region.get(key1);
-        region.get(key2);
-        region.get(key3);
-        region.get(notPresentKey1);
-        region.get(notPresentKey2);
-        region.get(notPresentKey3);
-        region.get(notPresentKey4);
-
-        assertEquals(value, result);
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> 4 == stats.getHitCount());
-        assertEquals(4, stats.getMissCount());
-        assertTrue(stats.getLastAccessedTime() > lastAccessed);
-      }
+      assertEquals(value, result);
+      assertEquals(4, stats.getHitCount());
+      assertEquals(4, stats.getMissCount());
+      assertTrue(stats.getLastAccessedTime() > lastAccessed);
     });
 
-    waitForOp();
-
-    vm0.invoke(new CacheSerializableRunnable("Update") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        long before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-
-        region.put(key, value);
-        region.put(key1, value1);
-        region.put(key2, value2);
-        region.put(key3, value3);
-        long after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> before <= stats.getLastModifiedTime()
-                && after >= stats.getLastModifiedTime());
-      }
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      long before = ((InternalRegion) region).cacheTimeMillis();
+      region.put(key0, value);
+      region.put(key1, value1);
+      region.put(key2, value2);
+      region.put(key3, value3);
+      long after = ((InternalRegion) region).cacheTimeMillis();
+      assertTrue(before <= stats.getLastModifiedTime());
+      assertTrue(after >= stats.getLastModifiedTime());
     });
 
-    waitForOp();
-
-    vm1.invoke(new CacheSerializableRunnable("Update") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastModified = stats.getLastModifiedTime();
-        long before = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-        region.put(key, value);
-        region.put(key1, value1);
-        region.put(key2, value2);
-        region.put(key3, value3);
-        long after = ((GemFireCacheImpl) getCache()).cacheTimeMillis();
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> before <= stats.getLastModifiedTime()
-                && after >= stats.getLastModifiedTime());
-      }
+    vm1.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastModified = stats.getLastModifiedTime();
+      long before = ((InternalRegion) region).cacheTimeMillis();
+      region.put(key0, value);
+      region.put(key1, value1);
+      region.put(key2, value2);
+      region.put(key3, value3);
+      long after = ((InternalRegion) region).cacheTimeMillis();
+      assertTrue(before <= stats.getLastModifiedTime());
+      assertTrue(after >= stats.getLastModifiedTime());
     });
 
-    vm0.invoke(new CacheSerializableRunnable("Invalidate") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastAccessed = stats.getLastAccessedTime();
-        lastModified = stats.getLastModifiedTime();
-        region.invalidate(key);
-        region.invalidate(key1);
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastAccessedTime() == lastAccessed);
-        assertEquals(lastModified, stats.getLastModifiedTime());
-        assertEquals(4, stats.getHitCount());
-        assertEquals(4, stats.getMissCount());
-      }
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastAccessed = stats.getLastAccessedTime();
+      lastModified = stats.getLastModifiedTime();
+      region.invalidate(key0);
+      region.invalidate(key1);
+      assertEquals(lastAccessed, stats.getLastAccessedTime());
+      assertEquals(lastModified, stats.getLastModifiedTime());
+      assertEquals(4, stats.getHitCount());
+      assertEquals(4, stats.getMissCount());
     });
 
-    waitForOp();
+    vm1.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastAccessed = stats.getLastAccessedTime();
+      lastModified = stats.getLastModifiedTime();
+      region.invalidate(key2);
+      region.invalidate(key3);
 
-    vm1.invoke(new CacheSerializableRunnable("Invalidate") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastAccessed = stats.getLastAccessedTime();
-        lastModified = stats.getLastModifiedTime();
-        region.invalidate(key2);
-        region.invalidate(key3);
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastAccessedTime() == lastAccessed);
-        assertEquals(lastModified, stats.getLastModifiedTime());
-        assertEquals(4, stats.getHitCount());
-        assertEquals(4, stats.getMissCount());
-      }
+      assertEquals(lastAccessed, stats.getLastAccessedTime());
+      assertEquals(lastModified, stats.getLastModifiedTime());
+      assertEquals(4, stats.getHitCount());
+      assertEquals(4, stats.getMissCount());
     });
 
-    vm0.invoke(new CacheSerializableRunnable("Destroy Entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastModified = stats.getLastModifiedTime();
-        region.destroy(key);
-        region.destroy(key1);
+    vm0.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastModified = stats.getLastModifiedTime();
+      region.destroy(key0);
+      region.destroy(key1);
 
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastModifiedTime() == lastModified);
-        assertEquals(4, stats.getHitCount());
-        assertEquals(4, stats.getMissCount());
-      }
+      assertEquals(lastModified, stats.getLastModifiedTime());
+      assertEquals(4, stats.getHitCount());
+      assertEquals(4, stats.getMissCount());
     });
 
-    waitForOp();
+    vm1.invoke(() -> {
+      Region region = getRootRegion(name);
+      CacheStatistics stats = region.getStatistics();
+      lastModified = stats.getLastModifiedTime();
+      region.destroy(key2);
+      region.destroy(key3);
 
-    vm1.invoke(new CacheSerializableRunnable("Destroy Entry") {
-      @Override
-      public void run2() throws CacheException {
-        Region region = getRootRegion(name);
-        CacheStatistics stats = region.getStatistics();
-        lastModified = stats.getLastModifiedTime();
-        region.destroy(key2);
-        region.destroy(key3);
-
-        GeodeAwaitility.await().atMost(MSECS, TimeUnit.MILLISECONDS)
-            .until(() -> stats.getLastModifiedTime() == lastModified);
-        assertEquals(4, stats.getHitCount());
-        assertEquals(4, stats.getMissCount());
-      }
+      assertEquals(lastModified, stats.getLastModifiedTime());
+      assertEquals(4, stats.getHitCount());
+      assertEquals(4, stats.getMissCount());
     });
 
   }
@@ -547,31 +451,14 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     AttributesFactory factory = new AttributesFactory();
     factory.setStatisticsEnabled(false);
     Region region = createPartitionedRegion(name, factory.create());
-    try {
-      region.getStatistics();
-      fail("Should have thrown a StatisticsDisabledException");
 
-    } catch (StatisticsDisabledException ex) {
-      // pass...
-    }
+    assertThatThrownBy(() -> region.getStatistics())
+        .isInstanceOf(StatisticsDisabledException.class);
 
     region.put(key, value);
     Region.Entry entry = region.getEntry(key);
 
-    try {
-      region.getStatistics();
-
-    } catch (StatisticsDisabledException ex) {
-      // pass...
-    }
+    assertThatThrownBy(() -> entry.getStatistics()).isInstanceOf(StatisticsDisabledException.class);
   }
 
-  private void waitForOp() {
-    long OPS_WAIT_MSECS = 100;
-    try {
-      Thread.sleep(OPS_WAIT_MSECS);
-    } catch (InterruptedException ex) {
-      fail("interrupted");
-    }
-  }
 }
