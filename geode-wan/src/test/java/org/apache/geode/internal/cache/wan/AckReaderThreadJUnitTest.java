@@ -56,6 +56,7 @@ public class AckReaderThreadJUnitTest {
 
   @Test
   public void testLogBatchExceptions() {
+
     // Create AckReaderThread
     GatewaySenderEventRemoteDispatcher.AckReaderThread thread =
         this.dispatcher.new AckReaderThread(this.sender, "AckReaderThread");
