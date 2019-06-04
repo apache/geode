@@ -396,8 +396,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDescribeDiskStoreCommand() throws Exception {
-    MemberVM server1 =
-        rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
@@ -424,8 +423,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
   @Test
   public void testDescribeMissingDiskStoreCommand() throws Exception {
-    MemberVM server1 =
-        rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
@@ -445,8 +443,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
   @Test
   public void testUpgradeOfflineDiskStoreCommandFailsAsExpected() throws Exception {
-    MemberVM server1 =
-        rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
@@ -482,8 +479,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
   @Test
   public void testAlterOfflineDiskStoreCommandFailsAsExpected() throws Exception {
-    MemberVM server1 =
-        rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
+    MemberVM server1 = rule.startServerVM(0, x -> x.withJMXManager().withProperty("groups", GROUP));
 
     gfsh.connectAndVerify(server1.getJmxPort(), GfshCommandRule.PortType.jmxManager);
 
