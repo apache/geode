@@ -23,6 +23,7 @@ import org.junit.Test;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheStatistics;
+import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.internal.cache.InternalRegion;
@@ -374,7 +375,6 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     vm1.invoke(() -> {
       Region region = getRootRegion(name);
       CacheStatistics stats = region.getStatistics();
-      lastModified = stats.getLastModifiedTime();
       long before = ((InternalRegion) region).cacheTimeMillis();
       region.put(key0, value);
       region.put(key1, value1);
@@ -461,4 +461,45 @@ public class CacheStatisticsPartitionedRegionDUnitTest extends JUnit4CacheTestCa
     assertThatThrownBy(() -> entry.getStatistics()).isInstanceOf(StatisticsDisabledException.class);
   }
 
+  /**
+   * Tests that the stats values for a Proxy PartitionedRegion are all 0.
+   */
+  @Test
+  public void testProxyRegionStats() throws CacheException {
+    String name = this.getUniqueName();
+    Object key = Integer.valueOf(0);
+    Object missingKey = Integer.valueOf(999);
+    Object value = "VALUE";
+
+    // Create the PARTITION_PROXY region
+    AttributesFactory proxyRegionAttrsFactory = new AttributesFactory();
+    proxyRegionAttrsFactory.setStatisticsEnabled(true);
+    PartitionAttributesFactory paf = new PartitionAttributesFactory();
+    // Setting LocalMaxMemory to 0 makes the region of PROXY type
+    paf.setLocalMaxMemory(0);
+    proxyRegionAttrsFactory.setPartitionAttributes(paf.create());
+    Region region = createPartitionedRegion(name, proxyRegionAttrsFactory.create());
+
+    // Create the region as not proxy on another server to be able to add entries.
+    VM vm0 = VM.getVM(0);
+    vm0.invoke(() -> {
+      AttributesFactory factory = new AttributesFactory();
+      factory.setStatisticsEnabled(true);
+      createPartitionedRegion(name, factory.create());
+    });
+
+    region.put(key, value);
+    region.get(key);
+    region.get(missingKey);
+
+    CacheStatistics stats = region.getStatistics();
+    assertEquals(0, stats.getLastModifiedTime());
+    assertEquals(0, stats.getLastAccessedTime());
+    assertEquals(0, stats.getHitCount());
+    assertEquals(0, stats.getMissCount());
+    assertEquals(0.0f, stats.getHitRatio(), 0.0f);
+
+    // Call reset counts to check that no exception is raised
+    stats.resetCounts();
+  }
 }

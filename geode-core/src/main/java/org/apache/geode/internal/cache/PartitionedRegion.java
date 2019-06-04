@@ -1850,36 +1850,49 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public long getLastModifiedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
     Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
     long lastModifiedTime =
         buckets.stream().map(x -> x.getLastModifiedTime()).reduce(0L, (a, b) -> a > b ? a : b);
-    this.setLastModifiedTime(lastModifiedTime);
     return lastModifiedTime;
   }
 
   @Override
   public long getLastAccessedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
     Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
     long lastAccessedTime =
         buckets.stream().map(x -> x.getLastAccessedTime()).reduce(0L, (a, b) -> a > b ? a : b);
-    this.setLastAccessedTime(lastAccessedTime, true);
     return lastAccessedTime;
   }
 
   @Override
   public long getMissCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
     Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
     return buckets.stream().map(x -> x.getMissCount()).reduce(0L, (a, b) -> a + b);
   }
 
   @Override
   public long getHitCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
     Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
     return buckets.stream().map(x -> x.getHitCount()).reduce(0L, (a, b) -> a + b);
   }
 
   @Override
   public void resetCounts() {
+    if (!this.canStoreDataLocally()) {
+      return;
+    }
     Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
     for (BucketRegion bucket : buckets) {
       bucket.resetCounts();

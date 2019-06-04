@@ -204,7 +204,8 @@ public interface Region<K, V> extends ConcurrentMap<K, V> {
   AttributesMutator<K, V> getAttributesMutator();
 
   /**
-   * Returns the <code>CacheStatistics</code> for this region.
+   * Returns the <code>CacheStatistics</code> for this region. If the region is a partitioned proxy
+   * region then the values for all the statistics will be 0.
    *
    * @return the <code>CacheStatistics</code> of this region
    * @throws StatisticsDisabledException if statistics have been disabled for this region
