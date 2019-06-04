@@ -14,13 +14,20 @@
  */
 package org.apache.geode.cache.configuration;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.geode.management.api.RestfulEndpoint;
-
-import javax.xml.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
  * <p>
@@ -265,6 +272,7 @@ public class GatewayReceiverConfig extends CacheElement implements RestfulEndpoi
   }
 
   public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
+
   @Override
   @XmlTransient
   @JsonIgnore

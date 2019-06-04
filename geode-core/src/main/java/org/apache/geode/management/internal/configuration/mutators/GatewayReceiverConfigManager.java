@@ -15,15 +15,15 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.internal.cache.InternalCache;
 
-import java.util.Collections;
-import java.util.List;
-
 public class GatewayReceiverConfigManager implements ConfigurationManager<GatewayReceiverConfig> {
-  final private InternalCache cache;
+  private final InternalCache cache;
 
   public GatewayReceiverConfigManager(InternalCache cache) {
     this.cache = cache;
@@ -46,9 +46,10 @@ public class GatewayReceiverConfigManager implements ConfigurationManager<Gatewa
   }
 
   @Override
-  public List<? extends GatewayReceiverConfig> list(GatewayReceiverConfig filterConfig, CacheConfig existing) {
+  public List<? extends GatewayReceiverConfig> list(GatewayReceiverConfig filterConfig,
+      CacheConfig existing) {
     GatewayReceiverConfig gatewayReceiver = existing.getGatewayReceiver();
-    if(gatewayReceiver == null) {
+    if (gatewayReceiver == null) {
       return Collections.emptyList();
     }
     return Collections.singletonList(gatewayReceiver);

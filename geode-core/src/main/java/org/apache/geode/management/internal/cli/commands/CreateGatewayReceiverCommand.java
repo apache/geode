@@ -110,8 +110,8 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
   }
 
   private GatewayReceiverConfig buildConfiguration(Boolean manualStart, Integer startPort,
-                                                   Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
-                                                   Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
+      Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
+      Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
     GatewayReceiverConfig configuration = new GatewayReceiverConfig();
 
     if (gatewayTransportFilters != null) {
