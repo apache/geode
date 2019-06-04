@@ -574,7 +574,7 @@ jobs:
             - name: geode
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
-          timeout: {{parameters.execute_test_timeout}}
+          timeout: {{parameters.EXECUTE_TEST_TIMEOUT}}
         ensure:
           do:
           - task: rsync_code_down-{{java_test_version.name}}

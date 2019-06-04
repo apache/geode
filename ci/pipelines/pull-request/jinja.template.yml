@@ -144,7 +144,7 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: {{build_test.execute_test_timeout}}
+      timeout: {{build_test.EXECUTE_TEST_TIMEOUT}}
     on_failure:
       do:
       - put: pull-request-job-failure
@@ -293,7 +293,7 @@ jobs:
         - name: geode
         - name: geode-ci
         - name: instance-data
-      timeout: {{test.execute_test_timeout}}
+      timeout: {{test.EXECUTE_TEST_TIMEOUT}}
     on_failure:
       do:
       - put: pull-request-job-failure
