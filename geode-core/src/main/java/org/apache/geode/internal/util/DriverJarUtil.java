@@ -108,32 +108,39 @@ public class DriverJarUtil {
       return this.jdbcDriver.getClass().getName();
     }
 
+    @Override
     public Connection connect(String url, java.util.Properties info)
         throws SQLException {
       return this.jdbcDriver.connect(url, info);
     }
 
+    @Override
     public boolean acceptsURL(String url) throws SQLException {
       return this.jdbcDriver.acceptsURL(url);
     }
 
+    @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info)
         throws SQLException {
       return this.jdbcDriver.getPropertyInfo(url, info);
     }
 
+    @Override
     public int getMajorVersion() {
       return this.jdbcDriver.getMajorVersion();
     }
 
+    @Override
     public int getMinorVersion() {
       return this.jdbcDriver.getMinorVersion();
     }
 
+    @Override
     public boolean jdbcCompliant() {
       return this.jdbcDriver.jdbcCompliant();
     }
 
+    @Override
     public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
       return this.jdbcDriver.getParentLogger();
     }
