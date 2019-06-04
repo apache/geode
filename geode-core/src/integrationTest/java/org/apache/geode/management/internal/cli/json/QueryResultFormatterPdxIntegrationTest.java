@@ -14,56 +14,46 @@
  */
 package org.apache.geode.management.internal.cli.json;
 
-import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
+import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 /**
  * Integration tests for {@link QueryResultFormatter}.
- * <p>
- *
- * TODO: add actual assertions
  */
 public class QueryResultFormatterPdxIntegrationTest {
-
   private static final String RESULT = "result";
-
-  private DistributedSystem system;
   private PdxInstanceFactory pdxInstanceFactory;
+
+  @Rule
+  public ServerStarterRule server = new ServerStarterRule().withAutoStart();
 
   @Before
   public void setUp() throws Exception {
-    Properties config = new Properties();
-    config.setProperty(LOCATORS, "");
-    config.setProperty(MCAST_PORT, "0");
-
-    system = DistributedSystem.connect(config);
-    Cache cache = new CacheFactory().create();
-    pdxInstanceFactory =
-        PdxInstanceFactoryImpl.newCreator("Portfolio", false, ((InternalCache) cache));
+    pdxInstanceFactory = PdxInstanceFactoryImpl.newCreator("Portfolio", false, (server.getCache()));
   }
 
-  @After
-  public void tearDown() throws Exception {
-    system.disconnect();
+  private void checkResult(QueryResultFormatter queryResultFormatter, String expectedJsonString)
+      throws IOException {
+    String jsonString = queryResultFormatter.toString();
+    System.out.println("queryResultFormatter.toString=" + jsonString);
+    assertThat(jsonString).isEqualTo(expectedJsonString);
+
+    JsonNode jsonObject = new ObjectMapper().readTree(jsonString);
+    System.out.println("jsonObject=" + jsonObject);
+    assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 
   @Test
@@ -76,8 +66,8 @@ public class QueryResultFormatterPdxIntegrationTest {
 
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, pdxInstance);
-
-    checkResult(queryResultFormatter);
+    checkResult(queryResultFormatter,
+        "{\"result\":[[\"org.apache.geode.pdx.PdxInstance\",{\"ID\":[\"java.lang.Integer\",111],\"status\":[\"java.lang.String\",\"active\"],\"secId\":[\"java.lang.String\",\"IBM\"],\"object\":[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest.SerializableObject\",{}]}]]}");
   }
 
   @Test
@@ -89,18 +79,11 @@ public class QueryResultFormatterPdxIntegrationTest {
 
     QueryResultFormatter queryResultFormatter =
         new QueryResultFormatter(100).add(RESULT, pdxContainer);
-
-    checkResult(queryResultFormatter);
-  }
-
-  private void checkResult(QueryResultFormatter queryResultFormatter) throws IOException {
-    JsonNode jsonObject = new ObjectMapper().readTree(queryResultFormatter.toString());
-    System.out.println(jsonObject.toString());
-    assertThat(jsonObject.get(RESULT)).isNotNull();
+    checkResult(queryResultFormatter,
+        "{\"result\":[[\"org.apache.geode.management.internal.cli.json.QueryResultFormatterPdxIntegrationTest.PdxContainer\",{}]]}");
   }
 
   private static class SerializableObject implements Serializable {
-
     private final int id;
 
     SerializableObject(final int id) {
@@ -109,7 +92,6 @@ public class QueryResultFormatterPdxIntegrationTest {
   }
 
   private static class PdxContainer {
-
     private final PdxInstance pdxInstance;
     private final int count;
 
