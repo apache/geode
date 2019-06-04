@@ -14,11 +14,13 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.apache.http.annotation.Experimental;
 import org.springframework.shell.core.annotation.CliCommand;
+import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -38,41 +40,58 @@ public class ListDriversCommand extends SingleGfshCommand {
       + "Lists all drivers currently registered by the cluster's Driver Manager.";
   static final String LIST_OF_DRIVERS = "List of registered JDBC drivers";
   static final String NO_MEMBERS_FOUND = "No members found";
+  static final String MEMBER_NAME_NOT_FOUND = "No member found with name: ";
   static final String LIST_DRIVERS_SECTION = "LIST_DRIVERS";
+  static final String MEMBER_NAME = "member-name";
+  static final String MEMBER_NAME__HELP = "Name of specific member to list drivers for.";
+
 
   @CliCommand(value = LIST_DRIVERS, help = LIST_DRIVERS__HELP)
   @CliMetaData(relatedTopic = CliStrings.DEFAULT_TOPIC_GEODE)
   @ResourceOperation(resource = ResourcePermission.Resource.CLUSTER,
       operation = ResourcePermission.Operation.MANAGE)
 
-  public ResultModel listDrivers() {
+  public ResultModel listDrivers(
+      @CliOption(key = MEMBER_NAME, help = MEMBER_NAME__HELP) String memberName) {
     ResultModel resultModel = new ResultModel();
-    return createTabularResultDataAndGetResult(resultModel);
+    return createTabularResultDataAndGetResult(resultModel, memberName);
   }
 
-  private ResultModel createTabularResultDataAndGetResult(ResultModel resultModel) {
+  private ResultModel createTabularResultDataAndGetResult(ResultModel resultModel,
+      String memberName) {
     TabularResultModel tableModel = resultModel.addTable(LIST_DRIVERS_SECTION);
-    List<String> drivers;
+    List<String> drivers = new ArrayList<>();
 
     Set<DistributedMember> targetMembers = findMembers(null, null);
     if (targetMembers.size() > 0) {
       Object[] arguments = new Object[] {};
-      CliFunctionResult listDriversResult = executeAndGetFunctionResult(
-          new ListDriversFunction(), arguments, targetMembers).get(0);
+      List<CliFunctionResult> listDriversResults = executeAndGetFunctionResult(
+          new ListDriversFunction(), arguments, targetMembers);
 
-      if (listDriversResult.isSuccessful()) {
-        drivers = getListOfDrivers(listDriversResult);
-      } else {
-        return ResultModel
-            .createError("Error when listing drivers: " + listDriversResult.getStatusMessage());
+      if (memberName == null) {
+        return ResultModel.createMemberStatusResult(listDriversResults, EXPERIMENTAL, null,
+            false, true);
       }
 
+      for (CliFunctionResult result : listDriversResults) {
+        if (memberName.equals(result.getMemberIdOrName())) {
+          if (result.isSuccessful()) {
+            drivers = getListOfDrivers(result);
+          } else {
+            return ResultModel
+                .createError("Error when listing drivers: " + result.getStatusMessage());
+          }
+        }
+      }
+      if (drivers.isEmpty()) {
+        return ResultModel.createError(EXPERIMENTAL + "\n" + MEMBER_NAME_NOT_FOUND + memberName);
+      }
     } else {
       return ResultModel.createInfo(EXPERIMENTAL + "\n" + NO_MEMBERS_FOUND);
     }
 
     for (String driver : drivers) {
-      tableModel.accumulate(LIST_OF_DRIVERS, driver);
+      tableModel.accumulate("Driver names for: " + memberName, driver);
     }
     return resultModel;
   }

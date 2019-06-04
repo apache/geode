@@ -59,6 +59,9 @@ public class ListDriversFunctionTest {
     when(util.getRegisteredDriverNames()).thenReturn(driverNames);
     CliFunctionResult functionResult = function.executeFunction(context);
     assertThat(functionResult.getResultObject().equals(driverNames));
+    assertThat(functionResult.getStatusMessage())
+        .isEqualTo("{Driver.Class.One, Driver.Class.Two, Driver.Class.Three}");
+    assertThat(functionResult.isSuccessful()).isTrue();
   }
 
   @Test

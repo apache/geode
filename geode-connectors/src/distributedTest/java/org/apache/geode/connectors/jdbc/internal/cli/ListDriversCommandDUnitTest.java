@@ -50,9 +50,9 @@ public class ListDriversCommandDUnitTest {
   }
 
   @Test
-  public void testListDriversDoesNotThrowException() {
+  public void testListDriversWithoutMemberNameDoesNotThrowException() {
 
-    // aquire the jar to be used
+    // acquire the jar to be used
     final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
     final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
     File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
@@ -64,8 +64,27 @@ public class ListDriversCommandDUnitTest {
     gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
         .statusIsSuccess();
 
-    gfsh.executeAndAssertThat("list drivers").statusIsSuccess().containsOutput(jdbcDriverClassName);
+    gfsh.executeAndAssertThat("list drivers").statusIsSuccess().containsOutput(jdbcDriverClassName)
+        .containsOutput(server1.getName()).containsOutput(server2.getName());
 
+  }
+
+  @Test
+  public void testLIstDriversWithMemberNameDoesNotThrowException() {
+    // acquire the jar to be used
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+
+    gfsh.executeAndAssertThat("register driver --driver-class=" + jdbcDriverClassName)
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("list drivers --member-name=" + server1.getName()).statusIsSuccess()
+        .containsOutput(jdbcDriverClassName);
   }
 
   private File loadTestResource(String fileName) {

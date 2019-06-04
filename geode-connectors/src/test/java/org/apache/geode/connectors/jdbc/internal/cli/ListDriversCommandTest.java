@@ -51,16 +51,17 @@ public class ListDriversCommandTest {
   }
 
   @Test
-  public void testDeregisterDriverDoesNotThrowException() {
+  public void testListDriverDoesNotThrowException() {
     when(memberSet.size()).thenReturn(1);
     List<String> driverNames = new ArrayList<>();
     driverNames.add("Driver.Class.One");
     driverNames.add("Driver.Class.Two");
     driverNames.add("Driver.Class.Three");
-    result = new CliFunctionResult("Server 1", driverNames);
+    result = new CliFunctionResult("Server 1", driverNames,
+        "{Driver.Class.One, Driver.Class.Two, Driver.Class.Three}");
     resultList.add(result);
 
-    ResultModel resultModel = command.listDrivers();
+    ResultModel resultModel = command.listDrivers(null);
 
     assertThat(resultModel.toString()).contains("Driver.Class.One").contains("Driver.Class.Two")
         .contains("Driver.Class.Three");
@@ -69,25 +70,63 @@ public class ListDriversCommandTest {
   }
 
   @Test
-  public void testDeregisterDriverReturnsErrorWhenNoMembers() {
+  public void testListDriverWithMemberNameDoesNotThrowException() {
+    when(memberSet.size()).thenReturn(1);
+    List<String> driverNames = new ArrayList<>();
+    driverNames.add("Driver.Class.One");
+    driverNames.add("Driver.Class.Two");
+    driverNames.add("Driver.Class.Three");
+    result = new CliFunctionResult("Server 1", driverNames,
+        "{Driver.Class.One, Driver.Class.Two, Driver.Class.Three}");
+    resultList.add(result);
+
+    ResultModel resultModel = command.listDrivers("Server 1");
+
+    assertThat(resultModel.toString()).contains("Driver.Class.One").contains("Driver.Class.Two")
+        .contains("Driver.Class.Three").contains("Server 1");
+
+    resultList.clear();
+  }
+
+  @Test
+  public void testListDriverReturnsErrorWhenNoMembers() {
     when(memberSet.size()).thenReturn(0);
-    ResultModel resultModel = command.listDrivers();
+    ResultModel resultModel = command.listDrivers(null);
 
     assertThat(resultModel.toString()).contains(NO_MEMBERS_FOUND);
   }
 
   @Test
-  public void testDeregisterDriverReturnsWhenFunctionFailsToExecute() {
+  public void testListDriverReturnsWhenFunctionFailsToExecute() {
     when(memberSet.size()).thenReturn(1);
     String errorMessage = "Error message";
 
-    result = new CliFunctionResult("Server1", CliFunctionResult.StatusState.ERROR,
+    result = new CliFunctionResult("Server 1", CliFunctionResult.StatusState.ERROR,
         errorMessage);
     resultList.add(result);
 
-    ResultModel resultModel = command.listDrivers();
+    ResultModel resultModel = command.listDrivers(null);
 
     assertThat(resultModel.toString()).contains(errorMessage);
     assertThat(resultModel.getStatus()).isEqualTo(Result.Status.ERROR);
+  }
+
+  @Test
+  public void testListDriverWithInvalidMemberNameReportsError() {
+    String badMemberName = "Bad Member Name";
+    when(memberSet.size()).thenReturn(1);
+    List<String> driverNames = new ArrayList<>();
+    driverNames.add("Driver.Class.One");
+    driverNames.add("Driver.Class.Two");
+    driverNames.add("Driver.Class.Three");
+    result = new CliFunctionResult("Server 1", driverNames,
+        "{Driver.Class.One, Driver.Class.Two, Driver.Class.Three}");
+    resultList.add(result);
+
+    ResultModel resultModel = command.listDrivers(badMemberName);
+
+    assertThat(resultModel.toString()).contains("No member found with name: " + badMemberName);
+
+    resultList.clear();
   }
 }

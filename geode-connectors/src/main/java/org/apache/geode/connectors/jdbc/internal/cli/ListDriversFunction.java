@@ -39,7 +39,8 @@ public class ListDriversFunction extends CliFunction<Object[]> {
     try {
       List<String> driverNames;
       driverNames = (getDriverJarUtil()).getRegisteredDriverNames();
-      return new CliFunctionResult(context.getMemberName(), driverNames);
+      return new CliFunctionResult(context.getMemberName(), driverNames,
+          createMessageFromDriversList(driverNames));
     } catch (Exception ex) {
       return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.ERROR,
           ex.getMessage());
@@ -48,5 +49,22 @@ public class ListDriversFunction extends CliFunction<Object[]> {
 
   DriverJarUtil getDriverJarUtil() {
     return new DriverJarUtil();
+  }
+
+  String createMessageFromDriversList(List<String> driverNames) {
+    String message;
+    if (driverNames.isEmpty()) {
+      message = "No drivers found.";
+    } else {
+      message = "{" + driverNames.get(0);
+
+      for (int i = 1; i < driverNames.size(); i++) {
+        message += ", ";
+        message += driverNames.get(i);
+      }
+
+      message += "}";
+    }
+    return message;
   }
 }
