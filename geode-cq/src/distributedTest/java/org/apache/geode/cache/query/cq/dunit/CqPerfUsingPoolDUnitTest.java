@@ -950,7 +950,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
   }
 
   public String[] generateCqQueries(boolean uniqueQueries) {
-    ArrayList initQueries = new ArrayList();
+    ArrayList<String> initQueries = new ArrayList<>();
     // From Portfolio object.
     String[] names = {"aaa", "bbb", "ccc", "ddd"};
     int nameIndex = 0;
@@ -968,7 +968,7 @@ public class CqPerfUsingPoolDUnitTest extends JUnit4CacheTestCase {
     }
 
     int numMatchedQueries = 10;
-    ArrayList cqQueries = new ArrayList();
+    ArrayList<String> cqQueries = new ArrayList<>();
     Iterator iter = initQueries.iterator();
     while (iter.hasNext()) {
       String query = (String) iter.next();

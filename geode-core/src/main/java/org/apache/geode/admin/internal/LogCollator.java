@@ -32,7 +32,7 @@ import org.apache.geode.internal.logging.MergeLogFiles;
 public class LogCollator {
 
   private GfManagerAgent system;
-  private List logTails;
+  private List<Loglet> logTails;
 
   public LogCollator() {}
 
@@ -42,7 +42,7 @@ public class LogCollator {
         return "";
       }
       this.system = system;
-      this.logTails = new ArrayList();
+      this.logTails = new ArrayList<>();
       gatherActiveLogs();
       gatherInactiveLogs();
       return mergeLogs();
@@ -58,7 +58,7 @@ public class LogCollator {
     // combine logs...
     Map<String, InputStream> logFiles = new HashMap<>();
     for (int i = 0; i < this.logTails.size(); i++) {
-      Loglet loglet = (Loglet) this.logTails.get(i);
+      Loglet loglet = this.logTails.get(i);
       logFiles.put(loglet.name, new ByteArrayInputStream(loglet.tail.getBytes()));
     }
 

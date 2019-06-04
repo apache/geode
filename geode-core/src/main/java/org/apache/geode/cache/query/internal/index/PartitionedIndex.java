@@ -159,7 +159,7 @@ public class PartitionedIndex extends AbstractIndex {
    */
   public List getBucketIndexes() {
     synchronized (this.bucketIndexes) {
-      List indexes = new ArrayList();
+      List<Index> indexes = new ArrayList<>();
       for (List<Index> indexList : bucketIndexes.values()) {
         indexes.addAll(indexList);
       }
