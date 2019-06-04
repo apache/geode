@@ -153,8 +153,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     createDiskStore(locator, 1, GROUP);
 
     props.setProperty("groups", GROUP2);
-    rule.startServerVM(2, props, locator.getPort());
 
+    rule.startServerVM(2, props, locator.getPort());
     createDiskStore(locator, 1, GROUP2);
   }
 
