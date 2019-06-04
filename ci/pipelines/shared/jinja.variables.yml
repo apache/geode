@@ -59,8 +59,8 @@ java_test_versions:
 benchmarks:
   # set one or the other but not both
   branch: "develop"
-  baseline_branch: ""
-  baseline_version: "1.9.0"
+  baseline_branch: "develop/highwater"
+  baseline_version: ""
 
 java_build_version:
   name: OpenJDK8
