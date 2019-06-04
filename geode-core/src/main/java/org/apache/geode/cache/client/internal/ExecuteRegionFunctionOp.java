@@ -145,7 +145,7 @@ public class ExecuteRegionFunctionOp {
     AbstractOp reexecOp = null;
 
     int maxRetryAttempts = mRetryAttempts;
-    if (isHA) {
+    if (!isHA) {
       maxRetryAttempts = 0;
     }
 

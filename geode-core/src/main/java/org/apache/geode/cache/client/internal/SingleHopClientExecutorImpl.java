@@ -50,14 +50,19 @@ public class SingleHopClientExecutorImpl implements SingleHopClientExecutor {
 
   private static final Logger logger = LogService.getLogger();
 
-  final ExecutorService execService =
-      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true);
+  final ExecutorService execService;
 
   @MakeNotStatic
-  static final SingleHopClientExecutor instance = new SingleHopClientExecutorImpl();
+  static SingleHopClientExecutor instance = new SingleHopClientExecutorImpl(
+      LoggingExecutors.newCachedThreadPool("Function Execution Thread-", true));
 
-  static SingleHopClientExecutor getInstance() {
+  static synchronized SingleHopClientExecutor getInstance() {
     return instance;
+  }
+
+  // for testing only!
+  SingleHopClientExecutorImpl(final ExecutorService execService) {
+    this.execService = execService;
   }
 
   @Override
