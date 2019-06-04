@@ -19,11 +19,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.client.PoolFactory;
-import org.apache.geode.cache.client.PoolManager;
-import org.apache.geode.test.dunit.DistributedTestUtils;
-import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
 /**
@@ -34,8 +29,10 @@ import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 @Category({ClientSubscriptionTest.class})
 public class DurableClientReconnectAutoDUnitTest extends DurableClientReconnectDUnitTest {
 
+  private static final long serialVersionUID = 7635473106337161119L;
+
   @BeforeClass
-  public static void caseSetUp() throws Exception {
+  public static void caseSetUp() {
     disconnectAllFromDS();
   }
 
@@ -49,15 +46,7 @@ public class DurableClientReconnectAutoDUnitTest extends DurableClientReconnectD
   @Ignore("do nothing, this test doesn't make sense with the locator")
   @Override
   @Test
-  public void testDurableReconnectSingleServer() throws Exception {
+  public void testDurableReconnectSingleServer() {
     // do nothing, this test doesn't make sense with the locator
   }
-
-  protected PoolFactory getPoolFactory() {
-    Host host = Host.getHost(0);
-    PoolFactory factory = PoolManager.createFactory().addLocator(
-        NetworkUtils.getServerHostName(host), DistributedTestUtils.getDUnitLocatorPort());
-    return factory;
-  }
-
 }
