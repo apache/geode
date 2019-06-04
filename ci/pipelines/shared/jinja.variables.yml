@@ -77,7 +77,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 10m
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "true"
-  PLATFORM: "linux"
 - name: "Acceptance"
   CPUS: "8"
   RAM: "12"
@@ -88,7 +87,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 45m
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "linux"
 - name: "Distributed"
   CPUS: "96"
   RAM: "180"
@@ -98,7 +96,6 @@ tests:
   GRADLE_TASK: distributedTest
   EXECUTE_TEST_TIMEOUT: 2h15m
   PARALLEL_DUNIT: "true"
-  PLATFORM: "linux"
 - name: "Integration"
   CPUS: "96"
   RAM: "90"
@@ -108,7 +105,6 @@ tests:
   GRADLE_TASK: integrationTest
   EXECUTE_TEST_TIMEOUT: 40m
   PARALLEL_DUNIT: "true"
-  PLATFORM: "linux"
 - name: "Upgrade"
   CPUS: "96"
   RAM: "160"
@@ -118,7 +114,6 @@ tests:
   GRADLE_TASK: upgradeTest
   EXECUTE_TEST_TIMEOUT: 1h
   PARALLEL_DUNIT: "true"
-  PLATFORM: "linux"
 - name: "StressNew"
   CPUS: "96"
   RAM: "210"
@@ -129,7 +124,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 2h15m
   PARALLEL_DUNIT: "true"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "linux"
 - name: "WindowsAcceptance"
   CPUS: "16"
   RAM: "64"
@@ -139,7 +133,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "windows"
 - name: "WindowsGfshDistributed"
   CPUS: "16"
   RAM: "64"
@@ -150,7 +143,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "windows"
 - name: "WindowsIntegration"
   CPUS: "16"
   RAM: "64"
@@ -161,7 +153,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "windows"
 - name: "WindowsCoreIntegration"
   CPUS: "16"
   RAM: "64"
@@ -171,7 +162,6 @@ tests:
   EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
-  PLATFORM: "windows"
 - name: "WindowsUnit"
   CPUS: "16"
   RAM: "64"
@@ -180,4 +170,3 @@ tests:
   GRADLE_TASK: test
   EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
-  PLATFORM: "windows"
