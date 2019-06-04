@@ -23,6 +23,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -61,7 +62,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 public class ExecuteRegionFunctionSingleHopOpTest {
 
   private SingleHopClientExecutor singleHopClientExecutor;
-  private Map<ServerLocation, ? extends HashSet> serverToFilterMap;
+  private Map<ServerLocation, HashSet<Integer>> serverToFilterMap;
   private ExecuteFunctionTestSupport testSupport;
   private ExecutorService executorService;
 
@@ -110,7 +111,9 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
     singleHopClientExecutor = new SingleHopClientExecutorImpl(executorService);
 
-    serverToFilterMap = (Map<ServerLocation, ? extends HashSet>) mock(Map.class);
+    serverToFilterMap = new HashMap<>();
+    serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
+    serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
   }
 
   @Test
