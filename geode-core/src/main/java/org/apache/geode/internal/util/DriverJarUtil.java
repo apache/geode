@@ -95,7 +95,14 @@ public class DriverJarUtil {
     DriverManager.deregisterDriver(driver);
   }
 
-  // DriverManager only uses a driver loaded by system ClassLoader
+  /**
+   * <p>
+   * Driver Wrapper encapsulates a driver class with a wrapper which is loaded by the system class
+   * loader. Since driver classes may be added to the clusters class path after startup and may not
+   * be available in the system class loader
+   * we use this wrapper to allow the DriverManager to load these drivers.
+   * </p>
+   */
   class DriverWrapper implements Driver {
 
     private Driver jdbcDriver;
