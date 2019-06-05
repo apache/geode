@@ -34,11 +34,16 @@ public class PdxManager implements ConfigurationManager<PdxType> {
 
   @Override
   public void delete(PdxType config, CacheConfig existing) {
-
+    existing.setPdx(null);
   }
 
   @Override
   public List<PdxType> list(PdxType filterConfig, CacheConfig existing) {
     return Collections.singletonList(existing.getPdx());
+  }
+
+  @Override
+  public PdxType get(String id, CacheConfig existing) {
+    return existing.getPdx();
   }
 }

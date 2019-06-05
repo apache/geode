@@ -38,4 +38,6 @@ public interface ConfigurationManager<T extends CacheElement> {
   void delete(T config, CacheConfig existing);
 
   List<? extends T> list(T filterConfig, CacheConfig existing);
+
+  T get(String id, CacheConfig existing);
 }

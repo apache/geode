@@ -32,17 +32,17 @@ public class GatewayReceiverConfigManager implements ConfigurationManager<Gatewa
 
   @Override
   public void add(GatewayReceiverConfig config, CacheConfig existing) {
-
+    existing.setGatewayReceiver(config);
   }
 
   @Override
   public void update(GatewayReceiverConfig config, CacheConfig existing) {
-
+    existing.setGatewayReceiver(config);
   }
 
   @Override
   public void delete(GatewayReceiverConfig config, CacheConfig existing) {
-
+    existing.setGatewayReceiver(null);
   }
 
   @Override
@@ -53,5 +53,10 @@ public class GatewayReceiverConfigManager implements ConfigurationManager<Gatewa
       return Collections.emptyList();
     }
     return Collections.singletonList(gatewayReceiver);
+  }
+
+  @Override
+  public GatewayReceiverConfig get(String id, CacheConfig existing) {
+    return existing.getGatewayReceiver();
   }
 }
