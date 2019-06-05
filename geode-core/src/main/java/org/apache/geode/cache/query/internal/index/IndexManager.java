@@ -1475,12 +1475,12 @@ public class IndexManager {
             break;
           }
           try {
+            Object[] task = (Object[]) pendingTasks.take();
+            if (this.shutdownRequested) {
+              break;
+            }
+            updateIndexes(task);
             synchronized (this.pendingTasks) {
-              Object[] task = (Object[]) pendingTasks.take();
-              if (this.shutdownRequested) {
-                break;
-              }
-              updateIndexes(task);
               if (this.pendingTasks.isEmpty()) {
                 updateIndexMaintenanceStatus(false);
               }
