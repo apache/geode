@@ -21,6 +21,10 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 import org.apache.geode.internal.ClassPathLoader;
 
@@ -35,6 +39,35 @@ public class DriverJarUtil {
     registerDriverWithDriverManager(d);
   }
 
+  public void deregisterDriver(String driverClassName) throws SQLException {
+    Enumeration<Driver> driverEnumeration = getDrivers();
+    Driver driver;
+    while (driverEnumeration.hasMoreElements()) {
+      driver = driverEnumeration.nextElement();
+      if (compareDriverClassName(driver, driverClassName)) {
+        deregisterDriverWithDriverManager(driver);
+      }
+    }
+  }
+
+  public List<Driver> getRegisteredDrivers() {
+    Enumeration<Driver> drivers = DriverManager.getDrivers();
+    return Collections.list(drivers);
+  }
+
+  public List<String> getRegisteredDriverNames() {
+    List<String> listOfDriverNames = new ArrayList<>();
+    for (Driver driver : getRegisteredDrivers()) {
+      if (driver instanceof DriverWrapper) {
+        listOfDriverNames.add(((DriverWrapper) driver).getWrappedDriverName());
+      } else {
+        listOfDriverNames.add(driver.getClass().getName());
+      }
+    }
+    return listOfDriverNames;
+
+  }
+
   // The methods below are included to facilitate testing and to make the helper methods in this
   // class cleaner
   Driver getDriverInstanceByClassName(String driverClassName)
@@ -42,11 +75,34 @@ public class DriverJarUtil {
     return (Driver) ClassPathLoader.getLatest().forName(driverClassName).newInstance();
   }
 
+  Enumeration<Driver> getDrivers() {
+    return DriverManager.getDrivers();
+  }
+
+  boolean compareDriverClassName(Driver driver, String driverClassName) {
+    if (driver instanceof DriverWrapper) {
+      return ((DriverWrapper) driver).getWrappedDriverName().equals(driverClassName);
+    } else {
+      return driver.getClass().getName().equals(driverClassName);
+    }
+  }
+
   void registerDriverWithDriverManager(Driver driver) throws SQLException {
     DriverManager.registerDriver(driver);
   }
 
-  // DriverManager only uses a driver loaded by system ClassLoader
+  void deregisterDriverWithDriverManager(Driver driver) throws SQLException {
+    DriverManager.deregisterDriver(driver);
+  }
+
+  /**
+   * <p>
+   * Driver Wrapper encapsulates a driver class with a wrapper which is loaded by the system class
+   * loader. Since driver classes may be added to the clusters class path after startup and may not
+   * be available in the system class loader
+   * we use this wrapper to allow the DriverManager to load these drivers.
+   * </p>
+   */
   class DriverWrapper implements Driver {
 
     private Driver jdbcDriver;
@@ -55,32 +111,43 @@ public class DriverJarUtil {
       this.jdbcDriver = jdbcDriver;
     }
 
+    public String getWrappedDriverName() {
+      return this.jdbcDriver.getClass().getName();
+    }
+
+    @Override
     public Connection connect(String url, java.util.Properties info)
         throws SQLException {
       return this.jdbcDriver.connect(url, info);
     }
 
+    @Override
     public boolean acceptsURL(String url) throws SQLException {
       return this.jdbcDriver.acceptsURL(url);
     }
 
+    @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, java.util.Properties info)
         throws SQLException {
       return this.jdbcDriver.getPropertyInfo(url, info);
     }
 
+    @Override
     public int getMajorVersion() {
       return this.jdbcDriver.getMajorVersion();
     }
 
+    @Override
     public int getMinorVersion() {
       return this.jdbcDriver.getMinorVersion();
     }
 
+    @Override
     public boolean jdbcCompliant() {
       return this.jdbcDriver.jdbcCompliant();
     }
 
+    @Override
     public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
       return this.jdbcDriver.getParentLogger();
     }

@@ -20,9 +20,11 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.Enumeration;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,4 +49,19 @@ public class DriverJarUtilTest {
     util.registerDriver(driverName);
     verify(util).registerDriverWithDriverManager(any());
   }
+
+  @Test
+  public void deregisterDriverSucceedsWithClassName() throws SQLException {
+    String driverName = "driver-name";
+    Enumeration<Driver> drivers = mock(Enumeration.class);
+    doReturn(drivers).when(util).getDrivers();
+    Driver driver = mock(Driver.class);
+    when(drivers.hasMoreElements()).thenReturn(true).thenReturn(false);
+    when(drivers.nextElement()).thenReturn(driver);
+    doReturn(true).when(util).compareDriverClassName(driver, driverName);
+
+    util.deregisterDriver(driverName);
+    verify(util).deregisterDriverWithDriverManager(any());
+  }
+
 }
