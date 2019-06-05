@@ -40,7 +40,7 @@ public class DeregisterDriverCommand extends SingleGfshCommand {
 
   static final String DEREGISTER_DRIVER = "deregister driver";
   static final String DEREGISTER_DRIVER__HELP = EXPERIMENTAL
-      + "Deregister a driver with the cluster's Driver Manager using either the name of a currently deployed jar or the name of a driver class contained within a currenly deployed jar.";
+      + "Deregister a driver with the cluster's Driver Manager using the name of a driver class contained within a currenly deployed jar.";
   static final String DRIVER_CLASS_NAME = "driver-class";
   static final String DRIVER_CLASS_NAME_HELP =
       "The name of the driver class contained in a currently deployed jar to be deregistered with the cluster's Driver Manager.";
