@@ -37,7 +37,7 @@ public class RegisterDriverCommand extends SingleGfshCommand {
 
   static final String REGISTER_DRIVER = "register driver";
   static final String REGISTER_DRIVER__HELP = EXPERIMENTAL
-      + "Register a driver with the cluster's Driver Manager using either the name of a currently deployed jar or the name of a driver class contained within a currenly deployed jar.";
+      + "Register a driver with the cluster's Driver Manager using the name of a driver class contained within a currenly deployed jar.";
   static final String DRIVER_CLASS_NAME = "driver-class";
   static final String DRIVER_CLASS_NAME_HELP =
       "The name of the driver class contained in a currently deployed jar to be registered with the cluster's Driver Manager.";
