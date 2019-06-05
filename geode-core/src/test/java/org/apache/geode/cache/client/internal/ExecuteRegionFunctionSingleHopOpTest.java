@@ -80,16 +80,20 @@ public class ExecuteRegionFunctionSingleHopOpTest {
         when(future.get()).thenReturn(1);
         break;
       case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when(future.get()).thenThrow(new ExecutionException(new ServerConnectivityException("testing")));
+        when(future.get())
+            .thenThrow(new ExecutionException(new ServerConnectivityException("testing")));
         break;
       case THROW_SERVER_OPERATION_EXCEPTION:
-        when(future.get()).thenThrow(new ExecutionException(new ServerOperationException("testing")));
+        when(future.get())
+            .thenThrow(new ExecutionException(new ServerOperationException("testing")));
         break;
       case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when(future.get()).thenThrow(new ExecutionException(new NoAvailableServersException("testing")));
+        when(future.get())
+            .thenThrow(new ExecutionException(new NoAvailableServersException("testing")));
         break;
       case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-        when(future.get()).thenThrow(new ExecutionException(new InternalFunctionInvocationTargetException("testing")));
+        when(future.get()).thenThrow(
+            new ExecutionException(new InternalFunctionInvocationTargetException("testing")));
         break;
       default:
         throw new AssertionError("unknown FailureMode type: " + failureMode);
@@ -159,18 +163,18 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
   @Test
   @Parameters({
-//       "NOT_HA, OBJECT_REFERENCE, -1, 1",
-//       "NOT_HA, OBJECT_REFERENCE, 0, 1",
-//       "NOT_HA, OBJECT_REFERENCE, 3, 1",
-//       "NOT_HA, STRING, -1, 1",
-//       "NOT_HA, STRING, 0, 1",
-//       "NOT_HA, STRING, 3, 1",
-//       "HA, OBJECT_REFERENCE, -1, 2",
-//       "HA, OBJECT_REFERENCE, 0, 1",
-//       "HA, OBJECT_REFERENCE, 3, 4", // 3 pool.execute()
-       "HA, STRING, -1, 2",
-//       "HA, STRING, 0, 1",
-//       "HA, STRING, 3, 4", // 3 pool.execute()
+      // "NOT_HA, OBJECT_REFERENCE, -1, 1",
+      // "NOT_HA, OBJECT_REFERENCE, 0, 1",
+      // "NOT_HA, OBJECT_REFERENCE, 3, 1",
+      // "NOT_HA, STRING, -1, 1",
+      // "NOT_HA, STRING, 0, 1",
+      // "NOT_HA, STRING, 3, 1",
+      // "HA, OBJECT_REFERENCE, -1, 2",
+      // "HA, OBJECT_REFERENCE, 0, 1",
+      // "HA, OBJECT_REFERENCE, 3, 4", // 3 pool.execute()
+      "HA, STRING, -1, 2",
+      // "HA, STRING, 0, 1",
+      // "HA, STRING, 3, 4", // 3 pool.execute()
   })
   public void executeWithServerConnectivityException(
       final HAStatus haStatus,

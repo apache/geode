@@ -111,6 +111,7 @@ class ExecuteFunctionTestSupport {
 
     function = (Function<Integer>) mock(Function.class);
     when(function.isHA()).thenReturn(toBoolean(haStatus));
+    when(function.hasResult()).thenReturn(true);
 
     executor = mock(ServerRegionFunctionExecutor.class);
     when(executor.withFilter(ArgumentMatchers.<Set<Integer>>any())).thenReturn(executor);

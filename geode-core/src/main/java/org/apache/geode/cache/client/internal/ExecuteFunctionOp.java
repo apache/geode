@@ -156,7 +156,7 @@ public class ExecuteFunctionOp {
       boolean reexecute = false;
 
       int maxRetryAttempts = pool.getRetryAttempts();
-      if (isHA) {
+      if (!isHA) {
         maxRetryAttempts = 0;
       }
 
