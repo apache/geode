@@ -212,11 +212,15 @@ public class ScheduledThreadPoolExecutorWithKeepAliveJUnitTest {
     ex.schedule(new Runnable() {
       @Override
       public void run() {
-        // The testShutdown2 will test only with sleep, no deley
-        // let testShutdown to test only with delay
-        System.out.println("Finished scheduled task");
+        try {
+          // change to sleep 3 seconds, the same as testShutdown2, to avoid not enough SLOP time
+          Thread.sleep(3000);
+          System.out.println("Finished scheduled task");
+        } catch (InterruptedException e) {
+          fail("interrupted");
+        }
       }
-    }, 4, TimeUnit.SECONDS);
+    }, 2, TimeUnit.SECONDS);
     long start = System.nanoTime();
     ex.shutdown();
     assertTrue(ex.awaitTermination(10, TimeUnit.SECONDS));
