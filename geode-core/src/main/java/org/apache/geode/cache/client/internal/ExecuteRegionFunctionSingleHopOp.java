@@ -131,7 +131,7 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (retryAttempts > 0) {
       resultCollector.clearResults();
       ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
           isHA, optimizeForWrite);
     }
 

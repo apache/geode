@@ -19,6 +19,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import org.mockito.ArgumentMatchers;
 
@@ -112,6 +113,7 @@ class ExecuteFunctionTestSupport {
     when(function.isHA()).thenReturn(toBoolean(haStatus));
 
     executor = mock(ServerRegionFunctionExecutor.class);
+    when(executor.withFilter(ArgumentMatchers.<Set<Integer>>any())).thenReturn(executor);
 
     resultCollector = (ResultCollector<Integer, Collection<Integer>>) mock(ResultCollector.class);
 

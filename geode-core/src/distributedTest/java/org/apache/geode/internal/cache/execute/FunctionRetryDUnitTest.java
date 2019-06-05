@@ -328,23 +328,26 @@ public class FunctionRetryDUnitTest implements Serializable {
       /*
        * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
        */
-      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 2 | 1",
-      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
-      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
-      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 3",
-      "HA | CLIENT_MISSING_METADATA  | STRING | -1 | 3", // Infinite
-      "HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
-      "HA | CLIENT_MISSING_METADATA  | STRING | 2 | 3",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 1",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 1",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | -1 | 1",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
+//      "NOT_HA | CLIENT_MISSING_METADATA  | STRING | 2 | 1",
+//      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
+//      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 0 | 1",
+//      "HA | CLIENT_MISSING_METADATA  | OBJECT_REFERENCE | 2 | 3",
+//      "HA | CLIENT_MISSING_METADATA  | STRING | -1 | 3", // Infinite
+//      "HA | CLIENT_MISSING_METADATA  | STRING | 0 | 1",
+//      "HA | CLIENT_MISSING_METADATA  | STRING | 2 | 3",
+//
+//      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
+//      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 0 | 1", // Infinite
+//      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 2 | 3", // Infinite
+//      "HA | CLIENT_HAS_METADATA  | STRING | -1 | 3", // Infinite
 
-      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | -1 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 0 | 1", // Infinite
-      "HA | CLIENT_HAS_METADATA  | OBJECT_REFERENCE | 2 | 3", // Infinite
-      "HA | CLIENT_HAS_METADATA  | STRING | -1 | 3", // Infinite
+      "HA | CLIENT_HAS_METADATA  | STRING | 3 | 4",
+
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void testOnRegionWithSingleKeyFilter(final HAStatus haStatus,

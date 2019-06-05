@@ -80,25 +80,16 @@ public class ExecuteRegionFunctionSingleHopOpTest {
         when(future.get()).thenReturn(1);
         break;
       case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when(future.get()).thenThrow(new ServerConnectivityException("testing"));
+        when(future.get()).thenThrow(new ExecutionException(new ServerConnectivityException("testing")));
         break;
       case THROW_SERVER_OPERATION_EXCEPTION:
-        when(future.get()).thenThrow(new ServerOperationException("testing"));
+        when(future.get()).thenThrow(new ExecutionException(new ServerOperationException("testing")));
         break;
       case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when(future.get()).thenThrow(new NoAvailableServersException("testing"));
+        when(future.get()).thenThrow(new ExecutionException(new NoAvailableServersException("testing")));
         break;
       case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-        /*
-         * The product assumes that InternalFunctionInvocationTargetException will only be
-         * encountered
-         * when the target cache is going down. That condition is transient so the product assume
-         * it's
-         * ok to keep trying forever. In order to test this situation (and for the test to not hang)
-         * we throw this exception first, then we throw ServerConnectivityException
-         */
-        when(future.get()).thenThrow(new InternalFunctionInvocationTargetException("testing"))
-            .thenThrow(new ServerConnectivityException("testing"));
+        when(future.get()).thenThrow(new ExecutionException(new InternalFunctionInvocationTargetException("testing")));
         break;
       default:
         throw new AssertionError("unknown FailureMode type: " + failureMode);
@@ -168,18 +159,18 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
   @Test
   @Parameters({
-      // "NOT_HA, OBJECT_REFERENCE, -1, 1",
-      // "NOT_HA, OBJECT_REFERENCE, 0, 1",
-      // "NOT_HA, OBJECT_REFERENCE, 3, 1",
-      // "NOT_HA, STRING, -1, 1",
-      // "NOT_HA, STRING, 0, 1",
-      // "NOT_HA, STRING, 3, 1",
-      // "HA, OBJECT_REFERENCE, -1, 2",
-      // "HA, OBJECT_REFERENCE, 0, 1",
-      "HA, OBJECT_REFERENCE, 3, 4", // no interactions w/ pool
-      // "HA, STRING, -1, 2",
-      // "HA, STRING, 0, 1",
-      // "HA, STRING, 3, 4", // no interactions w/ pool
+//       "NOT_HA, OBJECT_REFERENCE, -1, 1",
+//       "NOT_HA, OBJECT_REFERENCE, 0, 1",
+//       "NOT_HA, OBJECT_REFERENCE, 3, 1",
+//       "NOT_HA, STRING, -1, 1",
+//       "NOT_HA, STRING, 0, 1",
+//       "NOT_HA, STRING, 3, 1",
+//       "HA, OBJECT_REFERENCE, -1, 2",
+//       "HA, OBJECT_REFERENCE, 0, 1",
+//       "HA, OBJECT_REFERENCE, 3, 4", // 3 pool.execute()
+       "HA, STRING, -1, 2",
+//       "HA, STRING, 0, 1",
+//       "HA, STRING, 3, 4", // 3 pool.execute()
   })
   public void executeWithServerConnectivityException(
       final HAStatus haStatus,
@@ -241,11 +232,9 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
     final int extraTries = expectTries - ExecuteFunctionTestSupport.NUMBER_OF_SERVERS;
 
-    if (extraTries > 0) {
-      verify(executablePool, times(extraTries))
-          .execute(ArgumentMatchers.<AbstractOp>any(),
-              ArgumentMatchers.anyInt());
-    }
+    verify(executablePool, times(extraTries))
+        .execute(ArgumentMatchers.<AbstractOp>any(),
+            ArgumentMatchers.anyInt());
   }
 
   /*
