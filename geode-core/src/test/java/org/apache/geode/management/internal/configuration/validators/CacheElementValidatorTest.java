@@ -35,6 +35,19 @@ public class CacheElementValidatorTest {
   }
 
   @Test
+  public void blankName() throws Exception {
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "id cannot be null or blank");
+
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.DELETE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "id cannot be null or blank");
+  }
+
+  @Test
   public void invalidGroup_cluster() throws Exception {
     config.setName("test");
     config.setGroup("cluster");
@@ -42,5 +55,25 @@ public class CacheElementValidatorTest {
         IllegalArgumentException.class)
         .hasMessageContaining(
             "'cluster' is a reserved group name");
+  }
+
+  @Test
+  public void invalidGroup_comma() throws Exception {
+    config.setName("test");
+    config.setGroup("group1,group2");
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Group name should not contain comma");
+  }
+
+  @Test
+  public void invalidGroup_delete() throws Exception {
+    config.setName("test");
+    config.setGroup("group1");
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.DELETE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "group is an invalid option when deleting an element from the cache");
   }
 }

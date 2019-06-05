@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -41,19 +40,12 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   @Override
   public void validate(CacheElementOperation operation, RegionConfig config)
       throws IllegalArgumentException {
-
-    if (config.getName() == null) {
-      throw new IllegalArgumentException("Name of the region has to be specified.");
-    }
-
     switch (operation) {
       case UPDATE:
       case CREATE:
         validateCreate(config);
         break;
       case DELETE:
-        validateDelete(config);
-        break;
       default:
     }
   }
@@ -81,12 +73,6 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
       cache.getSecurityService()
           .authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
               ResourcePermission.Target.DISK);
-    }
-  }
-
-  private void validateDelete(RegionConfig config) {
-    if (StringUtils.isNotBlank(config.getGroup())) {
-      throw new IllegalArgumentException("Group is invalid option when deleting a region");
     }
   }
 

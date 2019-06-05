@@ -217,7 +217,7 @@ public class LocatorClusterManagementServiceTest {
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Group is invalid option when deleting a region");
+        .hasMessage("group is an invalid option when deleting an element from the cache.");
   }
 
   @Test
@@ -267,5 +267,22 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(config.getRegions()).isEmpty();
+  }
+
+  @Test
+  public void deleteWithNoMember() throws Exception {
+    // region exists in cluster configuration
+    when(regionValidator.exists(any(), any())).thenReturn(true);
+    // no members found in any group
+    doReturn(Collections.emptySet()).when(service).findMembers(any());
+    doReturn(null).when(persistenceService).getConfiguration(any());
+    Region mockRegion = mock(Region.class);
+    doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
+
+    ClusterManagementResult result = service.delete(regionConfig);
+    verify(regionManager).delete(eq(regionConfig), any());
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getMemberStatuses()).hasSize(0);
+    assertThat(result.getStatusMessage()).contains("Successfully removed config for [cluster]");
   }
 }
