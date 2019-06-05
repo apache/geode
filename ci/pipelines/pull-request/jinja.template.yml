@@ -60,6 +60,7 @@ resource_types:
   type: docker-image
   source:
     repository: teliaoss/github-pr-resource
+    tag: v0.13.0
 - name: concourse-metadata-resource
   type: docker-image
   source:
