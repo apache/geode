@@ -1431,14 +1431,16 @@ public class IndexManager {
     }
 
     public void addTask(int action, RegionEntry entry, int opCode) {
-      if (isDone()) {
-        updateIndexMaintenanceStatus(true);
+      synchronized (this.pendingTasks) {
+        if (this.pendingTasks.isEmpty()) {
+          updateIndexMaintenanceStatus(true);
+        }
+        Object[] task = new Object[3];
+        task[0] = action;
+        task[1] = entry;
+        task[2] = opCode;
+        pendingTasks.add(task);
       }
-      Object[] task = new Object[3];
-      task[0] = action;
-      task[1] = entry;
-      task[2] = opCode;
-      pendingTasks.add(task);
     }
 
     /**
@@ -1473,13 +1475,15 @@ public class IndexManager {
             break;
           }
           try {
-            Object[] task = (Object[]) pendingTasks.take();
-            if (this.shutdownRequested) {
-              break;
-            }
-            updateIndexes(task);
-            if (isDone()) {
-              updateIndexMaintenanceStatus(false);
+            synchronized (this.pendingTasks) {
+              Object[] task = (Object[]) pendingTasks.take();
+              if (this.shutdownRequested) {
+                break;
+              }
+              updateIndexes(task);
+              if (this.pendingTasks.isEmpty()) {
+                updateIndexMaintenanceStatus(false);
+              }
             }
           } catch (InterruptedException ignore) {
             return; // give up (exit the thread)

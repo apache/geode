@@ -76,7 +76,7 @@ public class ListIndexCommandDUnitTestBase {
 
   @Test
   public void testListIndexesMaintStatus() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --maint-status").statusIsSuccess()
+    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --maintenance-status").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
         .tableHasColumnWithExactValuesInAnyOrder("Index Maintenance Status", "FINISHED");
   }
@@ -92,7 +92,7 @@ public class ListIndexCommandDUnitTestBase {
 
   @Test
   public void testListIndexesWithStatsMaintStatus() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats" + " --maint-status")
+    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats" + " --maintenance-status")
         .statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
         .tableHasColumnWithExactValuesInAnyOrder("Updates", "1")

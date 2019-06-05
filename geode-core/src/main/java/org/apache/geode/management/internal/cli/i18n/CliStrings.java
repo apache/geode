@@ -1662,7 +1662,7 @@ public class CliStrings {
   public static final String LIST_INDEX__STATS = "with-stats";
   public static final String LIST_INDEX__STATS__HELP =
       "Whether statistics should also be displayed.";
-  public static final String LIST_INDEX__MAINT = "maint-status";
+  public static final String LIST_INDEX__MAINT = "maintenance-status";
   public static final String LIST_INDEX__MAINT__HELP =
       "Whether index maintenance status should also be displayed.";
 

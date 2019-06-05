@@ -119,7 +119,9 @@ public interface Index {
   /**
    * Set whether maintenance of index is ongoing.
    */
-  void setMaintenanceOngoing(boolean b);
+  default void setMaintenanceOngoing(boolean b) {
+    // nothing by default
+  };
 
   /**
    * Get whether maintenance of index is ongoing.

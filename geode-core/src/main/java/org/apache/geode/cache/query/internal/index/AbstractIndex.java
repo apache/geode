@@ -2107,7 +2107,7 @@ public abstract class AbstractIndex implements IndexProtocol {
   }
 
   @Override
-  public synchronized boolean isMaintenanceOngoing() {
+  public boolean isMaintenanceOngoing() {
     return this.isMaintenanceOngoing;
   }
 

@@ -55,7 +55,7 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
   private final String memberId;
   private final String regionPath;
 
-  private String indexMaintStatus;
+  private String indexMaintenanceStatus;
 
   private static final String finished = "FINISHED";
   private static final String ongoing = "ONGOING";
@@ -250,18 +250,18 @@ public class IndexDetails implements Comparable<IndexDetails>, Serializable {
     buffer.append(", regionPath = ").append(getRegionPath());
     buffer.append(", isValid = ").append(getIsValid());
     buffer.append(", projectAttributes = ").append(getProjectionAttributes());
-    buffer.append(", indexMaintStatus = ").append(getIndexMaintenance());
+    buffer.append(", indexMaintenanceStatus = ").append(getIndexMaintenance());
     buffer.append("}");
 
     return buffer.toString();
   }
 
   public String getIndexMaintenance() {
-    return this.indexMaintStatus;
+    return this.indexMaintenanceStatus;
   }
 
   public void setIndexMaintenance(final String indexmaint) {
-    this.indexMaintStatus = indexmaint;
+    this.indexMaintenanceStatus = indexmaint;
   }
 
   public static class IndexStatisticsDetails implements Serializable {
