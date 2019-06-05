@@ -21,8 +21,7 @@ evaluationDependsOn(':extensions:geode-modules-tomcat8')
 evaluationDependsOn(':extensions:geode-modules-tomcat9')
 evaluationDependsOn(':extensions:geode-modules-session')
 evaluationDependsOn(':extensions:geode-modules-session-internal')
-  
-  
+
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 import org.apache.geode.gradle.plugins.DependencyConstraints
@@ -33,20 +32,12 @@ configurations {
   slf4jDeps
 }
 
-
 dependencies {
   slf4jDeps 'org.slf4j:slf4j-api:' + DependencyConstraints.get('slf4j-api.version')
   slf4jDeps 'org.slf4j:slf4j-jdk14:' + DependencyConstraints.get('slf4j-api.version')
 }
 
 jar.enabled = true
-
-
-def getJarArtifact(module) {
-  project(module).configurations.archives.artifacts.findAll {
-    it instanceof PublishArtifact && it.type == 'jar' && it.classifier == ''
-  }.collect { it.file }
-}
 
 def moduleBaseName = "Apache_Geode_Modules"
 
@@ -56,17 +47,19 @@ def configureTcServerAssembly = {
 
   // All client-server files
   into('geode-cs/lib') {
-    from getJarArtifact(':extensions:geode-modules')
-    from getJarArtifact(':extensions:geode-modules-tomcat7')
-    from getJarArtifact(':extensions:geode-modules-tomcat8')
-    from getJarArtifact(':extensions:geode-modules-tomcat9')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('geode-cs/bin') {
     from('release/scripts') {
       include '*'
     }
   }
+
   into('geode-cs/conf') {
     from('release/conf') {
       exclude 'cache-peer.xml'
@@ -76,6 +69,7 @@ def configureTcServerAssembly = {
       include 'server-fragment.xml'
     }
   }
+
   into('geode-cs') {
     from('release/tcserver/geode-cs') {
       include 'configuration-prompts.properties'
@@ -88,20 +82,23 @@ def configureTcServerAssembly = {
       include 'context-fragment.xml'
     }
   }
+
   // All peer-to-peer files
   into('geode-p2p/lib') {
-    from getJarArtifact(':extensions:geode-modules')
-    from getJarArtifact(':extensions:geode-modules-tomcat7')
-    from getJarArtifact(':extensions:geode-modules-tomcat8')
-    from getJarArtifact(':extensions:geode-modules-tomcat9')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('geode-p2p/bin') {
     from('release/scripts') {
       include 'gemfire.*'
       include 'setenv.properties'
     }
   }
+
   into('geode-p2p/conf') {
     from('release/conf') {
       include 'cache-peer.xml'
@@ -111,6 +108,7 @@ def configureTcServerAssembly = {
       include 'server-fragment.xml'
     }
   }
+
   into('geode-p2p') {
     from('release/tcserver/geode-p2p') {
       include 'configuration-prompts.properties'
@@ -166,27 +164,26 @@ def configureTcServer30Assembly = {
   }
 }
 
-task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
-                                       ':extensions:geode-modules-tomcat7:jar',
-                                       ':extensions:geode-modules-tomcat8:jar',
-                                       ':extensions:geode-modules-tomcat9:jar']) {
+tasks.register('distTomcat', Zip) {
   baseName = moduleBaseName
   classifier = "Tomcat"
 
   // All client-server files
   into('lib') {
-    from getJarArtifact(':extensions:geode-modules')
-    from getJarArtifact(':extensions:geode-modules-tomcat7')
-    from getJarArtifact(':extensions:geode-modules-tomcat8')
-    from getJarArtifact(':extensions:geode-modules-tomcat9')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat7').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat8').tasks.named('jar')
+    from project(':extensions:geode-modules-tomcat9').tasks.named('jar')
     from configurations.slf4jDeps
   }
+
   into('bin') {
     from('release/scripts') {
       include '*'
       exclude 'setenv.properties'
     }
   }
+
   into('conf') {
     from('release/conf') {
       include '*'
@@ -194,18 +191,14 @@ task distTomcat(type: Zip, dependsOn: [':extensions:geode-modules:jar',
   }
 }
 
-task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar',
-                                          ':extensions:geode-modules-session-internal:jar',
-                                          ':extensions:geode-modules-tomcat7:jar',
-                                          ':extensions:geode-modules-tomcat8:jar',
-                                          ':extensions:geode-modules-tomcat9:jar']) {
+tasks.register('distAppServer', Zip) {
   baseName = moduleBaseName
   classifier = "AppServer"
 
   into('lib') {
-    from getJarArtifact(':extensions:geode-modules-session')
-    from getJarArtifact(':extensions:geode-modules-session-internal')
-    from getJarArtifact(':extensions:geode-modules')
+    from project(':extensions:geode-modules').tasks.named('jar')
+    from project(':extensions:geode-modules-session').tasks.named('jar')
+    from project(':extensions:geode-modules-session-internal').tasks.named('jar')
     from configurations.slf4jDeps
   }
 
@@ -234,17 +227,11 @@ task distAppServer(type: Zip, dependsOn: [':extensions:geode-modules-session:jar
   }
 }
 
-task distTcServer(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
-                                         ':extensions:geode-modules-tomcat7:assemble',
-                                         ':extensions:geode-modules-tomcat8:assemble',
-                                         ':extensions:geode-modules-tomcat9:assemble'] ) {
+tasks.register('distTcServer', Zip) {
   configure(configureTcServerAssembly)
 }
 
-task distTcServer30(type: Zip, dependsOn: [':extensions:geode-modules:assemble',
-                                           ':extensions:geode-modules-tomcat7:assemble',
-                                           ':extensions:geode-modules-tomcat8:assemble',
-                                           ':extensions:geode-modules-tomcat9:assemble']) {
+tasks.register('distTcServer30', Zip) {
   configure(configureTcServerAssembly)
   configure(configureTcServer30Assembly)
 }
