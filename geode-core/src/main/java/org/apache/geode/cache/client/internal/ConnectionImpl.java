@@ -54,10 +54,15 @@ import org.apache.geode.internal.net.SocketCreator;
  */
 public class ConnectionImpl implements Connection {
 
+
   // TODO: DEFAULT_CLIENT_FUNCTION_TIMEOUT should be private
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
+
+  private static final int CLIENT_FUNCTION_TIMEOUT =
+      Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
+          DEFAULT_CLIENT_FUNCTION_TIMEOUT);
 
   private static final Logger logger = LogService.getLogger();
 
@@ -94,9 +99,10 @@ public class ConnectionImpl implements Connection {
   }
 
   public static int getClientFunctionTimeout() {
-    int time = Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
-        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
-    return time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+    if (CLIENT_FUNCTION_TIMEOUT >= 0) {
+      return CLIENT_FUNCTION_TIMEOUT;
+    }
+    return DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
