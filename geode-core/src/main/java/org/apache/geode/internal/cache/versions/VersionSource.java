@@ -31,4 +31,8 @@ import org.apache.geode.internal.DataSerializableFixedID;
 public interface VersionSource<T> extends DataSerializableFixedID, Comparable<T> {
 
   void writeEssentialData(DataOutput out) throws IOException;
+
+  default boolean isDiskStoreId() {
+    return false;
+  }
 }
