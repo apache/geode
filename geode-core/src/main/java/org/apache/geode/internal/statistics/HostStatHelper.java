@@ -26,7 +26,8 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
- * Provides native methods which fetch operating system statistics.
+ * Provides static methods which fetch operating system statistics.
+ * Only Linux OS is allowed.
  */
 public class HostStatHelper {
   private static final int PROCESS_STAT_FLAG = 1;
