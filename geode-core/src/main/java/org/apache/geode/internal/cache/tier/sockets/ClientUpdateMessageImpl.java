@@ -1579,7 +1579,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       // then each of the entires. If this map is modified between writing the size and iterating
       // the entries, there is a possibility of a mismatch of size and number of entries written
       // to the data output.
-      Map<String, Integer> mapToSerialize = new ConcurrentHashMap<>(this);
+      Map<String, Integer> mapToSerialize = new HashMap<>(this);
       DataSerializer.writeHashMap(mapToSerialize, out);
     }
 
