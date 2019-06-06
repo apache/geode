@@ -99,12 +99,12 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   private DurableClientReconnectDUnitTest instance = null;
 
   @BeforeClass
-  public static void caseSetUp() throws Exception {
+  public static void caseSetUp() {
     disconnectAllFromDS();
   }
 
   @Override
-  public final void postSetUp() throws Exception {
+  public final void postSetUp() {
     server1 = VM.getVM(0);
     server2 = VM.getVM(1);
     server3 = VM.getVM(2);
@@ -126,7 +126,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   }
 
   @Test
-  public void testDurableReconnectSingleServer() throws Exception {
+  public void testDurableReconnectSingleServer() {
     createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName(Host.getHost(0)), 0);
     List redundantServers = pool.getRedundantNames();
     String primaryName = pool.getPrimaryName();
