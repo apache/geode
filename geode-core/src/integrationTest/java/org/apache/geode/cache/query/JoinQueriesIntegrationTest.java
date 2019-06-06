@@ -351,15 +351,7 @@ public class JoinQueriesIntegrationTest {
     Region<String, Object> validationIssueXRefRegion = cache.<String, Object>createRegionFactory()
         .setDataPolicy(DataPolicy.REPLICATE).create("OrderValidationIssueXRef");
 
-    // Create Indexes
-    cache.getQueryService().createIndex("order_orderID", "orderId", "/Order", null);
-    cache.getQueryService().createIndex("validationIssue_issueID", "issueId", "/ValidationIssue",
-        null);
-    cache.getQueryService().createIndex("orderValidationIssueXRef_referenceOrderId",
-        "referenceOrderId", "/OrderValidationIssueXRef", null);
-    cache.getQueryService().createIndex("orderValidationIssueXRef_referenceIssueId",
-        "referenceIssueId", "/OrderValidationIssueXRef", null);
-
+    // Populate Regions
     if (!usePdx) {
       populateTripleJointRegionsWithSerializables(matches, extraEntitiesPerRegion, orderRegion,
           validationIssueRegion, validationIssueXRefRegion);
@@ -368,6 +360,15 @@ public class JoinQueriesIntegrationTest {
           orderRegion,
           validationIssueRegion, validationIssueXRefRegion);
     }
+
+    // Create Indexes
+    cache.getQueryService().createIndex("order_orderID", "orderId", "/Order", null);
+    cache.getQueryService().createIndex("validationIssue_issueID", "issueId", "/ValidationIssue",
+        null);
+    cache.getQueryService().createIndex("orderValidationIssueXRef_referenceOrderId",
+        "referenceOrderId", "/OrderValidationIssueXRef", null);
+    cache.getQueryService().createIndex("orderValidationIssueXRef_referenceIssueId",
+        "referenceIssueId", "/OrderValidationIssueXRef", null);
 
     SelectResults baseResultsWithIndexes =
         (SelectResults) queryService.newQuery(queryString).execute();
