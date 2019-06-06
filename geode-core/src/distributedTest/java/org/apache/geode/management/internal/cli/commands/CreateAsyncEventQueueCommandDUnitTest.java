@@ -93,7 +93,6 @@ public class CreateAsyncEventQueueCommandDUnitTest {
             " java.lang.IllegalStateException: A GatewaySender with id AsyncEventQueue_queue is already defined in this cache.");
 
     gfsh.executeAndAssertThat("create disk-store --name=diskStore2 --dir=diskstore");
-    locator.waitUntilDiskStoreIsReadyOnExactlyThisManyServers("diskStore2", 2);
 
     // create another queue with different configuration
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue2 --group=group2 "

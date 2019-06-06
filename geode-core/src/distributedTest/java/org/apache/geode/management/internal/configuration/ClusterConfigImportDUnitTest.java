@@ -97,7 +97,6 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
     lsRule.startServerVM(1, locatorVM.getPort());
     gfshConnector.executeAndAssertThat("create disk-store --name=diskStore1 --dir=testStore")
         .statusIsSuccess();
-    locatorVM.waitUntilDiskStoreIsReadyOnExactlyThisManyServers("diskStore1", 1);
     gfshConnector
         .executeAndAssertThat(
             "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)

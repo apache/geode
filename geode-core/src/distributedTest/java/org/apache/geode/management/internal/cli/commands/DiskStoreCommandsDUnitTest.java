@@ -93,8 +93,6 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
         IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).collect(Collectors.toList());
     gfsh.executeAndAssertThat("list disk-stores").statusIsSuccess()
         .tableHasColumnWithValuesContaining("Disk Store Name", diskStores.toArray(new String[0]));
-
-    jmxManager.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, serverCount);
   }
 
   private static SerializableRunnableIF dataProducer() {
