@@ -23,6 +23,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -420,5 +421,37 @@ public class AttributesFactoryJUnitTest {
    */
   private static class MyCacheListener extends CacheListenerAdapter {
     // empty impl
+  }
+
+  @Test
+  public void addsGatewaySenderId() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addGatewaySenderId("someSenderId");
+    RegionAttributes regionAttributes = factory.create();
+    Set gatewaySenderIds = regionAttributes.getGatewaySenderIds();
+
+    assertTrue(gatewaySenderIds.contains("someSenderId"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void addingNullGatewaySenderIdThrowsException() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addGatewaySenderId(null);
+  }
+
+  @Test
+  public void addsAsyncEventQueueId() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addAsyncEventQueueId("someId");
+    RegionAttributes regionAttributes = factory.create();
+    Set asyncEventQueueIds = regionAttributes.getAsyncEventQueueIds();
+
+    assertTrue(asyncEventQueueIds.contains("someId"));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void addingNullAsyncEventQueueIdThrowsException() {
+    AttributesFactory factory = new AttributesFactory();
+    factory.addAsyncEventQueueId(null);
   }
 }
