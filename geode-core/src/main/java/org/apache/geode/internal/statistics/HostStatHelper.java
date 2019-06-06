@@ -39,7 +39,7 @@ public class HostStatHelper {
   public static boolean isLinux() {
     return true;
   }
-  
+
   private HostStatHelper() {
     // instances are not allowed
   }
@@ -63,7 +63,7 @@ public class HostStatHelper {
   private static void refreshProcess(LocalStatisticsImpl statistics) {
     int pid = (int) statistics.getNumericId();
     LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
-          statistics._getLongStorage(), statistics._getDoubleStorage());
+        statistics._getLongStorage(), statistics._getDoubleStorage());
   }
 
   /**
@@ -72,7 +72,7 @@ public class HostStatHelper {
    */
   private static void refreshSystem(LocalStatisticsImpl statistics) {
     LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
-          statistics._getDoubleStorage());
+        statistics._getDoubleStorage());
   }
 
   /**
