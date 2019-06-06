@@ -137,7 +137,7 @@ groups:
 - name: windows
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if test.PLATFORM=="linux" -%}
+  {%- for test in (tests) if test.PLATFORM=="windows" -%}
     {% for java_test_version in (java_test_versions) %}
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
