@@ -37,6 +37,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
+  private int numOfJMXConnections = 0;
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -76,8 +77,13 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
-      if (JMXConnectionNotification.CLOSED.equals(type)) {
+      if (JMXConnectionNotification.OPENED.equals(type)) {
+        numOfJMXConnections++;
+      } else if (JMXConnectionNotification.CLOSED.equals(type) && numOfJMXConnections == 1) {
         this.securityService.logout();
+        numOfJMXConnections--;
+      } else if (JMXConnectionNotification.CLOSED.equals(type)) {
+        numOfJMXConnections--;
       }
     }
   }
