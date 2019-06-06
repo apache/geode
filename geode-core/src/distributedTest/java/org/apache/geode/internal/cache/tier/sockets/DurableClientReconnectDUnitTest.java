@@ -18,8 +18,10 @@ import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIEN
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -54,15 +56,13 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.Assert;
-import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.Wait;
-import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
 
@@ -127,57 +127,57 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
   @Test
   public void testDurableReconnectSingleServer() {
-    createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName(Host.getHost(0)), 0);
-    List redundantServers = pool.getRedundantNames();
+    createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName());
+    List<String> redundantServers = pool.getRedundantNames();
     String primaryName = pool.getPrimaryName();
     assertTrue(redundantServers.isEmpty());
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
     Wait.pause(2000);
 
-    createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName(Host.getHost(0)), 0);
-    List redundantServers2 = pool.getRedundantNames();
+    createCacheClientAndConnectToSingleServer(NetworkUtils.getServerHostName());
+    List<String> redundantServers2 = pool.getRedundantNames();
     String primaryName2 = pool.getPrimaryName();
     assertTrue(redundantServers2.isEmpty());
-    assertTrue(primaryName2.equals(primaryName));
+    assertEquals(primaryName2, primaryName);
   }
 
   @Test
-  public void testDurableReconnectSingleServerWithZeroConnPerServer() throws Exception {
+  public void testDurableReconnectSingleServerWithZeroConnPerServer() {
     createCacheClientAndConnectToSingleServerWithZeroConnPerServer(
-        NetworkUtils.getServerHostName(Host.getHost(0)), 0);
-    List redundantServers = pool.getRedundantNames();
+        NetworkUtils.getServerHostName());
+    List<String> redundantServers = pool.getRedundantNames();
     String primaryName = pool.getPrimaryName();
     assertTrue(redundantServers.isEmpty());
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
     createCacheClientAndConnectToSingleServerWithZeroConnPerServer(
-        NetworkUtils.getServerHostName(Host.getHost(0)), 0);
-    List redundantServers2 = pool.getRedundantNames();
+        NetworkUtils.getServerHostName());
+    List<String> redundantServers2 = pool.getRedundantNames();
     String primaryName2 = pool.getPrimaryName();
     assertTrue(redundantServers2.isEmpty());
-    assertTrue(primaryName2.equals(primaryName));
+    assertEquals(primaryName2, primaryName);
   }
 
   @Test
-  public void testDurableReconnectNonHA() throws Exception {
+  public void testDurableReconnectNonHA() {
     createCacheClient(0);
-    List redundantServers = pool.getRedundantNames();
+    List<String> redundantServers = pool.getRedundantNames();
     String primaryName = pool.getPrimaryName();
     assertTrue(redundantServers.isEmpty());
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
     Wait.pause(2000);
 
     createCacheClient(0);
-    List redundantServers2 = pool.getRedundantNames();
+    List<String> redundantServers2 = pool.getRedundantNames();
     String primaryName2 = pool.getPrimaryName();
     assertTrue(redundantServers2.isEmpty());
-    assertTrue(primaryName2.equals(primaryName));
+    assertEquals(primaryName2, primaryName);
   }
 
   /**
@@ -185,17 +185,17 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
    * queue.
    */
   @Test
-  public void testDurableReconnect() throws Exception {
+  public void testDurableReconnect() {
     // create client cache and Send clientReady message
     createCacheClient();
-    HashSet redundantServers = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServers = new HashSet<>(pool.getRedundantNames());
     redundantServers.add(pool.getPrimaryName());
 
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
@@ -203,27 +203,27 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     createCacheClient();
 
-    HashSet redundantServersAfterReconnect = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServersAfterReconnect = new HashSet<>(pool.getRedundantNames());
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-    instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyNonRedundantServers(redundantServersAfterReconnect);
 
-    assertTrue(redundantServers.equals(redundantServersAfterReconnect));
+    assertEquals(redundantServers, redundantServersAfterReconnect);
   }
 
   @Test
-  public void testDurableReconnect_DifferentPrimary() throws Exception {
+  public void testDurableReconnect_DifferentPrimary() {
     // create client cache and Send clientReady message
     createCacheClient();
-    HashSet redundantServers = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServers = new HashSet<>(pool.getRedundantNames());
     String primaryBefore = pool.getPrimaryName();
     redundantServers.add(primaryBefore);
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
@@ -231,69 +231,68 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     createCacheClient();
 
-    HashSet redundantServersAfterReconnect = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServersAfterReconnect = new HashSet<>(pool.getRedundantNames());
     String primaryAfter = pool.getPrimaryName();
     redundantServersAfterReconnect.add(primaryAfter);
-    instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyNonRedundantServers(redundantServersAfterReconnect);
 
-    assertTrue(redundantServers.equals(redundantServersAfterReconnect));
-    assertFalse(primaryBefore.equals(primaryAfter));
+    assertEquals(redundantServers, redundantServersAfterReconnect);
+    assertNotEquals(primaryBefore, primaryAfter);
   }
 
   @Test
-  public void testDurableReconnectWithOneRedundantServerDown() throws Exception {
+  public void testDurableReconnectWithOneRedundantServerDown() {
     // create client cache and Send clientReady message
     createCacheClient();
-    List redundantServers = pool.getRedundantNames();
+    List<String> redundantServers = pool.getRedundantNames();
     redundantServers.add(pool.getPrimaryName());
-    assertTrue(redundantServers.size() == 2);
+    assertEquals(2, redundantServers.size());
 
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
-    Object serverArray[] = redundantServers.toArray();
-    String rServer1 = (String) serverArray[0];
-    String rServer2 = (String) serverArray[1];
+    String[] serverArray = redundantServers.toArray(new String[0]);
+    String rServer1 = serverArray[0];
+    String rServer2 = serverArray[1];
 
     instance.closeServer(rServer1);
 
     createCacheClient();
 
-    List redundantServersAfterReconnect = pool.getRedundantNames();
+    List<String> redundantServersAfterReconnect = pool.getRedundantNames();
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-    instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyRedundantServers(redundantServersAfterReconnect);
 
-    List<String> redundantServersHistory = new ArrayList<>();
-    redundantServersHistory.addAll(redundantServersAfterReconnect);
+    List<String> redundantServersHistory = new ArrayList<>(redundantServersAfterReconnect);
     redundantServersHistory.add(rServer1);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersHistory);
+    instance.determineAndVerifyNonRedundantServers(redundantServersHistory);
 
-    assertFalse(redundantServers.equals(redundantServersAfterReconnect));
-    assertTrue(redundantServersAfterReconnect.size() == 2);
+    assertNotEquals(redundantServers, redundantServersAfterReconnect);
+    assertEquals(2, redundantServersAfterReconnect.size());
     assertFalse(redundantServersAfterReconnect.contains(rServer1));
     assertTrue(redundantServersAfterReconnect.contains(rServer2));
   }
 
   @Test
-  public void testDurableReconnectWithBothRedundantServersDown() throws Exception {
+  public void testDurableReconnectWithBothRedundantServersDown() {
     // create client cache and Send clientReady message
     createCacheClient();
-    List redundantServers = pool.getRedundantNames();
+    List<String> redundantServers = pool.getRedundantNames();
     redundantServers.add(pool.getPrimaryName());
-    assertTrue(redundantServers.size() == 2);
+    assertEquals(2, redundantServers.size());
 
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
-    Object serverArray[] = redundantServers.toArray();
+    Object[] serverArray = redundantServers.toArray();
     String rServer1 = (String) serverArray[0];
     String rServer2 = (String) serverArray[1];
 
@@ -302,40 +301,38 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     createCacheClient();
 
-    List redundantServersAfterReconnect = pool.getRedundantNames();
+    List<String> redundantServersAfterReconnect = pool.getRedundantNames();
     if (redundantServersAfterReconnect.isEmpty()) {
-      redundantServersAfterReconnect = new LinkedList();
+      redundantServersAfterReconnect = new LinkedList<>();
     }
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-
-    List<String> redundantServersHistory = new ArrayList<>();
-    redundantServersHistory.addAll(redundantServersAfterReconnect);
+    List<String> redundantServersHistory = new ArrayList<>(redundantServersAfterReconnect);
     redundantServersHistory.add(rServer1);
     redundantServersHistory.add(rServer2);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersHistory);
+    instance.determineAndVerifyNonRedundantServers(redundantServersHistory);
 
-    assertFalse(redundantServers.equals(redundantServersAfterReconnect));
-    assertTrue(redundantServersAfterReconnect.size() == 2);
+    assertNotEquals(redundantServers, redundantServersAfterReconnect);
+    assertEquals(2, redundantServersAfterReconnect.size());
 
     assertFalse(redundantServersAfterReconnect.contains(rServer1));
     assertFalse(redundantServersAfterReconnect.contains(rServer2));
   }
 
   @Test
-  public void testDurableReconnectWithBothNonRedundantServersDown() throws Exception {
+  public void testDurableReconnectWithBothNonRedundantServersDown() {
     // create client cache and Send clientReady message
     createCacheClient();
-    HashSet redundantServers = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServers = new HashSet<>(pool.getRedundantNames());
     redundantServers.add(pool.getPrimaryName());
-    assertTrue(redundantServers.size() == 2);
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    assertEquals(2, redundantServers.size());
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
-    Set nonRedundantSet = new HashSet();
+    Set<String> nonRedundantSet = new HashSet<>();
     nonRedundantSet.add(SERVER1);
     nonRedundantSet.add(SERVER2);
     nonRedundantSet.add(SERVER3);
@@ -343,7 +340,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     nonRedundantSet.removeAll(redundantServers);
 
-    Object serverArray[] = nonRedundantSet.toArray();
+    Object[] serverArray = nonRedundantSet.toArray();
     String rServer1 = (String) serverArray[0];
     String rServer2 = (String) serverArray[1];
 
@@ -356,19 +353,18 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     createCacheClient();
 
-    HashSet redundantServersAfterReconnect = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServersAfterReconnect = new HashSet<>(pool.getRedundantNames());
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-    List redundantServersHistory = new ArrayList();
-    redundantServersHistory.addAll(redundantServersAfterReconnect);
+    List<String> redundantServersHistory = new ArrayList<>(redundantServersAfterReconnect);
     redundantServersHistory.add(rServer1);
     redundantServersHistory.add(rServer2);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersHistory);
+    instance.determineAndVerifyNonRedundantServers(redundantServersHistory);
 
     expectedEx.remove();
 
-    assertTrue(redundantServers.equals(redundantServersAfterReconnect));
-    assertTrue(redundantServersAfterReconnect.size() == 2);
+    assertEquals(redundantServers, redundantServersAfterReconnect);
+    assertEquals(2, redundantServersAfterReconnect.size());
 
     assertFalse("redundantServersAfterReconnect contains " + rServer1,
         redundantServersAfterReconnect.contains(rServer1));
@@ -387,166 +383,151 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   public void testBug39332() {
     // create client cache and Send clientReady message
     createCacheClient(2, 20);
-    HashSet redundantServers = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServers = new HashSet<>(pool.getRedundantNames());
     redundantServers.add(pool.getPrimaryName());
 
-    instance.determineAndVerfiyRedundantServers(redundantServers);
-    instance.determineAndVerfiyNonRedundantServers(redundantServers);
+    instance.determineAndVerifyRedundantServers(redundantServers);
+    instance.determineAndVerifyNonRedundantServers(redundantServers);
 
-    LogWriterUtils.getLogWriter()
+    LogService.getLogger()
         .info("TEST - Durable client initialially has servers " + redundantServers);
 
-    LogWriterUtils.getLogWriter().info("TEST - Closing durable client for the first time");
+    LogService.getLogger().info("TEST - Closing durable client for the first time");
     // Stop the durable client
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
-    LogWriterUtils.getLogWriter().info("TEST - Durable client closed for the first time");
+    LogService.getLogger().info("TEST - Durable client closed for the first time");
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
     Wait.pause(2000);
 
-    LogWriterUtils.getLogWriter().info("TEST - Creating the durable client with one fewer servers");
+    LogService.getLogger().info("TEST - Creating the durable client with one fewer servers");
     // We recreate the durable client, but this
     // Time we won't have it create any queues
     createCacheClient(2, 20, false);
 
-    HashSet redundantServers2 = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServers2 = new HashSet<>(pool.getRedundantNames());
     redundantServers2.add(pool.getPrimaryName());
-    LogWriterUtils.getLogWriter()
+    LogService.getLogger()
         .info("TEST - Durable client created again, now with servers " + redundantServers2);
-    Host host = Host.getHost(0);
     // Make sure we create client to server connections to all of the servers
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT1.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(), PORT1));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT2.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(), PORT2));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT3.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(), PORT3));
     pool.acquireConnection(
-        new ServerLocation(NetworkUtils.getServerHostName(host), PORT4.intValue()));
+        new ServerLocation(NetworkUtils.getServerHostName(), PORT4));
 
-    LogWriterUtils.getLogWriter().info("TEST - All pool connections are now aquired");
+    LogService.getLogger().info("TEST - All pool connections are now aquired");
 
-    closeCache(true);
+    closeCacheAndKeepAlive();
 
-    LogWriterUtils.getLogWriter().info("TEST - closed durable client for the second time");
+    LogService.getLogger().info("TEST - closed durable client for the second time");
 
     // Wait for server to cleanup client resources
     // temporary fix for bug 38345.
     Wait.pause(2000);
 
-    LogWriterUtils.getLogWriter().info("TEST - creating durable client for the third time");
+    LogService.getLogger().info("TEST - creating durable client for the third time");
     // Now we should connect to all of the servers we were originally connected to
     createCacheClient(2, 20);
 
-    HashSet redundantServersAfterReconnect = new HashSet(pool.getRedundantNames());
+    Set<String> redundantServersAfterReconnect = new HashSet<>(pool.getRedundantNames());
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-    LogWriterUtils.getLogWriter()
+    LogService.getLogger()
         .info("TEST - durable client created for the third time, now with servers "
             + redundantServersAfterReconnect);
 
-    instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyNonRedundantServers(redundantServersAfterReconnect);
 
     assertEquals(redundantServers, redundantServersAfterReconnect);
 
     // Now we wait to make sure the durable client expiration task isn't fired.
     Wait.pause(25000);
 
-    LogWriterUtils.getLogWriter()
+    LogService.getLogger()
         .info("TEST - Finished waiting for durable client expiration task");
 
-    redundantServersAfterReconnect = new HashSet(pool.getRedundantNames());
+    redundantServersAfterReconnect = new HashSet<>(pool.getRedundantNames());
     redundantServersAfterReconnect.add(pool.getPrimaryName());
 
-    instance.determineAndVerfiyRedundantServers(redundantServersAfterReconnect);
-    instance.determineAndVerfiyNonRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyRedundantServers(redundantServersAfterReconnect);
+    instance.determineAndVerifyNonRedundantServers(redundantServersAfterReconnect);
 
     assertEquals(redundantServers, redundantServersAfterReconnect);
-  }
-
-  private static void verifyRedundantServers(Set redundantServers,
-      Set redundantServersAfterReconnect) {
-    try {
-      Iterator iter = redundantServers.iterator();
-      while (iter.hasNext()) {
-        Object endpointName = iter.next();
-        assertTrue(redundantServersAfterReconnect.contains(endpointName));
-      }
-    } catch (Exception e) {
-      Assert.fail("test failed due to", e);
-    }
   }
 
   private static void verifyNoDurableClientOnServer() {
     try {
       checkNumberOfClientProxies(0);
     } catch (Exception e) {
-      Assert.fail("test failed due to", e);
+      fail("test failed due to", e);
     }
   }
 
   private static Integer createServerCache() throws Exception {
     Properties props = new Properties();
     new DurableClientReconnectDUnitTest().createCache(props);
-    AttributesFactory factory = new AttributesFactory();
+    AttributesFactory<String, String> factory = new AttributesFactory<>();
     factory.setScope(Scope.DISTRIBUTED_ACK);
     factory.setDataPolicy(DataPolicy.REPLICATE);
-    RegionAttributes attrs = factory.create();
+    RegionAttributes<String, String> attrs = factory.create();
     Region r = cache.createRegion(REGION_NAME, attrs);
     assertNotNull(r);
     CacheServer server1 = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     server1.setPort(port);
-    server1.setNotifyBySubscription(true);
     server1.start();
-    return new Integer(server1.getPort());
+    return server1.getPort();
   }
 
-  private void determineAndVerfiyRedundantServers(Collection redundantServers) {
+  private void determineAndVerifyRedundantServers(Collection<String> redundantServers) {
     if (redundantServers.contains(SERVER1)) {
-      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server1.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER2)) {
-      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server2.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER3)) {
-      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server3.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
     if (redundantServers.contains(SERVER4)) {
-      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyDurableClientOnServer());
+      server4.invoke(DurableClientReconnectDUnitTest::verifyDurableClientOnServer);
     }
   }
 
-  private void determineAndVerfiyNonRedundantServers(Collection redundantServers) {
+  private void determineAndVerifyNonRedundantServers(Collection<String> redundantServers) {
     if (!redundantServers.contains(SERVER1)) {
-      server1.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server1.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER2)) {
-      server2.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server2.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER3)) {
-      server3.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server3.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
     if (!redundantServers.contains(SERVER4)) {
-      server4.invoke(() -> DurableClientReconnectDUnitTest.verifyNoDurableClientOnServer());
+      server4.invoke(DurableClientReconnectDUnitTest::verifyNoDurableClientOnServer);
     }
   }
 
   private void closeServer(String server) {
     if (server.equals(SERVER1)) {
-      server1.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+      server1.invoke(DurableClientReconnectDUnitTest::closeCache);
     }
     if (server.equals(SERVER2)) {
-      server2.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+      server2.invoke(DurableClientReconnectDUnitTest::closeCache);
     }
     if (server.equals(SERVER3)) {
-      server3.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+      server3.invoke(DurableClientReconnectDUnitTest::closeCache);
     }
     if (server.equals(SERVER4)) {
-      server4.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+      server4.invoke(DurableClientReconnectDUnitTest::closeCache);
     }
   }
 
@@ -560,7 +541,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
       assertEquals("DurableClientReconnectDUnitTest_client", proxy.getDurableId());
       // assertIndexDetailsEquals(60, proxy.getDurableTimeout());
     } catch (Exception e) {
-      Assert.fail("test failed due to", e);
+      fail("test failed due to", e);
     }
   }
 
@@ -570,26 +551,15 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
 
     // Get the CacheClientProxy or not (if proxy set is empty)
     CacheClientProxy proxy = null;
-    Iterator i = notifier.getClientProxies().iterator();
+    Iterator<CacheClientProxy> i = notifier.getClientProxies().iterator();
     if (i.hasNext()) {
-      proxy = (CacheClientProxy) i.next();
+      proxy = i.next();
     }
     return proxy;
   }
 
   private static void checkNumberOfClientProxies(final int expected) {
-    WaitCriterion ev = new WaitCriterion() {
-      @Override
-      public boolean done() {
-        return expected == getNumberOfClientProxies();
-      }
-
-      @Override
-      public String description() {
-        return null;
-      }
-    };
-    GeodeAwaitility.await().untilAsserted(ev);
+    GeodeAwaitility.await().until(() -> expected == getNumberOfClientProxies());
   }
 
   private static int getNumberOfClientProxies() {
@@ -611,7 +581,7 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
       cache = CacheFactory.create(ds);
       assertNotNull(cache);
     } catch (Exception e) {
-      Assert.fail("test failed due to ", e);
+      fail("test failed due to ", e);
     }
   }
 
@@ -620,13 +590,11 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   }
 
   private PoolFactory getPoolFactory() {
-    Host host = Host.getHost(0);
-    PoolFactory factory = PoolManager.createFactory()
-        .addServer(NetworkUtils.getServerHostName(host), PORT1.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT2.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT3.intValue())
-        .addServer(NetworkUtils.getServerHostName(host), PORT4.intValue());
-    return factory;
+    return PoolManager.createFactory()
+        .addServer(NetworkUtils.getServerHostName(), PORT1)
+        .addServer(NetworkUtils.getServerHostName(), PORT2)
+        .addServer(NetworkUtils.getServerHostName(), PORT3)
+        .addServer(NetworkUtils.getServerHostName(), PORT4);
   }
 
   private void createCacheClient(int redundancyLevel) {
@@ -640,9 +608,8 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
   private void createCacheClient(int redundancyLevel, final int durableClientTimeout,
       boolean queueEnabled) {
     try {
-      final String durableClientId = "DurableClientReconnectDUnitTest_client";
       Properties props =
-          getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
+          getClientDistributedSystemProperties(durableClientTimeout);
       instance = new DurableClientReconnectDUnitTest();
       instance.createCache(props);
       // Host host = Host.getHost(0);
@@ -651,11 +618,11 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
           // .setRetryInterval(2000)
           .setSubscriptionRedundancy(redundancyLevel).create("DurableClientReconnectDUnitTestPool");
 
-      AttributesFactory factory = new AttributesFactory();
+      AttributesFactory<String, String> factory = new AttributesFactory<>();
       factory.setScope(Scope.LOCAL);
       factory.setPoolName(p.getName());
 
-      RegionAttributes attrs = factory.create();
+      RegionAttributes<String, String> attrs = factory.create();
       Region r = cache.createRegion(REGION_NAME, attrs);
       assertNotNull(r);
 
@@ -666,28 +633,27 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
       cache.readyForEvents();
 
     } catch (Exception e) {
-      Assert.fail("test failed due to ", e);
+      fail("test failed due to ", e);
     }
   }
 
-  private void createCacheClientAndConnectToSingleServer(String host, int redundancyLevel) {
+  private void createCacheClientAndConnectToSingleServer(String host) {
     try {
-      final String durableClientId = "DurableClientReconnectDUnitTest_client";
       final int durableClientTimeout = 60; // keep the client alive for 60 seconds
       Properties props =
-          getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
+          getClientDistributedSystemProperties(durableClientTimeout);
       instance = new DurableClientReconnectDUnitTest();
       instance.createCache(props);
-      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
+      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
           .setSubscriptionEnabled(true).setReadTimeout(10000)
           // .setRetryInterval(2000)
-          .setSubscriptionRedundancy(redundancyLevel).create("DurableClientReconnectDUnitTestPool");
+          .setSubscriptionRedundancy(0).create("DurableClientReconnectDUnitTestPool");
 
-      AttributesFactory factory = new AttributesFactory();
+      AttributesFactory<String, String> factory = new AttributesFactory<>();
       factory.setScope(Scope.LOCAL);
       factory.setPoolName(p.getName());
 
-      RegionAttributes attrs = factory.create();
+      RegionAttributes<String, String> attrs = factory.create();
       Region r = cache.createRegion(REGION_NAME, attrs);
       assertNotNull(r);
 
@@ -698,30 +664,28 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
       cache.readyForEvents();
 
     } catch (Exception e) {
-      Assert.fail("test failed due to ", e);
+      fail("test failed due to ", e);
     }
   }
 
-  private void createCacheClientAndConnectToSingleServerWithZeroConnPerServer(String host,
-      int redundancyLevel) {
+  private void createCacheClientAndConnectToSingleServerWithZeroConnPerServer(String host) {
     try {
-      final String durableClientId = "DurableClientReconnectDUnitTest_client";
       final int durableClientTimeout = 60; // keep the client alive for 60 seconds
       Properties props =
-          getClientDistributedSystemProperties(durableClientId, durableClientTimeout);
+          getClientDistributedSystemProperties(durableClientTimeout);
       instance = new DurableClientReconnectDUnitTest();
       instance.createCache(props);
-      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1.intValue())
+      PoolImpl p = (PoolImpl) PoolManager.createFactory().addServer(host, PORT1)
           .setSubscriptionEnabled(true).setReadTimeout(10000)
           // .setRetryInterval(2000)
-          .setMinConnections(0).setSubscriptionRedundancy(redundancyLevel)
+          .setMinConnections(0).setSubscriptionRedundancy(0)
           .create("DurableClientReconnectDUnitTestPool");
 
-      AttributesFactory factory = new AttributesFactory();
+      AttributesFactory<String, String> factory = new AttributesFactory<>();
       factory.setScope(Scope.LOCAL);
       factory.setPoolName(p.getName());
 
-      RegionAttributes attrs = factory.create();
+      RegionAttributes<String, String> attrs = factory.create();
       Region r = cache.createRegion(REGION_NAME, attrs);
       assertNotNull(r);
 
@@ -732,35 +696,34 @@ public class DurableClientReconnectDUnitTest extends JUnit4DistributedTestCase {
       cache.readyForEvents();
 
     } catch (Exception e) {
-      Assert.fail("test failed due to ", e);
+      fail("test failed due to ", e);
     }
   }
 
-  private Properties getClientDistributedSystemProperties(String durableClientId,
-      int durableClientTimeout) {
+  private Properties getClientDistributedSystemProperties(int durableClientTimeout) {
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
-    properties.setProperty(DURABLE_CLIENT_ID, durableClientId);
+    properties.setProperty(DURABLE_CLIENT_ID, "DurableClientReconnectDUnitTest_client");
     properties.setProperty(DURABLE_CLIENT_TIMEOUT, String.valueOf(durableClientTimeout));
     return properties;
   }
 
   @Override
-  public final void preTearDown() throws Exception {
+  public final void preTearDown() {
     // close the clients first
     closeCache();
 
     // then close the servers
-    server1.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
-    server2.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
-    server3.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
-    server4.invoke(() -> DurableClientReconnectDUnitTest.closeCache());
+    server1.invoke((SerializableRunnableIF) DurableClientReconnectDUnitTest::closeCache);
+    server2.invoke((SerializableRunnableIF) DurableClientReconnectDUnitTest::closeCache);
+    server3.invoke((SerializableRunnableIF) DurableClientReconnectDUnitTest::closeCache);
+    server4.invoke((SerializableRunnableIF) DurableClientReconnectDUnitTest::closeCache);
   }
 
-  private void closeCache(boolean keepAlive) {
+  private void closeCacheAndKeepAlive() {
     if (cache != null && !cache.isClosed()) {
-      cache.close(keepAlive);
+      cache.close(true);
       cache.getDistributedSystem().disconnect();
     }
   }
