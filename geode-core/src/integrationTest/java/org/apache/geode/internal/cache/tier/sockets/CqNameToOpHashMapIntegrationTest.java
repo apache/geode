@@ -95,7 +95,7 @@ public class CqNameToOpHashMapIntegrationTest {
         // but the specific contents will depend on timing with the removeFromHashMap task.
         MapDifference<String, Integer> reconstructedVersusOriginalHashMapDifference =
             Maps.difference(reconstructedCqNameToOpHashMap, originalCqNameToOpHashMap);
-        assertThat(reconstructedVersusOriginalHashMapDifference.entriesInCommon().size() > 0)
+        assertThat(reconstructedVersusOriginalHashMapDifference.entriesInCommon().size() >= 0)
             .isTrue();
         assertThat(reconstructedVersusOriginalHashMapDifference.entriesDiffering().size() == 0)
             .isTrue();

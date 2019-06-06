@@ -1574,13 +1574,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      // By copying the hashmap prior to serializing, we avoid dealing with atomicity issues during
-      // serialization. When we serialize a hashmap, we first write the size to the data output
-      // then each of the entires. If this map is modified between writing the size and iterating
-      // the entries, there is a possibility of a mismatch of size and number of entries written
-      // to the data output.
-      Map<String, Integer> mapToSerialize = new HashMap<>(this);
-      DataSerializer.writeHashMap(mapToSerialize, out);
+      DataSerializer.writeConcurrentHashMap(this, out);
     }
 
     @Override
