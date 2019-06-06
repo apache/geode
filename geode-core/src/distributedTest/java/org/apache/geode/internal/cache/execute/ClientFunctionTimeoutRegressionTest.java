@@ -84,6 +84,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
   private VM server;
   private VM client;
+  private VM client2;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -96,8 +97,12 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
   public void setUp() throws Exception {
     server = getVM(0);
     client = getVM(1);
+    client.invoke(
+        () -> System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(6000)));
+    client2 = getVM(2);
 
     regionName = getClass().getSimpleName();
+
   }
 
   @After
@@ -115,8 +120,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
   }
 
   @Test
-  @Parameters({"SERVER,REPLICATE,0", "SERVER,REPLICATE,6000", "REGION,REPLICATE,0",
-      "REGION,REPLICATE,6000", "REGION,PARTITION,0", "REGION,PARTITION,6000"})
+  @Parameters({"SERVER,REPLICATE,6000", "REGION,REPLICATE,6000", "REGION,PARTITION,6000"})
   public void executeFunctionUsesClientTimeoutOnServer(final ExecutionTarget executionTarget,
       final RegionType regionType, final int timeout) {
     int port = server.invoke(() -> createServerCache(regionType));
@@ -125,11 +129,17 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
     client.invoke(() -> executeFunctionToVerifyClientTimeoutOnServer(executionTarget, timeout));
   }
 
-  private void createClientCache(final String hostName, final int port, final int timeout) {
-    if (timeout > 0) {
-      System.setProperty(GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT", String.valueOf(timeout));
-    }
+  @Test
+  @Parameters({"SERVER,REPLICATE,0", "REGION,REPLICATE,0", "REGION,PARTITION,0"})
+  public void executeFunctionUsesClientDefaultTimeoutOnServer(final ExecutionTarget executionTarget,
+      final RegionType regionType, final int timeout) {
+    int port = server.invoke(() -> createServerCache(regionType));
+    client2.invoke(() -> createClientCache(client2.getHost().getHostName(), port, timeout));
 
+    client2.invoke(() -> executeFunctionToVerifyClientTimeoutOnServer(executionTarget, timeout));
+  }
+
+  private void createClientCache(final String hostName, final int port, final int timeout) {
     Properties config = new Properties();
     config.setProperty(LOCATORS, "");
     config.setProperty(MCAST_PORT, "0");
