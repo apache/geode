@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.Statistics;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
@@ -34,10 +33,7 @@ public class HostStatHelper {
   private static final int SYSTEM_STAT_FLAG = 2;
 
   static {
-    String osName = System.getProperty("os.name", "unknown");
-    if (!osName.startsWith("Linux")){
-      throw new InternalGemFireException(String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.",osName));
-    }
+    new OSVerifier();
   }
 
   public static boolean isLinux() {
