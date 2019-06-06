@@ -61,7 +61,7 @@ public class DeregisterDriverCommand extends SingleGfshCommand {
       CacheConfig cacheConfig = ccService.getCacheConfig(null);
       if (cacheConfig != null) {
         for (JndiBindingsType.JndiBinding dataSource : cacheConfig.getJndiBindings()) {
-          if (dataSource.getJdbcDriverClass().equals(driverClassName)) {
+          if (driverClassName.equals(dataSource.getJdbcDriverClass())) {
             return ResultModel
                 .createError("Driver is currently in use by " + dataSource.getJndiName());
           }
