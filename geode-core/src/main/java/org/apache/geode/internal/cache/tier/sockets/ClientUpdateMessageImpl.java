@@ -1557,7 +1557,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
   /**
-   * Basically just a HashMap<String, Integer> but limits itself to the CqNameToOp interface.
+   * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
+   * interface.
    */
   public static class CqNameToOpHashMap extends ConcurrentHashMap<String, Integer>
       implements CqNameToOp {
