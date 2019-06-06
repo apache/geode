@@ -90,7 +90,7 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {% endmacro %}
 
 {% macro all_gating_jobs_for_benchmark() %}
-{%- for test in (tests) if not test.name=="StressNew" and test.PLATFORM=="linux" -%}
+{%- for test in (tests) if not test.name=="StressNew" and test.PLATFORM=="linux"%}
 - {{test.name}}TestOpenJDK8
 {%- endfor -%}
 {% endmacro %}
