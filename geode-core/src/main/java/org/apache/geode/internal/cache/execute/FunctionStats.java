@@ -90,6 +90,12 @@ public class FunctionStats {
    */
   private static final String FUNCTION_EXECUTION_EXCEPTIONS = "functionExecutionsExceptions";
 
+  /**
+   * Creation of GemFireStatSampler disabled: true/false
+   */
+  private static final boolean STATS_DISABLED =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+
   /** Id of the FUNCTION_EXECUTIONS_COMPLETED statistic */
   private static final int _functionExecutionsCompletedId;
 
@@ -455,6 +461,6 @@ public class FunctionStats {
   }
 
   private static boolean isDisabled() {
-    return Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+    return STATS_DISABLED;
   }
 }
