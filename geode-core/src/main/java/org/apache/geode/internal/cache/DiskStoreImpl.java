@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.channels.FileChannel;
@@ -4591,8 +4592,9 @@ public class DiskStoreImpl implements DiskStore {
     if (this.totalDiskStoreSpace == ManagementConstants.NOT_AVAILABLE_LONG) {
       return ManagementConstants.NOT_AVAILABLE_FLOAT;
     }
-    long totalDiskSpace = getTotalBytesOnDisk();
-    float usage = (float) (totalDiskSpace * 100 / this.totalDiskStoreSpace);
+    float totalDiskSpace = (float) getTotalBytesOnDisk();
+    float usage = totalDiskSpace * 100 / this.totalDiskStoreSpace;
+    usage = new BigDecimal(usage).setScale(2, BigDecimal.ROUND_FLOOR).floatValue();
     return usage;
   }
 
