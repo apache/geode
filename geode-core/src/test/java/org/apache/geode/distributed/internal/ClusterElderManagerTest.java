@@ -306,4 +306,18 @@ public class ClusterElderManagerTest {
       await().until(() -> !waitThread.isAlive());
     }
   }
+
+  @Test
+  public void getElderStateReturnsElderStateIfWaitsToBecomeElder() throws Exception {
+    Supplier<ElderState> elderStateSupplier = mock(Supplier.class);
+    ElderState elderState = mock(ElderState.class);
+    when(elderStateSupplier.get()).thenReturn(elderState);
+    ClusterElderManager clusterElderManager =
+        new ClusterElderManager(clusterDistributionManager, elderStateSupplier);
+    when(clusterDistributionManager.getId()).thenReturn(member0);
+    when(clusterDistributionManager.isCloseInProgress()).thenReturn(true);
+    when(clusterDistributionManager.getViewMembers()).thenReturn(Arrays.asList(member1));
+
+    assertThat(clusterElderManager.getElderState(true)).isEqualTo(elderState);
+  }
 }
