@@ -20,18 +20,15 @@ import static org.mockito.Mockito.when;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
 
 import org.mockito.ArgumentMatchers;
 
-import org.apache.geode.cache.client.NoAvailableServersException;
-import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 
 class ExecuteFunctionTestSupport {
@@ -101,7 +98,8 @@ class ExecuteFunctionTestSupport {
   @SuppressWarnings("unchecked")
   ExecuteFunctionTestSupport(
       final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FailureMode failureMode) {
+      final ExecuteFunctionTestSupport.FailureMode failureMode,
+      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
 
     servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);
@@ -127,54 +125,7 @@ class ExecuteFunctionTestSupport {
     executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
 
-    /*
-     * We know execute() handles three kinds of exception from the pool:
-     *
-     * InternalFunctionInvocationTargetException
-     *
-     * keep trying without regard to retry attempt limit
-     *
-     * ServerOperationException | NoAvailableServersException
-     *
-     * re-throw
-     *
-     * ServerConnectivityException
-     *
-     * keep trying up to retry attempt limit
-     */
-    switch (failureMode) {
-      case NO_FAILURE:
-        when(executablePool.execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()))
-            .thenReturn(null);
-        break;
-      case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when(executablePool.execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()))
-            .thenThrow(new ServerConnectivityException("testing"));
-        break;
-      case THROW_SERVER_OPERATION_EXCEPTION:
-        when(executablePool.execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()))
-            .thenThrow(new ServerOperationException("testing"));
-        break;
-      case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when(executablePool.execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()))
-            .thenThrow(new NoAvailableServersException("testing"));
-        break;
-      case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-        /*
-         * The product assumes that InternalFunctionInvocationTargetException will only be
-         * encountered
-         * when the target cache is going down. That condition is transient so the product assume
-         * it's
-         * ok to keep trying forever. In order to test this situation (and for the test to not hang)
-         * we throw this exception first, then we throw ServerConnectivityException
-         */
-        when(executablePool.execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()))
-            .thenThrow(new InternalFunctionInvocationTargetException("testing"))
-            .thenThrow(new ServerConnectivityException("testing"));
-        break;
-      default:
-        throw new AssertionError("unknown FailureMode type: " + failureMode);
-    }
+    addPoolMockBehavior.accept(executablePool, failureMode);
   }
 
   List<ServerLocation> getServers() {

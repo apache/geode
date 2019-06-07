@@ -17,7 +17,6 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_HAS_RESULT;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_NAME;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.OPTIMIZE_FOR_WRITE_SETTING;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,18 +25,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
-import com.sun.tools.javac.util.List;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.stubbing.OngoingStubbing;
 
 import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -53,7 +48,8 @@ import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
- * Test retry counts on single-hop on region function execution.
+ * Test retry counts on single-hop onRegion() function execution (via
+ * ExecuteRegionFunctionSingleHop).
  * Ensure they are never infinite!
  */
 @Category({ClientServerTest.class})
@@ -61,76 +57,29 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 
 public class ExecuteRegionFunctionSingleHopOpTest {
 
-  private SingleHopClientExecutor singleHopClientExecutor;
   private Map<ServerLocation, HashSet<Integer>> serverToFilterMap;
   private ExecuteFunctionTestSupport testSupport;
-  private ExecutorService executorService;
-
-  @SuppressWarnings("unchecked")
-  private void createMocks(final HAStatus haStatus,
-      final FailureMode failureMode)
-      throws ExecutionException, InterruptedException {
-
-    testSupport = new ExecuteFunctionTestSupport(haStatus, failureMode);
-
-    final Future<Integer> future = (Future<Integer>) mock(Future.class);
-
-    switch (failureMode) {
-      case NO_FAILURE:
-        when(future.get()).thenReturn(1);
-        break;
-      case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when(future.get())
-            .thenThrow(new ExecutionException(new ServerConnectivityException("testing")));
-        break;
-      case THROW_SERVER_OPERATION_EXCEPTION:
-        when(future.get())
-            .thenThrow(new ExecutionException(new ServerOperationException("testing")));
-        break;
-      case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when(future.get())
-            .thenThrow(new ExecutionException(new NoAvailableServersException("testing")));
-        break;
-      case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-        when(future.get()).thenThrow(
-            new ExecutionException(new InternalFunctionInvocationTargetException("testing")));
-        break;
-      default:
-        throw new AssertionError("unknown FailureMode type: " + failureMode);
-    }
-
-    executorService = mock(ExecutorService.class);
-    when(executorService
-        .invokeAll(ArgumentMatchers.<Collection<? extends Callable<Integer>>>any()))
-            .thenReturn(List.of(future));
-
-    singleHopClientExecutor = new SingleHopClientExecutorImpl(executorService);
-
-    serverToFilterMap = new HashMap<>();
-    serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
-    serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
-  }
 
   @Test
   @Parameters({
-      "NOT_HA, OBJECT_REFERENCE, -1, 1",
-      "NOT_HA, OBJECT_REFERENCE, 0, 1",
-      "NOT_HA, OBJECT_REFERENCE, 3, 1",
-      "NOT_HA, STRING, -1, 1",
-      "NOT_HA, STRING, 0, 1",
-      "NOT_HA, STRING, 3, 1",
-      "HA, OBJECT_REFERENCE, -1, 1",
-      "HA, OBJECT_REFERENCE, 0, 1",
-      "HA, OBJECT_REFERENCE, 3, 1",
-      "HA, STRING, -1, 1",
-      "HA, STRING, 0, 1",
-      "HA, STRING, 3, 1",
+      "NOT_HA, OBJECT_REFERENCE, -1, 2",
+      "NOT_HA, OBJECT_REFERENCE, 0, 2",
+      "NOT_HA, OBJECT_REFERENCE, 3, 2",
+      "NOT_HA, STRING, -1, 2",
+      "NOT_HA, STRING, 0, 2",
+      "NOT_HA, STRING, 3, 2",
+      "HA, OBJECT_REFERENCE, -1, 2",
+      "HA, OBJECT_REFERENCE, 0, 2",
+      "HA, OBJECT_REFERENCE, 3, 2",
+      "HA, STRING, -1, 2",
+      "HA, STRING, 0, 2",
+      "HA, STRING, 3, 2",
   })
   public void executeDoesNotRetryOnServerOperationException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
-      final int expectTries) throws ExecutionException, InterruptedException {
+      final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_SERVER_OPERATION_EXCEPTION);
@@ -138,24 +87,24 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
   @Test
   @Parameters({
-      "NOT_HA, OBJECT_REFERENCE, -1, 1",
-      "NOT_HA, OBJECT_REFERENCE, 0, 1",
-      "NOT_HA, OBJECT_REFERENCE, 3, 1",
-      "NOT_HA, STRING, -1, 1",
-      "NOT_HA, STRING, 0, 1",
-      "NOT_HA, STRING, 3, 1",
-      "HA, OBJECT_REFERENCE, -1, 1",
-      "HA, OBJECT_REFERENCE, 0, 1",
-      "HA, OBJECT_REFERENCE, 3, 1",
-      "HA, STRING, -1, 1",
-      "HA, STRING, 0, 1",
-      "HA, STRING, 3, 1",
+      "NOT_HA, OBJECT_REFERENCE, -1, 2",
+      "NOT_HA, OBJECT_REFERENCE, 0, 2",
+      "NOT_HA, OBJECT_REFERENCE, 3, 2",
+      "NOT_HA, STRING, -1, 2",
+      "NOT_HA, STRING, 0, 2",
+      "NOT_HA, STRING, 3, 2",
+      "HA, OBJECT_REFERENCE, -1, 2",
+      "HA, OBJECT_REFERENCE, 0, 2",
+      "HA, OBJECT_REFERENCE, 3, 2",
+      "HA, STRING, -1, 2",
+      "HA, STRING, 0, 2",
+      "HA, STRING, 3, 2",
   })
   public void executeDoesNotRetryOnNoServerAvailableException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
-      final int expectTries) throws ExecutionException, InterruptedException {
+      final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_NO_AVAILABLE_SERVERS_EXCEPTION);
@@ -163,34 +112,96 @@ public class ExecuteRegionFunctionSingleHopOpTest {
 
   @Test
   @Parameters({
-      // "NOT_HA, OBJECT_REFERENCE, -1, 1",
-      // "NOT_HA, OBJECT_REFERENCE, 0, 1",
-      // "NOT_HA, OBJECT_REFERENCE, 3, 1",
-      // "NOT_HA, STRING, -1, 1",
-      // "NOT_HA, STRING, 0, 1",
-      // "NOT_HA, STRING, 3, 1",
-      // "HA, OBJECT_REFERENCE, -1, 2",
-      // "HA, OBJECT_REFERENCE, 0, 1",
-      // "HA, OBJECT_REFERENCE, 3, 4", // 3 pool.execute()
+      "NOT_HA, OBJECT_REFERENCE, -1, 2",
+      "NOT_HA, OBJECT_REFERENCE, 0, 2",
+      "NOT_HA, OBJECT_REFERENCE, 3, 2",
+      "NOT_HA, STRING, -1, 2",
+      "NOT_HA, STRING, 0, 2",
+      "NOT_HA, STRING, 3, 2",
+      "HA, OBJECT_REFERENCE, -1, 2",
+      "HA, OBJECT_REFERENCE, 0, 2",
+      "HA, OBJECT_REFERENCE, 3, 2",
       "HA, STRING, -1, 2",
-      // "HA, STRING, 0, 1",
-      // "HA, STRING, 3, 4", // 3 pool.execute()
+      "HA, STRING, 0, 2",
+      "HA, STRING, 3, 2",
   })
   public void executeWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
-      final int expectTries) throws ExecutionException, InterruptedException {
+      final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION);
   }
 
+  private void createMocks(final HAStatus haStatus,
+      final FailureMode failureModeArg) {
+
+    testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
+        (final PoolImpl pool, final FailureMode failureMode) -> {
+          /*
+           * We know execute() handles three kinds of exception from the pool:
+           *
+           * InternalFunctionInvocationTargetException
+           *
+           * keep trying without regard to retry attempt limit
+           *
+           * ServerOperationException | NoAvailableServersException
+           *
+           * re-throw
+           *
+           * ServerConnectivityException
+           *
+           * keep trying up to retry attempt limit
+           */
+          final OngoingStubbing<Object> when =
+              when(pool.executeOn(
+                  ArgumentMatchers.<ServerLocation>any(),
+                  ArgumentMatchers.<Op>any(),
+                  ArgumentMatchers.anyBoolean(),
+                  ArgumentMatchers.anyBoolean()));
+          switch (failureMode) {
+            case NO_FAILURE:
+              when.thenReturn(null);
+              break;
+            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
+              when.thenThrow(new ServerConnectivityException("testing"));
+              break;
+            case THROW_SERVER_OPERATION_EXCEPTION:
+              when.thenThrow(new ServerOperationException("testing"));
+              break;
+            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
+              when.thenThrow(new NoAvailableServersException("testing"));
+              break;
+            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
+              /*
+               * The product assumes that InternalFunctionInvocationTargetException will only be
+               * encountered
+               * when the target cache is going down. That condition is transient so the product
+               * assume
+               * it's
+               * ok to keep trying forever. In order to test this situation (and for the test to not
+               * hang)
+               * we throw this exception first, then we throw ServerConnectivityException
+               */
+              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+                  .thenThrow(new ServerConnectivityException("testing"));
+              break;
+            default:
+              throw new AssertionError("unknown FailureMode type: " + failureMode);
+          }
+        });
+    serverToFilterMap = new HashMap<>();
+    serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
+    serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
+  }
+
   private void runExecuteTest(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts, final int expectTries,
-      final FailureMode failureMode)
-      throws ExecutionException, InterruptedException {
+      final FailureMode failureMode) {
+
     createMocks(haStatus, failureMode);
 
     executeFunctionSingleHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
@@ -206,8 +217,8 @@ public class ExecuteRegionFunctionSingleHopOpTest {
       final Function<Integer> function,
       final ServerRegionFunctionExecutor executor,
       final ResultCollector<Integer, Collection<Integer>> resultCollector,
-      final int expectTries)
-      throws InterruptedException {
+      final int expectTries) {
+
     switch (functionIdentifierType) {
       case STRING:
         ignoreServerConnectivityException(
@@ -217,7 +228,7 @@ public class ExecuteRegionFunctionSingleHopOpTest {
                 retryAttempts,
                 ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, testSupport.toBoolean(haStatus),
                 OPTIMIZE_FOR_WRITE_SETTING,
-                singleHopClientExecutor)));
+                SingleHopClientExecutorImpl.getInstance())));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
@@ -225,20 +236,19 @@ public class ExecuteRegionFunctionSingleHopOpTest {
                 function,
                 executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
                 retryAttempts,
-                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, singleHopClientExecutor));
+                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING,
+                SingleHopClientExecutorImpl.getInstance()));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
     }
 
-    verify(executorService, times(1))
-        .invokeAll(ArgumentMatchers.<Collection<? extends Callable<Integer>>>any());
-
-    final int extraTries = expectTries - ExecuteFunctionTestSupport.NUMBER_OF_SERVERS;
-
-    verify(executablePool, times(extraTries))
-        .execute(ArgumentMatchers.<AbstractOp>any(),
-            ArgumentMatchers.anyInt());
+    verify(executablePool, times(expectTries))
+        .executeOn(
+            ArgumentMatchers.<ServerLocation>any(),
+            ArgumentMatchers.<Op>any(),
+            ArgumentMatchers.anyBoolean(),
+            ArgumentMatchers.anyBoolean());
   }
 
   /*

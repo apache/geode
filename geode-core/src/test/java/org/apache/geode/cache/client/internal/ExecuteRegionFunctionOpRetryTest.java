@@ -20,6 +20,7 @@ import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.REGION_NAME;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -30,18 +31,22 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
+import org.mockito.stubbing.OngoingStubbing;
 
+import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FailureMode;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FunctionIdentifierType;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
- * Test retry counts on multi-hop on region function execution.
+ * Test retry counts on multi-hop on onRegion() function execution (via ExecuteRegionFunctionOp).
  * Ensure they are never infinite!
  */
 @Category({ClientServerTest.class})
@@ -243,9 +248,58 @@ public class ExecuteRegionFunctionOpRetryTest {
   private void runExecuteTest(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts, final int expectTries,
-      final FailureMode failureMode) {
+      final FailureMode failureModeArg) {
 
-    testSupport = new ExecuteFunctionTestSupport(haStatus, failureMode);
+    testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
+        (final PoolImpl pool, final FailureMode failureMode) -> {
+          /*
+           * We know execute() handles three kinds of exception from the pool:
+           *
+           * InternalFunctionInvocationTargetException
+           *
+           * keep trying without regard to retry attempt limit
+           *
+           * ServerOperationException | NoAvailableServersException
+           *
+           * re-throw
+           *
+           * ServerConnectivityException
+           *
+           * keep trying up to retry attempt limit
+           */
+          final OngoingStubbing<Object> when = when(pool
+              .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
+          switch (failureMode) {
+            case NO_FAILURE:
+              when.thenReturn(null);
+              break;
+            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
+              when.thenThrow(new ServerConnectivityException("testing"));
+              break;
+            case THROW_SERVER_OPERATION_EXCEPTION:
+              when.thenThrow(new ServerOperationException("testing"));
+              break;
+            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
+              when.thenThrow(new NoAvailableServersException("testing"));
+              break;
+            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
+              /*
+               * The product assumes that InternalFunctionInvocationTargetException will only be
+               * encountered
+               * when the target cache is going down. That condition is transient so the product
+               * assume
+               * it's
+               * ok to keep trying forever. In order to test this situation (and for the test to not
+               * hang)
+               * we throw this exception first, then we throw ServerConnectivityException
+               */
+              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+                  .thenThrow(new ServerConnectivityException("testing"));
+              break;
+            default:
+              throw new AssertionError("unknown FailureMode type: " + failureMode);
+          }
+        });
 
     executeFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
@@ -256,9 +310,58 @@ public class ExecuteRegionFunctionOpRetryTest {
   private void runReexecuteTest(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts, final int expectTries,
-      final FailureMode failureMode) {
+      final FailureMode failureModeArg) {
 
-    testSupport = new ExecuteFunctionTestSupport(haStatus, failureMode);
+    testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
+        (final PoolImpl pool, final FailureMode failureMode) -> {
+          /*
+           * We know execute() handles three kinds of exception from the pool:
+           *
+           * InternalFunctionInvocationTargetException
+           *
+           * keep trying without regard to retry attempt limit
+           *
+           * ServerOperationException | NoAvailableServersException
+           *
+           * re-throw
+           *
+           * ServerConnectivityException
+           *
+           * keep trying up to retry attempt limit
+           */
+          final OngoingStubbing<Object> when = when(pool
+              .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
+          switch (failureMode) {
+            case NO_FAILURE:
+              when.thenReturn(null);
+              break;
+            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
+              when.thenThrow(new ServerConnectivityException("testing"));
+              break;
+            case THROW_SERVER_OPERATION_EXCEPTION:
+              when.thenThrow(new ServerOperationException("testing"));
+              break;
+            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
+              when.thenThrow(new NoAvailableServersException("testing"));
+              break;
+            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
+              /*
+               * The product assumes that InternalFunctionInvocationTargetException will only be
+               * encountered
+               * when the target cache is going down. That condition is transient so the product
+               * assume
+               * it's
+               * ok to keep trying forever. In order to test this situation (and for the test to not
+               * hang)
+               * we throw this exception first, then we throw ServerConnectivityException
+               */
+              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+                  .thenThrow(new ServerConnectivityException("testing"));
+              break;
+            default:
+              throw new AssertionError("unknown FailureMode type: " + failureMode);
+          }
+        });
 
     reexecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
