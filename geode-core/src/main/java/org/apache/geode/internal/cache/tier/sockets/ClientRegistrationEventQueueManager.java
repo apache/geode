@@ -66,7 +66,7 @@ class ClientRegistrationEventQueueManager {
         // event is drained and processed. See incrementPutInProgressCounter() and
         // decrementPutInProgressCounter() for more details.
         if (conflatable instanceof HAEventWrapper) {
-          ((HAEventWrapper) conflatable).incrementPutInProgressCounter();
+          ((HAEventWrapper) conflatable).incrementPutInProgressCounter("client registration");
         }
 
         // After taking out the lock, we need to determine if the client is still actually
