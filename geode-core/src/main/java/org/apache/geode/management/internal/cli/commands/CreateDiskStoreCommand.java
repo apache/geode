@@ -148,7 +148,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
     return result;
   }
 
-  private boolean waitForDiskStoreMBeanCreation(String diskStore,
+  @VisibleForTesting
+  boolean waitForDiskStoreMBeanCreation(String diskStore,
       Set<DistributedMember> membersToCreateDiskStoreOn) {
     DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
 

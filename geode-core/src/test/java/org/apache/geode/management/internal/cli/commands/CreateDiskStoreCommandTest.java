@@ -55,6 +55,7 @@ public class CreateDiskStoreCommandTest {
         .executeAndGetFunctionResult(any(), any(), any());
     doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
         any());
+    doReturn(true).when(command).waitForDiskStoreMBeanCreation(any(), any());
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist")
             .getResultModel();
@@ -72,6 +73,7 @@ public class CreateDiskStoreCommandTest {
         .executeAndGetFunctionResult(any(), any(), any());
     doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
         any());
+    doReturn(true).when(command).waitForDiskStoreMBeanCreation(any(), any());
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist")
             .getResultModel();
