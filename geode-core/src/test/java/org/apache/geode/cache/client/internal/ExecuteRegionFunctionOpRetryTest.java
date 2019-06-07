@@ -251,7 +251,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        (final PoolImpl pool, final FailureMode failureMode) -> {
+        retryAttempts, (final PoolImpl pool, final FailureMode failureMode) -> {
           /*
            * We know execute() handles three kinds of exception from the pool:
            *
@@ -313,55 +313,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        (final PoolImpl pool, final FailureMode failureMode) -> {
-          /*
-           * We know execute() handles three kinds of exception from the pool:
-           *
-           * InternalFunctionInvocationTargetException
-           *
-           * keep trying without regard to retry attempt limit
-           *
-           * ServerOperationException | NoAvailableServersException
-           *
-           * re-throw
-           *
-           * ServerConnectivityException
-           *
-           * keep trying up to retry attempt limit
-           */
-          final OngoingStubbing<Object> when = when(pool
-              .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
-          switch (failureMode) {
-            case NO_FAILURE:
-              when.thenReturn(null);
-              break;
-            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-              when.thenThrow(new ServerConnectivityException("testing"));
-              break;
-            case THROW_SERVER_OPERATION_EXCEPTION:
-              when.thenThrow(new ServerOperationException("testing"));
-              break;
-            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-              when.thenThrow(new NoAvailableServersException("testing"));
-              break;
-            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-              /*
-               * The product assumes that InternalFunctionInvocationTargetException will only be
-               * encountered
-               * when the target cache is going down. That condition is transient so the product
-               * assume
-               * it's
-               * ok to keep trying forever. In order to test this situation (and for the test to not
-               * hang)
-               * we throw this exception first, then we throw ServerConnectivityException
-               */
-              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-                  .thenThrow(new ServerConnectivityException("testing"));
-              break;
-            default:
-              throw new AssertionError("unknown FailureMode type: " + failureMode);
-          }
-        });
+        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute2);
 
     reexecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),

@@ -20,7 +20,6 @@ import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 
@@ -30,15 +29,11 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.stubbing.OngoingStubbing;
 
-import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FailureMode;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
-import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
@@ -51,8 +46,8 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @RunWith(JUnitParamsRunner.class)
 public class ExecuteFunctionOpRetryTest {
 
-  static final boolean IS_FN_SERIALIZATION_REQUIRED = false;
-  static final boolean ALL_SERVERS_SETTING = false;
+  private static final boolean IS_FN_SERIALIZATION_REQUIRED = false;
+  private static final boolean ALL_SERVERS_SETTING = false;
 
   private ExecuteFunctionTestSupport testSupport;
   private Object args;
@@ -141,9 +136,9 @@ public class ExecuteFunctionOpRetryTest {
       final int retryAttempts, final int expectTries,
       final ExecuteFunctionTestSupport.FailureMode failureMode) {
 
-    createMocks(haStatus, failureMode);
+    createMocks(haStatus, failureMode, retryAttempts);
 
-    executeFunction(haStatus, functionIdentifierType, retryAttempts,
+    executeFunction(haStatus, functionIdentifierType,
         testSupport.getExecutablePool(), testSupport.getFunction(), serverFunctionExecutor,
         args, memberMappedArg, testSupport.getResultCollector(), userAttributes, groups);
 
@@ -154,16 +149,13 @@ public class ExecuteFunctionOpRetryTest {
 
   private void executeFunction(final ExecuteFunctionTestSupport.HAStatus haStatus,
       final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
-      final int retryAttempts,
       final PoolImpl executablePool,
       final Function<Integer> function,
       final ServerFunctionExecutor serverFunctionExecutor,
-      Object args,
-      MemberMappedArgument memberMappedArg,
+      final Object args,
+      final MemberMappedArgument memberMappedArg,
       final ResultCollector<Integer, Collection<Integer>> resultCollector,
-      UserAttributes userAttributes, String[] groups) {
-
-    when(executablePool.getRetryAttempts()).thenReturn(retryAttempts);
+      final UserAttributes userAttributes, final String[] groups) {
 
     switch (functionIdentifierType) {
       case STRING:
@@ -186,60 +178,11 @@ public class ExecuteFunctionOpRetryTest {
 
   }
 
-  @SuppressWarnings("unchecked")
   private void createMocks(final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final FailureMode failureModeArg) {
+      final FailureMode failureModeArg, final int retryAttempts) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        (final PoolImpl pool, final FailureMode failureMode) -> {
-          /*
-           * We know execute() handles three kinds of exception from the pool:
-           *
-           * InternalFunctionInvocationTargetException
-           *
-           * keep trying without regard to retry attempt limit
-           *
-           * ServerOperationException | NoAvailableServersException
-           *
-           * re-throw
-           *
-           * ServerConnectivityException
-           *
-           * keep trying up to retry attempt limit
-           */
-          final OngoingStubbing<Object> when = when(pool
-              .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
-          switch (failureModeArg) {
-            case NO_FAILURE:
-              when.thenReturn(null);
-              break;
-            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-              when.thenThrow(new ServerConnectivityException("testing"));
-              break;
-            case THROW_SERVER_OPERATION_EXCEPTION:
-              when.thenThrow(new ServerOperationException("testing"));
-              break;
-            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-              when.thenThrow(new NoAvailableServersException("testing"));
-              break;
-            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-              /*
-               * The product assumes that InternalFunctionInvocationTargetException will only be
-               * encountered
-               * when the target cache is going down. That condition is transient so the product
-               * assume
-               * it's
-               * ok to keep trying forever. In order to test this situation (and for the test to not
-               * hang)
-               * we throw this exception first, then we throw ServerConnectivityException
-               */
-              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-                  .thenThrow(new ServerConnectivityException("testing"));
-              break;
-            default:
-              throw new AssertionError("unknown FailureMode type: " + failureModeArg);
-          }
-        });
+        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute2);
     args = null;
     memberMappedArg = mock(MemberMappedArgument.class);
     userAttributes = mock(UserAttributes.class);

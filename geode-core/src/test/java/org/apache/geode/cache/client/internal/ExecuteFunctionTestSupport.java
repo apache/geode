@@ -23,12 +23,17 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 import org.mockito.ArgumentMatchers;
+import org.mockito.stubbing.OngoingStubbing;
 
+import org.apache.geode.cache.client.NoAvailableServersException;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 
 class ExecuteFunctionTestSupport {
@@ -94,12 +99,115 @@ class ExecuteFunctionTestSupport {
    */
   private PoolImpl executablePool;
 
+  static void mockThrowOnExecute2(final PoolImpl pool, final FailureMode failureMode) {
+    /*
+     * We know execute() handles three kinds of exception from the pool:
+     *
+     * InternalFunctionInvocationTargetException
+     *
+     * keep trying without regard to retry attempt limit
+     *
+     * ServerOperationException | NoAvailableServersException
+     *
+     * re-throw
+     *
+     * ServerConnectivityException
+     *
+     * keep trying up to retry attempt limit
+     */
+    final OngoingStubbing<Object> when = when(pool
+        .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
+    switch (failureMode) {
+      case NO_FAILURE:
+        when.thenReturn(null);
+        break;
+      case THROW_SERVER_CONNECTIVITY_EXCEPTION:
+        when.thenThrow(new ServerConnectivityException("testing"));
+        break;
+      case THROW_SERVER_OPERATION_EXCEPTION:
+        when.thenThrow(new ServerOperationException("testing"));
+        break;
+      case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
+        when.thenThrow(new NoAvailableServersException("testing"));
+        break;
+      case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
+        /*
+         * The product assumes that InternalFunctionInvocationTargetException will only be
+         * encountered
+         * when the target cache is going down. That condition is transient so the product
+         * assume
+         * it's
+         * ok to keep trying forever. In order to test this situation (and for the test to not
+         * hang)
+         * we throw this exception first, then we throw ServerConnectivityException
+         */
+        when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+            .thenThrow(new ServerConnectivityException("testing"));
+        break;
+      default:
+        throw new AssertionError("unknown FailureMode type: " + failureMode);
+    }
+  }
+
+  static void mockThrowOnExecute4(final PoolImpl pool, final FailureMode failureMode) {
+    /*
+     * We know execute() handles three kinds of exception from the pool:
+     *
+     * InternalFunctionInvocationTargetException
+     *
+     * keep trying without regard to retry attempt limit
+     *
+     * ServerOperationException | NoAvailableServersException
+     *
+     * re-throw
+     *
+     * ServerConnectivityException
+     *
+     * keep trying up to retry attempt limit
+     */
+    final OngoingStubbing<Object> when =
+        when(pool.executeOn(
+            ArgumentMatchers.<ServerLocation>any(),
+            ArgumentMatchers.<Op>any(),
+            ArgumentMatchers.anyBoolean(),
+            ArgumentMatchers.anyBoolean()));
+    switch (failureMode) {
+      case NO_FAILURE:
+        when.thenReturn(null);
+        break;
+      case THROW_SERVER_CONNECTIVITY_EXCEPTION:
+        when.thenThrow(new ServerConnectivityException("testing"));
+        break;
+      case THROW_SERVER_OPERATION_EXCEPTION:
+        when.thenThrow(new ServerOperationException("testing"));
+        break;
+      case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
+        when.thenThrow(new NoAvailableServersException("testing"));
+        break;
+      case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
+        /*
+         * The product assumes that InternalFunctionInvocationTargetException will only be
+         * encountered
+         * when the target cache is going down. That condition is transient so the product
+         * assume
+         * it's
+         * ok to keep trying forever. In order to test this situation (and for the test to not
+         * hang)
+         * we throw this exception first, then we throw ServerConnectivityException
+         */
+        when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+            .thenThrow(new ServerConnectivityException("testing"));
+        break;
+      default:
+        throw new AssertionError("unknown FailureMode type: " + failureMode);
+    }
+  }
 
   @SuppressWarnings("unchecked")
   ExecuteFunctionTestSupport(
-      final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FailureMode failureMode,
-      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
+      final HAStatus haStatus,
+      final FailureMode failureMode,
+      final int retryAttempts, final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
 
     servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);
@@ -124,6 +232,7 @@ class ExecuteFunctionTestSupport {
 
     executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
+    when(executablePool.getRetryAttempts()).thenReturn(retryAttempts);
 
     addPoolMockBehavior.accept(executablePool, failureMode);
   }

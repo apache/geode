@@ -19,7 +19,6 @@ import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.OPTIMIZE_FOR_WRITE_SETTING;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,18 +31,14 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatchers;
-import org.mockito.stubbing.OngoingStubbing;
 
-import org.apache.geode.cache.client.NoAvailableServersException;
 import org.apache.geode.cache.client.ServerConnectivityException;
-import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FailureMode;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FunctionIdentifierType;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
@@ -136,62 +131,10 @@ public class ExecuteRegionFunctionSingleHopOpTest {
   }
 
   private void createMocks(final HAStatus haStatus,
-      final FailureMode failureModeArg) {
+      final FailureMode failureModeArg, final int retryAttempts) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        (final PoolImpl pool, final FailureMode failureMode) -> {
-          /*
-           * We know execute() handles three kinds of exception from the pool:
-           *
-           * InternalFunctionInvocationTargetException
-           *
-           * keep trying without regard to retry attempt limit
-           *
-           * ServerOperationException | NoAvailableServersException
-           *
-           * re-throw
-           *
-           * ServerConnectivityException
-           *
-           * keep trying up to retry attempt limit
-           */
-          final OngoingStubbing<Object> when =
-              when(pool.executeOn(
-                  ArgumentMatchers.<ServerLocation>any(),
-                  ArgumentMatchers.<Op>any(),
-                  ArgumentMatchers.anyBoolean(),
-                  ArgumentMatchers.anyBoolean()));
-          switch (failureMode) {
-            case NO_FAILURE:
-              when.thenReturn(null);
-              break;
-            case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-              when.thenThrow(new ServerConnectivityException("testing"));
-              break;
-            case THROW_SERVER_OPERATION_EXCEPTION:
-              when.thenThrow(new ServerOperationException("testing"));
-              break;
-            case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-              when.thenThrow(new NoAvailableServersException("testing"));
-              break;
-            case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-              /*
-               * The product assumes that InternalFunctionInvocationTargetException will only be
-               * encountered
-               * when the target cache is going down. That condition is transient so the product
-               * assume
-               * it's
-               * ok to keep trying forever. In order to test this situation (and for the test to not
-               * hang)
-               * we throw this exception first, then we throw ServerConnectivityException
-               */
-              when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-                  .thenThrow(new ServerConnectivityException("testing"));
-              break;
-            default:
-              throw new AssertionError("unknown FailureMode type: " + failureMode);
-          }
-        });
+        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute4);
     serverToFilterMap = new HashMap<>();
     serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
     serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
@@ -202,7 +145,7 @@ public class ExecuteRegionFunctionSingleHopOpTest {
       final int retryAttempts, final int expectTries,
       final FailureMode failureMode) {
 
-    createMocks(haStatus, failureMode);
+    createMocks(haStatus, failureMode, retryAttempts);
 
     executeFunctionSingleHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
