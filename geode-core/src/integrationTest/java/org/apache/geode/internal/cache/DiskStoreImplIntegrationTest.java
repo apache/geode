@@ -160,11 +160,7 @@ public class DiskStoreImplIntegrationTest {
     diskDirs[0] = temporaryDirectory.newFolder("dir1");
     diskDirs[1] = temporaryDirectory.newFolder("dir2");
 
-    int[] diskDirSizes = new int[2];
-    diskDirSizes[0] = Integer.MAX_VALUE;
-    diskDirSizes[1] = Integer.MAX_VALUE;
-
-    cache.createDiskStoreFactory().setDiskDirsAndSizes(diskDirs, diskDirSizes)
+    cache.createDiskStoreFactory().setDiskDirs(diskDirs)
         .create(DISK_STORE_NAME);
     DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
 
@@ -180,11 +176,7 @@ public class DiskStoreImplIntegrationTest {
     diskDirs[0] = temporaryDirectory.newFolder("dir1");
     diskDirs[1] = temporaryDirectory.newFolder("dir2");
 
-    int[] diskDirSizes = new int[2];
-    diskDirSizes[0] = Integer.MAX_VALUE;
-    diskDirSizes[1] = Integer.MAX_VALUE;
-
-    cache.createDiskStoreFactory().setDiskDirsAndSizes(diskDirs, diskDirSizes)
+    cache.createDiskStoreFactory().setDiskDirs(diskDirs)
         .create(DISK_STORE_NAME);
     DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
     Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
