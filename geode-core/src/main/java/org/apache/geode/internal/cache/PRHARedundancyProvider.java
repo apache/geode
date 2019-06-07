@@ -1858,9 +1858,9 @@ public class PRHARedundancyProvider {
 
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
     int createdBucketCount = pr.getRegionAdvisor().getCreatedBucketsCount();
-    int lowRedundancyBucketCount = prStats.getLowRedundancyBucketCount();
+    int lowRedundancyBucketCount = (int) prStats.getLowRedundancyBucketCount();
     int configuredRedundantCopies = pr.getRedundantCopies();
-    int actualRedundantCopies = prStats.getActualRedundantCopies();
+    int actualRedundantCopies = (int) prStats.getActualRedundantCopies();
 
     final PartitionedRegionDataStore ds = pr.getDataStore();
 
