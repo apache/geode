@@ -32,6 +32,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
@@ -397,6 +398,29 @@ public abstract class JUnit4CacheTestCase extends JUnit4DistributedTestCase
       final RegionAttributes<K, V> attributes)
       throws CacheException {
     return createRegion(name, "root", attributes);
+  }
+
+  public final <K, V> Region<K, V> createPartitionedRegion(final String rootName,
+      final RegionAttributes<K, V> attributes) throws CacheException {
+    Region<K, V> root = getRootRegion(rootName);
+    if (root == null) {
+      // don't put listeners on root region
+      AttributesFactory<K, V> attributesFactory = new AttributesFactory<>(attributes);
+      ExpirationAttributes expiration = ExpirationAttributes.DEFAULT;
+
+      attributesFactory.setCacheLoader(null);
+      attributesFactory.setCacheWriter(null);
+      attributesFactory.setPoolName(null);
+      attributesFactory.setDataPolicy(DataPolicy.PARTITION);
+      attributesFactory.setRegionTimeToLive(expiration);
+      attributesFactory.setEntryTimeToLive(expiration);
+      attributesFactory.setRegionIdleTimeout(expiration);
+      attributesFactory.setEntryIdleTimeout(expiration);
+
+      RegionAttributes<K, V> rootAttrs = attributesFactory.create();
+      root = createRootRegion(rootName, rootAttrs);
+    }
+    return root;
   }
 
   public final <K, V> Region<K, V> createRegion(final String name, final String rootName,

@@ -87,13 +87,6 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
-  public void noName() {
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining("Name of the region has to be specified");
-  }
-
-  @Test
   public void invalidName1() {
     config.setName("__test");
     config.setType("REPLICATE");

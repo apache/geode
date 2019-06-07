@@ -23,7 +23,7 @@ groups:
 - name: main
   jobs:
   - {{ build_test.name }}
-{%- for test in tests if not test.name.startswith("Windows") %}
+{%- for test in tests if test.PLATFORM=="linux" %}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
   - {{test.name}}Test{{java_test_version.name}}
   {%- endfor %}
@@ -144,7 +144,7 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-      timeout: {{build_test.execute_test_timeout}}
+      timeout: {{build_test.EXECUTE_TEST_TIMEOUT}}
     on_failure:
       do:
       - put: pull-request-job-failure
@@ -207,7 +207,7 @@ jobs:
         get_params: {skip_download: true}
 
 
-{% for test in tests if not test.name.startswith("Windows")%}
+{% for test in tests if test.PLATFORM=="linux"%}
   {%- for java_test_version in (java_test_versions) if not java_test_version.name.endswith("JDK8") or test.name == "Unit" %}
 - name: {{test.name}}Test{{java_test_version.name}}
   public: true
@@ -293,7 +293,7 @@ jobs:
         - name: geode
         - name: geode-ci
         - name: instance-data
-      timeout: {{test.execute_test_timeout}}
+      timeout: {{test.EXECUTE_TEST_TIMEOUT}}
     on_failure:
       do:
       - put: pull-request-job-failure

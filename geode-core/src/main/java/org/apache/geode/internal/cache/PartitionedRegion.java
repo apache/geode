@@ -1857,13 +1857,55 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @since GemFire 5.0
-   * @throws UnsupportedOperationException OVERRIDES
-   */
   @Override
-  public CacheStatistics getStatistics() {
-    throw new UnsupportedOperationException();
+  public long getLastModifiedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastModifiedTime =
+        buckets.stream().map(x -> x.getLastModifiedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    return lastModifiedTime;
+  }
+
+  @Override
+  public long getLastAccessedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastAccessedTime =
+        buckets.stream().map(x -> x.getLastAccessedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    return lastAccessedTime;
+  }
+
+  @Override
+  public long getMissCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getMissCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public long getHitCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getHitCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public void resetCounts() {
+    if (!this.canStoreDataLocally()) {
+      return;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    for (BucketRegion bucket : buckets) {
+      bucket.resetCounts();
+    }
   }
 
   /**

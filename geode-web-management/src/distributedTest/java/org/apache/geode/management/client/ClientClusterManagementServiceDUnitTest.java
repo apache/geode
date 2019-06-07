@@ -18,6 +18,7 @@ package org.apache.geode.management.client;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -74,7 +75,10 @@ public class ClientClusterManagementServiceDUnitTest {
     List<RuntimeRegionConfig> regions = client.list(new RegionConfig())
         .getResult(RuntimeRegionConfig.class);
 
-    regions.forEach(r -> client.delete(r));
+    regions.forEach(r -> {
+      r.setGroup(null);
+      client.delete(r);
+    });
 
     List<RuntimeRegionConfig> moreRegions = client.list(new RegionConfig())
         .getResult(RuntimeRegionConfig.class);
@@ -171,6 +175,22 @@ public class ClientClusterManagementServiceDUnitTest {
         .getResult(RuntimeRegionConfig.class);
 
     assertThat(listResult).hasSize(0);
+  }
+
+
+  @Test
+  @WithMockUser
+  public void deleteRegionCreatedOnPartialGroups() {
+    RegionConfig region = new RegionConfig();
+    region.setName("test");
+    region.setGroup("group1");
+    region.setType(RegionType.REPLICATE);
+
+    ClusterManagementResult result = client.create(region);
+    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
+        "server-3");
+
+    assertThatThrownBy(() -> client.delete(region)).isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test

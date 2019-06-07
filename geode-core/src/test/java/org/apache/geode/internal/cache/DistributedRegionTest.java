@@ -24,11 +24,25 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
+import org.apache.geode.internal.cache.versions.RegionVersionVector;
+import org.apache.geode.internal.cache.versions.VersionSource;
 
 
 public class DistributedRegionTest {
+  private RegionVersionVector vector;
+  private RegionVersionHolder holder;
+  private VersionSource lostMemberVersionID;
+
+  @Before
+  public void setup() {
+    vector = mock(RegionVersionVector.class);
+    holder = mock(RegionVersionHolder.class);
+    lostMemberVersionID = mock(VersionSource.class);
+  }
 
   @Test
   public void shouldBeMockable() throws Exception {
@@ -92,5 +106,44 @@ public class DistributedRegionTest {
 
     assertThat(distributedRegion.lockWhenRegionIsInitializing()).isFalse();
     verify(distributedRegion, never()).lockFailedInitialImageReadLock();
+  }
+
+  @Test
+  public void versionHolderInvokesSetRegionSynchronizeScheduledIfVectorContainsLostMemberID() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getVersionVector()).thenReturn(vector);
+    when(vector.getHolderForMember(lostMemberVersionID)).thenReturn(holder);
+    doCallRealMethod().when(distributedRegion).setRegionSynchronizeScheduled(lostMemberVersionID);
+
+    distributedRegion.setRegionSynchronizeScheduled(lostMemberVersionID);
+
+    verify(holder).setRegionSynchronizeScheduled();
+  }
+
+  @Test
+  public void versionHolderInvokesSetRegionSynchronizeScheduledOrDoneIfNotIfVectorContainsLostMemberID() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getVersionVector()).thenReturn(vector);
+    when(vector.getHolderForMember(lostMemberVersionID)).thenReturn(holder);
+    doCallRealMethod().when(distributedRegion)
+        .setRegionSynchronizedWithIfNotScheduled(lostMemberVersionID);
+    when(holder.setRegionSynchronizeScheduledOrDoneIfNot()).thenReturn(true);
+
+    assertThat(distributedRegion.setRegionSynchronizedWithIfNotScheduled(lostMemberVersionID))
+        .isTrue();
+
+    verify(holder).setRegionSynchronizeScheduledOrDoneIfNot();
+  }
+
+  @Test
+  public void setRegionSynchronizedWithIfNotScheduledReturnsFalseIfVectorDoesNotContainLostMemberID() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getVersionVector()).thenReturn(vector);
+    when(vector.getHolderForMember(lostMemberVersionID)).thenReturn(holder);
+
+    assertThat(distributedRegion.setRegionSynchronizedWithIfNotScheduled(lostMemberVersionID))
+        .isFalse();
+
+    verify(holder, never()).setRegionSynchronizeScheduledOrDoneIfNot();
   }
 }

@@ -30,7 +30,7 @@ build_test:
   # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
   GRADLE_TASK: build
   PARALLEL_GRADLE: "false"
-  execute_test_timeout: 10m
+  EXECUTE_TEST_TIMEOUT: 10m
 examples_test:
   name: "TestExamples"
   CPUS: "8"
@@ -42,13 +42,13 @@ examples_test:
   # Actual gradle task is "clean runAll" but is hard-coded in execute_build_examples.sh
   # It's consumption is more like a "TEST_RESULTS_DESTINATIONS_DIRECTORY_STUB_THING.
   GRADLE_TASK: runAll
-  execute_test_timeout: 30m
+  EXECUTE_TEST_TIMEOUT: 30m
 
 publish_artifacts:
   name: "PublishArtifacts"
   CPUS: "8"
   RAM: "16"
-  execute_test_timeout: 10m
+  EXECUTE_TEST_TIMEOUT: 10m
 
 java_test_versions:
 - name: OpenJDK8
@@ -59,8 +59,8 @@ java_test_versions:
 benchmarks:
   # set one or the other but not both
   branch: "develop"
-  baseline_branch: ""
-  baseline_version: "1.9.0"
+  baseline_branch: "develop/highwater"
+  baseline_version: ""
 
 java_build_version:
   name: OpenJDK8
@@ -74,9 +74,10 @@ tests:
   CALL_STACK_TIMEOUT: "1800"
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: test
-  execute_test_timeout: 10m
+  EXECUTE_TEST_TIMEOUT: 10m
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "true"
+  PLATFORM: "linux"
 - name: "Acceptance"
   CPUS: "8"
   RAM: "12"
@@ -84,9 +85,10 @@ tests:
   CALL_STACK_TIMEOUT: "1800"
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: acceptanceTest
-  execute_test_timeout: 45m
+  EXECUTE_TEST_TIMEOUT: 45m
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "linux"
 - name: "Distributed"
   CPUS: "96"
   RAM: "180"
@@ -94,8 +96,9 @@ tests:
   CALL_STACK_TIMEOUT: "7200"
   DUNIT_PARALLEL_FORKS: "24"
   GRADLE_TASK: distributedTest
-  execute_test_timeout: 2h15m
+  EXECUTE_TEST_TIMEOUT: 2h15m
   PARALLEL_DUNIT: "true"
+  PLATFORM: "linux"
 - name: "Integration"
   CPUS: "96"
   RAM: "90"
@@ -103,8 +106,9 @@ tests:
   CALL_STACK_TIMEOUT: "1500"
   DUNIT_PARALLEL_FORKS: "48"
   GRADLE_TASK: integrationTest
-  execute_test_timeout: 40m
+  EXECUTE_TEST_TIMEOUT: 40m
   PARALLEL_DUNIT: "true"
+  PLATFORM: "linux"
 - name: "Upgrade"
   CPUS: "96"
   RAM: "160"
@@ -112,8 +116,9 @@ tests:
   CALL_STACK_TIMEOUT: "3000"
   DUNIT_PARALLEL_FORKS: "48"
   GRADLE_TASK: upgradeTest
-  execute_test_timeout: 1h
+  EXECUTE_TEST_TIMEOUT: 1h
   PARALLEL_DUNIT: "true"
+  PLATFORM: "linux"
 - name: "StressNew"
   CPUS: "96"
   RAM: "210"
@@ -121,18 +126,20 @@ tests:
   CALL_STACK_TIMEOUT: "7200"
   DUNIT_PARALLEL_FORKS: "24"
   GRADLE_TASK: repeatTest
-  execute_test_timeout: 2h15m
+  EXECUTE_TEST_TIMEOUT: 2h15m
   PARALLEL_DUNIT: "true"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "linux"
 - name: "WindowsAcceptance"
   CPUS: "16"
   RAM: "64"
   ARTIFACT_SLUG: windows-acceptancetestfiles
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: :geode-assembly:acceptanceTest
-  execute_test_timeout: 6h
+  EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "windows"
 - name: "WindowsGfshDistributed"
   CPUS: "16"
   RAM: "64"
@@ -140,9 +147,10 @@ tests:
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: distributedTest
   GRADLE_TASK_OPTIONS: "-PtestCategory=org.apache.geode.test.junit.categories.GfshTest"
-  execute_test_timeout: 6h
+  EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "windows"
 - name: "WindowsIntegration"
   CPUS: "16"
   RAM: "64"
@@ -150,23 +158,26 @@ tests:
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: integrationTest
   GRADLE_TASK_OPTIONS: "-x geode-core:integrationTest"
-  execute_test_timeout: 6h
+  EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "windows"
 - name: "WindowsCoreIntegration"
   CPUS: "16"
   RAM: "64"
   ARTIFACT_SLUG: windows-coreintegrationtestfiles
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: geode-core:integrationTest
-  execute_test_timeout: 6h
+  EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "false"
+  PLATFORM: "windows"
 - name: "WindowsUnit"
   CPUS: "16"
   RAM: "64"
   ARTIFACT_SLUG: windows-unittestfiles
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: test
-  execute_test_timeout: 6h
+  EXECUTE_TEST_TIMEOUT: 6h
   PARALLEL_DUNIT: "false"
+  PLATFORM: "windows"

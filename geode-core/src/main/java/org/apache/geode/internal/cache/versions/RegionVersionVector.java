@@ -242,7 +242,14 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
     liveHolders = new HashMap<T, RegionVersionHolder<T>>(this.memberToVersion);
     RegionVersionHolder<T> holder = liveHolders.get(mbr);
     if (holder == null) {
-      holder = new RegionVersionHolder<T>(-1);
+      if (mbr.isDiskStoreId() && mbr.equals(myId)) {
+        // For region recovered from disk, we may have local exceptions needs to be
+        // brought back during region synchronization
+        holder = localExceptions.clone();
+        holder.setVersion(localVersion.get());
+      } else {
+        holder = new RegionVersionHolder<T>(-1);
+      }
     } else {
       holder = holder.clone();
     }
@@ -804,26 +811,34 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @return true if this vector has seen the given version
    */
   public boolean contains(T id, long version) {
-    if (id.equals(this.myId)) {
-      if (isForSynchronization()) {
-        // a sync vector only has one holder & no valid version for the vector's owner
+    RegionVersionHolder<T> holder = this.memberToVersion.get(id);
+    // For region synchronization.
+    if (isForSynchronization()) {
+      if (holder == null) {
+        // we only care about missing changes from a particular member, and this
+        // vector is known to contain that member's version holder
         return true;
       }
+      if (id.equals(this.myId)) {
+        if (!myId.isDiskStoreId()) {
+          // a sync vector only has one holder if not recovered from persistence,
+          // no valid version for the vector's owner
+          return true;
+        }
+      }
+      return holder.contains(version);
+    }
+
+    // Regular GII
+    if (id.equals(this.myId)) {
       if (getCurrentVersion() < version) {
         return false;
       } else {
         return !localExceptions.hasExceptionFor(version);
       }
     }
-    RegionVersionHolder<T> holder = this.memberToVersion.get(id);
     if (holder == null) {
-      if (this.singleMember) {
-        // we only care about missing changes from a particular member, and this
-        // vector is known to contain that member's version holder
-        return true;
-      } else {
-        return false;
-      }
+      return false;
     } else {
       return holder.contains(version);
     }
@@ -1151,7 +1166,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
       if (cId != null) {
         return cId;
       }
-      if (id instanceof InternalDistributedMember) {
+      if (!id.isDiskStoreId()) {
         InternalDistributedSystem system = InternalDistributedSystem.getConnectedInstance();
         if (system != null) {
           can = (T) system.getDistributionManager().getCanonicalId((InternalDistributedMember) id);
@@ -1456,7 +1471,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   }
 
   public static RegionVersionVector<?> create(VersionSource<?> versionMember, LocalRegion owner) {
-    if (versionMember instanceof DiskStoreID) {
+    if (versionMember.isDiskStoreId()) {
       return new DiskRegionVersionVector((DiskStoreID) versionMember, owner);
     } else {
       return new VMRegionVersionVector((InternalDistributedMember) versionMember, owner);
