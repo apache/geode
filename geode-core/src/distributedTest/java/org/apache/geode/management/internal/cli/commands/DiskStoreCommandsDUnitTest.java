@@ -87,7 +87,9 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   private void createDiskStore(MemberVM jmxManager, int serverCount, String group) {
     gfsh.executeAndAssertThat(String.format(
         "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
-        DISKSTORE, DISKSTORE, group)).statusIsSuccess();
+        DISKSTORE, DISKSTORE, group))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     List<String> diskStores =
         IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).collect(Collectors.toList());
@@ -342,7 +344,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         String.format("create disk-store --name=%s --dir=%s", DISKSTORE, DISKSTORE))
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
         .statusIsSuccess();
@@ -530,7 +533,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     // Create a disk store with the input disk-dir name
     gfsh.executeAndAssertThat(
         String.format("create disk-store --name=%s --dir=%s", DISKSTORE, diskDirectoryName))
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     // Verify the server defines the disk store with the disk-dir path
     server.invoke(() -> {
