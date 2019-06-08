@@ -697,7 +697,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region, function,
                 serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true, SingleHopClientExecutorImpl.getInstance());
+                true);
           }
         } else {
           boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -711,7 +711,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region, function,
                 serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                isBucketFilter, SingleHopClientExecutorImpl.getInstance());
+                isBucketFilter);
           }
         }
       } else {
@@ -748,8 +748,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region, functionId,
                 serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true, isHA, optimizeForWrite, SingleHopClientExecutorImpl
-                    .getInstance());
+                true, isHA, optimizeForWrite);
           }
         } else {
           boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -762,8 +761,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(this.pool, this.region, functionId,
                 serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                false, isHA, optimizeForWrite, SingleHopClientExecutorImpl
-                    .getInstance());
+                false, isHA, optimizeForWrite);
           }
         }
       } else {

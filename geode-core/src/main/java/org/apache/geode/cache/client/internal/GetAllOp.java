@@ -77,7 +77,7 @@ public class GetAllOp {
       List callableTasks =
           constructGetAllTasks(region.getFullPath(), serverToFilterMap, (PoolImpl) pool, callback);
       Map<ServerLocation, Object> results =
-          SingleHopClientExecutorImpl.getInstance().submitGetAll(serverToFilterMap,
+          SingleHopClientExecutor.submitGetAll(serverToFilterMap,
               callableTasks, cms, (LocalRegion) region);
       for (ServerLocation server : results.keySet()) {
         Object serverResult = results.get(server);

@@ -50,7 +50,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 @Category({ClientServerTest.class})
 @RunWith(JUnitParamsRunner.class)
 
-public class ExecuteRegionFunctionSingleHopOpTest {
+public class ExecuteRegionFunctionSingleHopOpRetryTest {
 
   private Map<ServerLocation, HashSet<Integer>> serverToFilterMap;
   private ExecuteFunctionTestSupport testSupport;
@@ -170,8 +170,7 @@ public class ExecuteRegionFunctionSingleHopOpTest {
                 executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
                 retryAttempts,
                 ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING,
-                SingleHopClientExecutorImpl.getInstance())));
+                OPTIMIZE_FOR_WRITE_SETTING)));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
@@ -179,8 +178,7 @@ public class ExecuteRegionFunctionSingleHopOpTest {
                 function,
                 executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
                 retryAttempts,
-                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING,
-                SingleHopClientExecutorImpl.getInstance()));
+                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);

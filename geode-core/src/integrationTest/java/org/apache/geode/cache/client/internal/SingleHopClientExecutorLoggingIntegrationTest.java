@@ -26,7 +26,7 @@ import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**
- * Verifies that {@link SingleHopClientExecutorImpl#submitTask} logs any exceptions thrown by task.
+ * Verifies that {@link SingleHopClientExecutor#submitTask} logs any exceptions thrown by task.
  */
 @Category({ClientServerTest.class, LoggingTest.class})
 public class SingleHopClientExecutorLoggingIntegrationTest {
@@ -38,7 +38,7 @@ public class SingleHopClientExecutorLoggingIntegrationTest {
   public void submittedTaskShouldLogFailure() {
     String message = "I am expecting this to be logged";
 
-    SingleHopClientExecutorImpl.getInstance().submitTask(() -> {
+    SingleHopClientExecutor.submitTask(() -> {
       throw new RuntimeException(message);
     });
 

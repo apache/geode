@@ -539,7 +539,7 @@ public class ClientMetadataService {
           }
         }
       };
-      SingleHopClientExecutorImpl.getInstance().submitTask(fetchTask);
+      SingleHopClientExecutor.submitTask(fetchTask);
     }
   }
 
@@ -652,7 +652,7 @@ public class ClientMetadataService {
           }
         }
       };
-      SingleHopClientExecutorImpl.getInstance().submitTask(fetchTask);
+      SingleHopClientExecutor.submitTask(fetchTask);
     }
   }
 

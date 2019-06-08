@@ -63,8 +63,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       byte hasResult,
       Map<ServerLocation, ? extends HashSet> serverToFilterMap,
       int mRetryAttempts,
-      boolean allBuckets,
-      final SingleHopClientExecutor singleHopClientExecutor) {
+      boolean allBuckets) {
 
     Set<String> failedNodes = new HashSet<String>();
 
@@ -80,7 +79,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         hasResult, resultCollector, cms, allBuckets);
 
     final int retryAttempts =
-        singleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
             function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
@@ -102,8 +101,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       byte hasResult,
       Map<ServerLocation, ? extends HashSet> serverToFilterMap,
       int mRetryAttempts,
-      boolean allBuckets, boolean isHA, boolean optimizeForWrite,
-      final SingleHopClientExecutor singleHopClientExecutor) {
+      boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
 
     Set<String> failedNodes = new HashSet<String>();
 
@@ -119,7 +117,7 @@ public class ExecuteRegionFunctionSingleHopOp {
         hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
 
     final int retryAttempts =
-        singleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
             resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
