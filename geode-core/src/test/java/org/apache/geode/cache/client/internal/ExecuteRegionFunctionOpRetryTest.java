@@ -260,7 +260,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        retryAttempts, (final PoolImpl pool, final FailureMode failureMode) -> {
+        (final PoolImpl pool, final FailureMode failureMode) -> {
           /*
            * We know execute() handles three kinds of exception from the pool:
            *
@@ -322,7 +322,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute2);
+        ExecuteFunctionTestSupport::mockThrowOnExecute2);
 
     reexecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),

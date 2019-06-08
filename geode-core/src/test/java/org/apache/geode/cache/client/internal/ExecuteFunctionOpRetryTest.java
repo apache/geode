@@ -187,7 +187,7 @@ public class ExecuteFunctionOpRetryTest {
       final FailureMode failureModeArg, final int retryAttempts) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute2);
+        ExecuteFunctionTestSupport::mockThrowOnExecute2);
 
     when(testSupport.getExecutablePool().getRetryAttempts()).thenReturn(retryAttempts);
 

@@ -207,7 +207,7 @@ class ExecuteFunctionTestSupport {
   ExecuteFunctionTestSupport(
       final HAStatus haStatus,
       final FailureMode failureMode,
-      final int retryAttempts, final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
+      final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
 
     servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);

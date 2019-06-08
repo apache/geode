@@ -135,10 +135,10 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
   }
 
   private void createMocks(final HAStatus haStatus,
-      final FailureMode failureModeArg, final int retryAttempts) {
+      final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute4);
+        ExecuteFunctionTestSupport::mockThrowOnExecute4);
     serverToFilterMap = new HashMap<>();
     serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
     serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
@@ -149,7 +149,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       final int retryAttempts, final int expectTries,
       final FailureMode failureMode) {
 
-    createMocks(haStatus, failureMode, retryAttempts);
+    createMocks(haStatus, failureMode);
 
     executeFunctionSingleHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
