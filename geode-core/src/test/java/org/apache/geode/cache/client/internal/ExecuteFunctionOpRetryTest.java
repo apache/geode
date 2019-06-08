@@ -20,6 +20,7 @@ import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 
@@ -187,6 +188,9 @@ public class ExecuteFunctionOpRetryTest {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         retryAttempts, ExecuteFunctionTestSupport::mockThrowOnExecute2);
+
+    when(testSupport.getExecutablePool().getRetryAttempts()).thenReturn(retryAttempts);
+
     args = null;
     memberMappedArg = mock(MemberMappedArgument.class);
     userAttributes = mock(UserAttributes.class);

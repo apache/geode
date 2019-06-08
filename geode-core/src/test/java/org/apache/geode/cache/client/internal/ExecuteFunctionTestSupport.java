@@ -232,7 +232,6 @@ class ExecuteFunctionTestSupport {
 
     executablePool = mock(PoolImpl.class);
     when(executablePool.getConnectionSource()).thenReturn(connectionSource);
-    when(executablePool.getRetryAttempts()).thenReturn(retryAttempts);
 
     addPoolMockBehavior.accept(executablePool, failureMode);
   }
