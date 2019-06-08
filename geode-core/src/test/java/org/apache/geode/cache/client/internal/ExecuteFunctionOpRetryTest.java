@@ -25,6 +25,7 @@ import java.util.Collection;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -71,6 +72,7 @@ public class ExecuteFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 1",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnServerOperationException(
       final ExecuteFunctionTestSupport.HAStatus haStatus,
       final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
@@ -96,6 +98,7 @@ public class ExecuteFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 4",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeWithServerConnectivityException(
       final ExecuteFunctionTestSupport.HAStatus haStatus,
       final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
@@ -121,6 +124,7 @@ public class ExecuteFunctionOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 5",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeWithInternalFunctionInvocationTargetExceptionCallsReexecute(
       final ExecuteFunctionTestSupport.HAStatus haStatus,
       final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,

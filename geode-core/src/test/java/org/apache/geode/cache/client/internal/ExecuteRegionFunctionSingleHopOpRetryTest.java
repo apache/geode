@@ -27,6 +27,7 @@ import java.util.Map;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -70,6 +71,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 2",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnServerOperationException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -95,6 +97,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 2",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnNoServerAvailableException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -120,6 +123,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 2",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,

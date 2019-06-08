@@ -27,6 +27,7 @@ import java.util.HashSet;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -70,6 +71,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 1",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnServerOperationException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -95,6 +97,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 1",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnNoServerAvailableException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -120,6 +123,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 4",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -152,6 +156,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 5",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void executeWithInternalFunctionInvocationTargetExceptionCallsReexecute(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -171,6 +176,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 1",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void reexecuteDoesNotRetryOnServerOperationException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -190,6 +196,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 1",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void reexecuteDoesNotRetryOnNoServerAvailableException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -209,6 +216,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 1",
       "HA, STRING, 3, 4",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void reexecuteWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
@@ -235,6 +243,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 0, 2",
       "HA, STRING, 3, 5",
   })
+  @TestCaseName("[{index}] {method}: {params}")
   public void reexecuteWithInternalFunctionInvocationTargetExceptionCallsReexecute(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
