@@ -157,7 +157,7 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 3, 5",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void executeWithInternalFunctionInvocationTargetExceptionCallsReexecute(
+  public void executeWithInternalFunctionInvocationTargetExceptionCallsReExecute(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
@@ -177,13 +177,13 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 3, 1",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void reexecuteDoesNotRetryOnServerOperationException(
+  public void reExecuteDoesNotRetryOnServerOperationException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
-    runReexecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_SERVER_OPERATION_EXCEPTION);
   }
 
@@ -197,13 +197,13 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 3, 1",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void reexecuteDoesNotRetryOnNoServerAvailableException(
+  public void reExecuteDoesNotRetryOnNoServerAvailableException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
-    runReexecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_NO_AVAILABLE_SERVERS_EXCEPTION);
   }
 
@@ -217,13 +217,13 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 3, 4",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void reexecuteWithServerConnectivityException(
+  public void reExecuteWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
-    runReexecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION);
   }
 
@@ -244,13 +244,13 @@ public class ExecuteRegionFunctionOpRetryTest {
       "HA, STRING, 3, 5",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void reexecuteWithInternalFunctionInvocationTargetExceptionCallsReexecute(
+  public void reExecuteWithInternalFunctionInvocationTargetExceptionCallsReExecute(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
-    runReexecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION);
   }
 
@@ -316,15 +316,17 @@ public class ExecuteRegionFunctionOpRetryTest {
         testSupport.getExecutor(), testSupport.getResultCollector(), expectTries);
   }
 
-  private void runReexecuteTest(final HAStatus haStatus,
+  private void runReExecuteTest(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts, final int expectTries,
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        ExecuteFunctionTestSupport::mockThrowOnExecute2);
+        (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(pool
+            .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt())),
+            failureMode));
 
-    reexecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
+    reExecuteFunctionMultiHopAndValidate(haStatus, functionIdentifierType, retryAttempts,
         testSupport.getExecutablePool(),
         testSupport.getFunction(),
         testSupport.getExecutor(), testSupport.getResultCollector(), expectTries);
@@ -360,7 +362,7 @@ public class ExecuteRegionFunctionOpRetryTest {
         ArgumentMatchers.anyInt());
   }
 
-  private void reexecuteFunctionMultiHopAndValidate(final HAStatus haStatus,
+  private void reExecuteFunctionMultiHopAndValidate(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final PoolImpl executablePool,

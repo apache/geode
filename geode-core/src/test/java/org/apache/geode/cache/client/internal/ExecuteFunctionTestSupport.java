@@ -49,21 +49,8 @@ class ExecuteFunctionTestSupport {
     NOT_HA, HA
   }
 
-  // TODO: remove
-  enum ExecutionTarget {
-    REGION_NO_FILTER,
-    REGION_WITH_FILTER_1_KEY,
-    REGION_WITH_FILTER_2_KEYS,
-    SERVER,
-  }
-
   enum FunctionIdentifierType {
     STRING, OBJECT_REFERENCE
-  }
-
-  // TODO: remove
-  private enum ClientMetadataStatus {
-    CLIENT_HAS_METADATA, CLIENT_MISSING_METADATA
   }
 
   enum FailureMode {
@@ -74,32 +61,42 @@ class ExecuteFunctionTestSupport {
     THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION
   }
 
-  private List<ServerLocation> servers;
-  private ConnectionSource connectionSource;
-
-  private Function<Integer> function;
-  private ServerRegionFunctionExecutor executor;
-  private ResultCollector<Integer, Collection<Integer>> resultCollector;
+  private final Function<Integer> function;
+  private final ServerRegionFunctionExecutor executor;
+  private final ResultCollector<Integer, Collection<Integer>> resultCollector;
 
   /*
    * It would be nice to make this variable have type Cache (an interface) but that
    * won't work because the methods we are testing cast the reference to a InternalCache.
    */
-  private InternalCache cache;
+  private final InternalCache cache;
 
   /*
    * It would be nice to make this variable have type Region (an interface) but that
    * won't work because the methods we are testing cast the reference to a LocalRegion.
    */
-  private LocalRegion region;
+  private final LocalRegion region;
 
   /*
    * It would be nice to make this variable have type ExecutablePool (an interface) but that
    * won't work because the methods we are testing cast the reference to a PoolImpl.
    */
-  private PoolImpl executablePool;
+  private final PoolImpl executablePool;
 
-  static void mockThrowOnExecute2(final PoolImpl pool, final FailureMode failureMode) {
+  /**
+   * Add a {@link OngoingStubbing#thenThrow(Throwable...)} behavior to
+   * {@param whenPoolExecute}
+   *
+   * This method has to be {@code static} because it is called before
+   * {@link ExecuteFunctionTestSupport} is constructed.
+   *
+   * @param whenPoolExecute is the {@link OngoingStubbing} for (one of the ) {@code execute()}
+   *        methods on {@link PoolImpl}
+   * @param failureMode is the {@link FailureMode} that determines the kind of exception
+   *        to {@code throw}
+   */
+  static void thenThrow(final OngoingStubbing<Object> whenPoolExecute,
+      final FailureMode failureMode) {
     /*
      * We know execute() handles three kinds of exception from the pool:
      *
@@ -115,20 +112,18 @@ class ExecuteFunctionTestSupport {
      *
      * keep trying up to retry attempt limit
      */
-    final OngoingStubbing<Object> when = when(pool
-        .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt()));
     switch (failureMode) {
       case NO_FAILURE:
-        when.thenReturn(null);
+        whenPoolExecute.thenReturn(null);
         break;
       case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when.thenThrow(new ServerConnectivityException("testing"));
+        whenPoolExecute.thenThrow(new ServerConnectivityException("testing"));
         break;
       case THROW_SERVER_OPERATION_EXCEPTION:
-        when.thenThrow(new ServerOperationException("testing"));
+        whenPoolExecute.thenThrow(new ServerOperationException("testing"));
         break;
       case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when.thenThrow(new NoAvailableServersException("testing"));
+        whenPoolExecute.thenThrow(new NoAvailableServersException("testing"));
         break;
       case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
         /*
@@ -141,61 +136,7 @@ class ExecuteFunctionTestSupport {
          * hang)
          * we throw this exception first, then we throw ServerConnectivityException
          */
-        when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
-            .thenThrow(new ServerConnectivityException("testing"));
-        break;
-      default:
-        throw new AssertionError("unknown FailureMode type: " + failureMode);
-    }
-  }
-
-  static void mockThrowOnExecute4(final PoolImpl pool, final FailureMode failureMode) {
-    /*
-     * We know execute() handles three kinds of exception from the pool:
-     *
-     * InternalFunctionInvocationTargetException
-     *
-     * keep trying without regard to retry attempt limit
-     *
-     * ServerOperationException | NoAvailableServersException
-     *
-     * re-throw
-     *
-     * ServerConnectivityException
-     *
-     * keep trying up to retry attempt limit
-     */
-    final OngoingStubbing<Object> when =
-        when(pool.executeOn(
-            ArgumentMatchers.<ServerLocation>any(),
-            ArgumentMatchers.<Op>any(),
-            ArgumentMatchers.anyBoolean(),
-            ArgumentMatchers.anyBoolean()));
-    switch (failureMode) {
-      case NO_FAILURE:
-        when.thenReturn(null);
-        break;
-      case THROW_SERVER_CONNECTIVITY_EXCEPTION:
-        when.thenThrow(new ServerConnectivityException("testing"));
-        break;
-      case THROW_SERVER_OPERATION_EXCEPTION:
-        when.thenThrow(new ServerOperationException("testing"));
-        break;
-      case THROW_NO_AVAILABLE_SERVERS_EXCEPTION:
-        when.thenThrow(new NoAvailableServersException("testing"));
-        break;
-      case THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION:
-        /*
-         * The product assumes that InternalFunctionInvocationTargetException will only be
-         * encountered
-         * when the target cache is going down. That condition is transient so the product
-         * assume
-         * it's
-         * ok to keep trying forever. In order to test this situation (and for the test to not
-         * hang)
-         * we throw this exception first, then we throw ServerConnectivityException
-         */
-        when.thenThrow(new InternalFunctionInvocationTargetException("testing"))
+        whenPoolExecute.thenThrow(new InternalFunctionInvocationTargetException("testing"))
             .thenThrow(new ServerConnectivityException("testing"));
         break;
       default:
@@ -209,10 +150,10 @@ class ExecuteFunctionTestSupport {
       final FailureMode failureMode,
       final BiConsumer<PoolImpl, FailureMode> addPoolMockBehavior) {
 
-    servers = (List<ServerLocation>) mock(List.class);
+    final List<ServerLocation> servers = (List<ServerLocation>) mock(List.class);
     when(servers.size()).thenReturn(ExecuteFunctionTestSupport.NUMBER_OF_SERVERS);
 
-    connectionSource = mock(ConnectionSource.class);
+    final ConnectionSource connectionSource = mock(ConnectionSource.class);
     when(connectionSource.getAllServers()).thenReturn(servers);
 
     function = (Function<Integer>) mock(Function.class);
@@ -236,14 +177,6 @@ class ExecuteFunctionTestSupport {
     addPoolMockBehavior.accept(executablePool, failureMode);
   }
 
-  List<ServerLocation> getServers() {
-    return servers;
-  }
-
-  ConnectionSource getConnectionSource() {
-    return connectionSource;
-  }
-
   Function<Integer> getFunction() {
     return function;
   }
@@ -264,7 +197,7 @@ class ExecuteFunctionTestSupport {
     return region;
   }
 
-  public PoolImpl getExecutablePool() {
+  PoolImpl getExecutablePool() {
     return executablePool;
   }
 

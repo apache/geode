@@ -34,6 +34,8 @@ import org.mockito.ArgumentMatchers;
 
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FailureMode;
+import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FunctionIdentifierType;
+import org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
@@ -75,13 +77,13 @@ public class ExecuteFunctionOpRetryTest {
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void executeDoesNotRetryOnServerOperationException(
-      final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
-        ExecuteFunctionTestSupport.FailureMode.THROW_SERVER_OPERATION_EXCEPTION);
+        FailureMode.THROW_SERVER_OPERATION_EXCEPTION);
   }
 
   @Test
@@ -101,13 +103,13 @@ public class ExecuteFunctionOpRetryTest {
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void executeWithServerConnectivityException(
-      final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
-        ExecuteFunctionTestSupport.FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION);
+        FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION);
   }
 
   @Test
@@ -127,19 +129,19 @@ public class ExecuteFunctionOpRetryTest {
   })
   @TestCaseName("[{index}] {method}: {params}")
   public void executeWithInternalFunctionInvocationTargetExceptionCallsReexecute(
-      final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
-        ExecuteFunctionTestSupport.FailureMode.THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION);
+        FailureMode.THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION);
   }
 
-  private void runExecuteTest(final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
+  private void runExecuteTest(final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts, final int expectTries,
-      final ExecuteFunctionTestSupport.FailureMode failureMode) {
+      final FailureMode failureMode) {
 
     createMocks(haStatus, failureMode, retryAttempts);
 
@@ -152,8 +154,8 @@ public class ExecuteFunctionOpRetryTest {
         ArgumentMatchers.anyInt());
   }
 
-  private void executeFunction(final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final ExecuteFunctionTestSupport.FunctionIdentifierType functionIdentifierType,
+  private void executeFunction(final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
       final PoolImpl executablePool,
       final Function<Integer> function,
       final ServerFunctionExecutor serverFunctionExecutor,
@@ -183,11 +185,14 @@ public class ExecuteFunctionOpRetryTest {
 
   }
 
-  private void createMocks(final ExecuteFunctionTestSupport.HAStatus haStatus,
-      final FailureMode failureModeArg, final int retryAttempts) {
+  private void createMocks(final HAStatus haStatus,
+      final FailureMode failureModeArg,
+      final int retryAttempts) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        ExecuteFunctionTestSupport::mockThrowOnExecute2);
+        (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(pool
+            .execute(ArgumentMatchers.<AbstractOp>any(), ArgumentMatchers.anyInt())),
+            failureMode));
 
     when(testSupport.getExecutablePool().getRetryAttempts()).thenReturn(retryAttempts);
 

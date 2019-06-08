@@ -19,6 +19,7 @@ import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.OPTIMIZE_FOR_WRITE_SETTING;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -138,7 +139,14 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       final FailureMode failureModeArg) {
 
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
-        ExecuteFunctionTestSupport::mockThrowOnExecute4);
+        (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(
+            pool.executeOn(
+                ArgumentMatchers.<ServerLocation>any(),
+                ArgumentMatchers.<Op>any(),
+                ArgumentMatchers.anyBoolean(),
+                ArgumentMatchers.anyBoolean())),
+            failureMode));
+
     serverToFilterMap = new HashMap<>();
     serverToFilterMap.put(new ServerLocation("host1", 10), new HashSet<>());
     serverToFilterMap.put(new ServerLocation("host2", 10), new HashSet<>());
@@ -157,7 +165,8 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
         testSupport.getExecutor(), testSupport.getResultCollector(), expectTries);
   }
 
-  private void executeFunctionSingleHopAndValidate(final HAStatus haStatus,
+  private void executeFunctionSingleHopAndValidate(
+      final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final PoolImpl executablePool,
