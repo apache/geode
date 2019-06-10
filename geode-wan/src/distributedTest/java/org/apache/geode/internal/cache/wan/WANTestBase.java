@@ -2992,7 +2992,7 @@ public class WANTestBase extends DistributedTestCase {
     Locator locator = locatorsConfigured.get(0);
     await().untilAsserted(() -> {
       Map<Integer, Set<DistributionLocatorId>> allSiteMetaData =
-          ((InternalLocator) locator).getlocatorMembershipListener().getAllLocatorsInfo();
+          ((InternalLocator) locator).getLocatorMembershipListener().getAllLocatorsInfo();
       for (Map.Entry<Integer, Set<InetSocketAddress>> entry : dsIdToLocatorAddresses.entrySet()) {
         Set<DistributionLocatorId> foundLocatorIds = allSiteMetaData.get(entry.getKey());
         Set<InetSocketAddress> expectedLocators = entry.getValue();
@@ -3011,7 +3011,7 @@ public class WANTestBase extends DistributedTestCase {
             () -> assertEquals("System is not initialized", true, (getSystemStatic() != null)));
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
-    LocatorMembershipListener listener = ((InternalLocator) locator).getlocatorMembershipListener();
+    LocatorMembershipListener listener = ((InternalLocator) locator).getLocatorMembershipListener();
     if (listener == null) {
       fail(
           "No locator membership listener available. WAN is likely not enabled. Is this test in the WAN project?");
@@ -3047,7 +3047,7 @@ public class WANTestBase extends DistributedTestCase {
     Locator locator = locatorsConfigured.get(0);
     if (remoteLocators != null) {
       // Add fake remote locators to the locators map
-      ((InternalLocator) locator).getlocatorMembershipListener().getAllServerLocatorsInfo()
+      ((InternalLocator) locator).getLocatorMembershipListener().getAllServerLocatorsInfo()
           .put(remoteDsId, remoteLocators);
     }
   }
