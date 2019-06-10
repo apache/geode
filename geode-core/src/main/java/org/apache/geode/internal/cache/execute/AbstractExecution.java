@@ -49,7 +49,7 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 5.8LA
  *
  */
-public abstract class AbstractExecution implements InternalExecution {
+public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecution<IN, OUT, AGG> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -69,7 +69,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   protected volatile boolean isClientServerMode = false;
 
-  protected Set<String> failedNodes = new HashSet<String>();
+  protected Set<String> failedNodes = new HashSet<>();
 
   protected boolean isFnSerializationReqd;
 
@@ -98,7 +98,7 @@ public abstract class AbstractExecution implements InternalExecution {
 
   @MakeNotStatic
   private static final ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
-      new ConcurrentHashMap<String, byte[]>();
+      new ConcurrentHashMap<>();
 
   public static final byte NO_HA_NO_HASRESULT_NO_OPTIMIZEFORWRITE = 0;
 
@@ -205,7 +205,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return this.filter;
   }
 
-  public AbstractExecution setIsReExecute() {
+  public AbstractExecution<IN, OUT, AGG> setIsReExecute() {
     this.isReExecute = true;
     if (this.executionNodesListener != null) {
       this.executionNodesListener.reset();
@@ -258,7 +258,7 @@ public abstract class AbstractExecution implements InternalExecution {
   public void executeFunctionOnLocalPRNode(final Function fn, final FunctionContext cx,
       final PartitionedRegionFunctionResultSender sender, DistributionManager dm, boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
-      if (ServerConnection.isExecuteFunctionOnLocalNodeOnly().byteValue() == 1) {
+      if (ServerConnection.isExecuteFunctionOnLocalNodeOnly() == 1) {
         ServerConnection.executeFunctionOnLocalNodeOnly((byte) 3);// executed locally
         executeFunctionLocally(fn, cx, sender, dm);
         if (!sender.isLastResultReceived() && fn.hasResult()) {
@@ -269,15 +269,12 @@ public abstract class AbstractExecution implements InternalExecution {
       } else {
 
         final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-        newDM.getFunctionExecutor().execute(new Runnable() {
-          @Override
-          public void run() {
-            executeFunctionLocally(fn, cx, sender, newDM);
-            if (!sender.isLastResultReceived() && fn.hasResult()) {
-              ((InternalResultSender) sender).setException(new FunctionException(
-                  String.format("The function, %s, did not send last result",
-                      fn.getId())));
-            }
+        newDM.getFunctionExecutor().execute(() -> {
+          executeFunctionLocally(fn, cx, sender, newDM);
+          if (!sender.isLastResultReceived() && fn.hasResult()) {
+            ((InternalResultSender) sender).setException(new FunctionException(
+                String.format("The function, %s, did not send last result",
+                    fn.getId())));
           }
         });
       }
@@ -298,15 +295,12 @@ public abstract class AbstractExecution implements InternalExecution {
       final ResultSender sender, DistributionManager dm, final boolean isTx) {
     if (dm instanceof ClusterDistributionManager && !isTx) {
       final ClusterDistributionManager newDM = (ClusterDistributionManager) dm;
-      newDM.getFunctionExecutor().execute(new Runnable() {
-        @Override
-        public void run() {
-          executeFunctionLocally(fn, cx, sender, newDM);
-          if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
-            ((InternalResultSender) sender).setException(new FunctionException(
-                String.format("The function, %s, did not send last result",
-                    fn.getId())));
-          }
+      newDM.getFunctionExecutor().execute(() -> {
+        executeFunctionLocally(fn, cx, sender, newDM);
+        if (!((InternalResultSender) sender).isLastResultReceived() && fn.hasResult()) {
+          ((InternalResultSender) sender).setException(new FunctionException(
+              String.format("The function, %s, did not send last result",
+                  fn.getId())));
         }
       });
     } else {
@@ -335,7 +329,7 @@ public abstract class AbstractExecution implements InternalExecution {
       fn.execute(cx);
       stats.endFunctionExecution(start, fn.hasResult());
     } catch (FunctionInvocationTargetException fite) {
-      FunctionException functionException = null;
+      FunctionException functionException;
       if (fn.isHA()) {
         functionException =
             new FunctionException(new InternalFunctionInvocationTargetException(fite.getMessage()));
@@ -344,7 +338,7 @@ public abstract class AbstractExecution implements InternalExecution {
       }
       handleException(functionException, fn, cx, sender, dm);
     } catch (BucketMovedException bme) {
-      FunctionException functionException = null;
+      FunctionException functionException;
       if (fn.isHA()) {
         functionException =
             new FunctionException(new InternalFunctionInvocationTargetException(bme));
@@ -362,7 +356,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   @Override
-  public ResultCollector execute(final String functionName) {
+  public ResultCollector<OUT, AGG> execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -379,7 +373,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   @Override
-  public ResultCollector execute(Function function) throws FunctionException {
+  public ResultCollector<OUT, AGG> execute(Function function) throws FunctionException {
     if (function == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -429,7 +423,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return this.ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector executeFunction(Function fn);
+  protected abstract ResultCollector<OUT, AGG> executeFunction(Function fn);
 
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical
@@ -442,8 +436,8 @@ public abstract class AbstractExecution implements InternalExecution {
    */
   public abstract void validateExecution(Function function, Set targetMembers);
 
-  public LocalResultCollector<?, ?> getLocalResultCollector(Function function,
-      final ResultCollector<?, ?> rc) {
+  public LocalResultCollector<OUT, AGG> getLocalResultCollector(Function function,
+      final ResultCollector<OUT, AGG> rc) {
     if (rc instanceof LocalResultCollector) {
       return (LocalResultCollector) rc;
     } else {

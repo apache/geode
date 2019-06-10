@@ -67,7 +67,8 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
    * @param regionPath this is the full path of the region
    */
   public void create(RegionConfig regionConfig, String regionPath, Cache cache) {
-    RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
+    RegionFactory<Object, Object> factory =
+        getRegionFactory(cache, regionConfig.getRegionAttributes());
     RegionPath regionPathData = new RegionPath(regionPath);
     String regionName = regionPathData.getName();
     String parentRegionPath = regionPathData.getParent();
@@ -80,8 +81,9 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     factory.createSubregion(parentRegion, regionName);
   }
 
-  private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
-    RegionFactory factory = cache.createRegionFactory();
+  private <K, V> RegionFactory<K, V> getRegionFactory(Cache cache,
+      RegionAttributesType regionAttributes) {
+    RegionFactory<K, V> factory = cache.createRegionFactory();
 
     factory.setDataPolicy(DataPolicy.fromString(regionAttributes.getDataPolicy().name()));
 
@@ -90,13 +92,13 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     }
 
     if (regionAttributes.getCacheLoader() != null) {
-      ((RegionFactory<Object, Object>) factory)
+      factory
           .setCacheLoader(DeclarableTypeInstantiator.newInstance(regionAttributes.getCacheLoader(),
               cache));
     }
 
     if (regionAttributes.getCacheWriter() != null) {
-      ((RegionFactory<Object, Object>) factory)
+      factory
           .setCacheWriter(DeclarableTypeInstantiator.newInstance(regionAttributes.getCacheWriter(),
               cache));
     }
@@ -107,25 +109,25 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
       for (int i = 0; i < configListeners.size(); i++) {
         listeners[i] = DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache);
       }
-      ((RegionFactory<Object, Object>) factory).initCacheListeners(listeners);
+      factory.initCacheListeners(listeners);
     }
 
     final String keyConstraint = regionAttributes.getKeyConstraint();
     final String valueConstraint = regionAttributes.getValueConstraint();
     if (keyConstraint != null && !keyConstraint.isEmpty()) {
-      Class<Object> keyConstraintClass =
+      Class<K> keyConstraintClass =
           CliUtil.forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      ((RegionFactory<Object, Object>) factory).setKeyConstraint(keyConstraintClass);
+      factory.setKeyConstraint(keyConstraintClass);
     }
 
     if (valueConstraint != null && !valueConstraint.isEmpty()) {
-      Class<Object> valueConstraintClass =
+      Class<V> valueConstraintClass =
           CliUtil.forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      ((RegionFactory<Object, Object>) factory).setValueConstraint(valueConstraintClass);
+      factory.setValueConstraint(valueConstraintClass);
     }
 
     if (regionAttributes.getCompressor() != null) {
-      ((RegionFactory<Object, Object>) factory)
+      factory
           .setCompressor(DeclarableTypeInstantiator.newInstance(regionAttributes.getCompressor()));
     }
 
@@ -137,13 +139,13 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (regionAttributes.getEntryIdleTime() != null) {
       RegionAttributesType.ExpirationAttributesType eitl = regionAttributes.getEntryIdleTime();
-      ((RegionFactory<Object, Object>) factory).setEntryIdleTimeout(
+      factory.setEntryIdleTimeout(
           new ExpirationAttributes(Integer.valueOf(eitl.getTimeout()),
               ExpirationAction.fromXmlString(eitl.getAction())));
 
 
       if (eitl.getCustomExpiry() != null) {
-        ((RegionFactory<Object, Object>) factory).setCustomEntryIdleTimeout(
+        factory.setCustomEntryIdleTimeout(
             DeclarableTypeInstantiator.newInstance(eitl.getCustomExpiry(),
                 cache));
       }
@@ -151,12 +153,12 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (regionAttributes.getEntryTimeToLive() != null) {
       RegionAttributesType.ExpirationAttributesType ettl = regionAttributes.getEntryTimeToLive();
-      ((RegionFactory<Object, Object>) factory).setEntryTimeToLive(
+      factory.setEntryTimeToLive(
           new ExpirationAttributes(Integer.valueOf(ettl.getTimeout()),
               ExpirationAction.fromXmlString(ettl.getAction())));
 
       if (ettl.getCustomExpiry() != null) {
-        ((RegionFactory<Object, Object>) factory)
+        factory
             .setCustomEntryTimeToLive(DeclarableTypeInstantiator.newInstance(ettl.getCustomExpiry(),
                 cache));
       }
@@ -164,14 +166,14 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (regionAttributes.getRegionIdleTime() != null) {
       RegionAttributesType.ExpirationAttributesType ritl = regionAttributes.getRegionIdleTime();
-      ((RegionFactory<Object, Object>) factory).setRegionIdleTimeout(
+      factory.setRegionIdleTimeout(
           new ExpirationAttributes(Integer.valueOf(ritl.getTimeout()),
               ExpirationAction.fromXmlString(ritl.getAction())));
     }
 
     if (regionAttributes.getRegionTimeToLive() != null) {
       RegionAttributesType.ExpirationAttributesType rttl = regionAttributes.getRegionTimeToLive();
-      ((RegionFactory<Object, Object>) factory).setRegionTimeToLive(
+      factory.setRegionTimeToLive(
           new ExpirationAttributes(Integer.valueOf(rttl.getTimeout()),
               ExpirationAction.fromXmlString(rttl.getAction())));
     }
@@ -212,12 +214,12 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (regionAttributes.getGatewaySenderIds() != null) {
       Arrays.stream(regionAttributes.getGatewaySenderIds().split(","))
-          .forEach(gsi -> factory.addGatewaySenderId(gsi));
+          .forEach(factory::addGatewaySenderId);
     }
 
     if (regionAttributes.getAsyncEventQueueIds() != null) {
       Arrays.stream(regionAttributes.getAsyncEventQueueIds().split(","))
-          .forEach(gsi -> factory.addAsyncEventQueueId(gsi));
+          .forEach(factory::addAsyncEventQueueId);
     }
 
     factory.setConcurrencyChecksEnabled(regionAttributes.isConcurrencyChecksEnabled());
@@ -236,7 +238,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     return factory;
   }
 
-  PartitionAttributesImpl convertToRegionFactoryPartitionAttributes(
+  private PartitionAttributesImpl convertToRegionFactoryPartitionAttributes(
       RegionAttributesType.PartitionAttributes configAttributes, Cache cache) {
     PartitionAttributesImpl partitionAttributes = new PartitionAttributesImpl();
     if (configAttributes == null) {
@@ -281,9 +283,9 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
     if (configAttributes.getPartitionListeners() != null) {
       List<DeclarableType> configListeners = configAttributes.getPartitionListeners();
-      for (int i = 0; i < configListeners.size(); i++) {
+      for (DeclarableType configListener : configListeners) {
         partitionAttributes.addPartitionListener(
-            DeclarableTypeInstantiator.newInstance(configListeners.get(i), cache));
+            DeclarableTypeInstantiator.newInstance(configListener, cache));
       }
     }
 

@@ -104,9 +104,10 @@ public class FunctionExecutionOnLonerRegressionTest {
   }
 
   @Test
-  public void executeFunctionOnLonerShouldNotThrowClassCastException() throws Exception {
+  public void executeFunctionOnLonerShouldNotThrowClassCastException() {
     Execution<Void, Collection<String>, Collection<String>> execution =
-        FunctionService.onRegion(region).withFilter(keysForGet);
+        FunctionService.onRegion(region);
+    execution = execution.withFilter(keysForGet);
     ResultCollector<Collection<String>, Collection<String>> resultCollector =
         execution.execute(new TestFunction());
     assertThat(resultCollector.getResult())

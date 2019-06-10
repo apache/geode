@@ -50,7 +50,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  Execution onRegion(Region region);
+  <I, O, A> Execution<I, O, A> onRegion(Region region);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -63,7 +63,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  Execution onServer(Pool pool);
+  <I, O, A> Execution<I, O, A> onServer(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -74,7 +74,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  Execution onServers(Pool pool);
+  <I, O, A> Execution<I, O, A> onServers(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -89,7 +89,7 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  Execution onServer(RegionService regionService);
+  <I, O, A> Execution<I, O, A> onServer(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -102,7 +102,7 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  Execution onServers(RegionService regionService);
+  <I, O, A> Execution<I, O, A> onServers(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -114,7 +114,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
-  Execution onMember(DistributedMember distributedMember);
+  <I, O, A> Execution<I, O, A> onMember(DistributedMember distributedMember);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -131,7 +131,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  Execution onMembers(String... groups);
+  <I, O, A> Execution<I, O, A> onMembers(String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -142,7 +142,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
-  Execution onMembers(Set<DistributedMember> distributedMembers);
+  <I, O, A> Execution<I, O, A> onMembers(Set<DistributedMember> distributedMembers);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -155,7 +155,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  Execution onMember(String... groups);
+  <I, O, A> Execution<I, O, A> onMember(String... groups);
 
   /**
    * Returns the {@link Function} defined by the functionId, returns null if no function is found

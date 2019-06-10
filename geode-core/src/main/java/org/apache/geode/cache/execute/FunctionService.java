@@ -72,7 +72,7 @@ public class FunctionService {
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onRegion(Region region) {
+  public static <I, O, A> Execution<I, O, A> onRegion(Region region) {
     return getFunctionExecutionService().onRegion(region);
   }
 
@@ -87,7 +87,7 @@ public class FunctionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onServer(Pool pool) {
+  public static <I, O, A> Execution<I, O, A> onServer(Pool pool) {
     return getFunctionExecutionService().onServer(pool);
   }
 
@@ -100,7 +100,7 @@ public class FunctionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  public static Execution onServers(Pool pool) {
+  public static <I, O, A> Execution<I, O, A> onServers(Pool pool) {
     return getFunctionExecutionService().onServers(pool);
   }
 
@@ -117,7 +117,7 @@ public class FunctionService {
    *         pool
    * @since GemFire 6.5
    */
-  public static Execution onServer(RegionService regionService) {
+  public static <I, O, A> Execution<I, O, A> onServer(RegionService regionService) {
     return getFunctionExecutionService().onServer(regionService);
   }
 
@@ -132,7 +132,7 @@ public class FunctionService {
    *         pool
    * @since GemFire 6.5
    */
-  public static Execution onServers(RegionService regionService) {
+  public static <I, O, A> Execution<I, O, A> onServers(RegionService regionService) {
     return getFunctionExecutionService().onServers(regionService);
   }
 
@@ -146,7 +146,7 @@ public class FunctionService {
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
-  public static Execution onMember(DistributedMember distributedMember) {
+  public static <I, O, A> Execution<I, O, A> onMember(DistributedMember distributedMember) {
     return getFunctionExecutionService().onMember(distributedMember);
   }
 
@@ -165,7 +165,7 @@ public class FunctionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  public static Execution onMembers(String... groups) {
+  public static <I, O, A> Execution<I, O, A> onMembers(String... groups) {
     return getFunctionExecutionService().onMembers(groups);
   }
 
@@ -178,7 +178,7 @@ public class FunctionService {
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
-  public static Execution onMembers(Set<DistributedMember> distributedMembers) {
+  public static <I, O, A> Execution<I, O, A> onMembers(Set<DistributedMember> distributedMembers) {
     return getFunctionExecutionService().onMembers(distributedMembers);
   }
 
@@ -193,7 +193,7 @@ public class FunctionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  public static Execution onMember(String... groups) {
+  public static <I, O, A> Execution<I, O, A> onMember(String... groups) {
     return getFunctionExecutionService().onMember(groups);
   }
 

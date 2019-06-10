@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.cache.Region;
@@ -29,7 +28,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
-public class PartitionedRegionFunctionExecutor extends AbstractExecution {
+public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
+    extends AbstractExecution<IN, OUT, AGG> {
 
   private final PartitionedRegion pr;
 
@@ -46,21 +46,6 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
               "region"));
     }
     this.pr = (PartitionedRegion) r;
-  }
-
-  private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe) {
-    super(prfe);
-    this.pr = prfe.pr;
-    this.executeOnBucketSet = prfe.executeOnBucketSet;
-    this.isPRSingleHop = prfe.isPRSingleHop;
-    this.isReExecute = prfe.isReExecute;
-    if (prfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(prfe.filter);
-    }
-    if (prfe.sender != null) {
-      this.sender = prfe.sender;
-    }
   }
 
   private PartitionedRegionFunctionExecutor(PartitionedRegionFunctionExecutor prfe,
@@ -249,9 +234,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
     bucketIDs.retainAll(actualBucketSet);
 
-    Iterator<Integer> it = bucketIDs.iterator();
-    while (it.hasNext()) {
-      int bid = it.next();
+    for (int bid : bucketIDs) {
       if (!actualBucketSet.contains(bid)) {
         throw new FunctionException("Bucket " + bid + " does not exist.");
       }
@@ -316,16 +299,14 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    final StringBuffer buf = new StringBuffer();
-    buf.append("[ PartitionedRegionFunctionExecutor:");
-    buf.append("args=");
-    buf.append(this.args);
-    buf.append(";filter=");
-    buf.append(this.filter);
-    buf.append(";region=");
-    buf.append(this.pr.getName());
-    buf.append("]");
-    return buf.toString();
+    return "[ PartitionedRegionFunctionExecutor:"
+        + "args="
+        + this.args
+        + ";filter="
+        + this.filter
+        + ";region="
+        + this.pr.getName()
+        + "]";
   }
 
   @Override

@@ -36,7 +36,8 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class MemberFunctionExecutor extends AbstractExecution {
+public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG>
+    implements Execution<IN, OUT, AGG> {
 
   protected InternalDistributedSystem ds;
 
@@ -95,7 +96,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @SuppressWarnings("unchecked")
-  private ResultCollector executeFunction(final Function function,
+  private ResultCollector<OUT, AGG> executeFunction(final Function function,
       ResultCollector resultCollector) {
     final DistributionManager dm = this.ds.getDistributionManager();
     final Set dest = new HashSet(this.members);
@@ -109,7 +110,8 @@ public class MemberFunctionExecutor extends AbstractExecution {
 
     final InternalDistributedMember localVM =
         this.ds.getDistributionManager().getDistributionManagerId();
-    final LocalResultCollector<?, ?> localRC = getLocalResultCollector(function, resultCollector);
+    final LocalResultCollector<OUT, AGG> localRC =
+        getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
     if (!dest.contains(localVM)) {
@@ -129,7 +131,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
       boolean isTx = false;
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
-        isTx = cache.getTxManager().getTXState() == null ? false : true;
+        isTx = cache.getTxManager().getTXState() != null;
       }
       final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
           getArgumentsForMember(localVM.getId()), resultSender);
@@ -137,8 +139,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
     }
 
     if (!dest.isEmpty()) {
-      HashMap<InternalDistributedMember, Object> memberArgs =
-          new HashMap<InternalDistributedMember, Object>();
+      HashMap<InternalDistributedMember, Object> memberArgs = new HashMap<>();
       Iterator<DistributedMember> iter = dest.iterator();
       while (iter.hasNext()) {
         InternalDistributedMember recip = (InternalDistributedMember) iter.next();
@@ -148,8 +149,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
       MemberFunctionResultWaiter resultReceiver = new MemberFunctionResultWaiter(this.ds, localRC,
           function, memberArgs, dest, resultSender);
 
-      ResultCollector reply = resultReceiver.getFunctionResultFrom(dest, function, this);
-      return reply;
+      return resultReceiver.getFunctionResultFrom(dest, function, this);
     }
     return localRC;
   }
@@ -184,7 +184,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function) {
+  protected ResultCollector<OUT, AGG> executeFunction(Function function) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;
       if (rc == null) {
@@ -198,54 +198,54 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public Execution setArguments(Object args) {
+  public Execution<IN, OUT, AGG> setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new MemberFunctionExecutor(this, args);
+    return new MemberFunctionExecutor<>(this, args);
   }
 
   // Changing the object!!
   @Override
-  public Execution withArgs(Object args) {
+  public Execution<IN, OUT, AGG> withArgs(Object args) {
     return setArguments(args);
   }
 
   // Changing the object!!
   @Override
-  public Execution withCollector(ResultCollector rs) {
+  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new MemberFunctionExecutor(this, rs);
+    return new MemberFunctionExecutor<>(this, rs);
   }
 
   @Override
-  public Execution withFilter(Set filter) {
+  public Execution<IN, OUT, AGG> withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "bucket as filter"));
   }
 
   @Override
-  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "MemberMappedArgs"));
     }
-    return new MemberFunctionExecutor(this, argument);
+    return new MemberFunctionExecutor<>(this, argument);
   }
 
   @Override
