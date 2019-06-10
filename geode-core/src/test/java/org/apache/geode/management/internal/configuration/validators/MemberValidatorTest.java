@@ -109,7 +109,7 @@ public class MemberValidatorTest {
   public void findGroupsWithThisElement() throws Exception {
     cacheConfig.getRegions().add(regionConfig);
     when(service.getCacheConfig("cluster")).thenReturn(cacheConfig);
-    assertThat(validator.findGroupsWithThisElement(regionConfig, regionManager))
+    assertThat(validator.findGroupsWithThisElement(regionConfig.getId(), regionManager))
         .containsExactly("cluster");
 
     when(service.getCacheConfig("cluster")).thenReturn(null);
@@ -118,7 +118,7 @@ public class MemberValidatorTest {
 
     CacheConfig another = new CacheConfig();
     when(service.getCacheConfig("group3")).thenReturn(another);
-    assertThat(validator.findGroupsWithThisElement(regionConfig, regionManager))
+    assertThat(validator.findGroupsWithThisElement(regionConfig.getId(), regionManager))
         .containsExactlyInAnyOrder("group1", "group2");
   }
 

@@ -179,7 +179,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     String[] groupsWithThisElement =
-        memberValidator.findGroupsWithThisElement(config, configurationManager);
+        memberValidator.findGroupsWithThisElement(config.getId(), configurationManager);
     if (groupsWithThisElement.length == 0) {
       throw new EntityNotFoundException("Cache element '" + config.getId() + "' does not exist");
     }

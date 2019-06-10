@@ -15,11 +15,11 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,12 +47,14 @@ public class MemberValidator {
 
   public void validateCreate(CacheElement config, ConfigurationManager manager) {
 
-    String[] groupWithThisElement = findGroupsWithThisElement(config, manager);
-    if (groupWithThisElement.length == 0) {
+    Map<String, CacheElement> existingElementsAndTheirGroups =
+        findCacheElement(config.getId(), manager);
+    if (existingElementsAndTheirGroups.size() == 0) {
       return;
     }
 
-    Set<DistributedMember> membersOfExistingGroups = findMembers(groupWithThisElement);
+    Set<DistributedMember> membersOfExistingGroups =
+        findMembers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
     Set<DistributedMember> membersOfNewGroup = findMembers(config.getConfigGroup());
     Collection<DistributedMember> intersection =
         CollectionUtils.intersection(membersOfExistingGroups, membersOfNewGroup);
@@ -62,18 +64,34 @@ public class MemberValidator {
       throw new EntityExistsException(
           "Member(s) " + members + " already has this element created.");
     }
+
+    // if there is no common member, we still need to verify if the new config is compatible with
+    // the existing ones.
+    for (Map.Entry<String, CacheElement> existing : existingElementsAndTheirGroups.entrySet()) {
+      manager.checkCompatibility(config, existing.getKey(), existing.getValue());
+    }
   }
 
-  public String[] findGroupsWithThisElement(CacheElement config, ConfigurationManager manager) {
-    // if the same element exists in some groups already, make sure the groups has no common members
-    List<String> groupWithThisElement = new ArrayList<>();
+  public String[] findGroupsWithThisElement(String id, ConfigurationManager manager) {
+    return findCacheElement(id, manager).keySet().toArray(new String[0]);
+  }
+
+  /**
+   * this returns a map of CacheElement with this id, with the group as the key of the map
+   */
+  public Map<String, CacheElement> findCacheElement(String id, ConfigurationManager manager) {
+    Map<String, CacheElement> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
-      if (cacheConfig != null && manager.get(config.getId(), cacheConfig) != null) {
-        groupWithThisElement.add(group);
+      if (cacheConfig == null) {
+        continue;
+      }
+      CacheElement existing = manager.get(id, cacheConfig);
+      if (existing != null) {
+        results.put(group, existing);
       }
     }
-    return groupWithThisElement.toArray(new String[0]);
+    return results;
   }
 
   /**

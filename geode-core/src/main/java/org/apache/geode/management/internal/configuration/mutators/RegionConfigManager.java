@@ -93,4 +93,32 @@ public class RegionConfigManager
   public RegionConfig get(String id, CacheConfig existing) {
     return CacheElement.findElement(existing.getRegions(), id);
   }
+
+  @Override
+  public void checkCompatibility(RegionConfig incoming, String group, RegionConfig existing) {
+    // if their types are the same, then they are compatible
+    if (incoming.getType().equals(existing.getType())) {
+      return;
+    }
+
+    // one has to be the proxy of the other's main type
+    if (!incoming.getType().contains("PROXY") && !existing.getType().contains("PROXY")) {
+      throw new IllegalArgumentException(getDescription(incoming) + " is not compatible with "
+          + group + "'s existing regionConfig "
+          + getDescription(existing));
+    }
+
+    // the beginning part of the type has to be the same
+    String incomingType = incoming.getType().split("_")[0];
+    String existingType = existing.getType().split("_")[0];
+    if (!incomingType.equals(existingType)) {
+      throw new IllegalArgumentException(
+          getDescription(incoming) + " is not compatible with " + group + "'s existing "
+              + getDescription(existing));
+    }
+  }
+
+  private String getDescription(RegionConfig regionConfig) {
+    return "Region " + regionConfig.getName() + " of type " + regionConfig.getType();
+  }
 }

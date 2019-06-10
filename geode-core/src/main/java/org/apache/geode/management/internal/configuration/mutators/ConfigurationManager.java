@@ -31,6 +31,10 @@ import org.apache.geode.cache.configuration.CacheElement;
  */
 @Experimental
 public interface ConfigurationManager<T extends CacheElement> {
+  /**
+   * specify how to add the config to the existing cache config. Note at this point, the config
+   * should have passed all the validations already.
+   */
   void add(T config, CacheConfig existing);
 
   void update(T config, CacheConfig existing);
@@ -40,4 +44,15 @@ public interface ConfigurationManager<T extends CacheElement> {
   List<? extends T> list(T filterConfig, CacheConfig existing);
 
   T get(String id, CacheConfig existing);
+
+  /**
+   * @param incoming the one that's about to be persisted
+   * @param group the group name of the existing cache element
+   * @param existing the existing cache element on another group
+   * @throws IllegalArgumentException if the incoming CacheElement is not compatible with the
+   *         existing
+   *
+   *         Note: incoming and exiting should have the same ID already
+   */
+  default void checkCompatibility(T incoming, String group, T existing) {};
 }
