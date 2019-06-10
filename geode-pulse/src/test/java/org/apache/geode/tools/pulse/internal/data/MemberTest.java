@@ -109,6 +109,7 @@ public class MemberTest {
     assertThat(resultingClient.getClientCQCount()).isEqualTo(0);
     assertThat(resultingClient.isSubscriptionEnabled()).isTrue();
     assertThat(resultingClient.getCpuUsage()).isEqualTo(0.2);
+    assertThat(resultingClient.getUptime()).isEqualTo(2);
     assertThat(resultingClient.getProcessCpuTime()).isEqualTo(2000000000);
   }
 
@@ -156,6 +157,7 @@ public class MemberTest {
     assertThat(resultingClient.getClientCQCount()).isEqualTo(0);
     assertThat(resultingClient.isSubscriptionEnabled()).isTrue();
     assertThat(resultingClient.getCpuUsage()).isEqualTo(0.2);
+    assertThat(resultingClient.getUptime()).isEqualTo(2);
     assertThat(resultingClient.getProcessCpuTime()).isEqualTo(2000000000);
   }
 
