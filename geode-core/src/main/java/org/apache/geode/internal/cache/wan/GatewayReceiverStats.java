@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.cache.wan;
 
-import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.statistics.meters.LegacyStatCounter;
 
 public class GatewayReceiverStats extends CacheServerStats {
 
@@ -104,7 +105,7 @@ public class GatewayReceiverStats extends CacheServerStats {
    * Id of the events distributed statistic
    */
   private int eventsReceivedId;
-  private final FunctionCounter eventsReceivedCounter;
+  private final Counter eventsReceivedCounter;
   private static final String EVENTS_RECEIVED_COUNTER_NAME =
       "cache.gatewayreceiver.events.received";
   private static final String EVENTS_RECEIVED_COUNTER_DESCRIPTION =
@@ -189,8 +190,8 @@ public class GatewayReceiverStats extends CacheServerStats {
     eventsRetriedId = statType.nameToId(EVENTS_RETRIED);
 
     this.meterRegistry = meterRegistry;
-    eventsReceivedCounter = FunctionCounter.builder(EVENTS_RECEIVED_COUNTER_NAME, stats,
-        s -> s.getInt(eventsReceivedId))
+    eventsReceivedCounter = LegacyStatCounter.builder(EVENTS_RECEIVED_COUNTER_NAME)
+        .intStatistic(stats, eventsReceivedId)
         .description(EVENTS_RECEIVED_COUNTER_DESCRIPTION)
         .baseUnit(EVENTS_RECEIVED_COUNTER_UNITS)
         .register(meterRegistry);
@@ -246,11 +247,11 @@ public class GatewayReceiverStats extends CacheServerStats {
    * Increments the number of events received by 1.
    */
   public void incEventsReceived(int delta) {
-    this.stats.incInt(eventsReceivedId, delta);
+    eventsReceivedCounter.increment(delta);
   }
 
   public int getEventsReceived() {
-    return this.stats.getInt(eventsReceivedId);
+    return (int) eventsReceivedCounter.count();
   }
 
   /**
