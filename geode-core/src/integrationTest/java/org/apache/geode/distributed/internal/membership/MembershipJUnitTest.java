@@ -34,8 +34,10 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Properties;
 
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -68,6 +70,9 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   /**
    * This test creates a locator with a colocated membership manager and then creates a second
@@ -126,7 +131,7 @@ public class MembershipJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-          new Properties(), null);
+          new Properties(), null, temporaryFolder.getRoot());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -270,7 +275,8 @@ public class MembershipJUnitTest {
       p.setProperty(ConfigurationProperties.SECURITY_UDP_DHALGO, "AES:128");
       // this locator will hook itself up with the first MembershipManager
       // to be created
-      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null);
+      l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
+          temporaryFolder.getRoot());
 
       // create configuration objects
       Properties nonDefault = new Properties();
