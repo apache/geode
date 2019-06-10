@@ -27,7 +27,7 @@ import java.util.Collection;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 
-import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Counter;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -272,9 +272,9 @@ public class GatewayReceiverMetricsTest {
 
     @Override
     public void execute(FunctionContext<Void> context) {
-      FunctionCounter eventsReceivedCounter = SimpleMetricsPublishingService.getRegistry()
+      Counter eventsReceivedCounter = SimpleMetricsPublishingService.getRegistry()
           .find("cache.gatewayreceiver.events.received")
-          .functionCounter();
+          .counter();
 
       Object result = eventsReceivedCounter == null
           ? "Meter not found."

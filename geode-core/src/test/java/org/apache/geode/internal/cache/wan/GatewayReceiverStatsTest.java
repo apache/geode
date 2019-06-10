@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan;
 
 
+import static org.apache.geode.internal.cache.wan.GatewayReceiverStats.createGatewayReceiverStats;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -22,11 +23,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.micrometer.core.instrument.FunctionCounter;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -46,6 +48,7 @@ public class GatewayReceiverStatsTest {
   private MeterRegistry registry;
   private String ownerName;
   private StatisticsFactory factory;
+  private GatewayReceiverStats gatewayReceiverStats;
 
   @Before
   public void setup() {
@@ -60,8 +63,15 @@ public class GatewayReceiverStatsTest {
     when(factory.createAtomicStatistics(any(), any()))
         .thenReturn(statistics);
 
-    registry = new CompositeMeterRegistry();
+    registry = new SimpleMeterRegistry();
 
+  }
+
+  @After
+  public void closeStats() {
+    if (gatewayReceiverStats != null) {
+      gatewayReceiverStats.close();
+    }
   }
 
   @Test
@@ -71,16 +81,32 @@ public class GatewayReceiverStatsTest {
     when(statisticsType.nameToId(EVENTS_RECEIVED_STAT_NAME))
         .thenReturn(eventsReceivedStatId);
 
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     int delta = 99;
 
     gatewayReceiverStats.incEventsReceived(delta);
 
     verify(statistics).incInt(eventsReceivedStatId, delta);
+  }
 
-    gatewayReceiverStats.close();
+  @Test
+  public void incEventsReceived_incrementsTheRegisteredEventsReceivedCounter() {
+    int eventsReceivedStatId = 33;
+
+    when(statisticsType.nameToId(EVENTS_RECEIVED_STAT_NAME))
+        .thenReturn(eventsReceivedStatId);
+
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
+
+    int delta = 99;
+
+    gatewayReceiverStats.incEventsReceived(delta);
+
+    Counter registeredEventsReceivedMeter = registry.find(EVENTS_RECEIVED_COUNTER_NAME).counter();
+
+    assertThat(registeredEventsReceivedMeter.count())
+        .isEqualTo(delta);
   }
 
   @Test
@@ -93,28 +119,16 @@ public class GatewayReceiverStatsTest {
     when(statistics.getInt(eventsReceivedId))
         .thenReturn(statValue);
 
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
-    FunctionCounter eventsReceivedCounter = registry
-        .find(EVENTS_RECEIVED_COUNTER_NAME)
-        .functionCounter();
-
-    assertThat(eventsReceivedCounter)
-        .as("events received counter")
-        .isNotNull();
-
-    assertThat(eventsReceivedCounter.count())
+    assertThat(gatewayReceiverStats.getEventsReceived())
         .as("events received count")
         .isEqualTo(statValue);
-
-    gatewayReceiverStats.close();
   }
 
   @Test
   public void eventsReceivedMeter_descriptionMatchesEventsReceivedStat() {
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
     verify(factory)
@@ -127,14 +141,11 @@ public class GatewayReceiverStatsTest {
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME).getId().getDescription())
         .as("meter description")
         .isEqualTo(descriptionCaptor.getValue());
-
-    gatewayReceiverStats.close();
   }
 
   @Test
   public void eventsReceivedMeter_unitsMatchesEventsReceivedStat() {
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     ArgumentCaptor<String> unitsCaptor = ArgumentCaptor.forClass(String.class);
     verify(factory).createIntCounter(eq(EVENTS_RECEIVED_STAT_NAME), any(), unitsCaptor.capture());
@@ -146,8 +157,6 @@ public class GatewayReceiverStatsTest {
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME).getId().getBaseUnit())
         .as("meter base unit")
         .isEqualTo(unitsCaptor.getValue());
-
-    gatewayReceiverStats.close();
   }
 
   @Test
@@ -156,8 +165,7 @@ public class GatewayReceiverStatsTest {
     when(statisticsType.nameToId(EVENTS_RECEIVED_STAT_NAME))
         .thenReturn(eventsReceivedId);
 
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME))
         .as("events received counter before closing the stats")
@@ -168,6 +176,8 @@ public class GatewayReceiverStatsTest {
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME))
         .as("events received counter after closing the stats")
         .isNull();
+
+    gatewayReceiverStats = null;
   }
 
   @Test
@@ -176,8 +186,7 @@ public class GatewayReceiverStatsTest {
     when(statisticsType.nameToId(EVENTS_RECEIVED_STAT_NAME))
         .thenReturn(eventsReceivedId);
 
-    GatewayReceiverStats gatewayReceiverStats =
-        GatewayReceiverStats.createGatewayReceiverStats(factory, ownerName, registry);
+    gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     String foreignMeterName = "some.meter.not.created.by.the.gateway.receiver.stats";
 
@@ -189,6 +198,8 @@ public class GatewayReceiverStatsTest {
     assertThat(meterNamed(foreignMeterName))
         .as("foreign meter after closing the stats")
         .isNotNull();
+
+    gatewayReceiverStats = null;
   }
 
   private Meter meterNamed(String meterName) {
