@@ -137,7 +137,6 @@ public class FunctionRetryTestBase implements Serializable {
 
     setClientMetaDataStatus(clientMetadataStatus);
 
-    // TODO: remove this once this test is passing (it's here for debugging)
     IgnoredException.addIgnoredException(FunctionException.class.getName());
 
     AsyncInvocation clientExecuteAsync = client.invokeAsync(() -> {
@@ -171,7 +170,7 @@ public class FunctionRetryTestBase implements Serializable {
         try {
           resultCollector.getResult();
         } catch (Exception ex) {
-          System.out.println("#### Exception while collecting the result: " + ex.getMessage());
+          logger.info("Exception while collecting the result: " + ex.getMessage());
         }
       }
     });
@@ -368,7 +367,7 @@ public class FunctionRetryTestBase implements Serializable {
 
     @Override
     public void execute(final FunctionContext<Integer> context) {
-      LogService.getLogger().info("#### Function Executing on server.");
+      LogService.getLogger().info("Function Executing on server.");
       final int thinkTimeMillis = context.getArguments();
       try {
         Thread.sleep(thinkTimeMillis);

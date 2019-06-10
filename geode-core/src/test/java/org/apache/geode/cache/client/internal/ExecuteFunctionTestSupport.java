@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache.client.internal;
 
-import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus.*;
+import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.HAStatus.HA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -194,7 +194,9 @@ class ExecuteFunctionTestSupport {
     return cache;
   }
 
-  LocalRegion getRegion() { return region; }
+  LocalRegion getRegion() {
+    return region;
+  }
 
   PoolImpl getExecutablePool() {
     return executablePool;
