@@ -16,18 +16,22 @@ package org.apache.geode.internal.statistics;
 
 import org.apache.geode.InternalGemFireException;
 
-public class OSVerifier {
+public final class OSVerifier {
 
-  private boolean isLinux;
-  private String currentOs;
+  private final boolean isLinux;
+  private final String currentOs;
 
-  public OSVerifier() {
+  private OSVerifier() {
     currentOs = System.getProperty("os.name", "unknown");
     isLinux = (currentOs.startsWith("Linux") ? true : false);
     if (!isSupportedOs(currentOs)) {
       throw new InternalGemFireException(
           String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.", currentOs));
     }
+  }
+
+  public static OSVerifier build() {
+    return new OSVerifier();
   }
 
   private boolean isSupportedOs(String os) {
@@ -43,13 +47,7 @@ public class OSVerifier {
     return this.isLinux;
   }
 
-  /**
-   * If the current OS is not Linux, an exception will be thrown
-   */
-  public void continueIfLinux() {
-    if (!isLinux) {
-      throw new InternalGemFireException(
-          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.", currentOs));
-    }
+  public String getCurrentOS() {
+    return this.currentOs;
   }
 }

@@ -34,36 +34,32 @@ public class OSVerifierTest {
   @Test
   public void givenLinuxOs_thenOSVerifierObjectCanBeBuilt() {
     System.setProperty("os.name", "Linux");
-    OSVerifier os = new OSVerifier();
-    assertTrue(os.osIsLinux());
+    assertTrue(OSVerifier.build().osIsLinux());
   }
 
   @Test
   public void givenWindowsOs_thenOSVerifierObjectCanBeBuilt() {
     System.setProperty("os.name", "Windows");
-    OSVerifier os = new OSVerifier();
-    assertTrue(!os.osIsLinux());
+    assertTrue(!OSVerifier.build().osIsLinux());
   }
 
   @Test
   public void givenMacOs_thenOSVerifierObjectCanBeBuilt() {
     System.setProperty("os.name", "Mac OS X");
-    OSVerifier os = new OSVerifier();
-    assertTrue(!os.osIsLinux());
+    assertTrue(!OSVerifier.build().osIsLinux());
   }
 
   @Test
   public void givenSolarisOs_thenOSVerifierObjectCanBeBuilt() {
     System.setProperty("os.name", "SunOS");
-    OSVerifier os = new OSVerifier();
-    assertTrue(!os.osIsLinux());
+    assertTrue(!OSVerifier.build().osIsLinux());
   }
 
   @Test
   public void givenUnknownOs_thenOSVerifierThrowsAnException() {
     System.setProperty("os.name", "AnyOtherOS");
     exceptionGrabber.expect(InternalGemFireException.class);
-    new OSVerifier();
+    OSVerifier.build();
   }
 
 }

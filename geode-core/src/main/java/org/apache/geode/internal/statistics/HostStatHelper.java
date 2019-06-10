@@ -17,6 +17,7 @@ package org.apache.geode.internal.statistics;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import org.apache.geode.InternalGemFireException;
 import org.apache.geode.Statistics;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
@@ -32,14 +33,14 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
 public class HostStatHelper {
   private static final int PROCESS_STAT_FLAG = 1;
   private static final int SYSTEM_STAT_FLAG = 2;
-  private static OSVerifier osVerifier;
+  private static final boolean isLinux;
 
   static {
-    osVerifier = new OSVerifier();
+    isLinux = OSVerifier.build().osIsLinux();
   }
 
   public static boolean isLinux() {
-    return osVerifier.osIsLinux();
+    return isLinux;
   }
 
   private HostStatHelper() {
@@ -47,17 +48,17 @@ public class HostStatHelper {
   }
 
   static int initOSStats() {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     return LinuxProcFsStatistics.init();
   }
 
   static void closeOSStats() {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     LinuxProcFsStatistics.close();
   }
 
   static void readyRefreshOSStats() {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     LinuxProcFsStatistics.readyRefresh();
   }
 
@@ -66,7 +67,7 @@ public class HostStatHelper {
    * stats and storing them in the instance.
    */
   private static void refreshProcess(LocalStatisticsImpl statistics) {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     int pid = (int) statistics.getNumericId();
     LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
         statistics._getLongStorage(), statistics._getDoubleStorage());
@@ -77,7 +78,7 @@ public class HostStatHelper {
    * machine and storing them in the instance.
    */
   private static void refreshSystem(LocalStatisticsImpl statistics) {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
         statistics._getDoubleStorage());
   }
@@ -101,7 +102,7 @@ public class HostStatHelper {
    * contain a snapshot of the current statistic values for the specified process.
    */
   static Statistics newProcess(OsStatisticsFactory osStatisticsFactory, long pid, String name) {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxProcessStats.getType(), name, pid,
         PROCESS_STAT_FLAG);
@@ -116,7 +117,7 @@ public class HostStatHelper {
    * @since GemFire 3.5
    */
   static ProcessStats newProcessStats(Statistics statistics) {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     return LinuxProcessStats.createProcessStats(statistics);
   }
 
@@ -125,7 +126,7 @@ public class HostStatHelper {
    * will contain a snapshot of the current statistic values for the local machine.
    */
   static void newSystem(OsStatisticsFactory osStatisticsFactory, long id) {
-    osVerifier.continueIfLinux();
+    continueIfLinux();
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxSystemStats.getType(),
         getHostSystemName(), id, SYSTEM_STAT_FLAG);
@@ -145,5 +146,16 @@ public class HostStatHelper {
     } catch (UnknownHostException ignored) {
     }
     return hostname;
+  }
+
+  /**
+   * If the current OS is not Linux, an exception will be thrown
+   */
+  public static void continueIfLinux() {
+    if (!isLinux) {
+      throw new InternalGemFireException(
+          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.",
+              OSVerifier.build().getCurrentOS()));
+    }
   }
 }
