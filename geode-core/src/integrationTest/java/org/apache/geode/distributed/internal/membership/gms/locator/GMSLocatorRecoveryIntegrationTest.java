@@ -59,7 +59,7 @@ import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class GMSLocatorRecoveryJUnitTest {
+public class GMSLocatorRecoveryIntegrationTest {
 
   private File tempStateFile;
   private GMSLocator locator;
