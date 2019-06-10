@@ -40,7 +40,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
     Map<Integer, Set<DistributionLocatorId>> allSiteMetaData =
-        ((InternalLocator) locator).getlocatorMembershipListener().getAllLocatorsInfo();
+        ((InternalLocator) locator).getLocatorMembershipListener().getAllLocatorsInfo();
     System.out.println("Added : allSiteMetaData : " + allSiteMetaData);
   }
 
@@ -50,7 +50,7 @@ public class MyDistributedSystemListener implements DistributedSystemListener {
     List<Locator> locatorsConfigured = Locator.getLocators();
     Locator locator = locatorsConfigured.get(0);
     Map<Integer, Set<DistributionLocatorId>> allSiteMetaData =
-        ((InternalLocator) locator).getlocatorMembershipListener().getAllLocatorsInfo();
+        ((InternalLocator) locator).getLocatorMembershipListener().getAllLocatorsInfo();
     System.out.println("Removed : allSiteMetaData : " + allSiteMetaData);
   }
 
