@@ -32,6 +32,7 @@ import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.Properties;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -107,6 +108,7 @@ public class AcceptorImplTest {
     when(system.getStatisticsManager()).thenReturn(statisticsManager);
     when(statisticsManager.createType(any(), any(), any())).thenReturn(mock(StatisticsType.class));
     when(statisticsManager.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
+    when(cache.getMeterRegistry()).thenReturn(new SimpleMeterRegistry());
 
     Acceptor acceptor = new AcceptorImpl(0, null, false, DEFAULT_SOCKET_BUFFER_SIZE,
         DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS, cache, MINIMUM_MAX_CONNECTIONS, 0,
