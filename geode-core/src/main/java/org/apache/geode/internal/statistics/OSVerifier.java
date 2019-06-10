@@ -18,15 +18,38 @@ import org.apache.geode.InternalGemFireException;
 
 public class OSVerifier {
 
-  /**
-   * Logic extracted from HostStatHelper static initializer.
-   * Having a separated class for it, makes testing far easier.
-   */
+  private boolean isLinux;
+  private String currentOs;
+
   public OSVerifier() {
-    String osName = System.getProperty("os.name", "unknown");
-    if (!osName.startsWith("Linux")) {
+    currentOs = System.getProperty("os.name", "unknown");
+    isLinux = (currentOs.startsWith("Linux") ? true : false);
+    if (!isSupportedOs(currentOs)) {
       throw new InternalGemFireException(
-          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.", osName));
+          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.", currentOs));
+    }
+  }
+
+  private boolean isSupportedOs(String os) {
+    boolean result = true;
+    if (!os.startsWith("Linux") && !os.startsWith("Windows") && !os.equals("Mac OS X")
+        && !os.equals("SunOS")) {
+      result = false;
+    }
+    return result;
+  }
+
+  public boolean osIsLinux() {
+    return this.isLinux;
+  }
+
+  /**
+   * If the current OS is not Linux, an exception will be thrown
+   */
+  public void continueIfLinux() {
+    if (!isLinux) {
+      throw new InternalGemFireException(
+          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.", currentOs));
     }
   }
 }

@@ -32,13 +32,14 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
 public class HostStatHelper {
   private static final int PROCESS_STAT_FLAG = 1;
   private static final int SYSTEM_STAT_FLAG = 2;
+  private static OSVerifier osVerifier;
 
   static {
-    new OSVerifier();
+    osVerifier = new OSVerifier();
   }
 
   public static boolean isLinux() {
-    return true;
+    return osVerifier.osIsLinux();
   }
 
   private HostStatHelper() {
@@ -46,14 +47,17 @@ public class HostStatHelper {
   }
 
   static int initOSStats() {
+    osVerifier.continueIfLinux();
     return LinuxProcFsStatistics.init();
   }
 
   static void closeOSStats() {
+    osVerifier.continueIfLinux();
     LinuxProcFsStatistics.close();
   }
 
   static void readyRefreshOSStats() {
+    osVerifier.continueIfLinux();
     LinuxProcFsStatistics.readyRefresh();
   }
 
@@ -62,6 +66,7 @@ public class HostStatHelper {
    * stats and storing them in the instance.
    */
   private static void refreshProcess(LocalStatisticsImpl statistics) {
+    osVerifier.continueIfLinux();
     int pid = (int) statistics.getNumericId();
     LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
         statistics._getLongStorage(), statistics._getDoubleStorage());
@@ -72,6 +77,7 @@ public class HostStatHelper {
    * machine and storing them in the instance.
    */
   private static void refreshSystem(LocalStatisticsImpl statistics) {
+    osVerifier.continueIfLinux();
     LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
         statistics._getDoubleStorage());
   }
@@ -95,6 +101,7 @@ public class HostStatHelper {
    * contain a snapshot of the current statistic values for the specified process.
    */
   static Statistics newProcess(OsStatisticsFactory osStatisticsFactory, long pid, String name) {
+    osVerifier.continueIfLinux();
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxProcessStats.getType(), name, pid,
         PROCESS_STAT_FLAG);
@@ -109,14 +116,16 @@ public class HostStatHelper {
    * @since GemFire 3.5
    */
   static ProcessStats newProcessStats(Statistics statistics) {
+    osVerifier.continueIfLinux();
     return LinuxProcessStats.createProcessStats(statistics);
   }
 
   /**
-   * Creates and returns a {@link Statistics} with the current machine's stats. The resource's stats
+   * Creates a {@link Statistics} with the current machine's stats. The resource's stats
    * will contain a snapshot of the current statistic values for the local machine.
    */
   static void newSystem(OsStatisticsFactory osStatisticsFactory, long id) {
+    osVerifier.continueIfLinux();
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxSystemStats.getType(),
         getHostSystemName(), id, SYSTEM_STAT_FLAG);
