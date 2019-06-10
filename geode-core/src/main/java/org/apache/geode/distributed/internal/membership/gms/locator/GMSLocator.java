@@ -75,6 +75,7 @@ public class GMSLocator implements Locator, NetLocator {
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
   private final Map<InternalDistributedMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
+  private final File workingDirectory;
 
   private volatile boolean isCoordinator;
 
@@ -97,10 +98,11 @@ public class GMSLocator implements Locator, NetLocator {
    * @param networkPartitionDetectionEnabled true if network partition detection is enabled
    * @param locatorStats the locator statistics object
    * @param securityUDPDHAlgo DF algorithm
+   * @param workingDirectory directory to use for view file (defaults to "user.dir")
    */
   public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
-      String securityUDPDHAlgo) {
+      String securityUDPDHAlgo, File workingDirectory) {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.securityUDPDHAlgo = securityUDPDHAlgo;
@@ -111,6 +113,7 @@ public class GMSLocator implements Locator, NetLocator {
       locators = GMSUtil.parseLocators(locatorString, bindAddress);
     }
     this.locatorStats = locatorStats;
+    this.workingDirectory = workingDirectory;
   }
 
   @Override
@@ -156,10 +159,16 @@ public class GMSLocator implements Locator, NetLocator {
     return viewFile;
   }
 
+  @VisibleForTesting
+  File getViewFile() {
+    return viewFile;
+  }
+
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (viewFile == null) {
-      viewFile = new File("locator" + server.getPort() + "view.dat").getAbsoluteFile();
+      viewFile =
+          new File(workingDirectory, "locator" + server.getPort() + "view.dat").getAbsoluteFile();
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",

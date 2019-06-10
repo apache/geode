@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
+import java.io.File;
 import java.net.InetAddress;
 
 import org.apache.geode.annotations.Immutable;
@@ -99,9 +100,9 @@ public class MemberFactory {
    */
   public static NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo) {
+      LocatorStats stats, String securityUDPDHAlgo, File workingDirectory) {
     return services.newLocatorHandler(bindAddress, locatorString, usePreferredCoordinators,
-        networkPartitionDetectionEnabled, stats, securityUDPDHAlgo);
+        networkPartitionDetectionEnabled, stats, securityUDPDHAlgo, workingDirectory);
   }
 
 }
