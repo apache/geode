@@ -32,8 +32,9 @@ public class TXReservationMgr {
   /**
    * keys are LocalRegion; values are ArrayList of Sets of held locks.
    */
-  private final Map<Object, Map> regionLocks;
+  private final Map regionLocks;
   private final boolean local;
+  private final Map<Object, Map> regionreadkeyLocks;
 
   public TXReservationMgr(boolean local) {
     Map m;
@@ -44,6 +45,7 @@ public class TXReservationMgr {
     }
     this.regionLocks = m;
     this.local = local;
+    this.regionreadkeyLocks = new HashMap();
   }
 
   public void makeReservation(IdentityArrayList localLocks) throws CommitConflictException {
@@ -66,16 +68,29 @@ public class TXReservationMgr {
       throws CommitConflictException {
     Object r = getRegionObject(rr);
     Map keys = rr.getKeys();
-    Map oldValue = this.regionLocks.put(r, keys);
+    synchronized (this.regionreadkeyLocks) {
+      updateReadLocksMap(r, keys);
+    }
+    Object oldValue = this.regionLocks.put(r, keys);
     if (oldValue != null) {
       try {
         // we may have a conflict
-        checkSetForConflict(rr, oldValue, keys, localLocks);
-        HashMap<Object, Boolean> newValue =
-            new HashMap<Object, Boolean>(oldValue.size() + keys.size());
-        newValue.putAll(oldValue);
-        newValue.putAll(keys);
-        this.regionLocks.put(r, newValue);
+        if (oldValue instanceof Map) {
+          checkSetForConflict(rr, (Map) oldValue, keys, localLocks);
+          IdentityArrayList newValue = new IdentityArrayList(2);
+          newValue.add(oldValue);
+          newValue.add(keys);
+          this.regionLocks.put(r, newValue);
+        } else {
+          IdentityArrayList al = (IdentityArrayList) oldValue;
+          int alSize = al.size();
+          Object[] alArray = al.getArrayRef();
+          for (int i = 0; i < alSize; i++) {
+            checkSetForConflict(rr, (Map) alArray[i], keys, localLocks);
+          }
+          al.add(keys);
+          this.regionLocks.put(r, al); // fix for bug 36689
+        }
       } catch (CommitConflictException ex) {
         // fix for bug 36689
         this.regionLocks.put(r, oldValue);
@@ -88,14 +103,12 @@ public class TXReservationMgr {
       Map<Object, Boolean> keys, IdentityArrayList localLocks) throws CommitConflictException {
     for (Map.Entry<Object, Boolean> e : keys.entrySet()) {
       if (oldValue.containsKey(e.getKey())) {
-        if (oldValue.get(e.getKey())) {
+        if (oldValue.get(e.getKey()) || e.getValue()) {
           release(localLocks, true);
           throw new CommitConflictException(
               String.format(
                   "The key %s in region %s was being modified by another transaction locally.",
                   new Object[] {e.getKey(), rr.getRegionFullPath()}));
-        } else {
-          oldValue.remove(e.getKey());
         }
       }
     }
@@ -112,24 +125,33 @@ public class TXReservationMgr {
   private void release(IdentityArrayList localLocks, boolean conflictDetected) {
     final int llSize = localLocks.size();
     final Object[] llArray = localLocks.getArrayRef();
+    boolean canremovelock;
     for (int i = 0; i < llSize; i++) {
       TXRegionLockRequestImpl rr = (TXRegionLockRequestImpl) llArray[i];
       Object r = getRegionObject(rr);
       Map<Object, Boolean> keys = rr.getKeys();
-      Map<Object, Boolean> curValue = this.regionLocks.get(r);
+      synchronized (this.regionreadkeyLocks) {
+        canremovelock = checkremoveReadLocks(r, keys);
+      }
+      Object curValue = this.regionLocks.get(r);
       boolean foundIt = false;
       if (curValue != null) {
         if (curValue == keys) {
           foundIt = true;
-          this.regionLocks.remove(r);
-        } else {
-          for (Map.Entry<Object, Boolean> entry : keys.entrySet()) {
-            if (curValue.remove(entry.getKey(), entry.getValue())) {
-              foundIt = true;
-            }
-          }
-          if (curValue.isEmpty()) {
+          if (canremovelock || conflictDetected) {
             this.regionLocks.remove(r);
+          }
+        } else if (curValue instanceof IdentityArrayList) {
+          IdentityArrayList al = (IdentityArrayList) curValue;
+          int idx = al.indexOf(keys);
+          if (idx != -1) {
+            foundIt = true;
+            al.remove(idx);
+            if (al.isEmpty()) {
+              this.regionLocks.remove(r);
+            } else {
+              this.regionLocks.put(r, al);
+            }
           }
         }
       }
@@ -141,4 +163,56 @@ public class TXReservationMgr {
       }
     }
   }
+
+  private void updateReadLocksMap(Object r, Map<Object, Boolean> keys) {
+    int numlocks;
+    for (Map.Entry<Object, Boolean> e : keys.entrySet()) {
+      if (!e.getValue()) {
+        Map<Object, Integer> readLocks = this.regionreadkeyLocks.get(r);
+        if (readLocks != null) {
+          numlocks = readLocks.getOrDefault(e.getKey(), 0);
+          numlocks++;
+        } else {
+          readLocks = new HashMap();
+          numlocks = 1;
+        }
+
+        readLocks.put(e.getKey(), numlocks);
+        this.regionreadkeyLocks.put(r, readLocks);
+      }
+    }
+  }
+
+
+  private boolean checkremoveReadLocks(Object r, Map<Object, Boolean> keys) {
+    Map<Object, Integer> readLocks = this.regionreadkeyLocks.get(r);
+    boolean result = true;
+    if (readLocks == null || readLocks.isEmpty()) {
+      return result;
+    }
+
+    for (Map.Entry<Object, Boolean> e : keys.entrySet()) {
+
+      int numlocks = readLocks.getOrDefault(e.getKey(), 0);
+      if (numlocks == 0) {
+        continue;
+      }
+      if (numlocks > 1) {
+        numlocks--;
+        readLocks.put(e.getKey(), numlocks);
+        result = false;
+      } else {
+        readLocks.remove(e.getKey());
+      }
+    }
+    if (readLocks.isEmpty()) {
+      this.regionreadkeyLocks.remove(r);
+    } else {
+      this.regionreadkeyLocks.put(r, readLocks);
+    }
+    return result;
+
+  }
+
+
 }
