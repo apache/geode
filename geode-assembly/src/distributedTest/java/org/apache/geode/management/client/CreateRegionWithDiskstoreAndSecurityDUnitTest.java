@@ -69,7 +69,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutDataManage() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
@@ -92,7 +94,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutClusterWrite() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
@@ -115,7 +119,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreSuccess() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");

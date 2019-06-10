@@ -96,8 +96,8 @@ public class ClusterConfigImportDUnitTest extends ClusterConfigTestBase {
   public void importFailWithExistingDiskStore() {
     lsRule.startServerVM(1, locatorVM.getPort());
     gfshConnector.executeAndAssertThat("create disk-store --name=diskStore1 --dir=testStore")
-        .statusIsSuccess();
-    locatorVM.waitUntilDiskStoreIsReadyOnExactlyThisManyServers("diskStore1", 1);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
     gfshConnector
         .executeAndAssertThat(
             "import cluster-configuration --zip-file-name=" + clusterConfigZipPath)
