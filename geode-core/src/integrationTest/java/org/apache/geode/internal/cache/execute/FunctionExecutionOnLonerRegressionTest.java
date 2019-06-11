@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -64,6 +65,7 @@ public class FunctionExecutionOnLonerRegressionTest {
   private Region<String, String> region;
   private Set<String> keysForGet;
   private Set<String> expectedValues;
+  private Cache cache;
 
   @Before
   public void setUp() {
@@ -76,7 +78,7 @@ public class FunctionExecutionOnLonerRegressionTest {
     DistributionManager dm = ds.getDistributionManager();
     assertThat(dm).isInstanceOf(LonerDistributionManager.class);
 
-    Cache cache = CacheFactory.create(ds);
+    cache = CacheFactory.create(ds);
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
     region = regionFactory.create("region");
@@ -92,6 +94,11 @@ public class FunctionExecutionOnLonerRegressionTest {
         expectedValues.add(value);
       }
     }
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    cache.close();
   }
 
   private Properties getDistributedSystemProperties() {
