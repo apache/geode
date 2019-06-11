@@ -1276,26 +1276,52 @@ public class PartitionedRegion extends LocalRegion
     new UpdateAttributesProcessor(this).distribute();
   }
 
+  private boolean gatewaySenderIdsDifferWarningMessage;
+  private boolean asyncQueueIdsDifferWarningMessage;
+
+  /**
+   * This method used to throw an exception if the ids were different on other members.
+   * But since this check was not done until after the region had already been updated
+   * it would cause inconsistency between the contents of the region of what was sent
+   * on the gateway. So now it will simply log a warning and the caller will continue
+   * to add the event to any gateway or async event queue we have configured locally.
+   */
   @Override
   void checkSameSenderIdsAvailableOnAllNodes() {
     List senderIds =
         this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
     if (!senderIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
+      if (!gatewaySenderIdsDifferWarningMessage) {
+        gatewaySenderIdsDifferWarningMessage = true;
+        logger.warn(
+            "Region {} has {} gateway sender IDs. Another member has the same region with {} gateway sender IDs. For the same region, across all members, gateway sender ids should be the same.",
 
-              new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
+            getName(), senderIds.get(0), senderIds.get(1));
+      }
+    } else {
+      if (gatewaySenderIdsDifferWarningMessage) {
+        gatewaySenderIdsDifferWarningMessage = false;
+        logger.warn(
+            "Region {} now has the same gateway sender IDs on all members. The previous problem with them being different has been corrected.");
+      }
     }
 
-    List asycnQueueIds = this.getCacheDistributionAdvisor()
+    List asyncQueueIds = this.getCacheDistributionAdvisor()
         .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
-    if (!asycnQueueIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
+    if (!asyncQueueIds.isEmpty()) {
+      if (!asyncQueueIdsDifferWarningMessage) {
+        asyncQueueIdsDifferWarningMessage = true;
+        logger.warn(
+            "Region {} has {} AsyncEvent queue IDs. Another member has the same region with {} AsyncEvent queue IDs. For the same region, across all members, AsyncEvent queue ids should be the same.",
 
-              new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
+            getName(), asyncQueueIds.get(0), asyncQueueIds.get(1));
+      }
+    } else {
+      if (asyncQueueIdsDifferWarningMessage) {
+        asyncQueueIdsDifferWarningMessage = false;
+        logger.warn(
+            "Region {} now has the same AsyncEvent queue IDs on all members. The previous problem with them being different has been corrected.");
+      }
     }
   }
 
