@@ -59,8 +59,8 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
   private static final String SERVER_2_TRUSTSTORE = "geodeserver2.truststore";
 
 
-  private static SSLDualServerNoClientAuthDUnitTest
-      instance = new SSLDualServerNoClientAuthDUnitTest();
+  private static SSLDualServerNoClientAuthDUnitTest instance =
+      new SSLDualServerNoClientAuthDUnitTest();
 
   @Before
   public void setUp() {
@@ -73,7 +73,7 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     VM server2VM = getVM(2);
     VM locator = getVM(3);
 
-    locator.invoke(()  -> closeLocatorTask());
+    locator.invoke(() -> closeLocatorTask());
     server2VM.invoke(() -> closeCacheTask());
     serverVM.invoke(() -> closeCacheTask());
   }
@@ -85,7 +85,9 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
 
     VM locator = getVM(3);
 
-    Integer locatorPort = locator.invoke(()  -> {return setUpLocatorTask();});
+    Integer locatorPort = locator.invoke(() -> {
+      return setUpLocatorTask();
+    });
     boolean cacheServerSslenabled = true;
 
     serverVM.invoke(() -> setUpServerVMTask(locatorPort));
@@ -111,7 +113,7 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
 
     System.setProperty("javax.net.debug", "all");
 
-     String keyStore =
+    String keyStore =
         createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class, SERVER_1_KEYSTORE)
             .getAbsolutePath();
     String trustStore =
@@ -143,14 +145,14 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     System.setProperty("javax.net.debug", "all");
     String keyStore;
     String trustStore;
-    if ( VM.getCurrentVMNum() == 1 ) {
+    if (VM.getCurrentVMNum() == 1) {
       keyStore =
           createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class, SERVER_1_KEYSTORE)
               .getAbsolutePath();
       trustStore =
           createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class,
               SERVER_1_TRUSTSTORE)
-              .getAbsolutePath();
+                  .getAbsolutePath();
     } else {
       keyStore =
           createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class, SERVER_2_KEYSTORE)
@@ -158,7 +160,7 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
       trustStore =
           createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class,
               SERVER_2_TRUSTSTORE)
-              .getAbsolutePath();
+                  .getAbsolutePath();
     }
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "cluster");
     gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "" + cacheServerSslRequireAuth);
@@ -185,7 +187,7 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     assertEquals("servervalue", region.get("serverkey"));
   }
 
-  private static Integer setUpLocatorTask()  throws Exception{
+  private static Integer setUpLocatorTask() throws Exception {
     return instance.setUpLocator();
   }
 
@@ -202,6 +204,7 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
       instance.cache.close();
     }
   }
+
   private static void closeLocatorTask() {
     if (instance != null && instance.cache != null) {
       Locator.getLocator().stop();
