@@ -19,6 +19,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
@@ -44,6 +45,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.ReferenceCountHelper;
 import org.apache.geode.internal.offheap.Releasable;
@@ -774,6 +776,15 @@ public class GatewaySenderEventImpl
     return buffer.toString();
   }
 
+  public String toSmallString() {
+    StringBuffer buffer = new StringBuffer();
+    buffer.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";operation=")
+        .append(getOperation()).append(";region=").append(this.regionPath).append(";key=")
+        .append(this.key).append(";shadowKey=").append(this.shadowKey).append(";bucketId=")
+        .append(this.bucketId).append("]");
+    return buffer.toString();
+  }
+
   public static boolean isSerializingValue() {
     return ((Boolean) isSerializingValue.get()).booleanValue();
   }
@@ -1177,6 +1188,38 @@ public class GatewaySenderEventImpl
    */
   public Long getShadowKey() {
     return this.shadowKey;
+  }
+
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+
+    if (obj == null || !(obj instanceof GatewaySenderEventImpl)) {
+      return false;
+    }
+
+    GatewaySenderEventImpl that = (GatewaySenderEventImpl) obj;
+
+    return this.shadowKey.equals(that.shadowKey)
+        && this.id.equals(that.id)
+        && this.bucketId == that.bucketId
+        && this.action == that.action
+        && this.regionPath.equals(that.regionPath)
+        && this.key.equals(that.key)
+        && Arrays.equals(this.value, that.value);
+  }
+
+  public int hashCode() {
+    int hashCode = 17;
+    hashCode = 37 * hashCode + ObjectUtils.hashCode(this.shadowKey);
+    hashCode = 37 * hashCode + ObjectUtils.hashCode(this.id);
+    hashCode = 37 * hashCode + this.bucketId;
+    hashCode = 37 * hashCode + this.action;
+    hashCode = 37 * hashCode + ObjectUtils.hashCode(this.regionPath);
+    hashCode = 37 * hashCode + ObjectUtils.hashCode(this.key);
+    hashCode = 37 * hashCode + (this.value == null ? 0 : Arrays.hashCode(this.value));
+    return hashCode;
   }
 
   @Override
