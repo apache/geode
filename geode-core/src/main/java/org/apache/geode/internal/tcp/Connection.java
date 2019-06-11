@@ -79,7 +79,9 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.MsgReader.Header;
 import org.apache.geode.internal.util.concurrent.ReentrantSemaphore;
 
@@ -1835,6 +1837,8 @@ public class Connection implements Runnable {
       if (!clientSocket) {
         engine.setWantClientAuth(true);
         engine.setNeedClientAuth(true);
+//        engine.setNeedClientAuth(SSLConfigurationFactory.getSSLConfigForComponent(getConduit().config,
+//            SecurableCommunicationChannel.CLUSTER).isRequireAuth());
       }
 
       int packetBufferSize = engine.getSession().getPacketBufferSize();
