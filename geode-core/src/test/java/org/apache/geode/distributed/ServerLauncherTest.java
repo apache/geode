@@ -50,7 +50,7 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void constructorCorrectlySetsCacheServerLauncherParameters() {
+  public void constructorCorrectlySetsServerLauncherParameters() {
     ServerLauncher launcher = new Builder().setServerBindAddress(null).setServerPort(11235)
         .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
         .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients")
