@@ -81,7 +81,7 @@ public class RegionManagementDunitTest {
     server1.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
 
     // make sure region is persisted
-    locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE"));
+    locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE", "group1"));
   }
 
   @Test
@@ -130,7 +130,7 @@ public class RegionManagementDunitTest {
     server1.invoke(() -> verifyRegionCreated("orders", "PARTITION"));
 
     // make sure region is persisted
-    locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
+    locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION", "group1"));
 
     // create the same region 2nd time
     result = restClient.doPostAndAssert("/regions", json)
@@ -151,10 +151,10 @@ public class RegionManagementDunitTest {
     assertThat(result.isSuccessful()).isFalse();
   }
 
-  static void verifyRegionPersisted(String regionName, String type) {
+  static void verifyRegionPersisted(String regionName, String type, String group) {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
-            .getCacheConfig("group1");
+            .getCacheConfig(group);
     RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
