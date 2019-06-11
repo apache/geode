@@ -62,7 +62,7 @@ public class UnregisterInterestList extends BaseCommand {
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     Part isClosingListPart = clientMessage.getPart(1);
     byte[] isClosingListPartBytes = (byte[]) isClosingListPart.getObject();

@@ -225,7 +225,7 @@ public class ExecuteRegionFunctionSingleHopOp {
       Object args = serverRegionExecutor.getArguments();
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       if (serverRegionExecutor.isFnSerializationReqd()) {
         getMessage().addStringOrObjPart(function);
       } else {
@@ -270,7 +270,7 @@ public class ExecuteRegionFunctionSingleHopOp {
           hasResult == (byte) 1 ? true : false, optimizeForWrite);
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(functionId);
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);

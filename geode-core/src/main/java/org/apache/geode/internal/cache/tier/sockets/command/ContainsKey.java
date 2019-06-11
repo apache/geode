@@ -70,7 +70,7 @@ public class ContainsKey extends BaseCommand {
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
     keyPart = clientMessage.getPart(1);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {

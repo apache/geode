@@ -169,21 +169,27 @@ public class ElderInitProcessor extends ReplyProcessor21 {
       ArrayList grantorVersions = new ArrayList(); // grantor versions
       ArrayList grantorSerialNumbers = new ArrayList(); // serial numbers of grantor svcs
       ArrayList nonGrantors = new ArrayList(); // svc names non-grantor for
-      if (dm.waitForElder(this.getSender())) {
-        GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), this.getSender(), null);
-        DLockService.recoverRmtElder(grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
-        reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
-      } else if (dm.getOtherNormalDistributionManagerIds().isEmpty()) {
-        // Either we're alone (and received a message from an unknown member) or else we haven't
-        // yet processed a view. In either case, we clearly don't have any grantors,
-        // so we return empty lists.
+      try {
+        if (dm.waitForElder(this.getSender())) {
+          GrantorRequestProcessor.readyForElderRecovery(dm.getSystem(), this.getSender(), null);
+          DLockService
+              .recoverRmtElder(grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
+          reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
+        } else if (dm.getOtherNormalDistributionManagerIds().isEmpty()) {
+          // Either we're alone (and received a message from an unknown member) or else we haven't
+          // yet processed a view. In either case, we clearly don't have any grantors,
+          // so we return empty lists.
 
-        logger.info(LogMarker.DLS_MARKER,
-            "{}: returning empty lists because I know of no other members.",
-            this);
-        reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
-      } else {
-        logger.info(LogMarker.DLS_MARKER, "{}: disregarding request from departed member.", this);
+          logger.info(LogMarker.DLS_MARKER,
+              "{}: returning empty lists because I know of no other members.",
+              this);
+          reply(dm, grantors, grantorVersions, grantorSerialNumbers, nonGrantors);
+        } else {
+          logger.info(LogMarker.DLS_MARKER, "{}: disregarding request from departed member.", this);
+        }
+      } catch (InterruptedException e) {
+        // shutting down
+        logger.info("Elder initialization interrupted - will not send a reply");
       }
     }
 
@@ -207,7 +213,7 @@ public class ElderInitProcessor extends ReplyProcessor21 {
     @Override
     public String toString() {
       StringBuffer buff = new StringBuffer();
-      buff.append("ElderInitMessage (processorId='").append(this.processorId).append(")");
+      buff.append("ElderInitMessage (processorId=").append(this.processorId).append(")");
       return buff.toString();
     }
   }

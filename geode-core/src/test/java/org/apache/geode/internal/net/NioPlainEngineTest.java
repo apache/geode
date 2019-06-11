@@ -35,17 +35,15 @@ import org.apache.geode.distributed.internal.DMStats;
 
 public class NioPlainEngineTest {
 
-  private static final int netBufferSize = 10000;
-  private static final int appBufferSize = 20000;
-
   private DMStats mockStats;
   private NioPlainEngine nioEngine;
+  private BufferPool bufferPool;
 
   @Before
   public void setUp() throws Exception {
     mockStats = mock(DMStats.class);
-
-    nioEngine = new NioPlainEngine();
+    bufferPool = new BufferPool(mockStats);
+    nioEngine = new NioPlainEngine(bufferPool);
   }
 
   @Test
@@ -58,13 +56,13 @@ public class NioPlainEngineTest {
 
   @Test
   public void ensureWrappedCapacity() {
-    ByteBuffer wrappedBuffer = Buffers.acquireReceiveBuffer(100, mockStats);
+    ByteBuffer wrappedBuffer = bufferPool.acquireReceiveBuffer(100);
     verify(mockStats, times(1)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
     wrappedBuffer.put(new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9});
     nioEngine.lastReadPosition = 10;
     int requestedCapacity = 210;
     ByteBuffer result = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
-        Buffers.BufferType.TRACKED_RECEIVER, mockStats);
+        BufferPool.BufferType.TRACKED_RECEIVER);
     verify(mockStats, times(2)).incReceiverBufferSize(any(Integer.class), any(Boolean.class));
     assertThat(result.capacity()).isGreaterThanOrEqualTo(requestedCapacity);
     assertThat(result).isNotSameAs(wrappedBuffer);
@@ -88,7 +86,7 @@ public class NioPlainEngineTest {
     nioEngine.lastReadPosition = consumedDataPresentInBuffer + unconsumedDataPresentInBuffer;
     ByteBuffer result =
         wrappedBuffer = nioEngine.ensureWrappedCapacity(requestedCapacity, wrappedBuffer,
-            Buffers.BufferType.UNTRACKED, mockStats);
+            BufferPool.BufferType.UNTRACKED);
     assertThat(result.capacity()).isEqualTo(requestedCapacity + unconsumedDataPresentInBuffer);
     assertThat(result).isSameAs(wrappedBuffer);
     // make sure that data was transferred to the new buffer
@@ -119,14 +117,14 @@ public class NioPlainEngineTest {
 
     nioEngine.lastReadPosition = 10;
 
-    ByteBuffer data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer, mockStats);
+    ByteBuffer data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(amountToRead);
     assertThat(nioEngine.lastReadPosition).isEqualTo(individualRead * 3 + preexistingBytes);
     assertThat(nioEngine.lastProcessedPosition).isEqualTo(amountToRead);
 
-    data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer, mockStats);
+    data = nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(5)).read(any(ByteBuffer.class));
     // at end of last readAtLeast data
     assertThat(data.position()).isEqualTo(amountToRead);
@@ -150,7 +148,7 @@ public class NioPlainEngineTest {
 
     nioEngine.lastReadPosition = 10;
 
-    nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer, mockStats);
+    nioEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
   }
 
 }

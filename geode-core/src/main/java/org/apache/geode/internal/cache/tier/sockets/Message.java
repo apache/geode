@@ -277,7 +277,7 @@ public class Message {
     addStringPart(str, false);
   }
 
-  @MakeNotStatic
+  @MakeNotStatic("not tied to the cache lifecycle")
   private static final Map<String, byte[]> CACHED_STRINGS = new ConcurrentHashMap<>();
 
   public void addStringPart(String str, boolean enableCaching) {

@@ -51,7 +51,7 @@ dependencies {
   testCompile('org.apache.bcel:bcel')
   testCompile('junit:junit')
   testCompile('org.assertj:assertj-core')
-
+  testCompile('org.mockito:mockito-core')
   integrationTestCompile('junit:junit')
 
   integrationTestRuntime('org.apache.tomcat:coyote:' + DependencyConstraints.get('tomcat6.version'))

@@ -171,7 +171,7 @@ public class ConnectionProxyJUnitTest {
     long t1 = 0;
     try {
       t1 = System.currentTimeMillis();
-      EntryEventImpl event = new EntryEventImpl((Object) null);
+      EntryEventImpl event = new EntryEventImpl((Object) null, false);
       try {
         event.setEventId(new EventID(new byte[] {1}, 1, 1));
         PutOp.execute(conn, proxy, testRegion.getFullPath(), "key1", "val1", event, null, false);

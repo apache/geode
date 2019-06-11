@@ -272,15 +272,15 @@ public class Gfsh extends JLineShell {
     gfshout.println();
   }
 
-  public static <T> void println(T toPrint) {
+  public static void println(Object toPrint) {
     gfshout.println(toPrint);
   }
 
-  public static <T> void print(T toPrint) {
+  public static void print(Object toPrint) {
     gfshout.print(toPrint);
   }
 
-  public static <T> void printlnErr(T toPrint) {
+  public static void printlnErr(Object toPrint) {
     gfsherr.println(toPrint);
   }
 

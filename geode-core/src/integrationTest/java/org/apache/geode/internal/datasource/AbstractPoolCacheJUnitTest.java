@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
@@ -45,7 +46,6 @@ import org.junit.Test;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.util.test.TestUtil;
 
 public class AbstractPoolCacheJUnitTest {
 
@@ -59,7 +59,9 @@ public class AbstractPoolCacheJUnitTest {
     props.setProperty(LOG_LEVEL, "info");
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
-    String path = TestUtil.getResourcePath(AbstractPoolCacheJUnitTest.class, "/jta/cachejta.xml");
+    String path =
+        createTempFileFromResource(AbstractPoolCacheJUnitTest.class, "/jta/cachejta.xml")
+            .getAbsolutePath();
     props.setProperty(CACHE_XML_FILE, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);

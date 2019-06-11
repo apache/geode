@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
 
 import org.junit.Test;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.internal.cq.ServerCQ;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.FilterProfile;
@@ -155,6 +156,7 @@ public class CacheClientNotifierTest {
     when(filterInfo.getCQs()).thenReturn(cqs);
     when(internalCacheEvent.getLocalFilterInfo()).thenReturn(
         filterInfo);
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     FilterProfile filterProfile = mock(FilterProfile.class);
     when(filterProfile.getRealCqID(cqId)).thenReturn(cqName);

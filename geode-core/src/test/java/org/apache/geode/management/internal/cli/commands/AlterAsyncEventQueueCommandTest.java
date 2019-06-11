@@ -119,8 +119,9 @@ public class AlterAsyncEventQueueCommandTest {
   @Test
   public void queueIdFoundInTheMap_updateBatchSize() throws Exception {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue1")
-        .statusIsSuccess().tableHasRowCount(2)
-        .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
+        .statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'group1' is updated")
+        .containsOutput("Cluster configuration for group 'group2' is not updated")
         .containsOutput("Please restart the servers to apply any changed configuration");
   }
 
@@ -129,8 +130,8 @@ public class AlterAsyncEventQueueCommandTest {
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-time-interval=100 --id=queue1")
         .statusIsSuccess()
-        .tableHasRowCount(2)
-        .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
+        .containsOutput("Cluster configuration for group 'group1' is updated")
+        .containsOutput("Cluster configuration for group 'group2' is not updated")
         .containsOutput("Please restart the servers to apply any changed configuration");
 
     gfsh.executeAndAssertThat(command,
@@ -141,8 +142,9 @@ public class AlterAsyncEventQueueCommandTest {
   @Test
   public void queueIdFoundInTheMap_updateMaxMemory() throws Exception {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --max-queue-memory=100 --id=queue1")
-        .statusIsSuccess().tableHasRowCount(2)
-        .tableHasRowWithValues("Group", "Status", "group1", "Cluster Configuration Updated")
+        .statusIsSuccess()
+        .containsOutput("Cluster configuration for group 'group1' is updated")
+        .containsOutput("Cluster configuration for group 'group2' is not updated")
         .containsOutput("Please restart the servers to apply any changed configuration");
   }
 }

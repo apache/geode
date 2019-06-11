@@ -184,6 +184,14 @@ public class HeapDataOutputStream extends OutputStream
     this.memoPosition = this.buffer.position();
   }
 
+  /**
+   * If this HeapDataOutputStream detects that it needs to
+   * grow then it will throw an IllegalStateException.
+   */
+  public void disallowExpansion() {
+    this.disallowExpansion = true;
+  }
+
   /** write the low-order 8 bits of the given int */
   @Override
   public void write(int b) {
@@ -203,9 +211,13 @@ public class HeapDataOutputStream extends OutputStream
 
   private void expand(int amount) {
     if (this.disallowExpansion) {
-      this.buffer.position(this.memoPosition);
-      this.ignoreWrites = true;
-      throw this.expansionException;
+      if (this.expansionException != null) {
+        this.ignoreWrites = true;
+        this.buffer.position(this.memoPosition);
+        throw this.expansionException;
+      } else {
+        throw new IllegalStateException("initial buffer size was exceeded");
+      }
     }
 
     final ByteBuffer oldBuffer = this.buffer;

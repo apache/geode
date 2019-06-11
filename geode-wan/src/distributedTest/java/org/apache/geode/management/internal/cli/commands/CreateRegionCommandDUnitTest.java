@@ -87,8 +87,8 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create gateway-sender --parallel=true --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
-        .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(2);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
         + " --gateway-sender-id=" + gatewaySenderName)
@@ -113,8 +113,8 @@ public class CreateRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create gateway-sender --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
-        .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(2);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region --type=REPLICATE  --name=" + regionName
         + " --gateway-sender-id=" + gatewaySenderName + "-2")
@@ -141,10 +141,9 @@ public class CreateRegionCommandDUnitTest {
 
     gfsh.executeAndAssertThat("create gateway-sender"
         + " --id=" + sender
-        + " --remote-distributed-system-id=" + remoteDS).statusIsSuccess();
-
-    // Give gateway sender time to get created
-    Thread.sleep(2000);
+        + " --remote-distributed-system-id=" + remoteDS)
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region"
         + " --name=" + regionName

@@ -216,7 +216,7 @@ public class SSLSocketIntegrationTest {
     NioSslEngine engine =
         clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
             clusterSocketCreator.createSSLEngine("localhost", 1234), 0, true,
-            ByteBuffer.allocate(65535), mock(DMStats.class));
+            ByteBuffer.allocate(65535), new BufferPool(mock(DMStats.class)));
     clientChannel.configureBlocking(true);
 
     // transmit expected string from Client to Server
@@ -264,7 +264,7 @@ public class SSLSocketIntegrationTest {
                 timeoutMillis,
                 false,
                 ByteBuffer.allocate(500),
-                mock(DMStats.class));
+                new BufferPool(mock(DMStats.class)));
 
         readMessageFromNIOSSLClient(socket, buffer, engine);
         readMessageFromNIOSSLClient(socket, buffer, engine);

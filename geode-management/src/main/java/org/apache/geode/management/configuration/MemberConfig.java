@@ -15,72 +15,26 @@
 
 package org.apache.geode.management.configuration;
 
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RuntimeCacheElement, RestfulEndpoint {
-
-  private static final long serialVersionUID = -6262538068604902018L;
+public class MemberConfig extends CacheElement implements RestfulEndpoint {
 
   public static final String MEMBER_CONFIG_ENDPOINT = "/members";
 
-  private boolean isLocator;
-  private boolean isCoordinator;
   private String id;
-  private String host;
-  private String pid;
-  private List<Integer> ports;
-
-  public MemberConfig() {
-
-  }
 
   public void setId(String id) {
     this.id = id;
   }
 
-  public boolean isLocator() {
-    return isLocator;
-  }
-
-  public void setLocator(boolean locator) {
-    isLocator = locator;
-  }
-
-  public boolean isCoordinator() {
-    return isCoordinator;
-  }
-
-  public void setCoordinator(boolean coordinator) {
-    isCoordinator = coordinator;
-  }
-
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  public String getPid() {
-    return pid;
-  }
-
-  public void setPid(String pid) {
-    this.pid = pid;
-  }
-
-  public List<Integer> getPorts() {
-    return ports;
-  }
-
-  public void setPorts(List<Integer> port) {
-    this.ports = port;
+  @Override
+  public String getId() {
+    return id;
   }
 
   @Override
@@ -89,11 +43,12 @@ public class MemberConfig extends CacheElement implements RuntimeCacheElement, R
   }
 
   @Override
-  public String getId() {
-    return id;
+  public String getUri() {
+    if (StringUtils.isBlank(getId())) {
+      throw new IllegalArgumentException("Member Id is requied.");
+    }
+    return MEMBER_CONFIG_ENDPOINT + "/" + getId();
   }
 
-  public List<String> getGroups() {
-    return groups;
-  }
+
 }

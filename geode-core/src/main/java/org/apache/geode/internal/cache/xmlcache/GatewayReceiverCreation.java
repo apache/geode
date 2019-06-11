@@ -53,7 +53,13 @@ public class GatewayReceiverCreation implements GatewayReceiver {
 
   private CacheServer receiver;
 
-  @SuppressWarnings("deprecation")
+  public GatewayReceiverCreation(Cache cache, GatewayReceiver gatewayReceiver) {
+    this(cache, gatewayReceiver.getStartPort(), gatewayReceiver.getEndPort(),
+        gatewayReceiver.getMaximumTimeBetweenPings(), gatewayReceiver.getSocketBufferSize(),
+        gatewayReceiver.getBindAddress(), gatewayReceiver.getGatewayTransportFilters(),
+        gatewayReceiver.getHostnameForSenders(), gatewayReceiver.isManualStart());
+  }
+
   public GatewayReceiverCreation(Cache cache, int startPort, int endPort, int timeBetPings,
       int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
       boolean manualStart) {
@@ -131,8 +137,8 @@ public class GatewayReceiverCreation implements GatewayReceiver {
   @Override
   public void start() throws IOException {
     if (receiver == null) {
-      // add a cache server and set its port to random port. See defect 45630 for more details.
-      receiver = ((CacheCreation) this.cache).addCacheServer(true);
+      // add a cache server and set its port to random port
+      receiver = cache.addCacheServer();
       receiver.setPort(endPort + 1);
     }
   }

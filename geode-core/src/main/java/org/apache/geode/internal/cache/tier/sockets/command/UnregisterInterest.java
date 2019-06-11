@@ -60,7 +60,7 @@ public class UnregisterInterest extends BaseCommand {
     Part isClosingPart = clientMessage.getPart(3);
     byte[] isClosingPartBytes = (byte[]) isClosingPart.getObject();
     boolean isClosing = isClosingPartBytes[0] == 0x01;
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {

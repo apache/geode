@@ -19,9 +19,8 @@ import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_TASK;
 import static javax.net.ssl.SSLEngineResult.HandshakeStatus.NEED_UNWRAP;
 import static javax.net.ssl.SSLEngineResult.Status.BUFFER_OVERFLOW;
 import static javax.net.ssl.SSLEngineResult.Status.OK;
-import static org.apache.geode.internal.net.Buffers.BufferType.TRACKED_RECEIVER;
-import static org.apache.geode.internal.net.Buffers.BufferType.TRACKED_SENDER;
-import static org.apache.geode.internal.net.Buffers.releaseBuffer;
+import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_RECEIVER;
+import static org.apache.geode.internal.net.BufferPool.BufferType.TRACKED_SENDER;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -41,8 +40,8 @@ import javax.net.ssl.SSLSession;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.net.BufferPool.BufferType;
 
 
 /**
@@ -53,7 +52,7 @@ import org.apache.geode.internal.logging.LogService;
 public class NioSslEngine implements NioFilter {
   private static final Logger logger = LogService.getLogger();
 
-  private final DMStats stats;
+  private final BufferPool bufferPool;
 
   private volatile boolean closed;
 
@@ -74,14 +73,14 @@ public class NioSslEngine implements NioFilter {
    */
   ByteBuffer handshakeBuffer;
 
-  NioSslEngine(SSLEngine engine, DMStats stats) {
-    this.stats = stats;
+  NioSslEngine(SSLEngine engine, BufferPool bufferPool) {
     SSLSession session = engine.getSession();
     int appBufferSize = session.getApplicationBufferSize();
     int packetBufferSize = engine.getSession().getPacketBufferSize();
     this.myNetData = ByteBuffer.allocate(packetBufferSize);
     this.peerAppData = ByteBuffer.allocate(appBufferSize);
     this.engine = engine;
+    this.bufferPool = bufferPool;
   }
 
   /**
@@ -97,7 +96,7 @@ public class NioSslEngine implements NioFilter {
         logger.debug("Allocating new buffer for SSL handshake");
       }
       this.handshakeBuffer =
-          Buffers.acquireReceiveBuffer(engine.getSession().getPacketBufferSize(), stats);
+          bufferPool.acquireReceiveBuffer(engine.getSession().getPacketBufferSize());
     } else {
       this.handshakeBuffer = peerNetData;
     }
@@ -154,8 +153,7 @@ public class NioSslEngine implements NioFilter {
 
           if (engineResult.getStatus() == BUFFER_OVERFLOW) {
             peerAppData =
-                expandWriteBuffer(TRACKED_RECEIVER, peerAppData, peerAppData.capacity() * 2,
-                    stats);
+                expandWriteBuffer(TRACKED_RECEIVER, peerAppData, peerAppData.capacity() * 2);
           }
           break;
 
@@ -172,7 +170,7 @@ public class NioSslEngine implements NioFilter {
             case BUFFER_OVERFLOW:
               myNetData =
                   expandWriteBuffer(TRACKED_SENDER, myNetData,
-                      myNetData.capacity() * 2, stats);
+                      myNetData.capacity() * 2);
               break;
             case OK:
               myNetData.flip();
@@ -216,9 +214,9 @@ public class NioSslEngine implements NioFilter {
     return true;
   }
 
-  ByteBuffer expandWriteBuffer(Buffers.BufferType type, ByteBuffer existing,
-      int desiredCapacity, DMStats stats) {
-    return Buffers.expandWriteBufferIfNeeded(type, existing, desiredCapacity, stats);
+  ByteBuffer expandWriteBuffer(BufferType type, ByteBuffer existing,
+      int desiredCapacity) {
+    return bufferPool.expandWriteBufferIfNeeded(type, existing, desiredCapacity);
   }
 
   void checkClosed() {
@@ -248,7 +246,7 @@ public class NioSslEngine implements NioFilter {
 
       if (remaining < (appData.remaining() * 2)) {
         int newCapacity = expandedCapacity(appData, myNetData);
-        myNetData = expandWriteBuffer(TRACKED_SENDER, myNetData, newCapacity, stats);
+        myNetData = expandWriteBuffer(TRACKED_SENDER, myNetData, newCapacity);
       }
 
       SSLEngineResult wrapResult = engine.wrap(appData, myNetData);
@@ -303,27 +301,27 @@ public class NioSslEngine implements NioFilter {
   void expandPeerAppData(ByteBuffer wrappedBuffer) {
     if (peerAppData.capacity() - peerAppData.position() < 2 * wrappedBuffer.remaining()) {
       peerAppData =
-          Buffers.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData,
-              expandedCapacity(wrappedBuffer, peerAppData), stats);
+          bufferPool.expandWriteBufferIfNeeded(TRACKED_RECEIVER, peerAppData,
+              expandedCapacity(wrappedBuffer, peerAppData));
     }
   }
 
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType, DMStats stats) {
+      BufferType bufferType) {
     ByteBuffer buffer = wrappedBuffer;
     int requiredSize = engine.getSession().getPacketBufferSize();
     if (buffer == null) {
-      buffer = Buffers.acquireBuffer(bufferType, requiredSize, stats);
+      buffer = bufferPool.acquireBuffer(bufferType, requiredSize);
     } else if (buffer.capacity() < requiredSize) {
-      buffer = Buffers.expandWriteBufferIfNeeded(bufferType, buffer, requiredSize, stats);
+      buffer = bufferPool.expandWriteBufferIfNeeded(bufferType, buffer, requiredSize);
     }
     return buffer;
   }
 
   @Override
   public ByteBuffer readAtLeast(SocketChannel channel, int bytes,
-      ByteBuffer wrappedBuffer, DMStats stats) throws IOException {
+      ByteBuffer wrappedBuffer) throws IOException {
     if (peerAppData.capacity() > bytes) {
       // we already have a buffer that's big enough
       if (peerAppData.capacity() - peerAppData.position() < bytes) {
@@ -332,7 +330,7 @@ public class NioSslEngine implements NioFilter {
       }
     } else {
       peerAppData =
-          Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes, this.stats);
+          bufferPool.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, bytes);
     }
 
     while (peerAppData.remaining() < bytes) {
@@ -367,7 +365,7 @@ public class NioSslEngine implements NioFilter {
     // for TTLS the app-data buffers do not need to be tracked direct-buffers since we
     // do not use them for I/O operations
     peerAppData =
-        Buffers.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, amount, this.stats);
+        bufferPool.expandReadBufferIfNeeded(TRACKED_RECEIVER, peerAppData, amount);
     return peerAppData;
   }
 
@@ -405,8 +403,8 @@ public class NioSslEngine implements NioFilter {
     } catch (IOException e) {
       throw new GemFireIOException("exception closing SSL session", e);
     } finally {
-      releaseBuffer(TRACKED_SENDER, myNetData, stats);
-      releaseBuffer(TRACKED_RECEIVER, peerAppData, stats);
+      bufferPool.releaseBuffer(TRACKED_SENDER, myNetData);
+      bufferPool.releaseBuffer(TRACKED_RECEIVER, peerAppData);
       this.closed = true;
     }
   }

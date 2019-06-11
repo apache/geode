@@ -1688,33 +1688,27 @@ public class AttributesFactory<K, V> {
     @Override
     @SuppressWarnings("unchecked")
     public CacheListener<K, V>[] getCacheListeners() {
-      ArrayList<CacheListener<K, V>> listeners = this.cacheListeners;
-      if (listeners == null) {
-        return (CacheListener<K, V>[]) EMPTY_LISTENERS;
-      } else {
-        synchronized (listeners) {
-          if (listeners.size() == 0) {
-            return (CacheListener<K, V>[]) EMPTY_LISTENERS;
-          } else {
-            CacheListener<K, V>[] result = new CacheListener[listeners.size()];
-            listeners.toArray(result);
-            return result;
-          }
+      synchronized (this) {
+        if (this.cacheListeners == null || this.cacheListeners.isEmpty()) {
+          return (CacheListener<K, V>[]) EMPTY_LISTENERS;
+        } else {
+          CacheListener<K, V>[] result = new CacheListener[this.cacheListeners.size()];
+          this.cacheListeners.toArray(result);
+          return result;
         }
       }
     }
 
     @Override
     public CacheListener<K, V> getCacheListener() {
-      ArrayList<CacheListener<K, V>> listeners = this.cacheListeners;
-      if (listeners == null) {
-        return null;
-      }
-      synchronized (listeners) {
-        if (listeners.size() == 0) {
+      synchronized (this) {
+        if (this.cacheListeners == null) {
           return null;
         }
-        if (listeners.size() == 1) {
+        if (this.cacheListeners.size() == 0) {
+          return null;
+        }
+        if (this.cacheListeners.size() == 1) {
           return this.cacheListeners.get(0);
         }
       }
@@ -1723,27 +1717,23 @@ public class AttributesFactory<K, V> {
     }
 
     protected void addCacheListener(CacheListener<K, V> aListener) {
-      ArrayList<CacheListener<K, V>> listeners = this.cacheListeners;
-      if (listeners == null) {
-        ArrayList<CacheListener<K, V>> al = new ArrayList<CacheListener<K, V>>(1);
-        al.add(aListener);
-        this.cacheListeners = al;
-      } else {
-        synchronized (listeners) {
-          listeners.add(aListener);
+      synchronized (this) {
+        if (this.cacheListeners == null) {
+          this.cacheListeners = new ArrayList<CacheListener<K, V>>(1);
+          this.cacheListeners.add(aListener);
+        } else {
+          this.cacheListeners.add(aListener);
         }
+        setHasCacheListeners(true);
       }
-      setHasCacheListeners(true);
     }
 
     public void addGatewaySenderId(String gatewaySenderId) {
-      if (this.gatewaySenderIds == null) {
-        this.gatewaySenderIds = new CopyOnWriteArraySet<String>();
-        this.gatewaySenderIds.add(gatewaySenderId);
-      } else {
-        synchronized (this.gatewaySenderIds) { // TODO: revisit this
-          // synchronization : added as per
-          // above code
+      synchronized (this) {
+        if (this.gatewaySenderIds == null) {
+          this.gatewaySenderIds = new CopyOnWriteArraySet<String>();
+          this.gatewaySenderIds.add(gatewaySenderId);
+        } else {
           if (this.gatewaySenderIds.contains(gatewaySenderId)) {
             throw new IllegalArgumentException(
                 String.format("gateway-sender-id %s is already added",
@@ -1751,18 +1741,16 @@ public class AttributesFactory<K, V> {
           }
           this.gatewaySenderIds.add(gatewaySenderId);
         }
+        setHasGatewaySenderIds(true);
       }
-      setHasGatewaySenderIds(true);
     }
 
     public void addAsyncEventQueueId(String asyncEventQueueId) {
-      if (this.asyncEventQueueIds == null) {
-        this.asyncEventQueueIds = new CopyOnWriteArraySet<String>();
-        this.asyncEventQueueIds.add(asyncEventQueueId);
-      } else {
-        synchronized (this.asyncEventQueueIds) { // TODO: revisit this
-          // synchronization : added as per
-          // above code
+      synchronized (this) {
+        if (this.asyncEventQueueIds == null) {
+          this.asyncEventQueueIds = new CopyOnWriteArraySet<String>();
+          this.asyncEventQueueIds.add(asyncEventQueueId);
+        } else {
           if (this.asyncEventQueueIds.contains(asyncEventQueueId)) {
             throw new IllegalArgumentException(
                 String.format("async-event-queue-id %s is already added",
@@ -1770,8 +1758,8 @@ public class AttributesFactory<K, V> {
           }
           this.asyncEventQueueIds.add(asyncEventQueueId);
         }
+        setHasAsyncEventListeners(true);
       }
-      setHasAsyncEventListeners(true);
     }
 
     @Override

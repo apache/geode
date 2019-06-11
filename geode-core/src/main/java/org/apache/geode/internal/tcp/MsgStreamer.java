@@ -25,7 +25,6 @@ import java.util.List;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DMStats;
@@ -37,8 +36,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.Buffers;
+import org.apache.geode.internal.net.BufferPool;
 
 /**
  * <p>
@@ -52,12 +50,12 @@ import org.apache.geode.internal.net.Buffers;
 public class MsgStreamer extends OutputStream
     implements ObjToByteArraySerializer, BaseMsgStreamer, ByteBufferWriter {
 
-  private static final Logger logger = LogService.getLogger();
-
   /**
    * List of connections to send this msg to.
    */
   private final List<?> cons;
+
+  private final BufferPool bufferPool;
 
   /**
    * Any exceptions that happen during sends
@@ -98,7 +96,7 @@ public class MsgStreamer extends OutputStream
     MsgIdGenerator.release(this.msgId);
     this.buffer.clear();
     this.overflowBuf = null;
-    Buffers.releaseSenderBuffer(this.buffer, this.stats);
+    bufferPool.releaseSenderBuffer(this.buffer);
   }
 
   /**
@@ -126,15 +124,16 @@ public class MsgStreamer extends OutputStream
    * now be used.
    */
   MsgStreamer(List<?> cons, DistributionMessage msg, boolean directReply, DMStats stats,
-      int sendBufferSize) {
+      int sendBufferSize, BufferPool bufferPool) {
     this.stats = stats;
     this.msg = msg;
     this.cons = cons;
-    this.buffer = Buffers.acquireSenderBuffer(sendBufferSize, stats);
+    this.buffer = bufferPool.acquireSenderBuffer(sendBufferSize);
     this.buffer.clear();
     this.buffer.position(Connection.MSG_HEADER_BYTES);
     this.msgId = MsgIdGenerator.NO_MSG_ID;
     this.directReply = directReply;
+    this.bufferPool = bufferPool;
     startSerialization();
   }
 
@@ -144,7 +143,7 @@ public class MsgStreamer extends OutputStream
    * List of MsgStreamer objects.
    */
   public static BaseMsgStreamer create(List<?> cons, final DistributionMessage msg,
-      final boolean directReply, final DMStats stats) {
+      final boolean directReply, final DMStats stats, BufferPool bufferPool) {
     final Connection firstCon = (Connection) cons.get(0);
     // split into different versions if required
     Version version;
@@ -170,7 +169,8 @@ public class MsgStreamer extends OutputStream
         }
       }
       if (versionToConnMap == null) {
-        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize());
+        return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+            bufferPool);
       } else {
         // if there is a versioned stream created, then split remaining
         // connections to unversioned stream
@@ -187,7 +187,8 @@ public class MsgStreamer extends OutputStream
               unversionedCons.add(con);
             }
           }
-          streamers.add(new MsgStreamer(unversionedCons, msg, directReply, stats, sendBufferSize));
+          streamers.add(new MsgStreamer(unversionedCons, msg, directReply, stats, sendBufferSize,
+              bufferPool));
         }
         for (ObjectIterator<Object2ObjectMap.Entry> itr =
             versionToConnMap.object2ObjectEntrySet().fastIterator(); itr.hasNext();) {
@@ -195,15 +196,17 @@ public class MsgStreamer extends OutputStream
           Object ver = entry.getKey();
           Object l = entry.getValue();
           streamers.add(new VersionedMsgStreamer((List<?>) l, msg, directReply, stats,
-              sendBufferSize, (Version) ver));
+              bufferPool, sendBufferSize, (Version) ver));
         }
         return new MsgStreamerList(streamers);
       }
     } else if ((version = firstCon.getRemoteVersion()) == null) {
-      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize());
+      return new MsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+          bufferPool);
     } else {
       // create a single VersionedMsgStreamer
-      return new VersionedMsgStreamer(cons, msg, directReply, stats, firstCon.getSendBufferSize(),
+      return new VersionedMsgStreamer(cons, msg, directReply, stats, bufferPool,
+          firstCon.getSendBufferSize(),
           version);
     }
   }

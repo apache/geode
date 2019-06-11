@@ -103,7 +103,7 @@ public class GetAll70Test {
 
     when(this.regionAttributes.getConcurrencyChecksEnabled()).thenReturn(true);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.requestSerializableValuesPart.getInt()).thenReturn(0);
 

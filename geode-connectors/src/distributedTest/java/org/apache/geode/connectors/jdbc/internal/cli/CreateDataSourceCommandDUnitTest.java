@@ -17,8 +17,10 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
+import java.io.File;
 import java.util.List;
 
+import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -34,6 +36,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.VMProvider;
+import org.apache.geode.util.test.TestUtil;
 
 public class CreateDataSourceCommandDUnitTest {
 
@@ -99,6 +102,48 @@ public class CreateDataSourceCommandDUnitTest {
     verifyThatNonExistentClassCausesGfshToError();
   }
 
+  @Test
+  public void testCreateDataSourceWithJarOptionDoesNotThrowDriverError() {
+    String URL = "jdbc:mysql://localhost/";
+    IgnoredException.addIgnoredException(
+        "No suitable driver");
+    IgnoredException.addIgnoredException(
+        "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\"");
+
+    // aquire the jar to be used
+    final String jdbcJarName = "mysql-connector-java-8.0.15.jar";
+    final String jdbcDriverClassName = "com.mysql.cj.jdbc.Driver";
+    File mySqlDriverFile = loadTestResource("/" + jdbcJarName);
+    assertThat(mySqlDriverFile).exists();
+    String jarFile = mySqlDriverFile.getAbsolutePath();
+
+    // attempt to create the data source without a deployed jar or a --driver-jar
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --pooled=false --url=\""
+            + URL + "\"")
+        .statusIsError();
+
+    gfsh.executeAndAssertThat("deploy --jar=" + jarFile).statusIsSuccess();
+
+    IgnoredException.removeAllExpectedExceptions();
+    IgnoredException.addIgnoredException(
+        "create data-source failed");
+    IgnoredException.addIgnoredException(
+        "Communications link failure");
+    IgnoredException.addIgnoredException(
+        "Access denied for user 'mySqlUser'@'localhost'");
+    IgnoredException.addIgnoredException(
+        "Failed to connect to \"mySqlDataSource\"");
+
+    gfsh.executeAndAssertThat(
+        "create data-source --name=mySqlDataSource --username=mySqlUser --password=mySqlPass --url=\""
+            + URL + "\" --jdbc-driver-class=" + jdbcDriverClassName)
+        .statusIsError().doesNotContainOutput("No suitable driver");
+
+  }
+
   private void verifyThatNonExistentClassCausesGfshToError() {
     SerializableRunnableIF IgnoreClassNotFound = () -> {
       IgnoredException ex =
@@ -113,5 +158,12 @@ public class CreateDataSourceCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create data-source --name=jndiBad --username=myuser --password=mypass --pooled --pooled-data-source-factory-class=non_existent_class_name --url=\"jdbc:derby:memory:newDB;create=true\"")
         .statusIsError();
+  }
+
+  private File loadTestResource(String fileName) {
+    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    Assertions.assertThat(filePath).isNotNull();
+
+    return new File(filePath);
   }
 }

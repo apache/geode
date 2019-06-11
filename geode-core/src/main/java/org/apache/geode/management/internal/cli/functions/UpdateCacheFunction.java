@@ -17,29 +17,29 @@
 
 package org.apache.geode.management.internal.cli.functions;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.collections.map.HashedMap;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
+import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
+import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
   @Immutable
-  private static final Map<Class, ConfigurationRealizer> realizers = new HashedMap();
+  private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
+
   static {
     realizers.put(RegionConfig.class, new RegionConfigRealizer());
-  }
-
-  public enum CacheElementOperation {
-    ADD, DELETE, UPDATE
+    realizers.put(GatewayReceiverConfig.class, new GatewayReceiverRealizer());
   }
 
   @Override
@@ -49,8 +49,18 @@ public class UpdateCacheFunction extends CliFunction<List> {
     Cache cache = context.getCache();
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
+
+    if (realizer == null) {
+      return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+          "Server needs to be restarted for this configuration change to be realized.");
+    }
+
     switch (operation) {
-      case ADD:
+      case CREATE:
+        if (realizer.exists(cacheElement, cache)) {
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+              "Element with id=" + cacheElement.getId() + " already exists. Skipp creation.");
+        }
         realizer.create(cacheElement, cache);
         break;
       case DELETE:

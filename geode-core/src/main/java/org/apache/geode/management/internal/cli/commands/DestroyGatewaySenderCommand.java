@@ -17,14 +17,17 @@ package org.apache.geode.management.internal.cli.commands;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -38,6 +41,7 @@ import org.apache.geode.security.ResourcePermission;
 
 public class DestroyGatewaySenderCommand extends SingleGfshCommand {
   private static final Logger logger = LogService.getLogger();
+  private static final int MBEAN_DELETION_WAIT_TIME = 10000;
 
   @CliCommand(value = CliStrings.DESTROY_GATEWAYSENDER,
       help = CliStrings.DESTROY_GATEWAYSENDER__HELP)
@@ -67,7 +71,25 @@ public class DestroyGatewaySenderCommand extends SingleGfshCommand {
 
     ResultModel resultModel = ResultModel.createMemberStatusResult(functionResults);
     resultModel.setConfigObject(id);
+
+    if (!waitForGatewaySenderMBeanDeletion(id, members)) {
+      resultModel.addInfo()
+          .addLine("Did not complete waiting for GatewaySenderMBean proxy deletion");
+    }
+
     return resultModel;
+  }
+
+  /*
+   * Wait for up tp 3 seconds for the proxy MBeans to be deleted.
+   */
+  @VisibleForTesting
+  boolean waitForGatewaySenderMBeanDeletion(String id, Set<DistributedMember> members) {
+    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
+
+    return poll(MBEAN_DELETION_WAIT_TIME, TimeUnit.MILLISECONDS, () -> members.stream()
+        .noneMatch(m -> CreateGatewaySenderCommand.gatewaySenderBeanExists(dsMXBean,
+            m.getName(), id)));
   }
 
   @Override

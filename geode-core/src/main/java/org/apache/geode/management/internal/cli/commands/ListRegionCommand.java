@@ -63,7 +63,7 @@ public class ListRegionCommand extends GfshCommand {
     Set<DistributedMember> targetMembers = findMembers(group, memberNameOrId);
 
     if (targetMembers.isEmpty()) {
-      return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
+      return ResultModel.createInfo(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
     TabularResultModel resultData = result.addTable("regionInfo");

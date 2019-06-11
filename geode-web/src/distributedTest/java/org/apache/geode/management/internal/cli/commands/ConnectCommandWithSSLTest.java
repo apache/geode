@@ -48,6 +48,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -69,7 +70,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({GfshTest.class})
 public class ConnectCommandWithSSLTest {
@@ -86,8 +86,8 @@ public class ConnectCommandWithSSLTest {
      * -ext san=ip:127.0.0.1 -storetype jks
      */
 
-    jks = new File(TestUtil.getResourcePath(ConnectCommandWithSSLTest.class.getClassLoader(),
-        "ssl/trusted.keystore"));
+    jks = new File(createTempFileFromResource(ConnectCommandWithSSLTest.class.getClassLoader(),
+        "ssl/trusted.keystore").getAbsolutePath());
   }
 
   private static final Properties sslProperties = new Properties() {

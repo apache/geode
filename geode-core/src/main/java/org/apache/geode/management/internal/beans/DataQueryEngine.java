@@ -40,8 +40,6 @@ import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.internal.ManagementConstants;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
  * this is used by DistributedSystemBridge.queryData() call. It calls QueryDataFunction on each
@@ -289,21 +287,15 @@ public class DataQueryEngine {
 
   static class JsonisedErrorMessage {
 
-    private static final String message = "message";
+    private final String message;
 
-    private GfJsonObject gFJsonObject = new GfJsonObject();
-
-    public JsonisedErrorMessage(final String errorMessage) throws Exception {
-      try {
-        gFJsonObject.put(message, errorMessage);
-      } catch (GfJsonException e) {
-        throw new Exception(e);
-      }
+    public JsonisedErrorMessage(final String errorMessage) {
+      message = errorMessage;
     }
 
     @Override
     public String toString() {
-      return gFJsonObject.toString();
+      return String.format("{\"message\":\"%s\"}", message);
     }
   }
 }

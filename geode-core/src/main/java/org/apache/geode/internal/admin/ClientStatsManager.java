@@ -85,9 +85,15 @@ public class ClientStatsManager {
       ServerRegionProxy regionProxy =
           new ServerRegionProxy(ClientHealthMonitoringRegion.ADMIN_REGION_NAME, pool);
 
+      boolean isOffHeap;
+      if (ds.getOffHeapStore() != null) {
+        isOffHeap = true;
+      } else {
+        isOffHeap = false;
+      }
       EventID eventId = new EventID(ds);
       @Released
-      EntryEventImpl event = new EntryEventImpl((Object) null);
+      EntryEventImpl event = new EntryEventImpl((Object) null, isOffHeap);
       try {
         event.setEventId(eventId);
         regionProxy.putForMetaRegion(ds.getDistributedMember(), stats, null, event, null);

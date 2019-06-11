@@ -108,7 +108,7 @@ public class RegisterInterestTest {
 
     when(this.notifyPart.getObject()).thenReturn(DURABLE);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);

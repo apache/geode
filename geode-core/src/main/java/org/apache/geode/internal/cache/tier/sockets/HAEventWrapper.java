@@ -405,8 +405,16 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
     return rcUpdater.decrementAndGet(this);
   }
 
-  public long incrementPutInProgressCounter() {
-    return putInProgressCountUpdater.incrementAndGet(this);
+  public long incrementPutInProgressCounter(String location) {
+    long putInProgressCounter = putInProgressCountUpdater.incrementAndGet(this);
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Incremented PutInProgressCounter from " + location
+          + " on HAEventWrapper with Event ID hash code: " + hashCode() + "; System ID hash code: "
+          + System.identityHashCode(this) + "; Wrapper details: " + toString());
+    }
+
+    return putInProgressCounter;
   }
 
   public long decrementPutInProgressCounter() {

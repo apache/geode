@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.client.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
 
 import org.apache.logging.log4j.Logger;
 
@@ -29,6 +27,7 @@ import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.LocalRegion;
@@ -198,7 +197,7 @@ public class PutOp {
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.requireOldValue = requireOldValue;
       this.expectedOldValue = expectedOldValue;
-      getMessage().addStringPart(regionName);
+      getMessage().addStringPart(regionName, true);
       getMessage().addBytePart(op.ordinal);
       int flags = 0;
       if (requireOldValue)
@@ -290,8 +289,7 @@ public class PutOp {
         if ((flags & HAS_OLD_VALUE_FLAG) != 0) {
           oldValue = msg.getPart(partIdx++).getObject();
           if ((flags & OLD_VALUE_IS_OBJECT_FLAG) != 0 && oldValue instanceof byte[]) {
-            ByteArrayInputStream in = new ByteArrayInputStream((byte[]) oldValue);
-            DataInputStream din = new DataInputStream(in);
+            ByteArrayDataInput din = new ByteArrayDataInput((byte[]) oldValue);
             oldValue = DataSerializer.readObject(din);
           }
         }

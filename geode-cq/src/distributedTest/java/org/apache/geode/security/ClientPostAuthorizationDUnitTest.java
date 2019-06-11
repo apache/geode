@@ -75,7 +75,7 @@ public class ClientPostAuthorizationDUnitTest extends ClientAuthorizationTestCas
       server2.invoke(() -> closeCache());
 
       // Perform all the ops on the clients
-      List opBlock = new ArrayList();
+      List<OperationWithAction> opBlock = new ArrayList<>();
       Random rnd = new Random();
 
       for (int opNum = 0; opNum < allOps.length; ++opNum) {

@@ -33,7 +33,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 @RunWith(SpringRunner.class)
@@ -53,7 +53,8 @@ public class RegionManagementIntegrationTest {
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    client = ClusterManagementServiceProvider.getService(context.getRequestFactory());
+    client = ClusterManagementServiceBuilder.buildWithRequestFactory()
+        .setRequestFactory(context.getRequestFactory()).build();
   }
 
   @Test
@@ -63,10 +64,10 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
+    // if run multiple times, this could either be OK or ENTITY_EXISTS
     assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ERROR)
-        .containsStatusMessage("no members found in cluster to create cache element");
+        .hasStatusCode(ClusterManagementResult.StatusCode.OK,
+            ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
 
   @Test
@@ -91,7 +92,7 @@ public class RegionManagementIntegrationTest {
     assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("cluster is a reserved group name");
+        .containsStatusMessage("'cluster' is a reserved group name");
   }
 
   @Test

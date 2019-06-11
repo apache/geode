@@ -168,6 +168,6 @@ public class ShowMetricsCommandIntegrationTest {
     gfsh.executeAndAssertThat(cmd).statusIsSuccess();
     String cmd2 = "show metrics --member=" + MEMBER_NAME + " --region=region2";
     gfsh.executeAndAssertThat(cmd2).statusIsSuccess().tableHasRowWithValues("Category", "Metric",
-        "Value", "", "missCount", "-1");
+        "Value", "", "missCount", "0");
   }
 }

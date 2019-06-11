@@ -62,6 +62,7 @@ public class CreateGatewaySenderCommandTest {
     command = spy(CreateGatewaySenderCommand.class);
     InternalCache cache = mock(InternalCache.class);
     doReturn(cache).when(command).getCache();
+    doReturn(true).when(command).waitForGatewaySenderMBeanCreation(any(), any());
     functionResults = new ArrayList<>();
     doReturn(functionResults).when(command).executeAndGetFunctionResult(any(), any(), any());
   }

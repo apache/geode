@@ -89,7 +89,7 @@ public class ListGatewaysCommandDUnitTest implements Serializable {
     locatorSite1.invoke(() -> validateMemberMXBeanProxy(getMember(server3.getVM())));
 
     String command = CliStrings.LIST_GATEWAY;
-    gfsh.executeAndAssertThat(command).statusIsError();
+    gfsh.executeAndAssertThat(command).statusIsSuccess();
   }
 
   @Test

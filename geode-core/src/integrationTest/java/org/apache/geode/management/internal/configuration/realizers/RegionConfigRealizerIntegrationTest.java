@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,9 +23,11 @@ import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RegionConfigRealizerIntegrationTest {
@@ -45,12 +48,40 @@ public class RegionConfigRealizerIntegrationTest {
   public void sanityCheck() throws Exception {
     config.setName("test");
     config.setType(RegionType.REPLICATE);
-
+    RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
     Region<Object, Object> region = server.getCache().getRegion("test");
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy()).isEqualTo(DataPolicy.REPLICATE);
     assertThat(region.getAttributes().getScope()).isEqualTo(Scope.DISTRIBUTED_ACK);
+  }
+
+  @Test
+  public void create2ndTime() throws Exception {
+    config.setName("foo");
+    config.setType(RegionType.REPLICATE);
+    RegionConfigValidator.setShortcutAttributes(config);
+    realizer.create(config, server.getCache());
+
+    // the 2nd time with same name and type will throw an error
+    assertThatThrownBy(() -> realizer.create(config, server.getCache()))
+        .isInstanceOf(RegionExistsException.class);
+  }
+
+  @Test
+  public void deleteRegion() {
+    config.setName("foo");
+    config.setType(RegionType.REPLICATE);
+    RegionConfigValidator.setShortcutAttributes(config);
+    realizer.create(config, server.getCache());
+
+    Region region = server.getCache().getRegion(config.getName());
+    assertThat(region).isNotNull();
+
+    realizer.delete(config, server.getCache());
+
+    region = server.getCache().getRegion(config.getName());
+    assertThat(region).isNull();
   }
 }

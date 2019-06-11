@@ -24,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -111,6 +112,6 @@ public class ClusterManagementResultTest {
     String json = "{\"statusCode\":\"OK\"}";
     ClusterManagementResult result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
-    assertThat(result.getResult()).isNotNull().isEmpty();
+    assertThat(result.getResult(CacheElement.class)).isNotNull().isEmpty();
   }
 }

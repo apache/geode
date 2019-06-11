@@ -27,11 +27,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.ServerConnectivityException;
@@ -637,7 +639,51 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     if ((obj == null) || !(obj instanceof InternalDistributedMember)) {
       return false;
     }
-    return compareTo((InternalDistributedMember) obj) == 0;
+    InternalDistributedMember other = (InternalDistributedMember) obj;
+
+    int myPort = getPort();
+    int otherPort = other.getPort();
+    if (myPort != otherPort) {
+      return false;
+    }
+
+    InetAddress myAddr = getInetAddress();
+    InetAddress otherAddr = other.getInetAddress();
+    if (myAddr == null && otherAddr == null) {
+      return true;
+    } else if (!Objects.equals(myAddr, otherAddr)) {
+      return false;
+    }
+
+    if (!isPartial() && !other.isPartial()) {
+      if (!Objects.equals(getName(), other.getName())) {
+        return false;
+      }
+    }
+
+    if (this.uniqueTag == null && other.uniqueTag == null) {
+      // not loners, so look at P2P view ID
+      int thisViewId = getVmViewId();
+      int otherViewId = other.getVmViewId();
+      if (thisViewId >= 0 && otherViewId >= 0) {
+        if (thisViewId != otherViewId) {
+          return false;
+        } // else they're the same, so continue
+      }
+    } else if (!Objects.equals(this.uniqueTag, other.uniqueTag)) {
+      return false;
+    }
+
+    if (this.netMbr != null && other.netMbr != null) {
+      if (0 != this.netMbr.compareAdditionalData(other.netMbr)) {
+        return false;
+      }
+    }
+
+    // purposely avoid checking roles
+    // @todo Add durableClientAttributes to equals
+
+    return true;
   }
 
   @Override
@@ -1227,6 +1273,15 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     return dsfidVersions;
   }
 
+  @VisibleForTesting
+  void setUniqueTag(String tag) {
+    uniqueTag = tag;
+  }
+
+  @VisibleForTesting
+  void setIsPartial(boolean value) {
+    isPartial = value;
+  }
 
   public static class InternalDistributedMemberWrapper {
     InternalDistributedMember mbr;

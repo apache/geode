@@ -47,6 +47,7 @@ import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -973,6 +974,10 @@ public class TCPConduit implements Runnable {
 
   public boolean useSSL() {
     return useSSL;
+  }
+
+  public BufferPool getBufferPool() {
+    return this.conTable.getBufferPool();
   }
 
   protected class Stopper extends CancelCriterion {

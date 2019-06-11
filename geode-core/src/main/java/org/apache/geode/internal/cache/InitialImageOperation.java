@@ -1619,12 +1619,15 @@ public class InitialImageOperation {
       final boolean lclAbortTest = abortTest;
       if (lclAbortTest)
         abortTest = false;
-
+      DistributedRegion targetRegion = null;
       boolean sendFailureMessage = true;
       try {
         Assert.assertTrue(this.regionPath != null, "Region path is null.");
         final DistributedRegion rgn =
             (DistributedRegion) getGIIRegion(dm, this.regionPath, this.targetReinitialized);
+        if (lostMemberID != null) {
+          targetRegion = rgn;
+        }
         if (rgn == null) {
           return;
         }
@@ -1878,6 +1881,16 @@ public class InitialImageOperation {
           sendFailureMessage(dm, rex);
         } // !success
 
+        if (lostMemberID != null && targetRegion != null) {
+          if (lostMemberVersionID == null) {
+            lostMemberVersionID = lostMemberID;
+          }
+          // check to see if the region in this cache needs to synchronize with others
+          // it is possible that the cache is recover/restart of a member and not
+          // scheduled to synchronize with others
+          synchronizeIfNotScheduled(targetRegion, lostMemberID, lostMemberVersionID);
+        }
+
         if (internalAfterSentImageReply != null
             && regionPath.endsWith(internalAfterSentImageReply.getRegionName())) {
           internalAfterSentImageReply.run();
@@ -1891,6 +1904,25 @@ public class InitialImageOperation {
           null, null);
     }
 
+    /**
+     * If there is no region sync scheduled after checking region version holder holding the
+     * lost member. Region sync requests are sent to members hosting the region.
+     * This is only executed when processing region sync requests from other members hosting the
+     * region.
+     * Region sync is triggered by a member departed event. If this member exists during the
+     * event, region sync would be scheduled. This method is only handles the case when
+     * node is recently joining the cluster or restarted, and does not get the member departed
+     * event.
+     */
+    void synchronizeIfNotScheduled(DistributedRegion region,
+        InternalDistributedMember lostMember, VersionSource lostVersionSource) {
+      if (region.setRegionSynchronizedWithIfNotScheduled(lostVersionSource)) {
+        // if region synchronization has not been scheduled or performed,
+        // we do synchronization with others right away as we received the synchronization request
+        // indicating timed task has been triggered on other nodes
+        region.synchronizeForLostMember(lostMember, lostVersionSource);
+      }
+    }
 
     /**
      * Serialize the entries into byte[] chunks, calling proc for each one. proc args: the byte[]

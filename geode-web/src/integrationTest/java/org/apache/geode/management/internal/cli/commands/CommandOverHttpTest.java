@@ -54,7 +54,7 @@ public class CommandOverHttpTest {
   @Test
   public void testListClient() throws Exception {
     gfshRule.executeAndAssertThat("list clients")
-        .statusIsError()
+        .statusIsSuccess()
         .hasInfoSection().hasOutput()
         .isEqualTo("No clients were retrieved for cache-servers.");
   }

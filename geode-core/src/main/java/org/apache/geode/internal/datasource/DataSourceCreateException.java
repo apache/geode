@@ -18,20 +18,16 @@ import org.apache.geode.GemFireCheckedException;
 
 /**
  * Exception thrown from DataSource factory.
- *
  */
 public class DataSourceCreateException extends GemFireCheckedException {
-  private static final long serialVersionUID = 8759147832954825309L;
 
-  private Exception excep;
+  private static final long serialVersionUID = 5107756585306908219L;
 
-  /** Creates a new instance of CreateConnectionException */
+  /**
+   * Creates a new instance of CreateConnectionException
+   */
   public DataSourceCreateException() {
     super();
-  }
-
-  public DataSourceCreateException(String message) {
-    super(message);
   }
 
   /**
@@ -40,20 +36,18 @@ public class DataSourceCreateException extends GemFireCheckedException {
    *
    * @param message The detail message. The detail message is saved for later retrieval.
    */
-  public DataSourceCreateException(String message, Exception ex) {
+  public DataSourceCreateException(String message) {
     super(message);
-    this.excep = ex;
   }
 
   /**
-   * @return ???
+   * Constructs a new exception with the specified detail message and cause.
+   *
+   * @param message The detail message. The detail message is saved for later retrieval.
+   * @param cause the cause (which is saved for later retrieval.
    */
-  @Override
-  public StackTraceElement[] getStackTrace() {
-    return excep.getStackTrace();
+  public DataSourceCreateException(String message, Throwable cause) {
+    super(message, cause);
   }
 
-  public Exception getWrappedException() {
-    return this.excep;
-  }
 }

@@ -38,6 +38,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATO
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.Matchers.greaterThan;
@@ -180,7 +181,6 @@ import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.WaitCriterion;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 import org.apache.geode.test.junit.categories.WanTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({WanTest.class})
 public class WANTestBase extends DistributedTestCase {
@@ -885,23 +885,6 @@ public class WANTestBase extends DistributedTestCase {
 
   private static CacheListener myListener;
 
-  public static void longPauseAfterNumEvents(int numEvents, int milliSeconds) {
-    myListener = new CacheListenerAdapter<Object, Object>() {
-      @Override
-      public void afterCreate(final EntryEvent<Object, Object> event) {
-        try {
-          if (event.getRegion().size() >= numEvents) {
-            Thread.sleep(milliSeconds);
-          }
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-      }
-    };
-    cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
-        .addCacheListener(myListener);
-  }
-
   public static void removeCacheListener() {
     cache.getRegion(getTestMethodName() + "_RR_1").getAttributesMutator()
         .removeCacheListener(myListener);
@@ -961,11 +944,11 @@ public class WANTestBase extends DistributedTestCase {
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
     // this uses the default.keystore which is all jdk compliant in geode-dunit module
-    gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/default.keystore"));
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE, createTempFileFromResource(WANTestBase.class,
+        "/org/apache/geode/cache/client/internal/default.keystore").getAbsolutePath());
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
-    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/default.keystore"));
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, createTempFileFromResource(WANTestBase.class,
+        "/org/apache/geode/cache/client/internal/default.keystore").getAbsolutePath());
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -1069,8 +1052,8 @@ public class WANTestBase extends DistributedTestCase {
     }
     for (AsyncInvocation invocation : tasks) {
       try {
-        invocation.join(30000); // TODO: these might be AsyncInvocation orphans
-      } catch (InterruptedException e) {
+        invocation.await();
+      } catch (InterruptedException | ExecutionException e) {
         fail("Starting senders was interrupted");
       }
     }
@@ -2050,11 +2033,11 @@ public class WANTestBase extends DistributedTestCase {
     gemFireProps.put(GATEWAY_SSL_REQUIRE_AUTHENTICATION, "true");
 
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_TYPE, "jks");
-    gemFireProps.put(GATEWAY_SSL_KEYSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/default.keystore"));
+    gemFireProps.put(GATEWAY_SSL_KEYSTORE, createTempFileFromResource(WANTestBase.class,
+        "/org/apache/geode/cache/client/internal/default.keystore").getAbsolutePath());
     gemFireProps.put(GATEWAY_SSL_KEYSTORE_PASSWORD, "password");
-    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, TestUtil.getResourcePath(WANTestBase.class,
-        "/org/apache/geode/cache/client/internal/default.keystore"));
+    gemFireProps.put(GATEWAY_SSL_TRUSTSTORE, createTempFileFromResource(WANTestBase.class,
+        "/org/apache/geode/cache/client/internal/default.keystore").getAbsolutePath());
     gemFireProps.put(GATEWAY_SSL_TRUSTSTORE_PASSWORD, "password");
 
     gemFireProps.setProperty(MCAST_PORT, "0");
@@ -3798,8 +3781,7 @@ public class WANTestBase extends DistributedTestCase {
       invocations.add(host.getVM(i).invokeAsync(() -> WANTestBase.cleanupVM()));
     }
     for (AsyncInvocation invocation : invocations) {
-      invocation.join();
-      invocation.checkException();
+      invocation.await();
     }
   }
 

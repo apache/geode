@@ -20,10 +20,12 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
@@ -64,13 +66,17 @@ class ClientRegistrationEventQueueManager {
         // event is drained and processed. See incrementPutInProgressCounter() and
         // decrementPutInProgressCounter() for more details.
         if (conflatable instanceof HAEventWrapper) {
-          ((HAEventWrapper) conflatable).incrementPutInProgressCounter();
+          ((HAEventWrapper) conflatable).incrementPutInProgressCounter("client registration");
         }
 
         // After taking out the lock, we need to determine if the client is still actually
         // registering since there is a small race where it may have finished registering
         // after we pulled the queue out of the registeringProxyEventQueues collection
         if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          // If the event value is off-heap, copy it to heap so we are guaranteed the value
+          // is available when we drain the registration queue
+          copyOffHeapToHeapForRegistrationQueue(event);
+
           registrationEventQueue.add(clientRegistrationEvent);
 
           // Because this event will be processed and sent when it is drained out of the temporary
@@ -93,41 +99,74 @@ class ClientRegistrationEventQueueManager {
     }
   }
 
+  /**
+   * For simplicity, we will copy off-heap registration queue values to heap to avoid
+   * complicated off-heap reference counting. Since the registration queue is only a
+   * temporary construct during client registration, the overhead should not be significant.
+   *
+   * @param event The InternalCacheEvent whose value will be copied to the heap if need be
+   */
+  private void copyOffHeapToHeapForRegistrationQueue(final InternalCacheEvent event) {
+    if (event.getOperation().isEntry()) {
+      EntryEventImpl entryEvent = ((EntryEventImpl) event);
+      entryEvent.copyOffHeapToHeap();
+    }
+  }
+
   void drain(final ClientProxyMembershipID clientProxyMembershipID,
       final CacheClientNotifier cacheClientNotifier) {
-    // As an optimization, we drain as many events from the queue as we can
-    // before taking out a lock to drain the remaining events
-    if (logger.isDebugEnabled()) {
-      logger.debug("Draining events from registration queue for client proxy "
-          + clientProxyMembershipID
-          + " without synchronization");
-    }
-
-    drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID, cacheClientNotifier);
-
     ClientRegistrationEventQueue registrationEventQueue =
         registeringProxyEventQueues.get(clientProxyMembershipID);
 
-    registrationEventQueue.lockForDraining();
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Draining remaining events from registration queue for client proxy "
-            + clientProxyMembershipID + " with synchronization");
+    if (registrationEventQueue != null) {
+      // It is possible that several client registration threads are active for the same
+      // ClientProxyMembershipID, in which case we only want a single drainer to drain
+      // and remove the queue.
+      registrationEventQueue.lockForSingleDrainer();
+      try {
+        // See if the queue is still available after acquiring the lock as it may have
+        // been removed from registeringProxyEventQueues by the previous thread
+        if (registeringProxyEventQueues.containsKey(clientProxyMembershipID)) {
+          // As an optimization, we drain as many events from the queue as we can
+          // before taking out a lock to drain the remaining events. When we lock for draining,
+          // it prevents additional events from being added to the queue while the queue is drained
+          // and removed.
+          if (logger.isDebugEnabled()) {
+            logger.debug("Draining events from registration queue for client proxy "
+                + clientProxyMembershipID
+                + " without synchronization");
+          }
+
+          drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID, registrationEventQueue,
+              cacheClientNotifier);
+
+          // Prevents additional events from being added to the queue while we process and remove it
+          registrationEventQueue.lockForDraining();
+          try {
+            if (logger.isDebugEnabled()) {
+              logger.debug("Draining remaining events from registration queue for client proxy "
+                  + clientProxyMembershipID + " with synchronization");
+            }
+
+            drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID,
+                registrationEventQueue,
+                cacheClientNotifier);
+
+            registeringProxyEventQueues.remove(clientProxyMembershipID);
+          } finally {
+            registrationEventQueue.unlockForDraining();
+          }
+        }
+      } finally {
+        registrationEventQueue.unlockForSingleDrainer();
       }
-
-      drainEventsReceivedWhileRegisteringClient(clientProxyMembershipID, cacheClientNotifier);
-
-      registeringProxyEventQueues.remove(clientProxyMembershipID);
-    } finally {
-      registrationEventQueue.unlockForDraining();
     }
   }
 
   private void drainEventsReceivedWhileRegisteringClient(final ClientProxyMembershipID proxyID,
+      final ClientRegistrationEventQueue registrationEventQueue,
       final CacheClientNotifier cacheClientNotifier) {
     ClientRegistrationEvent queuedEvent;
-    ClientRegistrationEventQueue registrationEventQueue = registeringProxyEventQueues.get(proxyID);
-
     while ((queuedEvent = registrationEventQueue.poll()) != null) {
       InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
       Conflatable conflatable = queuedEvent.conflatable;
@@ -139,23 +178,28 @@ class ClientRegistrationEventQueueManager {
   public ClientRegistrationEventQueue create(
       final ClientProxyMembershipID clientProxyMembershipID,
       final Queue<ClientRegistrationEvent> eventQueue,
-      final ReadWriteLock putDrainLock) {
+      final ReadWriteLock eventAddDrainLock,
+      final ReentrantLock singleDrainerLock) {
     final ClientRegistrationEventQueue clientRegistrationEventQueue =
         new ClientRegistrationEventQueue(eventQueue,
-            putDrainLock);
-    registeringProxyEventQueues.put(clientProxyMembershipID,
+            eventAddDrainLock, singleDrainerLock);
+    registeringProxyEventQueues.putIfAbsent(clientProxyMembershipID,
         clientRegistrationEventQueue);
     return clientRegistrationEventQueue;
   }
 
   class ClientRegistrationEventQueue {
-    Queue<ClientRegistrationEvent> eventQueue;
-    ReadWriteLock readWriteLock;
+    private final Queue<ClientRegistrationEvent> eventQueue;
+    private final ReadWriteLock eventAddDrainLock;
+    private final ReentrantLock singleDrainerLock;
 
     ClientRegistrationEventQueue(
-        final Queue<ClientRegistrationEvent> eventQueue, final ReadWriteLock readWriteLock) {
+        final Queue<ClientRegistrationEvent> eventQueue,
+        final ReadWriteLock eventAddDrainLock,
+        final ReentrantLock singleDrainerLock) {
       this.eventQueue = eventQueue;
-      this.readWriteLock = readWriteLock;
+      this.eventAddDrainLock = eventAddDrainLock;
+      this.singleDrainerLock = singleDrainerLock;
     }
 
     boolean isEmpty() {
@@ -171,19 +215,27 @@ class ClientRegistrationEventQueueManager {
     }
 
     private void lockForDraining() {
-      readWriteLock.writeLock().lock();
+      eventAddDrainLock.writeLock().lock();
     }
 
     private void unlockForDraining() {
-      readWriteLock.writeLock().unlock();
+      eventAddDrainLock.writeLock().unlock();
     }
 
     private void lockForPutting() {
-      readWriteLock.readLock().lock();
+      eventAddDrainLock.readLock().lock();
     }
 
     private void unlockForPutting() {
-      readWriteLock.readLock().unlock();
+      eventAddDrainLock.readLock().unlock();
+    }
+
+    private void lockForSingleDrainer() {
+      singleDrainerLock.lock();
+    }
+
+    private void unlockForSingleDrainer() {
+      singleDrainerLock.unlock();
     }
   }
 

@@ -14,14 +14,10 @@
  */
 package org.apache.geode.codeAnalysis;
 
-import static org.apache.commons.lang3.SystemUtils.isJavaVersionAtLeast;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
-import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeThat;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -48,8 +44,6 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.JavaVersion;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -127,10 +121,10 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   @Before
   public void setUp() throws Exception {
-    assumeThat(
-        "AnalyzeSerializables requires Java 8 but tests are running with v"
-            + SystemUtils.JAVA_VERSION,
-        isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
+    // assumeThat(
+    // "AnalyzeSerializables requires Java 8 but tests are running with v"
+    // + SystemUtils.JAVA_VERSION,
+    // isJavaVersionAtLeast(JavaVersion.JAVA_1_8), is(true));
     TypeRegistry.init();
   }
 
@@ -156,8 +150,8 @@ public abstract class AnalyzeSerializablesJUnitTestBase {
 
   @Test
   public void testDataSerializables() throws Exception {
-    assumeTrue("Ignoring this test when java version is 9 and above",
-        !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
+    // assumeTrue("Ignoring this test when java version is 9 and above",
+    // !SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9));
     System.out.println(this.testName.getMethodName() + " starting");
     findClasses();
     loadExpectedDataSerializables();

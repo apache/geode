@@ -84,7 +84,7 @@ public class Request extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {

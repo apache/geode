@@ -27,7 +27,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.net.Buffers;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 
 /**
@@ -125,13 +125,13 @@ public class MsgReader {
 
   private ByteBuffer readAtLeast(int bytes) throws IOException {
     peerNetData = ioFilter.ensureWrappedCapacity(bytes, peerNetData,
-        Buffers.BufferType.TRACKED_RECEIVER, getStats());
-    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData, getStats());
+        BufferPool.BufferType.TRACKED_RECEIVER);
+    return ioFilter.readAtLeast(conn.getSocket().getChannel(), bytes, peerNetData);
   }
 
   public void close() {
     if (peerNetData != null) {
-      Buffers.releaseReceiveBuffer(peerNetData, getStats());
+      conn.getBufferPool().releaseReceiveBuffer(peerNetData);
     }
   }
 

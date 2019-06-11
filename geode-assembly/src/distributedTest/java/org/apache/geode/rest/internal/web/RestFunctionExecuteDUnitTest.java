@@ -12,11 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web;
 
-
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,9 +35,8 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RestAPITest;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.util.test.TestUtil;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class RestFunctionExecuteDUnitTest {
 
   @ClassRule
@@ -47,8 +45,11 @@ public class RestFunctionExecuteDUnitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static JarBuilder jarBuilder = new JarBuilder();
-  private static MemberVM locator, server1, server2;
+  private static final JarBuilder jarBuilder = new JarBuilder();
+
+  private static MemberVM locator;
+  private static MemberVM server1;
+  private static MemberVM server2;
 
   private GeodeDevRestClient client;
 
@@ -58,20 +59,19 @@ public class RestFunctionExecuteDUnitTest {
     File jarsToDeploy = new File(gfsh.getWorkingDir(), "function.jar");
     jarBuilder.buildJar(jarsToDeploy, loadClassToFile());
 
-
     Properties locatorProps = new Properties();
-    locatorProps.put(ConfigurationProperties.SECURITY_MANAGER,
+    locatorProps.setProperty(ConfigurationProperties.SECURITY_MANAGER,
         SimpleSecurityManager.class.getName());
     locator = cluster.startLocatorVM(0, locatorProps);
 
     Properties props = new Properties();
-    props.put(ConfigurationProperties.START_DEV_REST_API, "true");
-    props.put("security-username", "cluster");
-    props.put("security-password", "cluster");
-    props.put(ConfigurationProperties.GROUPS, "group1");
+    props.setProperty(ConfigurationProperties.START_DEV_REST_API, "true");
+    props.setProperty("security-username", "cluster");
+    props.setProperty("security-password", "cluster");
+    props.setProperty(ConfigurationProperties.GROUPS, "group1");
     server1 = cluster.startServerVM(1, props, locator.getPort());
 
-    props.put(ConfigurationProperties.GROUPS, "group2");
+    props.setProperty(ConfigurationProperties.GROUPS, "group2");
     server2 = cluster.startServerVM(2, props, locator.getPort());
 
     gfsh.connectAndVerify(locator);
@@ -82,7 +82,7 @@ public class RestFunctionExecuteDUnitTest {
   }
 
   @Test
-  public void connectToServer1() throws Exception {
+  public void connectToServer1() {
     client = new GeodeDevRestClient("localhost", server1.getHttpPort());
     assertResponse(client.doPost("/functions/myTestFunction", "dataRead", "dataRead", ""))
         .hasStatusCode(403);
@@ -101,7 +101,7 @@ public class RestFunctionExecuteDUnitTest {
   }
 
   @Test
-  public void connectToServer2() throws Exception {
+  public void connectToServer2() {
     // function is deployed on server1
     client = new GeodeDevRestClient("localhost", server2.getHttpPort());
     assertResponse(client.doPost("/functions/myTestFunction", "dataRead", "dataRead", ""))
@@ -110,12 +110,12 @@ public class RestFunctionExecuteDUnitTest {
 
   // find ImplementsFunction.java in the geode-core resource
   private static File loadClassToFile() {
-    String resourcePath = TestUtil.getResourcePath(Function.class.getClassLoader(),
-        "org/apache/geode/management/internal/deployment/ImplementsFunction.java");
+    String resourcePath =
+        createTempFileFromResource(Function.class.getClassLoader(),
+            "org/apache/geode/management/internal/deployment/ImplementsFunction.java")
+                .getAbsolutePath();
     assertThat(resourcePath).isNotNull();
 
     return new File(resourcePath);
   }
-
-
 }

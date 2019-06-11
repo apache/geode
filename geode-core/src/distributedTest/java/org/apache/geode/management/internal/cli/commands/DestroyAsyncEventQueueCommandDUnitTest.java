@@ -16,8 +16,6 @@ package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
-
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -26,7 +24,6 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.wan.MyAsyncEventListener;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -162,8 +159,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
-  public void destroyAeq_selectsQueuesOnGroup_showsErrorForServersNotInGroup()
-      throws GfJsonException {
+  public void destroyAeq_selectsQueuesOnGroup_showsErrorForServersNotInGroup() {
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
@@ -181,7 +177,7 @@ public class DestroyAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
-  public void destroyAeq_selectsQueuesByGroup_returnsSuccess() throws GfJsonException, IOException {
+  public void destroyAeq_selectsQueuesByGroup_returnsSuccess() {
     server3 = lsRule.startServerVM(3, "group3", locator.getPort());
 
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="

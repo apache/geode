@@ -115,7 +115,7 @@ public class DestroyTest {
 
     when(this.region.containsKey(eq(REGION_NAME))).thenReturn(true);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(this.cacheServerStats);

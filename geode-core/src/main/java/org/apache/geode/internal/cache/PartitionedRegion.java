@@ -1619,7 +1619,16 @@ public class PartitionedRegion extends LocalRegion
     }
   }
 
-  public void updatePRConfig(PartitionRegionConfig prConfig, boolean putOnlyIfUpdated) {
+  /**
+   *
+   * Set the global PartitionedRegionConfig metadata for this region.
+   *
+   * This method should *only* be called while holding the partitioned region lock. For code
+   * that is mutating the config, use
+   * {@link #updatePartitionRegionConfig(PartitionRegionConfigModifier)}
+   * instead.
+   */
+  void updatePRConfig(PartitionRegionConfig prConfig, boolean putOnlyIfUpdated) {
     final PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this);
     RegionLock colocatedLock = null;
     boolean colocatedLockAcquired = false;
@@ -1848,13 +1857,55 @@ public class PartitionedRegion extends LocalRegion
     throw new UnsupportedOperationException();
   }
 
-  /**
-   * @since GemFire 5.0
-   * @throws UnsupportedOperationException OVERRIDES
-   */
   @Override
-  public CacheStatistics getStatistics() {
-    throw new UnsupportedOperationException();
+  public long getLastModifiedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastModifiedTime =
+        buckets.stream().map(x -> x.getLastModifiedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    return lastModifiedTime;
+  }
+
+  @Override
+  public long getLastAccessedTime() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    long lastAccessedTime =
+        buckets.stream().map(x -> x.getLastAccessedTime()).reduce(0L, (a, b) -> a > b ? a : b);
+    return lastAccessedTime;
+  }
+
+  @Override
+  public long getMissCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getMissCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public long getHitCount() {
+    if (!this.canStoreDataLocally()) {
+      return 0;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    return buckets.stream().map(x -> x.getHitCount()).reduce(0L, (a, b) -> a + b);
+  }
+
+  @Override
+  public void resetCounts() {
+    if (!this.canStoreDataLocally()) {
+      return;
+    }
+    Set<BucketRegion> buckets = this.dataStore.getAllLocalBucketRegions();
+    for (BucketRegion bucket : buckets) {
+      bucket.resetCounts();
+    }
   }
 
   /**
@@ -3210,22 +3261,25 @@ public class PartitionedRegion extends LocalRegion
     checkReadiness();
     checkForNoAccess();
     discoverJTA();
-    CachePerfStats stats = getCachePerfStats();
-    long start = stats.startGet();
     boolean miss = true;
-    try {
-      // if scope is local and there is no loader, then
-      // don't go further to try and get value
-      Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
-          true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
-          preferCD, requestingClient, clientEvent, returnTombstones);
-      if (value != null && !Token.isInvalid(value)) {
-        miss = false;
-      }
-      return value;
-    } finally {
-      stats.endGet(start, miss);
+    Object value = getDataView().findObject(getKeyInfo(key, aCallbackArgument), this,
+        true/* isCreate */, generateCallbacks, null /* no local value */, disableCopyOnRead,
+        preferCD, requestingClient, clientEvent, returnTombstones);
+    if (value != null && !Token.isInvalid(value)) {
+      miss = false;
     }
+    return value;
+  }
+
+  @Override
+  protected long startGet() {
+    return 0;
+  }
+
+  @Override
+  protected void endGet(long start, boolean isMiss) {
+    // get stats are recorded by the BucketRegion
+    // so nothing is needed on the PartitionedRegion.
   }
 
   public InternalDistributedMember getOrCreateNodeForBucketRead(int bucketId) {
@@ -9204,17 +9258,8 @@ public class PartitionedRegion extends LocalRegion
     PartitionRegionHelper.assignBucketsToPartitions(this);
     dataStore.lockBucketCreationAndVisit(
         (bucketId, r) -> r.getAttributesMutator().setEntryTimeToLive(timeToLive));
-    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
+    updatePartitionRegionConfig(config -> config.setEntryTimeToLive(timeToLive));
     return attr;
-  }
-
-  private PartitionRegionConfig getPRConfigWithLatestExpirationAttributes() {
-    PartitionRegionConfig prConfig = getPRRoot().get(getRegionIdentifier());
-
-    return new PartitionRegionConfig(prConfig.getPRId(), prConfig.getFullPath(),
-        prConfig.getPartitionAttrs(), prConfig.getScope(), prConfig.getEvictionAttributes(),
-        this.getRegionIdleTimeout(), this.getRegionTimeToLive(), this.getEntryIdleTimeout(),
-        this.getEntryTimeToLive(), prConfig.getGatewaySenderIds());
   }
 
   /**
@@ -9255,7 +9300,8 @@ public class PartitionedRegion extends LocalRegion
     // Set to Bucket regions as well
     dataStore.lockBucketCreationAndVisit(
         (bucketId, r) -> r.getAttributesMutator().setEntryIdleTimeout(idleTimeout));
-    updatePRConfig(getPRConfigWithLatestExpirationAttributes(), false);
+
+    updatePartitionRegionConfig(config -> config.setEntryIdleTimeout(idleTimeout));
     return attr;
   }
 

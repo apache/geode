@@ -15,9 +15,7 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataInput;
-import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
@@ -34,6 +32,7 @@ import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
+import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
@@ -1219,7 +1218,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     // This is a debugging method so ignore all exceptions like
     // ClassNotFoundException
     try {
-      DataInputStream dis = new DataInputStream(new ByteArrayInputStream(serializedBytes));
+      ByteArrayDataInput dis = new ByteArrayDataInput(serializedBytes);
       deserializedObject = DataSerializer.readObject(dis);
     } catch (Exception e) {
     }
@@ -1558,9 +1557,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
   /**
-   * Basically just a HashMap<String, Integer> but limits itself to the CqNameToOp interface.
+   * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
+   * interface.
    */
-  public static class CqNameToOpHashMap extends HashMap<String, Integer> implements CqNameToOp {
+  public static class CqNameToOpHashMap extends ConcurrentHashMap<String, Integer>
+      implements CqNameToOp {
     public CqNameToOpHashMap(int initialCapacity) {
       super(initialCapacity, 1.0f);
     }
@@ -1574,7 +1575,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      DataSerializer.writeHashMap(this, out);
+      DataSerializer.writeConcurrentHashMap(this, out);
     }
 
     @Override

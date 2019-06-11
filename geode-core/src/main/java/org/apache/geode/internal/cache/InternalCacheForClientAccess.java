@@ -1041,7 +1041,7 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public List getCacheServersAndGatewayReceiver() {
+  public List<InternalCacheServer> getCacheServersAndGatewayReceiver() {
     return delegate.getCacheServersAndGatewayReceiver();
   }
 
@@ -1126,13 +1126,18 @@ public class InternalCacheForClientAccess implements InternalCache {
   }
 
   @Override
-  public CacheServer addCacheServer(boolean isGatewayReceiver) {
-    return delegate.addCacheServer(isGatewayReceiver);
+  public InternalCacheServer addGatewayReceiverServer(GatewayReceiver receiver) {
+    return delegate.addGatewayReceiverServer(receiver);
   }
 
   @Override
   public boolean removeCacheServer(CacheServer cacheServer) {
     return delegate.removeCacheServer(cacheServer);
+  }
+
+  @Override
+  public boolean removeGatewayReceiverServer(InternalCacheServer receiverServer) {
+    return delegate.removeGatewayReceiverServer(receiverServer);
   }
 
   @Override

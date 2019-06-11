@@ -66,10 +66,6 @@
         <util:constant static-field="com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_SINGLE_QUOTES"/>
         <util:constant static-field="com.fasterxml.jackson.databind.MapperFeature.USE_BASE_TYPE_AS_DEFAULT_IMPL"/>
         <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT"/>
-      </array>
-    </property>
-    <property name="featuresToDisable">
-      <array>
         <util:constant static-field="com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES"/>
       </array>
     </property>

@@ -551,7 +551,7 @@ public class CliUtil {
           null, workingDir);
       p.waitFor();
     } catch (IOException | InterruptedException e) {
-      Gfsh.printlnErr(e.getMessage());
+      Gfsh.println(e.getMessage());
     } finally {
       if (file != null)
         file.delete();

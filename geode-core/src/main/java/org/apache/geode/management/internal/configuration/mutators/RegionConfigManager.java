@@ -24,7 +24,9 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -34,6 +36,9 @@ import org.apache.geode.management.configuration.RuntimeRegionConfig;
 public class RegionConfigManager
     implements ConfigurationManager<RegionConfig> {
   private InternalCache cache;
+
+  @VisibleForTesting
+  RegionConfigManager() {}
 
   public RegionConfigManager(InternalCache cache) {
     this.cache = cache;
@@ -55,7 +60,7 @@ public class RegionConfigManager
 
   @Override
   public void delete(RegionConfig config, CacheConfig existing) {
-    throw new NotImplementedException("Not implemented yet");
+    existing.getRegions().removeIf(i -> i.getId().equals(config.getId()));
   }
 
   @Override
@@ -82,5 +87,10 @@ public class RegionConfigManager
       results.add(runtimeConfig);
     }
     return results;
+  }
+
+  @Override
+  public RegionConfig get(String id, CacheConfig existing) {
+    return CacheElement.findElement(existing.getRegions(), id);
   }
 }

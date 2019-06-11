@@ -26,8 +26,6 @@ import org.apache.geode.internal.cache.wan.GatewayReceiverException;
  * used in conjunction with a {@link GatewaySender} to connect two distributed-systems. This
  * GatewayReceiver will receive all the events originating in distributed-systems that has a
  * {@code GatewaySender} connected to this distributed-system.
- *
- *
  */
 public interface GatewayReceiver {
 
@@ -184,5 +182,4 @@ public interface GatewayReceiver {
    * Return the underlying Cacheserver
    */
   CacheServer getServer();
-
 }

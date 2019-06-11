@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.configuration;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -40,7 +41,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.util.test.TestUtil;
 
 public class ClusterConfigServerRestartWithJarDeployDUnitTest {
 
@@ -79,7 +79,7 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
 
     server2.forceDisconnect();
 
-    server2.waitTilServerFullyReconnected();
+    server2.waitTilFullyReconnected();
 
     callFunction(server1);
   }
@@ -87,8 +87,8 @@ public class ClusterConfigServerRestartWithJarDeployDUnitTest {
   private File getFunctionJar() throws IOException {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        TestUtil.getResourcePath(this.getClass(),
-            "/ClusterConfigServerRestartWithJarDeployFunction.java");
+        createTempFileFromResource(this.getClass(),
+            "/ClusterConfigServerRestartWithJarDeployFunction.java").getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 
     File functionJar = new File(temporaryFolder.newFolder(), "output.jar");

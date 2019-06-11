@@ -81,7 +81,7 @@ public class CacheConfigTest {
     assertThat(index.isKeyIndex()).isTrue();
     assertThat(index.getName()).isEqualTo("indexName");
     assertThat(index.getExpression()).isEqualTo("expression");
-    assertThat(index.getType()).isEqualTo("range");
+    assertThat(index.getType()).isEqualTo("key");
   }
 
 

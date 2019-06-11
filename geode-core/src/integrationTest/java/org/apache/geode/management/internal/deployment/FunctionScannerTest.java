@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.deployment;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -28,7 +29,6 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.compiler.JarBuilder;
 import org.apache.geode.test.junit.categories.GfshTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({GfshTest.class})
 public class FunctionScannerTest {
@@ -111,7 +111,8 @@ public class FunctionScannerTest {
   }
 
   private File loadTestResource(String fileName) {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    String filePath =
+        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);

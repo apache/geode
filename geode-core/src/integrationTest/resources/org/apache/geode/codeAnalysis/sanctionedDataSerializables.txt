@@ -1020,7 +1020,7 @@ toDataPre_GFE_7_1_0_0,88
 org/apache/geode/internal/cache/FilterRoutingInfo$FilterInfo,4
 fromData,9
 fromDataPre_GFE_8_0_0_0,50
-toData,255
+toData,247
 toDataPre_GFE_8_0_0_0,213
 
 org/apache/geode/internal/cache/FindDurableQueueProcessor$FindDurableQueueMessage,2

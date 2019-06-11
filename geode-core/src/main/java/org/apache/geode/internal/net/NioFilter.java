@@ -18,8 +18,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.apache.geode.distributed.internal.DMStats;
-
 /**
  * Prior to transmitting a buffer or processing a received buffer
  * a NioFilter should be called to wrap (transmit) or unwrap (received)
@@ -44,7 +42,7 @@ public interface NioFilter {
    * This must be invoked before readAtLeast. A new buffer may be returned by this method.
    */
   ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType, DMStats stats);
+      BufferPool.BufferType bufferType);
 
   /**
    * read at least the indicated amount of bytes from the given
@@ -55,8 +53,8 @@ public interface NioFilter {
    * wrappedBuffer = filter.ensureWrappedCapacity(amount, wrappedBuffer, etc.);<br>
    * unwrappedBuffer = filter.readAtLeast(channel, amount, wrappedBuffer, etc.)
    */
-  ByteBuffer readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer,
-      DMStats stats) throws IOException;
+  ByteBuffer readAtLeast(SocketChannel channel, int amount, ByteBuffer wrappedBuffer)
+      throws IOException;
 
   /**
    * You must invoke this when done reading from the unwrapped buffer

@@ -23,6 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_R
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -35,7 +36,6 @@ import org.junit.Test;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * @since GemFire 8.1
@@ -62,7 +62,8 @@ public class HTTPServiceSSLSupportJUnitTest {
 
   private static File findTrustedJKS() {
     return new File(
-        TestUtil.getResourcePath(HTTPServiceSSLSupportJUnitTest.class, "/ssl/trusted.keystore"));
+        createTempFileFromResource(HTTPServiceSSLSupportJUnitTest.class,
+            "/ssl/trusted.keystore").getAbsolutePath());
   }
 
   public static String makePath(String[] strings) {

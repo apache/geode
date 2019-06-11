@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,7 +37,6 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({FunctionServiceTest.class})
 public class DeployCommandFunctionRegistrationDUnitTest {
@@ -95,7 +95,8 @@ public class DeployCommandFunctionRegistrationDUnitTest {
   }
 
   private File loadTestResource(String fileName) throws URISyntaxException {
-    String filePath = TestUtil.getResourcePath(this.getClass(), fileName);
+    String filePath =
+        createTempFileFromResource(this.getClass(), fileName).getAbsolutePath();
     assertThat(filePath).isNotNull();
 
     return new File(filePath);

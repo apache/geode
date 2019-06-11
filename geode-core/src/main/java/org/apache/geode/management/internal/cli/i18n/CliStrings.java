@@ -738,7 +738,7 @@ public class CliStrings {
   public static final String CREATE_INDEX__TYPE__HELP =
       "Type of the index. Valid values are: range and key. Deprecated: Since Geode 1.4, hash should not be used.";
   public static final String CREATE_INDEX__GROUP__HELP =
-      "Group of members in which the index will be created.";
+      "Group of members in which the index will be created. Value will be ignored when using cluster configuration.";
   public static final String CREATE_INDEX__INVALID__INDEX__TYPE__MESSAGE =
       "Invalid index type. Value must be either range or key.";
   public static final String CREATE_INDEX__SUCCESS__MSG =

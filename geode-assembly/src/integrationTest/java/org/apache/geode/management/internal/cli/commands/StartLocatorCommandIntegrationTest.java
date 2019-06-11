@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
@@ -44,14 +43,14 @@ public class StartLocatorCommandIntegrationTest {
   private StartLocatorCommand spy;
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     spy = Mockito.spy(StartLocatorCommand.class);
     doReturn(mock(Gfsh.class)).when(spy).getGfsh();
   }
 
   @Test
   public void startLocatorWorksWithNoOptions() throws Exception {
-    commandRule.executeCommandWithInstance(spy, "start locator");
+    commandRule.executeAndAssertThat(spy, "start locator");
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartLocatorCommandLine(any(), any(), any(),
@@ -67,7 +66,7 @@ public class StartLocatorCommandIntegrationTest {
     String startLocatorCommand = new CommandStringBuilder("start locator")
         .addOption(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, FAKE_HOSTNAME).toString();
 
-    commandRule.executeCommandWithInstance(spy, startLocatorCommand);
+    commandRule.executeAndAssertThat(spy, startLocatorCommand);
 
     ArgumentCaptor<Properties> gemfirePropertiesCaptor = ArgumentCaptor.forClass(Properties.class);
     verify(spy).createStartLocatorCommandLine(any(), any(), any(),
@@ -78,4 +77,28 @@ public class StartLocatorCommandIntegrationTest {
     assertThat(gemfireProperties.get(JMX_MANAGER_HOSTNAME_FOR_CLIENTS)).isEqualTo(FAKE_HOSTNAME);
   }
 
+  @Test
+  public void startWithBindAddress() throws Exception {
+    doReturn(mock(Process.class)).when(spy).getProcess(any(), any());
+    commandRule.executeAndAssertThat(spy, "start locator --bind-address=127.0.0.1");
+
+    ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
+    verify(spy).getProcess(any(), commandLines.capture());
+
+    String[] lines = commandLines.getValue();
+    assertThat(lines[12]).isEqualTo("--bind-address=127.0.0.1");
+  }
+
+  @Test
+  public void startLocatorRespectsHostnameForClients() throws Exception {
+    doReturn(mock(Process.class)).when(spy).getProcess(any(), any());
+    String startLocatorCommand = new CommandStringBuilder("start locator")
+        .addOption("hostname-for-clients", FAKE_HOSTNAME).toString();
+
+    commandRule.executeAndAssertThat(spy, startLocatorCommand);
+    ArgumentCaptor<String[]> commandLines = ArgumentCaptor.forClass(String[].class);
+    verify(spy).getProcess(any(), commandLines.capture());
+    String[] lines = commandLines.getValue();
+    assertThat(lines).containsOnlyOnce("--hostname-for-clients=" + FAKE_HOSTNAME);
+  }
 }

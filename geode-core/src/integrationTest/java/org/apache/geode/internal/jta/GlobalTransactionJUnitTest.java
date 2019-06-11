@@ -16,6 +16,7 @@ package org.apache.geode.internal.jta;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
@@ -39,7 +40,6 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.GemFireBasicDataSource;
 import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
-import org.apache.geode.util.test.TestUtil;
 
 public class GlobalTransactionJUnitTest {
 
@@ -53,7 +53,9 @@ public class GlobalTransactionJUnitTest {
   public void setUp() throws Exception {
     props = new Properties();
     props.setProperty(MCAST_PORT, "0");
-    String path = TestUtil.getResourcePath(GlobalTransactionJUnitTest.class, "/jta/cachejta.xml");
+    String path =
+        createTempFileFromResource(GlobalTransactionJUnitTest.class, "/jta/cachejta.xml")
+            .getAbsolutePath();
     props.setProperty(CACHE_XML_FILE, path);
     ds1 = DistributedSystem.connect(props);
     cache = CacheFactory.create(ds1);

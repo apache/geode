@@ -84,7 +84,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -172,6 +171,11 @@ public class SocketCreator {
    * Only print this SocketCreator's config once
    */
   private boolean configShown = false;
+  /**
+   * Only print hostname validation disabled log once
+   */
+  private boolean hostnameValidationDisabledLogShown = false;
+
 
   /**
    * context for SSL socket factories
@@ -770,8 +774,8 @@ public class SocketCreator {
               "Unable to find a free port in the membership-port-range");
         }
       }
+      ServerSocket socket = null;
       try {
-        ServerSocket socket;
         if (useNIO) {
           ServerSocketChannel channel = ServerSocketChannel.open();
           socket = channel.socket();
@@ -784,21 +788,12 @@ public class SocketCreator {
         }
         return socket;
       } catch (java.net.SocketException ex) {
-        if (useNIO || SocketCreator.treatAsBindException(ex)) {
-          localPort++;
-        } else {
-          throw ex;
+        if (socket != null && !socket.isClosed()) {
+          socket.close();
         }
+        localPort++;
       }
     }
-  }
-
-  private static boolean treatAsBindException(SocketException se) {
-    if (se instanceof BindException) {
-      return true;
-    }
-    final String msg = se.getMessage();
-    return (msg != null && msg.contains("Invalid argument: listen failed"));
   }
 
   /**
@@ -935,7 +930,7 @@ public class SocketCreator {
       int timeout,
       boolean clientSocket,
       ByteBuffer peerNetBuffer,
-      DMStats stats)
+      BufferPool bufferPool)
       throws IOException {
     engine.setUseClientMode(clientSocket);
     while (!socketChannel.finishConnect()) {
@@ -949,7 +944,7 @@ public class SocketCreator {
       }
     }
 
-    NioSslEngine nioSslEngine = new NioSslEngine(engine, stats);
+    NioSslEngine nioSslEngine = new NioSslEngine(engine, bufferPool);
 
     boolean blocking = socketChannel.isBlocking();
     if (blocking) {
@@ -1062,9 +1057,12 @@ public class SocketCreator {
         sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
         sslSocket.setSSLParameters(sslParameters);
       } else {
-        logger.warn("Your SSL configuration disables hostname validation. "
-            + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
-            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+        if (!hostnameValidationDisabledLogShown) {
+          logger.info("Your SSL configuration disables hostname validation. "
+              + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
+              + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+          hostnameValidationDisabledLogShown = true;
+        }
       }
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();

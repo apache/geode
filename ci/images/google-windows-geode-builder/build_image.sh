@@ -49,7 +49,7 @@ fi
 HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
-PACKER_LOG=1 packer build \
+PACKER_LOG=1 packer135 build \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \

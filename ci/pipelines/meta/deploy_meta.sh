@@ -107,28 +107,27 @@ YML
   fly -t ${FLY_TARGET} set-pipeline \
     -p ${META_PIPELINE} \
     --config ${SCRIPTDIR}/generated-pipeline.yml \
-    --var concourse-url=${CONCOURSE_URL} \
     --var artifact-bucket=${ARTIFACT_BUCKET} \
+    --var concourse-team=main \
+    --var concourse-url=${CONCOURSE_URL} \
     --var gcp-project=${GCP_PROJECT} \
     --var geode-build-branch=${GEODE_BRANCH} \
-    --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
-    --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var geode-fork=${GEODE_FORK} \
     --var geode-repo-name=${GEODE_REPO_NAME} \
-    --var upstream-fork=${UPSTREAM_FORK} \
-    --var pipeline-prefix=${PIPELINE_PREFIX} \
     --var gradle-global-args="${GRADLE_GLOBAL_ARGS}" \
     --var maven-snapshot-bucket="${MAVEN_SNAPSHOT_BUCKET}" \
+    --var pipeline-prefix=${PIPELINE_PREFIX} \
+    --var sanitized-geode-build-branch=${SANITIZED_GEODE_BRANCH} \
+    --var sanitized-geode-fork=${SANITIZED_GEODE_FORK} \
     --var semver-prerelease-token="${SEMVER_PRERELEASE_TOKEN}" \
-    --var concourse-team=main \
+    --var upstream-fork=${UPSTREAM_FORK} \
     --yaml-var public-pipelines=${PUBLIC} 2>&1 |tee flyOutput.log
 
+  if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
+    exit 1
+  fi
 popd 2>&1 > /dev/null
 
-
-if [[ "$(tail -n1 flyOutput.log)" == "bailing out" ]]; then
-  exit 1
-fi
 
 # bootstrap all precursors of the actual Build job
 
@@ -238,11 +237,11 @@ set +x
 
 if [[ "${GEODE_FORK}" != "${UPSTREAM_FORK}" ]]; then
   echo "Disabling unnecessary jobs for forks."
-  pauseJobs ${META_PIPELINE} set-images-pipeline set-reaper-pipeline
+  pauseJobs ${META_PIPELINE} set-reaper-pipeline
   pauseNewJobs ${META_PIPELINE} set-metrics-pipeline
 elif [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]] && [[ "$GEODE_BRANCH" == "develop" ]]; then
   echo "Disabling optional jobs for develop"
-  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-images-pipeline set-metrics-pipeline set-examples-pipeline
+  pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-metrics-pipeline set-examples-pipeline
 else
   echo "Disabling unnecessary jobs for release branches."
   echo "*** DO NOT RE-ENABLE THESE META-JOBS ***"
@@ -250,7 +249,6 @@ else
   pauseNewJobs ${META_PIPELINE} set-pr-pipeline set-metrics-pipeline set-examples-pipeline
 fi
 
-pauseNewJobs ${META_PIPELINE} set-pipeline
 unpausePipeline ${META_PIPELINE}
 driveToGreen $META_PIPELINE build-meta-mini-docker-image
 driveToGreen $META_PIPELINE set-images-pipeline

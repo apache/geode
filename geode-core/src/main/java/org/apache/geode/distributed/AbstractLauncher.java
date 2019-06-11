@@ -41,6 +41,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -52,7 +55,6 @@ import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.SunAPINotFoundException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
  * The AbstractLauncher class is a base class for implementing various launchers to construct and
@@ -597,7 +599,15 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
       map.put(JSON_TIMESTAMP, getTimestamp().getTime());
       map.put(JSON_UPTIME, getUptime());
       map.put(JSON_WORKINGDIRECTORY, getWorkingDirectory());
-      return new GfJsonObject(map).toString();
+
+      String jsonStatus = null;
+      try {
+        jsonStatus = new ObjectMapper().writeValueAsString(map);
+      } catch (JsonProcessingException e) {
+        // Ignored
+      }
+
+      return jsonStatus;
     }
 
     public static boolean isStartingNotRespondingOrNull(final ServiceState serviceState) {

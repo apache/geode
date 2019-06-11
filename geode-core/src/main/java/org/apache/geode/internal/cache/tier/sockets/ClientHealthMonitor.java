@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -43,6 +44,7 @@ import org.apache.geode.internal.cache.IncomingGatewayStatus;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXId;
 import org.apache.geode.internal.cache.TXManagerImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -240,7 +242,7 @@ public class ClientHealthMonitor {
    *        <code>CacheClientProxy</code>).
    * @param clientDisconnectedCleanly Whether the client disconnected cleanly or crashed
    */
-  void unregisterClient(ClientProxyMembershipID proxyID, AcceptorImpl acceptor,
+  void unregisterClient(ClientProxyMembershipID proxyID, Acceptor acceptor,
       boolean clientDisconnectedCleanly, Throwable clientDisconnectException) {
     unregisterClient(proxyID, clientDisconnectedCleanly, clientDisconnectException);
     // Unregister any CacheClientProxy instances associated with this member id
@@ -260,6 +262,7 @@ public class ClientHealthMonitor {
   /**
    * provide a test hook to track client transactions to be removed
    */
+  @SuppressWarnings("unused") // do not delete
   public Set<TXId> getScheduledToBeRemovedTx() {
     final TXManagerImpl txMgr = (TXManagerImpl) cache.getCacheTransactionManager();
     return txMgr.getScheduledToBeRemovedTx();
@@ -827,4 +830,21 @@ public class ClientHealthMonitor {
       } // while
     }
   } // ClientHealthMonitorThread
+
+  @VisibleForTesting
+  public static ClientHealthMonitorProvider singletonProvider() {
+    return ClientHealthMonitor::getInstance;
+  }
+
+  @VisibleForTesting
+  public static Supplier<ClientHealthMonitor> singletonGetter() {
+    return ClientHealthMonitor::getInstance;
+  }
+
+  @FunctionalInterface
+  @VisibleForTesting
+  public interface ClientHealthMonitorProvider {
+    ClientHealthMonitor get(InternalCache cache, int maximumTimeBetweenPings,
+        CacheClientNotifierStats stats);
+  }
 }

@@ -209,7 +209,8 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
    * Sets currentElder to the memberId of the current elder if elder is remote; null if elder is in
    * our vm.
    */
-  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls) {
+  private static ElderState startElderCall(InternalDistributedSystem sys, DLockService dls)
+      throws InterruptedException {
     InternalDistributedMember elder;
     ElderState es = null;
 
@@ -328,7 +329,12 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     try {
       do {
         tryNewElder = false;
-        final ElderState es = startElderCall(system, service);
+        ElderState es = null;
+        try {
+          es = startElderCall(system, service);
+        } catch (InterruptedException e) {
+          interrupted = true;
+        }
         dm.throwIfDistributionStopped();
         try {
           if (es != null) {
@@ -491,7 +497,13 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
 
     protected void basicProcess(final DistributionManager dm) {
       // we should be in the elder
-      ElderState es = dm.getElderState(true);
+      final ElderState es;
+      try {
+        es = dm.getElderState(true);
+      } catch (InterruptedException e) {
+        logger.info("Interrupted while processing {}", this);
+        return;
+      }
       switch (this.opCode) {
         case GET_OP:
           replyGrantorInfo(dm, es.getGrantor(this.serviceName, getSender(), this.dlsSerialNumber));

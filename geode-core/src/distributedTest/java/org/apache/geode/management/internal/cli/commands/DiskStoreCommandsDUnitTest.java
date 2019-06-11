@@ -44,7 +44,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DiskDirType;
-import org.apache.geode.cache.configuration.DiskDirsType;
 import org.apache.geode.cache.configuration.DiskStoreType;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
@@ -64,6 +63,7 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @RunWith(JUnitParamsRunner.class)
 public class DiskStoreCommandsDUnitTest implements Serializable {
   private static final String GROUP = "GROUP1";
+  private static final String GROUP2 = "GROUP2";
   private static final String REGION_1 = "REGION1";
   private static final String DISKSTORE = "DISKSTORE";
 
@@ -77,20 +77,24 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
   public transient TemporaryFolder tempDir = new TemporaryFolder();
 
   private void createDiskStoreAndRegion(MemberVM jmxManager, int serverCount) {
+    createDiskStore(jmxManager, serverCount, GROUP);
+
+    gfsh.executeAndAssertThat(String.format(
+        "create region --name=%s --type=REPLICATE_PERSISTENT --disk-store=%s --group=%s --eviction-action=overflow-to-disk",
+        REGION_1, DISKSTORE, GROUP)).statusIsSuccess();
+  }
+
+  private void createDiskStore(MemberVM jmxManager, int serverCount, String group) {
     gfsh.executeAndAssertThat(String.format(
         "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
-        DISKSTORE, DISKSTORE, GROUP));
+        DISKSTORE, DISKSTORE, group))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     List<String> diskStores =
         IntStream.rangeClosed(1, serverCount).mapToObj(x -> DISKSTORE).collect(Collectors.toList());
     gfsh.executeAndAssertThat("list disk-stores").statusIsSuccess()
         .tableHasColumnWithValuesContaining("Disk Store Name", diskStores.toArray(new String[0]));
-
-    jmxManager.waitUntilDiskStoreIsReadyOnExactlyThisManyServers(DISKSTORE, serverCount);
-
-    gfsh.executeAndAssertThat(String.format(
-        "create region --name=%s --type=REPLICATE_PERSISTENT --disk-store=%s --group=%s --eviction-action=overflow-to-disk",
-        REGION_1, DISKSTORE, GROUP)).statusIsSuccess();
   }
 
   private static SerializableRunnableIF dataProducer() {
@@ -100,6 +104,58 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
       Region<String, String> r = cache.getRegion(REGION_1);
       r.put("A", "B");
     };
+  }
+
+  @Test
+  public void createDuplicateDiskStoreFails() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+    MemberVM server1 = rule.startServerVM(1, props, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+
+    createDiskStore(locator, 1, GROUP);
+
+    gfsh.executeAndAssertThat(String.format(
+        "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
+        DISKSTORE, DISKSTORE, GROUP))
+        .statusIsError()
+        .containsOutput("Error: Disk store DISKSTORE already exists");
+  }
+
+  @Test
+  public void createDuplicateDiskStoreFailsNoServers() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+
+    gfsh.connectAndVerify(locator);
+
+    gfsh.executeAndAssertThat(String.format(
+        "create disk-store --name=%s --dir=%s --group=%s --auto-compact=false --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true",
+        DISKSTORE, DISKSTORE, GROUP))
+        .statusIsError()
+        .containsOutput("No Members Found");
+  }
+
+  @Test
+  public void createDuplicateDiskStoreOnDifferentGroups() throws Exception {
+    Properties props = new Properties();
+    props.setProperty("groups", GROUP);
+
+    MemberVM locator = rule.startLocatorVM(0);
+    rule.startServerVM(1, props, locator.getPort());
+
+    gfsh.connectAndVerify(locator);
+    createDiskStore(locator, 1, GROUP);
+
+    props.setProperty("groups", GROUP2);
+
+    rule.startServerVM(2, props, locator.getPort());
+    createDiskStore(locator, 1, GROUP2);
   }
 
   @Test
@@ -288,7 +344,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
 
     gfsh.executeAndAssertThat(
         String.format("create disk-store --name=%s --dir=%s", DISKSTORE, DISKSTORE))
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat(String.format("destroy disk-store --name=%s --if-exists", DISKSTORE))
         .statusIsSuccess();
@@ -476,7 +533,8 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     // Create a disk store with the input disk-dir name
     gfsh.executeAndAssertThat(
         String.format("create disk-store --name=%s --dir=%s", DISKSTORE, diskDirectoryName))
-        .statusIsSuccess();
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     // Verify the server defines the disk store with the disk-dir path
     server.invoke(() -> {
@@ -522,8 +580,7 @@ public class DiskStoreCommandsDUnitTest implements Serializable {
     List<DiskStoreType> diskStores = config.getDiskStores();
     assertThat(diskStores.size()).isEqualTo(1);
     DiskStoreType diskStore = diskStores.get(0);
-    DiskDirsType diskDirsType = diskStore.getDiskDirs();
-    List<DiskDirType> diskDirs = diskDirsType.getDiskDirs();
+    List<DiskDirType> diskDirs = diskStore.getDiskDirs();
     assertThat(diskDirs.size()).isEqualTo(1);
     DiskDirType diskDir = diskDirs.get(0);
     assertThat(diskDir.getContent()).isEqualTo(absoluteDirectoryName);

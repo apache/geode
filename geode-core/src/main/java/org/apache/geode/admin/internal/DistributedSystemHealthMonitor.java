@@ -80,12 +80,12 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
   /**
    * The most recent <code>OKAY_HEALTH</code> diagnoses of the GemFire system
    */
-  private List okayDiagnoses;
+  private List<String> okayDiagnoses;
 
   /**
    * The most recent <code>POOR_HEALTH</code> diagnoses of the GemFire system
    */
-  private List poorDiagnoses;
+  private List<String> poorDiagnoses;
 
   ////////////////////// Constructors //////////////////////
 
@@ -102,8 +102,8 @@ class DistributedSystemHealthMonitor implements Runnable, GemFireVM {
     this.eval = eval;
     this.healthImpl = healthImpl;
     this.interval = interval;
-    this.okayDiagnoses = new ArrayList();
-    this.poorDiagnoses = new ArrayList();
+    this.okayDiagnoses = new ArrayList<>();
+    this.poorDiagnoses = new ArrayList<>();
 
     String name = String.format("Health monitor for %s",
         eval.getDescription());

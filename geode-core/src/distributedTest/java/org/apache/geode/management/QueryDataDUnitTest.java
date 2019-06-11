@@ -37,6 +37,8 @@ import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -61,8 +63,6 @@ import org.apache.geode.internal.cache.partitioned.fixed.SingleHopQuarterPartiti
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.beans.BeanUtilFuncs;
 import org.apache.geode.management.internal.beans.QueryDataFunction;
-import org.apache.geode.management.internal.cli.json.GfJsonArray;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
 import org.apache.geode.pdx.internal.PdxInstanceFactoryImpl;
@@ -245,16 +245,12 @@ public class QueryDataDUnitTest implements Serializable {
       assertThat(jsonString).contains("result").doesNotContain("No Data Found");
       assertThat(jsonString).contains(BIG_COLLECTION_ELEMENT_);
 
-      GfJsonObject jsonObject = new GfJsonObject(jsonString);
-      GfJsonArray jsonArray = jsonObject.getJSONArray("result");
-      assertThat(jsonArray.length()).isEqualTo(DEFAULT_QUERY_LIMIT);
-
-      // Get the first element
-      GfJsonArray jsonArray1 = jsonArray.getJSONArray(0);
-      assertThat(jsonArray1).isNotNull();
+      JsonNode jsonObject = new ObjectMapper().readTree(jsonString);
+      JsonNode jsonArray = jsonObject.get("result");
+      assertThat(jsonArray.size()).isEqualTo(DEFAULT_QUERY_LIMIT);
 
       // Get the ObjectValue
-      GfJsonObject collectionObject = jsonArray1.getJsonObject(1);
+      JsonNode collectionObject = jsonArray.get(0).get(1);
       assertThat(collectionObject.size()).isEqualTo(100);
 
       // Query With Override Values
@@ -274,17 +270,14 @@ public class QueryDataDUnitTest implements Serializable {
       verifyJsonIsValid(jsonString);
       assertThat(jsonString).contains("result").doesNotContain("No Data Found");
 
-      jsonObject = new GfJsonObject(jsonString);
+      jsonObject = new ObjectMapper().readTree(jsonString);
       assertThat(jsonString).contains(BIG_COLLECTION_ELEMENT_);
 
-      jsonArray = jsonObject.getJSONArray("result");
-      assertThat(jsonArray.length()).isEqualTo(newQueryResultSetLimit);
-
-      // Get the first element
-      jsonArray1 = jsonArray.getJSONArray(0);
+      jsonArray = jsonObject.get("result");
+      assertThat(jsonArray.size()).isEqualTo(newQueryResultSetLimit);
 
       // Get the ObjectValue
-      collectionObject = jsonArray1.getJsonObject(1);
+      collectionObject = jsonArray.get(0).get(1);
       assertThat(collectionObject.size()).isEqualTo(newQueryCollectionDepth);
     });
   }

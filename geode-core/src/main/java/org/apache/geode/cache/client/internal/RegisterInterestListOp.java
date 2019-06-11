@@ -101,7 +101,7 @@ public class RegisterInterestListOp {
     public RegisterInterestListOpImpl(String region, List keys, InterestResultPolicy policy,
         boolean isDurable, boolean receiveUpdatesAsInvalidates, byte regionDataPolicy) {
       super(region, MessageType.REGISTER_INTEREST_LIST, 6);
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addObjPart(policy);
       {
         byte durableByte = (byte) (isDurable ? 0x01 : 0x00);

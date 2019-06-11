@@ -620,14 +620,7 @@ public class HARegionQueue implements RegionQueue {
 
         if (object instanceof HAEventWrapper) {
           HAEventWrapper wrapper = (HAEventWrapper) object;
-          wrapper.incrementPutInProgressCounter();
-          if (logger.isDebugEnabled()) {
-            logger
-                .debug("Incremented PutInProgressCounter during GII queueing. Event ID hash code: "
-                    + wrapper.hashCode() + "; System ID hash code: "
-                    + System.identityHashCode(wrapper)
-                    + "; Wrapper details: " + wrapper);
-          }
+          wrapper.incrementPutInProgressCounter("GII queue");
         }
 
         this.giiQueue.add(object);

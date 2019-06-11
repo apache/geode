@@ -30,15 +30,19 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.internal.CacheElementOperation;
+import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
 public class RegionConfigRealizerTest {
   InternalCache cache;
   RegionFactory regionFactory;
   RegionConfigRealizer realizer;
+  RegionConfigValidator validator;
 
   @Before
   public void setup() {
     cache = mock(InternalCache.class);
+    validator = new RegionConfigValidator(cache);
     regionFactory = mock(RegionFactory.class);
     when(cache.createRegionFactory()).thenReturn(regionFactory);
     realizer = new RegionConfigRealizer();
@@ -49,7 +53,7 @@ public class RegionConfigRealizerTest {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
     config.setType(RegionShortcut.PARTITION.name());
-
+    validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
@@ -64,7 +68,7 @@ public class RegionConfigRealizerTest {
     RegionConfig config = new RegionConfig();
     config.setName("regionName");
     config.setType(RegionShortcut.REPLICATE.name());
-
+    validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 
     ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);

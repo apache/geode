@@ -46,19 +46,20 @@ public class ListMembersCommand extends GfshCommand {
       help = CliStrings.LIST_MEMBER__GROUP__HELP) String[] groups) {
 
     ResultModel crm = new ResultModel();
-    Set<DistributedMember> memberSet = new TreeSet<>();
-    memberSet.addAll(this.findMembersIncludingLocators(groups, null));
+    Set<DistributedMember> memberSet = new TreeSet<>(
+        this.findMembersIncludingLocators(groups, null));
 
     if (memberSet.isEmpty()) {
       crm.addInfo().addLine(CliStrings.LIST_MEMBER__MSG__NO_MEMBER_FOUND);
       return crm;
     }
-
+    crm.addInfo().addLine("Member Count : " + memberSet.size());
     TabularResultModel resultData = crm.addTable(MEMBERS_SECTION);
-    final DistributedMember coordinatorMember = getCoordinator();
+    final String coordinatorMemberId = getCoordinatorId();
     for (DistributedMember member : memberSet) {
       resultData.accumulate("Name", member.getName());
-      if (member == coordinatorMember) {
+
+      if (member.getUniqueId().equals(coordinatorMemberId)) {
         resultData.accumulate("Id", member.getId() + " [Coordinator]");
       } else {
         resultData.accumulate("Id", member.getId());
@@ -68,7 +69,7 @@ public class ListMembersCommand extends GfshCommand {
     return crm;
   }
 
-  DistributedMember getCoordinator() {
+  String getCoordinatorId() {
     InternalDistributedSystem ids = InternalDistributedSystem.getConnectedInstance();
     if (ids == null || !ids.isConnected()) {
       return null;
@@ -79,7 +80,6 @@ public class ListMembersCommand extends GfshCommand {
       return null;
     }
 
-    return mmgr.getCoordinator();
-
+    return mmgr.getCoordinator().getUniqueId();
   }
 }

@@ -43,7 +43,7 @@ public class GetEntryOp {
       super(MessageType.GET_ENTRY, 2);
       this.region = region;
       this.key = key;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
     }
 

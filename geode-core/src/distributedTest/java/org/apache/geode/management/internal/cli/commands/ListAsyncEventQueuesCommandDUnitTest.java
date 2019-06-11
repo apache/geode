@@ -51,9 +51,6 @@ public class ListAsyncEventQueuesCommandDUnitTest {
 
   @Test
   public void list() {
-    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
-        .containsOutput(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
-
     gfsh.executeAndAssertThat("create async-event-queue --id=queue1 --group=group1 --listener="
         + MyAsyncEventListener.class.getName()).statusIsSuccess();
 
@@ -78,5 +75,14 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         .tableHasRowWithValues("Member", "ID", "server-1", "queue")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue");
 
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue2").statusIsSuccess();
+  }
+
+  @Test
+  public void ensureNoResultIsSuccess() {
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .containsOutput(CliStrings.LIST_ASYNC_EVENT_QUEUES__NO_QUEUES_FOUND_MESSAGE);
   }
 }

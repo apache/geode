@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -37,15 +38,14 @@ public class GatewayReceiverCreateFunctionTest {
 
   private FunctionContext context = mock(FunctionContext.class);
   private Cache cache = mock(Cache.class);
-  private GatewayReceiverFunctionArgs args = mock(GatewayReceiverFunctionArgs.class);
+  private GatewayReceiverConfig args = mock(GatewayReceiverConfig.class);
   private GatewayReceiver receiver = mock(GatewayReceiver.class);
   private ResultSender resultSender = mock(ResultSender.class);
 
   @Before
-  public void setup()
-      throws IllegalAccessException, ClassNotFoundException, InstantiationException {
+  public void setup() {
     doReturn(cache).when(context).getCache();
-    doReturn(args).when(context).getArguments();
+    doReturn(new Object[] {args, Boolean.FALSE}).when(context).getArguments();
     doReturn("server-1").when(context).getMemberName();
     doReturn(resultSender).when(context).getResultSender();
 

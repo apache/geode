@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.util;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -24,15 +25,14 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import org.apache.geode.util.test.TestUtil;
-
 public class PluckStacksUnitTest {
 
 
   @Test
   public void testPluckingStacksFromJVMGeneratedDump() throws Exception {
     LineNumberReader reader = new LineNumberReader(
-        new FileReader(TestUtil.getResourcePath(getClass(), "PluckStacksJstackGeneratedDump.txt")));
+        new FileReader(createTempFileFromResource(getClass(), "PluckStacksJstackGeneratedDump.txt")
+            .getAbsolutePath()));
 
     Map<String, List<PluckStacks.ThreadStack>> dumps =
         new PluckStacks().getThreadDumps(reader, "PluckStacksSystemGeneratedDump.txt");

@@ -18,9 +18,12 @@ import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Properties;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,10 +93,10 @@ public class QueryResultFormatterPdxIntegrationTest {
     checkResult(queryResultFormatter);
   }
 
-  private void checkResult(QueryResultFormatter queryResultFormatter) throws GfJsonException {
-    GfJsonObject gfJsonObject = new GfJsonObject(queryResultFormatter.toString());
-    System.out.println(gfJsonObject);
-    assertThat(gfJsonObject.get(RESULT)).isNotNull();
+  private void checkResult(QueryResultFormatter queryResultFormatter) throws IOException {
+    JsonNode jsonObject = new ObjectMapper().readTree(queryResultFormatter.toString());
+    System.out.println(jsonObject.toString());
+    assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 
   private static class SerializableObject implements Serializable {

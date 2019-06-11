@@ -15,19 +15,40 @@
 
 package org.apache.geode.management.internal.rest;
 
+import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
 
-  private final LocatorStarterRule locator;
+  private final LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
 
-  public PlainLocatorContextLoader() {
-    locator = new LocatorStarterRule()
-        .withAutoStart();
+  @Override
+  public void start() {
+    locator.before();
   }
 
   @Override
-  public LocatorStarterRule getLocator() {
+  public void stop() {
+    locator.after();
+  }
+
+  @Override
+  public int getPort() {
+    return locator.getPort();
+  }
+
+  @Override
+  public SecurityService getSecurityService() {
+    return locator.getCache().getSecurityService();
+  }
+
+  @Override
+  public ClusterManagementService getClusterManagementService() {
+    return locator.getLocator().getClusterManagementService();
+  }
+
+  public LocatorStarterRule getLocatorStartupRule() {
     return locator;
   }
 }

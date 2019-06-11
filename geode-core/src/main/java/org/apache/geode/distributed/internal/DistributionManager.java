@@ -166,7 +166,7 @@ public interface DistributionManager extends ReplySender {
    * @throws IllegalStateException if elder try lock fails
    * @since GemFire 4.0
    */
-  ElderState getElderState(boolean force);
+  ElderState getElderState(boolean force) throws InterruptedException;
 
   /**
    * Returns the membership port of the underlying distribution manager used for communication.

@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_C
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -45,7 +46,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4CacheTestCase {
 
@@ -256,8 +256,9 @@ public class ConfigurationPersistenceServiceUsingDirDUnitTest extends JUnit4Cach
 
   private void copyClusterXml(final VM vm, final String clusterXml) {
     vm.invoke("Copying new cluster.xml from " + clusterXml, () -> {
-      String clusterXmlPath = TestUtil
-          .getResourcePath(ConfigurationPersistenceServiceUsingDirDUnitTest.class, clusterXml);
+      String clusterXmlPath =
+          createTempFileFromResource(ConfigurationPersistenceServiceUsingDirDUnitTest.class,
+              clusterXml).getAbsolutePath();
       InputStream cacheXml = new FileInputStream(clusterXmlPath);
       assertNotNull("Could not create InputStream from " + clusterXmlPath, cacheXml);
       Files.createDirectories(Paths.get("cluster_config", "cluster"));

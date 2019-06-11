@@ -2159,7 +2159,7 @@ public class Oplog implements CompactableOplog, Flushable {
           RegionVersionHolder versionHolder = new RegionVersionHolder(dis);
           if (drs != null) {
             Object member = getParent().getDiskInitFile().getCanonicalObject((int) memberId);
-            drs.recordRecoveredVersonHolder((VersionSource) member, versionHolder, latestOplog);
+            drs.recordRecoveredVersionHolder((VersionSource) member, versionHolder, latestOplog);
             if (isPersistRecoveryDebugEnabled) {
               logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE,
                   "adding RVV entry drId={}, member={}, versionHolder={}, latestOplog={}, oplogId={}",

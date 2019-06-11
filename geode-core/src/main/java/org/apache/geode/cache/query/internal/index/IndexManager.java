@@ -785,7 +785,7 @@ public class IndexManager {
    * @return the collection of indexes for the specified region and type
    */
   public Collection getIndexes(IndexType indexType) {
-    ArrayList list = new ArrayList();
+    ArrayList<Index> list = new ArrayList<>();
     Iterator it = this.indexes.values().iterator();
     while (it.hasNext()) {
       Object ind = it.next();

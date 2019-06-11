@@ -145,7 +145,7 @@ public class Put65Test {
     when(this.putOperationContext.getValue()).thenReturn(VALUE);
     when(this.putOperationContext.isObject()).thenReturn(true);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));
@@ -171,7 +171,7 @@ public class Put65Test {
   @Test
   public void noRegionNameShouldFail() throws Exception {
     when(this.securityService.isClientSecurityRequired()).thenReturn(false);
-    when(this.regionNamePart.getString()).thenReturn(null);
+    when(this.regionNamePart.getCachedString()).thenReturn(null);
 
     this.put65.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 

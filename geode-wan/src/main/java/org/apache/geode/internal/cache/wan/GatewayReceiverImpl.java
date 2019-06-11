@@ -14,6 +14,10 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.AvailablePort.SOCKET;
+import static org.apache.geode.internal.AvailablePort.getAddress;
+import static org.apache.geode.internal.AvailablePort.getRandomAvailablePortInRange;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -27,53 +31,43 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.internal.AvailablePort;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * @since GemFire 7.0
  */
-@SuppressWarnings("deprecation")
 public class GatewayReceiverImpl implements GatewayReceiver {
 
   private static final Logger logger = LogService.getLogger();
 
-  private String hostnameForSenders;
-
-  private int startPort;
-
-  private int endPort;
-
-  private int port;
-
-  private int timeBetPings;
-
-  private int socketBufferSize;
-
-  private boolean manualStart;
-
-  private final List<GatewayTransportFilter> filters;
-
-  private String bindAdd;
-
-  private CacheServer receiver;
-
   private final InternalCache cache;
+  private final String hostnameForSenders;
+  private final int startPort;
+  private final int endPort;
+  private final int maximumTimeBetweenPings;
+  private final int socketBufferSize;
+  private final boolean manualStart;
+  private final List<GatewayTransportFilter> gatewayTransportFilters;
+  private final String bindAddress;
 
-  public GatewayReceiverImpl(InternalCache cache, int startPort, int endPort, int timeBetPings,
-      int buffSize, String bindAdd, List<GatewayTransportFilter> filters, String hostnameForSenders,
-      boolean manualStart) {
+  private volatile int port;
+  private volatile InternalCacheServer receiverServer;
+
+  GatewayReceiverImpl(final InternalCache cache, final int startPort, final int endPort,
+      final int maximumTimeBetweenPings, final int socketBufferSize, final String bindAddress,
+      final List<GatewayTransportFilter> gatewayTransportFilters, final String hostnameForSenders,
+      final boolean manualStart) {
     this.cache = cache;
-
     this.hostnameForSenders = hostnameForSenders;
     this.startPort = startPort;
     this.endPort = endPort;
-    this.timeBetPings = timeBetPings;
-    this.socketBufferSize = buffSize;
-    this.bindAdd = bindAdd;
-    this.filters = filters;
+    this.maximumTimeBetweenPings = maximumTimeBetweenPings;
+    this.socketBufferSize = socketBufferSize;
+    this.bindAddress = bindAddress;
+    this.gatewayTransportFilters = gatewayTransportFilters;
     this.manualStart = manualStart;
   }
 
@@ -84,104 +78,105 @@ public class GatewayReceiverImpl implements GatewayReceiver {
 
   @Override
   public String getHost() {
-    if (receiver != null) {
-      return ((CacheServerImpl) receiver).getExternalAddress();
+    if (receiverServer != null) {
+      return receiverServer.getExternalAddress();
     }
 
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
       return hostnameForSenders;
     }
 
-    if (bindAdd != null && !bindAdd.isEmpty()) {
-      return bindAdd;
+    if (bindAddress != null && !bindAddress.isEmpty()) {
+      return bindAddress;
     }
 
     try {
       return SocketCreator.getLocalHost().getHostName();
     } catch (UnknownHostException e) {
-      throw new IllegalStateException(
-          "Could not get host name", e);
+      throw new IllegalStateException("Could not get host name", e);
     }
   }
 
   @Override
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
-    return this.filters;
+    return gatewayTransportFilters;
   }
 
   @Override
   public int getMaximumTimeBetweenPings() {
-    return this.timeBetPings;
+    return maximumTimeBetweenPings;
   }
 
   @Override
   public int getPort() {
-    return this.port;
+    return port;
   }
 
   @Override
   public int getStartPort() {
-    return this.startPort;
+    return startPort;
   }
 
   @Override
   public int getEndPort() {
-    return this.endPort;
+    return endPort;
   }
 
   @Override
   public int getSocketBufferSize() {
-    return this.socketBufferSize;
+    return socketBufferSize;
   }
 
   @Override
   public boolean isManualStart() {
-    return this.manualStart;
+    return manualStart;
   }
 
   @Override
   public CacheServer getServer() {
-    return receiver;
+    return receiverServer;
   }
 
   private boolean tryToStart(int port) {
-    if (!AvailablePort.isPortAvailable(port, AvailablePort.SOCKET,
-        AvailablePort.getAddress(AvailablePort.SOCKET))) {
+    if (!AvailablePort.isPortAvailable(port, SOCKET, getAddress(SOCKET))) {
       return false;
     }
 
-    receiver.setPort(port);
-    receiver.setSocketBufferSize(socketBufferSize);
-    receiver.setMaximumTimeBetweenPings(timeBetPings);
+    CacheServer cacheServer = receiverServer;
+
+    cacheServer.setPort(port);
+    cacheServer.setSocketBufferSize(socketBufferSize);
+    cacheServer.setMaximumTimeBetweenPings(maximumTimeBetweenPings);
     if (hostnameForSenders != null && !hostnameForSenders.isEmpty()) {
-      receiver.setHostnameForClients(hostnameForSenders);
+      cacheServer.setHostnameForClients(hostnameForSenders);
     }
-    receiver.setBindAddress(bindAdd);
-    receiver.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
-    ((CacheServerImpl) receiver).setGatewayTransportFilter(this.filters);
+    cacheServer.setBindAddress(bindAddress);
+    cacheServer.setGroups(new String[] {GatewayReceiver.RECEIVER_GROUP});
+
     try {
-      receiver.start();
+      cacheServer.start();
       this.port = port;
       return true;
     } catch (IOException e) {
-      logger.info("Failed to create server socket on  {}[{}]",
-          bindAdd, port);
+      logger.info("Failed to create server socket on {}[{}]", bindAddress, port);
       return false;
     }
   }
 
   @Override
-  public void start() throws IOException {
-    if (receiver == null) {
-      receiver = this.cache.addCacheServer(true);
+  public void start() {
+    if (receiverServer == null) {
+      receiverServer = cache.addGatewayReceiverServer(this);
     }
-    if (receiver.isRunning()) {
+
+    if (receiverServer.isRunning()) {
       logger.warn("Gateway Receiver is already running");
       return;
     }
 
     int loopStartPort = getPortToStart();
     int port = loopStartPort;
+
     while (!tryToStart(port)) {
       // get next port to try
       if (port == endPort && startPort != endPort) {
@@ -191,71 +186,72 @@ public class GatewayReceiverImpl implements GatewayReceiver {
       }
       if (port == loopStartPort || port > endPort) {
         throw new GatewayReceiverException("No available free port found in the given range (" +
-            this.startPort + "-" + this.endPort + ")");
+            startPort + "-" + endPort + ")");
       }
     }
 
-    logger
-        .info("The GatewayReceiver started on port : {}", this.port);
+    logger.info("The GatewayReceiver started on port : {}", this.port);
 
-    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+    InternalDistributedSystem system = cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_START, this);
   }
 
   private int getPortToStart() {
     // choose a random port from the given port range
-    int rPort;
-    if (this.startPort == this.endPort) {
-      rPort = this.startPort;
+    int randomPort;
+    if (startPort == endPort) {
+      randomPort = startPort;
     } else {
-      rPort = AvailablePort.getRandomAvailablePortInRange(this.startPort, this.endPort,
-          AvailablePort.SOCKET);
+      randomPort = getRandomAvailablePortInRange(startPort, endPort, SOCKET);
     }
-    return rPort;
+    return randomPort;
   }
 
   @Override
   public void stop() {
     if (!isRunning()) {
-      throw new GatewayReceiverException(
-          "Gateway Receiver is not running");
+      throw new GatewayReceiverException("Gateway Receiver is not running");
     }
-    receiver.stop();
+
+    receiverServer.stop();
   }
 
   @Override
   public void destroy() {
-    logger.info("Destroying Gateway Receiver: " + this);
-    if (receiver == null) {
+    logger.info("Destroying Gateway Receiver: {}", this);
+
+    if (receiverServer == null) {
       // receiver was not started
-      this.cache.removeGatewayReceiver(this);
+      cache.removeGatewayReceiver(this);
     } else {
-      if (receiver.isRunning()) {
+      if (receiverServer.isRunning()) {
         throw new GatewayReceiverException(
             "Gateway Receiver is running and needs to be stopped first");
       }
-      this.cache.removeGatewayReceiver(this);
-      this.cache.removeCacheServer(receiver);
+      cache.removeGatewayReceiver(this);
+      cache.removeGatewayReceiverServer(receiverServer);
     }
-    InternalDistributedSystem system = this.cache.getInternalDistributedSystem();
+
+    InternalDistributedSystem system = cache.getInternalDistributedSystem();
     system.handleResourceEvent(ResourceEvent.GATEWAYRECEIVER_DESTROY, this);
   }
 
   @Override
   public String getBindAddress() {
-    return this.bindAdd;
+    return bindAddress;
   }
 
   @Override
   public boolean isRunning() {
-    if (this.receiver != null) {
-      return this.receiver.isRunning();
+    if (receiverServer != null) {
+      return receiverServer.isRunning();
     }
     return false;
   }
 
+  @Override
   public String toString() {
-    return new StringBuffer().append("Gateway Receiver").append("@")
+    return new StringBuilder().append("Gateway Receiver").append("@")
         .append(Integer.toHexString(hashCode())).append("'; port=").append(getPort())
         .append("; bindAddress=").append(getBindAddress()).append("'; hostnameForSenders=")
         .append(getHostnameForSenders()).append("; maximumTimeBetweenPings=")
@@ -264,5 +260,4 @@ public class GatewayReceiverImpl implements GatewayReceiver {
         .append("; group=").append(Arrays.toString(new String[] {GatewayReceiver.RECEIVER_GROUP}))
         .append("]").toString();
   }
-
 }

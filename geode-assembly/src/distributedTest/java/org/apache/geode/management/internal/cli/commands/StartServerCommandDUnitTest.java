@@ -24,6 +24,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SER
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__CACHE_XML_FILE;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__DIR;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__FORCE;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__HOSTNAME__FOR__CLIENTS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__LOCATORS;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__MAXHEAP;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__NAME;
@@ -42,6 +43,7 @@ import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.file.Paths;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -50,10 +52,15 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.cache.client.internal.locator.GetAllServersRequest;
+import org.apache.geode.cache.client.internal.locator.GetAllServersResponse;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.distributed.AbstractLauncher;
 import org.apache.geode.distributed.ServerLauncher;
+import org.apache.geode.distributed.internal.InternalLocator;
+import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
@@ -369,5 +376,35 @@ public class StartServerCommandDUnitTest implements Serializable {
     server.stop(Boolean.TRUE);
 
     assertThat(ProcessUtils.isProcessAlive(serverPid)).isFalse();
+  }
+
+
+  @Test
+  public void startServerRespectsHostnameForClients() throws IOException {
+    String expectedMessagePattern = "Server (.*) is currently online";
+
+    String command = new CommandStringBuilder(START_SERVER)
+        .addOption(START_SERVER__NAME, memberName)
+        .addOption(START_SERVER__LOCATORS, locatorConnectionString)
+        .addOption(START_SERVER__DIR, workingDir.getCanonicalPath())
+        .addOption(START_SERVER__SERVER_PORT, String.valueOf(serverPort))
+        .addOption(START_SERVER__HOSTNAME__FOR__CLIENTS, "fakeServerName")
+        .getCommandString();
+
+    gfsh.executeAndAssertThat(command).statusIsSuccess()
+        .hasOutput().containsPattern(expectedMessagePattern);
+
+    // Verify that the ServerLocation contains the specified hostname-for-clients.
+    locator.invoke(() -> {
+      InternalLocator internalLocator = InternalLocator.getLocator();
+      final ServerLocator serverLocator = internalLocator.getServerLocatorAdvisee();
+      GetAllServersResponse serversResponse =
+          (GetAllServersResponse) serverLocator.processRequest(new GetAllServersRequest());
+      List<ServerLocation> locators = serversResponse.getServers();
+
+      assertThat(locators.stream().filter(
+          serverLocation -> "fakeServerName".equals(serverLocation.getHostName())))
+              .isNotEmpty().hasSize(1);
+    });
   }
 }

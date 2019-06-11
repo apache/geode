@@ -16,7 +16,7 @@ package org.apache.geode.management.internal.beans;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.tier.sockets.AcceptorImpl;
+import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -36,7 +36,7 @@ public class ServerBridge {
 
   protected StatsAverageLatency putRequestAvgLatency;
 
-  protected AcceptorImpl acceptor;
+  protected Acceptor acceptor;
 
   public ServerBridge(final CacheServer cacheServer) {
     this((CacheServerImpl) cacheServer,
@@ -47,7 +47,7 @@ public class ServerBridge {
     this(cacheServer.getAcceptor(), monitor);
   }
 
-  public ServerBridge(final AcceptorImpl acceptor, final MBeanStatsMonitor monitor) {
+  public ServerBridge(final Acceptor acceptor, final MBeanStatsMonitor monitor) {
     this.monitor = monitor;
     this.acceptor = acceptor;
     initializeStats();

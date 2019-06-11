@@ -14,6 +14,7 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -27,23 +28,28 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class GeodeDependencyJarIntegrationTest {
 
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
+
   private List<String> expectedClasspathElements;
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Before
   public void loadExpectedClassPath() throws IOException {
     String dependencyClasspath =
-        TestUtil.getResourcePath(AssemblyContentsIntegrationTest.class,
-            "/dependency_classpath.txt");
+        createTempFileFromResource(AssemblyContentsIntegrationTest.class,
+            "/dependency_classpath.txt").getAbsolutePath();
 
     expectedClasspathElements =
         Files.lines(Paths.get(dependencyClasspath)).collect(Collectors.toList());

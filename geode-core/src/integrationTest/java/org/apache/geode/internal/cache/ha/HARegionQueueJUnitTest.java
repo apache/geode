@@ -1558,7 +1558,7 @@ public class HARegionQueueJUnitTest {
 
     // Mock that a put is in progress so we don't null out the
     // ClientUpdateMessage member on the HAEventWrapper
-    mockHAEventWrapper.incrementPutInProgressCounter();
+    mockHAEventWrapper.incrementPutInProgressCounter("test");
 
     // TODO: Why don't we add CQs and Interest when we initially add the
     // wrapper to the container?

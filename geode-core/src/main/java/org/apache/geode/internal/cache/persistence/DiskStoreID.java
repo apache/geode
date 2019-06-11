@@ -146,4 +146,9 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
     return Long.toHexString(mostSig).substring(8);
   }
 
+  @Override
+  public boolean isDiskStoreId() {
+    return true;
+  }
+
 }

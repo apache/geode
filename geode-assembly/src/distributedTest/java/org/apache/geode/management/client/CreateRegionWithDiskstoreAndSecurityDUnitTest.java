@@ -69,7 +69,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutDataManage() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
@@ -80,8 +82,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setRegionAttributes(attributes);
 
     ClusterManagementService client =
-        ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(), null, null,
-            "user", "user");
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("user", "user").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
@@ -91,7 +94,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreWithoutClusterWrite() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
@@ -102,8 +107,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setRegionAttributes(attributes);
 
     ClusterManagementService client =
-        ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(), null, null,
-            "data", "data");
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("data", "data").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
@@ -113,7 +119,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   @Test
   public void createReplicateRegionWithDiskstoreSuccess() throws Exception {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
-        diskStoreDir.getAbsolutePath())).statusIsSuccess();
+        diskStoreDir.getAbsolutePath()))
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("REGION1");
@@ -126,8 +134,9 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     regionConfig.setRegionAttributes(attributes);
 
     ClusterManagementService client =
-        ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort(), null, null,
-            "data,cluster", "data,cluster");
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .setCredentials("data,cluster", "data,cluster").build();
     ClusterManagementResult result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 

@@ -15,23 +15,42 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.internal.CacheElementOperation;
 
 /**
- * this is used to validate all the common attributes of CacheElement, eg. group
+ * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
 public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
   @Override
-  public void validate(CacheElement config) throws IllegalArgumentException {
-    if ("cluster".equalsIgnoreCase(config.getGroup())) {
-      throw new IllegalArgumentException(
-          "cluster is a reserved group name. Do not use it for member groups.");
+  public void validate(CacheElementOperation operation, CacheElement config)
+      throws IllegalArgumentException {
+    if (StringUtils.isBlank(config.getId())) {
+      throw new IllegalArgumentException("id cannot be null or blank");
+    }
+
+    switch (operation) {
+      case UPDATE:
+      case CREATE:
+        validateCreate(config);
+        break;
+      case DELETE:
+        break;
+      default:
     }
   }
 
-  @Override
-  public boolean exists(CacheElement config, CacheConfig persistedConfig) {
-    return false;
+  private void validateCreate(CacheElement config) {
+    if ("cluster".equalsIgnoreCase(config.getGroup())) {
+      throw new IllegalArgumentException(
+          "'cluster' is a reserved group name. Do not use it for member groups.");
+    }
+    if (config.getGroup() != null && config.getGroup().contains(",")) {
+      throw new IllegalArgumentException(
+          "Group name should not contain comma.");
+    }
   }
+
 }

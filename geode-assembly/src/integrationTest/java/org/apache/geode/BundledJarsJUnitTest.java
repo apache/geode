@@ -14,13 +14,16 @@
  */
 package org.apache.geode;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -30,57 +33,68 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.junit.rules.RequiresGeodeHome;
 
-@Category({RestAPITest.class})
+@Category(RestAPITest.class)
 public class BundledJarsJUnitTest {
 
   private static final String VERSION_PATTERN = "[0-9-_.v]{3,}.*\\.jar$";
   private static final String GEODE_HOME = System.getenv("GEODE_HOME");
+
   private Set<String> expectedJars;
+
+  @Rule
+  public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
   @Before
   public void loadExpectedJars() throws IOException {
     String expectedJarFile =
-        TestUtil.getResourcePath(BundledJarsJUnitTest.class, "/expected_jars.txt");
+        createTempFileFromResource(BundledJarsJUnitTest.class, "/expected_jars.txt")
+            .getAbsolutePath();
 
     expectedJars = Files.lines(Paths.get(expectedJarFile)).collect(Collectors.toSet());
   }
 
   @Test
   public void verifyBundledJarsHaveNotChanged() throws IOException {
-    TreeMap<String, String> sortedJars = getBundledJars();
+    Map<String, String> sortedJars = getBundledJars();
     Stream<String> lines =
         sortedJars.entrySet().stream().map(entry -> removeVersion(entry.getKey()));
     Set<String> bundledJarNames = new TreeSet<>(lines.collect(Collectors.toSet()));
 
     Files.write(Paths.get("bundled_jars.txt"), bundledJarNames);
 
-    TreeSet<String> newJars = new TreeSet<>(bundledJarNames);
+    Set<String> newJars = new TreeSet<>(bundledJarNames);
     newJars.removeAll(expectedJars);
-    TreeSet<String> missingJars = new TreeSet<>(expectedJars);
+
+    Set<String> missingJars = new TreeSet<>(expectedJars);
     missingJars.removeAll(bundledJarNames);
 
     String message =
         "The bundled jars have changed. Please make sure you update the licence and notice"
-            + "\nas described in https://cwiki.apache.org/confluence/display/GEODE/License+Guide+for+Contributors"
-            + "\nWhen fixed, copy geode-assembly/build/test/bundled_jars.txt"
-            + "\nto src/test/resources/expected_jars.txt" + "\nRemoved Jars\n--------------\n"
-            + String.join("\n", missingJars) + "\n\nAdded Jars\n--------------\n"
-            + String.join("\n", newJars) + "\n\n";
+            + System.lineSeparator()
+            + "as described in https://cwiki.apache.org/confluence/display/GEODE/License+Guide+for+Contributors"
+            + System.lineSeparator() + "When fixed, copy geode-assembly/build/test/bundled_jars.txt"
+            + System.lineSeparator() + "to src/test/resources/expected_jars.txt"
+            + System.lineSeparator() + "Removed Jars" + System.lineSeparator() + "--------------"
+            + System.lineSeparator() + String.join(System.lineSeparator(), missingJars)
+            + System.lineSeparator() + System.lineSeparator() + "Added Jars"
+            + System.lineSeparator() + "--------------" + System.lineSeparator()
+            + String.join(System.lineSeparator(), newJars) + System.lineSeparator()
+            + System.lineSeparator();
 
     assertTrue(message, expectedJars.equals(bundledJarNames));
-
   }
 
   /**
    * Find all of the jars bundled with the project. Key is the name of the jar, value is the path.
    */
-  private TreeMap<String, String> getBundledJars() {
+  private Map<String, String> getBundledJars() {
     File geodeHomeDirectory = new File(GEODE_HOME);
 
     assertTrue(
@@ -88,11 +102,11 @@ public class BundledJarsJUnitTest {
         geodeHomeDirectory.isDirectory());
 
     Collection<File> jars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"jar"}, true);
-    TreeMap<String, String> sortedJars = new TreeMap<>();
+    Map<String, String> sortedJars = new TreeMap<>();
     jars.forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
 
     Collection<File> wars = FileUtils.listFiles(geodeHomeDirectory, new String[] {"war"}, true);
-    TreeSet<File> sortedWars = new TreeSet<>(wars);
+    Set<File> sortedWars = new TreeSet<>(wars);
     sortedWars.stream().flatMap(BundledJarsJUnitTest::extractJarNames)
         .forEach(jar -> sortedJars.put(jar.getName(), jar.getPath()));
 
@@ -117,8 +131,7 @@ public class BundledJarsJUnitTest {
           // Materialize the list of files while the war is still open
           .collect(Collectors.toList()).stream();
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw new UncheckedIOException(e);
     }
   }
-
 }

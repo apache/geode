@@ -24,6 +24,7 @@ import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTC
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableUDPPort;
 import static org.apache.geode.internal.AvailablePortHelper.initializeUniquePortRange;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assume.assumeFalse;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.internal.AvailablePort.Keeper;
+import org.apache.geode.internal.lang.SystemUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class AvailablePortHelperIntegrationTest {
@@ -266,6 +268,10 @@ public class AvailablePortHelperIntegrationTest {
   @Parameters({"true", "false"})
   public void initializeUniquePortRange_willReturnSamePortsForSameRange(
       final boolean useMembershipPortRange) {
+    assumeFalse(
+        "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
+        SystemUtils.isWindows());
+
     for (int i = 0; i < 100; ++i) {
       initializeUniquePortRange(i);
       int[] testPorts = getRandomAvailableTCPPorts(3, useMembershipPortRange);
@@ -278,6 +284,10 @@ public class AvailablePortHelperIntegrationTest {
   @Parameters({"true", "false"})
   public void initializeUniquePortRange_willReturnUniquePortsForUniqueRanges(
       final boolean useMembershipPortRange) {
+    assumeFalse(
+        "Windows has ports scattered throughout the range that makes this test difficult to pass consistently",
+        SystemUtils.isWindows());
+
     Set<Integer> ports = new HashSet<>();
 
     for (int i = 0; i < 100; ++i) {

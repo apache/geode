@@ -113,7 +113,7 @@ public class RemoveAllTest {
 
     when(this.numberofKeysPart.getInt()).thenReturn(1);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getCacheServerStats()).thenReturn(mock(CacheServerStats.class));

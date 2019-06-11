@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.UncheckedIOException;
 import java.net.URL;
 
 import com.google.common.io.Resources;
@@ -35,13 +35,20 @@ import org.apache.commons.io.IOUtils;
  * <p>
  * See also {@link Resources#getResource(String)} and {@link Resources#getResource(Class, String)}.
  */
+@SuppressWarnings("unused")
 public class ResourceUtils {
 
   /**
    * Returns the class identified by {@code depth} element of the call stack.
+   *
+   * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
    */
-  public static Class<?> getCallerClass(final int depth) throws ClassNotFoundException {
-    return Class.forName(getCallerClassName(depth + 1));
+  public static Class<?> getCallerClass(final int depth) {
+    try {
+      return Class.forName(getCallerClassName(depth + 1));
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -55,35 +62,177 @@ public class ResourceUtils {
    * Finds {@code resourceName} using the {@code ClassLoader} of the caller class.
    *
    * @return the URL of the resource
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws ClassNotFoundException wrapped in RuntimeException if the class cannot be located
    */
-  public static URL getResource(final String resourceName) throws ClassNotFoundException {
-    URL configResource = getCallerClass(2).getResource(resourceName);
-    assertThat(configResource).as(resourceName).isNotNull();
-    return configResource;
+  public static URL getResource(final String resourceName) {
+    URL resource = getCallerClass(2).getResource(resourceName);
+    assertThat(resource).as(resourceName).isNotNull();
+    return resource;
   }
 
   /**
    * Finds {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage}.
    *
    * @return the URL of the resource
+   *
+   * @throws AssertionError if the resource cannot be located
    */
   public static URL getResource(final Class<?> classInSamePackage, final String resourceName) {
-    URL configResource = classInSamePackage.getResource(resourceName);
-    assertThat(configResource).as(resourceName).isNotNull();
-    return configResource;
+    URL resource = classInSamePackage.getResource(resourceName);
+    assertThat(resource).as(resourceName).isNotNull();
+    return resource;
+  }
+
+  /**
+   * Finds {@code resourceName} using the specified {@code ClassLoader}.
+   *
+   * @return the URL of the resource
+   *
+   * @throws AssertionError if the resource cannot be located
+   */
+  public static URL getResource(final ClassLoader classLoader, final String resourceName) {
+    URL resource = classLoader.getResource(resourceName);
+    assertThat(resource).as(resourceName).isNotNull();
+    return resource;
   }
 
   /**
    * Copies a {@code resource} to a {@code file} in {@code targetFolder}.
    *
    * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
    */
   public static File createFileFromResource(final URL resource, final File targetFolder,
-      final String fileName) throws IOException, URISyntaxException {
-    File targetFile = new File(targetFolder, fileName);
-    IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
-    assertThat(targetFile).hasSameContentAs(new File(resource.toURI()));
-    return targetFile;
+      final String fileName) {
+    try {
+      File targetFile = new File(targetFolder, fileName);
+      IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
+      return targetFile;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  /**
+   * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
+   * {@code targetFolder}.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createFileFromResource(final ClassLoader classLoader,
+      final String resourceName, final File targetFolder, final String fileName) {
+    URL resource = getResource(classLoader, resourceName);
+    return createFileFromResource(resource, targetFolder, fileName);
+  }
+
+  /**
+   * Copies a {@code resource} to a {@code file} in {@code targetFolder}.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createTempFileFromResource(final URL resource, final String fileName) {
+    try {
+      File targetFile = File.createTempFile(fileName, null);
+      targetFile.deleteOnExit();
+      IOUtils.copy(resource.openStream(), new FileOutputStream(targetFile));
+      return targetFile;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  /**
+   * Copies a {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage} to a
+   * {@code file} in the temporary-file directory.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createTempFileFromResource(final Class<?> classInSamePackage,
+      final String resourceName, final String fileName) {
+    URL resource = getResource(classInSamePackage, resourceName);
+    return createTempFileFromResource(resource, fileName);
+  }
+
+  /**
+   * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
+   * the temporary-file directory.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createTempFileFromResource(final ClassLoader classLoader,
+      final String resourceName, final String fileName) {
+    URL resource = getResource(classLoader, resourceName);
+    return createTempFileFromResource(resource, fileName);
+  }
+
+  /**
+   * Copies a {@code resourceName} using the {@code ClassLoader} of {@code classInSamePackage} to a
+   * {@code file} in the temporary-file directory.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createTempFileFromResource(final Class<?> classInSamePackage,
+      final String resourceName) {
+    String fileName = resourceName.replaceFirst(".*/", "");
+    URL resource = getResource(classInSamePackage, resourceName);
+    return createTempFileFromResource(resource, fileName);
+  }
+
+  /**
+   * Copies a {@code resourceName} using the specified {@code ClassLoader} to a {@code file} in
+   * the temporary-file directory.
+   *
+   * @return the newly created file
+   *
+   * @throws AssertionError if the resource cannot be located
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
+   */
+  public static File createTempFileFromResource(final ClassLoader classLoader,
+      final String resourceName) {
+    String fileName = resourceName.replaceFirst(".*/", "");
+    URL resource = getResource(classLoader, resourceName);
+    return createTempFileFromResource(resource, fileName);
   }
 
   /**
@@ -92,11 +241,20 @@ public class ResourceUtils {
    * @param resource a file-based resource referencing a directory
    * @param targetFolder the directory to which to copy the resource and all files within that
    *        resource.
+   *
+   * @throws AssertionError if the resulting file does not exist
+   *
+   * @throws UncheckedIOException if an I/O exception occurs or the file exists but is a directory
+   *         rather than a regular file, does not exist but cannot be created, or cannot be opened
+   *         for any other reason
    */
-  public static void copyDirectoryResource(final URL resource, final File targetFolder)
-      throws IOException {
-    File source = new File(resource.getPath());
-    assertThat(source.exists()).as("Source does not exist: " + resource.getPath());
-    FileUtils.copyDirectory(source, targetFolder);
+  public static void copyDirectoryResource(final URL resource, final File targetFolder) {
+    try {
+      File source = new File(resource.getPath());
+      assertThat(source.exists()).as("Source does not exist: " + resource.getPath());
+      FileUtils.copyDirectory(source, targetFolder);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 }
