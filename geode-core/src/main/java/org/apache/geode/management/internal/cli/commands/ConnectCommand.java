@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
@@ -379,6 +380,9 @@ public class ConnectCommand extends OfflineGfshCommand {
       gfProperties.setProperty(UserInputProperty.PASSWORD.getKey(),
           UserInputProperty.PASSWORD.promptForAcceptableValue(gfsh));
       return jmxConnect(gfProperties, useSsl, jmxHostPortToConnect, null, true);
+    } catch (UnknownHostException e) {
+      return handleException(e,
+          "JMX manager can't be reached. Hostname or IP address could not be found.");
     } catch (Exception e) {
       // all other exceptions, just logs it and returns a connection error
       return handleException(e, jmxHostPortToConnect);
@@ -431,7 +435,7 @@ public class ConnectCommand extends OfflineGfshCommand {
   }
 
   private ResultModel handleException(Exception e) {
-    return handleException(e, e.toString());
+    return handleException(e, e.getMessage());
   }
 
   private ResultModel handleException(Exception e, String errorMessage) {
@@ -444,7 +448,7 @@ public class ConnectCommand extends OfflineGfshCommand {
       return handleException(e);
     }
     return handleException(e, CliStrings.format(CliStrings.CONNECT__MSG__ERROR,
-        hostPortToConnect.toString(false), e.toString()));
+        hostPortToConnect.toString(false), e.getMessage()));
   }
 
   private static Properties loadPropertiesFromFile(File propertyFile) {

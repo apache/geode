@@ -55,6 +55,8 @@ public class ConnectCommandAcceptanceTest {
   public void invalidHostname() throws Exception {
     GfshExecution connect = GfshScript.of("connect --locator=l192.168.99.1[52326]").expectFailure()
         .execute(gfshDefault);
-    assertThat(connect.getOutputText()).contains("UnknownHostException");
+    assertThat(connect.getOutputText()).doesNotContain("UnknownHostException")
+        .doesNotContain("nodename nor servname")
+        .contains("can't be reached. Hostname or IP address could not be found.");
   }
 }

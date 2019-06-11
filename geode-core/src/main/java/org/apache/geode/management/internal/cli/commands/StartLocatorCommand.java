@@ -405,8 +405,8 @@ public class StartLocatorCommand extends OfflineGfshCommand {
         getGfsh().logToFile(ignore.getMessage(), ignore);
         responseFailureMessage = "Check your SSL configuration and try again.";
       } catch (Exception ignore) {
-        getGfsh().logToFile(ignore.toString(), ignore);
-        responseFailureMessage = "Failed to connect; unknown cause: " + ignore.toString();
+        getGfsh().logToFile(ignore.getMessage(), ignore);
+        responseFailureMessage = "Failed to connect; unknown cause: " + ignore.getMessage();
       }
     }
 
