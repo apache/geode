@@ -77,12 +77,12 @@ public class InitialImageOperationTest {
   }
 
   @Test
-  public void synchronizeForLostMemberIsInvokedIfRegionHasNotScheduledOrDoneSynchronization() {
+  public void scheduleSynchronizeForLostMemberIsInvokedIfRegionHasNotScheduledOrDoneSynchronization() {
     when(distributedRegion.setRegionSynchronizedWithIfNotScheduled(versionSource)).thenReturn(true);
 
     message.synchronizeIfNotScheduled(distributedRegion, lostMember, versionSource);
 
-    verify(distributedRegion).synchronizeForLostMember(lostMember, versionSource);
+    verify(distributedRegion).scheduleSynchronizeForLostMember(lostMember, versionSource, 0);
   }
 
   @Test
@@ -92,6 +92,7 @@ public class InitialImageOperationTest {
 
     message.synchronizeIfNotScheduled(distributedRegion, lostMember, versionSource);
 
-    verify(distributedRegion, never()).synchronizeForLostMember(lostMember, versionSource);
+    verify(distributedRegion, never()).scheduleSynchronizeForLostMember(lostMember, versionSource,
+        0);
   }
 }
