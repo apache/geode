@@ -52,7 +52,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *
    * @see MultiRegionFunctionContext
    */
-  <I, O, A> Execution<I, O, A> onRegions(Set<Region> regions);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegions(Set<Region> regions);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -65,7 +65,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *         pool
    * @since GemFire 6.5
    */
-  <I, O, A> Execution<I, O, A> onServers(RegionService regionService, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(RegionService regionService, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -80,7 +80,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *         pool
    * @since GemFire 6.5
    */
-  <I, O, A> Execution<I, O, A> onServer(RegionService regionService, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(RegionService regionService, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -91,7 +91,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <I, O, A> Execution<I, O, A> onServers(Pool pool, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(Pool pool, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -104,7 +104,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <I, O, A> Execution<I, O, A> onServer(Pool pool, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(Pool pool, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -118,7 +118,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @since GemFire 6.0
    *
    */
-  <I, O, A> Execution<I, O, A> onMember(DistributedSystem system,
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system,
       DistributedMember distributedMember);
 
   /**
@@ -131,7 +131,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  <I, O, A> Execution<I, O, A> onMembers(DistributedSystem system, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system, String... groups);
 
   /**
    * Uses {@code RANDOM_onMember} for tests.
@@ -139,7 +139,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * <p>
    * TODO: maybe merge with {@link #onMembers(DistributedSystem, String...)}
    */
-  <I, O, A> Execution<I, O, A> onMember(DistributedSystem system, String... groups);
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -151,6 +151,6 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  <I, O, A> Execution<I, O, A> onMembers(DistributedSystem system,
+  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system,
       Set<DistributedMember> distributedMembers);
 }

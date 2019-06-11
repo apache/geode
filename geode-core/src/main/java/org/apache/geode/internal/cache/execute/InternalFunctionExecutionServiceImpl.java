@@ -67,42 +67,43 @@ public class InternalFunctionExecutionServiceImpl
   // FunctionExecutionService API ----------------------------------------------------------------
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServer(Pool pool) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(Pool pool) {
     return onServer(pool, EMPTY_GROUPS);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServers(Pool pool) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(Pool pool) {
     return onServers(pool, EMPTY_GROUPS);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServer(RegionService regionService) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(RegionService regionService) {
     return onServer(regionService, EMPTY_GROUPS);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServers(RegionService regionService) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(RegionService regionService) {
     return onServers(regionService, EMPTY_GROUPS);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMember(DistributedMember distributedMember) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedMember distributedMember) {
     return onMember(getDistributedSystem(), distributedMember);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMembers(String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(String... groups) {
     return onMembers(getDistributedSystem(), groups);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMembers(Set<DistributedMember> distributedMembers) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(
+      Set<DistributedMember> distributedMembers) {
     return onMembers(getDistributedSystem(), distributedMembers);
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMember(String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(String... groups) {
     return onMember(getDistributedSystem(), groups);
   }
 
@@ -111,7 +112,7 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onRegion(Region region) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region region) {
     if (region == null) {
       throw new FunctionException("Region instance passed is null");
     }
@@ -205,7 +206,7 @@ public class InternalFunctionExecutionServiceImpl
   // InternalFunctionExecutionService OnServerGroups API -----------------------------------------
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServer(Pool pool, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           String.format("%s passed is null", "Pool instance "));
@@ -219,7 +220,7 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServers(Pool pool, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           String.format("%s passed is null", "Pool instance "));
@@ -233,7 +234,8 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServer(RegionService regionService, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(RegionService regionService,
+      String... groups) {
     if (regionService == null) {
       throw new FunctionException(String.format("%s passed is null",
           "RegionService instance "));
@@ -256,7 +258,8 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onServers(RegionService regionService, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(RegionService regionService,
+      String... groups) {
     if (regionService == null) {
       throw new FunctionException(String.format("%s passed is null",
           "RegionService instance "));
@@ -281,7 +284,7 @@ public class InternalFunctionExecutionServiceImpl
   // InternalFunctionExecutionService InDistributedSystem API ------------------------------------
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMember(DistributedSystem system,
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system,
       DistributedMember distributedMember) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
@@ -295,7 +298,8 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMembers(DistributedSystem system, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system,
+      String... groups) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
@@ -315,7 +319,8 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMember(DistributedSystem system, String... groups) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system,
+      String... groups) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
@@ -340,7 +345,7 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <I, O, A> Execution<I, O, A> onMembers(DistributedSystem system,
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system,
       Set<DistributedMember> distributedMembers) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
@@ -356,7 +361,7 @@ public class InternalFunctionExecutionServiceImpl
   // InternalFunctionExecutionService OnRegions API ----------------------------------------------
 
   @Override
-  public <I, O, A> Execution<I, O, A> onRegions(Set<Region> regions) {
+  public <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegions(Set<Region> regions) {
     if (regions == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
