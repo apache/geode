@@ -84,7 +84,7 @@ public class ReconnectWithCacheXMLDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Test
-  public void testCacheServerLauncherPortRetained() {
+  public void usesPortSpecifiedByServerLauncherParametersWithPort() {
     ServerLauncherParameters.INSTANCE.withPort(AvailablePortHelper.getRandomAvailableTCPPort())
         .withDisableDefaultServer(true);
     Cache cache = getCache();
