@@ -48,11 +48,9 @@ public class QueryResultFormatterPdxIntegrationTest {
   private void checkResult(QueryResultFormatter queryResultFormatter, String expectedJsonString)
       throws IOException {
     String jsonString = queryResultFormatter.toString();
-    System.out.println("queryResultFormatter.toString=" + jsonString);
     assertThat(jsonString).isEqualTo(expectedJsonString);
 
     JsonNode jsonObject = new ObjectMapper().readTree(jsonString);
-    System.out.println("jsonObject=" + jsonObject);
     assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 

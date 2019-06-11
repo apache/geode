@@ -41,11 +41,9 @@ public class QueryResultFormatterTest {
   private void checkResult(final QueryResultFormatter queryResultFormatter,
       String expectedJsonString) throws Exception {
     String jsonString = queryResultFormatter.toString();
-    System.out.println("queryResultFormatter.toString=" + jsonString);
     assertThat(jsonString).isEqualTo(expectedJsonString);
 
     JsonNode jsonObject = new ObjectMapper().readTree(jsonString);
-    System.out.println("jsonObject=" + jsonObject);
     assertThat(jsonObject.get(RESULT)).isNotNull();
   }
 
@@ -207,7 +205,7 @@ public class QueryResultFormatterTest {
     CollectionHolder arrayHolder = new CollectionHolder();
     QueryResultFormatter arrayHolderResult = new QueryResultFormatter(100).add(RESULT, arrayHolder);
     checkResult(arrayHolderResult,
-        "{\"result\":[[\"org.apache.geode.cache.query.data.CollectionHolder\",{\"arr\":[\"java.lang.String[]\",[\"0\",\"1\",\"2\",\"3\",\"4\",\"SUN\",\"IBM\",\"YHOO\",\"GOOG\",\"MSFT\"]]}]]}");;
+        "{\"result\":[[\"org.apache.geode.cache.query.data.CollectionHolder\",{\"arr\":[\"java.lang.String[]\",[\"0\",\"1\",\"2\",\"3\",\"4\",\"SUN\",\"IBM\",\"YHOO\",\"GOOG\",\"MSFT\"]]}]]}");
   }
 
   @Test
