@@ -57,9 +57,9 @@ public class StatisticsImplTest {
     statisticsManager = mock(StatisticsManager.class);
 
     statisticsType = mock(StatisticsTypeImpl.class);
-    when(statisticsType.getIntStatCount()).thenReturn(5);
-    when(statisticsType.getDoubleStatCount()).thenReturn(5);
-    when(statisticsType.getLongStatCount()).thenReturn(5);
+    when(statisticsType.isValidIntId(anyInt())).thenReturn(true);
+    when(statisticsType.isValidLongId(anyInt())).thenReturn(true);
+    when(statisticsType.isValidDoubleId(anyInt())).thenReturn(true);
 
     statistics = new SimpleStatistics(statisticsType, ANY_TEXT_ID, ANY_NUMERIC_ID, ANY_UNIQUE_ID,
         ANY_OS_STAT_FLAGS, statisticsManager);
@@ -141,6 +141,7 @@ public class StatisticsImplTest {
   public void badSupplierParamShouldThrowError() {
     IntSupplier intSupplier = mock(IntSupplier.class);
     when(intSupplier.getAsInt()).thenReturn(23);
+    when(statisticsType.isValidIntId(anyInt())).thenReturn(false);
 
     Throwable thrown = catchThrowable(() -> statistics.setIntSupplier(23, intSupplier));
 

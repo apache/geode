@@ -167,13 +167,18 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   /////////////////////// get() Methods ///////////////////////
 
   @Override
-  protected int _getInt(int offset) {
-    return this.intStorage[offset];
+  protected int _getInt(int id) {
+    return this.intStorage[id];
   }
 
   @Override
-  protected long _getLong(int offset) {
+  protected long _getLong(int id) {
+    int offset = getOffsetFromLongId(id);
     return this.longStorage[offset];
+  }
+
+  private int getOffsetFromLongId(int id) {
+    return id - type.getIntStatCount();
   }
 
   @Override
@@ -196,12 +201,13 @@ public class LocalStatisticsImpl extends StatisticsImpl {
 
   @Override
   protected void _incLong(int offset, long delta) {
+    int longIndex = getOffsetFromLongId(offset);
     if (this.longLocks != null) {
-      synchronized (this.longLocks[offset]) {
-        this.longStorage[offset] += delta;
+      synchronized (this.longLocks[longIndex]) {
+        this.longStorage[longIndex] += delta;
       }
     } else {
-      this.longStorage[offset] += delta;
+      this.longStorage[longIndex] += delta;
     }
   }
 

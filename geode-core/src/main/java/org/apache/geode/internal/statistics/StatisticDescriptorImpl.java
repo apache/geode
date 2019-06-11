@@ -105,32 +105,6 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
   }
 
   /**
-   * Returns the number of bits needed to represent a value of the given type
-   *
-   * @throws IllegalArgumentException <code>code</code> is an unknown type
-   */
-  public static int getTypeCodeBits(int code) {
-    switch (code) {
-      case BYTE:
-        return 8;
-      case SHORT:
-        return 16;
-      case FLOAT:
-        return 32;
-      case INT:
-        return 32;
-      case LONG:
-        return 64;
-      case DOUBLE:
-        return 64;
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unknown type code: %s",
-                Integer.valueOf(code)));
-    }
-  }
-
-  /**
    * Returns the class of the given type code
    *
    * @throws IllegalArgumentException <code>code</code> is an unknown type
@@ -241,10 +215,6 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
   @Override
   public Class<?> getType() {
     return getTypeCodeClass(this.typeCode);
-  }
-
-  public int getStorageBits() {
-    return getTypeCodeBits(this.typeCode);
   }
 
   @Override

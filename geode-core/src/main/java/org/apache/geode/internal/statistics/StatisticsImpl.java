@@ -45,7 +45,7 @@ public abstract class StatisticsImpl implements Statistics {
   private static final Logger logger = LogService.getLogger();
 
   /** The type of this statistics instance */
-  private final StatisticsTypeImpl type;
+  protected final StatisticsTypeImpl type;
 
   /** The display name of this statistics instance */
   private final String textId;
@@ -254,7 +254,13 @@ public abstract class StatisticsImpl implements Statistics {
   @Override
   public int getInt(int id) {
     if (isOpen()) {
-      return _getInt(id);
+      if (type.isValidIntId(id)) {
+        return _getInt(id);
+      } else if (type.isValidLongId(id)) {
+        return (int) _getLong(id);
+      } else {
+        throw new IllegalArgumentException("Id, " + id + ", is not an integer or long statistic.");
+      }
     } else {
       return 0;
     }
@@ -273,6 +279,9 @@ public abstract class StatisticsImpl implements Statistics {
   @Override
   public long getLong(int id) {
     if (isOpen()) {
+      if (!type.isValidLongId(id)) {
+        throw new IllegalArgumentException("Id, " + id + ", is not a long statistic.");
+      }
       return _getLong(id);
     } else {
       return 0;
@@ -379,7 +388,7 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public IntSupplier setIntSupplier(final int id, final IntSupplier supplier) {
-    if (id >= type.getIntStatCount()) {
+    if (!type.isValidIntId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return intSuppliers.put(id, supplier);
@@ -398,7 +407,7 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public LongSupplier setLongSupplier(final int id, final LongSupplier supplier) {
-    if (id >= type.getLongStatCount()) {
+    if (!type.isValidLongId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return longSuppliers.put(id, supplier);
@@ -417,7 +426,7 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public DoubleSupplier setDoubleSupplier(final int id, final DoubleSupplier supplier) {
-    if (id >= type.getDoubleStatCount()) {
+    if (!type.isValidDoubleId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return doubleSuppliers.put(id, supplier);
