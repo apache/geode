@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.DistributedRegionMXBean;
@@ -86,5 +87,10 @@ public class RegionConfigManager
       results.add(runtimeConfig);
     }
     return results;
+  }
+
+  @Override
+  public RegionConfig get(String id, CacheConfig existing) {
+    return CacheElement.findElement(existing.getRegions(), id);
   }
 }

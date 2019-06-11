@@ -76,6 +76,11 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
     return generateMemberConfigs(memberInformation);
   }
 
+  @Override
+  public MemberConfig get(String id, CacheConfig existing) {
+    throw new NotImplementedException("Not implemented");
+  }
+
   @VisibleForTesting
   Set<DistributedMember> getDistributedMembers(MemberConfig filter) {
     Set<InternalDistributedMember> distributionManagerIds =

@@ -18,7 +18,6 @@ package org.apache.geode.management.client;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -141,11 +140,11 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
         "server-3");
 
-    // creating the same region on group2 will be successful even though the region already exists
-    // on another member
+    // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
-    assertManagementResult(client.create(region)).isSuccessful().hasMemberStatus()
-        .containsOnlyKeys("server-2", "server-3");
+    assertManagementResult(client.create(region)).failed().hasStatusCode(
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
+        .containsStatusMessage("Member(s) server-3 already has this element created");
   }
 
   @Test
@@ -160,11 +159,10 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
         "server-3");
 
-    // creating the same region on group2 will be successful even though the region already exists
-    // on another member
+    // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
-    assertManagementResult(client.create(region)).isSuccessful().hasMemberStatus()
-        .containsOnlyKeys("server-2", "server-3");
+    assertManagementResult(client.create(region)).failed().hasStatusCode(
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS);
 
     region.setGroup(null);
     ClusterManagementResult deleteResult = client.delete(region);
@@ -190,7 +188,9 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
         "server-3");
 
-    assertThatThrownBy(() -> client.delete(region)).isInstanceOf(IllegalArgumentException.class);
+    assertManagementResult(client.delete(region)).failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("group is an invalid option when deleting region");
   }
 
   @Test

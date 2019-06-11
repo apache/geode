@@ -25,7 +25,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.management.api.RestfulEndpoint;
 
@@ -268,7 +267,7 @@ public class GatewayReceiverConfig extends CacheElement implements RestfulEndpoi
   @XmlTransient
   @JsonIgnore
   public String getId() {
-    return getGroup();
+    return getConfigGroup();
   }
 
   public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
@@ -283,9 +282,6 @@ public class GatewayReceiverConfig extends CacheElement implements RestfulEndpoi
   @Override
   @XmlTransient
   public String getUri() {
-    if (StringUtils.isBlank(getGroup())) {
-      return getEndpoint() + "/cluster";
-    }
-    return getEndpoint() + "/" + getGroup();
+    return getEndpoint() + "/" + getId();
   }
 }

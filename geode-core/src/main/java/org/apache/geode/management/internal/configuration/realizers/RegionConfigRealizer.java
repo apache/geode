@@ -27,7 +27,6 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -51,11 +50,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
   @Override
   public void create(RegionConfig regionConfig, Cache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
-    try {
-      factory.create(regionConfig.getName());
-    } catch (RegionExistsException e) {
-      // since we are trying to create this region, ignore this exception
-    }
+    factory.create(regionConfig.getName());
   }
 
   /**
@@ -292,7 +287,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
   @Override
   public boolean exists(RegionConfig config, Cache cache) {
-    return false;
+    return cache.getRegion("/" + config.getName()) != null;
   }
 
   @Override

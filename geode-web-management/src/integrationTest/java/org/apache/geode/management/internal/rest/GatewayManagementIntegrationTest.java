@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.List;
@@ -51,19 +52,19 @@ public class GatewayManagementIntegrationTest {
 
   private ClusterManagementService client;
 
-  private GatewayReceiverConfig filter;
+  private GatewayReceiverConfig receiver;
 
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
     client = ClusterManagementServiceBuilder.buildWithRequestFactory()
         .setRequestFactory(context.getRequestFactory()).build();
-    filter = new GatewayReceiverConfig();
+    receiver = new GatewayReceiverConfig();
   }
 
   @Test
   public void listEmptyGatewayReceivers() {
-    ClusterManagementResult result = client.list(filter);
+    ClusterManagementResult result = client.list(receiver);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getResult(CacheElement.class).size()).isEqualTo(0);
   }
@@ -85,20 +86,36 @@ public class GatewayManagementIntegrationTest {
       return cacheConfig;
     });
 
-    ClusterManagementResult result = client.list(filter);
-    assertThat(result.isSuccessful()).isTrue();
+    ClusterManagementResult results = client.list(receiver);
+    assertThat(results.isSuccessful()).isTrue();
     List<GatewayReceiverConfig> receivers =
-        result.getResult(GatewayReceiverConfig.class);
+        results.getResult(GatewayReceiverConfig.class);
     assertThat(receivers.size()).isEqualTo(1);
-    GatewayReceiverConfig receiver = receivers.get(0);
-    assertThat(receiver.getBindAddress()).isEqualTo("localhost");
-    assertThat(receiver.isManualStart()).isFalse();
-    assertThat(receiver.getStartPort()).isEqualTo("5000");
+    GatewayReceiverConfig result = receivers.get(0);
+    assertThat(result.getBindAddress()).isEqualTo("localhost");
+    assertThat(result.isManualStart()).isFalse();
+    assertThat(result.getStartPort()).isEqualTo("5000");
 
     // manually removing the GWR so that it won't pollute other tests
     cps.updateCacheConfig("cluster", cacheConfig -> {
       cacheConfig.setGatewayReceiver(null);
       return cacheConfig;
     });
+  }
+
+  @Test
+  public void createWithBindAddress() throws Exception {
+    receiver.setBindAddress("test-mbpro");
+    assertManagementResult(client.create(receiver)).failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("");
+  }
+
+  @Test
+  public void createWithHostName() throws Exception {
+    receiver.setHostnameForSenders("test-mbpro");
+    assertManagementResult(client.create(receiver)).failed()
+        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
+        .containsStatusMessage("");
   }
 }

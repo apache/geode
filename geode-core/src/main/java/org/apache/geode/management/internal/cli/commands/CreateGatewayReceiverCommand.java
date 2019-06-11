@@ -35,7 +35,6 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
-import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -89,14 +88,11 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
         buildConfiguration(manualStart, startPort, endPort, bindAddress, maximumTimeBetweenPings,
             socketBufferSize, gatewayTransportFilters, hostnameForSenders);
 
-    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
-        new GatewayReceiverFunctionArgs(configuration, ifNotExists);
-
     Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> gatewayReceiverCreateResults =
         executeAndGetFunctionResult(GatewayReceiverCreateFunction.INSTANCE,
-            gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
+            new Object[] {configuration, ifNotExists}, membersToCreateGatewayReceiverOn);
 
     ResultModel result = ResultModel.createMemberStatusResult(gatewayReceiverCreateResults);
     result.setConfigObject(configuration);
