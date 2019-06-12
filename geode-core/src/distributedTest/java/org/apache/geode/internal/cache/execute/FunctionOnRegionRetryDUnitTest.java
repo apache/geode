@@ -76,7 +76,6 @@ public class FunctionOnRegionRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .atMost(30, TimeUnit.SECONDS)
         .untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
@@ -121,7 +120,6 @@ public class FunctionOnRegionRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .atMost(30, TimeUnit.SECONDS)
         .untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
