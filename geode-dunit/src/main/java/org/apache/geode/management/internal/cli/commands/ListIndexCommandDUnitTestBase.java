@@ -71,12 +71,6 @@ public class ListIndexCommandDUnitTestBase {
   @Test
   public void testListIndexes() throws Exception {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX).statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName());
-  }
-
-  @Test
-  public void testListIndexesMaintStatus() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --maintenance-status").statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
         .tableHasColumnWithExactValuesInAnyOrder("Index Maintenance Status", "FINISHED");
   }
@@ -84,16 +78,6 @@ public class ListIndexCommandDUnitTestBase {
   @Test
   public void testListIndexesWithStats() throws Exception {
     gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats").statusIsSuccess()
-        .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
-        .tableHasColumnWithExactValuesInAnyOrder("Updates", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Keys", "1")
-        .tableHasColumnWithExactValuesInAnyOrder("Values", "1");
-  }
-
-  @Test
-  public void testListIndexesWithStatsMaintStatus() throws Exception {
-    gfsh.executeAndAssertThat(CliStrings.LIST_INDEX + " --with-stats" + " --maintenance-status")
-        .statusIsSuccess()
         .tableHasColumnWithExactValuesInAnyOrder("Member Name", server.getName())
         .tableHasColumnWithExactValuesInAnyOrder("Updates", "1")
         .tableHasColumnWithExactValuesInAnyOrder("Keys", "1")

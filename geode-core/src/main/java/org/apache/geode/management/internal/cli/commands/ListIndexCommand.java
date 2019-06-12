@@ -47,10 +47,7 @@ public class ListIndexCommand extends GfshCommand {
   public ResultModel listIndex(
       @CliOption(key = CliStrings.LIST_INDEX__STATS,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats,
-      @CliOption(key = CliStrings.LIST_INDEX__MAINT,
-          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
-          help = CliStrings.LIST_INDEX__MAINT__HELP) final boolean maintStatus) {
+          help = CliStrings.LIST_INDEX__STATS__HELP) final boolean showStats) {
 
     ResultModel result = new ResultModel();
     TabularResultModel indexTable = result.addTable("indices");
@@ -85,9 +82,7 @@ public class ListIndexCommand extends GfshCommand {
         indexTable.accumulate("Values", adapter.getNumberOfValues());
       }
 
-      if (maintStatus) {
-        indexTable.accumulate("Index Maintenance Status", indexDetails.getIndexMaintenance());
-      }
+      indexTable.accumulate("Index Maintenance Status", indexDetails.getIndexMaintenance());
     }
 
     return result;
