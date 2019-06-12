@@ -19,6 +19,7 @@ import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -26,7 +27,10 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
+import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
@@ -36,12 +40,14 @@ public class DistributedRegionTest {
   private RegionVersionVector vector;
   private RegionVersionHolder holder;
   private VersionSource lostMemberVersionID;
+  private InternalDistributedMember member;
 
   @Before
   public void setup() {
     vector = mock(RegionVersionVector.class);
     holder = mock(RegionVersionHolder.class);
     lostMemberVersionID = mock(VersionSource.class);
+    member = mock(InternalDistributedMember.class);
   }
 
   @Test
@@ -145,5 +151,35 @@ public class DistributedRegionTest {
         .isFalse();
 
     verify(holder, never()).setRegionSynchronizeScheduledOrDoneIfNot();
+  }
+
+  @Test
+  public void regionSyncInvokedInPerformSynchronizeForLostMemberTaskAfterRegionInitialized() {
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getDataPolicy()).thenReturn(mock(DataPolicy.class));
+    doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
+        lostMemberVersionID);
+    InOrder inOrder = inOrder(distributedRegion);
+
+    distributedRegion.performSynchronizeForLostMemberTask(member, lostMemberVersionID);
+
+    inOrder.verify(distributedRegion).waitUntilInitialized();
+    inOrder.verify(distributedRegion).synchronizeForLostMember(member, lostMemberVersionID);
+  }
+
+  @Test
+  public void emptyAccessorOfPersistentRegionDoesNotSynchronizeForLostMember() {
+    DataPolicy dataPolicy = mock(DataPolicy.class);
+    DistributedRegion distributedRegion = mock(DistributedRegion.class);
+    when(distributedRegion.getDataPolicy()).thenReturn(dataPolicy);
+    when(dataPolicy.withPersistence()).thenReturn(true);
+    when(distributedRegion.getPersistentID()).thenReturn(null);
+    doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
+        lostMemberVersionID);
+
+    distributedRegion.performSynchronizeForLostMemberTask(member, lostMemberVersionID);
+
+    verify(distributedRegion).waitUntilInitialized();
+    verify(distributedRegion, never()).synchronizeForLostMember(member, lostMemberVersionID);
   }
 }

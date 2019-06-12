@@ -87,6 +87,7 @@ import org.apache.geode.distributed.internal.locks.DLockRemoteToken;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.InitialImageOperation.GIIStatus;
 import org.apache.geode.internal.cache.RegionMap.ARMLockTestHook;
@@ -1273,11 +1274,40 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     }
   }
 
+  public void scheduleSynchronizeForLostMember(InternalDistributedMember member,
+      VersionSource lostVersionID, long delay) {
+    getGemFireCache().getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
+      @Override
+      public void run2() {
+        performSynchronizeForLostMemberTask(member, lostVersionID);
+      }
+    }, delay);
+  }
+
+  void performSynchronizeForLostMemberTask(InternalDistributedMember member,
+      VersionSource lostVersionID) {
+    waitUntilInitialized();
+
+    if (getDataPolicy().withPersistence() && getPersistentID() == null) {
+      // Fix for 46704. The lost member may be a replicate
+      // or an empty accessor. We don't need to do a synchronization
+      // in that case, because those members send their writes to
+      // a persistent member.
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "da.syncForCrashedMember skipping sync because crashed member is not persistent: {}",
+            member);
+      }
+      return;
+    }
+    synchronizeForLostMember(member, lostVersionID);
+  }
+
   /**
    * If this region has concurrency controls enabled this will pull any missing changes from other
    * replicates using InitialImageOperation and a filtered chunking protocol.
    */
-  public void synchronizeForLostMember(InternalDistributedMember lostMember,
+  void synchronizeForLostMember(InternalDistributedMember lostMember,
       VersionSource lostVersionID) {
     if (!getConcurrencyChecksEnabled()) {
       return;
@@ -1326,6 +1356,24 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return regionVersionHolder.setRegionSynchronizeScheduledOrDoneIfNot();
     }
     return false;
+  }
+
+  void waitUntilInitialized() {
+    while (!isInitialized()) {
+      if (isDestroyed()) {
+        return;
+      } else {
+        try {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "da.syncForCrashedMember waiting for region to finish initializing: {}", this);
+          }
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+          return;
+        }
+      }
+    }
   }
 
   /** remove any partial entries received in a failed GII */
