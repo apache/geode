@@ -34,7 +34,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.junit.Test;
 
+import org.apache.geode.cache.Operation;
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
@@ -84,6 +86,7 @@ public class ClientRegistrationEventQueueManagerTest {
         .thenReturn(filterRoutingInfo);
     when(localRegion.getFilterProfile()).thenReturn(filterProfile);
     when(internalCacheEvent.getRegion()).thenReturn(localRegion);
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
 
@@ -131,6 +134,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
 
@@ -176,6 +180,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
     Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
@@ -207,6 +212,7 @@ public class ClientRegistrationEventQueueManagerTest {
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     Conflatable conflatable = mock(Conflatable.class);
     Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
@@ -237,6 +243,31 @@ public class ClientRegistrationEventQueueManagerTest {
 
       assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
     }
+  }
+
+  @Test
+  public void addEventWithOffheapValueCopiedToHeap() {
+    ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
+        new ClientRegistrationEventQueueManager();
+
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+    Operation mockOperation = mock(Operation.class);
+    when(mockOperation.isEntry()).thenReturn(true);
+    when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
+
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+        new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock(), new ReentrantLock());
+
+    clientRegistrationEventQueueManager
+        .add(internalCacheEvent, conflatable, filterClientIDs, cacheClientNotifier);
+
+    verify(internalCacheEvent, times(1)).copyOffHeapToHeap();
   }
 
   /*

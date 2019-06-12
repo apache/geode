@@ -48,6 +48,7 @@ import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.SocketCloser;
 
 /**
@@ -124,6 +125,8 @@ public class ConnectionTable {
    */
   private final TCPConduit owner;
 
+  private final BufferPool bufferPool;
+
   /**
    * true if this table is no longer in use
    */
@@ -199,6 +202,7 @@ public class ConnectionTable {
     this.threadConnectionMap = new ConcurrentHashMap();
     this.p2pReaderThreadPool = createThreadPoolForIO(conduit.getDM().getSystem().isShareSockets());
     this.socketCloser = new SocketCloser();
+    this.bufferPool = new BufferPool(owner.getStats());
   }
 
   private Executor createThreadPoolForIO(boolean conserveSockets) {
@@ -609,6 +613,10 @@ public class ConnectionTable {
 
   protected TCPConduit getConduit() {
     return owner;
+  }
+
+  public BufferPool getBufferPool() {
+    return bufferPool;
   }
 
   public boolean isClosed() {

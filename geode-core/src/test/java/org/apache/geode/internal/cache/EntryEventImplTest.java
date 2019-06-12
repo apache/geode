@@ -34,10 +34,12 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.SerializedCacheValue;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl.NewValueImporter;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.StoredObject;
 
 public class EntryEventImplTest {
@@ -59,6 +61,13 @@ public class EntryEventImplTest {
     doReturn(expectedRegionName).when(region).getFullPath();
     doReturn(keyInfo).when(region).getKeyInfo(any(), any(), any());
 
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
+
     // create entry event for the region
     EntryEventImpl e = createEntryEvent(region, value);
 
@@ -75,6 +84,14 @@ public class EntryEventImplTest {
   public void verifyExportNewValueWithUnserializedStoredObject() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject newValue = mock(StoredObject.class);
     byte[] newValueBytes = new byte[] {1, 2, 3};
     when(newValue.getValueAsHeapByteArray()).thenReturn(newValueBytes);
@@ -89,6 +106,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithByteArray() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     byte[] newValue = new byte[] {1, 2, 3};
     NewValueImporter nvImporter = mock(NewValueImporter.class);
     EntryEventImpl e = createEntryEvent(region, newValue);
@@ -101,6 +125,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithStringIgnoresNewValueBytes() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     String newValue = "newValue";
     NewValueImporter nvImporter = mock(NewValueImporter.class);
     when(nvImporter.prefersNewSerialized()).thenReturn(true);
@@ -116,6 +147,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithByteArrayCachedDeserializable() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     CachedDeserializable newValue = mock(CachedDeserializable.class);
     byte[] newValueBytes = new byte[] {1, 2, 3};
     when(newValue.getValue()).thenReturn(newValueBytes);
@@ -130,6 +168,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithStringCachedDeserializable() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     CachedDeserializable newValue = mock(CachedDeserializable.class);
     Object newValueObj = "newValueObj";
     when(newValue.getValue()).thenReturn(newValueObj);
@@ -147,6 +192,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithStringCachedDeserializablePrefersNewValueBytes() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     CachedDeserializable newValue = mock(CachedDeserializable.class);
     Object newValueObj = "newValueObj";
     when(newValue.getValue()).thenReturn(newValueObj);
@@ -164,6 +216,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportNewValueWithStringCachedDeserializablePrefersCachedSerializedNewValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     CachedDeserializable newValue = mock(CachedDeserializable.class);
     Object newValueObj = "newValueObj";
     when(newValue.getValue()).thenReturn(newValueObj);
@@ -182,6 +241,14 @@ public class EntryEventImplTest {
   public void verifyExportNewValueWithSerializedStoredObjectAndImporterPrefersSerialized() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject newValue = mock(StoredObject.class);
     when(newValue.isSerialized()).thenReturn(true);
     byte[] newValueBytes = new byte[] {1, 2, 3};
@@ -199,6 +266,14 @@ public class EntryEventImplTest {
   public void verifyExportNewValueWithSerializedStoredObject() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject newValue = mock(StoredObject.class);
     when(newValue.isSerialized()).thenReturn(true);
     Object newValueDeserialized = "newValueDeserialized";
@@ -215,6 +290,14 @@ public class EntryEventImplTest {
   public void verifyExportNewValueWithSerializedStoredObjectAndUnretainedNewReferenceOk() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject newValue = mock(StoredObject.class);
     when(newValue.isSerialized()).thenReturn(true);
     Object newValueDeserialized = "newValueDeserialized";
@@ -232,6 +315,14 @@ public class EntryEventImplTest {
   public void verifyExportOldValueWithUnserializedStoredObject() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject oldValue = mock(StoredObject.class);
     byte[] oldValueBytes = new byte[] {1, 2, 3};
     when(oldValue.getValueAsHeapByteArray()).thenReturn(oldValueBytes);
@@ -247,6 +338,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportOldValueWithByteArray() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     byte[] oldValue = new byte[] {1, 2, 3};
     OldValueImporter ovImporter = mock(OldValueImporter.class);
     EntryEventImpl e = createEntryEvent(region, null);
@@ -260,6 +358,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportOldValueWithStringIgnoresOldValueBytes() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     String oldValue = "oldValue";
     OldValueImporter ovImporter = mock(OldValueImporter.class);
     when(ovImporter.prefersOldSerialized()).thenReturn(true);
@@ -276,6 +381,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportOldValuePrefersOldValueBytes() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     OldValueImporter ovImporter = mock(OldValueImporter.class);
     when(ovImporter.prefersOldSerialized()).thenReturn(true);
     EntryEventImpl e = createEntryEvent(region, null);
@@ -290,6 +402,13 @@ public class EntryEventImplTest {
   @Test
   public void verifyExportOldValueWithCacheDeserializableByteArray() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     CachedDeserializable oldValue = mock(CachedDeserializable.class);
     byte[] oldValueBytes = new byte[] {1, 2, 3};
     when(oldValue.getValue()).thenReturn(oldValueBytes);
@@ -307,6 +426,13 @@ public class EntryEventImplTest {
     LocalRegion region = mock(LocalRegion.class);
     CachedDeserializable oldValue = mock(CachedDeserializable.class);
     Object oldValueObj = "oldValueObj";
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     when(oldValue.getValue()).thenReturn(oldValueObj);
     OldValueImporter ovImporter = mock(OldValueImporter.class);
     EntryEventImpl e = createEntryEvent(region, null);
@@ -322,6 +448,13 @@ public class EntryEventImplTest {
     LocalRegion region = mock(LocalRegion.class);
     CachedDeserializable oldValue = mock(CachedDeserializable.class);
     Object oldValueObj = "oldValueObj";
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     when(oldValue.getValue()).thenReturn(oldValueObj);
     OldValueImporter ovImporter = mock(OldValueImporter.class);
     when(ovImporter.isCachedDeserializableValueOk()).thenReturn(true);
@@ -337,6 +470,14 @@ public class EntryEventImplTest {
   public void verifyExportOldValueWithSerializedStoredObjectAndImporterPrefersSerialized() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject oldValue = mock(StoredObject.class);
     when(oldValue.isSerialized()).thenReturn(true);
     byte[] oldValueBytes = new byte[] {1, 2, 3};
@@ -355,6 +496,14 @@ public class EntryEventImplTest {
   public void verifyExportOldValueWithSerializedStoredObject() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject oldValue = mock(StoredObject.class);
     when(oldValue.isSerialized()).thenReturn(true);
     Object oldValueDeserialized = "newValueDeserialized";
@@ -372,6 +521,14 @@ public class EntryEventImplTest {
   public void verifyExportOldValueWithSerializedStoredObjectAndUnretainedOldReferenceOk() {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject oldValue = mock(StoredObject.class);
     when(oldValue.isSerialized()).thenReturn(true);
     Object oldValueDeserialized = "oldValueDeserialized";
@@ -389,6 +546,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueUnforcedWithRemoveTokenChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -399,6 +563,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueForcedWithRemoveTokenChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -409,6 +580,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueUnforcedWithInvalidTokenNullsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -419,6 +597,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueForcedWithInvalidTokenNullsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -429,6 +614,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueUnforcedWithNullChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -439,6 +631,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueForcedWithNullChangesOldValueToNull() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -449,6 +648,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueForcedWithNotAvailableTokenSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -459,6 +665,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueUnforcedWithNotAvailableTokenSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -469,6 +682,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldUnforcedValueSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -479,6 +699,13 @@ public class EntryEventImplTest {
   @Test
   public void setOldValueForcedSetsOldValue() {
     LocalRegion region = mock(LocalRegion.class);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     String UNINITIALIZED = "Uninitialized";
     e.basicSetOldValue(UNINITIALIZED);
@@ -508,6 +735,14 @@ public class EntryEventImplTest {
   public void verifyExternalReadMethodsBlockedByRelease() throws InterruptedException {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getOffHeap()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    MemoryAllocator mem = mock(MemoryAllocator.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(mem);
+
     StoredObject newValue = mock(StoredObject.class);
     when(newValue.hasRefCount()).thenReturn(true);
     when(newValue.isSerialized()).thenReturn(true);
@@ -670,6 +905,13 @@ public class EntryEventImplTest {
     long timestamp = System.currentTimeMillis();
     LocalRegion region = mock(LocalRegion.class);
     when(region.cacheTimeMillis()).thenReturn(timestamp);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     assertThat(e.getEventTime(0l)).isEqualTo(timestamp);
   }
@@ -679,6 +921,13 @@ public class EntryEventImplTest {
     long timestamp = System.currentTimeMillis();
     LocalRegion region = mock(LocalRegion.class);
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     VersionTag tag = VersionTag.create(mock(InternalDistributedMember.class));
     tag.setVersionTimeStamp(timestamp);
@@ -694,6 +943,13 @@ public class EntryEventImplTest {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
     when(region.cacheTimeMillis()).thenReturn(timestamp);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     VersionTag tag = VersionTag.create(mock(InternalDistributedMember.class));
     tag.setVersionTimeStamp(timestampPlus1);
@@ -708,6 +964,13 @@ public class EntryEventImplTest {
     LocalRegion region = mock(LocalRegion.class);
     when(region.getConcurrencyChecksEnabled()).thenReturn(false);
     when(region.cacheTimeMillis()).thenReturn(timestamp);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     VersionTag tag = VersionTag.create(mock(InternalDistributedMember.class));
     tag.setVersionTimeStamp(timestamp + 1000l);
@@ -720,6 +983,13 @@ public class EntryEventImplTest {
     long timestamp = System.currentTimeMillis();
     LocalRegion region = mock(LocalRegion.class);
     when(region.getConcurrencyChecksEnabled()).thenReturn(false);
+
+    InternalCache cache = mock(InternalCache.class);
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(ids);
+    when(ids.getOffHeapStore()).thenReturn(null);
+
     EntryEventImpl e = createEntryEvent(region, null);
     VersionTag tag = VersionTag.create(mock(InternalDistributedMember.class));
     tag.setVersionTimeStamp(timestamp + 1000l);

@@ -85,7 +85,15 @@ public class ObjectInputStreamFilterWrapper implements InputStreamFilter {
           .getResource(InternalDataSerializer.class, "sanctioned-geode-core-serializables.txt");
       Collection<String> coreClassNames =
           InternalDataSerializer.loadClassNames(sanctionedSerializables);
+
+      URL sanctionedManagementSerializables = ClassPathLoader.getLatest()
+          .getResource(InternalDataSerializer.class,
+              "sanctioned-geode-management-serializables.txt");
+      Collection<String> managmentClassNames =
+          InternalDataSerializer.loadClassNames(sanctionedManagementSerializables);
+
       sanctionedClasses.addAll(coreClassNames);
+      sanctionedClasses.addAll(managmentClassNames);
     } catch (IOException e) {
       throw new InternalGemFireException(
           "unable to read sanctionedSerializables.txt to form a serialization acceptlist", e);

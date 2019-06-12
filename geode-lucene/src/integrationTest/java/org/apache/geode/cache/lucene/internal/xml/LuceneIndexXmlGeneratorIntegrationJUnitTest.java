@@ -20,12 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotSame;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
 import java.util.Properties;
 
 import org.junit.After;
@@ -139,20 +138,17 @@ public class LuceneIndexXmlGeneratorIntegrationJUnitTest {
   private LuceneIndex generateAndParseXml(LuceneService service) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     PrintWriter pw = new PrintWriter(baos);
-    CacheXmlGenerator.generate(cache, pw, true, false, false);
+    CacheXmlGenerator.generate(cache, pw, false, false);
     pw.flush();
 
     cache.close();
     cache = new CacheFactory().set(MCAST_PORT, "0").create();
 
     byte[] bytes = baos.toByteArray();
-    ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-    System.out.println("---FILE---");
-    System.out.println(new String(bytes, Charset.defaultCharset()));
     cache.loadCacheXml(new ByteArrayInputStream(bytes));
 
     LuceneService service2 = LuceneServiceProvider.get(cache);
-    assertTrue(service != service2);
+    assertNotSame(service, service2);
 
     LuceneIndex index = service2.getIndex("index", "region");
     assertNotNull(index);

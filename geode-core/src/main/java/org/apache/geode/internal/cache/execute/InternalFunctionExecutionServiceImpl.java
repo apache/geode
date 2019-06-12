@@ -106,24 +106,32 @@ public class InternalFunctionExecutionServiceImpl
     return onMember(getDistributedSystem(), groups);
   }
 
+  protected Pool findPool(String poolName) {
+    return PoolManager.find(poolName);
+  }
+
   @Override
   public Execution onRegion(Region region) {
     if (region == null) {
-      throw new FunctionException(
-          String.format("%s passed is null", "Region instance "));
+      throw new FunctionException("Region instance passed is null");
     }
 
     ProxyCache proxyCache = null;
     String poolName = region.getAttributes().getPoolName();
     if (poolName != null) {
-      Pool pool = PoolManager.find(poolName);
-      if (pool.getMultiuserAuthentication()) {
-        if (region instanceof ProxyRegion) {
-          ProxyRegion proxyRegion = (ProxyRegion) region;
-          region = proxyRegion.getRealRegion();
-          proxyCache = proxyRegion.getAuthenticatedCache();
-        } else {
-          throw new UnsupportedOperationException();
+      Pool pool = findPool(poolName);
+
+      if (pool == null) {
+        throw new IllegalStateException(String.format("Could not find a pool named %s.", poolName));
+      } else {
+        if (pool.getMultiuserAuthentication()) {
+          if (region instanceof ProxyRegion) {
+            ProxyRegion proxyRegion = (ProxyRegion) region;
+            region = proxyRegion.getRealRegion();
+            proxyCache = proxyRegion.getAuthenticatedCache();
+          } else {
+            throw new UnsupportedOperationException();
+          }
         }
       }
     }

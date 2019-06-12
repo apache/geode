@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -34,16 +33,14 @@ import org.junit.Test;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
-
 public class ListMembersCommandTest {
-
   @ClassRule
   public static GfshParserRule gfsh = new GfshParserRule();
 
   private ListMembersCommand command;
-  private Set<DistributedMember> members;
   private DistributedMember member1;
   private DistributedMember member2;
+  private Set<DistributedMember> members;
 
   @Before
   public void before() {
@@ -54,11 +51,14 @@ public class ListMembersCommandTest {
     member1 = mock(DistributedMember.class);
     when(member1.getName()).thenReturn("name");
     when(member1.getId()).thenReturn("id");
-    doReturn(member1).when(command).getCoordinator();
+    when(member1.getUniqueId()).thenReturn("uniqueId1");
+    doReturn("uniqueId1").when(command).getCoordinatorId();
 
     member2 = mock(DistributedMember.class);
     when(member2.getName()).thenReturn("name2");
     when(member2.getId()).thenReturn("id2");
+    when(member2.getUniqueId()).thenReturn("uniqueId2");
+
     // This will enforce the sort order in TreeSet used by ListMembersCommand.
     when(member1.compareTo(member2)).thenReturn(-1);
     when(member2.compareTo(member1)).thenReturn(1);
@@ -84,7 +84,7 @@ public class ListMembersCommandTest {
   @Test
   public void noCoordinator() {
     members.add(member1);
-    doReturn(null).when(command).getCoordinator();
+    doReturn(null).when(command).getCoordinatorId();
 
     Map<String, List<String>> table = gfsh.executeAndAssertThat(command, "list members")
         .hasTableSection().getActual().getContent();

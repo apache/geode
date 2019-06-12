@@ -18,6 +18,7 @@
 {% from 'shared_jinja.yml' import alpine_tools_config with context %}
 {% from 'shared_jinja.yml' import pipeline_prefix with context %}
 {% from 'shared_jinja.yml' import github_access with context %}
+{% from 'shared_jinja.yml' import init_retry with context %}
 
 ---
 
@@ -27,18 +28,10 @@
   - get: geode
     trigger: true
     passed:
-    {%- if test.name.startswith("Windows") %}
-    {{- all_gating_jobs() | indent(4) -}}
-    {% else %}
     - Build
-    {%- endif %}
   - get: geode-build-version
     passed:
-    {%- if test.name.startswith("Windows") %}
-    {{- all_gating_jobs() | indent(4) -}}
-    {% else %}
     - Build
-    {%- endif %}
 {% endmacro %}
 
 {%- macro deep_merge(a, b): %}
@@ -89,10 +82,16 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
 {% macro all_gating_jobs() %}
-{%- for test in (tests) if not test.name=="StressNew" and not test.name.startswith("Windows") -%}
+{%- for test in (tests) if not test.name=="StressNew" -%}
   {%- for java_test_version in (java_test_versions) %}
 - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
+{%- endfor -%}
+{% endmacro %}
+
+{% macro all_gating_jobs_for_benchmark() %}
+{%- for test in (tests) if not test.name=="StressNew" and test.PLATFORM=="linux"%}
+- {{test.name}}TestOpenJDK8
 {%- endfor -%}
 {% endmacro %}
 
@@ -101,9 +100,10 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
+  - UpdatePassingBuild
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -115,9 +115,10 @@ groups:
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
   {%- endfor -%}
-  {%- if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
   - UpdatePassingRef
   {%- endif %}
+  - UpdatePassingBuild
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -125,7 +126,7 @@ groups:
 - name: linux
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if not test.name.startswith("Windows") and not test.name=="StressNew" -%}
+  {%- for test in (tests) if test.PLATFORM=="linux" and not test.name=="StressNew" -%}
     {% for java_test_version in (java_test_versions) %}
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
@@ -134,7 +135,7 @@ groups:
 - name: windows
   jobs:
   - {{ build_test.name }}
-  {%- for test in (tests) if test.name.startswith("Windows") -%}
+  {%- for test in (tests) if test.PLATFORM=="windows" -%}
     {% for java_test_version in (java_test_versions) %}
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
@@ -176,7 +177,7 @@ resources:
 - name: geode-benchmarks
   type: git
   source:
-    branch: develop
+    branch: {{benchmarks.branch}}
     depth: 1
     uri: https://github.com/apache/geode-benchmarks.git
 - name: geode-build-version
@@ -187,6 +188,14 @@ resources:
     initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/version
+- name: geode-passing-version
+  type: semver
+  source:
+    bucket: ((version-bucket))
+    driver: gcs
+    initial_version: 1.10.0
+    json_key: ((!concourse-gcp-key))
+    key: ((pipeline-prefix))((geode-build-branch))/passing-version
 
 resource_types:
 - name: concourse-metadata-resource
@@ -224,6 +233,7 @@ jobs:
         pre: ((semver-prerelease-token))
     - do:
       - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
       - task: create_instance
         {{- alpine_tools_config()|indent(8) }}
           params:
@@ -234,9 +244,13 @@ jobs:
           run:
             path: geode-ci/ci/scripts/create_instance.sh
           inputs:
+          - name: attempts-log
+            path: old
           - name: concourse-metadata-resource
           - name: geode-ci
           outputs:
+          - name: attempts-log
+            path: new
           - name: instance-data
         timeout: 15m
         attempts: 10
@@ -322,14 +336,18 @@ jobs:
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == "apache" and repository.branch == "develop" %}
+{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
 - name: UpdatePassingRef
   public: true
   serial: true
   plan:
   - get: geode
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+    passed: [PublishArtifacts]
+{% else %}
     passed:
-    {{ all_gating_jobs() | indent(4) }}
+    {{ all_gating_jobs() | indent(6) }}
+{% endif %}
     trigger: true
   - get: geode-ci
   - task: updatepassingref
@@ -346,6 +364,21 @@ jobs:
       outputs:
       - name: results
 {% endif %}
+- name: UpdatePassingBuild
+  public: true
+  serial: true
+  plan:
+  - get: geode-build-version
+{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
+    passed: [PublishArtifacts]
+{% else %}
+    passed:
+    {{ all_gating_jobs() | indent(6) }}
+{% endif %}
+    trigger: true
+  - put: geode-passing-version
+    params:
+      file: geode-build-version/number
 - name: Benchmark
   public: true
   plan:
@@ -353,12 +386,12 @@ jobs:
   - aggregate:
     - get: geode
       passed:
-      {{ all_gating_jobs() | indent(6) }}
+      {{ all_gating_jobs_for_benchmark() | indent(6) }}
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
       passed:
-      {{ all_gating_jobs() | indent(6) }}
+      {{ all_gating_jobs_for_benchmark() | indent(6) }}
     - put: concourse-metadata-resource
   - task: run_benchmarks
     {{- alpine_tools_config()|indent(4) }}
@@ -368,6 +401,7 @@ jobs:
         AWS_DEFAULT_REGION: us-west-2
         AWS_REGION: us-west-2
         ARTIFACT_BUCKET: ((artifact-bucket))
+        BENCHMARKS_BRANCH: {{benchmarks.branch}}
         BASELINE_BRANCH: {{benchmarks.baseline_branch}}
         BASELINE_VERSION: {{benchmarks.baseline_version}}
       run:
@@ -415,6 +449,7 @@ jobs:
       {{ all_gating_jobs() | indent(6) }}
     - do:
       - put: concourse-metadata-resource
+      {{ init_retry()|indent(6) }}
       - task: create_instance
         {{- alpine_tools_config()|indent(8) }}
           params:
@@ -427,8 +462,12 @@ jobs:
           inputs:
           - name: concourse-metadata-resource
           - name: geode-ci
+          - name: attempts-log
+            path: old
           outputs:
           - name: instance-data
+          - name: attempts-log
+            path: new
         timeout: 15m
         attempts: 10
   - task: rsync_code_up
@@ -484,6 +523,7 @@ jobs:
       - put: concourse-metadata-resource
     - aggregate:
       - do:
+        {{ init_retry()|indent(8) }}
         - task: create_instance-{{java_test_version.name}}
           {{- alpine_tools_config()|indent(10) }}
             params:
@@ -497,9 +537,13 @@ jobs:
             inputs:
             - name: concourse-metadata-resource
             - name: geode-ci
+            - name: attempts-log
+              path: old
             outputs:
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
+            - name: attempts-log
+              path: new
           timeout: 15m
           attempts: 10
         - task: rsync_code_up-{{java_test_version.name}}
@@ -528,7 +572,7 @@ jobs:
             - name: geode
             - name: instance-data-{{java_test_version.name}}
               path: instance-data
-          timeout: {{parameters.execute_test_timeout}}
+          timeout: {{parameters.EXECUTE_TEST_TIMEOUT}}
         ensure:
           do:
           - task: rsync_code_down-{{java_test_version.name}}

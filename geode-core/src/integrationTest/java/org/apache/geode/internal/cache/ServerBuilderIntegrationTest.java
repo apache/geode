@@ -66,6 +66,7 @@ public class ServerBuilderIntegrationTest {
   public void byDefaultCreatesServerWithCacheServerAcceptor() throws IOException {
     server = new ServerBuilder(cache, cache.getSecurityService())
         .createServer();
+    server.setPort(0);
 
     server.start();
 
@@ -80,6 +81,7 @@ public class ServerBuilderIntegrationTest {
     server = new ServerBuilder(cache, cache.getSecurityService())
         .forGatewayReceiver(gatewayReceiver)
         .createServer();
+    server.setPort(0);
 
     server.start();
 

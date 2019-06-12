@@ -28,6 +28,8 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
@@ -91,7 +93,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setName(member.getName());
       memberInfo.setId(member.getId());
       memberInfo.setHost(member.getHost());
-      memberInfo.setProcessId("" + member.getProcessId());
+      memberInfo.setProcessId(member.getProcessId());
 
       SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(config,
           SecurableCommunicationChannel.WEB);
@@ -106,14 +108,13 @@ public class GetMemberInformationFunction implements InternalFunction {
       memberInfo.setServerBindAddress(config.getServerBindAddress());
       memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
       memberInfo.setHttpServicePort(config.getHttpServicePort());
-
       memberInfo.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
 
       MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
       MemoryUsage memUsage = memoryMXBean.getHeapMemoryUsage();
-      memberInfo.setHeapUsage(Long.toString(bytesToMeg(memUsage.getUsed())));
-      memberInfo.setMaxHeapSize(Long.toString(bytesToMeg(memUsage.getMax())));
-      memberInfo.setInitHeapSize(Long.toString(bytesToMeg(memUsage.getInit())));
+      memberInfo.setHeapUsage(bytesToMeg(memUsage.getUsed()));
+      memberInfo.setMaxHeapSize(bytesToMeg(memUsage.getMax()));
+      memberInfo.setInitHeapSize(bytesToMeg(memUsage.getInit()));
       memberInfo.setHostedRegions(CliUtil.getAllRegionNames(cache));
 
       List<CacheServer> csList = cache.getCacheServers();
@@ -125,11 +126,7 @@ public class GetMemberInformationFunction implements InternalFunction {
         while (iters.hasNext()) {
           CacheServer cs = iters.next();
 
-          String bindAddress = cs.getBindAddress();
-          int port = cs.getPort();
-          boolean isRunning = cs.isRunning();
-
-          CacheServerInfo cacheServerInfo = new CacheServerInfo(bindAddress, port, isRunning);
+          CacheServerInfo cacheServerInfo = new CacheServerInfo(cs);
           memberInfo.addCacheServerInfo(cacheServerInfo);
         }
         Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients =
@@ -142,11 +139,21 @@ public class GetMemberInformationFunction implements InternalFunction {
           numConnections = numConnections + status.getNumberOfConnections();
         }
         memberInfo.setClientCount(numConnections);
+
+        ServerLauncher.ServerState state = ServerLauncher.getServerState();
+        if (state != null) {
+          memberInfo.setStatus(state.getStatus().getDescription());
+        }
       } else {
         memberInfo.setServer(false);
         InternalLocator locator = InternalLocator.getLocator();
         if (locator != null) {
           memberInfo.setLocatorPort(locator.getPort());
+        }
+
+        LocatorLauncher.LocatorState state = LocatorLauncher.getLocatorState();
+        if (state != null) {
+          memberInfo.setStatus(state.getStatus().getDescription());
         }
       }
       functionContext.getResultSender().lastResult(memberInfo);

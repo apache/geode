@@ -341,9 +341,9 @@ public class ConnectionManagerJUnitTest {
 
     // Ok, now get some connections that fill our queue
     Connection ping1 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), false);
     Connection ping2 =
-        manager.borrowConnection(new ServerLocation("localhost", 5), BORROW_TIMEOUT_MILLIS, false);
+        manager.borrowConnection(new ServerLocation("localhost", 5), false);
     manager.returnConnection(ping1);
     manager.returnConnection(ping2);
 
@@ -485,7 +485,7 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(2, manager.getConnectionCount());
 
-    Connection conn3 = manager.exchangeConnection(conn1, Collections.emptySet(), 10);
+    Connection conn3 = manager.exchangeConnection(conn1, Collections.emptySet());
 
     Assert.assertEquals(3, factory.creates);
     Assert.assertEquals(1, factory.destroys);
@@ -498,7 +498,7 @@ public class ConnectionManagerJUnitTest {
     Assert.assertEquals(2, manager.getConnectionCount());
 
     Connection conn4 =
-        manager.exchangeConnection(conn3, Collections.singleton(conn3.getServer()), 10);
+        manager.exchangeConnection(conn3, Collections.singleton(conn3.getServer()));
 
     Assert.assertEquals(4, factory.creates);
     Assert.assertEquals(2, factory.destroys);
@@ -692,7 +692,7 @@ public class ConnectionManagerJUnitTest {
       // do nothing
     }
 
-    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), 10, false);
+    Connection conn3 = manager.borrowConnection(new ServerLocation("localhost", -2), false);
     Assert.assertEquals(2, factory.creates);
     Assert.assertEquals(0, factory.destroys);
     Assert.assertEquals(0, factory.closes);

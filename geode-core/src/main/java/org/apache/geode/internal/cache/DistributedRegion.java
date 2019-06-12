@@ -117,6 +117,7 @@ import org.apache.geode.internal.cache.tx.RemoteFetchVersionMessage.FetchVersion
 import org.apache.geode.internal.cache.tx.RemoteInvalidateMessage;
 import org.apache.geode.internal.cache.tx.RemotePutMessage;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
+import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1298,6 +1299,35 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       InternalDistributedMember lostMember) {
     InitialImageOperation op = new InitialImageOperation(this, entries);
     op.synchronizeWith(target, versionMember, lostMember);
+  }
+
+
+  /**
+   * This is invoked by syncForCrashedMember when scheduling region synchronization
+   * triggered by member departed event. It sets the regionSynchronizeScheduledOrDone
+   * flag in region version holder to true. This indicates that no additional region sync for
+   * the lost member is needed, when it receives requests for region sync for the lost member.
+   */
+  public void setRegionSynchronizeScheduled(VersionSource lostMemberVersionID) {
+    RegionVersionHolder regionVersionHolder =
+        getVersionVector().getHolderForMember(lostMemberVersionID);
+    if (regionVersionHolder != null) {
+      regionVersionHolder.setRegionSynchronizeScheduled();
+    }
+  }
+
+  /**
+   * This method checks region version holder to see if regionSynchronizeScheduledOrDone is
+   * set to true for the lost member. If it is not, the regionSynchronizeScheduledOrDone variable
+   * is set to true and returns true. If it is already set to true, do nothing and returns false.
+   */
+  public boolean setRegionSynchronizedWithIfNotScheduled(VersionSource lostMemberVersionID) {
+    RegionVersionHolder regionVersionHolder =
+        getVersionVector().getHolderForMember(lostMemberVersionID);
+    if (regionVersionHolder != null) {
+      return regionVersionHolder.setRegionSynchronizeScheduledOrDoneIfNot();
+    }
+    return false;
   }
 
   /** remove any partial entries received in a failed GII */

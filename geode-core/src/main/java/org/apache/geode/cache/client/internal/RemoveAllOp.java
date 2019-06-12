@@ -246,7 +246,7 @@ public class RemoveAllOp {
       super(MessageType.REMOVE_ALL, 5 + keys.size());
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.region = (LocalRegion) region;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addBytesPart(eventId.calcBytes());
       this.keys = keys;
       this.callbackArg = callbackArg;

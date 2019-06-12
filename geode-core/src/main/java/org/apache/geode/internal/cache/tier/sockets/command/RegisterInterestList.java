@@ -68,7 +68,7 @@ public class RegisterInterestList extends BaseCommand {
     // start = DistributionStats.getStatTime();
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     // Retrieve the InterestResultPolicy
     try {

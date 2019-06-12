@@ -1557,9 +1557,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
   /**
-   * Basically just a HashMap<String, Integer> but limits itself to the CqNameToOp interface.
+   * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
+   * interface.
    */
-  public static class CqNameToOpHashMap extends HashMap<String, Integer> implements CqNameToOp {
+  public static class CqNameToOpHashMap extends ConcurrentHashMap<String, Integer>
+      implements CqNameToOp {
     public CqNameToOpHashMap(int initialCapacity) {
       super(initialCapacity, 1.0f);
     }
@@ -1573,7 +1575,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      DataSerializer.writeHashMap(this, out);
+      DataSerializer.writeConcurrentHashMap(this, out);
     }
 
     @Override

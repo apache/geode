@@ -34,6 +34,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -62,7 +63,6 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * All the non-ssl enabled locators need to be in a different VM than the ssl enabled locators in
@@ -95,11 +95,15 @@ public class JMXMBeanDUnitTest implements Serializable {
 
   @BeforeClass
   public static void beforeClass() {
-    singleKeystore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class, "/ssl/trusted.keystore");
-    multiKeystore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class,
-        "/org/apache/geode/internal/net/multiKey.jks");
-    multiKeyTruststore = TestUtil.getResourcePath(JMXMBeanDUnitTest.class,
-        "/org/apache/geode/internal/net/multiKeyTrust.jks");
+    singleKeystore =
+        createTempFileFromResource(JMXMBeanDUnitTest.class, "/ssl/trusted.keystore")
+            .getAbsolutePath();
+    multiKeystore =
+        createTempFileFromResource(JMXMBeanDUnitTest.class,
+            "/org/apache/geode/internal/net/multiKey.jks").getAbsolutePath();
+    multiKeyTruststore =
+        createTempFileFromResource(JMXMBeanDUnitTest.class,
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath();
 
     // setting up properties used to set the ssl properties used by the locators
     legacySSLProperties = new Properties();

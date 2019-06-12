@@ -16,7 +16,8 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
-import static org.apache.geode.test.dunit.Host.getHost;
+import static org.apache.geode.test.dunit.VM.getVM;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
@@ -28,12 +29,10 @@ import org.junit.Test;
 import org.apache.geode.cache.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This class tests regions created by xml files
  */
-
 public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
 
   private static final String CACHE_XML_FILE_1 = "PartitionRegionCacheExample1.xml";
@@ -44,14 +43,15 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
   private static final String PARTITIONED_SUBREGION_NAME =
       SEPARATOR + "root" + SEPARATOR + "PartitionedSubRegion";
 
+  private String cacheXmlFileName;
+
   private VM vm0;
   private VM vm1;
-  private String cacheXmlFileName;
 
   @Before
   public void setUp() throws Exception {
-    vm0 = getHost(0).getVM(0);
-    vm1 = getHost(0).getVM(1);
+    vm0 = getVM(0);
+    vm1 = getVM(1);
   }
 
   @After
@@ -97,7 +97,8 @@ public class PartitionedRegionCacheXMLExampleDUnitTest extends CacheTestCase {
 
   private void createCache(String cacheXmlFileName) {
     Properties config = new Properties();
-    String cacheXmlPath = TestUtil.getResourcePath(getClass(), cacheXmlFileName);
+    String cacheXmlPath =
+        createTempFileFromResource(getClass(), cacheXmlFileName).getAbsolutePath();
     config.setProperty(CACHE_XML_FILE, cacheXmlPath);
 
     getSystem(config);

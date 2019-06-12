@@ -59,7 +59,7 @@ public class KeySet extends BaseCommand {
 
     // Retrieve the region name from the message parts
     regionNamePart = clientMessage.getPart(0);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     ChunkedMessage chunkedResponseMsg = serverConnection.getChunkedResponseMessage();
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {

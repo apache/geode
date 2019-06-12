@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.tier.sockets;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -33,7 +34,6 @@ import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.test.junit.categories.ClientSubscriptionTest;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Tests the proper intialization of redundancyLevel property.
@@ -87,7 +87,9 @@ public class RedundancyLevelJUnitTest {
    */
   @Test
   public void testRedundancyLevelSetThroughXML() {
-    String path = TestUtil.getResourcePath(getClass(), "RedundancyLevelJUnitTest.xml");
+    String path =
+        createTempFileFromResource(getClass(), "RedundancyLevelJUnitTest.xml")
+            .getAbsolutePath();
 
     Properties p = new Properties();
     p.setProperty(MCAST_PORT, "0");

@@ -1,5 +1,6 @@
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -10,10 +11,11 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -48,13 +50,15 @@ public class ClientClusterManagementServiceDunitTest {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
     serverWithGroupA = cluster.startServerVM(2, groupA, locator.getPort());
-    cmsClient = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+    cmsClient = ClusterManagementServiceBuilder.buildWithHostAddress()
+        .setHostAddress("localhost", locator.getHttpPort()).build();
   }
 
   @Test
   public void createRegion() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
+    region.setType(RegionType.PARTITION);
 
     ClusterManagementResult result = cmsClient.create(region);
 
@@ -71,6 +75,7 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegionWithNullGroup() {
     RegionConfig region = new RegionConfig();
     region.setName("orders");
+    region.setType(RegionType.PARTITION);
 
     ClusterManagementResult result = cmsClient.create(region);
 
@@ -95,6 +100,7 @@ public class ClientClusterManagementServiceDunitTest {
   public void createRegionWithGroup() {
     RegionConfig region = new RegionConfig();
     region.setName("company");
+    region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
 
     ClusterManagementResult result = cmsClient.create(region);
@@ -121,7 +127,8 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withLocatorConnection(locatorPort));
 
     client.invoke(() -> {
-      ClusterManagementService service = ClusterManagementServiceProvider.getService();
+      ClusterManagementService service = buildWithCache()
+          .setCache(ClusterStartupRule.getClientCache()).build();
       assertThat(service.isConnected()).isTrue();
     });
     client.stop();
@@ -133,9 +140,11 @@ public class ClientClusterManagementServiceDunitTest {
     client = cluster.startClientVM(3, c -> c.withServerConnection(serverPort));
 
     client.invoke(() -> {
-      assertThatThrownBy(() -> ClusterManagementServiceProvider.getService())
-          .isInstanceOf(IllegalStateException.class)
-          .hasMessageContaining("the client needs to have a client pool connected with a locator");
+      assertThatThrownBy(() -> buildWithCache()
+          .setCache(ClusterStartupRule.getClientCache()).build())
+              .isInstanceOf(IllegalStateException.class)
+              .hasMessageContaining(
+                  "the client needs to have a client pool connected with a locator");
     });
     client.stop();
   }

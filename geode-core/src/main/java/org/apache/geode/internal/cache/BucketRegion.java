@@ -2367,8 +2367,8 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   }
 
   @Override
-  public boolean notifiesMultipleSerialGateways() {
-    return getPartitionedRegion().notifiesMultipleSerialGateways();
+  public boolean notifiesSerialGatewaySender() {
+    return getPartitionedRegion().notifiesSerialGatewaySender();
   }
 
   @Override

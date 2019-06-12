@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -45,7 +45,6 @@ import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshScript;
 import org.apache.geode.test.junit.rules.gfsh.internal.ProcessLogger;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
 
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
@@ -69,23 +68,24 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
   @BeforeClass
   public static void beforeClass() {
-    /**
+    /*
      * This file was generated with:
      * keytool -genkey -dname "CN=localhost" -alias self -validity 3650 -keyalg EC \
      * -keystore trusted.keystore -keypass password -storepass password \
      * -ext san=ip:127.0.0.1,dns:localhost -storetype jks
      */
-    trustStorePath = TestUtil.getResourcePath(StandaloneClientManagementAPIAcceptanceTest.class,
-        "/ssl/trusted.keystore");
+    trustStorePath =
+        createTempFileFromResource(StandaloneClientManagementAPIAcceptanceTest.class,
+            "/ssl/trusted.keystore").getAbsolutePath();
     assertThat(trustStorePath).as("java file resource not found").isNotBlank();
   }
 
   @Test
-  @Parameterized.Parameters
   public void clientCreatesRegionUsingClusterManagementService() throws Exception {
     JarBuilder jarBuilder = new JarBuilder();
     String filePath =
-        TestUtil.getResourcePath(this.getClass(), "/ManagementClientTestCreateRegion.java");
+        createTempFileFromResource(this.getClass(), "/ManagementClientCreateRegion.java")
+            .getAbsolutePath();
     assertThat(filePath).as("java file resource not found").isNotBlank();
 
     File outputJar = new File(tempDir.getRoot(), "output.jar");
@@ -108,7 +108,7 @@ public class StandaloneClientManagementAPIAcceptanceTest {
 
     Process process = launchClientProcess(outputJar, httpPort);
 
-    boolean exited = process.waitFor(10, TimeUnit.SECONDS);
+    boolean exited = process.waitFor(30, TimeUnit.SECONDS);
     assertThat(exited).as("Process did not exit within 10 seconds").isTrue();
     assertThat(process.exitValue()).as("Process did not exit with 0 return code").isEqualTo(0);
 
@@ -189,7 +189,8 @@ public class StandaloneClientManagementAPIAcceptanceTest {
         .split(File.pathSeparator))
         .filter(x -> x.contains(module)
             && (x.endsWith("/classes") || x.endsWith("/classes/java/main")
-                || x.endsWith("/resources") || x.endsWith(".jar")))
+                || x.endsWith("/resources") || x.endsWith("/resources/main")
+                || x.endsWith(".jar")))
         .collect(Collectors.joining(File.pathSeparator));
 
     assertThat(classPath).as("no classes found for module: " + module)

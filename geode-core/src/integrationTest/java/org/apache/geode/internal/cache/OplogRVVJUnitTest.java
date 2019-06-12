@@ -135,10 +135,10 @@ public class OplogRVVJUnitTest {
     oplog.recoverCrf(deletedIds, true, true, false, Collections.singleton(oplog), true);
     verify(drs, times(1)).recordRecoveredGCVersion(m1, 1);
     verify(drs, times(1)).recordRecoveredGCVersion(m2, 0);
-    verify(drs, times(1)).recordRecoveredVersonHolder(ownerId,
+    verify(drs, times(1)).recordRecoveredVersionHolder(ownerId,
         rvv.getMemberToVersion().get(ownerId), true);
-    verify(drs, times(1)).recordRecoveredVersonHolder(m1, rvv.getMemberToVersion().get(m1), true);
-    verify(drs, times(1)).recordRecoveredVersonHolder(m2, rvv.getMemberToVersion().get(m2), true);
+    verify(drs, times(1)).recordRecoveredVersionHolder(m1, rvv.getMemberToVersion().get(m1), true);
+    verify(drs, times(1)).recordRecoveredVersionHolder(m2, rvv.getMemberToVersion().get(m2), true);
     verify(drs, times(1)).setRVVTrusted(true);
   }
 }

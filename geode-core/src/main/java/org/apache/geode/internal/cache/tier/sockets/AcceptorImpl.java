@@ -23,7 +23,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.net.BindException;
 import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -57,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -525,7 +525,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             serverSock.bind(new InetSocketAddress(getBindAddress(), port), backLog);
             break;
           } catch (SocketException b) {
-            if (!treatAsBindException(b) || System.currentTimeMillis() > tilt) {
+            if (System.currentTimeMillis() > tilt) {
               throw b;
             }
           }
@@ -555,7 +555,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
                 this.gatewayTransportFilters, socketBufferSize);
             break;
           } catch (SocketException e) {
-            if (!treatAsBindException(e) || System.currentTimeMillis() > tilt) {
+            if (System.currentTimeMillis() > tilt) {
               throw e;
             }
           }
@@ -598,7 +598,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
       StatisticsFactory statisticsFactory =
           internalCache.getInternalDistributedSystem().getStatisticsManager();
       if (isGatewayReceiver()) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
+        MeterRegistry meterRegistry = internalCache.getMeterRegistry();
+        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName,
+            meterRegistry);
       } else {
         stats = new CacheServerStats(statisticsFactory, sockName);
       }
@@ -1816,15 +1818,6 @@ public class AcceptorImpl implements Acceptor, Runnable {
 
   public List<GatewayTransportFilter> getGatewayTransportFilters() {
     return gatewayTransportFilters;
-  }
-
-  // IBM J9 sometimes reports "listen failed" instead of BindException
-  private static boolean treatAsBindException(SocketException se) {
-    if (se instanceof BindException) {
-      return true;
-    }
-    final String msg = se.getMessage();
-    return msg != null && msg.contains("Invalid argument: listen failed");
   }
 
   static boolean isAuthenticationRequired() {

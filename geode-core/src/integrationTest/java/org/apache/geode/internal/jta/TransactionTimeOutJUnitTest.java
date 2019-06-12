@@ -16,6 +16,7 @@ package org.apache.geode.internal.jta;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -47,7 +48,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * TODO: this test has no assertions or validations of any sort
@@ -73,7 +73,8 @@ public class TransactionTimeOutJUnitTest {
 
     String path = tmpFile.getAbsolutePath();
     String file_as_str =
-        readFile(TestUtil.getResourcePath(TransactionTimeOutJUnitTest.class, "/jta/cachejta.xml"));
+        readFile(createTempFileFromResource(TransactionTimeOutJUnitTest.class, "/jta/cachejta.xml")
+            .getAbsolutePath());
     String modified_file_str = file_as_str.replaceAll("newDB", "newDB_" + pid);
 
     FileOutputStream fos = new FileOutputStream(path);

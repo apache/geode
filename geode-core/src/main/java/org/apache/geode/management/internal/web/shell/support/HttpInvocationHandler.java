@@ -80,6 +80,10 @@ public class HttpInvocationHandler implements InvocationHandler {
       signature.add(parameterType.getName());
     }
 
+    if (signature.size() == 0) {
+      return null;
+    }
+
     return signature.toArray(new String[signature.size()]);
   }
 

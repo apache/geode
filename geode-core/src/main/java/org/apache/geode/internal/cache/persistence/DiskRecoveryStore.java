@@ -61,7 +61,7 @@ public interface DiskRecoveryStore {
 
   void recordRecoveredGCVersion(VersionSource member, long gcVersion);
 
-  void recordRecoveredVersonHolder(VersionSource member, RegionVersionHolder versionHolder,
+  void recordRecoveredVersionHolder(VersionSource member, RegionVersionHolder versionHolder,
       boolean latestOplog);
 
   void recordRecoveredVersionTag(VersionTag tag);

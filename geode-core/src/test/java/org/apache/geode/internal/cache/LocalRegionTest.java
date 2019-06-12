@@ -14,11 +14,16 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,6 +33,7 @@ import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
+import org.apache.geode.cache.wan.GatewaySender;
 
 public class LocalRegionTest {
   private LocalRegion region;
@@ -36,6 +42,7 @@ public class LocalRegionTest {
   private Operation operation;
   private CancelCriterion cancelCriterion;
   private RegionAttributes regionAttributes;
+  private InternalCache cache;
 
   private final Object key = new Object();
   private final String value = "value";
@@ -47,6 +54,7 @@ public class LocalRegionTest {
     serverRegionProxy = mock(ServerRegionProxy.class);
     cancelCriterion = mock(CancelCriterion.class);
     regionAttributes = mock(RegionAttributes.class);
+    cache = mock(InternalCache.class);
 
     when(region.getServerProxy()).thenReturn(serverRegionProxy);
     when(event.isFromServer()).thenReturn(false);
@@ -54,6 +62,7 @@ public class LocalRegionTest {
     when(event.getRawNewValue()).thenReturn(value);
     when(region.getCancelCriterion()).thenReturn(cancelCriterion);
     when(region.getAttributes()).thenReturn(regionAttributes);
+    when(region.getCache()).thenReturn(cache);
   }
 
   @Test
@@ -88,6 +97,46 @@ public class LocalRegionTest {
     doCallRealMethod().when(region).checkPutIfAbsentResult(event, value, result);
 
     region.checkPutIfAbsentResult(event, value, result);
+  }
+
+  @Test
+  public void testNotifiesSerialGatewaySenderEmptySenders() {
+    doCallRealMethod().when(region).notifiesSerialGatewaySender();
+    assertThat(region.notifiesSerialGatewaySender()).isFalse();
+  }
+
+  @Test
+  public void testNotifiesSerialGatewaySenderPdxRegion() {
+    when(region.isPdxTypesRegion()).thenReturn(false);
+    doCallRealMethod().when(region).notifiesSerialGatewaySender();
+    assertThat(region.notifiesSerialGatewaySender()).isFalse();
+  }
+
+  @Test
+  public void testNotifiesSerialGatewaySenderWithSerialGatewaySender() {
+    createGatewaySender("sender1", false);
+    doCallRealMethod().when(region).notifiesSerialGatewaySender();
+    assertThat(region.notifiesSerialGatewaySender()).isTrue();
+  }
+
+  @Test
+  public void testNotifiesSerialGatewaySenderWithParallelGatewaySender() {
+    createGatewaySender("sender1", true);
+    doCallRealMethod().when(region).notifiesSerialGatewaySender();
+    assertThat(region.notifiesSerialGatewaySender()).isFalse();
+  }
+
+  private void createGatewaySender(String senderId, boolean isParallel) {
+    // Create set of sender ids
+    Set<String> allGatewaySenderIds = Stream.of(senderId).collect(Collectors.toSet());
+    when(region.getAllGatewaySenderIds()).thenReturn(allGatewaySenderIds);
+
+    // Create set of senders
+    GatewaySender sender = mock(GatewaySender.class);
+    when(sender.getId()).thenReturn(senderId);
+    when(sender.isParallel()).thenReturn(isParallel);
+    Set<GatewaySender> allGatewaySenders = Stream.of(sender).collect(Collectors.toSet());
+    when(cache.getAllGatewaySenders()).thenReturn(allGatewaySenders);
   }
 
 }

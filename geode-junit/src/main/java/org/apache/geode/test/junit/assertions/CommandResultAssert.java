@@ -281,7 +281,9 @@ public class CommandResultAssert
   // convenience method to get the first table section. if more than one table section
   // use the sectionName to get it
   public TabularResultModelAssert hasTableSection() {
-    return new TabularResultModelAssert(getResultModel().getTableSections().get(0));
+    List<TabularResultModel> table = getResultModel().getTableSections();
+    assertThat(table.size()).isGreaterThan(0);
+    return new TabularResultModelAssert(table.get(0));
   }
 
   public TabularResultModelAssert hasTableSection(String sectionName) {

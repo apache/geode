@@ -16,7 +16,6 @@ package org.apache.geode.internal.cache.wan.serial;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -55,10 +54,6 @@ import org.apache.geode.test.junit.categories.WanTest;
 public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
 
   private static final long serialVersionUID = 1L;
-
-  public SerialGatewaySenderOperationsDUnitTest() {
-    super();
-  }
 
   @Override
   protected final void postSetUpWANTestBase() throws Exception {
@@ -133,7 +128,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
 
 
   @Test
-  public void testStartPauseResumeSerialGatewaySender() {
+  public void testStartPauseResumeSerialGatewaySender() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -170,12 +165,7 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     vm4.invoke(() -> SerialGatewaySenderOperationsDUnitTest.verifySenderResumedState("ln"));
     vm5.invoke(() -> SerialGatewaySenderOperationsDUnitTest.verifySenderResumedState("ln"));
 
-    try {
-      inv1.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-      fail("Interrupted the async invocation.");
-    }
+    inv1.await();
 
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
@@ -239,9 +229,9 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
 
     AsyncInvocation vm4async = vm4.invokeAsync(() -> WANTestBase.startSender("ln"));
     AsyncInvocation vm5async = vm5.invokeAsync(() -> WANTestBase.startSender("ln"));
-    int START_WAIT_TIME = 30000;
-    vm4async.getResult(START_WAIT_TIME);
-    vm5async.getResult(START_WAIT_TIME);
+
+    vm4async.await();
+    vm5async.await();
 
     vm4.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 20));
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 20));
@@ -303,7 +293,8 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     AsyncInvocation async = vm7.invokeAsync(() -> doPuts(getTestMethodName() + "_RR", 5000));
 
     startSenderInVMsAsync("ln", vm4, vm5);
-    async.join();
+
+    async.await();
 
     vm4.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
     vm5.invoke(() -> WANTestBase.validateQueueSizeStat("ln", 0));
@@ -382,7 +373,8 @@ public class SerialGatewaySenderOperationsDUnitTest extends WANTestBase {
     Thread.sleep(10);
     vm4.invoke(() -> WANTestBase.startSender("ln"));
 
-    asyncPuts.getResult();
+    asyncPuts.await();
+
     LogWriterUtils.getLogWriter().info("Completed puts in the region");
 
     vm2.invoke(() -> WANTestBase.validateRegionSize(getTestMethodName() + "_RR", 300));

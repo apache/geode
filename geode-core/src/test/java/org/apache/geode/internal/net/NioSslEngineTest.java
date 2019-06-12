@@ -80,7 +80,7 @@ public class NioSslEngineTest {
 
     mockStats = mock(DMStats.class);
 
-    nioSslEngine = new NioSslEngine(mockEngine, mockStats);
+    nioSslEngine = new NioSslEngine(mockEngine, new BufferPool(mockStats));
     spyNioSslEngine = spy(nioSslEngine);
   }
 
@@ -113,8 +113,8 @@ public class NioSslEngineTest {
     verify(mockEngine, atLeast(2)).getHandshakeStatus();
     verify(mockEngine, times(3)).wrap(any(ByteBuffer.class), any(ByteBuffer.class));
     verify(mockEngine, times(3)).unwrap(any(ByteBuffer.class), any(ByteBuffer.class));
-    verify(spyNioSslEngine, times(2)).expandWriteBuffer(any(Buffers.BufferType.class),
-        any(ByteBuffer.class), any(Integer.class), any(DMStats.class));
+    verify(spyNioSslEngine, times(2)).expandWriteBuffer(any(BufferPool.BufferType.class),
+        any(ByteBuffer.class), any(Integer.class));
     verify(spyNioSslEngine, times(1)).handleBlockingTasks();
     verify(mockChannel, times(3)).read(any(ByteBuffer.class));
   }
@@ -228,8 +228,8 @@ public class NioSslEngineTest {
 
     ByteBuffer wrappedBuffer = spyNioSslEngine.wrap(appData);
 
-    verify(spyNioSslEngine, times(1)).expandWriteBuffer(any(Buffers.BufferType.class),
-        any(ByteBuffer.class), any(Integer.class), any(DMStats.class));
+    verify(spyNioSslEngine, times(1)).expandWriteBuffer(any(BufferPool.BufferType.class),
+        any(ByteBuffer.class), any(Integer.class));
     appData.flip();
     assertThat(wrappedBuffer).isEqualTo(appData);
     verify(spyNioSslEngine, times(1)).handleBlockingTasks();
@@ -376,14 +376,14 @@ public class NioSslEngineTest {
   public void ensureWrappedCapacityOfSmallMessage() {
     ByteBuffer buffer = ByteBuffer.allocate(netBufferSize);
     assertThat(
-        nioSslEngine.ensureWrappedCapacity(10, buffer, Buffers.BufferType.UNTRACKED, mockStats))
+        nioSslEngine.ensureWrappedCapacity(10, buffer, BufferPool.BufferType.UNTRACKED))
             .isEqualTo(buffer);
   }
 
   @Test
   public void ensureWrappedCapacityWithNoBuffer() {
     assertThat(
-        nioSslEngine.ensureWrappedCapacity(10, null, Buffers.BufferType.UNTRACKED, mockStats)
+        nioSslEngine.ensureWrappedCapacity(10, null, BufferPool.BufferType.UNTRACKED)
             .capacity())
                 .isEqualTo(netBufferSize);
   }
@@ -415,7 +415,7 @@ public class NioSslEngineTest {
     testSSLEngine.addReturnResult(new SSLEngineResult(OK, NEED_UNWRAP, 0, 0));
     nioSslEngine.engine = testSSLEngine;
 
-    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer, mockStats);
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);
@@ -459,7 +459,7 @@ public class NioSslEngineTest {
         new SSLEngineResult(OK, NEED_UNWRAP, 0, 0)); // 130 + 60 bytes = 190
     nioSslEngine.engine = testSSLEngine;
 
-    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer, mockStats);
+    ByteBuffer data = nioSslEngine.readAtLeast(mockChannel, amountToRead, wrappedBuffer);
     verify(mockChannel, times(3)).read(isA(ByteBuffer.class));
     assertThat(data.position()).isEqualTo(0);
     assertThat(data.limit()).isEqualTo(individualRead * 3 + preexistingBytes);

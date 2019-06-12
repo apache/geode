@@ -71,7 +71,7 @@ public class ContainsKey66 extends BaseCommand {
     regionNamePart = clientMessage.getPart(0);
     keyPart = clientMessage.getPart(1);
     mode = ContainsKeyOp.MODE.values()[(clientMessage.getPart(2).getInt())];
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
     try {
       key = keyPart.getStringOrObject();
     } catch (Exception e) {

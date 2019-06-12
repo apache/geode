@@ -22,6 +22,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -49,7 +50,6 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.test.junit.categories.MembershipTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({MembershipTest.class})
 public class TCPServerSSLJUnitTest {
@@ -110,9 +110,11 @@ public class TCPServerSSLJUnitTest {
     sslProperties.setProperty(SSL_ENABLED_COMPONENTS,
         SecurableCommunicationChannel.LOCATOR.getConstant());
     sslProperties.setProperty(SSL_KEYSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKey.jks"));
+        createTempFileFromResource(getClass(), "/org/apache/geode/internal/net/multiKey.jks")
+            .getAbsolutePath());
     sslProperties.setProperty(SSL_TRUSTSTORE,
-        TestUtil.getResourcePath(getClass(), "/org/apache/geode/internal/net/multiKeyTrust.jks"));
+        createTempFileFromResource(getClass(),
+            "/org/apache/geode/internal/net/multiKeyTrust.jks").getAbsolutePath());
     sslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     sslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     sslProperties.setProperty(SSL_KEYSTORE_TYPE, "JKS");

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -173,6 +174,59 @@ public class Part {
       Assert.assertTrue(false, "expected String part to be of type BYTE, part =" + this.toString());
     }
     return CacheServerHelper.fromUTF((byte[]) this.part);
+  }
+
+  @MakeNotStatic("not tied to the cache lifecycle")
+  private static final Map<ByteArrayKey, String> CACHED_STRINGS = new ConcurrentHashMap<>();
+
+  private static String getCachedString(byte[] serializedBytes) {
+    ByteArrayKey key = new ByteArrayKey(serializedBytes);
+    String result = CACHED_STRINGS.get(key);
+    if (result == null) {
+      result = CacheServerHelper.fromUTF(serializedBytes);
+      CACHED_STRINGS.put(key, result);
+    }
+    return result;
+  }
+
+  /**
+   * Used to wrap a byte array so that it can be used
+   * as a key on a HashMap. This is needed so that
+   * equals and hashCode will be based on the contents
+   * of the byte array instead of the identity.
+   */
+  private static final class ByteArrayKey {
+    private final byte[] bytes;
+
+    public ByteArrayKey(byte[] bytes) {
+      this.bytes = bytes;
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(bytes);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      ByteArrayKey other = (ByteArrayKey) obj;
+      return Arrays.equals(bytes, other.bytes);
+    }
+  }
+
+  /**
+   * Like getString but will also check a cache of frequently serialized strings.
+   * The result will be added to the cache if it is not already in it.
+   * NOTE: only call this for strings that are reused often (like region names).
+   */
+  public String getCachedString() {
+    if (this.part == null) {
+      return null;
+    }
+    if (!isBytes()) {
+      Assert.assertTrue(false, "expected String part to be of type BYTE, part =" + this.toString());
+    }
+    return getCachedString((byte[]) this.part);
   }
 
   @Immutable

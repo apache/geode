@@ -98,7 +98,7 @@ public class Put61 extends BaseCommand {
         return;
       }
     }
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     try {
       key = keyPart.getStringOrObject();

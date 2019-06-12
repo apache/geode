@@ -115,7 +115,7 @@ public class RegisterInterestListTest {
 
     when(this.numberOfKeysPart.getInt()).thenReturn(1);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.registerInterestOperationContext.getKey()).thenReturn(KEY);
 

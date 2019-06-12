@@ -53,6 +53,7 @@ import org.apache.geode.internal.jta.TransactionManagerImpl;
 import org.apache.geode.internal.jta.TransactionUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.DriverJarUtil;
 
 /**
  * <p>
@@ -341,24 +342,36 @@ public class JNDIInvoker {
    * @param map contains Datasource configuration properties.
    */
   public static void mapDatasource(Map map, List<ConfigProperty> props)
-      throws NamingException, DataSourceCreateException {
+      throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException,
+      InstantiationException, IllegalAccessException {
     mapDatasource(map, props, dataSourceFactory, ctx);
   }
 
   static void mapDatasource(Map map, List<ConfigProperty> props,
       DataSourceFactory dataSourceFactory, Context context)
-      throws NamingException, DataSourceCreateException {
+      throws NamingException, DataSourceCreateException, ClassNotFoundException, SQLException,
+      InstantiationException, IllegalAccessException {
+    String driverClassName = null;
+    if (map != null) {
+      driverClassName = (String) map.get("jdbc-driver-class");
+      DriverJarUtil util = new DriverJarUtil();
+      if (driverClassName != null) {
+        util.registerDriver(driverClassName);
+      }
+    }
+
     String value = (String) map.get("type");
     String jndiName = "";
     jndiName = (String) map.get("jndi-name");
     if (value.equals("PooledDataSource")) {
       validateAndBindDataSource(context, jndiName,
-          dataSourceFactory.getPooledDataSource(map, props));
+          dataSourceFactory.getPooledDataSource(map, props), props);
     } else if (value.equals("XAPooledDataSource")) {
       validateAndBindDataSource(context, jndiName,
-          dataSourceFactory.getTranxDataSource(map, props));
+          dataSourceFactory.getTranxDataSource(map, props), props);
     } else if (value.equals("SimpleDataSource")) {
-      validateAndBindDataSource(context, jndiName, dataSourceFactory.getSimpleDataSource(map));
+      validateAndBindDataSource(context, jndiName, dataSourceFactory.getSimpleDataSource(map),
+          props);
     } else if (value.equals("ManagedDataSource")) {
       ClientConnectionFactoryWrapper wrapper = dataSourceFactory.getManagedDataSource(map, props);
       ctx.rebind("java:/" + jndiName, wrapper.getClientConnFactory());
@@ -376,8 +389,9 @@ public class JNDIInvoker {
   }
 
   private static void validateAndBindDataSource(Context context, String jndiName,
-      DataSource dataSource) throws NamingException, DataSourceCreateException {
-    try (Connection connection = dataSource.getConnection()) {
+      DataSource dataSource, List<ConfigProperty> props)
+      throws NamingException, DataSourceCreateException {
+    try (Connection connection = getConnection(dataSource, props)) {
     } catch (SQLException sqlEx) {
       closeDataSource(dataSource);
       throw new DataSourceCreateException(
@@ -388,6 +402,11 @@ public class JNDIInvoker {
     if (logger.isDebugEnabled()) {
       logger.debug("Bound java:/" + jndiName + " to Context");
     }
+  }
+
+  private static Connection getConnection(DataSource dataSource, List<ConfigProperty> props)
+      throws SQLException {
+    return dataSource.getConnection();
   }
 
   public static void unMapDatasource(String jndiName) throws NamingException {

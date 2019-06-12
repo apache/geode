@@ -188,7 +188,7 @@ public class FilterPostAuthorization implements AccessControl {
       Object value = queryContext.getQueryResult();
       if (value instanceof SelectResults) {
         SelectResults results = (SelectResults) value;
-        List newResults = new ArrayList();
+        List<Object> newResults = new ArrayList<>();
         Iterator resultIter = results.iterator();
         while (resultIter.hasNext()) {
           Object obj = resultIter.next();

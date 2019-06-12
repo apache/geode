@@ -100,7 +100,142 @@ public class RegionVersionVectorTest {
     assertFalse(singletonRVV.contains(server2, 6));
     assertFalse(singletonRVV.contains(server2, 7));
     assertFalse(singletonRVV.contains(server2, 9));
+  }
 
+  @Test
+  public void testSynchronizationVectorContainsAllVersionsForSameOwnerAsTargetAndNonTarget() {
+    final String local = getIPLiteral();
+    InternalDistributedMember server1 = new InternalDistributedMember(local, 101);
+    InternalDistributedMember server2 = new InternalDistributedMember(local, 102);
+    InternalDistributedMember server3 = new InternalDistributedMember(local, 103);
+
+    RegionVersionVector rv1 = new VMRegionVersionVector(server1);
+    rv1.updateLocalVersion(10);
+    rv1.recordVersion(server2, 1);
+    rv1.recordVersion(server2, 5);
+    rv1.recordVersion(server2, 8);
+    rv1.recordVersion(server3, 1);
+    rv1.recordVersion(server3, 3);
+    RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server1);
+    assertTrue(singletonRVV.isForSynchronization());
+    assertEquals(singletonRVV.getOwnerId(), server1);
+    assertTrue(singletonRVV.getMemberToVersion().containsKey(server1));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server2));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
+
+    assertTrue(singletonRVV.contains(server1, 1));
+    assertTrue(singletonRVV.contains(server1, 11));
+
+    assertTrue(singletonRVV.contains(server3, 1));
+    assertTrue(singletonRVV.contains(server3, 11));
+
+    assertTrue(singletonRVV.contains(server2, 1));
+    assertTrue(singletonRVV.contains(server2, 5));
+    assertTrue(singletonRVV.contains(server2, 8));
+    assertTrue(singletonRVV.contains(server2, 2));
+    assertTrue(singletonRVV.contains(server2, 3));
+    assertTrue(singletonRVV.contains(server2, 4));
+    assertTrue(singletonRVV.contains(server2, 6));
+    assertTrue(singletonRVV.contains(server2, 7));
+    assertTrue(singletonRVV.contains(server2, 9));
+  }
+
+  /**
+   * server1 will simulate doing a sync with another server for operations performed
+   * by server2. server3 is another server in the cluster that we don't care about
+   * servers have version source as dist store id
+   */
+  @Test
+  public void testSynchronizationVectorWithDiskStoreIdContainsAllVersionsForNonTarget() {
+    DiskStoreID server1 = new DiskStoreID(0, 0);
+    DiskStoreID server2 = new DiskStoreID(0, 1);
+    DiskStoreID server3 = new DiskStoreID(1, 0);
+
+    RegionVersionVector rv1 = new DiskRegionVersionVector(server1);
+    rv1.updateLocalVersion(10);
+    rv1.recordVersion(server2, 1);
+    rv1.recordVersion(server2, 5);
+    rv1.recordVersion(server2, 8);
+    rv1.recordVersion(server3, 1);
+    rv1.recordVersion(server3, 3);
+    RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server2);
+    assertTrue(singletonRVV.isForSynchronization());
+    assertEquals(singletonRVV.getOwnerId(), server1);
+    assertTrue(singletonRVV.getMemberToVersion().containsKey(server2));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
+
+    assertTrue(singletonRVV.contains(server1, 1));
+    assertTrue(singletonRVV.contains(server1, 11));
+
+    assertTrue(singletonRVV.contains(server3, 1));
+    assertTrue(singletonRVV.contains(server3, 11));
+  }
+
+  @Test
+  public void testSynchronizationVectorWithDiskStoreIdContainsVersionsForTarget() {
+    DiskStoreID server1 = new DiskStoreID(0, 0);
+    DiskStoreID server2 = new DiskStoreID(0, 1);
+    DiskStoreID server3 = new DiskStoreID(1, 0);
+
+    RegionVersionVector rv1 = new DiskRegionVersionVector(server1);
+    rv1.updateLocalVersion(10);
+    rv1.recordVersion(server2, 1);
+    rv1.recordVersion(server2, 5);
+    rv1.recordVersion(server2, 8);
+    rv1.recordVersion(server3, 1);
+    rv1.recordVersion(server3, 3);
+    RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server2);
+    assertTrue(singletonRVV.isForSynchronization());
+    assertEquals(singletonRVV.getOwnerId(), server1);
+    assertTrue(singletonRVV.getMemberToVersion().containsKey(server2));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
+
+    assertTrue(singletonRVV.contains(server2, 1));
+    assertTrue(singletonRVV.contains(server2, 5));
+    assertTrue(singletonRVV.contains(server2, 8));
+
+    assertFalse(singletonRVV.contains(server2, 2));
+    assertFalse(singletonRVV.contains(server2, 3));
+    assertFalse(singletonRVV.contains(server2, 4));
+    assertFalse(singletonRVV.contains(server2, 6));
+    assertFalse(singletonRVV.contains(server2, 7));
+    assertFalse(singletonRVV.contains(server2, 9));
+  }
+
+  @Test
+  public void testSynchronizationVectorWithDiskStoreIdContainsVersionsForTargetAsOriginator() {
+    DiskStoreID server1 = new DiskStoreID(0, 0);
+    DiskStoreID server2 = new DiskStoreID(0, 1);
+    DiskStoreID server3 = new DiskStoreID(1, 0);
+
+    RegionVersionVector rv1 = new DiskRegionVersionVector(server1);
+    RegionVersionHolder localExceptions = rv1.getLocalExceptions();
+    localExceptions.addException(2, 5);
+    localExceptions.addException(7, 9);
+    rv1.updateLocalVersion(10);
+    rv1.recordVersion(server2, 1);
+    rv1.recordVersion(server2, 5);
+    rv1.recordVersion(server2, 8);
+    rv1.recordVersion(server3, 1);
+    rv1.recordVersion(server3, 3);
+    RegionVersionVector singletonRVV = rv1.getCloneForTransmission(server1);
+    assertTrue(singletonRVV.isForSynchronization());
+    assertEquals(singletonRVV.getOwnerId(), server1);
+    assertTrue(singletonRVV.getMemberToVersion().containsKey(server1));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server2));
+    assertFalse(singletonRVV.getMemberToVersion().containsKey(server3));
+
+    assertTrue(singletonRVV.contains(server1, 1));
+    assertTrue(singletonRVV.contains(server1, 2));
+    assertTrue(singletonRVV.contains(server1, 5));
+    assertTrue(singletonRVV.contains(server1, 6));
+    assertTrue(singletonRVV.contains(server1, 7));
+    assertTrue(singletonRVV.contains(server1, 9));
+    assertTrue(singletonRVV.contains(server1, 10));
+
+    assertFalse(singletonRVV.contains(server1, 3));
+    assertFalse(singletonRVV.contains(server1, 4));
+    assertFalse(singletonRVV.contains(server1, 8));
   }
 
   @Test

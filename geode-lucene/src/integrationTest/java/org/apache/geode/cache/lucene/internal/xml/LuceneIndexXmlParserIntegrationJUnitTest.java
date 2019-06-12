@@ -17,6 +17,7 @@ package org.apache.geode.cache.lucene.internal.xml;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -52,7 +53,6 @@ import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.RegionCreation;
 import org.apache.geode.test.junit.categories.LuceneTest;
-import org.apache.geode.util.test.TestUtil;
 
 @Category({LuceneTest.class})
 public class LuceneIndexXmlParserIntegrationJUnitTest {
@@ -232,8 +232,8 @@ public class LuceneIndexXmlParserIntegrationJUnitTest {
   }
 
   private String getXmlFileForTest() {
-    return TestUtil.getResourcePath(getClass(),
-        getClass().getSimpleName() + "." + name.getMethodName() + ".cache.xml");
+    return createTempFileFromResource(getClass(),
+        getClass().getSimpleName() + "." + name.getMethodName() + ".cache.xml").getAbsolutePath();
   }
 
 }

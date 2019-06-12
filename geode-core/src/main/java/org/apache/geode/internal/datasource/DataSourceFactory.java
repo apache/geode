@@ -89,7 +89,7 @@ public class DataSourceFactory {
   }
 
   /**
-   * This function creats a data dource from the ManagedConnectionFactory class using the
+   * This function creates a data source from the ManagedConnectionFactory class using the
    * connectionManager.
    *
    * @return javax.sql.DataSource
@@ -188,6 +188,9 @@ public class DataSourceFactory {
           continue;
         }
         if (entry.getKey().equals("type")) {
+          continue;
+        }
+        if (entry.getKey().equals("jdbc-driver-class")) {
           continue;
         }
         if (entry.getKey().equals("jndi-name")) {

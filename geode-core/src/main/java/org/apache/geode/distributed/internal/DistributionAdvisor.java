@@ -267,6 +267,14 @@ public class DistributionAdvisor {
     if (isDebugEnabled) {
       logger.debug("da.syncForCrashedMember will sync region in cache's timer for region: {}", dr);
     }
+    CacheProfile cacheProfile = (CacheProfile) profile;
+    PersistentMemberID persistentId = getPersistentID(cacheProfile);
+    VersionSource lostVersionID;
+    if (persistentId != null) {
+      lostVersionID = persistentId.getVersionMember();
+    } else {
+      lostVersionID = id;
+    }
     // schedule the synchronization for execution in the future based on the client health monitor
     // interval. This allows client caches to retry an operation that might otherwise be recovered
     // through the sync operation. Without associated event information this could cause the
@@ -291,11 +299,9 @@ public class DistributionAdvisor {
             }
           }
         }
-        CacheProfile cp = (CacheProfile) profile;
-        PersistentMemberID persistentId = cp.persistentID;
         if (dr.getDataPolicy().withPersistence() && persistentId == null) {
           // Fix for 46704. The lost member may be a replicate
-          // or an empty accessor. We don't need to to a synchronization
+          // or an empty accessor. We don't need to do a synchronization
           // in that case, because those members send their writes to
           // a persistent member.
           if (isDebugEnabled) {
@@ -305,17 +311,16 @@ public class DistributionAdvisor {
           }
           return;
         }
-
-
-        VersionSource lostVersionID;
-        if (persistentId != null) {
-          lostVersionID = persistentId.getVersionMember();
-        } else {
-          lostVersionID = id;
-        }
         dr.synchronizeForLostMember(id, lostVersionID);
       }
     }, delay);
+    if (dr.getConcurrencyChecksEnabled()) {
+      dr.setRegionSynchronizeScheduled(lostVersionID);
+    }
+  }
+
+  private PersistentMemberID getPersistentID(CacheProfile cp) {
+    return cp.persistentID;
   }
 
   /** find the region for a delta-gii operation (synch) */

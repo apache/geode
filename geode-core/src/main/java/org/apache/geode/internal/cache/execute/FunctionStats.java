@@ -20,7 +20,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
@@ -179,7 +178,7 @@ public class FunctionStats {
 
   /** This is an instance of the FunctionStats when the statsDisabled = true; */
   @Immutable
-  private static final FunctionStats dummy = createDummy();
+  public static final FunctionStats dummy = createDummy();
 
   // ///////////////////// Constructors ///////////////////////
 
@@ -438,23 +437,14 @@ public class FunctionStats {
    * @return object of the FunctionStats
    */
   public static FunctionStats getFunctionStats(String functionID, InternalDistributedSystem ds) {
-    if (isDisabled()) {
-      return dummy;
-    } else {
-      return ds.getFunctionStats(functionID);
-    }
+    return ds.getFunctionStats(functionID);
   }
 
   public static FunctionStats getFunctionStats(String functionID) {
-    if (isDisabled()) {
+    InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
+    if (ds == null) {
       return dummy;
-    } else {
-      InternalDistributedSystem ds = InternalDistributedSystem.getAnyInstance();
-      return ds.getFunctionStats(functionID);
     }
-  }
-
-  private static boolean isDisabled() {
-    return Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "statsDisabled");
+    return ds.getFunctionStats(functionID);
   }
 }

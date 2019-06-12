@@ -98,7 +98,7 @@ GRADLE_ARGS="\
     ${GRADLE_GLOBAL_ARGS} \
     -Pversion=${FULL_PRODUCT_VERSION} \
     -PbuildId=${BUILD_ID} \
-    build install javadoc spotlessCheck rat checkPom resolveDependencies -x test"
+    build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test"
 
 EXEC_COMMAND="mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ./gradlew ${GRADLE_ARGS}"
 echo "${EXEC_COMMAND}"

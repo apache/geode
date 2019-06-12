@@ -20,14 +20,14 @@ import static org.apache.geode.connectors.jdbc.internal.cli.DescribeMappingComma
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.ListMappingCommand.LIST_OF_MAPPINGS;
-import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.GROUP_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.ID_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.GROUP_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.ID_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.sql.Connection;
@@ -59,8 +59,6 @@ import org.apache.geode.connectors.jdbc.JdbcWriter;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.FieldMapping;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.connectors.util.internal.MappingCommandUtils;
-import org.apache.geode.connectors.util.internal.MappingConstants;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;
@@ -557,24 +555,6 @@ public class CreateMappingCommandForProxyRegionDUnitTest {
         new FieldMapping("myid", FieldType.STRING.name(), "MYID", JDBCType.VARCHAR.name(), false));
     assertThat(fieldMappings.get(1)).isEqualTo(
         new FieldMapping("name", FieldType.STRING.name(), "NAME", JDBCType.VARCHAR.name(), true));
-  }
-
-
-  private static void assertValidResourcePDXMapping(RegionMapping mapping, String tableName) {
-    assertThat(mapping.getDataSourceName()).isEqualTo("connection");
-    assertThat(mapping.getTableName()).isEqualTo(tableName);
-    assertThat(mapping.getPdxName()).isEqualTo("org.apache.geode.internal.ResourcePDX");
-    assertThat(mapping.getIds()).isEqualTo("id");
-    assertThat(mapping.getCatalog()).isNull();
-    assertThat(mapping.getSchema()).isEqualTo("mySchema");
-    List<FieldMapping> fieldMappings = mapping.getFieldMappings();
-    assertThat(fieldMappings).hasSize(3);
-    assertThat(fieldMappings.get(0))
-        .isEqualTo(new FieldMapping("id", "STRING", "ID", "VARCHAR", false));
-    assertThat(fieldMappings.get(1))
-        .isEqualTo(new FieldMapping("name", "STRING", "NAME", "VARCHAR", true));
-    assertThat(fieldMappings.get(2))
-        .isEqualTo(new FieldMapping("age", "INT", "AGE", "INTEGER", true));
   }
 
   public static class IdAndName implements PdxSerializable {

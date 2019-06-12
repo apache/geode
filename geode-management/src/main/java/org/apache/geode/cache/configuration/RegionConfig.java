@@ -28,9 +28,12 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAnyElement;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -161,14 +164,21 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   protected RegionAttributesType regionAttributes;
   @XmlElement(name = "index", namespace = "http://geode.apache.org/schema/cache")
   protected List<Index> indexes;
+
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "entry", namespace = "http://geode.apache.org/schema/cache")
   protected List<Entry> entries;
+
   @XmlAnyElement(lax = true)
   protected List<CacheElement> regionElements;
+
+  @ApiModelProperty(hidden = true)
   @XmlElement(name = "region", namespace = "http://geode.apache.org/schema/cache")
   protected List<RegionConfig> regions;
+
   @XmlAttribute(name = "name", required = true)
   protected String name;
+
   @XmlAttribute(name = "refid")
   protected String type;
 
@@ -193,6 +203,14 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   @Override
   public String getEndpoint() {
     return REGION_CONFIG_ENDPOINT;
+  }
+
+  @Override
+  public String getUri() {
+    if (StringUtils.isBlank(getId())) {
+      return null;
+    }
+    return REGION_CONFIG_ENDPOINT + "/" + getId();
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -250,6 +268,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    * Currently, users can not create regions with custom region elements using management v2 api.
    * this cache element list will be ignored when creating the region
    */
+  @ApiModelProperty(hidden = true)
   public List<CacheElement> getCustomRegionElements() {
     if (regionElements == null) {
       regionElements = new ArrayList<>();
@@ -331,145 +350,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   public void setType(String regionType) {
     if (regionType != null) {
       this.type = regionType.toUpperCase();
-      setShortcutAttributes();
-    }
-  }
-
-  private void setShortcutAttributes() {
-    if (regionAttributes == null) {
-      regionAttributes = new RegionAttributesType();
-    }
-
-    switch (type) {
-      case "PARTITION": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        break;
-      }
-      case "REPLICATE": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      case "PARTITION_REDUNDANT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "PARTITION_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "PARTITION_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_REDUNDANT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-
-      }
-      case "PARTITION_REDUNDANT_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setRedundantCopy("1");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-
-      case "REPLICATE_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      case "REPLICATE_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-
-      }
-      case "REPLICATE_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "REPLICATE_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        regionAttributes.setInterestPolicy("all");
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-      case "LOCAL": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        break;
-      }
-      case "LOCAL_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        break;
-      }
-      case "LOCAL_HEAP_LRU": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.LOCAL_DESTROY);
-        break;
-      }
-      case "LOCAL_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "LOCAL_PERSISTENT_OVERFLOW": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.LOCAL);
-        regionAttributes.setLruHeapPercentage(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
-        break;
-      }
-      case "PARTITION_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLocalMaxMemory("0");
-        break;
-      }
-      case "PARTITION_PROXY_REDUNDANT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLocalMaxMemory("0");
-        regionAttributes.setRedundantCopy("1");
-        break;
-      }
-      case "REPLICATE_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
-      default:
-        throw new IllegalArgumentException("invalid type " + type);
     }
   }
 
@@ -658,7 +538,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Index extends CacheElement {
+  public static class Index extends CacheElement implements RestfulEndpoint {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")
@@ -671,6 +551,19 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
     protected Boolean keyIndex;
     @XmlAttribute(name = "type")
     protected String type; // for non-key index type, range or hash
+    @XmlTransient
+    protected String regionName;
+
+    public Index() {}
+
+    public Index(Index index) {
+      this.name = index.name;
+      this.expression = index.expression;
+      this.fromClause = index.fromClause;
+      this.imports = index.imports;
+      this.keyIndex = index.keyIndex;
+      this.type = index.type;
+    }
 
     /**
      * Gets the value of the name property.
@@ -790,6 +683,12 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
      *
      */
     public String getType() {
+      // this should return a "key" value because some production code relies on this method
+      // returning a type string that would turn into IndexType enum object
+      if (keyIndex == Boolean.TRUE) {
+        return "key";
+      }
+
       if (type == null) {
         return "range";
       } else {
@@ -808,19 +707,58 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
      *             {@link #setKeyIndex(Boolean)}
      */
     public void setType(String value) {
-      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)
-          || "key".equalsIgnoreCase(value)) {
+      if ("range".equalsIgnoreCase(value) || "hash".equalsIgnoreCase(value)) {
         this.type = value.toLowerCase();
+        setKeyIndex(false);
+      }
+      // we need to avoid setting the "type" to key since by xsd definition, it should only contain
+      // "hash" and "range" value.
+      else if ("key".equalsIgnoreCase(value)) {
+        this.type = null;
+        setKeyIndex(true);
       } else {
         throw new IllegalArgumentException("Invalid index type " + value);
       }
+    }
 
-      setKeyIndex("key".equalsIgnoreCase(value));
+    public String getRegionName() {
+      return regionName;
+    }
+
+    public void setRegionName(String regionName) {
+      this.regionName = regionName;
+      if (StringUtils.isBlank(regionName)) {
+        return;
+      }
+
+      if (fromClause == null) {
+        fromClause = "/" + regionName;
+      } else if (!fromClause.contains(regionName)) {
+        throw new IllegalArgumentException(
+            "Invalid regionName for this index with fromClause = " + fromClause);
+      }
     }
 
     @Override
+    @JsonIgnore
     public String getId() {
       return getName();
+    }
+
+    @Override
+    public String getEndpoint() {
+      if (StringUtils.isBlank(regionName)) {
+        return null;
+      }
+      return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
+    }
+
+    @Override
+    public String getUri() {
+      if (getEndpoint() == null || StringUtils.isBlank(getId())) {
+        return null;
+      }
+      return getEndpoint() + "/" + getId();
     }
   }
 

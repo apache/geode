@@ -179,7 +179,7 @@ public class DestroyDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found, data source removed from cluster configuration.")
-        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+        .containsOutput("Cluster configuration for group 'cluster' is updated");
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
@@ -196,7 +196,7 @@ public class DestroyDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found, data source removed from cluster configuration.")
-        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+        .containsOutput("Cluster configuration for group 'cluster' is updated");
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());
@@ -213,7 +213,7 @@ public class DestroyDataSourceCommandTest {
 
     gfsh.executeAndAssertThat(command, COMMAND + " --name=name").statusIsSuccess()
         .containsOutput("No members found, data source removed from cluster configuration.")
-        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+        .containsOutput("Cluster configuration for group 'cluster' is updated");
 
     verify(ccService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());

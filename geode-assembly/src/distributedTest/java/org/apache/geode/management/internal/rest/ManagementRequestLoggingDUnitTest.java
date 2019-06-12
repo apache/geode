@@ -33,7 +33,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -48,7 +48,10 @@ public class ManagementRequestLoggingDUnitTest {
   public static void beforeClass() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     server = cluster.startServerVM(1, locator.getPort());
-    service = ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+    service =
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .build();
   }
 
   @Test

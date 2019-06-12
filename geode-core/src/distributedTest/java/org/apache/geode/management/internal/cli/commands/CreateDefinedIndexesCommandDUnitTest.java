@@ -144,7 +144,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .hasTableSection(CreateDefinedIndexesCommand.CREATE_DEFINED_INDEXES_SECTION)
         .hasRowSize(6);
     assertThat(gfsh.getGfshOutput())
-        .contains("Changes to configuration for group 'cluster' are persisted");
+        .contains("Cluster configuration for group 'cluster' is updated");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();
@@ -215,7 +215,7 @@ public class CreateDefinedIndexesCommandDUnitTest {
         .statusIsSuccess().containsOutput("Index successfully defined");
 
     gfsh.executeAndAssertThat("create defined indexes --group=group1").statusIsSuccess()
-        .containsOutput("Changes to configuration for group 'group1' are persisted.");
+        .containsOutput("Cluster configuration for group 'group1' is updated");
 
     VMProvider.invokeInEveryMember(() -> {
       Cache cache = ClusterStartupRule.getCache();

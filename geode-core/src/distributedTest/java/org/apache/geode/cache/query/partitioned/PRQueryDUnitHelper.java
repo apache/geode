@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.query.partitioned;
 
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -75,18 +76,20 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.test.dunit.Assert;
+import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This is a helper class for the various Partitioned Query DUnit Test Cases
+ *
+ * TODO: inline and then delete class PRQueryDUnitHelper
  */
 public class PRQueryDUnitHelper implements Serializable {
 
-  static Cache cache = null;
+  static Cache cache;
 
   public static void setCache(Cache cache) {
     PRQueryDUnitHelper.cache = cache;
@@ -96,10 +99,9 @@ public class PRQueryDUnitHelper implements Serializable {
     return cache;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionCreation(
+  CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionCreation(
       final String regionName, final Class constraint) {
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    return new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
@@ -110,7 +112,7 @@ public class PRQueryDUnitHelper implements Serializable {
           attr.setScope(Scope.LOCAL);
           localRegion = cache.createRegion(regionName, attr.create());
         } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
+          LogWriterUtils.getLogWriter().warning(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreate: Creation caught IllegalStateException",
               ex);
         }
@@ -126,29 +128,21 @@ public class PRQueryDUnitHelper implements Serializable {
             !localRegion.isDestroyed());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionWithAsyncIndexCreation(
+  CacheSerializableRunnable getCacheSerializableRunnableForLocalRegionWithAsyncIndexCreation(
       final String regionName, final Class constraint) {
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    return new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
-        Region localRegion = null;
-        try {
-          AttributesFactory attr = new AttributesFactory();
-          attr.setValueConstraint(constraint);
-          attr.setScope(Scope.LOCAL);
-          attr.setIndexMaintenanceSynchronous(false);
-          localRegion = cache.createRegion(regionName, attr.create());
-        } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
-              "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreate: Creation caught IllegalStateException",
-              ex);
-        }
+
+        AttributesFactory attr = new AttributesFactory();
+        attr.setValueConstraint(constraint);
+        attr.setScope(Scope.LOCAL);
+        attr.setIndexMaintenanceSynchronous(false);
+        Region localRegion = cache.createRegion(regionName, attr.create());
+
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreate: Partitioned Region "
                 + regionName + " not in cache",
@@ -161,25 +155,17 @@ public class PRQueryDUnitHelper implements Serializable {
             !localRegion.isDestroyed());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
   public CacheSerializableRunnable getCacheSerializableRunnableForReplicatedRegionCreation(
       final String regionName) {
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    return new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
-        Region localRegion = null;
-        try {
-          localRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
-        } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
-              "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreate: Creation caught IllegalStateException",
-              ex);
-        }
+
+        Region localRegion = cache.createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
+
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreate: Partitioned Region "
                 + regionName + " not in cache",
@@ -192,8 +178,6 @@ public class PRQueryDUnitHelper implements Serializable {
             !localRegion.isDestroyed());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
   /**
@@ -203,14 +187,10 @@ public class PRQueryDUnitHelper implements Serializable {
    */
   public CacheSerializableRunnable getCacheSerializableRunnableForPRCreate(final String regionName,
       final int redundancy, final Class constraint) {
-
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    return new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
-
         Cache cache = getCache();
-        Region partitionedregion = null;
         AttributesFactory attr = new AttributesFactory();
         attr.setValueConstraint(constraint);
 
@@ -219,7 +199,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
         attr.setPartitionAttributes(prAttr);
 
-        partitionedregion = cache.createRegion(regionName, attr.create());
+        Region partitionedregion = cache.createRegion(regionName, attr.create());
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
                 + regionName + " not in cache",
@@ -232,8 +212,6 @@ public class PRQueryDUnitHelper implements Serializable {
             !partitionedregion.isDestroyed());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
   /**
@@ -242,20 +220,16 @@ public class PRQueryDUnitHelper implements Serializable {
    *
    * @return cacheSerializable object
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedPRCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForColocatedPRCreate(
       final String regionName, final int redundancy, final Class constraint,
       boolean makePersistent) {
+    String childRegionName = regionName + "Child";
+    String diskName = "disk";
 
-    final String childRegionName = regionName + "Child";
-    final String diskName = "disk";
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    return new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
-
         Cache cache = getCache();
-        Region partitionedregion = null;
-        Region childRegion = null;
         AttributesFactory attr = new AttributesFactory();
         attr.setValueConstraint(constraint);
         if (makePersistent) {
@@ -276,7 +250,7 @@ public class PRQueryDUnitHelper implements Serializable {
         attr.setPartitionAttributes(paf.create());
 
         // parent region
-        partitionedregion = cache.createRegion(regionName, attr.create());
+        Region partitionedregion = cache.createRegion(regionName, attr.create());
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
                 + regionName + " not in cache",
@@ -292,11 +266,10 @@ public class PRQueryDUnitHelper implements Serializable {
         attr.setValueConstraint(constraint);
         paf.setColocatedWith(regionName);
         attr.setPartitionAttributes(paf.create());
-        childRegion = cache.createRegion(childRegionName, attr.create());
+
+        cache.createRegion(childRegionName, attr.create());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
   /**
@@ -305,20 +278,15 @@ public class PRQueryDUnitHelper implements Serializable {
    *
    * @return cacheSerializable object
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedParentCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForColocatedParentCreate(
       final String regionName, final int redundancy, final Class constraint,
       boolean makePersistent) {
+    String diskName = "disk";
 
-    final String childRegionName = regionName + "Child";
-    final String diskName = "disk";
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName + "-NoChildRegion") {
+    return new CacheSerializableRunnable(regionName + "-NoChildRegion") {
       @Override
       public void run2() throws CacheException {
-
         Cache cache = getCache();
-        Region partitionedregion = null;
-        Region childRegion = null;
         AttributesFactory attr = new AttributesFactory();
         attr.setValueConstraint(constraint);
         if (makePersistent) {
@@ -339,7 +307,7 @@ public class PRQueryDUnitHelper implements Serializable {
         attr.setPartitionAttributes(paf.create());
 
         // parent region
-        partitionedregion = cache.createRegion(regionName, attr.create());
+        Region partitionedregion = cache.createRegion(regionName, attr.create());
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Partitioned Region "
                 + regionName + " not in cache",
@@ -352,8 +320,6 @@ public class PRQueryDUnitHelper implements Serializable {
             !partitionedregion.isDestroyed());
       }
     };
-
-    return (CacheSerializableRunnable) createPrRegion;
   }
 
   /**
@@ -362,60 +328,58 @@ public class PRQueryDUnitHelper implements Serializable {
    *
    * @return cacheSerializable object
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForColocatedChildCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForColocatedChildCreate(
       final String regionName, final int redundancy, final Class constraint, boolean isPersistent) {
 
     final String childRegionName = regionName + "Child";
     final String diskName = "disk";
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName + "-ChildRegion") {
-      @Override
-      public void run2() throws CacheException {
+    SerializableRunnable createPrRegion =
+        new CacheSerializableRunnable(regionName + "-ChildRegion") {
+          @Override
+          public void run2() throws CacheException {
 
-        Cache cache = getCache();
-        Region partitionedregion = null;
-        Region childRegion = null;
-        AttributesFactory attr = new AttributesFactory();
-        attr.setValueConstraint(constraint);
-        if (isPersistent) {
-          DiskStore ds = cache.findDiskStore(diskName);
-          if (ds == null) {
-            // ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs())
-            ds = cache.createDiskStoreFactory()
-                .setDiskDirs(
-                    org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase.getDiskDirs())
-                .create(diskName);
+            Cache cache = getCache();
+            Region partitionedregion = null;
+            AttributesFactory attr = new AttributesFactory();
+            attr.setValueConstraint(constraint);
+            if (isPersistent) {
+              DiskStore ds = cache.findDiskStore(diskName);
+              if (ds == null) {
+                // ds = cache.createDiskStoreFactory().setDiskDirs(getDiskDirs())
+                ds = cache.createDiskStoreFactory()
+                    .setDiskDirs(
+                        JUnit4CacheTestCase.getDiskDirs())
+                    .create(diskName);
+              }
+              attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
+              attr.setDiskStoreName(diskName);
+            } else {
+              attr.setDataPolicy(DataPolicy.PARTITION);
+              attr.setDiskStoreName(null);
+            }
+
+            PartitionAttributesFactory paf = new PartitionAttributesFactory();
+            paf.setRedundantCopies(redundancy);
+            attr.setPartitionAttributes(paf.create());
+
+            // skip parent region creation
+            // partitionedregion = cache.createRegion(regionName, attr.create());
+
+            // child region
+            attr.setValueConstraint(constraint);
+            paf.setColocatedWith(regionName);
+            attr.setPartitionAttributes(paf.create());
+            Region childRegion = cache.createRegion(childRegionName, attr.create());
           }
-          attr.setDataPolicy(DataPolicy.PERSISTENT_PARTITION);
-          attr.setDiskStoreName(diskName);
-        } else {
-          attr.setDataPolicy(DataPolicy.PARTITION);
-          attr.setDiskStoreName(null);
-        }
-
-        PartitionAttributesFactory paf = new PartitionAttributesFactory();
-        paf.setRedundantCopies(redundancy);
-        attr.setPartitionAttributes(paf.create());
-
-        // skip parent region creation
-        // partitionedregion = cache.createRegion(regionName, attr.create());
-
-        // child region
-        attr.setValueConstraint(constraint);
-        paf.setColocatedWith(regionName);
-        attr.setPartitionAttributes(paf.create());
-        childRegion = cache.createRegion(childRegionName, attr.create());
-      }
-    };
+        };
 
     return (CacheSerializableRunnable) createPrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRCreateLimitedBuckets(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRCreateLimitedBuckets(
       final String regionName, final int redundancy, final int buckets) {
 
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    SerializableRunnable createPrRegion = new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
 
@@ -429,7 +393,7 @@ public class PRQueryDUnitHelper implements Serializable {
           attr.setPartitionAttributes(prAttr);
           partitionedregion = cache.createRegion(regionName, attr.create());
         } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
+          LogWriterUtils.getLogWriter().warning(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Creation caught IllegalStateException",
               ex);
         }
@@ -449,11 +413,10 @@ public class PRQueryDUnitHelper implements Serializable {
     return (CacheSerializableRunnable) createPrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPersistentPRCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForPersistentPRCreate(
       final String regionName, final int redundancy, final Class constraint) {
 
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    SerializableRunnable createPrRegion = new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
 
@@ -474,7 +437,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
           partitionedregion = cache.createRegion(regionName, attr.create());
         } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
+          LogWriterUtils.getLogWriter().warning(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Creation caught IllegalStateException",
               ex);
         }
@@ -500,11 +463,10 @@ public class PRQueryDUnitHelper implements Serializable {
    * @return cacheSerializable object
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRColocatedCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRColocatedCreate(
       final String regionName, final int redundancy, final String coloRegionName) {
 
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    SerializableRunnable createPrRegion = new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
 
@@ -522,7 +484,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
           partitionedregion = cache.createRegion(regionName, attr.create());
         } catch (IllegalStateException ex) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().warning(
+          LogWriterUtils.getLogWriter().warning(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRCreateWithRedundancy: Creation caught IllegalStateException",
               ex);
         }
@@ -610,11 +572,11 @@ public class PRQueryDUnitHelper implements Serializable {
               }
             } catch (EntryExistsException e) {
               // Do nothing let it go
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              LogWriterUtils.getLogWriter()
                   .info("EntryExistsException was thrown for key " + j);
             } catch (EntryNotFoundException e) {
               // Do nothing let it go
-              org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+              LogWriterUtils.getLogWriter()
                   .info("EntryNotFoundException was thrown for key " + j);
             }
           }
@@ -629,7 +591,7 @@ public class PRQueryDUnitHelper implements Serializable {
    *
    * @return cacheSerializable object
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRDuplicatePuts(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRDuplicatePuts(
       final String regionName, final Object[] portfolio, final int from, final int to) {
     SerializableRunnable prPuts = new CacheSerializableRunnable("PRPuts") {
       @Override
@@ -648,7 +610,7 @@ public class PRQueryDUnitHelper implements Serializable {
    *
    * @return cacheSerializable object
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRPutsKeyValue(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRPutsKeyValue(
       final String regionName, final Object[] portfolio, final int from, final int to) {
     SerializableRunnable prPuts = new CacheSerializableRunnable("PRPuts") {
       @Override
@@ -669,12 +631,12 @@ public class PRQueryDUnitHelper implements Serializable {
    * 3. Compares the appropriate resultSet <br>
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRQueryAndCompareResults(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRQueryAndCompareResults(
       final String regionName, final String localRegion) {
     return getCacheSerializableRunnableForPRQueryAndCompareResults(regionName, localRegion, false);
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRQueryAndCompareResults(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRQueryAndCompareResults(
       final String regionName, final String localRegion,
       final boolean fullQueryOnPortfolioPositions) {
 
@@ -731,10 +693,10 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         QueryService qs = getCache().getQueryService();
-        Object[] params;
         try {
           for (int j = 0; j < queries.length; j++) {
             synchronized (region) {
+              Object[] params;
               if (fullQueryOnPortfolioPositions) {
                 params = new Object[] {local, new Double((j % 25) * 1.0 + 1)};
                 r[j][0] = qs.newQuery(queries[j]).execute(params);
@@ -763,7 +725,7 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -773,12 +735,12 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -796,7 +758,7 @@ public class PRQueryDUnitHelper implements Serializable {
   }
 
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
+  CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndCompareResults(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -856,17 +818,16 @@ public class PRQueryDUnitHelper implements Serializable {
               .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
         }
 
-        String distinct = "SELECT DISTINCT ";
         QueryService qs = getCache().getQueryService();
         Object[] params;
 
 
         try {
+          String distinct = "SELECT DISTINCT ";
           for (int j = 0; j < queries.length; j++) {
-            String qStr = null;
             synchronized (region) {
               // Execute on local region.
-              qStr = (distinct + queries[j].replace("REGION_NAME", localRegion));
+              String qStr = (distinct + queries[j].replace("REGION_NAME", localRegion));
               r[j][0] = qs.newQuery(qStr).execute();
 
               // Execute on remote region.
@@ -875,7 +836,7 @@ public class PRQueryDUnitHelper implements Serializable {
             }
           }
 
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
@@ -890,7 +851,7 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -900,12 +861,12 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -922,7 +883,7 @@ public class PRQueryDUnitHelper implements Serializable {
     return (CacheSerializableRunnable) PrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
+  CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryAndVerifyOrder(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -931,36 +892,6 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the localRegion and the PR region
 
-        String[] queries = new String[] {"p.status from /REGION_NAME p order by p.status",
-            "status, ID from /REGION_NAME order by status, ID",
-            "p.status, p.ID from /REGION_NAME p order by p.status, p.ID",
-            "key.ID from /REGION_NAME.keys key order by key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status desc, key.ID",
-            "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID desc",
-            "p.status, p.ID from /REGION_NAME p order by p.status asc, p.ID",
-            "p.ID, p.status from /REGION_NAME p order by p.ID desc, p.status asc",
-            "p.ID from /REGION_NAME p, p.positions.values order by p.ID",
-            "p.ID, p.status from /REGION_NAME p, p.positions.values order by p.status, p.ID",
-            "pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId",
-            "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
-            "p.iD from /REGION_NAME p order by p.iD",
-            "p.iD, p.status from /REGION_NAME p order by p.iD",
-            "iD, status from /REGION_NAME order by iD",
-            "p.getID() from /REGION_NAME p order by p.getID()",
-            "p.names[1] from /REGION_NAME p order by p.names[1]",
-            "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId desc, p.ID",
-            "p.ID, p.position1.secId from /REGION_NAME p order by p.position1.secId, p.ID",
-            "e.key.ID from /REGION_NAME.entries e order by e.key.ID",
-            "e.key.ID, e.value.status from /REGION_NAME.entries e order by e.key.ID",
-            "e.key.ID, e.value.status from /REGION_NAME.entrySet e order by e.key.ID desc , e.value.status desc",
-            "e.key, e.value from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
-            "e.key from /REGION_NAME.entrySet e order by e.key.ID desc, e.key.pkid desc",
-            "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",
-            "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId desc",
-            "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId",};
-
-        Object r[][] = new Object[1][2];
         Region region = cache.getRegion(regionName);
         assertNotNull(region);
 
@@ -974,17 +905,45 @@ public class PRQueryDUnitHelper implements Serializable {
               .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
         }
 
-        String distinct = "SELECT DISTINCT ";
         QueryService qs = getCache().getQueryService();
         Object[] params;
         StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
 
         try {
+          String distinct = "SELECT DISTINCT ";
+          Object[][] r = new Object[1][2];
+          String[] queries = new String[] {"p.status from /REGION_NAME p order by p.status",
+              "status, ID from /REGION_NAME order by status, ID",
+              "p.status, p.ID from /REGION_NAME p order by p.status, p.ID",
+              "key.ID from /REGION_NAME.keys key order by key.ID",
+              "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID",
+              "key.ID, key.status from /REGION_NAME.keys key order by key.status desc, key.ID",
+              "key.ID, key.status from /REGION_NAME.keys key order by key.status, key.ID desc",
+              "p.status, p.ID from /REGION_NAME p order by p.status asc, p.ID",
+              "p.ID, p.status from /REGION_NAME p order by p.ID desc, p.status asc",
+              "p.ID from /REGION_NAME p, p.positions.values order by p.ID",
+              "p.ID, p.status from /REGION_NAME p, p.positions.values order by p.status, p.ID",
+              "pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId",
+              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by pos.secId, p.ID",
+              "p.iD from /REGION_NAME p order by p.iD",
+              "p.iD, p.status from /REGION_NAME p order by p.iD",
+              "iD, status from /REGION_NAME order by iD",
+              "p.getID() from /REGION_NAME p order by p.getID()",
+              "p.names[1] from /REGION_NAME p order by p.names[1]",
+              "p.position1.secId, p.ID from /REGION_NAME p order by p.position1.secId desc, p.ID",
+              "p.ID, p.position1.secId from /REGION_NAME p order by p.position1.secId, p.ID",
+              "e.key.ID from /REGION_NAME.entries e order by e.key.ID",
+              "e.key.ID, e.value.status from /REGION_NAME.entries e order by e.key.ID",
+              "e.key.ID, e.value.status from /REGION_NAME.entrySet e order by e.key.ID desc , e.value.status desc",
+              "e.key, e.value from /REGION_NAME.entrySet e order by e.key.ID, e.value.status desc",
+              "e.key from /REGION_NAME.entrySet e order by e.key.ID desc, e.key.pkid desc",
+              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID, pos.secId",
+              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId desc",
+              "p.ID, pos.secId from /REGION_NAME p, p.positions.values pos order by p.ID desc, pos.secId",};
           for (final String query : queries) {
-            String qStr = null;
             synchronized (region) {
               // Execute on local region.
-              qStr = (distinct + query.replace("REGION_NAME", localRegion));
+              String qStr = (distinct + query.replace("REGION_NAME", localRegion));
               r[0][0] = qs.newQuery(qStr).execute();
 
               // Execute on remote region.
@@ -994,7 +953,7 @@ public class PRQueryDUnitHelper implements Serializable {
             }
           }
 
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
         } catch (QueryInvocationTargetException e) {
           // throw an unchecked exception so the controller can examine the cause and see whether or
@@ -1005,7 +964,7 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -1015,12 +974,12 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -1037,7 +996,7 @@ public class PRQueryDUnitHelper implements Serializable {
     return (CacheSerializableRunnable) PrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryWithLimit(
+  CacheSerializableRunnable getCacheSerializableRunnableForPROrderByQueryWithLimit(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -1087,18 +1046,17 @@ public class PRQueryDUnitHelper implements Serializable {
               .info("<ExpectedException action=add>" + expectedException + "</ExpectedException>");
         }
 
-        String distinct = "<TRACE>SELECT DISTINCT ";
         QueryService qs = getCache().getQueryService();
         Object[] params;
 
         try {
+          String distinct = "<TRACE>SELECT DISTINCT ";
           for (int l = 1; l <= 3; l++) {
             String[] rq = new String[queries.length];
             for (int j = 0; j < queries.length; j++) {
-              String qStr = null;
               synchronized (region) {
                 // Execute on local region.
-                qStr = (distinct + queries[j].replace("REGION_NAME", localRegion));
+                String qStr = (distinct + queries[j].replace("REGION_NAME", localRegion));
                 qStr += (" LIMIT " + (l * l));
                 rq[j] = qStr;
                 SelectResults sr = (SelectResults) qs.newQuery(qStr).execute();
@@ -1128,7 +1086,7 @@ public class PRQueryDUnitHelper implements Serializable {
             ssORrs.CompareQueryResultsWithoutAndWithIndexes(r, queries.length, true, rq);
 
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
         } catch (QueryInvocationTargetException e) {
           // throw an unchecked exception so the controller can examine the cause and see whether or
@@ -1139,7 +1097,7 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -1149,12 +1107,12 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -1171,7 +1129,7 @@ public class PRQueryDUnitHelper implements Serializable {
     return (CacheSerializableRunnable) PrRegion;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRCountStarQueries(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRCountStarQueries(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRCountStarQuery") {
       @Override
@@ -1234,10 +1192,9 @@ public class PRQueryDUnitHelper implements Serializable {
 
         try {
           for (int j = 0; j < queries.length; j++) {
-            String qStr = null;
             synchronized (region) {
               // Execute on PR region.
-              qStr = queries[j];
+              String qStr = queries[j];
               SelectResults sr = (SelectResults) qs.newQuery(qStr).execute();
               r[j][0] = sr;
 
@@ -1248,7 +1205,7 @@ public class PRQueryDUnitHelper implements Serializable {
               r[j][1] = srr;
             }
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
@@ -1264,7 +1221,7 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -1274,12 +1231,12 @@ public class PRQueryDUnitHelper implements Serializable {
         }
 
         catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -1299,7 +1256,7 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * Insure queries on a pr is using index if not fail.
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForIndexUsageCheck() {
+  CacheSerializableRunnable getCacheSerializableRunnableForIndexUsageCheck() {
     SerializableRunnable PrIndexCheck = new CacheSerializableRunnable("PrIndexCheck") {
       @Override
       public void run2() {
@@ -1361,7 +1318,7 @@ public class PRQueryDUnitHelper implements Serializable {
    * 3. Compares the appropriate resultSet <br>
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults(
       final String regionName, final String localRegion) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -1381,13 +1338,13 @@ public class PRQueryDUnitHelper implements Serializable {
             r[j][1] = region.query(query[j]);
           }
 
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults: Queries Executed successfully on Local region & PR Region");
 
           compareTwoQueryResults(r, query.length);
 
         } catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryWithConstantsAndComparingResults: Caught an Exception while querying Constants"
                   + e,
               e);
@@ -1409,20 +1366,18 @@ public class PRQueryDUnitHelper implements Serializable {
 
   public CacheSerializableRunnable getCacheSerializableRunnableForPRAccessorCreate(
       final String regionName, final int redundancy, final Class constraint) {
-    SerializableRunnable createPrRegion;
-    createPrRegion = new CacheSerializableRunnable(regionName) {
+    SerializableRunnable createPrRegion = new CacheSerializableRunnable(regionName) {
       @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
-        Region partitionedregion = null;
-        int maxMem = 0;
         AttributesFactory attr = new AttributesFactory();
         attr.setValueConstraint(constraint);
         PartitionAttributesFactory paf = new PartitionAttributesFactory();
+        int maxMem = 0;
         PartitionAttributes prAttr =
             paf.setLocalMaxMemory(maxMem).setRedundantCopies(redundancy).create();
         attr.setPartitionAttributes(prAttr);
-        partitionedregion = cache.createRegion(regionName, attr.create());
+        Region partitionedregion = cache.createRegion(regionName, attr.create());
         assertNotNull(
             "PRQueryDUnitHelper#getCacheSerializableRunnableForPRAccessorCreate: Partitioned Region "
                 + regionName + " not in cache",
@@ -1446,25 +1401,21 @@ public class PRQueryDUnitHelper implements Serializable {
    * @param Object[][] @param length @return
    */
 
-  public void compareTwoQueryResults(Object[][] r, int len) {
-
-    Set set1 = null;
-    Set set2 = null;
-    ObjectType type1, type2;
+  private void compareTwoQueryResults(Object[][] r, int len) {
 
     for (int j = 0; j < len; j++) {
       if ((r[j][0] != null) && (r[j][1] != null)) {
-        type1 = ((SelectResults) r[j][0]).getCollectionType().getElementType();
+        ObjectType type1 = ((SelectResults) r[j][0]).getCollectionType().getElementType();
         assertNotNull("PRQueryDUnitHelper#compareTwoQueryResults: Type 1 is NULL " + type1, type1);
-        type2 = ((SelectResults) r[j][1]).getCollectionType().getElementType();
+        ObjectType type2 = ((SelectResults) r[j][1]).getCollectionType().getElementType();
         assertNotNull("PRQueryDUnitHelper#compareTwoQueryResults: Type 2 is NULL " + type2, type2);
         if ((type1.getClass().getName()).equals(type2.getClass().getName())) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#compareTwoQueryResults: Both Search Results are of the same Type i.e.--> "
                   + ((SelectResults) r[j][0]).getCollectionType().getElementType());
 
         } else {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter()
+          LogWriterUtils.getLogWriter()
               .error("PRQueryDUnitHelper#compareTwoQueryResults: Classes are : "
                   + type1.getClass().getName() + " " + type2.getClass().getName());
 
@@ -1474,20 +1425,20 @@ public class PRQueryDUnitHelper implements Serializable {
         int size0 = ((SelectResults) r[j][0]).size();
         int size1 = ((SelectResults) r[j][1]).size();
         if (size0 == size1) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#compareTwoQueryResults: Both Search Results are non-zero and are of Same Size i.e.  Size= "
                   + size1 + ";j=" + j);
 
         } else {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#compareTwoQueryResults: FAILED:Search resultSet size are different in both cases; size0="
                   + size0 + ";size1=" + size1 + ";j=" + j);
           fail(
               "PRQueryDUnitHelper#compareTwoQueryResults: FAILED:Search resultSet size are different in both cases; size0="
                   + size0 + ";size1=" + size1 + ";j=" + j);
         }
-        set2 = (((SelectResults) r[j][1]).asSet());
-        set1 = (((SelectResults) r[j][0]).asSet());
+        Set set2 = (((SelectResults) r[j][1]).asSet());
+        Set set1 = (((SelectResults) r[j][0]).asSet());
 
         assertEquals("PRQueryDUnitHelper#compareTwoQueryResults: FAILED: "
             + "result contents are not equal, ", set1, set2);
@@ -1506,7 +1457,7 @@ public class PRQueryDUnitHelper implements Serializable {
    * @return cacheSerializable object
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForPRInvalidQuery(
+  CacheSerializableRunnable getCacheSerializableRunnableForPRInvalidQuery(
       final String regionName) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("PRQuery") {
       @Override
@@ -1515,11 +1466,10 @@ public class PRQueryDUnitHelper implements Serializable {
         Cache cache = getCache();
         // Querying the PR region with an Invalid query string
 
-        String query = "INVALID QUERY";
-
         Region region = cache.getRegion(regionName);
         try {
 
+          String query = "INVALID QUERY";
           region.query(query);
           fail(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRInvalidQuery: InvalidQueryException expected");
@@ -1527,7 +1477,7 @@ public class PRQueryDUnitHelper implements Serializable {
           // pass
         } catch (QueryException qe) {
 
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRInvalidQuery: Caught another Exception while querying , Exception is "
                   + qe,
               qe);
@@ -1550,24 +1500,24 @@ public class PRQueryDUnitHelper implements Serializable {
    * @return cacheSerializable object
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForRegionClose(
+  CacheSerializableRunnable getCacheSerializableRunnableForRegionClose(
       final String regionName, final int redundancy, final Class constraint) {
     SerializableRunnable PrRegion = new CacheSerializableRunnable("regionClose") {
       @Override
       public void run2() throws CacheException {
         Cache cache = getCache();
         final String expectedRegionDestroyedException = RegionDestroyedException.class.getName();
-        final String expectedReplyException = ReplyException.class.getName();
         getCache().getLogger().info("<ExpectedException action=add>"
             + expectedRegionDestroyedException + "</ExpectedException>");
+        final String expectedReplyException = ReplyException.class.getName();
         getCache().getLogger().info(
             "<ExpectedException action=add>" + expectedReplyException + "</ExpectedException>");
 
         Region region = cache.getRegion(regionName);
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Closing region");
         region.close();
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Region Closed on VM ");
         AttributesFactory attr = new AttributesFactory();
         attr.setValueConstraint(constraint);
@@ -1575,7 +1525,7 @@ public class PRQueryDUnitHelper implements Serializable {
         PartitionAttributes prAttr = paf.setRedundantCopies(redundancy).create();
         attr.setPartitionAttributes(prAttr);
         cache.createRegion(regionName, attr.create());
-        org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+        LogWriterUtils.getLogWriter().info(
             "PROperationWithQueryDUnitTest#getCacheSerializableRunnableForRegionClose: Region Recreated on VM ");
         getCache().getLogger().info(
             "<ExpectedException action=remove>" + expectedReplyException + "</ExpectedException>");
@@ -1639,7 +1589,7 @@ public class PRQueryDUnitHelper implements Serializable {
   /**
    * This function defines a appropriate index on a PR given the name and other parameters.
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForDefineIndex(
+  CacheSerializableRunnable getCacheSerializableRunnableForDefineIndex(
       final String prRegionName, final ArrayList<String> indexName,
       final ArrayList<String> indexedExpression) {
     return getCacheSerializableRunnableForDefineIndex(prRegionName, indexName, indexedExpression,
@@ -1680,7 +1630,7 @@ public class PRQueryDUnitHelper implements Serializable {
     return (CacheSerializableRunnable) prIndexCreator;
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForRRIndexCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForRRIndexCreate(
       final String rrRegionName, final String indexName, final String indexedExpression,
       final String fromClause, final String alias) {
 
@@ -1754,11 +1704,13 @@ public class PRQueryDUnitHelper implements Serializable {
   }
 
 
-  public File findFile(String fileName) {
-    return new File(TestUtil.getResourcePath(PRQueryDUnitHelper.class, fileName));
+  File findFile(String fileName) {
+    return new File(
+        createTempFileFromResource(PRQueryDUnitHelper.class, fileName)
+            .getAbsolutePath());
   }
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForIndexCreationCheck(
+  CacheSerializableRunnable getCacheSerializableRunnableForIndexCreationCheck(
       final String name) {
     return new CacheSerializableRunnable("PrIndexCreationCheck") {
       @Override
@@ -1788,7 +1740,7 @@ public class PRQueryDUnitHelper implements Serializable {
    * This function creates a duplicate index should throw an IndexNameConflictException and if not
    * the test should fail.
    */
-  public CacheSerializableRunnable getCacheSerializableRunnableForDuplicatePRIndexCreate(
+  CacheSerializableRunnable getCacheSerializableRunnableForDuplicatePRIndexCreate(
       final String prRegionName, final String indexName, final String indexedExpression,
       final String fromClause, final String alias) {
     SerializableRunnable prIndexCreator =
@@ -1830,7 +1782,7 @@ public class PRQueryDUnitHelper implements Serializable {
    * @param name name of the partitioned regions
    */
 
-  public CacheSerializableRunnable getCacheSerializableRunnableForRemoveIndex(final String name,
+  CacheSerializableRunnable getCacheSerializableRunnableForRemoveIndex(final String name,
       final boolean random) {
     return new CacheSerializableRunnable("PrRemoveIndex") {
       @Override
@@ -1876,7 +1828,7 @@ public class PRQueryDUnitHelper implements Serializable {
     };
   }
 
-  public SerializableRunnableIF getCacheSerializableRunnableForPRColocatedDataSetQueryAndCompareResults(
+  SerializableRunnableIF getCacheSerializableRunnableForPRColocatedDataSetQueryAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -1901,8 +1853,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
         Object r[][] = new Object[queries.length][2];
-        Region region = null;
-        region = cache.getRegion(name);
+        Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
         assertNotNull(region);
@@ -1946,7 +1897,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 .execute();
             r[j][1] = r2.asList();
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           // compareTwoQueryResults(r, queries.length);
@@ -1961,7 +1912,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -1969,12 +1920,12 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -1991,7 +1942,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
   }
 
-  public SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryAndCompareResults(
+  SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -2016,8 +1967,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
         Object r[][] = new Object[queries.length][2];
-        Region region = null;
-        region = cache.getRegion(name);
+        Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
         assertNotNull(region);
@@ -2060,7 +2010,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 .execute();
             r[j][1] = r2.asList();
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           // compareTwoQueryResults(r, queries.length);
@@ -2075,7 +2025,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -2083,12 +2033,12 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -2106,7 +2056,7 @@ public class PRQueryDUnitHelper implements Serializable {
   }
 
 
-  public SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryWithCompactAndRangeIndexAndCompareResults(
+  SerializableRunnableIF getCacheSerializableRunnableForPRAndRRQueryWithCompactAndRangeIndexAndCompareResults(
       final String name, final String coloName, final String localName,
       final String coloLocalName) {
 
@@ -2130,8 +2080,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = pos2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
         Object r[][] = new Object[queries.length][2];
-        Region region = null;
-        region = cache.getRegion(name);
+        Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
         assertNotNull(region);
@@ -2173,7 +2122,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 .execute();
             r[j][1] = r2.asList();
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
@@ -2187,7 +2136,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -2195,12 +2144,12 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -2246,8 +2195,7 @@ public class PRQueryDUnitHelper implements Serializable {
             "r1.ID = r2.id AND (r1.positions.size < r2.positions.size OR r1.positions.size > 0)",};
 
         Object r[][] = new Object[queries.length][2];
-        Region region = null;
-        region = cache.getRegion(name);
+        Region region = cache.getRegion(name);
         assertNotNull(region);
         region = cache.getRegion(coloName);
         assertNotNull(region);
@@ -2289,7 +2237,7 @@ public class PRQueryDUnitHelper implements Serializable {
                 .execute();
             r[j][1] = r2.asList();
           }
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Queries Executed successfully on Local region & PR Region");
 
           StructSetOrResultsSet ssORrs = new StructSetOrResultsSet();
@@ -2303,7 +2251,7 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (QueryException e) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().error(
+          LogWriterUtils.getLogWriter().error(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught QueryException while querying"
                   + e,
               e);
@@ -2311,12 +2259,12 @@ public class PRQueryDUnitHelper implements Serializable {
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught unexpected query exception",
               e);
         } catch (RegionDestroyedException rde) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a RegionDestroyedException while querying as expected ",
               rde);
 
         } catch (CancelException cce) {
-          org.apache.geode.test.dunit.LogWriterUtils.getLogWriter().info(
+          LogWriterUtils.getLogWriter().info(
               "PRQueryDUnitHelper#getCacheSerializableRunnableForPRQueryAndCompareResults: Caught a CancelException while querying as expected ",
               cce);
 
@@ -2330,10 +2278,8 @@ public class PRQueryDUnitHelper implements Serializable {
       }
     };
     return PrRegion;
-
   }
 
-  // Helper classes and function
   public static class TestQueryFunction implements Function {
 
     @Override
@@ -2348,8 +2294,7 @@ public class PRQueryDUnitHelper implements Serializable {
 
     private final String id;
 
-    public TestQueryFunction(String id) {
-      super();
+    TestQueryFunction(String id) {
       this.id = id;
     }
 
@@ -2361,21 +2306,20 @@ public class PRQueryDUnitHelper implements Serializable {
       try {
         Query query = queryService.newQuery(qstr);
         context.getResultSender().sendResult(
-            (ArrayList) ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
+            ((SelectResults) query.execute((RegionFunctionContext) context)).asList());
         context.getResultSender().lastResult(null);
       } catch (Exception e) {
-        e.printStackTrace();
         throw new FunctionException(e);
       }
     }
 
     @Override
     public String getId() {
-      return this.id;
+      return id;
     }
   }
 
-  public SerializableRunnable getCacheSerializableRunnableForCloseCache() {
+  SerializableRunnable getCacheSerializableRunnableForCloseCache() {
     return new SerializableRunnable() {
       @Override
       public void run() {

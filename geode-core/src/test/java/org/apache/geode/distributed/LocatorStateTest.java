@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 import org.apache.geode.distributed.AbstractLauncher.Status;
 import org.apache.geode.distributed.LocatorLauncher.LocatorState;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
-import org.apache.geode.management.internal.cli.json.GfJsonObject;
 
 /**
  * Unit tests for {@link LocatorLauncher.LocatorState}.
@@ -79,10 +79,9 @@ public class LocatorStateTest {
     // when: passed to fromJson
     Throwable thrown = catchThrowable(() -> fromJson(emptyString));
 
-    // then: throws IllegalArgumentException with cause of GfJsonException
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class)
-        .hasCauseInstanceOf(GfJsonException.class);
-    assertThat(thrown.getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
+        .hasCauseInstanceOf(NullPointerException.class);
+    assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class).hasNoCause();
   }
 
   @Test
@@ -95,8 +94,8 @@ public class LocatorStateTest {
 
     // then: throws IllegalArgumentException with cause of GfJsonException
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class)
-        .hasCauseInstanceOf(GfJsonException.class);
-    assertThat(thrown.getCause()).isInstanceOf(GfJsonException.class).hasNoCause();
+        .hasCauseInstanceOf(NullPointerException.class);
+    assertThat(thrown.getCause()).isInstanceOf(NullPointerException.class).hasNoCause();
   }
 
   @Test
@@ -165,6 +164,14 @@ public class LocatorStateTest {
     map.put(ServiceState.JSON_TIMESTAMP, timestampTime);
     map.put(ServiceState.JSON_UPTIME, uptime);
     map.put(ServiceState.JSON_WORKINGDIRECTORY, workingDirectory);
-    return new GfJsonObject(map).toString();
+
+    String status = null;
+    try {
+      status = new ObjectMapper().writeValueAsString(map);
+    } catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+
+    return status;
   }
 }

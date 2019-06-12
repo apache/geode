@@ -206,8 +206,8 @@ public class DestroyOperation extends DistributedCacheOperation {
     }
 
     @Override
-    protected boolean mayAddToMultipleSerialGateways(ClusterDistributionManager dm) {
-      return _mayAddToMultipleSerialGateways(dm);
+    protected boolean mayNotifySerialGatewaySender(ClusterDistributionManager dm) {
+      return notifiesSerialGatewaySender(dm);
     }
   }
 

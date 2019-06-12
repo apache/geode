@@ -24,7 +24,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,11 +42,11 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
-
 public class DeployJarWithSSLDUnitTest {
 
   private static File jks =
-      new File(getResourcePath(DeployJarWithSSLDUnitTest.class, "/ssl/trusted.keystore"));
+      new File(createTempFileFromResource(DeployJarWithSSLDUnitTest.class, "/ssl/trusted.keystore")
+          .getAbsolutePath());
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();

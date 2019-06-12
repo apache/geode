@@ -154,9 +154,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public void readFully(byte[] b) throws IOException {
-    final int len = b.length;
-    System.arraycopy(this.bytes, this.pos, b, 0, len);
-    this.pos += len;
+    readFully(b, 0, b.length);
   }
 
   /**
@@ -311,8 +309,15 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   @Override
   public String readUTF() throws IOException {
     final int utfLen = readUnsignedShort();
+    if (utfLen == 0) {
+      return "";
+    }
 
     if ((this.pos + utfLen) <= this.nBytes) {
+      String asciiString = readASCII(utfLen);
+      if (asciiString != null) {
+        return asciiString;
+      }
       if (this.charBuf == null || this.charBuf.length < utfLen) {
         int charBufLength = (((utfLen / 2) + 1) * 3);
         this.charBuf = new char[charBufLength];
@@ -324,17 +329,6 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
       final int limit = index + utfLen;
       int nChars = 0;
       int char1, char2, char3;
-
-      // quick check for ASCII strings first
-      for (; index < limit; index++, nChars++) {
-        char1 = (bytes[index] & 0xff);
-        if (char1 < 128) {
-          chars[nChars] = (char) char1;
-          continue;
-        } else {
-          break;
-        }
-      }
 
       for (; index < limit; index++, nChars++) {
         char1 = (bytes[index] & 0xff);
@@ -399,11 +393,66 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   }
 
   /**
+   * If the utf encoded data is all ASCII then return
+   * a String containing that data. Otherwise return null.
+   */
+  private String readASCII(int utfLen) {
+    final int startIdx = pos;
+    int index = pos;
+    final int limit = index + utfLen;
+    for (; index < limit; index++) {
+      if ((bytes[index] & 0xff) >= 128) {
+        return null;
+      }
+    }
+    pos = limit;
+    return new String(bytes, 0, startIdx, utfLen);
+  }
+
+  /**
+   * Behaves like InputStream.read()
+   * Returns the next byte as an int in the range [0..255]
+   * or -1 if at EOF.
+   */
+  private int readByteAsInt() {
+    if (this.pos >= this.nBytes) {
+      return -1;
+    } else {
+      return this.bytes[this.pos++] & 0xff;
+    }
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override
   public String readLine() throws IOException {
-    throw new UnsupportedOperationException();
+    if (this.pos >= this.nBytes) {
+      return null;
+    }
+    // index of the first byte in the line
+    int startIdx = this.pos;
+    // index of the last byte in the line
+    int lastIdx = -1;
+    while (lastIdx == -1) {
+      int c = readByteAsInt();
+      switch (c) {
+        case -1:
+          lastIdx = this.pos;
+          break;
+        case '\n':
+          lastIdx = this.pos - 1;
+          break;
+        case '\r':
+          lastIdx = this.pos - 1;
+          int c2 = readByteAsInt();
+          if (c2 != '\n' && c2 != -1) {
+            this.pos--;
+          }
+          break;
+      }
+    }
+    return new String(this.bytes, 0, startIdx, lastIdx - startIdx);
   }
 
   /**

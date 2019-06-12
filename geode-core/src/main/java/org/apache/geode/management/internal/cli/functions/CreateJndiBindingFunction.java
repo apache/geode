@@ -19,18 +19,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.naming.NamingException;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.JndiBindingsType.JndiBinding;
 import org.apache.geode.cache.execute.FunctionContext;
-import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.datasource.ConfigProperty;
-import org.apache.geode.internal.datasource.DataSourceCreateException;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.util.DriverJarUtil;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult.StatusState;
 
@@ -39,32 +36,26 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
   private static final Logger logger = LogService.getLogger();
 
   @Override
-  public CliFunctionResult executeFunction(FunctionContext<Object[]> context)
-      throws DataSourceCreateException, NamingException {
-    ResultSender<Object> resultSender = context.getResultSender();
+  public CliFunctionResult executeFunction(FunctionContext<Object[]> context) {
     Object[] arguments = context.getArguments();
     JndiBinding configuration = (JndiBinding) arguments[0];
     boolean creatingDataSource = (Boolean) arguments[1];
+
     final String TYPE_NAME;
     if (creatingDataSource) {
       TYPE_NAME = "data-source";
     } else {
       TYPE_NAME = "jndi-binding";
     }
+
     try {
       JNDIInvoker.mapDatasource(getParamsAsMap(configuration),
           convert(configuration.getConfigProperties()));
-    } catch (DataSourceCreateException ex) {
-      if (logger.isErrorEnabled()) {
-        logger.error("create " + TYPE_NAME + " failed", ex.getWrappedException());
-      }
-      throw ex;
-    } catch (NamingException ex) {
+    } catch (Exception ex) {
       if (logger.isErrorEnabled()) {
         logger.error("create " + TYPE_NAME + " failed", ex);
       }
-      throw ex;
-
+      return new CliFunctionResult(context.getMemberName(), StatusState.ERROR, ex.getMessage());
     }
 
     return new CliFunctionResult(context.getMemberName(), StatusState.OK,
@@ -90,6 +81,10 @@ public class CreateJndiBindingFunction extends CliFunction<Object[]> {
     params.put("user-name", binding.getUserName());
     params.put("xa-datasource-class", binding.getXaDatasourceClass());
     return params;
+  }
+
+  DriverJarUtil getDriverJarUtil() {
+    return new DriverJarUtil();
   }
 
   static List<ConfigProperty> convert(

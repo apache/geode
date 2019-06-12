@@ -83,7 +83,7 @@ public class LoggingSession implements SessionContext {
     }
     if (logConfiguration) {
       String configInfo = configuration.getLogConfigSupplier().getLogConfig().toLoggerString();
-      logger.info(STARTUP_CONFIGURATION + configInfo);
+      logger.info(STARTUP_CONFIGURATION + System.lineSeparator() + configInfo);
     }
   }
 

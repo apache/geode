@@ -21,7 +21,6 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
 @Component
 public class LocatorCleanupEventListener {
@@ -31,10 +30,10 @@ public class LocatorCleanupEventListener {
 
   @EventListener
   public void handleContextCloseEvent(ContextClosedEvent closedEvent) {
-    LocatorStarterRule locator =
-        (LocatorStarterRule) webApplicationContext.getServletContext().getAttribute("locator");
+    GeodeComponent locator =
+        (GeodeComponent) webApplicationContext.getServletContext().getAttribute("locator");
     if (locator != null) {
-      locator.after();
+      locator.stop();
     }
   }
 }

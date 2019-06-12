@@ -14,6 +14,7 @@
  */
 package org.apache.geode.session.tests;
 
+import static org.apache.geode.test.util.ResourceUtils.getResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -47,7 +48,6 @@ import org.w3c.dom.NodeList;
 
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.configuration.utils.ZipUtils;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * Base class for handling downloading and configuring J2EE containers.
@@ -58,14 +58,15 @@ import org.apache.geode.util.test.TestUtil;
  * Subclasses provide installation of specific containers.
  */
 public abstract class ContainerInstall {
+
   private final IntSupplier portSupplier;
-  public static final Logger logger = LogService.getLogger();
-  public static final String TMP_DIR = createTempDir();
-  public static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
-  public static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
-  public static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
-  public static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
-  protected static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
+  static final Logger logger = LogService.getLogger();
+  static final String TMP_DIR = createTempDir();
+  static final String GEODE_BUILD_HOME = System.getenv("GEODE_HOME");
+  static final String GEODE_BUILD_HOME_LIB = GEODE_BUILD_HOME + "/lib/";
+  private static final String DEFAULT_INSTALL_DIR = TMP_DIR + "/cargo_containers/";
+  private static final String DEFAULT_MODULE_EXTRACTION_DIR = TMP_DIR + "/cargo_modules/";
+  static final String DEFAULT_MODULE_LOCATION = GEODE_BUILD_HOME + "/tools/Modules/";
 
   protected IntSupplier portSupplier() {
     return portSupplier;
@@ -120,8 +121,6 @@ public abstract class ContainerInstall {
     public boolean isClientServer() {
       return isClientServer;
     }
-
-
   }
 
   public ContainerInstall(String name, String downloadURL, ConnectionType connectionType,
@@ -145,7 +144,7 @@ public abstract class ContainerInstall {
 
     clearPreviousInstall(installDir);
 
-    String resource = TestUtil.getResourcePath(getClass(), "/" + downloadURL);
+    String resource = getResource(getClass(), "/" + downloadURL).getPath();
     URL url = Paths.get(resource).toUri().toURL();
     logger.info("Installing container from URL " + url);
 
@@ -169,14 +168,14 @@ public abstract class ContainerInstall {
     logger.info("Installed container into " + getHome());
   }
 
-  public ServerContainer generateContainer(String containerDescriptors) throws IOException {
+  ServerContainer generateContainer(String containerDescriptors) throws IOException {
     return generateContainer(null, containerDescriptors);
   }
 
   /**
    * Cleans up the installation by deleting the extracted module and downloaded installation folders
    */
-  public void clearPreviousInstall(String installDir) throws IOException {
+  private void clearPreviousInstall(String installDir) throws IOException {
     File installFolder = new File(installDir);
     // Remove installs from previous runs in the same folder
     if (installFolder.exists()) {
@@ -185,7 +184,7 @@ public abstract class ContainerInstall {
     }
   }
 
-  public void setDefaultLocatorPort(int port) {
+  void setDefaultLocatorPort(int port) {
     defaultLocatorPort = port;
   }
 
@@ -195,7 +194,7 @@ public abstract class ContainerInstall {
    * Since an installation can only be client server or peer to peer there is no need for a function
    * which checks for a peer to peer installation (just check if not client server).
    */
-  public boolean isClientServer() {
+  boolean isClientServer() {
     return connType.isClientServer();
   }
 
@@ -212,14 +211,14 @@ public abstract class ContainerInstall {
    * The module contains jars needed for geode session setup as well as default templates for some
    * needed XML files.
    */
-  public String getModulePath() {
+  String getModulePath() {
     return modulePath;
   }
 
   /**
    * The path to the session testing WAR file
    */
-  public String getWarFilePath() {
+  String getWarFilePath() {
     return warFilePath;
   }
 
@@ -227,7 +226,7 @@ public abstract class ContainerInstall {
    * @return The enum {@link #connType} which represents the type of connection for this
    *         installation
    */
-  public ConnectionType getConnectionType() {
+  ConnectionType getConnectionType() {
     return connType;
   }
 
@@ -237,7 +236,7 @@ public abstract class ContainerInstall {
    * This is the address that a container uses by default. Containers themselves can have their own
    * personal locator address, but will default to this address unless specifically set.
    */
-  public String getDefaultLocatorAddress() {
+  String getDefaultLocatorAddress() {
     return defaultLocatorAddress;
   }
 
@@ -247,14 +246,14 @@ public abstract class ContainerInstall {
    * This is the port that a container uses by default. Containers themselves can have their own
    * personal locator port, but will default to this port unless specifically set.
    */
-  public int getDefaultLocatorPort() {
+  int getDefaultLocatorPort() {
     return defaultLocatorPort;
   }
 
   /**
    * Gets the cache XML file to use by default for this installation
    */
-  public File getCacheXMLFile() {
+  File getCacheXMLFile() {
     return new File(modulePath + "/conf/" + getConnectionType().getCacheXMLFileName());
   }
 
@@ -287,7 +286,7 @@ public abstract class ContainerInstall {
    * NOTE::This walks into the extensions folder and then uses a hardcoded path from there making it
    * very unreliable if things are moved.
    */
-  protected static String findSessionTestingWar() {
+  private static String findSessionTestingWar() {
     // Start out searching directory above current
     String curPath = "../";
 
@@ -322,15 +321,15 @@ public abstract class ContainerInstall {
    *        extract. Used as a search parameter to find the module archive.
    * @return The path to the non-archive (extracted) version of the module files
    */
-  protected static String findAndExtractModule(String geodeModuleLocation, String moduleName)
+  private static String findAndExtractModule(String geodeModuleLocation, String moduleName)
       throws IOException {
-    File modulePath = null;
     File modulesDir = new File(geodeModuleLocation);
 
-    boolean archive = false;
     logger.info("Trying to access build dir " + modulesDir);
 
     // Search directory for tomcat module folder/zip
+    boolean archive = false;
+    File modulePath = null;
     for (File file : modulesDir.listFiles()) {
 
       if (file.getName().toLowerCase().contains(moduleName)) {
@@ -386,7 +385,7 @@ public abstract class ContainerInstall {
    *        property value the current value. If false, replaces the current property value with the
    *        given property value
    */
-  protected static void editPropertyFile(String filePath, String propertyName, String propertyValue,
+  static void editPropertyFile(String filePath, String propertyName, String propertyValue,
       boolean append) throws Exception {
     FileInputStream input = new FileInputStream(filePath);
     Properties properties = new Properties();
@@ -405,26 +404,14 @@ public abstract class ContainerInstall {
     logger.info("Modified container Property file " + filePath);
   }
 
-  protected static void editXMLFile(String XMLPath, String tagId, String tagName,
+  static void editXMLFile(String XMLPath, String tagId, String tagName,
       String parentTagName, HashMap<String, String> attributes) {
     editXMLFile(XMLPath, tagId, tagName, tagName, parentTagName, attributes, false);
   }
 
-  protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
-      HashMap<String, String> attributes) {
-    editXMLFile(XMLPath, tagName, parentTagName, attributes, false);
-  }
-
-  protected static void editXMLFile(String XMLPath, String tagName, String parentTagName,
+  static void editXMLFile(String XMLPath, String tagName, String parentTagName,
       HashMap<String, String> attributes, boolean writeOnSimilarAttributeNames) {
     editXMLFile(XMLPath, null, tagName, tagName, parentTagName, attributes,
-        writeOnSimilarAttributeNames);
-  }
-
-  protected static void editXMLFile(String XMLPath, String tagName, String replacementTagName,
-      String parentTagName, HashMap<String, String> attributes,
-      boolean writeOnSimilarAttributeNames) {
-    editXMLFile(XMLPath, null, tagName, replacementTagName, parentTagName, attributes,
         writeOnSimilarAttributeNames);
   }
 
@@ -448,7 +435,7 @@ public abstract class ContainerInstall {
    *        rather than adding a new element. If false, create a new XML element (unless tagId is
    *        not null).
    */
-  protected static void editXMLFile(String XMLPath, String tagId, String tagName,
+  private static void editXMLFile(String XMLPath, String tagId, String tagName,
       String replacementTagName, String parentTagName, HashMap<String, String> attributes,
       boolean writeOnSimilarAttributeNames) {
 
@@ -586,7 +573,7 @@ public abstract class ContainerInstall {
     for (String key : attributes.keySet()) {
       Node attr = nodeAttrs.getNamedItem(key);
       if (attr == null
-          || (checkSimilarValues && !attr.getTextContent().equals(attributes.get(key)))) {
+          || checkSimilarValues && !attr.getTextContent().equals(attributes.get(key))) {
         return false;
       }
     }
@@ -594,8 +581,8 @@ public abstract class ContainerInstall {
     // Check to make sure the node does not have more than the attribute fields
     for (int i = 0; i < nodeAttrs.getLength(); i++) {
       String attr = nodeAttrs.item(i).getNodeName();
-      if (attributes.get(attr) == null || (checkSimilarValues
-          && !attributes.get(attr).equals(nodeAttrs.item(i).getTextContent()))) {
+      if (attributes.get(attr) == null || checkSimilarValues
+          && !attributes.get(attr).equals(nodeAttrs.item(i).getTextContent())) {
         return false;
       }
     }

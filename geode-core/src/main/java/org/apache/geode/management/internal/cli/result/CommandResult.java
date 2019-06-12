@@ -18,12 +18,11 @@ package org.apache.geode.management.internal.cli.result;
 import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.geode.annotations.Immutable;
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.result.model.AbstractResultModel;
@@ -36,11 +35,6 @@ public class CommandResult implements Result {
   private ResultModel result;
   private List<String> commandOutput;
   private int commandOutputIndex;
-  @Immutable
-  private static final Map<String, List<String>> EMPTY_TABLE_MAP =
-      Collections.unmodifiableMap(new LinkedHashMap<>());
-  @Immutable
-  private static final List<String> EMPTY_LIST = Collections.emptyList();
 
   public CommandResult(ResultModel result) {
     this.result = result;
@@ -108,16 +102,14 @@ public class CommandResult implements Result {
     commandOutput.addAll(resultTable.buildTableList());
   }
 
-
   private void addSpacedRowInTable(TableBuilder.Table resultTable, String row) {
-    if (row != null && !row.isEmpty()) {
+    if (StringUtils.isNotBlank(row)) {
       resultTable.newRow().newLeftCol(row);
-      resultTable.newRow().newLeftCol("");
     }
   }
 
   private void addRowInRowGroup(TableBuilder.RowGroup rowGroup, String row) {
-    if (row != null && !row.isEmpty()) {
+    if (StringUtils.isNotBlank(row)) {
       rowGroup.newRow().newLeftCol(row);
     }
   }

@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -27,7 +28,6 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheXmlException;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test tests Illegal arguements being passed to create disk regions. The creation of the DWA
@@ -44,7 +44,8 @@ public class DiskRegionIllegalCacheXMLvaluesJUnitTest {
       dir.deleteOnExit();
       Properties props = new Properties();
       props.setProperty(MCAST_PORT, "0");
-      props.setProperty(CACHE_XML_FILE, TestUtil.getResourcePath(getClass(), path));
+      props.setProperty(CACHE_XML_FILE,
+          createTempFileFromResource(getClass(), path).getAbsolutePath());
       ds = DistributedSystem.connect(props);
       try {
 

@@ -16,12 +16,12 @@ package org.apache.geode.connectors.jdbc.internal.cli;
 
 import static org.apache.geode.connectors.jdbc.internal.cli.CreateMappingCommand.CREATE_MAPPING;
 import static org.apache.geode.connectors.jdbc.internal.cli.DestroyMappingCommand.DESTROY_MAPPING;
-import static org.apache.geode.connectors.util.internal.MappingConstants.DATA_SOURCE_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.PDX_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.REGION_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SCHEMA_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.SYNCHRONOUS_NAME;
-import static org.apache.geode.connectors.util.internal.MappingConstants.TABLE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.DATA_SOURCE_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.PDX_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.REGION_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SCHEMA_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.SYNCHRONOUS_NAME;
+import static org.apache.geode.connectors.jdbc.internal.cli.MappingConstants.TABLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -45,7 +45,6 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.connectors.jdbc.internal.JdbcConnectorService;
 import org.apache.geode.connectors.jdbc.internal.configuration.RegionMapping;
-import org.apache.geode.connectors.util.internal.MappingCommandUtils;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.jndi.JNDIInvoker;

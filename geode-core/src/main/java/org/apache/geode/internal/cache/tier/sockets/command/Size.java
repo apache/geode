@@ -65,7 +65,7 @@ public class Size extends BaseCommand {
     stats.incReadSizeRequestTime(start - oldStart);
     // Retrieve the data from the message parts
     Part regionNamePart = clientMessage.getPart(0);
-    String regionName = regionNamePart.getString();
+    String regionName = regionNamePart.getCachedString();
 
     if (regionName == null) {
       logger.warn("The input region name for the %s request is null", "size");

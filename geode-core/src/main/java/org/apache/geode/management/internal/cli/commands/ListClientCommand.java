@@ -51,7 +51,7 @@ public class ListClientCommand extends GfshCommand {
     ObjectName[] cacheServers = service.getDistributedSystemMXBean().listCacheServerObjectNames();
 
     if (cacheServers.length == 0) {
-      return ResultModel.createError(
+      return ResultModel.createInfo(
           CliStrings.format(CliStrings.LIST_CLIENT_COULD_NOT_RETRIEVE_SERVER_LIST));
     }
 
@@ -81,7 +81,7 @@ public class ListClientCommand extends GfshCommand {
     }
 
     if (clientServerMap.size() == 0) {
-      return ResultModel.createError(
+      return ResultModel.createInfo(
           CliStrings.format(CliStrings.LIST_COULD_NOT_RETRIEVE_CLIENT_LIST));
     }
 

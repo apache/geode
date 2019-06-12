@@ -138,7 +138,7 @@ public class DestroyOp {
       this.prSingleHopEnabled = prSingleHopEnabled;
       this.callbackArg = callbackArg;
       this.event = event;
-      getMessage().addStringPart(region.getFullPath());
+      getMessage().addStringPart(region.getFullPath(), true);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
       getMessage().addBytePart(operation.ordinal);
@@ -155,7 +155,7 @@ public class DestroyOp {
       this.key = key;
       this.event = event;
       this.callbackArg = callbackArg;
-      getMessage().addStringPart(region);
+      getMessage().addStringPart(region, true);
       getMessage().addStringOrObjPart(key);
       getMessage().addObjPart(expectedOldValue);
       getMessage().addBytePart(operation.ordinal);

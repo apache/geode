@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -36,7 +37,6 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test is for testing Disk attributes set via xml.
@@ -71,7 +71,9 @@ public class DiskRegCacheXmlJUnitTest {
     // Connect to the GemFire distributed system
     Properties props = new Properties();
     props.setProperty(NAME, "test");
-    String path = TestUtil.getResourcePath(getClass(), "DiskRegCacheXmlJUnitTest.xml");
+    String path =
+        createTempFileFromResource(getClass(), "DiskRegCacheXmlJUnitTest.xml")
+            .getAbsolutePath();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(CACHE_XML_FILE, path);
     ds = DistributedSystem.connect(props);

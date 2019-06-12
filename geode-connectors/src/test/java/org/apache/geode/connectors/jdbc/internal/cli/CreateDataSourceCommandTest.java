@@ -230,7 +230,7 @@ public class CreateDataSourceCommandTest {
         COMMAND + " --name=name  --url=url")
         .statusIsSuccess()
         .containsOutput("No members found, data source saved to cluster configuration.")
-        .containsOutput("Changes to configuration for group 'cluster' are persisted.");
+        .containsOutput("Cluster configuration for group 'cluster' is updated");
 
     verify(clusterConfigService).updateCacheConfig(any(), any());
     verify(command).updateConfigForGroup(eq("cluster"), eq(cacheConfig), isNotNull());

@@ -16,6 +16,8 @@ package org.apache.geode.pdx.internal.json;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -36,12 +38,13 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
   PdxInstanceFactoryImpl m_pdxInstanceFactory;
   PdxInstance m_pdxInstance;
   String m_PdxName;// when pdx is member, else null if part of lists
+  private Set<String> identityFields;
 
   private InternalCache getCache() {
     return (InternalCache) CacheFactory.getAnyInstance();
   }
 
-  public PdxInstanceHelper(String className, JSONToPdxMapper parent) {
+  public PdxInstanceHelper(String className, JSONToPdxMapper parent, String... identityFields) {
     InternalCache cache = getCache();
     if (logger.isTraceEnabled()) {
       logger.trace("ClassName {}", className);
@@ -50,6 +53,14 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
     m_parent = parent;
     m_pdxInstanceFactory = (PdxInstanceFactoryImpl) cache
         .createPdxInstanceFactory(JSONFormatter.JSON_CLASSNAME, false);
+    initializeIdentityFields(identityFields);
+  }
+
+  public void initializeIdentityFields(String... identityFields) {
+    this.identityFields = new HashSet<>();
+    for (String identityField : identityFields) {
+      this.identityFields.add(identityField);
+    }
   }
 
   @Override
@@ -71,6 +82,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addStringField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeObject(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -79,6 +91,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addByteField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeByte(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -87,6 +100,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addShortField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeShort(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -95,6 +109,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addIntField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeInt(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -103,6 +118,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addLongField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeLong(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -111,6 +127,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addBigDecimalField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeObject(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -119,6 +136,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addBigIntegerField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeObject(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -127,6 +145,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addBooleanField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeBoolean(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -135,6 +154,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addFloatField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeFloat(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -143,6 +163,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addDoubleField fieldName: {}; value: {}", fieldName, value);
     }
     m_pdxInstanceFactory.writeDouble(fieldName, value);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -151,6 +172,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addNullField fieldName: {}; value: NULL", fieldName);
     }
     m_pdxInstanceFactory.writeObject(fieldName, null);
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -159,6 +181,7 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("addListField fieldName: {}", fieldName);
     }
     m_pdxInstanceFactory.writeObject(fieldName, list.getList());
+    addIdentityField(fieldName);
   }
 
   @Override
@@ -184,6 +207,12 @@ public class PdxInstanceHelper implements JSONToPdxMapper {
       logger.trace("endObjectField fieldName: {}", fieldName);
     }
     m_pdxInstance = m_pdxInstanceFactory.create();
+  }
+
+  private void addIdentityField(String fieldName) {
+    if (this.identityFields.contains(fieldName)) {
+      m_pdxInstanceFactory.markIdentityField(fieldName);
+    }
   }
 
   @Override

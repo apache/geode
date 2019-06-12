@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.rest.internal.web;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
@@ -24,7 +23,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.test.junit.rules.HttpResponseAssert.assertResponse;
-import static org.apache.geode.util.test.TestUtil.getResourcePath;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.File;
 
@@ -43,8 +42,9 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class, RestAPITest.class})
 public class RestSecurityWithSSLTest {
 
-  private static File KEYSTORE_FILE =
-      new File(getResourcePath(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore"));
+  private static final File KEYSTORE_FILE =
+      new File(createTempFileFromResource(RestSecurityWithSSLTest.class, "/ssl/trusted.keystore")
+          .getAbsolutePath());
 
   @Rule
   public RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();

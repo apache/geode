@@ -57,7 +57,9 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
-        "create disk-store --name=diskStore --dir=" + temporaryFolder.getRoot()).statusIsSuccess();
+        "create disk-store --name=diskStore --dir=" + temporaryFolder.getRoot())
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
   }
 
   @Test
@@ -210,8 +212,8 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create gateway-sender --parallel=true --enable-persistence=false --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
-        .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + regionName)
         .statusIsSuccess();
@@ -250,8 +252,8 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create gateway-sender --parallel=true --enable-persistence=false --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
-        .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region --type=PARTITION --name=" + region1Name)
         .statusIsSuccess();
@@ -305,8 +307,8 @@ public class AlterRegionCommandDUnitTest {
     gfsh.executeAndAssertThat(
         "create gateway-sender --parallel=true --enable-persistence=false --remote-distributed-system-id=2 --id="
             + gatewaySenderName)
-        .statusIsSuccess();
-    locator.waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(1);
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
 
     gfsh.executeAndAssertThat("create region --type=PARTITION_PERSISTENT --name=" + regionName
         + " --disk-store=diskStore").statusIsSuccess();

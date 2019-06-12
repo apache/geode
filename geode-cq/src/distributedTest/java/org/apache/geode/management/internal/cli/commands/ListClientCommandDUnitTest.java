@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -43,11 +43,11 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 @Category({GfshTest.class})
 public class ListClientCommandDUnitTest {
-  @ClassRule
-  public static ClusterStartupRule cluster = new ClusterStartupRule(6);
+  @Rule
+  public ClusterStartupRule cluster = new ClusterStartupRule(6);
 
-  @ClassRule
-  public static GfshCommandRule gfsh = new GfshCommandRule();
+  @Rule
+  public GfshCommandRule gfsh = new GfshCommandRule();
 
   private static final String REGION_NAME = "stocks";
 
@@ -57,22 +57,36 @@ public class ListClientCommandDUnitTest {
 
   private static ClientVM client1, client2;
 
-  @BeforeClass
-  public static void setup() throws Exception {
+  @Before
+  public void setup() throws Exception {
     locator = cluster.startLocatorVM(locatorID);
-    int locatorPort = locator.getPort();
-    server1 = cluster.startServerVM(server1ID,
-        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
-            .withConnectionToLocator(locatorPort));
-    server2 = cluster.startServerVM(server2ID,
-        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
-            .withConnectionToLocator(locatorPort));
 
     gfsh.connectAndVerify(locator);
   }
 
+  private void startServers(MemberVM locator) {
+    server1 = cluster.startServerVM(server1ID,
+        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
+            .withConnectionToLocator(locator.getPort()));
+    server2 = cluster.startServerVM(server2ID,
+        r -> r.withRegion(RegionShortcut.REPLICATE, REGION_NAME)
+            .withConnectionToLocator(locator.getPort()));
+  }
+
+  @Test
+  public void noResultIsSuccess() {
+    startServers(locator);
+    gfsh.executeAndAssertThat("list clients").statusIsSuccess();
+  }
+
+  @Test
+  public void noMembersIsSuccess() {
+    gfsh.executeAndAssertThat("list clients").statusIsSuccess();
+  }
+
   @Test
   public void testTwoClientsConnectToOneServer() throws Exception {
+    startServers(locator);
     int server1port = server1.getPort();
     Properties client1props = new Properties();
     client1props.setProperty("name", "client-1");
@@ -123,6 +137,7 @@ public class ListClientCommandDUnitTest {
 
   @Test
   public void oneClientConnectToTwoServers() throws Exception {
+    startServers(locator);
     int server1port = server1.getPort();
     int server2port = server2.getPort();
     Properties client1props = new Properties();

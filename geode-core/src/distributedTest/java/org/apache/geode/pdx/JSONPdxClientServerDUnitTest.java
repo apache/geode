@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
@@ -44,7 +43,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.management.internal.cli.json.GfJsonException;
 import org.apache.geode.pdx.internal.json.PdxToJSON;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.NetworkUtils;
@@ -52,7 +50,7 @@ import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.RestAPITest;
-import org.apache.geode.util.test.TestUtil;
+import org.apache.geode.test.util.ResourceUtils;
 
 @Category({RestAPITest.class})
 public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
@@ -185,7 +183,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
     });
   }
 
-  public void VerifyPdxInstanceAndJsonConversion() throws JsonProcessingException, GfJsonException {
+  public void VerifyPdxInstanceAndJsonConversion() throws Exception {
     Region region = getRootRegion("testSimplePdx");
 
     // Create Object and initialize its members.
@@ -215,7 +213,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   private void validateReceivedJSON(Region region, TestObjectForJSONFormatter actualTestObject,
-      ObjectMapper objectMapper) throws JsonProcessingException, GfJsonException {
+      ObjectMapper objectMapper) throws Exception {
     // 1. get the json from the object using Jackson Object Mapper
     String json = objectMapper.writeValueAsString(actualTestObject);
     String jsonWithClassType = actualTestObject.addClassTypeToJson(json);
@@ -241,7 +239,7 @@ public class JSONPdxClientServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   String getJSONDir(String file) {
-    String path = TestUtil.getResourcePath(getClass(), file);
+    String path = ResourceUtils.getResource(getClass(), file).getPath();
     return new File(path).getParent();
   }
 

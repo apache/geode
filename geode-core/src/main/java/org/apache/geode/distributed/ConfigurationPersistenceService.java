@@ -30,7 +30,6 @@ public interface ConfigurationPersistenceService {
   /**
    * retrieves all the group names in the cluster
    */
-
   Set<String> getGroups();
 
   /**

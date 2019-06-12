@@ -99,7 +99,7 @@ def examine_build(authorization_cookie, build, url) -> List[SingleFailure]:
     event_response = get_event_response(authorization_cookie, build, session, url)
     logging.debug("Event Status is {}".format(event_response.status_code))
 
-    build_status, event_output = assess_event_response(event_response)
+    build_status, event_output = assess_event_response(event_response, authorization_cookie)
     this_build_failures = assess_event_output_for_failure(build, event_output)
     logging.debug("Results: Job status is {}".format(build_status))
 
@@ -119,12 +119,13 @@ def assess_event_output_for_failure(build, event_output) -> List[SingleFailure]:
     return all_failures
 
 
-def assess_event_response(event_response):
+def assess_event_response(event_response, authorization_cookie):
     event_outputs = []
     build_status = 'unknown'
-    event_client = sseclient.SSEClient(event_response)
 
-    for event in event_client.events():
+    event_client = sseclient.SSEClient(event_response.url, cookies=authorization_cookie)
+
+    for event in event_client:
         event_json = json.loads(event.data if event.data else "{}")
         build_status = (event_json['data']['status']
                         if event_json.get('event', 'not-a-status-event') == 'status'

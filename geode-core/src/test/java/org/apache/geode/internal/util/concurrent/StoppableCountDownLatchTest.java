@@ -17,7 +17,6 @@ package org.apache.geode.internal.util.concurrent;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.geode.internal.util.concurrent.StoppableCountDownLatch.RETRY_TIME_MILLIS_DEFAULT;
-import static org.apache.geode.internal.util.concurrent.StoppableCountDownLatch.RETRY_TIME_MILLIS_PROPERTY;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -68,16 +67,6 @@ public class StoppableCountDownLatchTest {
     assertThat(NANOSECONDS.toSeconds(latch.retryIntervalNanos()))
         .isEqualTo(MILLISECONDS.toSeconds(RETRY_TIME_MILLIS_DEFAULT))
         .isEqualTo(twoSeconds);
-  }
-
-  @Test
-  public void defaultRetryIntervalNanosIsOverriddenBySystemProperty() {
-    long theRetryTimeMillis = 42;
-    System.setProperty(RETRY_TIME_MILLIS_PROPERTY, String.valueOf(theRetryTimeMillis));
-
-    StoppableCountDownLatch latch = new StoppableCountDownLatch(stopper, 1);
-
-    assertThat(NANOSECONDS.toMillis(latch.retryIntervalNanos())).isEqualTo(theRetryTimeMillis);
   }
 
   @Test

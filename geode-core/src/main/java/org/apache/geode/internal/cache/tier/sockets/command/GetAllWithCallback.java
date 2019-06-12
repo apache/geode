@@ -69,7 +69,7 @@ public class GetAllWithCallback extends BaseCommand {
 
     // Retrieve the region name from the message parts
     regionNamePart = clientMessage.getPart(partIdx++);
-    regionName = regionNamePart.getString();
+    regionName = regionNamePart.getCachedString();
 
     // Retrieve the keys array from the message parts
     keysPart = clientMessage.getPart(partIdx++);

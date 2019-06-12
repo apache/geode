@@ -34,6 +34,10 @@ Delete or unregister functions, remove indexes, disk stores and regions.
 
     Destroy or unregister a function.
 
+-   **[destroy gateway-receiver](#destroy-gr)**
+
+    Destroy a gateway receiver.
+
 -   **[destroy gateway-sender](#destroy-gs)**
 
     Destroy a gateway sender.
@@ -146,6 +150,34 @@ destroy function --id=value [--groups=value(,value)*] [--member=value]
 (1) destroy function --id=InterestCalculations
 (2) destroy function --id=InterestCalculations --member=server1
 (3) destroy function --id=InterestCalculations --group=Group1
+```
+## <a id="destroy-gr" class="no-quick-link"></a>destroy gateway-receiver
+
+Destroy the gateway receiver on one or more members.
+Since there can be only one gateway receiver per member,
+specifying the member specifies which gateway receiver to destroy.
+
+**Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
+
+**Syntax:**
+
+``` pre
+destroy gateway-receiver [--group=value(,value)*]
+  [--member=value(,value)*] [--if-exists(=value)?]
+```
+
+**Parameters, destroy gateway-receiver:**
+
+| Name                                           | Description                                                                                |
+|------------------------------------------------|--------------------------------------------------------------------------------------------|
+| <span class="keyword parmname">\\-\\-group</span> | One or more groups of members on which the gateway receiver will be destroyed.       |
+| <span class="keyword parmname">&#8209;&#8209;members</span> | Name or ID of each member on which the gateway receiver will be destroyed.   |
+| &#8209;&#8209;if&#8209;exists | If this option is true and the gateway receiver does not exist, gfsh responds with a message prefixed with the label "Skipping: ". If this option is false and the gateway receiver does not exist, an error message is output. Default (if this option is not specified): false. Default (if this option is specified without a value): true.     |
+
+**Example Commands:**
+
+``` pre
+destroy gateway-receiver --member=server1,server2
 ```
 
 ## <a id="destroy-gs" class="no-quick-link"></a>destroy gateway-sender

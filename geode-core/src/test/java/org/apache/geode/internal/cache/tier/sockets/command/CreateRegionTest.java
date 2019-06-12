@@ -87,9 +87,9 @@ public class CreateRegionTest {
 
     when(this.parentRegion.getAttributes()).thenReturn(new AttributesFactory().create());
 
-    when(this.parentRegionNamePart.getString()).thenReturn(PARENT_REGION_NAME);
+    when(this.parentRegionNamePart.getCachedString()).thenReturn(PARENT_REGION_NAME);
 
-    when(this.regionNamePart.getString()).thenReturn(REGION_NAME);
+    when(this.regionNamePart.getCachedString()).thenReturn(REGION_NAME);
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);

@@ -25,8 +25,7 @@ import org.apache.geode.security.ResourcePermission;
 /**
  * Defines the interface a user defined function implements. {@link Function}s can be of different
  * types. Some can have results while others need not return any result. Some functions require
- * writing in the targeted {@link Region} while some may just be read operations. Consider extending
- * {@link FunctionAdapter} which has default values for some of the function attributes.
+ * writing in the targeted {@link Region} while some may just be read operations.
  * <p>
  * Even though this interface extends Serializable, functions will only be serialized if they are
  * not registered. For best performance it is recommended that you implement {@link #getId()} to

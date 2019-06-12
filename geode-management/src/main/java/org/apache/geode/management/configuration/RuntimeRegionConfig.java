@@ -17,12 +17,16 @@ package org.apache.geode.management.configuration;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 @Experimental
-public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheElement {
+public class RuntimeRegionConfig extends RegionConfig implements MultiGroupCacheElement {
   private long entryCount;
 
   public RuntimeRegionConfig() {}
@@ -41,5 +45,19 @@ public class RuntimeRegionConfig extends RegionConfig implements RuntimeCacheEle
 
   public List<String> getGroups() {
     return groups;
+  }
+
+  public List<RuntimeIndex> getRuntimeIndexes(String indexId) {
+    Stream<Index> stream = getIndexes().stream();
+    if (StringUtils.isNotBlank(indexId)) {
+      stream = stream.filter(i -> i.getId().equals(indexId));
+    }
+    return stream
+        .map(e -> {
+          RuntimeIndex index = new RuntimeIndex(e);
+          index.setRegionName(getName());
+          return index;
+        })
+        .collect(Collectors.toList());
   }
 }

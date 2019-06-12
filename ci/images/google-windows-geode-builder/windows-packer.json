@@ -17,9 +17,9 @@
       "project_id": "{{user `gcp_project`}}",
       "network": "{{user `gcp_network`}}",
       "subnetwork": "{{user `gcp_subnetwork`}}",
-      "source_image_family": "windows-1709-core-for-containers",
+      "source_image_family": "windows-2016",
       "disk_size": "100",
-      "machine_type": "n1-standard-1",
+      "machine_type": "n1-standard-4",
       "communicator": "winrm",
       "winrm_username": "geode",
       "winrm_insecure": true,
@@ -40,10 +40,23 @@
       "inline": [
         "$ErrorActionPreference = \"Stop\"",
         "Set-ExecutionPolicy Bypass -Scope Process -Force",
-
+        "Install-WindowsFeature Containers",
+        "Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force",
+        "Install-Module DockerMsftProvider -Force",
+        "Install-Package Docker -ProviderName DockerMsftProvider -Force"
+        ]
+    },
+    {
+      "type": "windows-restart"
+    },
+    {
+      "type": "powershell",
+      "inline": [
+        "$ErrorActionPreference = \"Stop\"",
+        "Set-ExecutionPolicy Bypass -Scope Process -Force",
         "Invoke-WebRequest https://chocolatey.org/install.ps1 -UseBasicParsing | Invoke-Expression",
-        "choco install -y git rsync openjdk",
-        "Move-Item \"C:\\Program Files\\OpenJDK\\jdk-11*\" c:\\java11",
+        "choco install -y git rsync adoptopenjdk11",
+        "Move-Item \"C:\\Program Files\\AdoptOpenJDK\\jdk-11*\" c:\\java11",
         "choco install -y jdk8 -params 'installdir=c:\\\\java8tmp;source=false'",
         "Move-Item \"C:\\java8tmp\" c:\\java8",
         "choco install -y openssh --version 7.7.2.1 /SSHServerFeature",
@@ -64,17 +77,13 @@
         "$OldPath = (Get-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH).Path",
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
         "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
-        "Install-Module -Name ProcessMitigations -Force",
-        "Get-ChildItem -Path \"C:\\Program Files\\Git\\bin\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
-        "Get-ChildItem -Path \"C:\\ProgramData\\chocolatey\" -Recurse -Include *exe | %{ Set-ProcessMitigation -Name $_.Name -Disable ForceRelocateASLR,ForceRelocate }",
-
         "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
         "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8",
         "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
-        "docker pull openjdk:8u181-jdk-windowsservercore-1709",
+        "docker pull openjdk:8u212-jdk-windowsservercore-1809",
         "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
-        "docker rmi microsoft/windowsservercore:1709",
-        "docker rmi microsoft/nanoserver:1709",
+        "docker rmi microsoft/windowsservercore:1809",
+        "docker rmi microsoft/nanoserver:1809",
 
         "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'",
 

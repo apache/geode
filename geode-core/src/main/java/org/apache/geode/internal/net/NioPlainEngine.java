@@ -20,24 +20,22 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.logging.LogService;
 
 /**
  * A pass-through implementation of NioFilter. Use this if you don't need
  * secure communications.
  */
 public class NioPlainEngine implements NioFilter {
-  private static final Logger logger = LogService.getLogger();
+  private final BufferPool bufferPool;
 
   int lastReadPosition;
   int lastProcessedPosition;
 
 
-  public NioPlainEngine() {}
+  public NioPlainEngine(BufferPool bufferPool) {
+    this.bufferPool = bufferPool;
+  }
 
   @Override
   public ByteBuffer wrap(ByteBuffer buffer) {
@@ -52,11 +50,11 @@ public class NioPlainEngine implements NioFilter {
 
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
-      Buffers.BufferType bufferType, DMStats stats) {
+      BufferPool.BufferType bufferType) {
     ByteBuffer buffer = wrappedBuffer;
 
     if (buffer == null) {
-      buffer = Buffers.acquireBuffer(bufferType, amount, stats);
+      buffer = bufferPool.acquireBuffer(bufferType, amount);
       buffer.clear();
       lastProcessedPosition = 0;
       lastReadPosition = 0;
@@ -73,10 +71,10 @@ public class NioPlainEngine implements NioFilter {
       ByteBuffer oldBuffer = buffer;
       oldBuffer.limit(lastReadPosition);
       oldBuffer.position(lastProcessedPosition);
-      buffer = Buffers.acquireBuffer(bufferType, amount, stats);
+      buffer = bufferPool.acquireBuffer(bufferType, amount);
       buffer.clear();
       buffer.put(oldBuffer);
-      Buffers.releaseBuffer(bufferType, oldBuffer, stats);
+      bufferPool.releaseBuffer(bufferType, oldBuffer);
       lastReadPosition = buffer.position();
       lastProcessedPosition = 0;
     }
@@ -84,8 +82,8 @@ public class NioPlainEngine implements NioFilter {
   }
 
   @Override
-  public ByteBuffer readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer,
-      DMStats stats) throws IOException {
+  public ByteBuffer readAtLeast(SocketChannel channel, int bytes, ByteBuffer wrappedBuffer)
+      throws IOException {
     ByteBuffer buffer = wrappedBuffer;
 
     Assert.assertTrue(buffer.capacity() - lastProcessedPosition >= bytes);

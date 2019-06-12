@@ -15,6 +15,7 @@
 package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,9 +37,6 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
-import org.apache.geode.util.test.TestUtil;
-
-
 
 @RunWith(Parameterized.class)
 @Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
@@ -55,8 +53,9 @@ public class TCPConduitDUnitTest extends DistributedTestCase {
     Properties SSL = new Properties();
     SSL.putAll(nonSSL);
 
-    final String keystorePath = TestUtil.getResourcePath(TCPConduitDUnitTest.class,
-        "/org/apache/geode/cache/client/internal/default.keystore");
+    final String keystorePath =
+        createTempFileFromResource(TCPConduitDUnitTest.class,
+            "/org/apache/geode/cache/client/internal/default.keystore").getAbsolutePath();
 
     SSL.setProperty(ConfigurationProperties.SSL_ENABLED_COMPONENTS, "cluster");
     SSL.setProperty(ConfigurationProperties.SSL_KEYSTORE, keystorePath);

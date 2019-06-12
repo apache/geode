@@ -17,6 +17,7 @@ package org.apache.geode.internal.jta.dunit;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.test.dunit.Assert.fail;
+import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,7 +48,6 @@ import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
-import org.apache.geode.util.test.TestUtil;
 
 /**
  * This test sees if the TransactionTimeOut works properly
@@ -62,7 +62,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     Properties props = new Properties();
     int pid = OSProcess.getId();
     String path = File.createTempFile("dunit-cachejta_", ".xml").getAbsolutePath();
-    String file_as_str = readFile(TestUtil.getResourcePath(CacheUtils.class, "cachejta.xml"));
+    String file_as_str = readFile(
+        createTempFileFromResource(CacheUtils.class, "cachejta.xml")
+            .getAbsolutePath());
     String modified_file_str = file_as_str.replaceAll("newDB", "newDB_" + pid);
     FileOutputStream fos = new FileOutputStream(path);
     BufferedWriter wr = new BufferedWriter(new OutputStreamWriter(fos));

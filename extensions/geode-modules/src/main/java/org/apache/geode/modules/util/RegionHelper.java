@@ -12,11 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.modules.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 
@@ -34,7 +34,6 @@ import org.apache.geode.cache.control.RebalanceResults;
 import org.apache.geode.cache.control.ResourceManager;
 import org.apache.geode.cache.partition.PartitionMemberInfo;
 import org.apache.geode.cache.partition.PartitionRebalanceInfo;
-import org.apache.geode.cache.partition.PartitionRegionHelper;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.RegionAttributesCreation;
 import org.apache.geode.modules.gatewaydelta.GatewayDeltaForwarderCacheListener;
@@ -76,28 +75,6 @@ public class RegionHelper {
     existingRACreation.sameAs(requestedRegionAttributes);
   }
 
-  public static RebalanceResults rebalanceRegion(Region region)
-      throws CancellationException, InterruptedException {
-    String regionName = region.getName(); // FilterByName only looks at name and not full path
-    if (!PartitionRegionHelper.isPartitionedRegion(region)) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Region ").append(regionName).append(" is not partitioned. Instead, it is ")
-          .append(region.getAttributes().getDataPolicy()).append(". It can't be rebalanced.");
-      throw new IllegalArgumentException(builder.toString());
-    }
-
-    // Rebalance the region
-    ResourceManager resourceManager = region.getCache().getResourceManager();
-    RebalanceFactory rebalanceFactory = resourceManager.createRebalanceFactory();
-    Set<String> regionsToRebalance = new HashSet<String>();
-    regionsToRebalance.add(regionName);
-    rebalanceFactory.includeRegions(regionsToRebalance);
-    RebalanceOperation rebalanceOperation = rebalanceFactory.start();
-
-    // Return the results
-    return rebalanceOperation.getResults();
-  }
-
   public static RebalanceResults rebalanceCache(GemFireCache cache)
       throws CancellationException, InterruptedException {
     ResourceManager resourceManager = cache.getResourceManager();
@@ -110,7 +87,7 @@ public class RegionHelper {
     try {
       StringWriter sw = new StringWriter();
       PrintWriter pw = new PrintWriter(sw, true);
-      CacheXmlGenerator.generate(cache, pw, true, false);
+      CacheXmlGenerator.generate(cache, pw, false);
       pw.close();
       return sw.toString();
     } catch (Exception ex) {
@@ -118,8 +95,7 @@ public class RegionHelper {
     }
   }
 
-  private static RegionAttributes getRegionAttributes(Cache cache,
-      RegionConfiguration configuration) {
+  static RegionAttributes getRegionAttributes(Cache cache, RegionConfiguration configuration) {
     // Create the requested attributes
     RegionAttributes baseRequestedAttributes =
         cache.getRegionAttributes(configuration.getRegionAttributesId());
@@ -166,11 +142,7 @@ public class RegionHelper {
         CacheWriter writer =
             (CacheWriter) Class.forName(configuration.getCacheWriterName()).newInstance();
         requestedFactory.setCacheWriter(writer);
-      } catch (InstantiationException e) {
-        throw new RuntimeException("Could not set a cacheWriter for the region", e);
-      } catch (IllegalAccessException e) {
-        throw new RuntimeException("Could not set a cacheWriter for the region", e);
-      } catch (ClassNotFoundException e) {
+      } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
         throw new RuntimeException("Could not set a cacheWriter for the region", e);
       }
     }

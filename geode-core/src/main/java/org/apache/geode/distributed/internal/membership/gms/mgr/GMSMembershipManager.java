@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.distributed.internal.membership.gms.mgr;
 
 import java.io.NotSerializableException;
@@ -1583,7 +1584,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
         try {
           logger.info("generating XML to rebuild the cache after reconnect completes");
           StringPrintWriter pw = new StringPrintWriter();
-          CacheXmlGenerator.generate(cache, pw, true, false);
+          CacheXmlGenerator.generate(cache, pw, false);
           String cacheXML = pw.toString();
           cache.getCacheConfig().setCacheXMLDescription(cacheXML);
           logger.info("XML generation completed: {}", cacheXML);
@@ -2619,7 +2620,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   @Override
   public boolean isShutdownStarted() {
     ClusterDistributionManager dm = listener.getDM();
-    return shutdownInProgress || (dm != null && dm.isShutdownStarted());
+    return shutdownInProgress || (dm != null && dm.isCloseInProgress());
   }
 
   @Override

@@ -177,7 +177,7 @@ public class HARegionQueueIntegrationTest {
         new ClientProxyMembershipID(), new EventID(cache.getDistributedSystem()));
     HAEventWrapper wrapper = new HAEventWrapper(message);
     wrapper.setHAContainer(haContainerWrapper);
-    wrapper.incrementPutInProgressCounter();
+    wrapper.incrementPutInProgressCounter("test");
 
     // Create and update HARegionQueues forcing one queue to startGiiQueueing
     int numQueues = 10;
@@ -379,7 +379,7 @@ public class HARegionQueueIntegrationTest {
 
       HAEventWrapper wrapper = new HAEventWrapper(message);
       wrapper.setHAContainer(haContainerWrapper);
-      wrapper.incrementPutInProgressCounter();
+      wrapper.incrementPutInProgressCounter("test");
 
       for (HARegionQueue queue : regionQueues) {
         queue.put(wrapper);
@@ -432,7 +432,7 @@ public class HARegionQueueIntegrationTest {
         (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
         new ClientProxyMembershipID(), eventID);
     HAEventWrapper originalWrapperInstance = new HAEventWrapper(oldMessage);
-    originalWrapperInstance.incrementPutInProgressCounter();
+    originalWrapperInstance.incrementPutInProgressCounter("test");
     originalWrapperInstance.setHAContainer(haContainerWrapper);
 
     HARegionQueue haRegionQueue = createHARegionQueue(haContainerWrapper, 0);
@@ -447,7 +447,7 @@ public class HARegionQueueIntegrationTest {
         (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
         new ClientProxyMembershipID(), eventID);
     HAEventWrapper newWrapperInstance = new HAEventWrapper(newMessage);
-    newWrapperInstance.incrementPutInProgressCounter();
+    newWrapperInstance.incrementPutInProgressCounter("test");
     newWrapperInstance.setHAContainer(haContainerWrapper);
 
     haRegionQueue.putEventInHARegion(newWrapperInstance, 1L);
@@ -478,7 +478,7 @@ public class HARegionQueueIntegrationTest {
             (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
             new ClientProxyMembershipID(), eventID);
     HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
-    haEventWrapper.incrementPutInProgressCounter();
+    haEventWrapper.incrementPutInProgressCounter("test");
     haEventWrapper.setHAContainer(haContainerWrapper);
 
     haRegionQueue.put(haEventWrapper);
@@ -542,7 +542,7 @@ public class HARegionQueueIntegrationTest {
             (LocalRegion) dataRegion, "key", "value".getBytes(), (byte) 0x01, null,
             new ClientProxyMembershipID(), eventID);
     HAEventWrapper haEventWrapper = new HAEventWrapper(clientUpdateMessage);
-    haEventWrapper.incrementPutInProgressCounter();
+    haEventWrapper.incrementPutInProgressCounter("test");
     haEventWrapper.setHAContainer(haContainerWrapper);
 
     haRegionQueue.put(haEventWrapper);
@@ -782,7 +782,7 @@ public class HARegionQueueIntegrationTest {
       queues.add(createHARegionQueue(haContainerWrapper, i));
     }
 
-    haEventWrapper.incrementPutInProgressCounter();
+    haEventWrapper.incrementPutInProgressCounter("test");
 
     for (HARegionQueue queue : queues) {
       queue.put(haEventWrapper);

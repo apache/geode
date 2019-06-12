@@ -435,17 +435,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     return managementService.getMBeanProxy(cacheServerMBeanName, CacheServerMXBean.class);
   }
 
-  public void waitUntilGatewaySendersAreReadyOnExactlyThisManyServers(int exactGatewaySenderCount)
-      throws Exception {
-    DistributedSystemMXBean dsMXBean = getManagementService().getDistributedSystemMXBean();
-    String predicateDescription = String.format(
-        "Expecting to find exactly %d gateway sender beans.", exactGatewaySenderCount);
-
-    waitUntilEqual(() -> dsMXBean.listGatewaySenderObjectNames(),
-        array -> array.length, exactGatewaySenderCount, predicateDescription, WAIT_UNTIL_TIMEOUT,
-        TimeUnit.SECONDS);
-  }
-
   public void waitUntilDiskStoreIsReadyOnExactlyThisManyServers(String diskStoreName,
       int exactServerCount) throws Exception {
     final Supplier<DistributedSystemMXBean> distributedSystemMXBeanSupplier =
@@ -514,6 +503,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
       throws Exception {
     try {
       await(assertionConsumerDescription)
+          .atMost(timeout, unit)
           .untilAsserted(() -> assertionConsumer.accept(examiner.apply(supplier.get())));
     } catch (ConditionTimeoutException e) {
       // There is a very slight race condition here, where the above could conceivably time out,

@@ -1058,7 +1058,7 @@ public abstract class AbstractDiskRegion implements DiskRegionView {
 
   }
 
-  public void recordRecoveredVersonHolder(VersionSource member, RegionVersionHolder versionHolder,
+  public void recordRecoveredVersionHolder(VersionSource member, RegionVersionHolder versionHolder,
       boolean latestOplog) {
     this.versionVector.initRecoveredVersion(member, versionHolder, latestOplog);
   }

@@ -44,6 +44,7 @@ import org.w3c.dom.Document;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
@@ -90,7 +91,7 @@ public class InternalConfigurationPersistenceServiceTest {
 
     System.out.println(configuration.getCacheXmlContent());
     assertThat(configuration.getCacheXmlContent())
-        .contains("<region name=\"regionA\" refid=\"REPLICATE\">");
+        .contains("<region name=\"regionA\" refid=\"REPLICATE\"");
   }
 
   @Test
@@ -207,7 +208,7 @@ public class InternalConfigurationPersistenceServiceTest {
   @Test
   public void updateGatewayReceiverConfig() {
     service.updateCacheConfig("cluster", cacheConfig -> {
-      CacheConfig.GatewayReceiver receiver = new CacheConfig.GatewayReceiver();
+      GatewayReceiverConfig receiver = new GatewayReceiverConfig();
       cacheConfig.setGatewayReceiver(receiver);
       return cacheConfig;
     });

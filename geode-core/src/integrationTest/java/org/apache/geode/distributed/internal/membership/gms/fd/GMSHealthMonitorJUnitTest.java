@@ -50,8 +50,10 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.Timer;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -110,6 +112,7 @@ public class GMSHealthMonitorJUnitTest {
   private int[] portRange = new int[] {0, 65535};
   private boolean useGMSHealthMonitorTestClass = false;
   private boolean simulateHeartbeatInGMSHealthMonitorTestClass = true;
+  private boolean allowSelfCheckToSucceed = true;
   private final int myAddressIndex = 3;
 
   @Before
@@ -273,7 +276,6 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   private NetView installAView() {
-    System.out.println("installAView starting");
     NetView v = new NetView(mockMembers.get(0), 2, mockMembers);
 
     // 3rd is current member
@@ -446,7 +448,11 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testCheckIfAvailableNoHeartBeatDontRemoveMember() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
     installAView();
+
     long startTime = System.currentTimeMillis();
     boolean retVal = gmsHealthMonitor.checkIfAvailable(mockMembers.get(1), "Not responding", true);
     long timeTaken = System.currentTimeMillis() - startTime;
@@ -606,6 +612,9 @@ public class GMSHealthMonitorJUnitTest {
 
   @Test
   public void testFinalCheckFailureLeavesMemberAsSuspect() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
     NetView v = installAView();
 
     setFailureDetectionPorts(v);
@@ -617,11 +626,35 @@ public class GMSHealthMonitorJUnitTest {
     assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
+  @Test
+  public void testFailedSelfCheckRemovesMemberAsSuspect() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+    allowSelfCheckToSucceed = false;
+
+    NetView v = installAView();
+
+    setFailureDetectionPorts(v);
+
+    InternalDistributedMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+    gmsHealthMonitor.stopServer();
+    boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
+    assertTrue(available);
+    verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
+    assertTrue(((GMSHealthMonitorTest) gmsHealthMonitor).availabilityCheckedMembers
+        .contains(memberToCheck));
+    assertTrue(((GMSHealthMonitorTest) gmsHealthMonitor).availabilityCheckedMembers
+        .contains(joinLeave.getMemberID()));
+  }
+
   /**
    * a failed availablility check should initiate suspect processing
    */
   @Test
   public void testFailedCheckIfAvailableDoesNotRemoveMember() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
     NetView v = installAView();
 
     setFailureDetectionPorts(v);
@@ -630,7 +663,7 @@ public class GMSHealthMonitorJUnitTest {
     boolean available = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", false);
     assertFalse(available);
     verify(joinLeave, never()).remove(isA(InternalDistributedMember.class), isA(String.class));
-    assertFalse(gmsHealthMonitor.isSuspectMember(memberToCheck));
+    assertTrue(gmsHealthMonitor.isSuspectMember(memberToCheck));
   }
 
 
@@ -639,6 +672,9 @@ public class GMSHealthMonitorJUnitTest {
    */
   @Test
   public void testFailedCheckIfAvailableRemovesMember() {
+    useGMSHealthMonitorTestClass = true;
+    simulateHeartbeatInGMSHealthMonitorTestClass = false;
+
     NetView v = installAView();
 
     setFailureDetectionPorts(v);
@@ -901,15 +937,20 @@ public class GMSHealthMonitorJUnitTest {
 
   public class GMSHealthMonitorTest extends GMSHealthMonitor {
     public boolean useBlockingSocket = false;
+    public Set<InternalDistributedMember> availabilityCheckedMembers = new HashSet<>();
 
     @Override
     boolean doTCPCheckMember(InternalDistributedMember suspectMember, int port,
         boolean retryIfConnectFails) {
+      availabilityCheckedMembers.add(suspectMember);
       if (useGMSHealthMonitorTestClass) {
         if (simulateHeartbeatInGMSHealthMonitorTestClass) {
           HeartbeatMessage fakeHeartbeat = new HeartbeatMessage();
           fakeHeartbeat.setSender(suspectMember);
           gmsHealthMonitor.processMessage(fakeHeartbeat);
+        }
+        if (allowSelfCheckToSucceed && suspectMember.equals(joinLeave.getMemberID())) {
+          return true;
         }
         return false;
       }

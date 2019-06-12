@@ -26,7 +26,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.client.ClusterManagementServiceProvider;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -43,7 +43,9 @@ public class ServerRestartTest {
     MemberVM server2 = cluster.startServerVM(2, locator.getPort());
 
     ClusterManagementService cmService =
-        ClusterManagementServiceProvider.getService("localhost", locator.getHttpPort());
+        ClusterManagementServiceBuilder.buildWithHostAddress()
+            .setHostAddress("localhost", locator.getHttpPort())
+            .build();
 
     RegionConfig region = new RegionConfig();
     region.setName("Foo");

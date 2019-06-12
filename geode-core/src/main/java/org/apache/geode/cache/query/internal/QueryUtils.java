@@ -486,11 +486,15 @@ public class QueryUtils {
       QueryInvocationTargetException {
 
     int resultSize = values[level].length;
-    int limit = getLimitValue(context);
-    // stops recursion if limit has already been met
+    // We do not know if the first X results might or might not fulfill all operands.
+    Boolean applyLimit = (Boolean) context.cacheGet(CompiledValue.CAN_APPLY_LIMIT_AT_INDEX);
+    int limit = (applyLimit != null && applyLimit) ? getLimitValue(context) : -1;
+
+    // Stops recursion if limit has already been met AND limit can be applied to index.
     if (limit != -1 && result.size() >= limit) {
       return;
     }
+
     for (int j = 0; j < resultSize; ++j) {
       // Check if query execution on this thread is canceled.
       QueryMonitor.throwExceptionIfQueryOnCurrentThreadIsCanceled();

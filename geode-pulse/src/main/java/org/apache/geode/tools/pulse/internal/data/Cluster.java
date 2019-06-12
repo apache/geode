@@ -750,7 +750,6 @@ public class Cluster extends Thread {
     }
 
     public void updateMemberClientsHMap(HashMap<String, Cluster.Client> memberClientsHM) {
-
       if (Cluster.LAST_UPDATE_TIME == 0) {
         Cluster.LAST_UPDATE_TIME = System.nanoTime();
       }
@@ -778,11 +777,13 @@ public class Cluster extends Thread {
           existingClient.setUptime(updatedClient.getUptime());
 
           // set cpu usage
-          long lastCPUTime = existingClient.getProcessCpuTime();
           long currCPUTime = updatedClient.getProcessCpuTime();
+          long lastCPUTime = existingClient.getProcessCpuTime();
 
-          double newCPUTime =
-              (double) (((currCPUTime - lastCPUTime) / elapsedTime) / 1_000_000_000L);
+          double newCPUTime = 0;
+          if (elapsedTime > 0) {
+            newCPUTime = (double) (((currCPUTime - lastCPUTime) / elapsedTime) / 1_000_000_000L);
+          }
 
           double newCPUUsage = 0;
           int availableCpus = updatedClient.getCpus();
@@ -792,16 +793,14 @@ public class Cluster extends Thread {
 
           existingClient.setCpuUsage(newCPUUsage);
           existingClient.setProcessCpuTime(currCPUTime);
-
         } else {
           // Add client to clients list
           memberClientsHMap.put(clientId, client);
         }
-
       }
 
       // Remove unwanted entries from clients list
-      HashMap<String, Cluster.Client> memberClientsHMapNew = new HashMap<String, Cluster.Client>();
+      HashMap<String, Cluster.Client> memberClientsHMapNew = new HashMap<>();
       for (Map.Entry<String, Cluster.Client> entry : memberClientsHMap.entrySet()) {
         String clientId = entry.getKey();
         if (memberClientsHM.get(clientId) != null) {
@@ -813,9 +812,7 @@ public class Cluster extends Thread {
 
       // update last update time
       Cluster.LAST_UPDATE_TIME = systemNanoTime;
-
     }
-
   }
 
   /**
