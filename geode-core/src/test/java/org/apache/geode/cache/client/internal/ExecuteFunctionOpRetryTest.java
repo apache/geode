@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_HAS_RESULT;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_NAME;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.OPTIMIZE_FOR_WRITE_SETTING;
+import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -255,14 +256,16 @@ public class ExecuteFunctionOpRetryTest {
             () -> ExecuteFunctionOp.execute(executablePool, FUNCTION_NAME, serverFunctionExecutor,
                 args, memberMappedArg, ALL_SERVERS_SETTING, FUNCTION_HAS_RESULT, resultCollector,
                 IS_FN_SERIALIZATION_REQUIRED, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING, userAttributes, groups));
+                OPTIMIZE_FOR_WRITE_SETTING, userAttributes, groups,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
 
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
             () -> ExecuteFunctionOp.execute(executablePool, function, serverFunctionExecutor, args,
                 memberMappedArg, ALL_SERVERS_SETTING, FUNCTION_HAS_RESULT, resultCollector,
-                IS_FN_SERIALIZATION_REQUIRED, userAttributes, groups));
+                IS_FN_SERIALIZATION_REQUIRED, userAttributes, groups,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
@@ -286,7 +289,8 @@ public class ExecuteFunctionOpRetryTest {
             () -> ExecuteFunctionOp.reexecute(executablePool, FUNCTION_NAME, serverFunctionExecutor,
                 resultCollector, FUNCTION_HAS_RESULT,
                 IS_FN_SERIALIZATION_REQUIRED, retryAttempts, args, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING, groups, ALL_SERVERS_SETTING));
+                OPTIMIZE_FOR_WRITE_SETTING, groups, ALL_SERVERS_SETTING,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
 
         break;
 
@@ -294,7 +298,8 @@ public class ExecuteFunctionOpRetryTest {
         ignoreServerConnectivityException(
             () -> ExecuteFunctionOp.reexecute(executablePool, function, serverFunctionExecutor,
                 resultCollector, FUNCTION_HAS_RESULT,
-                IS_FN_SERIALIZATION_REQUIRED, retryAttempts, groups, ALL_SERVERS_SETTING));
+                IS_FN_SERIALIZATION_REQUIRED, retryAttempts, groups, ALL_SERVERS_SETTING,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
@@ -326,8 +331,7 @@ public class ExecuteFunctionOpRetryTest {
   private void ignoreServerConnectivityException(final Runnable runnable) {
     try {
       runnable.run();
-    } catch (final ServerConnectivityException e) {
-      // ok
+    } catch (final ServerConnectivityException ignored) {
     }
   }
 

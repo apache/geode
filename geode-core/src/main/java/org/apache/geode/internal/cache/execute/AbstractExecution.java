@@ -38,6 +38,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
@@ -50,6 +51,10 @@ import org.apache.geode.internal.logging.LogService;
  *
  */
 public abstract class AbstractExecution implements InternalExecution {
+
+  public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
+  private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
+      DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
 
   private static final Logger logger = LogService.getLogger();
 
@@ -95,6 +100,8 @@ public abstract class AbstractExecution implements InternalExecution {
   private boolean ignoreDepartedMembers = false;
 
   protected ProxyCache proxyCache;
+
+  private final int timeoutMs;
 
   @MakeNotStatic
   private static final ConcurrentHashMap<String, byte[]> idToFunctionAttributes =
@@ -152,7 +159,11 @@ public abstract class AbstractExecution implements InternalExecution {
     throw new InternalGemFireException("Wrong fnState provided.");
   }
 
-  protected AbstractExecution() {}
+  protected AbstractExecution() {
+    final int timeoutMs = Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
+        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
+    this.timeoutMs = timeoutMs >= 0 ? timeoutMs : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+  }
 
   protected AbstractExecution(AbstractExecution ae) {
     if (ae.args != null) {
@@ -170,6 +181,7 @@ public abstract class AbstractExecution implements InternalExecution {
       proxyCache = ae.proxyCache;
     }
     isFnSerializationReqd = ae.isFnSerializationReqd;
+    timeoutMs = ae.timeoutMs;
   }
 
   protected AbstractExecution(AbstractExecution ae, boolean isReExecute) {
@@ -496,5 +508,14 @@ public abstract class AbstractExecution implements InternalExecution {
       logger.warn("Exception occurred on local node while executing Function:",
           functionException);
     }
+  }
+
+  /**
+   * Get function timeout in milliseconds.
+   *
+   * @return timeout in milliseconds.
+   */
+  protected int getTimeoutMs() {
+    return timeoutMs;
   }
 }

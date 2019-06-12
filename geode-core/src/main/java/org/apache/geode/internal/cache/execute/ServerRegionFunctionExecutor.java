@@ -197,7 +197,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      srp.executeFunction(region.getFullPath(), function, this, collector, hasResult, false);
+      srp.executeFunction(region.getFullPath(), function, this, collector, hasResult, false,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -219,7 +220,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       long start = stats.startTime();
       stats.startFunctionExecution(true);
       srp.executeFunction(region.getFullPath(), functionId, this, collector, hasResult, isHA,
-          optimizeForWrite, false);
+          optimizeForWrite, false, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {

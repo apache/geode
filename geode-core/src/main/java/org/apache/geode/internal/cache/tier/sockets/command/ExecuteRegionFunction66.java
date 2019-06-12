@@ -14,13 +14,14 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.internal.cache.execute.ServerFunctionExecutor.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.client.internal.ExecuteFunctionHelper;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
@@ -78,7 +79,7 @@ public class ExecuteRegionFunction66 extends BaseCommand {
     Set<Object> removedNodesSet = null;
     int partNumber = 0;
     byte functionState = 0;
-    int functionTimeout = ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+    int functionTimeout = DEFAULT_CLIENT_FUNCTION_TIMEOUT;
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();
       functionState = bytes[0];
