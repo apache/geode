@@ -22,9 +22,9 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 
@@ -76,13 +76,12 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
 
     try {
-      GatewayReceiver createdGatewayReceiver = createGatewayReceiver(cache, gatewayReceiverConfig);
-
+      String port = createGatewayReceiver(cache, gatewayReceiverConfig);
       resultSender.lastResult(new CliFunctionResult(memberNameOrId,
           CliFunctionResult.StatusState.OK,
           CliStrings.format(
               CliStrings.CREATE_GATEWAYRECEIVER__MSG__GATEWAYRECEIVER_CREATED_ON_0_ONPORT_1,
-              memberNameOrId, Integer.toString(createdGatewayReceiver.getPort()))));
+              memberNameOrId, port)));
     } catch (IllegalStateException e) {
       // no need to log the stack trace
       resultSender.lastResult(new CliFunctionResult(memberNameOrId, e, e.getMessage()));
@@ -93,12 +92,12 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
   }
 
-  GatewayReceiver createGatewayReceiver(Cache cache,
+  String createGatewayReceiver(Cache cache,
       GatewayReceiverConfig gatewayReceiverConfig) {
     GatewayReceiverRealizer receiverRealizer = new GatewayReceiverRealizer();
-    receiverRealizer.create(gatewayReceiverConfig, cache);
+    RealizationResult result = receiverRealizer.create(gatewayReceiverConfig, cache);
 
-    return cache.getGatewayReceivers().iterator().next();
+    return result.getInfo("port");
   }
 
   boolean gatewayReceiverExists(Cache cache) {

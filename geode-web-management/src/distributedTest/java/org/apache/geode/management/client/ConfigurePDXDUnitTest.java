@@ -33,7 +33,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.Status;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -80,7 +80,8 @@ public class ConfigurePDXDUnitTest {
     assertThat(pdxResult.getGroup()).isNull();
     assertThat(pdxResult.getUri()).isEqualTo(PdxType.PDX_ENDPOINT);
 
-    Status status = result.getMemberStatuses().get("server-1");
+    RealizationResult status = result.getMemberStatuses().get(0);
+    assertThat(status.getMemberName()).isEqualTo("server-1");
     assertThat(status.getMessage())
         .contains("Server needs to be restarted for this configuration change to be realized");
   }

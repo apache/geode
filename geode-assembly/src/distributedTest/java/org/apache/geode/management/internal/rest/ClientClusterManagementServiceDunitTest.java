@@ -15,6 +15,7 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -64,7 +65,8 @@ public class ClientClusterManagementServiceDunitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-1", "server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1", "server-2");
 
     result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
@@ -81,7 +83,8 @@ public class ClientClusterManagementServiceDunitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-1", "server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1", "server-2");
   }
 
 
@@ -109,7 +112,8 @@ public class ClientClusterManagementServiceDunitTest {
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
     // server 1 should not be in the set
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-2");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService persistenceService =
