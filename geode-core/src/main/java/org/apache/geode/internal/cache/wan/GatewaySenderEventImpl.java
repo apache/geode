@@ -1195,7 +1195,7 @@ public class GatewaySenderEventImpl
       return true;
     }
 
-    if (obj == null || !(obj instanceof GatewaySenderEventImpl)) {
+    if (!(obj instanceof GatewaySenderEventImpl)) {
       return false;
     }
 
