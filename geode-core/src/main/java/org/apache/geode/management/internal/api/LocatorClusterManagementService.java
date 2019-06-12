@@ -256,7 +256,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<? extends T> listInGroup = manager.list(filter, currentPersistedConfig);
       for (T element : listInGroup) {
-        if (group.equals(element.getConfigGroup()) || element instanceof MultiGroupCacheElement) {
+        if (filter.getGroup() == null || // if listing all groups
+            group.equals(filter.getGroup()) || // if filter group matches this group
+            element instanceof MultiGroupCacheElement) { // if element can span multi groups
           element.setGroup(group);
           resultList.add(element);
         }
