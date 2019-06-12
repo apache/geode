@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -59,16 +58,27 @@ public class SenderIdMonitorTest {
   }
 
   @Test
-  public void checkFailsWithRegionAndProfileWithDifferentGatewayIds() {
+  public void checkLogsWarningWithRegionAndProfileWithDifferentGatewayIds() {
+    when(region.getName()).thenReturn("regionName");
     when(region.getGatewaySenderIds()).thenReturn(Collections.singleton("gatewayId"));
     CacheProfile profile = new CacheProfile();
     profile.gatewaySenderIds = Collections.singleton("profileGatewayId");
     advisor.putProfile(profile, true);
 
-    Throwable t = catchThrowable(() -> senderIdMonitor.checkSenderIds());
+    senderIdMonitor.checkSenderIds();
 
-    assertThat(t).hasMessage(
-        "Region null has [gatewayId] gateway sender IDs. Another cache has same region with [profileGatewayId] gateway sender IDs. For region across all members, gateway sender ids should be same.");
+    assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isTrue();
+    assertThat(senderIdMonitor.getAsyncQueueIdsDifferWarningMessage()).isFalse();
+
+    senderIdMonitor.checkSenderIds(); // should not log duplicate message
+
+    when(region.getGatewaySenderIds()).thenReturn(Collections.singleton("profileGatewayId"));
+    senderIdMonitor.update();
+
+    senderIdMonitor.checkSenderIds(); // should log all is well message
+
+    assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isFalse();
+    assertThat(senderIdMonitor.getAsyncQueueIdsDifferWarningMessage()).isFalse();
   }
 
   @Test
@@ -83,17 +93,29 @@ public class SenderIdMonitorTest {
   }
 
   @Test
-  public void checkFailsWithRegionAndProfileWithDifferentAsyncEventQueueIds() {
+  public void checkLogsWarningWithRegionAndProfileWithDifferentAsyncEventQueueIds() {
+    when(region.getName()).thenReturn("regionName");
     when(region.getVisibleAsyncEventQueueIds())
         .thenReturn(Collections.singleton("AsyncEventQueueId"));
     CacheProfile profile = new CacheProfile();
     profile.asyncEventQueueIds = Collections.singleton("profileAsyncEventQueueId");
     advisor.putProfile(profile, true);
 
-    Throwable t = catchThrowable(() -> senderIdMonitor.checkSenderIds());
+    senderIdMonitor.checkSenderIds();
 
-    assertThat(t).hasMessage(
-        "Region null has [AsyncEventQueueId] AsyncEvent queue IDs. Another cache has same region with [profileAsyncEventQueueId] AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.");
+    assertThat(senderIdMonitor.getAsyncQueueIdsDifferWarningMessage()).isTrue();
+    assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isFalse();
+
+    senderIdMonitor.checkSenderIds(); // should not log duplicate message
+
+    when(region.getVisibleAsyncEventQueueIds())
+        .thenReturn(Collections.singleton("profileAsyncEventQueueId"));
+    senderIdMonitor.update();
+
+    senderIdMonitor.checkSenderIds(); // should log all is well message
+
+    assertThat(senderIdMonitor.getAsyncQueueIdsDifferWarningMessage()).isFalse();
+    assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isFalse();
   }
 
   @Test

@@ -17,17 +17,23 @@ package org.apache.geode.internal.cache;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionAdvisor.InitializationListener;
 import org.apache.geode.distributed.internal.DistributionAdvisor.Profile;
 import org.apache.geode.distributed.internal.ProfileListener;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
-import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
+import org.apache.geode.internal.logging.LogService;
 
 public class SenderIdMonitor implements ProfileListener, InitializationListener {
+  private static final Logger logger = LogService.getLogger();
   private final InternalRegion region;
   private final CacheDistributionAdvisor advisor;
   private volatile Set<String> illegalGatewaySenderIds = null;
   private volatile Set<String> illegalAsyncEventQueueIds = null;
+  private boolean gatewaySenderIdsDifferWarningMessage;
+  private boolean asyncQueueIdsDifferWarningMessage;
 
   private SenderIdMonitor(InternalRegion region, CacheDistributionAdvisor advisor) {
     this.region = region;
@@ -92,19 +98,47 @@ public class SenderIdMonitor implements ProfileListener, InitializationListener 
     }
   }
 
+  @VisibleForTesting
+  boolean getGatewaySenderIdsDifferWarningMessage() {
+    return gatewaySenderIdsDifferWarningMessage;
+  }
+
+  @VisibleForTesting
+  boolean getAsyncQueueIdsDifferWarningMessage() {
+    return asyncQueueIdsDifferWarningMessage;
+  }
+
+
   public void checkSenderIds() {
     if (illegalGatewaySenderIds != null) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
-              region.getName(), region.getGatewaySenderIds(), illegalGatewaySenderIds));
+      if (!gatewaySenderIdsDifferWarningMessage) {
+        gatewaySenderIdsDifferWarningMessage = true;
+        logger.warn(
+            "Region {} has {} gateway sender IDs. Another member has the same region with {} gateway sender IDs. For the same region, across all members, gateway sender ids should be same.",
+            region.getName(), region.getGatewaySenderIds(), illegalGatewaySenderIds);
+      }
+    } else {
+      if (gatewaySenderIdsDifferWarningMessage) {
+        gatewaySenderIdsDifferWarningMessage = false;
+        logger.warn(
+            "Region {} now has the same gateway sender IDs on all members. The previous problem with them being different has been corrected.",
+            region.getName());
+      }
     }
     if (illegalAsyncEventQueueIds != null) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
-              region.getName(), region.getVisibleAsyncEventQueueIds(), illegalAsyncEventQueueIds));
-
+      if (!asyncQueueIdsDifferWarningMessage) {
+        asyncQueueIdsDifferWarningMessage = true;
+        logger.warn(
+            "Region {} has {} AsyncEvent queue IDs. Another member has the same region with {} AsyncEvent queue IDs. For the same region, across all members, AsyncEvent queue IDs should be same.",
+            region.getName(), region.getVisibleAsyncEventQueueIds(), illegalAsyncEventQueueIds);
+      }
+    } else {
+      if (asyncQueueIdsDifferWarningMessage) {
+        asyncQueueIdsDifferWarningMessage = false;
+        logger.warn(
+            "Region {} now has the same AsyncEvent queue IDs on all members. The previous problem with them being different has been corrected.",
+            region.getName());
+      }
     }
   }
 }
