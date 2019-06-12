@@ -100,10 +100,7 @@ groups:
   jobs:
   - {{ build_test.name }}
   {{- all_gating_jobs() | indent(2) }}
-  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
-  - UpdatePassingRef
-  {%- endif %}
-  - UpdatePassingBuild
+  - UpdatePassingTokens
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -114,11 +111,8 @@ groups:
     {%- for java_test_version in (java_test_versions) %}
   - {{test.name}}Test{{java_test_version.name}}
     {%- endfor -%}
-  {%- endfor -%}
-  {%- if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
-  - UpdatePassingRef
-  {%- endif %}
-  - UpdatePassingBuild
+  {%- endfor %}
+  - UpdatePassingTokens
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
@@ -196,6 +190,18 @@ resources:
     initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/passing-version
+- name: geode-passing-sha
+  type: gcs-resource
+  source:
+    bucket: ((version-bucket))
+    json_key: ((!concourse-gcp-key))
+    regexp: ((pipeline-prefix))((geode-build-branch))/passing-sha
+- name: geode-passing-tokens
+  type: gcs-resource
+  source:
+    bucket: ((version-bucket))
+    json_key: ((concourse-gcp-key))
+    regexp: ((geode-fork))/((geode-build-branch))/passing-build-tokens-(.*).json
 
 resource_types:
 - name: concourse-metadata-resource
@@ -336,49 +342,59 @@ jobs:
               - name: instance-data
             timeout: 1h
 
-{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
-- name: UpdatePassingRef
+- name: UpdatePassingTokens
   public: true
   serial: true
   plan:
-  - get: geode
+  - aggregate:
+    - get: geode
+      passed: &update-token-passed-anchor
 {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
-    passed: [PublishArtifacts]
+      - PublishArtifacts
 {% else %}
-    passed:
-    {{ all_gating_jobs() | indent(6) }}
+      {{ all_gating_jobs() | indent(6) }}
 {% endif %}
-    trigger: true
-  - get: geode-ci
-  - task: updatepassingref
+      trigger: true
+    - get: geode-build-version
+      trigger: true
+      passed: *update-token-passed-anchor
+  - task: couple-sha-and-build-id
     {{- alpine_tools_config()|indent(4) }}
-      params:
-        MAINTENANCE_VERSION: ((geode-build-branch))
-        ARTIFACT_BUCKET: ((artifact-bucket))
-        SERVICE_ACCOUNT: ((!concourse-gcp-account))
-      run:
-        path: geode-ci/ci/scripts/update-passing-ref.sh
       inputs:
       - name: geode
-      - name: geode-ci
+      - name: geode-build-version
       outputs:
-      - name: results
+      - name: geode-passing-tokens
+      run:
+        path: bash
+        args:
+        - -ecx
+        - |-
+          pushd geode
+            GEODE_SHA=$(git rev-parse HEAD)
+          popd
+          GEODE_SEMVER=$(cat geode-build-version/number)
+
+          cat > geode-passing-tokens/passing-build-tokens-${GEODE_SEMVER}.json <<JSON
+          {
+            "ref": "${GEODE_SHA}",
+            "semver": "${GEODE_SEMVER}"
+          }
+          JSON
+          echo "${GEODE_SHA}" > geode-passing-tokens/sha
+  - aggregate:
+    - put: geode-passing-version
+      params:
+        file: geode-build-version/number
+{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
+    - put: geode-passing-sha
+      params:
+        file: geode-passing-tokens/sha
 {% endif %}
-- name: UpdatePassingBuild
-  public: true
-  serial: true
-  plan:
-  - get: geode-build-version
-{%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
-    passed: [PublishArtifacts]
-{% else %}
-    passed:
-    {{ all_gating_jobs() | indent(6) }}
-{% endif %}
-    trigger: true
-  - put: geode-passing-version
-    params:
-      file: geode-build-version/number
+    - put: geode-passing-tokens
+      params:
+        file: geode-passing-tokens/*.json
+
 - name: Benchmark
   public: true
   plan:
