@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
@@ -85,7 +86,7 @@ public class ExecuteFunctionOp {
       SingleHopClientExecutor.submitAll(callableTasks);
 
     } else {
-      AbstractOp reexecOp = null;
+      AbstractOp reexecOp;
       boolean reexecuteForServ = false;
       boolean reexecute = false;
 
@@ -151,7 +152,7 @@ public class ExecuteFunctionOp {
 
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
-      AbstractOp reexecOp = null;
+      AbstractOp reexecOp;
       boolean reexecuteForServ = false;
       boolean reexecute = false;
 
@@ -203,11 +204,11 @@ public class ExecuteFunctionOp {
     }
   }
 
-  public static void reexecute(ExecutablePool pool, Function function,
+  private static void reexecute(ExecutablePool pool, Function function,
       ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
       boolean isFnSerializationReqd, int retryAttempts, String[] groups, boolean allMembers) {
 
-    boolean reexecute = true;
+    boolean reexecute;
     int maxRetryAttempts = retryAttempts;
 
     do {
@@ -243,12 +244,12 @@ public class ExecuteFunctionOp {
     } while (reexecute);
   }
 
-  public static void reexecute(ExecutablePool pool, String functionId,
+  private static void reexecute(ExecutablePool pool, String functionId,
       ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
       boolean isFnSerializationReqd, int retryAttempts, Object args, boolean isHA,
       boolean optimizeForWrite, String[] groups, boolean allMembers) {
 
-    boolean reexecute = true;
+    boolean reexecute;
     int maxRetryAttempts = retryAttempts;
 
     do {
@@ -285,10 +286,10 @@ public class ExecuteFunctionOp {
     } while (reexecute);
   }
 
-  static List constructAndGetFunctionTasks(final PoolImpl pool, final Function function,
+  private static List constructAndGetFunctionTasks(final PoolImpl pool, final Function function,
       Object args, MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
       boolean isFnSerializationReqd, UserAttributes attributes) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
     for (ServerLocation server : servers) {
       final AbstractOp op = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult,
@@ -301,11 +302,11 @@ public class ExecuteFunctionOp {
     return tasks;
   }
 
-  static List constructAndGetFunctionTasks(final PoolImpl pool, final String functionId,
+  private static List constructAndGetFunctionTasks(final PoolImpl pool, final String functionId,
       Object args, MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
       boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite,
       UserAttributes properties) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     List<ServerLocation> servers = pool.getConnectionSource().getAllServers();
     for (ServerLocation server : servers) {
       final AbstractOp op = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
@@ -365,10 +366,9 @@ public class ExecuteFunctionOp {
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public ExecuteFunctionOpImpl(Function function, Object args,
-        MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
-        boolean isFnSerializationReqd, byte isReexecute, String[] groups, boolean allMembers,
-        boolean ignoreFailedMembers) {
+    ExecuteFunctionOpImpl(Function function, Object args, MemberMappedArgument memberMappedArg,
+        byte hasResult, ResultCollector rc, boolean isFnSerializationReqd, byte isReexecute,
+        String[] groups, boolean allMembers, boolean ignoreFailedMembers) {
       super(MessageType.EXECUTE_FUNCTION, MSG_PARTS);
       byte fnState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
@@ -382,13 +382,13 @@ public class ExecuteFunctionOp {
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
       getMessage().addObjPart(groups);
-      this.flags = getByteArrayForFlags(allMembers, ignoreFailedMembers);
-      getMessage().addBytesPart(this.flags);
+      flags = getByteArrayForFlags(allMembers, ignoreFailedMembers);
+      getMessage().addBytesPart(flags);
       resultCollector = rc;
       if (isReexecute == 1) {
         resultCollector.clearResults();
       }
-      this.functionId = function.getId();
+      functionId = function.getId();
       this.function = function;
       this.args = args;
       this.memberMappedArg = memberMappedArg;
@@ -397,12 +397,13 @@ public class ExecuteFunctionOp {
       this.groups = groups;
     }
 
-    public ExecuteFunctionOpImpl(String functionId, Object args2,
+    ExecuteFunctionOpImpl(String functionId, Object args2,
         MemberMappedArgument memberMappedArg, byte hasResult, ResultCollector rc,
-        boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite, byte isReexecute,
+        boolean isFnSerializationReqd, boolean isHA, boolean optimizeForWrite,
+        byte isReexecute,
         String[] groups, boolean allMembers, boolean ignoreFailedMembers) {
       super(MessageType.EXECUTE_FUNCTION, MSG_PARTS);
-      byte fnState = AbstractExecution.getFunctionState(isHA, hasResult == (byte) 1 ? true : false,
+      byte fnState = AbstractExecution.getFunctionState(isHA, hasResult == (byte) 1,
           optimizeForWrite);
 
       addBytes(isReexecute, fnState);
@@ -410,42 +411,42 @@ public class ExecuteFunctionOp {
       getMessage().addObjPart(args2);
       getMessage().addObjPart(memberMappedArg);
       getMessage().addObjPart(groups);
-      this.flags = getByteArrayForFlags(allMembers, ignoreFailedMembers);
-      getMessage().addBytesPart(this.flags);
+      flags = getByteArrayForFlags(allMembers, ignoreFailedMembers);
+      getMessage().addBytesPart(flags);
       resultCollector = rc;
       if (isReexecute == 1) {
         resultCollector.clearResults();
       }
       this.functionId = functionId;
-      this.args = args2;
+      args = args2;
       this.memberMappedArg = memberMappedArg;
       this.hasResult = fnState;
       this.isFnSerializationReqd = isFnSerializationReqd;
       this.groups = groups;
     }
 
-    public ExecuteFunctionOpImpl(ExecuteFunctionOpImpl op, byte isReexecute) {
+    ExecuteFunctionOpImpl(ExecuteFunctionOpImpl op, byte isReexecute) {
       super(MessageType.EXECUTE_FUNCTION, MSG_PARTS);
-      this.resultCollector = op.resultCollector;
-      this.function = op.function;
-      this.functionId = op.functionId;
-      this.hasResult = op.hasResult;
-      this.args = op.args;
-      this.memberMappedArg = op.memberMappedArg;
-      this.isFnSerializationReqd = op.isFnSerializationReqd;
-      this.groups = op.groups;
-      this.flags = op.flags;
+      resultCollector = op.resultCollector;
+      function = op.function;
+      functionId = op.functionId;
+      hasResult = op.hasResult;
+      args = op.args;
+      memberMappedArg = op.memberMappedArg;
+      isFnSerializationReqd = op.isFnSerializationReqd;
+      groups = op.groups;
+      flags = op.flags;
 
-      addBytes(isReexecute, this.hasResult);
-      if (this.isFnSerializationReqd) {
+      addBytes(isReexecute, hasResult);
+      if (isFnSerializationReqd) {
         getMessage().addStringOrObjPart(function);
       } else {
         getMessage().addStringOrObjPart(function.getId());
       }
-      getMessage().addObjPart(this.args);
-      getMessage().addObjPart(this.memberMappedArg);
-      getMessage().addObjPart(this.groups);
-      getMessage().addBytesPart(this.flags);
+      getMessage().addObjPart(args);
+      getMessage().addObjPart(memberMappedArg);
+      getMessage().addObjPart(groups);
+      getMessage().addBytesPart(flags);
       if (isReexecute == 1) {
         resultCollector.clearResults();
       }
@@ -477,8 +478,8 @@ public class ExecuteFunctionOp {
      */
     private boolean getIgnoreFailedMembers() {
       boolean ignoreFailedMembers = false;
-      if (this.flags != null && this.flags.length > 1) {
-        if (this.flags[IGNORE_FAILED_MEMBERS_INDEX] == 1) {
+      if (flags != null && flags.length > 1) {
+        if (flags[IGNORE_FAILED_MEMBERS_INDEX] == 1) {
           ignoreFailedMembers = true;
         }
       }
@@ -514,9 +515,8 @@ public class ExecuteFunctionOp {
                   Throwable cause = ex.getCause() == null ? ex : ex.getCause();
                   DistributedMember memberID =
                       (DistributedMember) ((ArrayList) resultResponse).get(1);
-                  this.resultCollector.addResult(memberID, cause);
-                  FunctionStats.getFunctionStats(this.functionId).incResultsReceived();
-                  continue;
+                  resultCollector.addResult(memberID, cause);
+                  FunctionStats.getFunctionStats(functionId).incResultsReceived();
                 } else {
                   exception = ex;
                 }
@@ -529,7 +529,7 @@ public class ExecuteFunctionOp {
                 DistributedMember memberID =
                     (DistributedMember) ((ArrayList) resultResponse).get(1);
                 resultCollector.addResult(memberID, result);
-                FunctionStats.getFunctionStats(this.functionId).incResultsReceived();
+                FunctionStats.getFunctionStats(functionId).incResultsReceived();
               }
             } while (!executeFunctionResponseMsg.isLastChunk());
 
@@ -552,12 +552,11 @@ public class ExecuteFunctionOp {
             Part part0 = executeFunctionResponseMsg.getPart(0);
             Object obj = part0.getObject();
             if (obj instanceof FunctionException) {
-              FunctionException ex = ((FunctionException) obj);
-              throw ex;
+              throw ((FunctionException) obj);
             } else {
-              String s =
-                  ": While performing a remote execute Function" + ((Throwable) obj).getMessage();
-              throw new ServerOperationException(s, (Throwable) obj);
+              final Throwable t = (Throwable) obj;
+              throw new ServerOperationException(
+                  ": While performing a remote execute Function" + t.getMessage(), t);
             }
           case MessageType.EXECUTE_FUNCTION_ERROR:
             if (logger.isDebugEnabled()) {
@@ -570,7 +569,7 @@ public class ExecuteFunctionOp {
             throw new ServerOperationException(errorMessage);
           default:
             throw new InternalGemFireError(String.format("Unknown message type %s",
-                Integer.valueOf(executeFunctionResponseMsg.getMessageType())));
+                executeFunctionResponseMsg.getMessageType()));
         }
       } finally {
         executeFunctionResponseMsg.clear();
@@ -606,7 +605,4 @@ public class ExecuteFunctionOp {
       return new ChunkedMessage(1, Version.CURRENT);
     }
   }
-
-  public static final int MAX_FE_THREADS = Integer.getInteger("DistributionManager.MAX_FE_THREADS",
-      Math.max(Runtime.getRuntime().availableProcessors() * 4, 16)).intValue();
 }

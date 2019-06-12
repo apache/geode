@@ -29,19 +29,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.CancelCriterion;
-import org.apache.geode.distributed.PoolCancelledException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.security.GemFireSecurityException;
 
 public class ConnectionConnectorTest {
-  private CancelCriterion cancelCriterion;
   private EndpointManager endpointManager;
   private InternalDistributedSystem ds;
-  private ClientProxyMembershipID proxyId;
   private ClientSideHandshakeImpl handshake;
   private SocketCreator socketCreator;
   private ConnectionImpl connection;
@@ -49,27 +44,11 @@ public class ConnectionConnectorTest {
 
   @Before
   public void setUp() throws Exception {
-    cancelCriterion = mock(CancelCriterion.class);
     endpointManager = mock(EndpointManager.class);
     ds = mock(InternalDistributedSystem.class);
-    proxyId = mock(ClientProxyMembershipID.class);
     handshake = mock(ClientSideHandshakeImpl.class);
     socketCreator = mock(SocketCreator.class);
     connection = mock(ConnectionImpl.class);
-
-    // mocks don't seem to work well with CancelCriterion so let's create a real one
-    cancelCriterion = new CancelCriterion() {
-      @Override
-      public String cancelInProgress() {
-        return "shutting down for test";
-      }
-
-      @Override
-      public RuntimeException generateCancelledException(Throwable throwable) {
-        return new PoolCancelledException(cancelInProgress(), throwable);
-      }
-    };
-
   }
 
   @After
@@ -79,9 +58,9 @@ public class ConnectionConnectorTest {
   public void failedConnectionIsDestroyed() throws IOException {
 
     ConnectionConnector spyConnector =
-        spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, cancelCriterion, false,
+        spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, false,
             null, socketCreator, handshake));
-    doReturn(connection).when(spyConnector).getConnection(ds, cancelCriterion);
+    doReturn(connection).when(spyConnector).getConnection(ds);
     doReturn(handshake).when(spyConnector).getClientSideHandshake(handshake);
 
     when(connection.connect(any(), any(), any(), anyInt(), anyInt(), anyInt(), any(), any(), any()))
@@ -97,9 +76,9 @@ public class ConnectionConnectorTest {
   public void successfulConnectionIsNotDestroyed() throws IOException {
 
     ConnectionConnector spyConnector =
-        spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, cancelCriterion, false,
+        spy(new ConnectionConnector(endpointManager, ds, 0, 0, 0, false,
             null, socketCreator, handshake));
-    doReturn(connection).when(spyConnector).getConnection(ds, cancelCriterion);
+    doReturn(connection).when(spyConnector).getConnection(ds);
     doReturn(handshake).when(spyConnector).getClientSideHandshake(handshake);
 
     try {
