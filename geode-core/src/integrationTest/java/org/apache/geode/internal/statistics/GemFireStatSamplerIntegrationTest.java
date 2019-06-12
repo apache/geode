@@ -31,7 +31,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAM
 import static org.apache.geode.internal.GemFireVersion.getBuildId;
 import static org.apache.geode.internal.GemFireVersion.getGemFireVersion;
 import static org.apache.geode.internal.GemFireVersion.getSourceDate;
-import static org.apache.geode.internal.PureJavaMode.osStatsAreAvailable;
 import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredMemoryPoolMXBean;
 import static org.apache.geode.internal.cache.control.HeapMemoryMonitor.getTenuredPoolStatistics;
 import static org.apache.geode.internal.net.SocketCreator.getHostName;
@@ -173,7 +172,7 @@ public class GemFireStatSamplerIntegrationTest extends StatSamplerTestCase {
       assertThat(processStats)
           .withFailMessage("ProcessStats were not created on" + osName)
           .isNotNull();
-      assertThat(osStatsAreAvailable())
+      assertThat(OsStatisticsProvider.build().osStatsSupported())
           .as("os stats are available on Linux")
           .isTrue();
       assertThat(allStats.containsStatisticsType("LinuxProcessStats"))

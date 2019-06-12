@@ -19,6 +19,7 @@ import java.net.UnknownHostException;
 
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.Statistics;
+import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.statistics.platform.LinuxProcessStats;
@@ -27,38 +28,51 @@ import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
- * Provides static methods which fetch operating system statistics.
- * Only Linux OS is allowed.
+ * Provides methods which fetch operating system statistics.
+ * Only Linux OS is currently allowed.
  */
-public class HostStatHelper {
-  private static final int PROCESS_STAT_FLAG = 1;
-  private static final int SYSTEM_STAT_FLAG = 2;
-  private static final boolean isLinux;
+public class OsStatisticsProvider {
+  private final int PROCESS_STAT_FLAG = 1;
+  private final int SYSTEM_STAT_FLAG = 2;
+  private final boolean osStatsSupported;
+  private final String currentOs;
 
-  static {
-    isLinux = OSVerifier.build().osIsLinux();
+  public boolean osStatsSupported() {
+    return osStatsSupported;
   }
 
-  public static boolean isLinux() {
-    return isLinux;
+  private OsStatisticsProvider() {
+    currentOs = SystemUtils.getOsName();
+    osStatsSupported = SystemUtils.isLinux();
+    if (!isSupportedOs(currentOs)) {
+      throw new InternalGemFireException(
+          String.format("Unsupported OS %s. Only Linux(x86) OSs supports OS statistics.",
+              currentOs));
+    }
   }
 
-  private HostStatHelper() {
-    // instances are not allowed
+  public static OsStatisticsProvider build() {
+    return new OsStatisticsProvider();
   }
 
-  static int initOSStats() {
-    continueIfLinux();
+  private boolean isSupportedOs(String os) {
+    boolean result = true;
+    if (!SystemUtils.isLinux() && !SystemUtils.isWindows() && !SystemUtils.isMacOSX()
+        && !SystemUtils.isSolaris()) {
+      result = false;
+    }
+    return result;
+  }
+
+  int initOSStats() {
     return LinuxProcFsStatistics.init();
   }
 
-  static void closeOSStats() {
-    continueIfLinux();
+  void closeOSStats() {
     LinuxProcFsStatistics.close();
   }
 
-  static void readyRefreshOSStats() {
-    continueIfLinux();
+  void readyRefreshOSStats() {
     LinuxProcFsStatistics.readyRefresh();
   }
 
@@ -66,8 +80,7 @@ public class HostStatHelper {
    * Refreshes the specified process stats instance by fetching the current OS values for the given
    * stats and storing them in the instance.
    */
-  private static void refreshProcess(LocalStatisticsImpl statistics) {
-    continueIfLinux();
+  private void refreshProcess(LocalStatisticsImpl statistics) {
     int pid = (int) statistics.getNumericId();
     LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
         statistics._getLongStorage(), statistics._getDoubleStorage());
@@ -77,8 +90,7 @@ public class HostStatHelper {
    * Refreshes the specified system stats instance by fetching the current OS values for the local
    * machine and storing them in the instance.
    */
-  private static void refreshSystem(LocalStatisticsImpl statistics) {
-    continueIfLinux();
+  private void refreshSystem(LocalStatisticsImpl statistics) {
     LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
         statistics._getDoubleStorage());
   }
@@ -86,7 +98,7 @@ public class HostStatHelper {
   /**
    * The call should have already checked to make sure usesSystemCalls returns true.
    */
-  public static void refresh(LocalStatisticsImpl statistics) {
+  public void refresh(LocalStatisticsImpl statistics) {
     int flags = statistics.getOsStatFlags();
     if ((flags & PROCESS_STAT_FLAG) != 0) {
       refreshProcess(statistics);
@@ -101,8 +113,7 @@ public class HostStatHelper {
    * Creates and returns a {@link Statistics} with the given pid and name. The resource's stats will
    * contain a snapshot of the current statistic values for the specified process.
    */
-  static Statistics newProcess(OsStatisticsFactory osStatisticsFactory, long pid, String name) {
-    continueIfLinux();
+  Statistics newProcess(OsStatisticsFactory osStatisticsFactory, long pid, String name) {
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxProcessStats.getType(), name, pid,
         PROCESS_STAT_FLAG);
@@ -116,8 +127,7 @@ public class HostStatHelper {
    * @see #newProcess
    * @since GemFire 3.5
    */
-  static ProcessStats newProcessStats(Statistics statistics) {
-    continueIfLinux();
+  ProcessStats newProcessStats(Statistics statistics) {
     return LinuxProcessStats.createProcessStats(statistics);
   }
 
@@ -125,8 +135,7 @@ public class HostStatHelper {
    * Creates a {@link Statistics} with the current machine's stats. The resource's stats
    * will contain a snapshot of the current statistic values for the local machine.
    */
-  static void newSystem(OsStatisticsFactory osStatisticsFactory, long id) {
-    continueIfLinux();
+  void newSystem(OsStatisticsFactory osStatisticsFactory, long id) {
     Statistics statistics;
     statistics = osStatisticsFactory.createOsStatistics(LinuxSystemStats.getType(),
         getHostSystemName(), id, SYSTEM_STAT_FLAG);
@@ -138,7 +147,7 @@ public class HostStatHelper {
   /**
    * @return this machine's fully qualified hostname or "unknownHostName" if one cannot be found.
    */
-  private static String getHostSystemName() {
+  private String getHostSystemName() {
     String hostname = "unknownHostName";
     try {
       InetAddress inetAddress = SocketCreator.getLocalHost();
@@ -146,16 +155,5 @@ public class HostStatHelper {
     } catch (UnknownHostException ignored) {
     }
     return hostname;
-  }
-
-  /**
-   * If the current OS is not Linux, an exception will be thrown
-   */
-  public static void continueIfLinux() {
-    if (!isLinux) {
-      throw new InternalGemFireException(
-          String.format("Unsupported OS %s. Only Linux(x86) OSs is supported.",
-              OSVerifier.build().getCurrentOS()));
-    }
   }
 }

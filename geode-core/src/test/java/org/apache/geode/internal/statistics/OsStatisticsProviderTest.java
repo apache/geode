@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.statistics;
 
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.InternalGemFireException;
 
-public class OSVerifierTest {
+public class OsStatisticsProviderTest {
 
   @Rule
   public ExpectedException exceptionGrabber = ExpectedException.none();
@@ -32,34 +32,34 @@ public class OSVerifierTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Test
-  public void givenLinuxOs_thenOSVerifierObjectCanBeBuilt() {
+  public void givenLinuxOs_thenOsStatsAreSupported() {
     System.setProperty("os.name", "Linux");
-    assertTrue(OSVerifier.build().osIsLinux());
+    assertThat(OsStatisticsProvider.build().osStatsSupported()).isTrue();
   }
 
   @Test
-  public void givenWindowsOs_thenOSVerifierObjectCanBeBuilt() {
+  public void givenWindowsOs_thenOsStatsAreNotSupported() {
     System.setProperty("os.name", "Windows");
-    assertTrue(!OSVerifier.build().osIsLinux());
+    assertThat(OsStatisticsProvider.build().osStatsSupported()).isFalse();
   }
 
   @Test
-  public void givenMacOs_thenOSVerifierObjectCanBeBuilt() {
+  public void givenMacOs_thenOsStatsAreNotSupported() {
     System.setProperty("os.name", "Mac OS X");
-    assertTrue(!OSVerifier.build().osIsLinux());
+    assertThat(OsStatisticsProvider.build().osStatsSupported()).isFalse();
   }
 
   @Test
-  public void givenSolarisOs_thenOSVerifierObjectCanBeBuilt() {
+  public void givenSolarisOs_thenOsStatsAreNotSupported() {
     System.setProperty("os.name", "SunOS");
-    assertTrue(!OSVerifier.build().osIsLinux());
+    assertThat(OsStatisticsProvider.build().osStatsSupported()).isFalse();
   }
 
   @Test
-  public void givenUnknownOs_thenOSVerifierThrowsAnException() {
+  public void givenUnknownOs_thenBuilderThrowsAnException() {
     System.setProperty("os.name", "AnyOtherOS");
     exceptionGrabber.expect(InternalGemFireException.class);
-    OSVerifier.build();
+    OsStatisticsProvider.build();
   }
 
 }
