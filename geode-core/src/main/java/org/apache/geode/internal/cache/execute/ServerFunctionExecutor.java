@@ -41,6 +41,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private String[] groups;
 
+
   ServerFunctionExecutor(Pool pool, boolean allServers, String... groups) {
     this.pool = (PoolImpl) pool;
     this.allServers = allServers;
@@ -143,7 +144,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
       long start = stats.startTime();
       stats.startFunctionExecution(true);
       ExecuteFunctionOp.execute(pool, function, this, args, memberMappedArg, allServers,
-          hasResult, rc, isFnSerializationReqd, UserAttributes.userAttributes.get(), groups);
+          hasResult, rc, isFnSerializationReqd, UserAttributes.userAttributes.get(), groups,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;
@@ -167,7 +169,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
       stats.startFunctionExecution(true);
       ExecuteFunctionOp.execute(pool, functionId, this, args, memberMappedArg, allServers,
           hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite,
-          UserAttributes.userAttributes.get(), groups);
+          UserAttributes.userAttributes.get(), groups, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;

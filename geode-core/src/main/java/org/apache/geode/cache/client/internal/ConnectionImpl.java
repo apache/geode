@@ -29,11 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelException;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
-import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
-import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
@@ -52,11 +48,6 @@ import org.apache.geode.internal.net.SocketCreator;
  * @since GemFire 5.7
  */
 public class ConnectionImpl implements Connection {
-
-  // TODO: DEFAULT_CLIENT_FUNCTION_TIMEOUT should be private
-  public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
-  private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
-      DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
 
   private static final Logger logger = LogService.getLogger();
 
@@ -90,12 +81,6 @@ public class ConnectionImpl implements Connection {
 
   public ConnectionImpl(InternalDistributedSystem ds) {
     this.ds = ds;
-  }
-
-  static int getClientFunctionTimeout() {
-    int time = Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
-        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
-    return time >= 0 ? time : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
   public ServerQueueStatus connect(EndpointManager endpointManager, ServerLocation location,
@@ -275,18 +260,7 @@ public class ConnectionImpl implements Connection {
       return result;
     }
     synchronized (this) {
-      if (op instanceof ExecuteFunctionOpImpl || op instanceof ExecuteRegionFunctionOpImpl
-          || op instanceof ExecuteRegionFunctionSingleHopOpImpl) {
-        int previousTimeout = getSocket().getSoTimeout();
-        getSocket().setSoTimeout(getClientFunctionTimeout());
-        try {
-          result = op.attempt(this);
-        } finally {
-          getSocket().setSoTimeout(previousTimeout);
-        }
-      } else {
-        result = op.attempt(this);
-      }
+      result = op.attempt(this);
     }
     endpoint.updateLastExecute();
     return result;

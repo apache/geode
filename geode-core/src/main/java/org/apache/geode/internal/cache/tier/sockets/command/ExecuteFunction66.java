@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.apache.geode.internal.cache.execute.ServerFunctionExecutor.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
@@ -22,7 +24,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.LowMemoryException;
-import org.apache.geode.cache.client.internal.ConnectionImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
@@ -105,7 +106,7 @@ public class ExecuteFunction66 extends BaseCommand {
     boolean isReexecute = false;
     boolean allMembers;
     boolean ignoreFailedMembers;
-    int functionTimeout = ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+    int functionTimeout = DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
     try {
       byte[] bytes = clientMessage.getPart(0).getSerializedForm();

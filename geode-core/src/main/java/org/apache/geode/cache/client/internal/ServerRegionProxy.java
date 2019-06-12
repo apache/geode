@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
 
 import java.util.Collection;
@@ -657,7 +658,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   public void executeFunction(String rgnName, Function function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, boolean replaying) {
+      byte hasResult, boolean replaying, final int timeoutMs) {
 
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 1, function,
         serverRegionExecutor, resultCollector, hasResult);
@@ -673,12 +674,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
               cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
-                resultCollector, hasResult, retryAttempts);
+                resultCollector, hasResult, retryAttempts, timeoutMs);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
                 serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true);
+                true, timeoutMs);
           }
         } else {
           boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -687,29 +688,30 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
                   function.optimizeForWrite(), isBucketFilter);
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
-                resultCollector, hasResult, retryAttempts);
+                resultCollector, hasResult, retryAttempts, timeoutMs);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
                 serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                isBucketFilter);
+                isBucketFilter, timeoutMs);
           }
         }
       } else {
         cms.scheduleGetPRMetaData(region, false);
         ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
-            resultCollector, hasResult, retryAttempts);
+            resultCollector, hasResult, retryAttempts, timeoutMs);
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool, rgnName, function, serverRegionExecutor,
-          resultCollector, hasResult, retryAttempts);
+          resultCollector, hasResult, retryAttempts, timeoutMs);
     }
   }
 
 
   public void executeFunction(String rgnName, String functionId,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, boolean isHA, boolean optimizeForWrite, boolean replaying) {
+      byte hasResult, boolean isHA, boolean optimizeForWrite, boolean replaying,
+      final int timeoutMs) {
 
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 2, functionId,
         serverRegionExecutor, resultCollector, hasResult, isHA,
@@ -724,12 +726,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
-                resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
+                resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite, timeoutMs);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
                 serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true, isHA, optimizeForWrite);
+                true, isHA, optimizeForWrite, timeoutMs);
           }
         } else {
           boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -737,22 +739,22 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
               serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
-                resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
+                resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite, timeoutMs);
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
                 serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                false, isHA, optimizeForWrite);
+                false, isHA, optimizeForWrite, timeoutMs);
           }
         }
       } else {
         cms.scheduleGetPRMetaData(region, false);
         ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
-            resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
+            resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite, timeoutMs);
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool, rgnName, functionId, serverRegionExecutor,
-          resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite);
+          resultCollector, hasResult, retryAttempts, isHA, optimizeForWrite, timeoutMs);
     }
   }
 
