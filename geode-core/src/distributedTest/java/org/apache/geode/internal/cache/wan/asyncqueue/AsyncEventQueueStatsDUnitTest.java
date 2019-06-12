@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static junit.framework.TestCase.assertNotNull;
-import static org.apache.geode.internal.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -30,7 +29,6 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
-import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.junit.categories.AEQTest;
@@ -370,7 +368,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   }
 
   @Test
-  public void testPartitionedProxyWithoutSameAEQIdShouldThrowException() {
+  public void testPartitionedProxyWithoutSameAEQIdShouldLogWarning() {
     Integer lnPort =
         (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
@@ -393,13 +391,10 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     });
 
     vm2.invoke(() -> {
-      try {
-        AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 100);
-        fail("expected GatewaySenderConfigurationException");
-      } catch (GatewaySenderConfigurationException e) {
-        assertTrue(e.getMessage()
-            .contains("For region across all members, AsyncEvent queue IDs should be same."));
-      }
+      AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 100);
+      // expect the above doPuts call to log one warning in vm1: "Region
+      // testPartitionedProxyWithoutSameAEQIdShouldLogWarning_PR has [ln] AsyncEvent queue IDs.
+      // Another member has the same region with [] AsyncEvent queue IDs."
     });
   }
 
@@ -431,7 +426,7 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
   }
 
   @Test
-  public void testReplicatedProxyWithoutSameAEQIdShouldThrowException() {
+  public void testReplicatedProxyWithoutSameAEQIdToLogWarning() {
     Integer lnPort =
         (Integer) vm0.invoke(() -> AsyncEventQueueTestBase.createFirstLocatorWithDSId(1));
 
@@ -453,13 +448,10 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     });
 
     vm2.invoke(() -> {
-      try {
-        AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 100);
-        fail("expected GatewaySenderConfigurationException");
-      } catch (GatewaySenderConfigurationException e) {
-        assertTrue(e.getMessage()
-            .contains("For region across all members, AsyncEvent queue IDs should be same."));
-      }
+      AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 100);
+      // expect the above doPuts call to log one warning in vm1: "Region
+      // testReplicatedProxyWithoutSameAEQIdToLogWarning_RR has [ln] AsyncEvent queue IDs. Another
+      // member has the same region with [] AsyncEvent queue IDs."
     });
   }
 }

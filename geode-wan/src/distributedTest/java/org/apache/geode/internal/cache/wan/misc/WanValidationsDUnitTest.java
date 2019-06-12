@@ -31,7 +31,6 @@ import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.cache30.MyGatewayTransportFilter1;
 import org.apache.geode.cache30.MyGatewayTransportFilter2;
 import org.apache.geode.internal.cache.wan.Filter70;
-import org.apache.geode.internal.cache.wan.GatewaySenderConfigurationException;
 import org.apache.geode.internal.cache.wan.GatewaySenderException;
 import org.apache.geode.internal.cache.wan.MyGatewayTransportFilter3;
 import org.apache.geode.internal.cache.wan.MyGatewayTransportFilter4;
@@ -784,7 +783,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testBug50434_RR_Serial() throws Exception {
+  public void test_RR_Serial_warnAboutGatewaySenderIdsConsistency() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -809,20 +808,16 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(
         () -> WANTestBase.addSenderThroughAttributesMutator(getTestMethodName() + "_RR", "ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10));
-      fail("Expected GatewaySenderConfigurationException : Sender Ids should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, gateway sender ids should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 10));
+    // expect warnings in: vm4, vm5: Region test_RR_Serial_warnAboutGatewaySenderIdsConsistency_RR
+    // has [ln] gateway sender IDs. Another member has the same region with [] gateway sender IDs.
+    // expect warnings in: vm6, vm7: Region test_RR_Serial_warnAboutGatewaySenderIdsConsistency_RR
+    // has [] gateway sender IDs. Another member has the same region with [ln] gateway sender IDs.
   }
 
   @Test
-  public void testBug50434_RR_SerialAsyncEventQueue() throws Exception {
+  public void test_RR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency()
+      throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -847,16 +842,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase
         .addAsyncEventQueueThroughAttributesMutator(getTestMethodName() + "_RR", "ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
-      fail("Expected GatewaySenderConfigurationException : AsyncEvent queue IDs should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, AsyncEvent queue IDs should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_RR", 1000));
+    // expect warnings in: vm4, vm5: Region
+    // test_RR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_RR has [ln] AsyncEvent
+    // queue IDs. Another member has the same region with [] AsyncEvent queue IDs.
+    // expect warnings in: vm6, vm7: Region
+    // test_RR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_RR has [] AsyncEvent
+    // queue IDs. Another member has the same region with [ln] AsyncEvent queue IDs.
   }
 
   protected SerializableRunnableIF createReceiverReplicatedRegion() {
@@ -940,7 +932,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testBug50434_PR_Serial() throws Exception {
+  public void test_PR_Serial_warnAboutGatewaySenderIdsConsistency() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -958,13 +950,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     startSenderInVMs("ln", vm4, vm5, vm6, vm7);
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
 
     vm4.invoke(
@@ -975,20 +967,16 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
-      fail("Expected GatewaySenderConfigurationException : Sender Ids should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, gateway sender ids should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
+    // expect warnings in vm4, vm5: Region test_PR_Serial_warnAboutGatewaySenderIdsConsistency_PR
+    // has [ln] gateway sender IDs. Another member has the same region with [] gateway sender IDs.
+    // expect warnings in vm6, vm7: Region test_PR_Serial_warnAboutGatewaySenderIdsConsistency_PR
+    // has [] gateway sender IDs. Another member has the same region with [ln] gateway sender IDs.
   }
 
   @Test
-  public void testBug50434_PR_SerialAsyncEventQueue() throws Exception {
+  public void test_PR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency()
+      throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1002,13 +990,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createAsyncEventQueue("ln", false, 100, 100, false, false, null, false));
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 100,
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 100,
         isOffHeap()));
 
     vm4.invoke(() -> WANTestBase
@@ -1016,16 +1004,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase
         .addAsyncEventQueueThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
-      fail("Expected GatewaySenderConfigurationException : AsyncEvent queue IDs should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, AsyncEvent queue IDs should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 1000));
+    // expect warn in vm4, vm5: Region
+    // test_PR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_PR has [ln] AsyncEvent
+    // queue IDs. Another member has the same region with [] AsyncEvent queue IDs.
+    // expect warn in vm6, vm7: Region
+    // test_PR_SerialAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_PR has [] AsyncEvent
+    // queue IDs. Another member has the same region with [ln] AsyncEvent queue IDs.
   }
 
   @Test
@@ -1116,7 +1101,7 @@ public class WanValidationsDUnitTest extends WANTestBase {
   }
 
   @Test
-  public void testBug50434_PR_Parallel() throws Exception {
+  public void test_PR_Parallel_warnAboutGatewaySenderIdsConsistency() throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = (Integer) vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -1131,13 +1116,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase.createSender("ln", 2, true, 100, 10, false, false, null, true));
     startSenderInVMs("ln", vm4, vm5);
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
 
     vm4.invoke(
@@ -1147,20 +1132,16 @@ public class WanValidationsDUnitTest extends WANTestBase {
 
     vm4.invoke(() -> WANTestBase.waitForSenderRunningState("ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
-      fail("Expected GatewaySenderConfigurationException : Sender Ids should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, gateway sender ids should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
+    // expect warn in vm4, vm5: Region test_PR_Parallel_warnAboutGatewaySenderIdsConsistency_PR has
+    // [ln] gateway sender IDs. Another member has the same region with [] gateway sender IDs.
+    // expect warn in vm6, vm7: Region test_PR_Parallel_warnAboutGatewaySenderIdsConsistency_PR has
+    // [] gateway sender IDs. Another member has the same region with [ln] gateway sender IDs.
   }
 
   @Test
-  public void testBug50434_PR_ParallelAsyncEventQueue() throws Exception {
+  public void test_PR_ParallelAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency()
+      throws Exception {
     Integer lnPort = (Integer) vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
 
     createCacheInVMs(lnPort, vm4, vm5, vm6, vm7);
@@ -1174,13 +1155,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm7.invoke(
         () -> WANTestBase.createAsyncEventQueue("ln", true, 100, 100, false, false, null, false));
 
-    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm4.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm5.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm6.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
-    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 1, 10,
+    vm7.invoke(() -> WANTestBase.createPartitionedRegion(getTestMethodName() + "_PR", null, 3, 10,
         isOffHeap()));
 
     vm4.invoke(() -> WANTestBase
@@ -1188,16 +1169,13 @@ public class WanValidationsDUnitTest extends WANTestBase {
     vm5.invoke(() -> WANTestBase
         .addAsyncEventQueueThroughAttributesMutator(getTestMethodName() + "_PR", "ln"));
 
-    try {
-      vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
-      fail("Expected GatewaySenderConfigurationException : AsyncEvent queue IDs should match");
-    } catch (Exception e) {
-      if (!(e.getCause() instanceof GatewaySenderConfigurationException)
-          || !(e.getCause().getMessage()
-              .contains("For region across all members, AsyncEvent queue IDs should be same."))) {
-        Assert.fail("Expected GatewaySenderConfigurationException", e);
-      }
-    }
+    vm4.invoke(() -> WANTestBase.doPuts(getTestMethodName() + "_PR", 10));
+    // expect warn in vm4, vm5: Region
+    // test_PR_ParallelAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_PR has [ln] AsyncEvent
+    // queue IDs. Another member has the same region with [] AsyncEvent queue IDs.
+    // expect warn in vm6, vm7: Region
+    // test_PR_ParallelAsyncEventQueue_warnAboutAsyncEventQueueIdsConsistency_PR has [] AsyncEvent
+    // queue IDs. Another member has the same region with [ln] AsyncEvent queue IDs.
   }
 
   @Test
