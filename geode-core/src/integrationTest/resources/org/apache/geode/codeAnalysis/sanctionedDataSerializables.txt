@@ -1285,8 +1285,8 @@ fromData,37
 toData,34
 
 org/apache/geode/internal/cache/TXRegionLockRequestImpl,2
-fromData,71
-toData,17
+fromData,97
+toData,55
 
 org/apache/geode/internal/cache/TXRemoteCommitMessage$TXRemoteCommitReplyMessage,2
 fromData,17

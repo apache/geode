@@ -110,6 +110,7 @@ public class TXDetectReadConflictJUnitTest {
     mgr.commit();
   }
 
+
   /**
    * Test that two transactions with only read operations don't produce CommitConflictException
    * This test fill some initial value on startup and after that create different threads with
@@ -177,6 +178,8 @@ public class TXDetectReadConflictJUnitTest {
         CacheTransactionManager txMgr2 = cache.getCacheTransactionManager();
         txMgr2.begin();
         regionpr.get("key1"); // non-tx
+        regionpr.put("key2", "value2");
+
         lock.asReadLock().lock();
         txMgr2.commit();
       });
@@ -184,6 +187,8 @@ public class TXDetectReadConflictJUnitTest {
         CacheTransactionManager txMgr3 = cache.getCacheTransactionManager();
         txMgr3.begin();
         regionpr.get("key1"); // non-tx
+        regionpr.put("key3", "value3");
+
         lock.asReadLock().lock();
         txMgr3.commit();
       });
@@ -191,6 +196,8 @@ public class TXDetectReadConflictJUnitTest {
         CacheTransactionManager txMgr4 = cache.getCacheTransactionManager();
         txMgr4.begin();
         regionpr.get("key1"); // non-tx
+        regionpr.put("key4", "value4");
+
         lock.asReadLock().lock();
         txMgr4.commit();
       });
@@ -198,6 +205,8 @@ public class TXDetectReadConflictJUnitTest {
         CacheTransactionManager txMgr5 = cache.getCacheTransactionManager();
         txMgr5.begin();
         regionpr.get("key1"); // non-tx
+        regionpr.put("key5", "value5");
+
         lock.asReadLock().lock();
         txMgr5.commit();
       });
