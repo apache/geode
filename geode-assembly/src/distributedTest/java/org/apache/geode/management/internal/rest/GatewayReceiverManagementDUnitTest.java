@@ -96,5 +96,8 @@ public class GatewayReceiverManagementDUnitTest {
     assertManagementResult(cms.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
+
+    assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful()
+        .hasListResult().hasSize(2);
   }
 }
