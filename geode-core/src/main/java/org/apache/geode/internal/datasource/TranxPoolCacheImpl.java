@@ -94,7 +94,7 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
    * Used by unit tests
    */
   @VisibleForTesting
-  public void setXADataSource(XADataSource xads) {
+  void setXADataSource(XADataSource xads) {
     m_xads = xads;
   }
 }

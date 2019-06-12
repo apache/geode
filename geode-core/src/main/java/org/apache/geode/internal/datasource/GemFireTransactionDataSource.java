@@ -226,7 +226,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
       conn = poolC.getConnection();
     } catch (SQLException e) {
       provider.returnAndExpireConnection(poolC);
-      throw new SQLException(e);
+      throw e;
     }
     boolean val = validateConnection(conn);
     if (val)
@@ -260,7 +260,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * Used by unit tests
    */
   @VisibleForTesting
-  public void setTransManager(TransactionManager txmanager) {
+  void setTransManager(TransactionManager txmanager) {
     transManager = txmanager;
   }
 }

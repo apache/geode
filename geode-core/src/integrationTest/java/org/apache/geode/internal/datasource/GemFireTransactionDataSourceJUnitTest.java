@@ -21,13 +21,17 @@ package org.apache.geode.internal.datasource;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.junit.Assert.fail;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.Context;
 import javax.sql.XAConnection;
@@ -81,25 +85,28 @@ public class GemFireTransactionDataSourceJUnitTest {
     TranxPoolCacheImpl tpci = (TranxPoolCacheImpl) gcpm.getConnectionPoolCache();
     ds.getConnection();
     // get connection to activate clean thread, which will sleep for 20 seconds
+    // also duration of connection is cca. 20 secs
 
-    Thread.sleep(10000);
+    // wait for 10 secs (half of clean thread interval)
+    await().pollDelay(10, TimeUnit.SECONDS).atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(1, tpci.getActiveCacheSize()));
 
-    try {
-      transactionManager = mock(TransactionManager.class);
-      ds.setTransManager(transactionManager);
-      when(transactionManager.getTransaction()).thenThrow(new SystemException("SQL exception"));
+    transactionManager = mock(TransactionManager.class);
+    ds.setTransManager(transactionManager);
+    when(transactionManager.getTransaction()).thenThrow(new SystemException("SQL exception"));
+
+    Throwable thrown = catchThrowable(() -> {
       ds.getConnection();
-    } catch (SQLException e) {
-      exceptionoccurred = true;
-    }
-    if (!exceptionoccurred) {
-      fail("No exception recived, but expexted");
-    }
-    Thread.sleep(15000);
+    });
+
+    assertThat(thrown)
+        .isInstanceOf(SQLException.class)
+        .hasMessageContaining("SQL exception");
+
     // wait for activation of clean thread
-    if (tpci.getActiveCacheSize() != 0) {
-      fail("Number of active connections should be 0.");
-    }
+    await().atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, tpci.getActiveCacheSize()));
+
   }
 
 
@@ -114,29 +121,31 @@ public class GemFireTransactionDataSourceJUnitTest {
     TranxPoolCacheImpl tpci = (TranxPoolCacheImpl) gcpm.getConnectionPoolCache();
     ds.getConnection();
     ds.getConnection();
-    // get connection to activate clean thread, which will sleep for 20 seconds, and
+    // get connection to activate clean thread, which will sleep for 20 seconds
+    // also duration of connection is cca. 20 secs
+
+    // wait for 10 secs (half of clean thread interval)
     // get all connections from init pool.
-    Thread.sleep(10000);
+    await().pollDelay(10, TimeUnit.SECONDS).atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(2, tpci.getActiveCacheSize()));
 
-    try {
-      xads = mock(XADataSource.class);
-      xaconn = mock(XAConnection.class);
-      tpci.setXADataSource(xads);
+    xads = mock(XADataSource.class);
+    xaconn = mock(XAConnection.class);
+    tpci.setXADataSource(xads);
 
-      when(xads.getXAConnection(any(), any())).thenReturn(xaconn);
-      when(xaconn.getConnection()).thenThrow(new SQLException("SQL exception2"));
+    when(xads.getXAConnection(any(), any())).thenReturn(xaconn);
+    when(xaconn.getConnection()).thenThrow(new SQLException("SQL exception2"));
+
+    Throwable thrown = catchThrowable(() -> {
       ds.getConnection();
-    } catch (SQLException e) {
-      exceptionoccurred = true;
-    }
+    });
 
-    if (!exceptionoccurred) {
-      fail("No exception recived, but expexted");
-    }
-    Thread.sleep(15000);
+    assertThat(thrown)
+        .isInstanceOf(SQLException.class)
+        .hasMessageContaining("SQL exception2");
+
     // wait for activation of clean thread
-    if (tpci.getActiveCacheSize() != 0) {
-      fail("Number of active connections should be 0.");
-    }
+    await("Number of active connections should be 0.").atMost(15, TimeUnit.SECONDS)
+        .untilAsserted(() -> assertEquals(0, tpci.getActiveCacheSize()));
   }
 }
