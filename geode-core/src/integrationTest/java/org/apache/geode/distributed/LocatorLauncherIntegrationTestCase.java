@@ -17,14 +17,12 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.AbstractLauncher.Status.STOPPED;
 import static org.apache.geode.distributed.ConfigurationProperties.CLUSTER_CONFIGURATION_DIR;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
-import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 import static org.apache.geode.distributed.internal.InternalConfigurationPersistenceService.CLUSTER_CONFIG_DISK_DIR_PREFIX;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPorts;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -71,7 +69,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
   }
 
   @After
-  public void tearDownAbstractLocatorLauncherIntegrationTestCase() throws Exception {
+  public void tearDownAbstractLocatorLauncherIntegrationTestCase() {
     if (launcher != null) {
       launcher.stop();
     }
@@ -119,10 +117,11 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
    * without any of these defaults then simply use {@code new Builder()} instead.
    */
   protected Builder newBuilder() {
-    return new Builder().setMemberName(getUniqueName()).setRedirectOutput(true)
+    return new Builder()
+        .setMemberName(getUniqueName())
         .setWorkingDirectory(getWorkingDirectoryPath())
         .set(CLUSTER_CONFIGURATION_DIR, getClusterConfigDirectoryPath())
-        .set(DISABLE_AUTO_RECONNECT, "true").set(LOG_LEVEL, "config").set(MCAST_PORT, "0");
+        .set(DISABLE_AUTO_RECONNECT, "true");
   }
 
   protected LocatorLauncher startLocator() {
@@ -157,7 +156,7 @@ public abstract class LocatorLauncherIntegrationTestCase extends LauncherIntegra
 
   private boolean isLauncherOnline() {
     LocatorState locatorState = launcher.status();
-    assertNotNull(locatorState);
+    assertThat(locatorState).isNotNull();
     return Status.ONLINE.equals(locatorState.getStatus());
   }
 }

@@ -15,12 +15,12 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -33,87 +33,79 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionManagementDunitTest {
 
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator, server;
+  private static MemberVM locator, server1, server2, server3;
 
   private static GeodeDevRestClient restClient;
+  private static ClusterManagementService cms;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
-    server = cluster.startServerVM(1, locator.getPort());
+    server1 = cluster.startServerVM(1, "group1", locator.getPort());
+    server2 = cluster.startServerVM(2, "group2", locator.getPort());
+    server3 = cluster.startServerVM(3, "group2,group3", locator.getPort());
+
     restClient =
         new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
+        .setHostAddress("localhost", locator.getHttpPort())
+        .build();
   }
 
   @Test
   public void createsRegion() throws Exception {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
+    regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
-    ObjectMapper mapper = new ObjectMapper();
-    String json = mapper.writeValueAsString(regionConfig);
 
-    ClusterManagementResult<RuntimeRegionConfig> result =
-        restClient.doPostAndAssert("/regions", json)
-            .hasStatusCode(201)
-            .getClusterManagementResult();
+    ClusterManagementResult<RuntimeRegionConfig> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
-    server.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
+    server1.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
 
     // make sure region is persisted
-    locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE"));
-
-    // verify that additional server can be started with the cluster configuration
-    MemberVM server2 = cluster.startServerVM(2, locator.getPort());
-    server2.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
-
-    // stop the 2nd server to avoid test pollution
-    server2.stop();
+    locator.invoke(() -> verifyRegionPersisted("customers", "REPLICATE", "group1"));
   }
 
   @Test
   public void createRegionWithKeyValueConstraint() throws Exception {
     RegionConfig config = new RegionConfig();
     config.setName("customers2");
+    config.setGroup("group1");
     config.setType(RegionType.PARTITION);
     RegionAttributesType type = new RegionAttributesType();
     type.setKeyConstraint("java.lang.Boolean");
     type.setValueConstraint("java.lang.Integer");
     config.setRegionAttributes(type);
+    cms.create(config);
 
-    restClient.doPostAndAssert("/regions", GeodeJsonMapper.getMapper().writeValueAsString(config))
-        .statusIsOk();
-
-    locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 1);
-
-    List<?> result =
-        restClient.doGetAndAssert("/regions?id=customers2").statusIsOk()
-            .getClusterManagementResult().getResult();
+    List<RuntimeRegionConfig> result = cms.get(config).getResult();
 
     assertThat(result).hasSize(1);
-    RuntimeRegionConfig config1 = (RuntimeRegionConfig) result.get(0);
+    RuntimeRegionConfig config1 = result.get(0);
     assertThat(config1.getType()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getDataPolicy().name()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getValueConstraint()).isEqualTo("java.lang.Integer");
     assertThat(config1.getRegionAttributes().getKeyConstraint()).isEqualTo("java.lang.Boolean");
 
-    server.invoke(() -> {
+    server1.invoke(() -> {
       Region customers2 = ClusterStartupRule.getCache().getRegionByPath("/customers2");
       assertThatThrownBy(() -> customers2.put("key", 2)).isInstanceOf(ClassCastException.class)
           .hasMessageContaining("does not satisfy keyConstraint");
@@ -125,7 +117,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsAPartitionedRegion() throws Exception {
-    String json = "{\"name\": \"orders\", \"type\": \"PARTITION\"}";
+    String json = "{\"name\": \"orders\", \"type\": \"PARTITION\", \"group\": \"group1\"}";
 
     ClusterManagementResult<RuntimeRegionConfig> result =
         restClient.doPostAndAssert("/regions", json)
@@ -136,10 +128,10 @@ public class RegionManagementDunitTest {
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
 
     // make sure region is created
-    server.invoke(() -> verifyRegionCreated("orders", "PARTITION"));
+    server1.invoke(() -> verifyRegionCreated("orders", "PARTITION"));
 
     // make sure region is persisted
-    locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION"));
+    locator.invoke(() -> verifyRegionPersisted("orders", "PARTITION", "group1"));
 
     // create the same region 2nd time
     result = restClient.doPostAndAssert("/regions", json)
@@ -161,10 +153,10 @@ public class RegionManagementDunitTest {
     assertThat(result.isSuccessful()).isFalse();
   }
 
-  static void verifyRegionPersisted(String regionName, String type) {
+  static void verifyRegionPersisted(String regionName, String type, String group) {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
-            .getCacheConfig("cluster");
+            .getCacheConfig(group);
     RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
@@ -174,5 +166,60 @@ public class RegionManagementDunitTest {
     Region region = cache.getRegion(regionName);
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
+  }
+
+  @Test
+  public void createSameRegionOnDisjointGroups() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("disJoint");
+    regionConfig.setGroup("group1");
+    regionConfig.setType(RegionType.REPLICATE);
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
+
+    regionConfig.setName("disJoint");
+    regionConfig.setGroup("group2");
+    regionConfig.setType(RegionType.REPLICATE);
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
+  }
+
+  @Test
+  public void createSameRegionOnGroupsWithCommonMember() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("commonMember");
+    regionConfig.setGroup("group2");
+    regionConfig.setType(RegionType.REPLICATE);
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
+
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
+        .containsStatusMessage("server-2")
+        .containsStatusMessage("server-3")
+        .containsStatusMessage("already has this element created");
+
+    regionConfig.setGroup("group3");
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
+        .containsStatusMessage("Member(s) server-3 already has this element created");
+  }
+
+  @Test
+  public void createIncompatibleRegionOnDisjointGroups() throws Exception {
+    RegionConfig regionConfig = new RegionConfig();
+    regionConfig.setName("incompatible");
+    regionConfig.setGroup("group4");
+    regionConfig.setType(RegionType.REPLICATE);
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
+
+    regionConfig.setName("incompatible");
+    regionConfig.setGroup("group5");
+    regionConfig.setType(RegionType.PARTITION);
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+        ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
+
+    regionConfig.setName("incompatible");
+    regionConfig.setGroup("group5");
+    regionConfig.setType(RegionType.REPLICATE_PROXY);
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
+
   }
 }

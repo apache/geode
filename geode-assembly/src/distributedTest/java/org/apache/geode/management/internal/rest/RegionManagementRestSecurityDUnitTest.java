@@ -116,7 +116,8 @@ public class RegionManagementRestSecurityDUnitTest {
     server.invoke(() -> RegionManagementDunitTest.verifyRegionCreated("customers", "REPLICATE"));
 
     // make sure region is persisted
-    locator.invoke(() -> RegionManagementDunitTest.verifyRegionPersisted("customers", "REPLICATE"));
+    locator.invoke(() -> RegionManagementDunitTest.verifyRegionPersisted("customers", "REPLICATE",
+        "cluster"));
 
     // verify that additional server can be started with the cluster configuration
     cluster.startServerVM(2, config, locator.getPort());

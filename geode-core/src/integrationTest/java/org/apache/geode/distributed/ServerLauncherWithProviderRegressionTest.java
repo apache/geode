@@ -26,10 +26,10 @@ import org.apache.geode.cache.Cache;
 
 /**
  * Extracted from {@link ServerLauncherLocalIntegrationTest}. This tests the same mechanism used by
- * Spring Data GemFire/Geode. This test confirms the fix for TRAC #51201 (see below).
+ * Spring Data GemFire/Geode.
  *
  * <p>
- * TRAC #51201: ServerLauncher.start fails to configure server with Spring
+ * ServerLauncher.start fails to configure server with Spring
  */
 public class ServerLauncherWithProviderRegressionTest extends ServerLauncherIntegrationTestCase {
 
@@ -52,7 +52,9 @@ public class ServerLauncherWithProviderRegressionTest extends ServerLauncherInte
 
   @Test
   public void startGetsCacheFromServerLauncherCacheProvider() {
-    startServer(newBuilder().setDisableDefaultServer(true).setSpringXmlLocation(springXml()));
+    startServer(newBuilder()
+        .setDisableDefaultServer(true)
+        .setSpringXmlLocation(springXml()));
 
     Cache cache = launcher.getCache();
 

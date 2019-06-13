@@ -394,7 +394,7 @@ public class SocketCreator {
   }
 
   /**
-   * Used by CacheServerLauncher and SystemAdmin to read the properties from console
+   * Used by SystemAdmin to read the properties from console
    *
    * @param env Map in which the properties are to be read from console.
    */
@@ -404,8 +404,8 @@ public class SocketCreator {
 
   /**
    * Used to read the properties from console. AgentLauncher calls this method directly & ignores
-   * gemfire.properties. CacheServerLauncher and SystemAdmin call this through
-   * {@link #readSSLProperties(Map)} and do NOT ignore gemfire.properties.
+   * gemfire.properties. SystemAdmin calls this through {@link #readSSLProperties(Map)} and does
+   * NOT ignore gemfire.properties.
    *
    * @param env Map in which the properties are to be read from console.
    * @param ignoreGemFirePropsFile if <code>false</code> existing gemfire.properties file is read,
