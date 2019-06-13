@@ -64,7 +64,8 @@ public class MemberValidator {
 
     // if there is no common member, we still need to verify if the new config is compatible with
     // the existing ones.
-    for (Map.Entry<String, RestfulEndpoint<?>> existing : existingElementsAndTheirGroups.entrySet()) {
+    for (Map.Entry<String, RestfulEndpoint<?>> existing : existingElementsAndTheirGroups
+        .entrySet()) {
       manager.checkCompatibility(config, existing.getKey(), existing.getValue());
     }
   }
