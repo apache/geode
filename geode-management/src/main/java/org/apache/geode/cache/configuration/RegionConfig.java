@@ -32,11 +32,14 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.RuntimeIndex;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 
 /**
@@ -156,7 +159,8 @@ import org.apache.geode.management.api.RestfulEndpoint;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
-public class RegionConfig extends CacheElement implements RestfulEndpoint {
+@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
+public class RegionConfig extends CacheElement implements RestfulEndpoint<RuntimeRegionConfig> {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -201,6 +205,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
   }
 
   @Override
+  @JsonIgnore
   public String getEndpoint() {
     return REGION_CONFIG_ENDPOINT;
   }
@@ -538,7 +543,8 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint {
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  public static class Index extends CacheElement implements RestfulEndpoint {
+  @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
+  public static class Index extends CacheElement implements RestfulEndpoint<RuntimeIndex> {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

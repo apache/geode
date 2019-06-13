@@ -12,23 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.api;
 
-package org.apache.geode.management.configuration;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlTransient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import org.apache.geode.management.api.RuntimeResponse;
-
-public interface MultiGroupCacheElement extends RuntimeResponse {
-  @XmlTransient
-  List<String> getGroups();
-
-  // this is needed to hide "group" attribute in json serialization
-  @XmlTransient
-  @JsonIgnore
+/**
+ * the response object for all CMS requests must adhere to this interface to support injection of
+ * common attributes
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public interface RuntimeResponse {
   String getGroup();
+
+  void setGroup(String group);
 }

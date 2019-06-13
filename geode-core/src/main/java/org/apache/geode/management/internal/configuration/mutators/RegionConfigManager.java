@@ -34,7 +34,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 public class RegionConfigManager
-    implements ConfigurationManager<RegionConfig> {
+    implements ConfigurationManager<RegionConfig, RuntimeRegionConfig> {
   private InternalCache cache;
 
   @VisibleForTesting
@@ -90,7 +90,18 @@ public class RegionConfigManager
   }
 
   @Override
-  public RegionConfig get(String id, CacheConfig existing) {
-    return CacheElement.findElement(existing.getRegions(), id);
+  public RuntimeRegionConfig get(String id, CacheConfig existing) {
+    RegionConfig filter = new RegionConfig();
+    filter.setName(id);
+    List<RuntimeRegionConfig> all = list(filter, existing);
+    if (all.size() == 1)
+      return all.get(0);
+    else
+      return null;
+  }
+
+  @Override
+  public boolean has(String id, CacheConfig existing) {
+    return CacheElement.findElement(existing.getRegions(), id) != null;
   }
 }

@@ -17,15 +17,15 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 /**
  * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
-public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
+public class CacheElementValidator implements ConfigurationValidator<RestfulEndpoint<?>> {
   @Override
-  public void validate(CacheElementOperation operation, CacheElement config)
+  public void validate(CacheElementOperation operation, RestfulEndpoint<?> config)
       throws IllegalArgumentException {
     if (StringUtils.isBlank(config.getId())) {
       throw new IllegalArgumentException("id cannot be null or blank");
@@ -42,7 +42,7 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
     }
   }
 
-  private void validateCreate(CacheElement config) {
+  private void validateCreate(RestfulEndpoint<?> config) {
     if ("cluster".equalsIgnoreCase(config.getGroup())) {
       throw new IllegalArgumentException(
           "'cluster' is a reserved group name. Do not use it for member groups.");

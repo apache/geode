@@ -65,7 +65,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithoutCredentials_failsWithAuthenticationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(401)
             .getClusterManagementResult();
@@ -78,7 +78,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithBadCredentials_failsWithAuthenticationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "baduser", "badpassword")
             .hasStatusCode(401)
             .getClusterManagementResult();
@@ -91,7 +91,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionNotAuthorized_failsWithAuthorizationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "notauthorized", "notauthorized")
             .hasStatusCode(403)
             .getClusterManagementResult();
@@ -103,7 +103,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithCredentials_CreatesRegion() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "datamanage", "datamanage")
             .hasStatusCode(201)
             .getClusterManagementResult();

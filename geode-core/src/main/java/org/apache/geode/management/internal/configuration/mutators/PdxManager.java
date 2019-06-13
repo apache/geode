@@ -21,7 +21,7 @@ import java.util.List;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.PdxType;
 
-public class PdxManager implements ConfigurationManager<PdxType> {
+public class PdxManager implements ConfigurationManager<PdxType, PdxType> {
   @Override
   public void add(PdxType config, CacheConfig existing) {
     existing.setPdx(config);
@@ -45,5 +45,10 @@ public class PdxManager implements ConfigurationManager<PdxType> {
   @Override
   public PdxType get(String id, CacheConfig existing) {
     return existing.getPdx();
+  }
+
+  @Override
+  public boolean has(String id, CacheConfig existing) {
+    return get(id, existing) != null;
   }
 }

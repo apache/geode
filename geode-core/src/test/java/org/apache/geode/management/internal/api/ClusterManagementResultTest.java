@@ -24,16 +24,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementResultTest {
-  private ClusterManagementResult result;
+  private ClusterManagementResult<?> result;
 
   @Before
   public void setup() {
-    result = new ClusterManagementResult();
+    result = new ClusterManagementResult<>();
   }
 
   @Test
@@ -78,7 +77,7 @@ public class ClusterManagementResultTest {
   }
 
   @Test
-  public void errorCodeWillAlwaysBeUnSuccessful() throws Exception {
+  public void errorCodeWillAlwaysBeUnSuccessful() {
     result = new ClusterManagementResult(ERROR, "message");
     assertThat(result.isSuccessful()).isFalse();
 
@@ -87,18 +86,18 @@ public class ClusterManagementResultTest {
   }
 
   @Test
-  public void onlyUnsuccessfulResultHasErrorCode() throws Exception {
+  public void onlyUnsuccessfulResultHasErrorCode() {
     result = new ClusterManagementResult(true, "message");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
     result = new ClusterManagementResult(false, "message");
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
-    result = new ClusterManagementResult();
+    result = new ClusterManagementResult<>();
     result.setStatus(false, "message");
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
-    result = new ClusterManagementResult();
+    result = new ClusterManagementResult<>();
     result.setStatus(true, "message");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     result.addMemberStatus("member-1", true, "message-1");
@@ -110,8 +109,8 @@ public class ClusterManagementResultTest {
   @Test
   public void deserialize() throws Exception {
     String json = "{\"statusCode\":\"OK\"}";
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
-    assertThat(result.getResult(CacheElement.class)).isNotNull().isEmpty();
+    assertThat(result.getResult()).isNotNull().isEmpty();
   }
 }

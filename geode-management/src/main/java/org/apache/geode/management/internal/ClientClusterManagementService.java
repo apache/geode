@@ -24,6 +24,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.api.RuntimeResponse;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
@@ -31,9 +32,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
  * <p/>
  * In order to manipulate Geode components (Regions, etc.) clients can construct instances of {@link
  * CacheElement}s and call the corresponding
- * {@link ClientClusterManagementService#create(CacheElement)},
- * {@link ClientClusterManagementService#delete(CacheElement)} or
- * {@link ClientClusterManagementService#update(CacheElement)} method. The returned {@link
+ * {@link ClientClusterManagementService#create(RestfulEndpoint)},
+ * {@link ClientClusterManagementService#delete(RestfulEndpoint)} or
+ * {@link ClientClusterManagementService#update(RestfulEndpoint)} method. The returned {@link
  * ClusterManagementResult} will contain all necessary information about the outcome of the call.
  * This will include the result of persisting the config as part of the cluster configuration as
  * well as creating the actual component in the cluster.
@@ -46,12 +47,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private final RestTemplate restTemplate;
 
-  public ClientClusterManagementService(RestTemplate restTemplate) {
+  ClientClusterManagementService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> create(
+      T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
@@ -60,7 +63,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> delete(
+      T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
         .exchange(VERSION + endPoint + "/{id}?group={group}",
@@ -72,12 +77,15 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config) {
+  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> update(
+      T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
-  public ClusterManagementResult list(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> list(
+      T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
@@ -86,15 +94,16 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult get(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> get(
+      T config) {
     return restTemplate
         .getForEntity(VERSION + getUri(config), ClusterManagementResult.class)
         .getBody();
   }
 
-  private String getEndpoint(CacheElement config) {
-    checkIsRestful(config);
-    String endpoint = ((RestfulEndpoint) config).getEndpoint();
+  private String getEndpoint(RestfulEndpoint config) {
+    String endpoint = config.getEndpoint();
     if (endpoint == null) {
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
@@ -102,22 +111,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return endpoint;
   }
 
-  private String getUri(CacheElement config) {
-    checkIsRestful(config);
-    String uri = ((RestfulEndpoint) config).getUri();
+  private String getUri(RestfulEndpoint config) {
+    String uri = config.getUri();
     if (uri == null) {
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
     return uri;
-  }
-
-  private void checkIsRestful(CacheElement config) {
-    if (!(config instanceof RestfulEndpoint)) {
-      throw new IllegalArgumentException(
-          String.format("The config type %s does not have a RESTful endpoint defined",
-              config.getClass().getName()));
-    }
   }
 
   public boolean isConnected() {

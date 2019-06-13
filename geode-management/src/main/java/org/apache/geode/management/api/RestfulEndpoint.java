@@ -17,7 +17,23 @@ package org.apache.geode.management.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public interface RestfulEndpoint {
+import org.apache.geode.lang.Identifiable;
+
+/**
+ * established the minimum requirements for a restful service request -- must have a unique id, a
+ * scope, an endpoint to list all of its kind, an endpoint to list itself, and a type declaration
+ * for the return type when list or other operations are performed
+ */
+
+// "type parameter is never used" warning is suppressed, because actually it is used to create
+// the linkage between request and response type in the signature of ClusterManagementService.list
+@SuppressWarnings("unused")
+public interface RestfulEndpoint<R extends RuntimeResponse> extends Identifiable<String> {
+  /** should return null if no group */
+  String getGroup();
+
+  /** should return "cluster" if no group */
+  String getConfigGroup();
 
   /**
    * this needs to return the uri portion after the /geode-management/v2 that points to the
@@ -36,7 +52,4 @@ public interface RestfulEndpoint {
    * @return e.g. /regions/regionA
    */
   String getUri();
-
-  // exists for json serialization purpose
-  default void setUri(String uri) {};
 }

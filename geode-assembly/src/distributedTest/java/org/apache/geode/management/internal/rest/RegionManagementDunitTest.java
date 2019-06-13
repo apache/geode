@@ -65,7 +65,7 @@ public class RegionManagementDunitTest {
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    ClusterManagementResult result =
+    ClusterManagementResult<RuntimeRegionConfig> result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(201)
             .getClusterManagementResult();
@@ -102,13 +102,12 @@ public class RegionManagementDunitTest {
 
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 1);
 
-    List<RuntimeRegionConfig> result =
+    List<?> result =
         restClient.doGetAndAssert("/regions?id=customers2").statusIsOk()
-            .getClusterManagementResult().getResult(
-                RuntimeRegionConfig.class);
+            .getClusterManagementResult().getResult();
 
     assertThat(result).hasSize(1);
-    RuntimeRegionConfig config1 = result.get(0);
+    RuntimeRegionConfig config1 = (RuntimeRegionConfig) result.get(0);
     assertThat(config1.getType()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getDataPolicy().name()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getValueConstraint()).isEqualTo("java.lang.Integer");
@@ -128,9 +127,10 @@ public class RegionManagementDunitTest {
   public void createsAPartitionedRegion() throws Exception {
     String json = "{\"name\": \"orders\", \"type\": \"PARTITION\"}";
 
-    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(201)
-        .getClusterManagementResult();
+    ClusterManagementResult<RuntimeRegionConfig> result =
+        restClient.doPostAndAssert("/regions", json)
+            .hasStatusCode(201)
+            .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
@@ -153,9 +153,10 @@ public class RegionManagementDunitTest {
     IgnoredException.addIgnoredException("Name of the region has to be specified");
     String json = "{\"type\": \"REPLICATE\"}";
 
-    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(400)
-        .getClusterManagementResult();
+    ClusterManagementResult<RuntimeRegionConfig> result =
+        restClient.doPostAndAssert("/regions", json)
+            .hasStatusCode(400)
+            .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isFalse();
   }

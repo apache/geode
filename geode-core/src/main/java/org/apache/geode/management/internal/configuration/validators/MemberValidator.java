@@ -17,19 +17,16 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
-
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -45,7 +42,7 @@ public class MemberValidator {
     this.persistenceService = persistenceService;
   }
 
-  public void validateCreate(CacheElement config, ConfigurationManager manager) {
+  public void validateCreate(RestfulEndpoint<?> config, ConfigurationManager manager) {
 
     String[] groupWithThisElement = findGroupsWithThisElement(config, manager);
     if (groupWithThisElement.length == 0) {
@@ -54,8 +51,8 @@ public class MemberValidator {
 
     Set<DistributedMember> membersOfExistingGroups = findMembers(groupWithThisElement);
     Set<DistributedMember> membersOfNewGroup = findMembers(config.getConfigGroup());
-    Collection<DistributedMember> intersection =
-        CollectionUtils.intersection(membersOfExistingGroups, membersOfNewGroup);
+    Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
+    intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
       String members =
           intersection.stream().map(DistributedMember::getName).collect(Collectors.joining(", "));
@@ -64,12 +61,13 @@ public class MemberValidator {
     }
   }
 
-  public String[] findGroupsWithThisElement(CacheElement config, ConfigurationManager manager) {
+  public String[] findGroupsWithThisElement(RestfulEndpoint<?> config,
+      ConfigurationManager manager) {
     // if the same element exists in some groups already, make sure the groups has no common members
     List<String> groupWithThisElement = new ArrayList<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
-      if (cacheConfig != null && manager.get(config.getId(), cacheConfig) != null) {
+      if (cacheConfig != null && manager.has(config.getId(), cacheConfig)) {
         groupWithThisElement.add(group);
       }
     }
@@ -87,7 +85,7 @@ public class MemberValidator {
     Set<DistributedMember> allMembers = getAllServers();
 
     // if groups contains "cluster" group, return all members
-    if (Arrays.stream(groups).filter(g -> g.equals("cluster")).findFirst().isPresent()) {
+    if (Arrays.asList(groups).contains("cluster")) {
       return allMembers;
     }
 

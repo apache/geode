@@ -65,12 +65,12 @@ public class ConfigurePDXDUnitTest {
   @Test
   public void configurePdx() {
     PdxType pdxType = new PdxType();
-    ClusterManagementResult result = client.create(pdxType);
+    ClusterManagementResult<PdxType> result = client.create(pdxType);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
-    List<PdxType> list = result.getResult(PdxType.class);
+    List<PdxType> list = result.getResult();
     assertThat(list.size()).isEqualTo(1);
     PdxType pdxResult = list.get(0);
     assertThat(pdxResult.getGroup()).isNull();

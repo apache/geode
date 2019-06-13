@@ -151,7 +151,7 @@ public class CreateIndexCommandTest {
     // the existing configuration has a region named /regionA.B
     doReturn(mock(RuntimeRegionConfig.class)).when(command).getRuntimeRegionConfig(cms,
         "/regionA.B");
-    when(cms.list(any())).thenReturn(new ClusterManagementResult());
+    when(cms.list(any())).thenReturn(new ClusterManagementResult<>());
 
     assertThat(command.getValidRegionName("regionB", cms)).isEqualTo("regionB");
     assertThat(command.getValidRegionName("/regionB", cms)).isEqualTo("/regionB");
