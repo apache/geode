@@ -47,7 +47,7 @@ If autoserialization does not meet your needs, you can serialize your objects by
 
 <%=vars.product_name%> Data serialization is about 25% faster than PDX serialization, however using PDX serialization will help you to avoid the even larger costs of performing deserialization.
 
-<a id="data_serialization_options__section_993B4A298874459BB4A8A0A9811854D9"></a><a id="data_serialization_options__table_ccf00c9f-9b98-47f7-ab30-3d23ecaff0a1"></a>
+** Serialization Options: Comparison of Features**
 
 | Capability                                                                                                                       | <%=vars.product_name%> Data Serializable | <%=vars.product_name%> PDX Serializable |
 |----------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------|-----------------------------------------------------|
@@ -58,8 +58,6 @@ If autoserialization does not meet your needs, you can serialize your objects by
 | Works with .NET clients.                                                                                                         | X                                                    | X                                                   |
 | Works with C++ clients.                                                                                                         | X                                                    | X                                                   |
 | Works with <%=vars.product_name%> delta propagation.                                                                 | X                                                    | X (See note below.)                                 |
-
-<span class="tablecap">**Table 1.** Serialization Options: Comparison of Features</span>
 
 **Note:** By default, you can use <%=vars.product_name%> delta propagation with PDX serialization. However, delta propagation will not work if you have set the <%=vars.product_name%> property `read-serialized` to "true". In terms of deserialization, to apply a change delta propagation requires a domain class instance and the `fromDelta `method. If you have set `read-serialized` to true, then you will receive a `PdxInstance` instead of a domain class instance and `PdxInstance` does not have the `fromDelta` method required for delta propagation.
 
