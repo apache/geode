@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.wan.asyncqueue;
 
 import static junit.framework.TestCase.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
@@ -28,6 +29,9 @@ import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.SenderIdMonitor;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueTestBase;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Wait;
@@ -378,24 +382,24 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
         true, null, false));
 
+    String regionName = getTestMethodName() + "_PR";
     vm1.invoke(() -> AsyncEventQueueTestBase.createPartitionedRegionWithAsyncEventQueue(
-        getTestMethodName() + "_PR", "ln", isOffHeap()));
+        regionName, "ln", isOffHeap()));
     vm2.invoke(() -> {
       AttributesFactory fact = new AttributesFactory();
       PartitionAttributesFactory pfact = new PartitionAttributesFactory();
       pfact.setTotalNumBuckets(16);
       pfact.setLocalMaxMemory(0);
       fact.setPartitionAttributes(pfact.create());
-      Region r = cache.createRegionFactory(fact.create()).create(getTestMethodName() + "_PR");
+      Region r = cache.createRegionFactory(fact.create()).create(regionName);
       assertNotNull(r);
     });
 
+    vm1.invoke(() -> verifyIdConsistencyWarning(regionName, false, false));
     vm2.invoke(() -> {
-      AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_PR", 100);
-      // expect the above doPuts call to log one warning in vm1: "Region
-      // testPartitionedProxyWithoutSameAEQIdShouldLogWarning_PR has [ln] AsyncEvent queue IDs.
-      // Another member has the same region with [] AsyncEvent queue IDs."
+      AsyncEventQueueTestBase.doPuts(regionName, 100);
     });
+    vm1.invoke(() -> verifyIdConsistencyWarning(regionName, true, false));
   }
 
   @Test
@@ -436,22 +440,44 @@ public class AsyncEventQueueStatsDUnitTest extends AsyncEventQueueTestBase {
     vm1.invoke(() -> AsyncEventQueueTestBase.createAsyncEventQueue("ln", false, 100, 100, false,
         false, null, false));
 
+    String regionName = getTestMethodName() + "_RR";
     vm1.invoke(() -> AsyncEventQueueTestBase
-        .createReplicatedRegionWithAsyncEventQueue(getTestMethodName() + "_RR", "ln", isOffHeap()));
+        .createReplicatedRegionWithAsyncEventQueue(regionName, "ln", isOffHeap()));
     vm2.invoke(() -> {
       AttributesFactory fact = new AttributesFactory();
       fact.setDataPolicy(DataPolicy.EMPTY);
       fact.setOffHeap(isOffHeap());
       RegionFactory regionFactory = cache.createRegionFactory(fact.create());
-      Region r = regionFactory.create(getTestMethodName() + "_RR");
+      Region r = regionFactory.create(regionName);
       assertNotNull(r);
     });
 
+    vm1.invoke(() -> verifyIdConsistencyWarning(regionName, false, false));
     vm2.invoke(() -> {
-      AsyncEventQueueTestBase.doPuts(getTestMethodName() + "_RR", 100);
-      // expect the above doPuts call to log one warning in vm1: "Region
-      // testReplicatedProxyWithoutSameAEQIdToLogWarning_RR has [ln] AsyncEvent queue IDs. Another
-      // member has the same region with [] AsyncEvent queue IDs."
+      AsyncEventQueueTestBase.doPuts(regionName, 100);
     });
+    vm1.invoke(() -> verifyIdConsistencyWarning(regionName, true, false));
+  }
+
+  private void verifyIdConsistencyWarning(String regionName, boolean expected,
+      boolean gatewaySenderId) {
+    Region r = cache.getRegion(Region.SEPARATOR + regionName);
+    SenderIdMonitor senderIdMonitor = getSenderIdMonitor(r);
+    if (gatewaySenderId) {
+      assertThat(senderIdMonitor.getGatewaySenderIdsDifferWarningMessage()).isEqualTo(expected);
+    } else {
+      assertThat(senderIdMonitor.getAsyncQueueIdsDifferWarningMessage()).isEqualTo(expected);
+    }
+  }
+
+  private SenderIdMonitor getSenderIdMonitor(Region r) {
+    if (r instanceof DistributedRegion) {
+      return ((DistributedRegion) r).getSenderIdMonitor();
+    } else if (r instanceof PartitionedRegion) {
+      return ((PartitionedRegion) r).getSenderIdMonitor();
+    } else {
+      throw new IllegalStateException(
+          "expected region to be distributed or partitioned but it was: " + r.getClass());
+    }
   }
 }

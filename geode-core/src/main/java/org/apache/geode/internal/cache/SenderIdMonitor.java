@@ -99,12 +99,12 @@ public class SenderIdMonitor implements ProfileListener, InitializationListener 
   }
 
   @VisibleForTesting
-  boolean getGatewaySenderIdsDifferWarningMessage() {
+  public boolean getGatewaySenderIdsDifferWarningMessage() {
     return gatewaySenderIdsDifferWarningMessage;
   }
 
   @VisibleForTesting
-  boolean getAsyncQueueIdsDifferWarningMessage() {
+  public boolean getAsyncQueueIdsDifferWarningMessage() {
     return asyncQueueIdsDifferWarningMessage;
   }
 

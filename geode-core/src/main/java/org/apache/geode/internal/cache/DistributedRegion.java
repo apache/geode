@@ -41,6 +41,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
@@ -3907,4 +3908,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return getCacheDistributionAdvisor().adviseNetWrite();
   }
 
+  @VisibleForTesting
+  public SenderIdMonitor getSenderIdMonitor() {
+    return senderIdMonitor;
+  }
 }

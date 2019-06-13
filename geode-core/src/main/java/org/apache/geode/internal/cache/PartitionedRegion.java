@@ -54,6 +54,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -10112,5 +10113,10 @@ public class PartitionedRegion extends LocalRegion
     } finally {
       rl.unlock();
     }
+  }
+
+  @VisibleForTesting
+  public SenderIdMonitor getSenderIdMonitor() {
+    return senderIdMonitor;
   }
 }
