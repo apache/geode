@@ -46,9 +46,4 @@ public class PdxManager implements ConfigurationManager<PdxType, PdxType> {
   public PdxType get(String id, CacheConfig existing) {
     return existing.getPdx();
   }
-
-  @Override
-  public boolean has(String id, CacheConfig existing) {
-    return get(id, existing) != null;
-  }
 }

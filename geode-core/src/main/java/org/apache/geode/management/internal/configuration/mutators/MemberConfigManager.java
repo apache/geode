@@ -78,22 +78,8 @@ public class MemberConfigManager
   }
 
   @Override
-  public RuntimeMemberConfig get(String id, CacheConfig existing) {
-    MemberConfig filter = new MemberConfig();
-    filter.setId(id);
-    List<RuntimeMemberConfig> ret = list(filter, existing);
-    if (ret.size() == 1)
-      return ret.get(0);
-    else
-      return null;
-  }
-
-  @Override
-  public boolean has(String id, CacheConfig existing) {
-    MemberConfig filter = new MemberConfig();
-    filter.setId(id);
-    Set<DistributedMember> distributedMembers = getDistributedMembers(filter);
-    return !distributedMembers.isEmpty();
+  public MemberConfig get(String id, CacheConfig existing) {
+    throw new NotImplementedException("Not implemented");
   }
 
   @VisibleForTesting

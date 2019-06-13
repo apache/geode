@@ -17,6 +17,7 @@ import javax.net.ssl.SSLContext;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;

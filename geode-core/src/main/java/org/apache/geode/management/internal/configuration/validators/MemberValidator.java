@@ -67,7 +67,7 @@ public class MemberValidator {
     List<String> groupWithThisElement = new ArrayList<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
-      if (cacheConfig != null && manager.has(config.getId(), cacheConfig)) {
+      if (cacheConfig != null && manager.get(config.getId(), cacheConfig) != null) {
         groupWithThisElement.add(group);
       }
     }

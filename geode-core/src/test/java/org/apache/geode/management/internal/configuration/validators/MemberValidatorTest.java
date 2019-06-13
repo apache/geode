@@ -52,7 +52,7 @@ public class MemberValidatorTest {
     cache = mock(InternalCache.class);
     service = mock(ConfigurationPersistenceService.class);
     regionManager = mock(RegionConfigManager.class);
-    when(regionManager.has(any(), any())).thenCallRealMethod();
+    when(regionManager.get(any(), any())).thenCallRealMethod();
     validator = spy(new MemberValidator(cache, service));
 
     DistributedMember member1 = mock(DistributedMember.class);

@@ -41,7 +41,5 @@ public interface ConfigurationManager<T extends RestfulEndpoint<R>, R extends Ru
 
   List<R> list(T filterConfig, CacheConfig existing);
 
-  R get(String id, CacheConfig existing);
-
-  boolean has(String id, CacheConfig existing);
+  T get(String id, CacheConfig existing);
 }

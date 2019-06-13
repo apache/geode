@@ -60,9 +60,4 @@ public class GatewayReceiverConfigManager
   public GatewayReceiverConfig get(String id, CacheConfig existing) {
     return existing.getGatewayReceiver();
   }
-
-  @Override
-  public boolean has(String id, CacheConfig existing) {
-    return get(id, existing) != null;
-  }
 }
