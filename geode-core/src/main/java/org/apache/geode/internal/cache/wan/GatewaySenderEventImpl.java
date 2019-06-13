@@ -761,8 +761,8 @@ public class GatewaySenderEventImpl
 
   @Override
   public String toString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";action=")
+    StringBuilder builder = new StringBuilder();
+    builder.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";action=")
         .append(this.action).append(";operation=").append(getOperation()).append(";region=")
         .append(this.regionPath).append(";key=").append(this.key).append(";value=")
         .append(getValueAsString(true)).append(";valueIsObject=").append(this.valueIsObject)
@@ -773,16 +773,16 @@ public class GatewaySenderEventImpl
         .append(";acked=").append(this.isAcked).append(";dispatched=").append(this.isDispatched)
         .append(";bucketId=").append(this.bucketId).append(";isConcurrencyConflict=")
         .append(this.isConcurrencyConflict).append("]");
-    return buffer.toString();
+    return builder.toString();
   }
 
   public String toSmallString() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";operation=")
+    StringBuilder builder = new StringBuilder();
+    builder.append("GatewaySenderEventImpl[").append("id=").append(this.id).append(";operation=")
         .append(getOperation()).append(";region=").append(this.regionPath).append(";key=")
         .append(this.key).append(";shadowKey=").append(this.shadowKey).append(";bucketId=")
         .append(this.bucketId).append("]");
-    return buffer.toString();
+    return builder.toString();
   }
 
   public static boolean isSerializingValue() {

@@ -21,6 +21,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -28,14 +29,13 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderHelper;
 import org.apache.geode.test.fake.Fakes;
-import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
 public class GatewaySenderEventImplTest {
 
   private GemFireCacheImpl cache;
 
   @Rule
-  public SerializableTestName testName = new SerializableTestName();
+  public TestName testName = new TestName();
 
   @Before
   public void setUpGemFire() {
@@ -58,45 +58,45 @@ public class GatewaySenderEventImplTest {
         "key1", "value1", 0, 0, 0, 0);
 
     // Basic equality tests
-    assertThat(event.equals(null)).isFalse();
-    assertThat(event.equals(event)).isTrue();
+    assertThat(event).isNotEqualTo(null);
+    assertThat(event).isEqualTo(event);
 
     // Verify an event is equal to a duplicate
     Object eventDuplicate =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key1", "value1", 0, 0, 0, 0);
-    assertThat(event.equals(eventDuplicate)).isTrue();
+    assertThat(event).isEqualTo(eventDuplicate);
 
     // Verify an event is not equal if any of its fields are different
     Object eventDifferentShadowKey =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key1", "value1", 0, 0, 0, 1);
-    assertThat(event.equals(eventDifferentShadowKey)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentShadowKey);
 
     Object eventDifferentEventId =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key1", "value1", 0, 1, 0, 0);
-    assertThat(event.equals(eventDifferentEventId)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentEventId);
 
     Object eventDifferentBucketId =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key1", "value1", 0, 0, 1, 0);
-    assertThat(event.equals(eventDifferentBucketId)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentBucketId);
 
     Object eventDifferentOperation =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.UPDATE,
             "key1", "value1", 0, 0, 0, 0);
-    assertThat(event.equals(eventDifferentOperation)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentOperation);
 
     Object eventDifferentKey =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key2", "value1", 0, 0, 0, 0);
-    assertThat(event.equals(eventDifferentKey)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentKey);
 
     Object eventDifferentValue =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region, Operation.CREATE,
             "key1", "value2", 0, 0, 0, 0);
-    assertThat(event.equals(eventDifferentValue)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentValue);
 
     LocalRegion region2 = mock(LocalRegion.class);
     when(region2.getFullPath()).thenReturn(testName.getMethodName() + "_region2");
@@ -104,6 +104,6 @@ public class GatewaySenderEventImplTest {
     Object eventDifferentRegion =
         ParallelGatewaySenderHelper.createGatewaySenderEvent(region2, Operation.CREATE,
             "key1", "value1", 0, 0);
-    assertThat(event.equals(eventDifferentRegion)).isFalse();
+    assertThat(event).isNotEqualTo(eventDifferentRegion);
   }
 }
