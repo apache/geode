@@ -129,13 +129,14 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void delete_validatorIsCalledCorrectly() throws Exception {
     doReturn(Collections.emptySet()).when(memberValidator).findMembers(anyString());
-    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(regionConfig,
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
+        regionConfig.getId(),
         regionManager);
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.delete(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.DELETE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
-    verify(memberValidator).findGroupsWithThisElement(regionConfig, regionManager);
+    verify(memberValidator).findGroupsWithThisElement(regionConfig.getId(), regionManager);
     verify(memberValidator).findMembers("cluster");
   }
 
