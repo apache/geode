@@ -161,6 +161,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (result.isSuccessful()) {
       ClusterManagementResult<R> ret = get(config);
       if (ret != null) {
+        ret.setStatus(result.getStatusCode(), result.getStatusMessage());
         ret.getMemberStatuses().putAll(result.getMemberStatuses());
         ret.getResult().get(0).setGroup(config.getGroup());
         return ret;
