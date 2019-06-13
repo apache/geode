@@ -159,7 +159,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // add the config object which includes the HATOS information of the element created
     if (result.isSuccessful()) {
-      return get(config);
+      ClusterManagementResult<R> ret = get(config);
+      if (ret != null) {
+        ret.getMemberStatuses().putAll(result.getMemberStatuses());
+        ret.getResult().get(0).setGroup(config.getGroup());
+        return ret;
+      } else {
+        result.setStatus(ClusterManagementResult.StatusCode.FAIL_TO_PERSIST,
+            config.getId() + " was created, but could not be listed");
+      }
     }
     return result;
   }

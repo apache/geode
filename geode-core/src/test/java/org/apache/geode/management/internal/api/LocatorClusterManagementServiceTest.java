@@ -175,7 +175,10 @@ public class LocatorClusterManagementServiceTest {
 
     regionConfig.setName("test");
     result = service.create(regionConfig);
-    assertThat(result).isNull(); // null = create was successful but this test skips listing it back
+    // expect create was successful, but overall fail since this test does not mock listing it back
+    assertThat(result.isSuccessful()).isFalse();
+    assertThat(result.getStatusMessage())
+        .contains("test was created, but could not be listed");
 
     assertThat(cacheConfig.getRegions()).hasSize(1);
   }
