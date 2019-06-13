@@ -67,30 +67,32 @@ public class UpdateCacheFunction implements InternalFunction<List> {
 
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
 
+    RealizationResult result = new RealizationResult();
+    result.setMemberName(context.getMemberName());
+
     if (realizer == null) {
-      return new RealizationResult().setMessage(
+      return result.setMessage(
           "Server needs to be restarted for this configuration change to be realized.");
     }
 
-    RealizationResult result = new RealizationResult();
     switch (operation) {
       case CREATE:
         if (realizer.exists(cacheElement, cache)) {
-          return new RealizationResult().setMessage(
+          return result.setMessage(
               "Element with id=" + cacheElement.getId() + " already exists. Skipp creation.");
         }
         result = realizer.create(cacheElement, cache);
         break;
       case DELETE:
         if (!realizer.exists(cacheElement, cache)) {
-          return new RealizationResult().setMessage(
+          return result.setMessage(
               "Element with id=" + cacheElement.getId() + " does not exist.");
         }
         result = realizer.delete(cacheElement, cache);
         break;
       case UPDATE:
         if (!realizer.exists(cacheElement, cache)) {
-          new RealizationResult().setSuccess(false).setMessage(
+          return result.setSuccess(false).setMessage(
               "Element with id=" + cacheElement.getId() + " does not exist.");
         }
         result = realizer.update(cacheElement, cache);
