@@ -33,8 +33,9 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 
-public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG>
-    implements Execution<IN, OUT, AGG> {
+public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT>
+    implements Execution<ArgumentT, ReturnT, AggregatorT> {
 
   private PoolImpl pool;
 
@@ -81,7 +82,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     this.isMemberMappedArgument = true;
   }
 
-  protected ResultCollector<OUT, AGG> executeFunction(final String functionId, boolean result,
+  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final String functionId,
+      boolean result,
       boolean isHA,
       boolean optimizeForWrite) {
     try {
@@ -111,7 +113,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  protected ResultCollector<OUT, AGG> executeFunction(final Function function) {
+  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final Function function) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -139,7 +141,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
 
   }
 
-  private ResultCollector<OUT, AGG> executeOnServer(Function function, ResultCollector rc,
+  private ResultCollector<ReturnT, AggregatorT> executeOnServer(Function function,
+      ResultCollector rc,
       byte hasResult) {
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
     try {
@@ -162,7 +165,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
     }
   }
 
-  private ResultCollector<OUT, AGG> executeOnServer(String functionId, ResultCollector rc,
+  private ResultCollector<ReturnT, AggregatorT> executeOnServer(String functionId,
+      ResultCollector rc,
       byte hasResult,
       boolean isHA, boolean optimizeForWrite) {
     FunctionStats stats = FunctionStats.getFunctionStats(functionId);
@@ -233,21 +237,22 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withFilter(Set filter) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "buckets as filter"));
   }
 
   @Override
-  public Execution<IN, OUT, AGG> setArguments(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -257,12 +262,12 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withArgs(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withArgs(Object args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -272,7 +277,8 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
+      MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -289,7 +295,7 @@ public class ServerFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public ResultCollector<OUT, AGG> execute(final String functionName) {
+  public ResultCollector<ReturnT, AggregatorT> execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");

@@ -52,7 +52,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *
    * @see MultiRegionFunctionContext
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegions(Set<Region> regions);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onRegions(
+      Set<Region> regions);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -65,7 +66,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *         pool
    * @since GemFire 6.5
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(RegionService regionService, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
+      RegionService regionService, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -80,7 +82,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    *         pool
    * @since GemFire 6.5
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(RegionService regionService, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
+      RegionService regionService, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -91,7 +94,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(Pool pool, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(Pool pool,
+      String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -104,7 +108,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(Pool pool, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(Pool pool,
+      String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -118,7 +123,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @since GemFire 6.0
    *
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system,
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
+      DistributedSystem system,
       DistributedMember distributedMember);
 
   /**
@@ -131,7 +137,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
+      DistributedSystem system, String... groups);
 
   /**
    * Uses {@code RANDOM_onMember} for tests.
@@ -139,7 +146,8 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * <p>
    * TODO: maybe merge with {@link #onMembers(DistributedSystem, String...)}
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedSystem system, String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
+      DistributedSystem system, String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -151,6 +159,7 @@ public interface InternalFunctionExecutionService extends FunctionExecutionServi
    * @throws FunctionException if DistributedSystem instance passed is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(DistributedSystem system,
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
+      DistributedSystem system,
       Set<DistributedMember> distributedMembers);
 }

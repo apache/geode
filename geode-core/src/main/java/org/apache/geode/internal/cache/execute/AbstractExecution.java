@@ -49,7 +49,8 @@ import org.apache.geode.internal.logging.LogService;
  * @since GemFire 5.8LA
  *
  */
-public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecution<IN, OUT, AGG> {
+public abstract class AbstractExecution<ArgumentT, ReturnT, AggregatorT>
+    implements InternalExecution<ArgumentT, ReturnT, AggregatorT> {
 
   private static final Logger logger = LogService.getLogger();
 
@@ -205,7 +206,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
     return this.filter;
   }
 
-  public AbstractExecution<IN, OUT, AGG> setIsReExecute() {
+  public AbstractExecution<ArgumentT, ReturnT, AggregatorT> setIsReExecute() {
     this.isReExecute = true;
     if (this.executionNodesListener != null) {
       this.executionNodesListener.reset();
@@ -356,7 +357,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
   }
 
   @Override
-  public ResultCollector<OUT, AGG> execute(final String functionName) {
+  public ResultCollector<ReturnT, AggregatorT> execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -373,7 +374,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
   }
 
   @Override
-  public ResultCollector<OUT, AGG> execute(Function function) throws FunctionException {
+  public ResultCollector<ReturnT, AggregatorT> execute(Function function) throws FunctionException {
     if (function == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -423,7 +424,7 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
     return this.ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector<OUT, AGG> executeFunction(Function fn);
+  protected abstract ResultCollector<ReturnT, AggregatorT> executeFunction(Function fn);
 
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical
@@ -436,8 +437,8 @@ public abstract class AbstractExecution<IN, OUT, AGG> implements InternalExecuti
    */
   public abstract void validateExecution(Function function, Set targetMembers);
 
-  public LocalResultCollector<OUT, AGG> getLocalResultCollector(Function function,
-      final ResultCollector<OUT, AGG> rc) {
+  public LocalResultCollector<ReturnT, AggregatorT> getLocalResultCollector(Function function,
+      final ResultCollector<ReturnT, AggregatorT> rc) {
     if (rc instanceof LocalResultCollector) {
       return (LocalResultCollector) rc;
     } else {

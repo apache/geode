@@ -45,8 +45,8 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
  * @since GemFire 5.8 LA
  *
  */
-public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
-    extends AbstractExecution<IN, OUT, AGG> {
+public class DistributedRegionFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT> {
 
   private final LocalRegion region;
 
@@ -212,7 +212,8 @@ public class DistributedRegionFunctionExecutor<IN, OUT, AGG>
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     if (bucketIDs != null && !bucketIDs.isEmpty()) {
       throw new IllegalArgumentException(
           String.format("Buckets as filter cannot be applied to a non partitioned region: %s",

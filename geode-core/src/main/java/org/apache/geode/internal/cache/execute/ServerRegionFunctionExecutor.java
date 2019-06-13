@@ -41,7 +41,8 @@ import org.apache.geode.internal.logging.LogService;
  * @see FunctionService#onRegion(Region) *
  * @since GemFire 5.8 LA
  */
-public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
+public class ServerRegionFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT> {
   private static final Logger logger = LogService.getLogger();
 
   private final LocalRegion region;
@@ -114,7 +115,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withFilter(Set fltr) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set fltr) {
     if (fltr == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -125,7 +126,8 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     if (bucketIDs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -135,7 +137,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  protected ResultCollector<OUT, AGG> executeFunction(final Function function) {
+  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final Function function) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -162,7 +164,8 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
     }
   }
 
-  protected ResultCollector<OUT, AGG> executeFunction(final String functionId, boolean resultReq,
+  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final String functionId,
+      boolean resultReq,
       boolean isHA, boolean optimizeForWrite) {
     try {
       if (proxyCache != null) {
@@ -189,7 +192,8 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
     }
   }
 
-  private ResultCollector<OUT, AGG> executeOnServer(Function function, ResultCollector collector,
+  private ResultCollector<ReturnT, AggregatorT> executeOnServer(Function function,
+      ResultCollector collector,
       byte hasResult) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), this.region.getSystem());
@@ -297,7 +301,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public Execution<IN, OUT, AGG> setArguments(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -307,12 +311,12 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withArgs(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withArgs(Object args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -322,7 +326,8 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
+      MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -342,7 +347,7 @@ public class ServerRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecutio
   }
 
   @Override
-  public ResultCollector<OUT, AGG> execute(final String functionName) {
+  public ResultCollector<ReturnT, AggregatorT> execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");

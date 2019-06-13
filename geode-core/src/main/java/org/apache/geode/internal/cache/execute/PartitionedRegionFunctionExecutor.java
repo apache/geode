@@ -28,8 +28,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
-public class PartitionedRegionFunctionExecutor<IN, OUT, AGG>
-    extends AbstractExecution<IN, OUT, AGG> {
+public class PartitionedRegionFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT> {
 
   private final PartitionedRegion pr;
 

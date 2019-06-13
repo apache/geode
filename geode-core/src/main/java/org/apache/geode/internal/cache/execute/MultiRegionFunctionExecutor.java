@@ -40,7 +40,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
-public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG> {
+public class MultiRegionFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT> {
 
   private final Set<Region> regions;
 
@@ -142,7 +143,8 @@ public class MultiRegionFunctionExecutor<IN, OUT, AGG> extends AbstractExecution
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for multi region function",
             "bucket as filter"));

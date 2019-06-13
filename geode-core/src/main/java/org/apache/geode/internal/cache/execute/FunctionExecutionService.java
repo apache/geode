@@ -50,7 +50,8 @@ public interface FunctionExecutionService {
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onRegion(Region region);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onRegion(
+      Region region);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -63,7 +64,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(Pool pool);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -74,7 +75,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(Pool pool);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -89,7 +90,8 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServer(RegionService regionService);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
+      RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -102,7 +104,8 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onServers(RegionService regionService);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
+      RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -114,7 +117,8 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(DistributedMember distributedMember);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
+      DistributedMember distributedMember);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -131,7 +135,8 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
+      String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -142,7 +147,8 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMembers(Set<DistributedMember> distributedMembers);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
+      Set<DistributedMember> distributedMembers);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -155,7 +161,8 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  <IN, OUT, AGG> Execution<IN, OUT, AGG> onMember(String... groups);
+  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
+      String... groups);
 
   /**
    * Returns the {@link Function} defined by the functionId, returns null if no function is found

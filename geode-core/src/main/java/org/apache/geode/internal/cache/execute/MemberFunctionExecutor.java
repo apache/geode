@@ -36,8 +36,9 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, OUT, AGG>
-    implements Execution<IN, OUT, AGG> {
+public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT>
+    implements Execution<ArgumentT, ReturnT, AggregatorT> {
 
   protected InternalDistributedSystem ds;
 
@@ -96,7 +97,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @SuppressWarnings("unchecked")
-  private ResultCollector<OUT, AGG> executeFunction(final Function function,
+  private ResultCollector<ReturnT, AggregatorT> executeFunction(final Function function,
       ResultCollector resultCollector) {
     final DistributionManager dm = this.ds.getDistributionManager();
     final Set dest = new HashSet(this.members);
@@ -110,7 +111,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
 
     final InternalDistributedMember localVM =
         this.ds.getDistributionManager().getDistributionManagerId();
-    final LocalResultCollector<OUT, AGG> localRC =
+    final LocalResultCollector<ReturnT, AggregatorT> localRC =
         getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
@@ -184,7 +185,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  protected ResultCollector<OUT, AGG> executeFunction(Function function) {
+  protected ResultCollector<ReturnT, AggregatorT> executeFunction(Function function) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;
       if (rc == null) {
@@ -198,7 +199,7 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution<IN, OUT, AGG> setArguments(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -209,13 +210,13 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
 
   // Changing the object!!
   @Override
-  public Execution<IN, OUT, AGG> withArgs(Object args) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withArgs(Object args) {
     return setArguments(args);
   }
 
   // Changing the object!!
   @Override
-  public Execution<IN, OUT, AGG> withCollector(ResultCollector rs) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -225,21 +226,23 @@ public class MemberFunctionExecutor<IN, OUT, AGG> extends AbstractExecution<IN, 
   }
 
   @Override
-  public Execution<IN, OUT, AGG> withFilter(Set filter) {
+  public Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "bucket as filter"));
   }
 
   @Override
-  public InternalExecution<IN, OUT, AGG> withMemberMappedArgument(MemberMappedArgument argument) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
+      MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
