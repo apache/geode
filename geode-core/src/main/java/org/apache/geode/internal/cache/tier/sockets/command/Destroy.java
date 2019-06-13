@@ -135,7 +135,7 @@ public class Destroy extends BaseCommand {
 
     try {
       // for integrated security
-      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

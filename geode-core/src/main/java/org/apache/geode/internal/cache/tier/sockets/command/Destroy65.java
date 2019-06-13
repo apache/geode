@@ -220,7 +220,7 @@ public class Destroy65 extends BaseCommand {
     try {
       // for integrated security
       securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
-          key.toString());
+          key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
