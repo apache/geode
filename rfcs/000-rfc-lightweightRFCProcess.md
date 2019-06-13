@@ -1,6 +1,6 @@
 # Lightweight RFC Process
 
-**Geode-RFC-000**
+**Geode-RFC-0**
 
 **To be Reviewed By:** June 20th 2019
 
@@ -47,8 +47,8 @@ The proposal should be posted with a date by which the author would like to see 
 Writing an RFC should be entirely voluntary. There is always the option of going straight to a pull request. However, for larger changes, it might be wise to de-risk the risk of rejection of the pull request by first gathering input from the community. Therefore it’s up to every member of our community to decide themselves when they want to reach for this tool.
 
 It’s encouraged to write an RFC for any major change. A major change might be:
-Addition of any major new feature or subsystem
-Changes that impact existing, public APIs. This includes Java APIs, but also things like GFSH commands and externally exposed protocols.
+* Addition of any major new feature or subsystem
+* Changes that impact existing, public APIs. This includes Java APIs, but also things like GFSH commands and externally exposed protocols.
 
 ### How to write an RFC?
 1. Copy the RFC template (in same folder as this document) and write your proposal! It's up to the author's discretion to decide which section in the template make sense for their proposal. It's recommended to cover the problem the proposal is solving, who it affects, how you’re proposing to solve it, and answers to frequently asked questions. Explicitly listing the goals will also make it easier to retrospect later on the proposal.
@@ -61,7 +61,7 @@ The duration of the deadline is up to the author(s) and should depend on the siz
     2. If we are moving forward the status goes to *Active*
     3. When there is a newer RFC that replaces this one the status goes to *Superseded* and the *Superseded By* gets updated with the number of the new RFC.
     
-###Immutability & Errata
+### Immutability & Errata
 Once approved the existing body of the RFC should remain immutable. 
 
 Once the proposed work starts, we likely will learn things that require minor changes to the RFC to keep it current. These changes should be captured in an *Errata* section at the end of the document rather than modifying the existing body of the  document directly. This is to  highlight that and how the approach has changed, since initial discussion.
