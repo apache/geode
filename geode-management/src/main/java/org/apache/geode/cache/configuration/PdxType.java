@@ -220,7 +220,7 @@ public class PdxType extends CacheElement implements RuntimeResponse, RestfulEnd
   }
 
   public void setGroup(String group) {
-    if (group != null) {
+    if (group != null && !"cluster".equals(group)) {
       throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
     }
   }
