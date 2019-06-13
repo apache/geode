@@ -264,11 +264,10 @@ public class ExecuteFunctionOp {
       } catch (InternalFunctionInvocationTargetException e) {
         reexecute = true;
         resultCollector.clearResults();
+      } catch (ServerOperationException serverOperationException) {
+        throw serverOperationException;
       } catch (ServerConnectivityException se) {
 
-        if (se instanceof ServerOperationException) {
-          throw se;
-        }
         if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
           // If the retryAttempt is set to default(-1). Try it on all servers once.
           // Calculating number of servers when function is re-executed as it involves
