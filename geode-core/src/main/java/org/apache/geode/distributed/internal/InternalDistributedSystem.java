@@ -953,7 +953,7 @@ public class InternalDistributedSystem extends DistributedSystem
   public StatisticDescriptor createIntCounter(String name,
       String description,
       String units) {
-    return statisticsManager.createIntCounter(name, description, units);
+    return createLongCounter(name, description, units);
   }
 
   @Override
@@ -974,7 +974,7 @@ public class InternalDistributedSystem extends DistributedSystem
   public StatisticDescriptor createIntGauge(String name,
       String description,
       String units) {
-    return statisticsManager.createIntGauge(name, description, units);
+    return createLongGauge(name, description, units);
   }
 
   @Override
@@ -995,7 +995,7 @@ public class InternalDistributedSystem extends DistributedSystem
   public StatisticDescriptor createIntCounter(String name,
       String description,
       String units, boolean largerBetter) {
-    return statisticsManager.createIntCounter(name, description, units, largerBetter);
+    return createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
@@ -1017,7 +1017,7 @@ public class InternalDistributedSystem extends DistributedSystem
   public StatisticDescriptor createIntGauge(String name,
       String description,
       String units, boolean largerBetter) {
-    return statisticsManager.createIntGauge(name, description, units, largerBetter);
+    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override

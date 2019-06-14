@@ -97,7 +97,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
 
   @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return StatisticDescriptorImpl.createIntCounter(name, description, units, true);
+    return createLongCounter(name, description, units);
   }
 
   @Override
@@ -112,7 +112,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
 
   @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return StatisticDescriptorImpl.createIntGauge(name, description, units, false);
+    return createLongGauge(name, description, units);
   }
 
   @Override
@@ -128,7 +128,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter) {
-    return StatisticDescriptorImpl.createIntCounter(name, description, units, largerBetter);
+    return createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
@@ -146,7 +146,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter) {
-    return StatisticDescriptorImpl.createIntGauge(name, description, units, largerBetter);
+    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override
