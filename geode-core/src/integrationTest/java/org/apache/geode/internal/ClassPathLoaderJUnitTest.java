@@ -163,7 +163,7 @@ public class ClassPathLoaderJUnitTest {
   }
 
   @Test
-  public void redeployingParentClassDoesNotCauseSubclassIncompatibilities() throws Exception {
+  public void redeploySubclassJarThatExtendsInterdependentJarShouldNowLoadNewSubclass() throws Exception {
     String classAName = "classA";
     String classBName = "classB";
 
@@ -173,36 +173,82 @@ public class ClassPathLoaderJUnitTest {
             + classAName + " extends " + classBName
             + " { public boolean hasResult() {return true;}}";
 
+    String classA2Contents =
+            "package jddunit.function;"
+                    + "public class "
+                    + classAName + " extends " + classBName
+                    + " { public boolean hasResult() {return false;}}";
+
     String classBContents =
         "package jddunit.function;"
             + "public class "
             + classBName + " { public boolean someMethod() {return true;}}";
 
-    String classB2Contents =
-        "package jddunit.function;"
-            + "public class "
-            + classBName + " { public boolean someMethod() {return false;}}";
 
     File jarB = createJarFromClassContents("JarBVersion1", classBName, "JarB.jar", classBContents);
     File jarA = createJarFromClassContents("JarAVersion1", classAName, "JarA.jar", classAContents,
         jarB.getAbsolutePath());
-    File jarBV2 =
-        createJarFromClassContents("JarBVersion2", classBName, "JarB.jar", classB2Contents);
+    File jarAV2 = createJarFromClassContents("JarAVersion2", classAName, "JarA.jar", classA2Contents,
+            jarB.getAbsolutePath());
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarB);
     Class classB =
         ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
-    Object classBInstance = classB.newInstance();
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarA.jar", jarA);
     Class classA =
         ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
     Object classAInstance = classA.newInstance();
 
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarA.jar", jarAV2);
+    Class classA2 =
+        ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
+    Object classA2Instance = classA2.newInstance();
+
+    assertThat(classA2Instance).isNotInstanceOf(classA);
+  }
+
+  @Test
+  public void redeployingParentClassDoesNotCauseSubclassIncompatibilities() throws Exception {
+    String classAName = "classA";
+    String classBName = "classB";
+
+    String classAContents =
+            "package jddunit.function;"
+                    + "public class "
+                    + classAName + " extends " + classBName
+                    + " { public boolean hasResult() {return true;}}";
+
+    String classBContents =
+            "package jddunit.function;"
+                    + "public class "
+                    + classBName + " { public boolean someMethod() {return true;}}";
+
+    String classB2Contents =
+            "package jddunit.function;"
+                    + "public class "
+                    + classBName + " { public boolean someMethod() {return false;}}";
+
+    File jarB = createJarFromClassContents("JarBVersion1", classBName, "JarB.jar", classBContents);
+    File jarA = createJarFromClassContents("JarAVersion1", classAName, "JarA.jar", classAContents,
+            jarB.getAbsolutePath());
+    File jarBV2 =
+            createJarFromClassContents("JarBVersion2", classBName, "JarB.jar", classB2Contents);
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarB);
+    Class classB =
+            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
+    Object classBInstance = classB.newInstance();
+
+    ClassPathLoader.getLatest().getJarDeployer().deploy("JarA.jar", jarA);
+    Class classA =
+            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
+    Object classAInstance = classA.newInstance();
+
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarBV2);
 
     Class classA2 =
-        ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
+            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
     Object classA2Instance = classA2.newInstance();
 
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
@@ -255,7 +301,6 @@ public class ClassPathLoaderJUnitTest {
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
   }
 
-
   @Test(expected = ClassNotFoundException.class)
   public void redeployingJarWithRemovedClassShouldNoLongerAllowLoadingRemovedClass()
       throws Exception {
@@ -294,48 +339,6 @@ public class ClassPathLoaderJUnitTest {
     Class classB2 =
         ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
   }
-
-  // @Test (expected = ClassNotFoundException.class)
-  // public void parentClassRemovedShouldNoLongerAllowLoadingParentClass() throws Exception {
-  // String classAName = "classA";
-  // String classBName = "classB";
-  // String classB2Name = "classB2";
-  //
-  // String classAContents =
-  // "package jddunit.function;"
-  // + "public class "
-  // + classAName + " extends " + classBName + " { public boolean hasResult() {return true;}}";
-  //
-  // String classBContents =
-  // "package jddunit.function;"
-  // + "public class "
-  // + classBName + " { public boolean someMethod() {return true;}}";
-  //
-  // String classB2Contents =
-  // "package jddunit.function;"
-  // + "public class "
-  // + classB2Name + " { public boolean someMethod() {return false;}}";
-  //
-  // File jarB = createJarFromClassContents("JarBVersion1", classBName, "JarB.jar", classBContents);
-  // File jarA = createJarFromClassContents("JarAVersion1", classAName, "JarA.jar", classAContents,
-  // jarB.getAbsolutePath());
-  // File jarBV2 = createJarFromClassContents("JarBVersion2", classB2Name, "JarB.jar",
-  // classB2Contents);
-  //
-  // ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarB);
-  // Class classB = ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." +
-  // classBName);
-  // Object classBInstance = classB.newInstance();
-  //
-  // ClassPathLoader.getLatest().getJarDeployer().deploy("JarA.jar", jarA);
-  // Class classA = ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." +
-  // classAName);
-  // Object classAInstance = classA.newInstance();
-  //
-  // ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarBV2);
-  // Class classB2 = ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." +
-  // classBName);
-  // }
 
   @Test
   public void undeployedUnrelatedJarShouldNotAffectDeserializedObjectComparison() throws Exception {
