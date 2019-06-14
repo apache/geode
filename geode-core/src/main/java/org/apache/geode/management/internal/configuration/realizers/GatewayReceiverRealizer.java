@@ -24,7 +24,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.management.api.RealizationResult;
 
@@ -77,11 +76,8 @@ public class GatewayReceiverRealizer implements ConfigurationRealizer<GatewayRec
       }
     }
 
-    GatewayReceiver gatewayReceiver = gatewayReceiverFactory.create();
+    gatewayReceiverFactory.create();
     RealizationResult result = new RealizationResult().setSuccess(true);
-    result.addInfo("bindAddress", gatewayReceiver.getBindAddress());
-    result.addInfo("hostNameForClients", gatewayReceiver.getHostnameForSenders());
-    result.addInfo("port", gatewayReceiver.getPort() + "");
     return result;
   }
 

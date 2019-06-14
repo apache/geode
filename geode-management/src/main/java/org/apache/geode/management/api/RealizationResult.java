@@ -16,11 +16,7 @@
 package org.apache.geode.management.api;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 /**
  * this holds the information returned by the ConfigurationRealizers to indicate the
@@ -34,8 +30,6 @@ public class RealizationResult implements Serializable {
   private String memberName;
   private boolean success = true;
   private String message = "success";
-
-  private Map<String, String> moreInfo = new HashMap<>();
 
   public RealizationResult() {
     setSuccess(true);
@@ -67,20 +61,5 @@ public class RealizationResult implements Serializable {
   public RealizationResult setSuccess(boolean success) {
     this.success = success;
     return this;
-  }
-
-  @JsonAnySetter
-  public RealizationResult addInfo(String key, String value) {
-    moreInfo.put(key, value);
-    return this;
-  }
-
-  public String getInfo(String key) {
-    return moreInfo.get(key);
-  }
-
-  @JsonAnyGetter
-  public Map<String, String> getInfo() {
-    return moreInfo;
   }
 }

@@ -81,7 +81,6 @@ public class GatewayReceiverManagementDUnitTest {
             .containsStatusMessage("Successfully updated config for group1")
             .getMemberStatus();
     assertThat(results).hasSize(1);
-    assertThat(results.get(0).getInfo("port")).isNotNull();
     assertThat(results.get(0).isSuccess()).isTrue();
     assertThat(results.get(0).getMemberName()).isEqualTo("server-1");
 
