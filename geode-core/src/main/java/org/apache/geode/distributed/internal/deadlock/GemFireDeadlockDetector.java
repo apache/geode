@@ -67,7 +67,7 @@ public class GemFireDeadlockDetector {
 
           @Override
           public synchronized Serializable getResult(long timeout, TimeUnit unit)
-              throws FunctionException, InterruptedException {
+              throws FunctionException {
             return null;
           }
 
@@ -91,15 +91,18 @@ public class GemFireDeadlockDetector {
 
         };
 
-    Execution execution;
+    Execution<DistributedMember, HashSet<Dependency>, Serializable> onMembersExecution;
+    Execution<DistributedMember, HashSet<Dependency>, Serializable> withCollectorExecution;
     if (targetMembers != null) {
-      execution = FunctionService.onMembers(targetMembers).withCollector(collector);
+      onMembersExecution = FunctionService.onMembers(targetMembers);
+      withCollectorExecution = onMembersExecution.withCollector(collector);
     } else {
-      execution = FunctionService.onMembers().withCollector(collector);
+      onMembersExecution = FunctionService.onMembers();
+      withCollectorExecution = onMembersExecution.withCollector(collector);
     }
 
-    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
-    collector = execution.execute(new CollectDependencyFunction());
+    ((AbstractExecution) withCollectorExecution).setIgnoreDepartedMembers(true);
+    collector = withCollectorExecution.execute(new CollectDependencyFunction());
 
     // Wait for results
     collector.getResult();
@@ -127,7 +130,7 @@ public class GemFireDeadlockDetector {
       InternalDistributedMember member = instance.getDistributedMember();
 
       Set<Dependency> dependencies = DeadlockDetector.collectAllDependencies(member);
-      context.getResultSender().lastResult((Serializable) dependencies);
+      context.getResultSender().lastResult(dependencies);
     }
 
     @Override

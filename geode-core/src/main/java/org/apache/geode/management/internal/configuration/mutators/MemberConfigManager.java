@@ -97,9 +97,11 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
   private ArrayList<MemberInformation> getMemberInformation(
       Set<DistributedMember> distributedMembers) {
-    Execution execution = FunctionService.onMembers(distributedMembers);
-    ResultCollector<?, ?> resultCollector = execution.execute(new GetMemberInformationFunction());
-    return (ArrayList<MemberInformation>) resultCollector.getResult();
+    Execution<DistributedMember, MemberInformation, ArrayList<MemberInformation>> execution =
+        FunctionService.onMembers(distributedMembers);
+    ResultCollector<MemberInformation, ArrayList<MemberInformation>> resultCollector =
+        execution.execute(new GetMemberInformationFunction());
+    return resultCollector.getResult();
   }
 
   @VisibleForTesting

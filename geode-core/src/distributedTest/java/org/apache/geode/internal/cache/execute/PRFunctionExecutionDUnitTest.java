@@ -121,7 +121,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test to validate that the function execution is successful on PR with Loner Distributed System
    */
   @Test
-  public void testFunctionExecution() throws Exception {
+  public void testFunctionExecution() {
     Properties config = getDistributedSystemProperties();
     config.setProperty(MCAST_PORT, "0");
     config.setProperty(LOCATORS, "");
@@ -141,7 +141,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
-  public void testHAFunctionExecution() throws Exception {
+  public void testHAFunctionExecution() {
     Region<String, Integer> region = createPartitionedRegion(regionName, 10, 0);
 
     Function<Void> function = new TestFunction<>(false, TestFunction.TEST_FUNCTION10);
@@ -160,7 +160,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test remote execution by a pure accessor which doesn't have the function factory present.
    */
   @Test
-  public void testRemoteSingleKeyExecution_byName() throws Exception {
+  public void testRemoteSingleKeyExecution_byName() {
     VM accessor = getHost(0).getVM(2);
     VM datastore = getHost(0).getVM(3);
 
@@ -208,8 +208,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * function will send Boolean as last result. factory present.
    */
   @Test
-  public void testLocalSingleKeyExecution_byName_FunctionInvocationTargetException()
-      throws Exception {
+  public void testLocalSingleKeyExecution_byName_FunctionInvocationTargetException() {
     Region<String, Integer> region = createPartitionedRegion(regionName, 10, 0);
     region.put(STRING_KEY, 1);
 
@@ -231,8 +230,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * last result.
    */
   @Test
-  public void testRemoteSingleKeyExecution_byName_FunctionInvocationTargetException()
-      throws Exception {
+  public void testRemoteSingleKeyExecution_byName_FunctionInvocationTargetException() {
     VM accessor = getHost(0).getVM(2);
     VM datastore = getHost(0).getVM(3);
 
@@ -266,7 +264,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test remote execution by a pure accessor which doesn't have the function factory present.
    */
   @Test
-  public void testRemoteSingleKeyExecution_byInstance() throws Exception {
+  public void testRemoteSingleKeyExecution_byInstance() {
     VM accessor = getHost(0).getVM(2);
     VM datastore = getHost(0).getVM(3);
 
@@ -314,7 +312,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test remote execution of inline function by a pure accessor
    */
   @Test
-  public void testRemoteSingleKeyExecution_byInlineFunction() throws Exception {
+  public void testRemoteSingleKeyExecution_byInlineFunction() {
     VM accessor = getHost(0).getVM(2);
     VM datastore = getHost(0).getVM(3);
 
@@ -343,7 +341,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * present. ResultCollector = DefaultResultCollector haveResults = true;
    */
   @Test
-  public void testRemoteMultiKeyExecution_byName() throws Exception {
+  public void testRemoteMultiKeyExecution_byName() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -415,7 +413,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
-  public void testRemoteMultiKeyExecution_BucketMoved() throws Exception {
+  public void testRemoteMultiKeyExecution_BucketMoved() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -463,7 +461,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
-  public void testLocalMultiKeyExecution_BucketMoved() throws Exception {
+  public void testLocalMultiKeyExecution_BucketMoved() {
     IgnoredException.addIgnoredException("BucketMovedException");
 
     VM datastore0 = getHost(0).getVM(0);
@@ -601,7 +599,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     });
 
-    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(this::executeFunction);
 
     datastore0.invoke(() -> {
       Thread.sleep(3_000);
@@ -653,7 +651,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     });
 
-    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(() -> executeFunction());
+    AsyncInvocation<List<Boolean>> async = accessor.invokeAsync(this::executeFunction);
 
     datastore0.invoke(() -> {
       Thread.sleep(3000);
@@ -669,7 +667,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * DefaultResultCollector haveResults = true;
    */
   @Test
-  public void testRemoteMultiKeyExecution_byInlineFunction() throws Exception {
+  public void testRemoteMultiKeyExecution_byInlineFunction() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -720,7 +718,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * present. ResultCollector = CustomResultCollector haveResults = true;
    */
   @Test
-  public void testRemoteMultiKeyExecutionWithCollector_byName() throws Exception {
+  public void testRemoteMultiKeyExecutionWithCollector_byName() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -777,7 +775,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * present. ResultCollector = DefaultResultCollector haveResults = false;
    */
   @Test
-  public void testRemoteMultiKeyExecutionNoResult_byName() throws Exception {
+  public void testRemoteMultiKeyExecutionNoResult_byName() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -822,7 +820,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
       ResultCollector<Void, Void> resultCollector =
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageStartingWith(
               String.format("Cannot %s result as the Function#hasResult() is false",
                   "return any"));
@@ -835,7 +833,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * milliseconds expected result to be 0.(as the execution gets the timeout)
    */
   @Test
-  public void testRemoteMultiKeyExecution_timeout() throws Exception {
+  public void testRemoteMultiKeyExecution_timeout() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -891,7 +889,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * present. ResultCollector = CustomResultCollector haveResults = false;
    */
   @Test
-  public void testRemoteMultiKeyExecutionWithCollectorNoResult_byName() throws Exception {
+  public void testRemoteMultiKeyExecutionWithCollectorNoResult_byName() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -938,7 +936,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       ResultCollector<Object, List<Object>> resultCollector =
           dataSet.withFilter(keySet).setArguments(true).execute(function.getId());
 
-      assertThatThrownBy(() -> resultCollector.getResult()).isInstanceOf(FunctionException.class)
+      assertThatThrownBy(resultCollector::getResult).isInstanceOf(FunctionException.class)
           .hasMessageStartingWith(
               String.format("Cannot %s result as the Function#hasResult() is false",
                   "return any"));
@@ -950,7 +948,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * present.
    */
   @Test
-  public void testRemoteMultiKeyExecution_byInstance() throws Exception {
+  public void testRemoteMultiKeyExecution_byInstance() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -1024,7 +1022,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test bucketFilter functionality
    */
   @Test
-  public void testBucketFilter_1() throws Exception {
+  public void testBucketFilter_1() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -1106,7 +1104,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
   }
 
   @Test
-  public void testBucketFilterOverride() throws Exception {
+  public void testBucketFilterOverride() {
     VM accessor = getHost(0).getVM(3);
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
@@ -1162,7 +1160,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * DefaultResultCollector haveResult = true
    */
   @Test
-  public void testLocalMultiKeyExecution_byName() throws Exception {
+  public void testLocalMultiKeyExecution_byName() {
     PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
     Set<String> keySet = new HashSet<>();
@@ -1210,7 +1208,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Test ability to execute a multi-key function by a local data store
    */
   @Test
-  public void testLocalMultiKeyExecution_byInstance() throws Exception {
+  public void testLocalMultiKeyExecution_byInstance() {
     PartitionedRegion pr = createPartitionedRegion(regionName, 10, 0);
 
     Set<String> keySet = new HashSet<>();
@@ -1259,7 +1257,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * works correctly such that there is not extra execution
    */
   @Test
-  public void testMultiKeyExecutionOnASingleBucket_byName() throws Exception {
+  public void testMultiKeyExecutionOnASingleBucket_byName() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1338,7 +1336,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * works correctly such that there is not extra execution
    */
   @Test
-  public void testMultiKeyExecutionOnASingleBucket_byInstance() throws Exception {
+  public void testMultiKeyExecutionOnASingleBucket_byInstance() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1416,7 +1414,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Ensure that the execution is happening all the PR as a whole
    */
   @Test
-  public void testExecutionOnAllNodes_byName() throws Exception {
+  public void testExecutionOnAllNodes_byName() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1477,7 +1475,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Ensure that the execution is happening all the PR as a whole
    */
   @Test
-  public void testExecutionOnAllNodes_byInstance() throws Exception {
+  public void testExecutionOnAllNodes_byInstance() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1537,7 +1535,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Ensure that the execution of inline function is happening all the PR as a whole
    */
   @Test
-  public void testExecutionOnAllNodes_byInlineFunction() throws Exception {
+  public void testExecutionOnAllNodes_byInlineFunction() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1592,7 +1590,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * LocalDataSet
    */
   @Test
-  public void testExecutionOnAllNodes_LocalReadPR() throws Exception {
+  public void testExecutionOnAllNodes_LocalReadPR() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1657,7 +1655,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * LocalDataSet
    */
   @Test
-  public void testExecutionOnMultiNodes_LocalReadPR() throws Exception {
+  public void testExecutionOnMultiNodes_LocalReadPR() {
     VM datastore0 = getHost(0).getVM(0);
     VM datastore1 = getHost(0).getVM(1);
     VM datastore2 = getHost(0).getVM(2);
@@ -1760,7 +1758,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
   @Test
-  public void testLocalDataContext() throws Exception {
+  public void testLocalDataContext() {
     VM accessor = getHost(0).getVM(1);
     VM datastore1 = getHost(0).getVM(2);
     VM datastore2 = getHost(0).getVM(3);
@@ -1843,7 +1841,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
    * Assert the {@link RegionFunctionContext} yields the proper objects.
    */
   @Test
-  public void testLocalDataContextWithColocation() throws Exception {
+  public void testLocalDataContextWithColocation() {
     VM accessor = getHost(0).getVM(1);
     VM datastore1 = getHost(0).getVM(2);
     VM datastore2 = getHost(0).getVM(3);
@@ -1973,8 +1971,9 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
       }
     };
 
+    Execution<Boolean, Boolean, List<Boolean>> execution = FunctionService.onRegion(rootRegion);
     ResultCollector<Boolean, List<Boolean>> resultCollector =
-        FunctionService.onRegion(rootRegion).withFilter(createKeySet(key1)).execute(function);
+        execution.withFilter(createKeySet(key1)).execute(function);
     assertThat(resultCollector.getResult()).hasSize(1).containsExactly(true);
   }
 
@@ -2126,9 +2125,7 @@ public class PRFunctionExecutionDUnitTest extends CacheTestCase {
 
   private Set<String> createKeySet(final String... keys) {
     Set<String> keySet = new HashSet<>();
-    for (String key : keys) {
-      keySet.add(key);
-    }
+    Collections.addAll(keySet, keys);
     return keySet;
   }
 

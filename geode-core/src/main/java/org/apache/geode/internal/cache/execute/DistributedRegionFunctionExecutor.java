@@ -45,7 +45,8 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
  * @since GemFire 5.8 LA
  *
  */
-public class DistributedRegionFunctionExecutor extends AbstractExecution {
+public class DistributedRegionFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
+    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT> {
 
   private final LocalRegion region;
 
@@ -58,16 +59,6 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
               "region"));
     }
     this.region = (LocalRegion) r;
-  }
-
-  private DistributedRegionFunctionExecutor(DistributedRegionFunctionExecutor drfe) {
-    super(drfe);
-    this.region = drfe.region;
-    if (drfe.filter != null) {
-      this.filter.clear();
-      this.filter.addAll(drfe.filter);
-    }
-    this.sender = drfe.sender;
   }
 
   public DistributedRegionFunctionExecutor(DistributedRegion region, Set filter2, Object args,
@@ -221,7 +212,8 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
+  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
+      Set<Integer> bucketIDs) {
     if (bucketIDs != null && !bucketIDs.isEmpty()) {
       throw new IllegalArgumentException(
           String.format("Buckets as filter cannot be applied to a non partitioned region: %s",
@@ -282,14 +274,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public String toString() {
-    final StringBuffer buf = new StringBuffer();
-    buf.append("[ DistributedRegionFunctionExecutor:");
-    buf.append("args=");
-    buf.append(this.args);
-    buf.append(";region=");
-    buf.append(this.region.getName());
-    buf.append("]");
-    return buf.toString();
+    return "[ DistributedRegionFunctionExecutor:"
+        + "args="
+        + this.args
+        + ";region="
+        + this.region.getName()
+        + "]";
   }
 
   /*

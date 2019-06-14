@@ -28,9 +28,11 @@ import org.apache.geode.cache.execute.ResultCollector;
  * @since GemFire 5.8LA
  *
  */
-public interface InternalExecution extends Execution {
+public interface InternalExecution<ArgumentT, ReturnT, AggregatorT>
+    extends Execution<ArgumentT, ReturnT, AggregatorT> {
 
-  InternalExecution withMemberMappedArgument(MemberMappedArgument argument);
+  InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
+      MemberMappedArgument argument);
 
   /**
    * Specifies a filter of bucketIDs for selecting the GemFire members to execute the function on.
@@ -44,7 +46,7 @@ public interface InternalExecution extends Execution {
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since Geode 1.0
    */
-  InternalExecution withBucketFilter(Set<Integer> bucketIDs);
+  InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(Set<Integer> bucketIDs);
 
   /**
    * If true, function execution waits for all exceptions from target nodes <br>
