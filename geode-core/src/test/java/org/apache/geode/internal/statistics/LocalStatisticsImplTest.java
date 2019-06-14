@@ -15,7 +15,6 @@
 package org.apache.geode.internal.statistics;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import org.junit.Test;
@@ -49,9 +48,7 @@ public class LocalStatisticsImplTest {
 
     int intId = statisticsType.nameToId("intCount");
     assertThat(localStatistics.getInt(intId)).isEqualTo(7);
-    assertThatThrownBy(() -> localStatistics.getLong(intId))
-        .isInstanceOf(IllegalArgumentException.class);
-
+    assertThat(localStatistics.getLong(intId)).isEqualTo(7);
     int longId = statisticsType.nameToId("longCount");
     assertThat(localStatistics.getInt(longId)).isEqualTo(15);
     assertThat(localStatistics.getLong(longId)).isEqualTo(15);
@@ -63,7 +60,8 @@ public class LocalStatisticsImplTest {
     StatisticsTypeFactory statsFactory = StatisticsTypeFactoryImpl.singleton();
     StatisticDescriptor[] stats = {
         statsFactory.createIntCounter("intCount", "int counter", "ints"),
-        statsFactory.createLongCounter("longCount", "long counter", "longs")
+        statsFactory.createLongCounter("longCount", "long counter", "longs"),
+        statsFactory.createDoubleCounter("doubleCount", "double counter", "doubles")
     };
     StatisticsType statisticsType = new StatisticsTypeImpl("abc", "mock stats", stats);
     LocalStatisticsImpl localStatistics = new LocalStatisticsImpl(statisticsType, "abc", 123L, 123L,
@@ -71,19 +69,23 @@ public class LocalStatisticsImplTest {
 
     localStatistics.incInt("intCount", 7);
     localStatistics.incLong("longCount", 15);
+    localStatistics.incDouble("doubleCount", 3.14);
 
     assertThat(localStatistics.getInt("intCount")).isEqualTo(7);
     assertThat(localStatistics.getInt("longCount")).isEqualTo(15);
     assertThat(localStatistics.getLong("longCount")).isEqualTo(15);
+    assertThat(localStatistics.getDouble("doubleCount")).isEqualTo(3.14);
 
     int intId = statisticsType.nameToId("intCount");
     assertThat(localStatistics.getInt(intId)).isEqualTo(7);
-    assertThatThrownBy(() -> localStatistics.getLong(intId))
-        .isInstanceOf(IllegalArgumentException.class);
+    assertThat(localStatistics.getLong(intId)).isEqualTo(7);
 
     int longId = statisticsType.nameToId("longCount");
     assertThat(localStatistics.getInt(longId)).isEqualTo(15);
     assertThat(localStatistics.getLong(longId)).isEqualTo(15);
+
+    int doubleId = statisticsType.nameToId("doubleCount");
+    assertThat(localStatistics.getDouble(doubleId)).isEqualTo(3.14);
   }
 
 }
