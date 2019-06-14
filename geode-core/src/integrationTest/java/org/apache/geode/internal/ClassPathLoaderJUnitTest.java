@@ -163,7 +163,8 @@ public class ClassPathLoaderJUnitTest {
   }
 
   @Test
-  public void redeploySubclassJarThatExtendsInterdependentJarShouldNowLoadNewSubclass() throws Exception {
+  public void redeploySubclassJarThatExtendsInterdependentJarShouldNowLoadNewSubclass()
+      throws Exception {
     String classAName = "classA";
     String classBName = "classB";
 
@@ -174,10 +175,10 @@ public class ClassPathLoaderJUnitTest {
             + " { public boolean hasResult() {return true;}}";
 
     String classA2Contents =
-            "package jddunit.function;"
-                    + "public class "
-                    + classAName + " extends " + classBName
-                    + " { public boolean hasResult() {return false;}}";
+        "package jddunit.function;"
+            + "public class "
+            + classAName + " extends " + classBName
+            + " { public boolean hasResult() {return false;}}";
 
     String classBContents =
         "package jddunit.function;"
@@ -188,7 +189,8 @@ public class ClassPathLoaderJUnitTest {
     File jarB = createJarFromClassContents("JarBVersion1", classBName, "JarB.jar", classBContents);
     File jarA = createJarFromClassContents("JarAVersion1", classAName, "JarA.jar", classAContents,
         jarB.getAbsolutePath());
-    File jarAV2 = createJarFromClassContents("JarAVersion2", classAName, "JarA.jar", classA2Contents,
+    File jarAV2 =
+        createJarFromClassContents("JarAVersion2", classAName, "JarA.jar", classA2Contents,
             jarB.getAbsolutePath());
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarB);
@@ -214,41 +216,41 @@ public class ClassPathLoaderJUnitTest {
     String classBName = "classB";
 
     String classAContents =
-            "package jddunit.function;"
-                    + "public class "
-                    + classAName + " extends " + classBName
-                    + " { public boolean hasResult() {return true;}}";
+        "package jddunit.function;"
+            + "public class "
+            + classAName + " extends " + classBName
+            + " { public boolean hasResult() {return true;}}";
 
     String classBContents =
-            "package jddunit.function;"
-                    + "public class "
-                    + classBName + " { public boolean someMethod() {return true;}}";
+        "package jddunit.function;"
+            + "public class "
+            + classBName + " { public boolean someMethod() {return true;}}";
 
     String classB2Contents =
-            "package jddunit.function;"
-                    + "public class "
-                    + classBName + " { public boolean someMethod() {return false;}}";
+        "package jddunit.function;"
+            + "public class "
+            + classBName + " { public boolean someMethod() {return false;}}";
 
     File jarB = createJarFromClassContents("JarBVersion1", classBName, "JarB.jar", classBContents);
     File jarA = createJarFromClassContents("JarAVersion1", classAName, "JarA.jar", classAContents,
-            jarB.getAbsolutePath());
+        jarB.getAbsolutePath());
     File jarBV2 =
-            createJarFromClassContents("JarBVersion2", classBName, "JarB.jar", classB2Contents);
+        createJarFromClassContents("JarBVersion2", classBName, "JarB.jar", classB2Contents);
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarB);
     Class classB =
-            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
+        ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classBName);
     Object classBInstance = classB.newInstance();
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarA.jar", jarA);
     Class classA =
-            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
+        ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
     Object classAInstance = classA.newInstance();
 
     ClassPathLoader.getLatest().getJarDeployer().deploy("JarB.jar", jarBV2);
 
     Class classA2 =
-            ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
+        ClassPathLoader.getLatest().asClassLoader().loadClass("jddunit.function." + classAName);
     Object classA2Instance = classA2.newInstance();
 
     assertThat(classA2Instance).isInstanceOf(classAInstance.getClass());
