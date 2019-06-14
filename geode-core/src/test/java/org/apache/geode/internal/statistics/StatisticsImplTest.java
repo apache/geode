@@ -234,11 +234,6 @@ public class StatisticsImplTest {
     }
 
     @Override
-    protected void _setInt(int offset, int value) {
-      values.put(offset, value);
-    }
-
-    @Override
     protected void _setLong(int offset, long value) {
       values.put(offset, value);
     }
@@ -249,11 +244,6 @@ public class StatisticsImplTest {
     }
 
     @Override
-    protected int _getInt(int offset) {
-      return (int) values.get(offset);
-    }
-
-    @Override
     protected long _getLong(int offset) {
       return (long) values.get(offset);
     }
@@ -261,11 +251,6 @@ public class StatisticsImplTest {
     @Override
     protected double _getDouble(int offset) {
       return (double) values.get(offset);
-    }
-
-    @Override
-    protected void _incInt(int offset, int delta) {
-      values.put(offset, (int) values.get(delta) + 1);
     }
 
     @Override

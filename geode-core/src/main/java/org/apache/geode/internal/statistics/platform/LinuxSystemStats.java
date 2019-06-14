@@ -19,7 +19,6 @@ import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -30,134 +29,128 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 public class LinuxSystemStats {
 
   // shared fields
-  static final int allocatedSwapINT = 0;
-  static final int bufferMemoryINT = 1;
-  static final int sharedMemoryINT = 2;
-  static final int cpuActiveINT = 3;
-  static final int cpuIdleINT = 4;
-  static final int cpuNiceINT = 5;
-  static final int cpuSystemINT = 6;
-  static final int cpuUserINT = 7;
-  static final int iowaitINT = 8;
-  static final int irqINT = 9;
-  static final int softirqINT = 10;
-  static final int cpusINT = 11;
-  static final int freeMemoryINT = 12;
-  static final int physicalMemoryINT = 13;
-  static final int processesINT = 14;
-  static final int unallocatedSwapINT = 15;
-  static final int cachedMemoryINT = 16;
-  static final int dirtyMemoryINT = 17;
-  static final int cpuNonUserINT = 18;
-  static final int cpuStealINT = 19;
-  static final int tcpSOMaxConnINT = 20;
+  static final int allocatedSwapLONG;
+  static final int bufferMemoryLONG;
+  static final int sharedMemoryLONG;
+  static final int cpuActiveLONG;
+  static final int cpuIdleLONG;
+  static final int cpuNiceLONG;
+  static final int cpuSystemLONG;
+  static final int cpuUserLONG;
+  static final int iowaitLONG;
+  static final int irqLONG;
+  static final int softirqLONG;
+  static final int cpusLONG;
+  static final int freeMemoryLONG;
+  static final int physicalMemoryLONG;
+  static final int processesLONG;
+  static final int unallocatedSwapLONG;
+  static final int cachedMemoryLONG;
+  static final int dirtyMemoryLONG;
+  static final int cpuNonUserLONG;
+  static final int cpuStealLONG;
+  static final int tcpSOMaxConnLONG;
 
-  static final int loopbackPacketsLONG = 0;
-  static final int loopbackBytesLONG = 1;
-  static final int recvPacketsLONG = 2;
-  static final int recvBytesLONG = 3;
-  static final int recvErrorsLONG = 4;
-  static final int recvDropsLONG = 5;
-  static final int xmitPacketsLONG = 6;
-  static final int xmitBytesLONG = 7;
-  static final int xmitErrorsLONG = 8;
-  static final int xmitDropsLONG = 9;
-  static final int xmitCollisionsLONG = 10;
-  static final int contextSwitchesLONG = 11;
-  static final int processCreatesLONG = 12;
-  static final int pagesPagedInLONG = 13;
-  static final int pagesPagedOutLONG = 14;
-  static final int pagesSwappedInLONG = 15;
-  static final int pagesSwappedOutLONG = 16;
-  static final int readsCompletedLONG = 17;
-  static final int readsMergedLONG = 18;
-  static final int bytesReadLONG = 19;
-  static final int timeReadingLONG = 20;
-  static final int writesCompletedLONG = 21;
-  static final int writesMergedLONG = 22;
-  static final int bytesWrittenLONG = 23;
-  static final int timeWritingLONG = 24;
-  static final int iosInProgressLONG = 25;
-  static final int timeIosInProgressLONG = 26;
-  static final int ioTimeLONG = 27;
-  static final int tcpExtSynCookiesRecvLONG = 28;
-  static final int tcpExtSynCookiesSentLONG = 29;
-  static final int tcpExtListenDropsLONG = 30;
-  static final int tcpExtListenOverflowsLONG = 31;
+  static final int loopbackPacketsLONG;
+  static final int loopbackBytesLONG;
+  static final int recvPacketsLONG;
+  static final int recvBytesLONG;
+  static final int recvErrorsLONG;
+  static final int recvDropsLONG;
+  static final int xmitPacketsLONG;
+  static final int xmitBytesLONG;
+  static final int xmitErrorsLONG;
+  static final int xmitDropsLONG;
+  static final int xmitCollisionsLONG;
+  static final int contextSwitchesLONG;
+  static final int processCreatesLONG;
+  static final int pagesPagedInLONG;
+  static final int pagesPagedOutLONG;
+  static final int pagesSwappedInLONG;
+  static final int pagesSwappedOutLONG;
+  static final int readsCompletedLONG;
+  static final int readsMergedLONG;
+  static final int bytesReadLONG;
+  static final int timeReadingLONG;
+  static final int writesCompletedLONG;
+  static final int writesMergedLONG;
+  static final int bytesWrittenLONG;
+  static final int timeWritingLONG;
+  static final int iosInProgressLONG;
+  static final int timeIosInProgressLONG;
+  static final int ioTimeLONG;
+  static final int tcpExtSynCookiesRecvLONG;
+  static final int tcpExtSynCookiesSentLONG;
+  static final int tcpExtListenDropsLONG;
+  static final int tcpExtListenOverflowsLONG;
 
 
-  static final int loadAverage1DOUBLE = 0;
-  static final int loadAverage15DOUBLE = 1;
-  static final int loadAverage5DOUBLE = 2;
+  static final int loadAverage1DOUBLE;
+  static final int loadAverage15DOUBLE;
+  static final int loadAverage5DOUBLE;
 
   @Immutable
   private static final StatisticsType myType;
-
-  private static void checkOffset(String name, int offset) {
-    int id = myType.nameToId(name);
-    Assert.assertTrue(offset == id,
-        "Expected the offset for " + name + " to be " + offset + " but it was " + id);
-  }
 
   static {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     myType = f.createType("LinuxSystemStats", "Statistics on a Linux machine.",
         new StatisticDescriptor[] {
-            f.createIntGauge("allocatedSwap",
+            f.createLongGauge("allocatedSwap",
                 "The number of megabytes of swap space have actually been written to. Swap space must be reserved before it can be allocated.",
                 "megabytes"),
-            f.createIntGauge("bufferMemory",
+            f.createLongGauge("bufferMemory",
                 "The number of megabytes of memory allocated to buffers.", "megabytes"),
-            f.createIntGauge("sharedMemory",
+            f.createLongGauge("sharedMemory",
                 "The number of megabytes of shared memory on the machine.", "megabytes", true),
-            f.createIntGauge("cpuActive",
+            f.createLongGauge("cpuActive",
                 "The percentage of the total available time that has been used in a non-idle state.",
                 "%"),
-            f.createIntGauge("cpuIdle",
+            f.createLongGauge("cpuIdle",
                 "The percentage of the total available time that has been spent sleeping.", "%",
                 true),
-            f.createIntGauge("cpuNice",
+            f.createLongGauge("cpuNice",
                 "The percentage of the total available time that has been used to execute user code in processes with low priority.",
                 "%"),
-            f.createIntGauge("cpuSystem",
+            f.createLongGauge("cpuSystem",
                 "The percentage of the total available time that has been used to execute system (i.e. kernel) code.",
                 "%"),
-            f.createIntGauge("cpuUser",
+            f.createLongGauge("cpuUser",
                 "The percentage of the total available time that has been used to execute user code.",
                 "%"),
-            f.createIntGauge("iowait",
+            f.createLongGauge("iowait",
                 "The percentage of the total available time that has been used to wait for I/O to complete.",
                 "%"),
-            f.createIntGauge("irq",
+            f.createLongGauge("irq",
                 "The percentage of the total available time that has been used servicing  interrupts.",
                 "%"),
-            f.createIntGauge("softirq",
+            f.createLongGauge("softirq",
                 "The percentage of the total available time that has been used servicing softirqs.",
                 "%"),
-            f.createIntGauge("cpus", "The number of online cpus on the local machine.", "items"),
-            f.createIntGauge("freeMemory",
+            f.createLongGauge("cpus", "The number of online cpus on the local machine.", "items"),
+            f.createLongGauge("freeMemory",
                 "The number of megabytes of unused memory on the machine.", "megabytes", true),
-            f.createIntGauge("physicalMemory",
+            f.createLongGauge("physicalMemory",
                 "The actual amount of total physical memory on the machine.", "megabytes", true),
-            f.createIntGauge("processes",
+            f.createLongGauge("processes",
                 "The number of processes in the computer at the time of data collection.  Notice that this is an instantaneous count, not an average over the time interval.  Each process represents the running of a program.",
                 "processes"),
-            f.createIntGauge("unallocatedSwap",
+            f.createLongGauge("unallocatedSwap",
                 "The number of megabytes of swap space that have not been allocated.", "megabytes",
                 true),
-            f.createIntGauge("cachedMemory",
+            f.createLongGauge("cachedMemory",
                 "The number of megabytes of memory used for the file system cache.", "megabytes",
                 true),
-            f.createIntGauge("dirtyMemory",
+            f.createLongGauge("dirtyMemory",
                 "The number of megabytes of memory in the file system cache that need to be written.",
                 "megabytes", true),
-            f.createIntGauge("cpuNonUser",
+            f.createLongGauge("cpuNonUser",
                 "The percentage of total available time that has been used to execute non-user code.(includes system, iowait, irq, softirq etc.)",
                 "%"),
-            f.createIntGauge("cpuSteal",
+            f.createLongGauge("cpuSteal",
                 "Steal time is the amount of time the operating system wanted to execute, but was not allowed to by the hypervisor.",
                 "%"),
-            f.createIntGauge("soMaxConn",
+            f.createLongGauge("soMaxConn",
                 "Maximum TCP/IP server socket connection request backlog",
                 "connection requests"),
 
@@ -259,64 +252,63 @@ public class LinuxSystemStats {
                 "The average number of threads in the run queue or waiting for disk I/O over the last five minutes.",
                 "threads"),});
 
-    checkOffset("allocatedSwap", allocatedSwapINT);
-    checkOffset("bufferMemory", bufferMemoryINT);
-    checkOffset("sharedMemory", sharedMemoryINT);
-    checkOffset("cpuActive", cpuActiveINT);
-    checkOffset("cpuIdle", cpuIdleINT);
-    checkOffset("cpuNice", cpuNiceINT);
-    checkOffset("cpuSystem", cpuSystemINT);
-    checkOffset("cpuUser", cpuUserINT);
-    checkOffset("iowait", iowaitINT);
-    checkOffset("irq", irqINT);
-    checkOffset("softirq", softirqINT);
-    checkOffset("cpus", cpusINT);
-    checkOffset("freeMemory", freeMemoryINT);
-    checkOffset("physicalMemory", physicalMemoryINT);
-    checkOffset("processes", processesINT);
-    checkOffset("unallocatedSwap", unallocatedSwapINT);
-    checkOffset("cachedMemory", cachedMemoryINT);
-    checkOffset("dirtyMemory", dirtyMemoryINT);
-    checkOffset("cpuNonUser", cpuNonUserINT);
-    checkOffset("cpuSteal", cpuStealINT);
-    checkOffset("soMaxConn", tcpSOMaxConnINT);
+    allocatedSwapLONG = myType.nameToId("allocatedSwap");
+    bufferMemoryLONG = myType.nameToId("bufferMemory");
+    sharedMemoryLONG = myType.nameToId("sharedMemory");
+    cpuActiveLONG = myType.nameToId("cpuActive");
+    cpuIdleLONG = myType.nameToId("cpuIdle");
+    cpuNiceLONG = myType.nameToId("cpuNice");
+    cpuSystemLONG = myType.nameToId("cpuSystem");
+    cpuUserLONG = myType.nameToId("cpuUser");
+    iowaitLONG = myType.nameToId("iowait");
+    irqLONG = myType.nameToId("irq");
+    softirqLONG = myType.nameToId("softirq");
+    cpusLONG = myType.nameToId("cpus");
+    freeMemoryLONG = myType.nameToId("freeMemory");
+    physicalMemoryLONG = myType.nameToId("physicalMemory");
+    processesLONG = myType.nameToId("processes");
+    unallocatedSwapLONG = myType.nameToId("unallocatedSwap");
+    cachedMemoryLONG = myType.nameToId("cachedMemory");
+    dirtyMemoryLONG = myType.nameToId("dirtyMemory");
+    cpuNonUserLONG = myType.nameToId("cpuNonUser");
+    cpuStealLONG = myType.nameToId("cpuSteal");
+    tcpSOMaxConnLONG = myType.nameToId("soMaxConn");
+    loopbackPacketsLONG = myType.nameToId("loopbackPackets");
+    loopbackBytesLONG = myType.nameToId("loopbackBytes");
+    recvPacketsLONG = myType.nameToId("recvPackets");
+    recvBytesLONG = myType.nameToId("recvBytes");
+    recvErrorsLONG = myType.nameToId("recvErrors");
+    recvDropsLONG = myType.nameToId("recvDrops");
+    xmitPacketsLONG = myType.nameToId("xmitPackets");
+    xmitBytesLONG = myType.nameToId("xmitBytes");
+    xmitErrorsLONG = myType.nameToId("xmitErrors");
+    xmitDropsLONG = myType.nameToId("xmitDrops");
+    xmitCollisionsLONG = myType.nameToId("xmitCollisions");
+    contextSwitchesLONG = myType.nameToId("contextSwitches");
+    processCreatesLONG = myType.nameToId("processCreates");
+    pagesPagedInLONG = myType.nameToId("pagesPagedIn");
+    pagesPagedOutLONG = myType.nameToId("pagesPagedOut");
+    pagesSwappedInLONG = myType.nameToId("pagesSwappedIn");
+    pagesSwappedOutLONG = myType.nameToId("pagesSwappedOut");
+    readsCompletedLONG = myType.nameToId("diskReadsCompleted");
+    readsMergedLONG = myType.nameToId("diskReadsMerged");
+    bytesReadLONG = myType.nameToId("diskBytesRead");
+    timeReadingLONG = myType.nameToId("diskTimeReading");
+    writesCompletedLONG = myType.nameToId("diskWritesCompleted");
+    writesMergedLONG = myType.nameToId("diskWritesMerged");
+    bytesWrittenLONG = myType.nameToId("diskBytesWritten");
+    timeWritingLONG = myType.nameToId("diskTimeWriting");
+    iosInProgressLONG = myType.nameToId("diskOpsInProgress");
+    timeIosInProgressLONG = myType.nameToId("diskTimeInProgress");
+    ioTimeLONG = myType.nameToId("diskTime");
+    tcpExtSynCookiesRecvLONG = myType.nameToId("tcpExtSynCookiesRecv");
+    tcpExtSynCookiesSentLONG = myType.nameToId("tcpExtSynCookiesSent");
+    tcpExtListenDropsLONG = myType.nameToId("tcpExtListenDrops");
+    tcpExtListenOverflowsLONG = myType.nameToId("tcpExtListenOverflows");
 
-    checkOffset("loopbackPackets", loopbackPacketsLONG);
-    checkOffset("loopbackBytes", loopbackBytesLONG);
-    checkOffset("recvPackets", recvPacketsLONG);
-    checkOffset("recvBytes", recvBytesLONG);
-    checkOffset("recvErrors", recvErrorsLONG);
-    checkOffset("recvDrops", recvDropsLONG);
-    checkOffset("xmitPackets", xmitPacketsLONG);
-    checkOffset("xmitBytes", xmitBytesLONG);
-    checkOffset("xmitErrors", xmitErrorsLONG);
-    checkOffset("xmitDrops", xmitDropsLONG);
-    checkOffset("xmitCollisions", xmitCollisionsLONG);
-    checkOffset("contextSwitches", contextSwitchesLONG);
-    checkOffset("processCreates", processCreatesLONG);
-    checkOffset("pagesPagedIn", pagesPagedInLONG);
-    checkOffset("pagesPagedOut", pagesPagedOutLONG);
-    checkOffset("pagesSwappedIn", pagesSwappedInLONG);
-    checkOffset("pagesSwappedOut", pagesSwappedOutLONG);
-    checkOffset("diskReadsCompleted", readsCompletedLONG);
-    checkOffset("diskReadsMerged", readsMergedLONG);
-    checkOffset("diskBytesRead", bytesReadLONG);
-    checkOffset("diskTimeReading", timeReadingLONG);
-    checkOffset("diskWritesCompleted", writesCompletedLONG);
-    checkOffset("diskWritesMerged", writesMergedLONG);
-    checkOffset("diskBytesWritten", bytesWrittenLONG);
-    checkOffset("diskTimeWriting", timeWritingLONG);
-    checkOffset("diskOpsInProgress", iosInProgressLONG);
-    checkOffset("diskTimeInProgress", timeIosInProgressLONG);
-    checkOffset("diskTime", ioTimeLONG);
-    checkOffset("tcpExtSynCookiesRecv", tcpExtSynCookiesRecvLONG);
-    checkOffset("tcpExtSynCookiesSent", tcpExtSynCookiesSentLONG);
-    checkOffset("tcpExtListenDrops", tcpExtListenDropsLONG);
-    checkOffset("tcpExtListenOverflows", tcpExtListenOverflowsLONG);
-
-    checkOffset("loadAverage1", loadAverage1DOUBLE);
-    checkOffset("loadAverage15", loadAverage15DOUBLE);
-    checkOffset("loadAverage5", loadAverage5DOUBLE);
+    loadAverage1DOUBLE = myType.nameToId("loadAverage1");
+    loadAverage15DOUBLE = myType.nameToId("loadAverage15");
+    loadAverage5DOUBLE = myType.nameToId("loadAverage5");
   }
 
   private LinuxSystemStats() {

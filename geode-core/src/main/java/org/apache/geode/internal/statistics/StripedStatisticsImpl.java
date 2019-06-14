@@ -27,9 +27,9 @@ import org.apache.geode.StatisticsType;
  */
 public class StripedStatisticsImpl extends StatisticsImpl {
 
-  private final LongAdder[] intAdders;
   private final LongAdder[] longAdders;
   private final DoubleAdder[] doubleAdders;
+  private final int longCount;
 
   public StripedStatisticsImpl(StatisticsType type, String textId, long numericId,
       long uniqueId, StatisticsManager statisticsManager) {
@@ -37,8 +37,7 @@ public class StripedStatisticsImpl extends StatisticsImpl {
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
 
-    this.intAdders =
-        Stream.generate(LongAdder::new).limit(realType.getIntStatCount()).toArray(LongAdder[]::new);
+    this.longCount = realType.getLongStatCount();
     this.longAdders =
         Stream.generate(LongAdder::new).limit(realType.getLongStatCount())
             .toArray(LongAdder[]::new);
@@ -52,16 +51,17 @@ public class StripedStatisticsImpl extends StatisticsImpl {
     return true;
   }
 
-  @Override
-  protected void _setInt(int offset, int value) {
-    synchronized (intAdders[offset]) {
-      intAdders[offset].reset();
-      intAdders[offset].add(value);
-    }
+  private int getOffsetFromLongId(int id) {
+    return id;
+  }
+
+  private int getOffsetFromDoubleId(int id) {
+    return id - this.longCount;
   }
 
   @Override
-  protected void _setLong(int offset, long value) {
+  protected void _setLong(int id, long value) {
+    int offset = getOffsetFromLongId(id);
     synchronized (longAdders[offset]) {
       longAdders[offset].reset();
       longAdders[offset].add(value);
@@ -69,7 +69,8 @@ public class StripedStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected void _setDouble(int offset, double value) {
+  protected void _setDouble(int id, double value) {
+    int offset = getOffsetFromDoubleId(id);
     synchronized (doubleAdders[offset]) {
       doubleAdders[offset].reset();
       doubleAdders[offset].add(value);
@@ -77,38 +78,30 @@ public class StripedStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected int _getInt(int offset) {
-    synchronized (intAdders[offset]) {
-      return intAdders[offset].intValue();
-    }
-  }
-
-  @Override
-  protected long _getLong(int offset) {
+  protected long _getLong(int id) {
+    int offset = getOffsetFromLongId(id);
     synchronized (longAdders[offset]) {
       return longAdders[offset].sum();
     }
   }
 
   @Override
-  protected double _getDouble(int offset) {
+  protected double _getDouble(int id) {
+    int offset = getOffsetFromDoubleId(id);
     synchronized (doubleAdders[offset]) {
       return doubleAdders[offset].sum();
     }
   }
 
   @Override
-  protected void _incInt(int offset, int delta) {
-    intAdders[offset].add(delta);
-  }
-
-  @Override
-  protected void _incLong(int offset, long delta) {
+  protected void _incLong(int id, long delta) {
+    int offset = getOffsetFromLongId(id);
     longAdders[offset].add(delta);
   }
 
   @Override
-  protected void _incDouble(int offset, double delta) {
+  protected void _incDouble(int id, double delta) {
+    int offset = getOffsetFromDoubleId(id);
     doubleAdders[offset].add(delta);
   }
 }

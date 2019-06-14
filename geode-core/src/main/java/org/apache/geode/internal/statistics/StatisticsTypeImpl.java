@@ -46,16 +46,11 @@ public class StatisticsTypeImpl implements StatisticsType {
   /** Maps a stat name to its StatisticDescriptor */
   private final HashMap<String, StatisticDescriptor> statsMap;
 
-  /** Contains the number of 32-bit statistics in this type. */
-  private final int intStatCount;
-
   /** Contains the number of long statistics in this type. */
   private final int longStatCount;
 
   /** Contains the number of double statistics in this type. */
   private final int doubleStatCount;
-
-  private int sequentialId;
 
   ///////////////////// Static Methods /////////////////////
 
@@ -102,10 +97,8 @@ public class StatisticsTypeImpl implements StatisticsType {
     this.stats = stats;
     this.statsMap = new HashMap<>(stats.length * 2);
 
-    this.intStatCount = 0;
-    this.longStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.LONG, intStatCount);
-    this.doubleStatCount =
-        addTypedDescriptorToMap(StatisticDescriptorImpl.DOUBLE, intStatCount + longStatCount);
+    longStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.LONG, 0);
+    doubleStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.DOUBLE, longStatCount);
   }
 
   private int addTypedDescriptorToMap(byte typeCode, int startOfSequentialIds) {
@@ -113,8 +106,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     for (StatisticDescriptor stat : stats) {
       StatisticDescriptorImpl sd = (StatisticDescriptorImpl) stat;
       if (sd.getTypeCode() == typeCode) {
-        sd.setId(startOfSequentialIds);
-        this.sequentialId++;
+        sd.setId(startOfSequentialIds + count);
         count++;
         addDescriptorToMap(sd);
       }
@@ -170,7 +162,7 @@ public class StatisticsTypeImpl implements StatisticsType {
    * Gets the number of statistics in this type that are ints.
    */
   public int getIntStatCount() {
-    return this.intStatCount;
+    return 0;
   }
 
   /**
@@ -237,15 +229,14 @@ public class StatisticsTypeImpl implements StatisticsType {
   }
 
   public boolean isValidIntId(int id) {
-    return id < intStatCount;
+    return id < 0;
   }
 
   public boolean isValidLongId(int id) {
-    return intStatCount <= id && id < intStatCount + longStatCount;
+    return id < longStatCount;
   }
 
   public boolean isValidDoubleId(int id) {
-    return intStatCount + longStatCount <= id
-        && id < intStatCount + longStatCount + doubleStatCount;
+    return longStatCount <= id && id < longStatCount + doubleStatCount;
   }
 }

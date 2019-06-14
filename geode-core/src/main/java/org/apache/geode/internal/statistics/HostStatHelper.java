@@ -139,11 +139,9 @@ public class HostStatHelper {
   private static void refreshProcess(LocalStatisticsImpl statistics) {
     int pid = (int) statistics.getNumericId();
     if (isLinux()) {
-      LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
-          statistics._getLongStorage(), statistics._getDoubleStorage());
+      LinuxProcFsStatistics.refreshProcess(pid, statistics);
     } else {
-      refreshProcess(pid, statistics._getIntStorage(), statistics._getLongStorage(),
-          statistics._getDoubleStorage());
+      throw new IllegalStateException("only Linux stats are supported");
     }
   }
 
@@ -155,11 +153,9 @@ public class HostStatHelper {
    */
   private static void refreshSystem(LocalStatisticsImpl statistics) {
     if (isLinux()) {
-      LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
-          statistics._getDoubleStorage());
+      LinuxProcFsStatistics.refreshSystem(statistics);
     } else {
-      refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
-          statistics._getDoubleStorage());
+      throw new IllegalStateException("only Linux stats are supported");
     }
   }
 

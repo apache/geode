@@ -42,15 +42,14 @@ public class StatisticsTypeImplTest {
     int idForLongCounter2 = statisticsType.nameToId("longCount2");
     int idForDoubleCounter = statisticsType.nameToId("doubleCount");
 
-    assertThat(idForIntCounter).isLessThan(idForLongCounter);
+    assertThat(idForIntCounter).isLessThan(idForDoubleCounter);
     assertThat(idForLongCounter).isLessThan(idForDoubleCounter);
     assertThat(idForLongCounter2).isLessThan(idForDoubleCounter);
   }
 
   @Test
   public void testTypeCounts() {
-    assertThat(statisticsType.getIntStatCount()).isEqualTo(1);
-    assertThat(statisticsType.getLongStatCount()).isEqualTo(2);
+    assertThat(statisticsType.getLongStatCount()).isEqualTo(3);
     assertThat(statisticsType.getDoubleStatCount()).isEqualTo(1);
   }
 
@@ -58,8 +57,7 @@ public class StatisticsTypeImplTest {
   public void testIsValidIntId() {
     int idForIntCounter = statisticsType.nameToId("intCount");
 
-    assertThat(statisticsType.isValidIntId(idForIntCounter)).isEqualTo(true);
-    assertThat(statisticsType.isValidLongId(idForIntCounter)).isEqualTo(false);
+    assertThat(statisticsType.isValidLongId(idForIntCounter)).isEqualTo(true);
     assertThat(statisticsType.isValidDoubleId(idForIntCounter)).isEqualTo(false);
   }
 
@@ -68,11 +66,9 @@ public class StatisticsTypeImplTest {
     int idForLongCounter = statisticsType.nameToId("longCount");
     int idForLongCounter2 = statisticsType.nameToId("longCount2");
 
-    assertThat(statisticsType.isValidIntId(idForLongCounter)).isEqualTo(false);
     assertThat(statisticsType.isValidLongId(idForLongCounter)).isEqualTo(true);
     assertThat(statisticsType.isValidDoubleId(idForLongCounter)).isEqualTo(false);
 
-    assertThat(statisticsType.isValidIntId(idForLongCounter2)).isEqualTo(false);
     assertThat(statisticsType.isValidLongId(idForLongCounter2)).isEqualTo(true);
     assertThat(statisticsType.isValidDoubleId(idForLongCounter2)).isEqualTo(false);
   }
@@ -81,7 +77,6 @@ public class StatisticsTypeImplTest {
   public void testIsValidDoubleId() {
     int idForDoubleCounter = statisticsType.nameToId("doubleCount");
 
-    assertThat(statisticsType.isValidIntId(idForDoubleCounter)).isEqualTo(false);
     assertThat(statisticsType.isValidLongId(idForDoubleCounter)).isEqualTo(false);
     assertThat(statisticsType.isValidDoubleId(idForDoubleCounter)).isEqualTo(true);
   }
@@ -91,7 +86,6 @@ public class StatisticsTypeImplTest {
     StatisticDescriptor[] stats = {};
     statisticsType = new StatisticsTypeImpl("abc", "mock stats", stats);
 
-    assertThat(statisticsType.isValidIntId(0)).isEqualTo(false);
     assertThat(statisticsType.isValidLongId(0)).isEqualTo(false);
     assertThat(statisticsType.isValidDoubleId(0)).isEqualTo(false);
 
