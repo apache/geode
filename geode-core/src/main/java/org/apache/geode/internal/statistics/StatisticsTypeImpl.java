@@ -102,7 +102,7 @@ public class StatisticsTypeImpl implements StatisticsType {
     this.stats = stats;
     this.statsMap = new HashMap<>(stats.length * 2);
 
-    this.intStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.INT, 0);
+    this.intStatCount = 0;
     this.longStatCount = addTypedDescriptorToMap(StatisticDescriptorImpl.LONG, intStatCount);
     this.doubleStatCount =
         addTypedDescriptorToMap(StatisticDescriptorImpl.DOUBLE, intStatCount + longStatCount);

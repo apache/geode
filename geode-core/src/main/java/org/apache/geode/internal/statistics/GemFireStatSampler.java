@@ -368,14 +368,8 @@ public class GemFireStatSampler extends HostStatSampler {
       LocalStatListenerImpl result = null;
       StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
       switch (stat.getTypeCode()) {
-        case StatisticDescriptorImpl.BYTE:
-        case StatisticDescriptorImpl.SHORT:
-        case StatisticDescriptorImpl.INT:
         case StatisticDescriptorImpl.LONG:
           result = new LocalLongStatListenerImpl();
-          break;
-        case StatisticDescriptorImpl.FLOAT:
-          result = new LocalFloatStatListenerImpl();
           break;
         case StatisticDescriptorImpl.DOUBLE:
           result = new LocalDoubleStatListenerImpl();
@@ -411,13 +405,6 @@ public class GemFireStatSampler extends HostStatSampler {
     @Override
     protected double getBitsAsDouble(long bits) {
       return bits;
-    }
-  }
-
-  protected static class LocalFloatStatListenerImpl extends LocalStatListenerImpl {
-    @Override
-    protected double getBitsAsDouble(long bits) {
-      return Float.intBitsToFloat((int) bits);
     }
   }
 
@@ -470,14 +457,8 @@ public class GemFireStatSampler extends HostStatSampler {
       }
       StatisticDescriptorImpl stat = (StatisticDescriptorImpl) stats.nameToDescriptor(statName);
       switch (stat.getTypeCode()) {
-        case StatisticDescriptorImpl.BYTE:
-        case StatisticDescriptorImpl.SHORT:
-        case StatisticDescriptorImpl.INT:
         case StatisticDescriptorImpl.LONG:
           result = new LongStatListenerImpl();
-          break;
-        case StatisticDescriptorImpl.FLOAT:
-          result = new FloatStatListenerImpl();
           break;
         case StatisticDescriptorImpl.DOUBLE:
           result = new DoubleStatListenerImpl();
@@ -516,13 +497,6 @@ public class GemFireStatSampler extends HostStatSampler {
     @Override
     protected double getBitsAsDouble(long bits) {
       return bits;
-    }
-  }
-
-  protected static class FloatStatListenerImpl extends RemoteStatListenerImpl {
-    @Override
-    protected double getBitsAsDouble(long bits) {
-      return Float.intBitsToFloat((int) bits);
     }
   }
 

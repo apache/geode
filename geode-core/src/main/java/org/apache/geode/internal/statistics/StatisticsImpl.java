@@ -607,8 +607,6 @@ public abstract class StatisticsImpl implements Statistics {
    */
   private Number _get(StatisticDescriptorImpl descriptor) {
     switch (descriptor.getTypeCode()) {
-      case StatisticDescriptorImpl.INT:
-        return _getInt(descriptor.getId());
       case StatisticDescriptorImpl.LONG:
         return _getLong(descriptor.getId());
       case StatisticDescriptorImpl.DOUBLE:
@@ -625,8 +623,6 @@ public abstract class StatisticsImpl implements Statistics {
    */
   private long _getRawBits(StatisticDescriptorImpl descriptor) {
     switch (descriptor.getTypeCode()) {
-      case StatisticDescriptorImpl.INT:
-        return _getInt(descriptor.getId());
       case StatisticDescriptorImpl.LONG:
         return _getLong(descriptor.getId());
       case StatisticDescriptorImpl.DOUBLE:
