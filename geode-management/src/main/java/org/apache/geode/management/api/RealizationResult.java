@@ -22,8 +22,7 @@ import java.io.Serializable;
  * this holds the information returned by the ConfigurationRealizers to indicate the
  * success/failure of the realization step.
  *
- * It by default should have at least memberName, success and a message. a realizer can add
- * additional info to it if necessary.
+ * It by default should have at least memberName, success and a message.
  */
 
 public class RealizationResult implements Serializable {
