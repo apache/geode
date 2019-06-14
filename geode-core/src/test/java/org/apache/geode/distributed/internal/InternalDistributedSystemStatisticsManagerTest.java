@@ -139,8 +139,9 @@ public class InternalDistributedSystemStatisticsManagerTest {
   @Test
   public void delegatesCreateIntCounterToStatisticsManager() {
     StatisticDescriptor descriptorReturnedByManager = mock(StatisticDescriptor.class);
-    when(statisticsManager.createIntCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS))
-        .thenReturn(descriptorReturnedByManager);
+    when(
+        statisticsManager.createLongCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS))
+            .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
         .createIntCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS);
@@ -181,7 +182,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
   public void delegatesCreateIntGaugeToStatisticsManager() {
     StatisticDescriptor descriptorReturnedByManager = mock(StatisticDescriptor.class);
     when(statisticsManager
-        .createIntGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS))
+        .createLongGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS))
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
@@ -222,7 +223,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
   public void delegatesCreateLargerBetterIntCounterToStatisticsManager() {
     StatisticDescriptor descriptorReturnedByManager = mock(StatisticDescriptor.class);
     when(statisticsManager
-        .createIntCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false))
+        .createLongCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false))
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
@@ -264,7 +265,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
   public void delegatesCreateLargerBetterIntGaugeToStatisticsManager() {
     StatisticDescriptor descriptorReturnedByManager = mock(StatisticDescriptor.class);
     when(statisticsManager
-        .createIntGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false))
+        .createLongGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false))
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
