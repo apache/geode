@@ -141,7 +141,7 @@ public class StatisticsImplTest {
   public void badSupplierParamShouldThrowError() {
     IntSupplier intSupplier = mock(IntSupplier.class);
     when(intSupplier.getAsInt()).thenReturn(23);
-    when(statisticsType.isValidIntId(anyInt())).thenReturn(false);
+    when(statisticsType.isValidLongId(anyInt())).thenReturn(false);
 
     Throwable thrown = catchThrowable(() -> statistics.setIntSupplier(23, intSupplier));
 
