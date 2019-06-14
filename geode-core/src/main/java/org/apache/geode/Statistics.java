@@ -33,9 +33,9 @@ import java.util.function.LongSupplier;
  * For optimal performance, each statistic may be referred to by its {@link #nameToId id} in the
  * statistics object. Note that ids can not be mapped back to their name and methods that take ids
  * are unsafe. It is important to call the correct type of method for the given id. For example if
- * your stat is a long then incLong must be called instead of incInt.
+ * your stat is a long then incLong must be called instead of incDouble.
  * <p>
- * Note that as of the 5.1 release the <code>incInt</code>, <code>incLong</code>, and
+ * Note that as of the 5.1 release the <code>incLong</code>, and
  * <code>incDouble</code> methods no longer return the new value of the statistic. They now return
  * <code>void</code>. This incompatible change was made to allow for a more efficient concurrent
  * increment implementation.
@@ -121,6 +121,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
+   * @deprecated as of Geode 1.10, use {@link #setLong(int, long)} instead
    */
   void setInt(int id, int value);
 
@@ -129,6 +130,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists named <code>name</code> or if the
    *         statistic with name <code>name</code> is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #setLong(String, long)} instead
    */
   void setInt(String name, int value);
 
@@ -137,6 +139,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists for the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #setLong(StatisticDescriptor, long)} instead
    */
   void setInt(StatisticDescriptor descriptor, int value);
 
@@ -197,6 +200,7 @@ public interface Statistics {
    *
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
+   * @deprecated as of Geode 1.10, use {@link #getLong(int)} instead
    */
   int getInt(int id);
 
@@ -205,6 +209,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists with the specified
    *         <code>descriptor</code> or if the described statistic is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #getLong(StatisticDescriptor)} instead
    */
   int getInt(StatisticDescriptor descriptor);
 
@@ -213,6 +218,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #getLong(String)} instead
    */
   int getInt(String name);
 
@@ -306,6 +312,7 @@ public interface Statistics {
    * @param id a statistic id obtained with {@link #nameToId} or {@link StatisticsType#nameToId}.
    *
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
+   * @deprecated as of Geode 1.10, use {@link #incLong(int, long)} instead
    */
   void incInt(int id, int delta);
 
@@ -314,6 +321,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #incLong(StatisticDescriptor, long)} instead
    */
   void incInt(StatisticDescriptor descriptor, int delta);
 
@@ -323,6 +331,7 @@ public interface Statistics {
    *
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
+   * @deprecated as of Geode 1.10, use {@link #incLong(String, long)} instead
    */
   void incInt(String name, int delta);
 
@@ -402,6 +411,7 @@ public interface Statistics {
    *         supplier
    * @throws IllegalArgumentException If the id is invalid.
    * @since Geode 1.0
+   * @deprecated as of Geode 1.10, use {@link #setLongSupplier(int, LongSupplier)} instead
    */
   IntSupplier setIntSupplier(int id, IntSupplier supplier);
 
@@ -428,6 +438,7 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with name <code>name</code> or if the
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @since Geode 1.0
+   * @deprecated as of Geode 1.10, use {@link #setLongSupplier(String, LongSupplier)} instead
    */
   IntSupplier setIntSupplier(String name, IntSupplier supplier);
 
@@ -455,6 +466,8 @@ public interface Statistics {
    * @throws IllegalArgumentException If no statistic exists with the given <code>descriptor</code>
    *         or if the described statistic is not of type <code>int</code>.
    * @since Geode 1.0
+   * @deprecated as of Geode 1.10, use {@link #setLongSupplier(StatisticDescriptor, LongSupplier)}
+   *             instead
    */
   IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
 
