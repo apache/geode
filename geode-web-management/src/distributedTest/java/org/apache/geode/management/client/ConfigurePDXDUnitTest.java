@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,6 +32,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
@@ -60,6 +62,18 @@ public class ConfigurePDXDUnitTest {
     client = ClusterManagementServiceBuilder.buildWithRequestFactory()
         .setRequestFactory(webContext.getRequestFactory()).build();
     cluster.startServerVM(1, webContext.getLocator().getPort());
+  }
+
+  @After
+  public void after() throws Exception {
+    // for the test to be run multiple times, we need to clean out the cluster config
+    InternalConfigurationPersistenceService cps =
+        ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule().getLocator()
+            .getConfigurationPersistenceService();
+    cps.updateCacheConfig("cluster", config -> {
+      config.setPdx(null);
+      return config;
+    });
   }
 
   @Test
