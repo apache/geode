@@ -151,18 +151,8 @@ public class GatewayReceiverMetricsTest {
         "--type=" + RegionShortcut.REPLICATE.name(),
         "--gateway-sender-id=" + gatewaySenderId);
 
-    gfshRule.execute(connectToSenderLocatorCommand, startGatewaySenderCommand);
-
-    // There is a bug in the GFSH create gateway-sender command where it returns before the system
-    // has recognized the creation status: GEODE-6777. We can remove the following when that bug is
-    // fixed.
-    try {
-      Thread.sleep(1000);
-    } catch (InterruptedException e) {
-      // Don't care
-    }
-
-    gfshRule.execute(connectToSenderLocatorCommand, createSenderRegionCommand);
+    gfshRule.execute(connectToSenderLocatorCommand, startGatewaySenderCommand,
+        createSenderRegionCommand);
 
     String connectToReceiverLocatorCommand =
         "connect --locator=localhost[" + receiverLocatorPort + "]";
