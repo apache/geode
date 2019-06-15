@@ -30,7 +30,7 @@ import org.apache.geode.lang.Identifiable;
  * 3. an endpoint to update or delete an individual instance (e.g. "/regions/{id}")
  */
 @Experimental
-public interface RestfulEndpoint extends Identifiable<String> {
+public interface RestfulEndpoint extends Identifiable<String>, CMSJsonSerializable {
   /**
    * this needs to return the uri portion after the /geode-management/v2 that points to the
    * list of entities

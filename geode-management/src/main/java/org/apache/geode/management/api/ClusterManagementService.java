@@ -35,7 +35,7 @@ public interface ClusterManagementService {
    *        cluster, as well as the group this config belongs to
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> ClusterManagementResult<T> create(
       T config);
 
   /**
@@ -47,7 +47,7 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> ClusterManagementResult<T> delete(
       T config);
 
   /**
@@ -59,13 +59,13 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> ClusterManagementResult<T> update(
       T config);
 
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> list(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> ClusterManagementResult<R> list(
       T config);
 
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> ClusterManagementResult<R> get(
       T config);
 
   /**

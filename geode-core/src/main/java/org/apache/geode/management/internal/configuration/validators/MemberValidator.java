@@ -23,10 +23,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.api.Groupable;
+import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -42,9 +43,9 @@ public class MemberValidator {
     this.persistenceService = persistenceService;
   }
 
-  public void validateCreate(CacheElement config, ConfigurationManager manager) {
+  public void validateCreate(RestfulEndpoint config, ConfigurationManager manager) {
 
-    Map<String, CacheElement> existingElementsAndTheirGroups =
+    Map<String, RestfulEndpoint> existingElementsAndTheirGroups =
         findCacheElement(config.getId(), manager);
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
@@ -52,7 +53,7 @@ public class MemberValidator {
 
     Set<DistributedMember> membersOfExistingGroups =
         findMembers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
-    Set<DistributedMember> membersOfNewGroup = findMembers(config.getConfigGroup());
+    Set<DistributedMember> membersOfNewGroup = findMembers(getConfigGroup(config));
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
@@ -64,9 +65,17 @@ public class MemberValidator {
 
     // if there is no common member, we still need to verify if the new config is compatible with
     // the existing ones.
-    for (Map.Entry<String, CacheElement> existing : existingElementsAndTheirGroups.entrySet()) {
+    for (Map.Entry<String, RestfulEndpoint> existing : existingElementsAndTheirGroups
+        .entrySet()) {
       manager.checkCompatibility(config, existing.getKey(), existing.getValue());
     }
+  }
+
+  private static String getConfigGroup(Object config) {
+    if (config instanceof Groupable)
+      return ((Groupable) config).getConfigGroup();
+    else
+      return Groupable.CLUSTER;
   }
 
   public String[] findGroupsWithThisElement(String id, ConfigurationManager manager) {
@@ -76,14 +85,14 @@ public class MemberValidator {
   /**
    * this returns a map of CacheElement with this id, with the group as the key of the map
    */
-  public Map<String, CacheElement> findCacheElement(String id, ConfigurationManager manager) {
-    Map<String, CacheElement> results = new HashMap<>();
+  public Map<String, RestfulEndpoint> findCacheElement(String id, ConfigurationManager manager) {
+    Map<String, RestfulEndpoint> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
       if (cacheConfig == null) {
         continue;
       }
-      CacheElement existing = manager.get(id, cacheConfig);
+      RestfulEndpoint existing = manager.get(id, cacheConfig);
       if (existing != null) {
         results.put(group, existing);
       }
@@ -102,7 +111,7 @@ public class MemberValidator {
     Set<DistributedMember> allMembers = getAllServers();
 
     // if groups contains "cluster" group, return all members
-    if (Arrays.asList(groups).contains(CacheElement.CLUSTER)) {
+    if (Arrays.asList(groups).contains(Groupable.CLUSTER)) {
       return allMembers;
     }
 

@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.apache.geode.management.api.CMSJsonSerializable;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 
@@ -62,7 +63,7 @@ import org.apache.geode.management.api.RestfulEndpoint;
 @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class GatewayReceiverConfig extends CacheElement
-    implements RestfulEndpoint, RespondsWith<GatewayReceiverConfig> {
+    implements CMSJsonSerializable, RestfulEndpoint, RespondsWith<GatewayReceiverConfig> {
 
   @XmlElement(name = "gateway-transport-filter",
       namespace = "http://geode.apache.org/schema/cache")

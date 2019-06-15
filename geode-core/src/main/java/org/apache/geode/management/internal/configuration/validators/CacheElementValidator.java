@@ -17,15 +17,16 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.Groupable;
+import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 /**
  * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
-public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
+public class CacheElementValidator implements ConfigurationValidator<RestfulEndpoint> {
   @Override
-  public void validate(CacheElementOperation operation, CacheElement config)
+  public void validate(CacheElementOperation operation, RestfulEndpoint config)
       throws IllegalArgumentException {
     if (StringUtils.isBlank(config.getId())) {
       throw new IllegalArgumentException("id cannot be null or blank");
@@ -42,15 +43,17 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
     }
   }
 
-  private void validateCreate(CacheElement config) {
-    String group = config.getGroup();
-    if (CacheElement.CLUSTER.equalsIgnoreCase(group)) {
-      throw new IllegalArgumentException("'"
-          + CacheElement.CLUSTER
-          + "' is a reserved group name. Do not use it for member groups.");
-    }
-    if (group != null && group.contains(",")) {
-      throw new IllegalArgumentException("Group name should not contain comma.");
+  private void validateCreate(RestfulEndpoint config) {
+    if (config instanceof Groupable) {
+      String group = ((Groupable) config).getGroup();
+      if (Groupable.CLUSTER.equalsIgnoreCase(group)) {
+        throw new IllegalArgumentException("'"
+            + Groupable.CLUSTER
+            + "' is a reserved group name. Do not use it for member groups.");
+      }
+      if (group != null && group.contains(",")) {
+        throw new IllegalArgumentException("Group name should not contain comma.");
+      }
     }
     String id = config.getId();
     if (id.contains("/")) {

@@ -12,25 +12,38 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
-package org.apache.geode.management.configuration;
-
-import java.util.List;
+package org.apache.geode.management.api;
 
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.CMSJsonSerializable;
 
+/**
+ * a thing that can have a group. if it has no group, then it belongs to the default group CLUSTER
+ * See also MultiGroupCacheElement for things that can have more than one group
+ */
 @Experimental
-public interface MultiGroupCacheElement extends CMSJsonSerializable {
-  @XmlTransient
-  List<String> getGroups();
+public interface Groupable {
+  String CLUSTER = "cluster";
 
-  // this is needed to hide "group" attribute in json serialization
+  String getGroup();
+
+  void setGroup(String group);
+
+  /**
+   * this returns a non-null value
+   * for cluster level element, it will return "cluster" for sure.
+   */
   @XmlTransient
   @JsonIgnore
-  String getGroup();
+  default String getConfigGroup() {
+    String group = getGroup();
+    if (StringUtils.isBlank(group))
+      return CLUSTER;
+    else
+      return group;
+  }
 }

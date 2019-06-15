@@ -24,10 +24,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
 
 @Experimental
-public class ClusterManagementResult<R extends CacheElement> {
+public class ClusterManagementResult<R extends CMSJsonSerializable> {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {

@@ -23,19 +23,17 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlTransient;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.api.Groupable;
 
 @Experimental
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class CacheElement implements Identifiable<String>, Serializable {
-  public static final String CLUSTER = "cluster";
-
+public abstract class CacheElement implements Identifiable<String>, Serializable, Groupable {
   protected List<String> groups = new ArrayList<>();
 
   public static <T extends Identifiable> boolean exists(List<T> list, String id) {
@@ -48,20 +46,6 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
 
   public static <T extends Identifiable> void removeElement(List<T> list, String id) {
     list.removeIf(t -> t.getId().equals(id));
-  }
-
-  /**
-   * this returns a non-null value
-   * for cluster level element, it will return "cluster" for sure.
-   */
-  @XmlTransient
-  @JsonIgnore
-  public String getConfigGroup() {
-    String group = getGroup();
-    if (StringUtils.isBlank(group))
-      return CLUSTER;
-    else
-      return group;
   }
 
   /**

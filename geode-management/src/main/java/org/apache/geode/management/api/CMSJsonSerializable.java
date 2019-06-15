@@ -12,25 +12,17 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.api;
 
-package org.apache.geode.management.configuration;
-
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlTransient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.CMSJsonSerializable;
 
+/**
+ * all CMS requests and responses must implement this marker interface to ensure correct json
+ * serialization
+ */
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 @Experimental
-public interface MultiGroupCacheElement extends CMSJsonSerializable {
-  @XmlTransient
-  List<String> getGroups();
-
-  // this is needed to hide "group" attribute in json serialization
-  @XmlTransient
-  @JsonIgnore
-  String getGroup();
+public interface CMSJsonSerializable {
 }

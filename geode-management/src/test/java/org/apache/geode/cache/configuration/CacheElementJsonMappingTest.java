@@ -17,7 +17,7 @@ package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
@@ -81,11 +82,8 @@ public class CacheElementJsonMappingTest {
 
   @Test
   public void serializeResult() throws Exception {
-    ClusterManagementResult<CacheElement> result = new ClusterManagementResult<>();
-    List<CacheElement> elements = new ArrayList<>();
-    elements.add(region);
-    elements.add(member);
-    result.setResult(elements);
+    ClusterManagementResult<MultiGroupCacheElement> result = new ClusterManagementResult<>();
+    result.setResult(Arrays.asList(region, member));
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);

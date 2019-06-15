@@ -22,7 +22,9 @@ import java.util.List;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.CMSJsonSerializable;
 import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
  * Defines the behavior to mutate a configuration change into a pre-existing cache config from a
@@ -31,7 +33,7 @@ import org.apache.geode.management.api.RespondsWith;
  * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
-public interface ConfigurationManager<T extends CacheElement & RespondsWith<R>, R extends CacheElement> {
+public interface ConfigurationManager<T extends RestfulEndpoint & RespondsWith<R>, R extends CMSJsonSerializable> {
   /**
    * specify how to add the config to the existing cache config. Note at this point, the config
    * should have passed all the validations already.

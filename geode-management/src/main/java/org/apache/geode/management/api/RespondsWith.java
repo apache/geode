@@ -16,11 +16,10 @@
 package org.apache.geode.management.api;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * provides additional information about a restful service request beyond the minimum required in
- * {#link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
+ * {@link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
  * performed
  */
 
@@ -28,5 +27,5 @@ import org.apache.geode.cache.configuration.CacheElement;
 // the linkage between request and response type in the signature of ClusterManagementService.list
 @SuppressWarnings("unused")
 @Experimental
-public interface RespondsWith<R extends CacheElement> {
+public interface RespondsWith<R extends CMSJsonSerializable> {
 }
