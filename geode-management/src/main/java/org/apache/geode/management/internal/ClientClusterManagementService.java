@@ -23,6 +23,8 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.Groupable;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.api.RuntimeResponse;
 
@@ -53,7 +55,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> create(
+  public <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> create(
       T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
@@ -64,38 +66,38 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> delete(
+  public <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> delete(
       T config) {
-    String endPoint = getEndpoint(config);
+    String uri = getUri(config);
     return restTemplate
-        .exchange(VERSION + endPoint + "/{id}?group={group}",
+        .exchange(VERSION + uri + "?group={group}",
             HttpMethod.DELETE,
             null,
             ClusterManagementResult.class,
-            config.getId(), config.getGroup())
+            config.getId(), getGroup(config))
         .getBody();
   }
 
   @Override
-  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> update(
+  public <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> list(
+  public <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> list(
       T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
-            ClusterManagementResult.class, config.getId(), config.getGroup())
+            ClusterManagementResult.class, config.getId(), getGroup(config))
         .getBody();
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> get(
+  public <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> get(
       T config) {
     return restTemplate
         .getForEntity(VERSION + getUri(config), ClusterManagementResult.class)
@@ -118,6 +120,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
           "unable to construct the uri with the current configuration.");
     }
     return uri;
+  }
+
+  private static String getGroup(Object config) {
+    if (config instanceof Groupable)
+      return ((Groupable) config).getGroup();
+    else
+      return null;
   }
 
   public boolean isConnected() {

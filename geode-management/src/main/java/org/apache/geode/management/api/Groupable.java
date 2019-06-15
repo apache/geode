@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.api;
 
 import javax.xml.bind.annotation.XmlTransient;
@@ -21,38 +20,30 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.lang.Identifiable;
 
 /**
- * a restful service request just needs:
- * 1. an endpoint to list all instances (e.g. "/regions")
- * 2. an id mechanism to distinguish instance (e.g. "{id}")
- * 3. an endpoint to update or delete an individual instance (e.g. "/regions/{id}")
+ * a thing that can have a group. if it has no group, then it belongs to the default group CLUSTER
+ * See also MultiGroupCacheElement for things that can have more than one group
  */
 @Experimental
-public interface RestfulEndpoint extends Identifiable<String> {
-  /**
-   * this needs to return the uri portion after the /geode-management/v2 that points to the
-   * list of entities
-   *
-   * @return e.g. /regions
-   */
-  @JsonIgnore
-  // @ApiModelProperty(hidden = true)
-  String getEndpoint();
+public interface Groupable {
+  String CLUSTER = "cluster";
+
+  String getGroup();
+
+  void setGroup(String group);
 
   /**
-   * return the uri portion after the /geode-management/v2 that points to a single
-   * entity. If the id is not available for the object, this will return null
-   *
-   * @return e.g. /regions/regionA
+   * this returns a non-null value
+   * for cluster level element, it will return "cluster" for sure.
    */
   @XmlTransient
-  default String getUri() {
-    String id = getId();
-    if (StringUtils.isBlank(id))
-      return null;
+  @JsonIgnore
+  default String getConfigGroup() {
+    String group = getGroup();
+    if (StringUtils.isBlank(group))
+      return CLUSTER;
     else
-      return getEndpoint() + "/" + getId();
+      return group;
   }
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.api.RuntimeResponse;
 
@@ -32,7 +33,7 @@ import org.apache.geode.management.api.RuntimeResponse;
  * type {@link CacheElement}, which represents the configuration change.
  */
 @Experimental
-public interface ConfigurationManager<T extends RestfulEndpoint<R>, R extends RuntimeResponse> {
+public interface ConfigurationManager<T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> {
   /**
    * specify how to add the config to the existing cache config. Note at this point, the config
    * should have passed all the validations already.

@@ -35,7 +35,7 @@ public interface ClusterManagementService {
    *        cluster, as well as the group this config belongs to
    * @see CacheElement
    */
-  <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> create(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> create(
       T config);
 
   /**
@@ -47,7 +47,7 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> delete(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> delete(
       T config);
 
   /**
@@ -59,13 +59,13 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> update(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> update(
       T config);
 
-  <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> list(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> list(
       T config);
 
-  <T extends RestfulEndpoint<R>, R extends RuntimeResponse> ClusterManagementResult<R> get(
+  <T extends RestfulEndpoint & RespondsWith<R>, R extends RuntimeResponse> ClusterManagementResult<R> get(
       T config);
 
   /**

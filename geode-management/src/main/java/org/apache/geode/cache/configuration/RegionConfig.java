@@ -37,6 +37,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
@@ -160,7 +161,8 @@ import org.apache.geode.management.configuration.RuntimeRegionConfig;
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
-public class RegionConfig extends CacheElement implements RestfulEndpoint<RuntimeRegionConfig> {
+public class RegionConfig extends CacheElement implements RestfulEndpoint,
+    RespondsWith<RuntimeRegionConfig> {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -208,14 +210,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint<Runtim
   @JsonIgnore
   public String getEndpoint() {
     return REGION_CONFIG_ENDPOINT;
-  }
-
-  @Override
-  public String getUri() {
-    if (StringUtils.isBlank(getId())) {
-      return null;
-    }
-    return REGION_CONFIG_ENDPOINT + "/" + getId();
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -544,7 +538,8 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint<Runtim
    */
   @XmlAccessorType(XmlAccessType.FIELD)
   @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
-  public static class Index extends CacheElement implements RestfulEndpoint<RuntimeIndex> {
+  public static class Index extends CacheElement
+      implements RestfulEndpoint, RespondsWith<RuntimeIndex> {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")
@@ -757,14 +752,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint<Runtim
         return null;
       }
       return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
-    }
-
-    @Override
-    public String getUri() {
-      if (getEndpoint() == null || StringUtils.isBlank(getId())) {
-        return null;
-      }
-      return getEndpoint() + "/" + getId();
     }
   }
 

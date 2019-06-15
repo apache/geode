@@ -16,13 +16,12 @@ package org.apache.geode.management.api;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
- * the response object for all CMS requests must adhere to this interface to support injection of
- * common attributes
+ * all CMS responses must implement this marker interface to ensure correct json serialization
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+@Experimental
 public interface RuntimeResponse {
-  String getGroup();
-
-  void setGroup(String group);
 }
