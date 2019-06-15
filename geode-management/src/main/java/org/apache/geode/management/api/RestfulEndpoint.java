@@ -52,7 +52,12 @@ public interface RestfulEndpoint extends Identifiable<String> {
     String id = getId();
     if (StringUtils.isBlank(id))
       return null;
-    else
-      return getEndpoint() + "/" + getId();
+    else {
+      String endpoint = getEndpoint();
+      if (StringUtils.isBlank(endpoint))
+        return null;
+      else
+        return getEndpoint() + "/" + getId();
+    }
   }
 }

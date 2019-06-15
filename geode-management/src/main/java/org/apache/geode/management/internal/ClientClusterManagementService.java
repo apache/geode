@@ -74,7 +74,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
             HttpMethod.DELETE,
             null,
             ClusterManagementResult.class,
-            config.getId(), getGroup(config))
+            getGroup(config))
         .getBody();
   }
 
