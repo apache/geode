@@ -230,11 +230,11 @@ public class LocatorConnectionDUnitTest {
   }
 
   private void validateStats(long messagesReceived, long messagesSent, long bytesReceived,
-      long bytesSent, int clientConnectionStarts, int clientConnectionTerminations) {
+      long bytesSent, long clientConnectionStarts, long clientConnectionTerminations) {
     locatorVM.invoke(() -> {
       await().untilAsserted(() -> {
         Statistics statistics = getStatistics();
-        assertEquals(0, statistics.get("currentClientConnections"));
+        assertEquals(0L, statistics.get("currentClientConnections"));
         assertEquals(messagesSent, statistics.get("messagesSent"));
         assertEquals(messagesReceived, statistics.get("messagesReceived"));
         assertEquals(bytesSent, statistics.get("bytesSent").longValue());
