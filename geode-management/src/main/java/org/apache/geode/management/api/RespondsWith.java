@@ -16,6 +16,7 @@
 package org.apache.geode.management.api;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * provides additional information about a restful service request beyond the minimum required in
@@ -27,5 +28,5 @@ import org.apache.geode.annotations.Experimental;
 // the linkage between request and response type in the signature of ClusterManagementService.list
 @SuppressWarnings("unused")
 @Experimental
-public interface RespondsWith<R extends RuntimeResponse> {
+public interface RespondsWith<R extends CacheElement> {
 }

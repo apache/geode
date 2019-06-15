@@ -22,10 +22,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.RuntimeResponse;
 
 @Experimental
-public interface MultiGroupCacheElement extends RuntimeResponse {
+public interface MultiGroupCacheElement {
   @XmlTransient
   List<String> getGroups();
 

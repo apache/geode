@@ -30,7 +30,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.api.RuntimeResponse;
 
 
 /**
@@ -79,8 +78,7 @@ import org.apache.geode.management.api.RuntimeResponse;
     propOrder = {"pdxSerializer"})
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
-public class PdxType extends CacheElement implements RuntimeResponse, RestfulEndpoint,
-    RespondsWith<PdxType> {
+public class PdxType extends CacheElement implements RestfulEndpoint, RespondsWith<PdxType> {
   @XmlElement(name = "pdx-serializer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType pdxSerializer;
   @XmlAttribute(name = "read-serialized")
@@ -222,7 +220,7 @@ public class PdxType extends CacheElement implements RuntimeResponse, RestfulEnd
   }
 
   public void setGroup(String group) {
-    if (group != null && !"cluster".equals(group)) {
+    if (group != null && !CLUSTER.equals(group)) {
       throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
     }
   }

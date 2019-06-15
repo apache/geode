@@ -70,7 +70,7 @@ public class LocatorClusterManagementServiceTest {
   private InternalCache cache;
   private InternalConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
-  private ClusterManagementResult<RuntimeRegionConfig> result;
+  private ClusterManagementResult<RegionConfig> result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
@@ -118,7 +118,6 @@ public class LocatorClusterManagementServiceTest {
   public void create_validatorIsCalledCorrectly() throws Exception {
     doReturn(Collections.emptySet()).when(memberValidator).findMembers(anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
-    doReturn(null).when(service).get(any());
     service.create(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.CREATE, regionConfig);
@@ -163,7 +162,6 @@ public class LocatorClusterManagementServiceTest {
     functionResults.add(new CliFunctionResult("member1", true, "success"));
     functionResults.add(new CliFunctionResult("member2", true, "failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
-    doReturn(null).when(service).get(any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
         .findMembers(any());
@@ -176,10 +174,7 @@ public class LocatorClusterManagementServiceTest {
 
     regionConfig.setName("test");
     result = service.create(regionConfig);
-    // expect create was successful, but overall fail since this test does not mock listing it back
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusMessage())
-        .contains("test was created, but could not be listed");
+    assertThat(result.isSuccessful()).isTrue();
 
     assertThat(cacheConfig.getRegions()).hasSize(1);
   }
@@ -311,7 +306,7 @@ public class LocatorClusterManagementServiceTest {
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    ClusterManagementResult<RuntimeRegionConfig> result = service.delete(regionConfig);
+    ClusterManagementResult<RegionConfig> result = service.delete(regionConfig);
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);

@@ -72,7 +72,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RuntimeRegionConfig> result = cms.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);

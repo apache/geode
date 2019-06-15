@@ -21,11 +21,11 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.ListAssert;
 import org.assertj.core.api.MapAssert;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.RuntimeResponse;
 import org.apache.geode.management.api.Status;
 
-public class ClusterManagementResultAssert<R extends RuntimeResponse>
+public class ClusterManagementResultAssert<R extends CacheElement>
     extends AbstractAssert<ClusterManagementResultAssert<R>, ClusterManagementResult<R>> {
   public ClusterManagementResultAssert(
       ClusterManagementResult<R> clusterManagementResult, Class<?> selfType) {
@@ -65,7 +65,7 @@ public class ClusterManagementResultAssert<R extends RuntimeResponse>
     return getActual().getResult().get(index);
   }
 
-  public static <R extends RuntimeResponse> ClusterManagementResultAssert<R> assertManagementResult(
+  public static <R extends CacheElement> ClusterManagementResultAssert<R> assertManagementResult(
       ClusterManagementResult<R> result) {
     return new ClusterManagementResultAssert<>(result, ClusterManagementResultAssert.class);
   }

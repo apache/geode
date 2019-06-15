@@ -55,9 +55,9 @@ public class RegionManagementController extends AbstractManagementController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> createRegion(
+  public ResponseEntity<ClusterManagementResult<RegionConfig>> createRegion(
       @RequestBody RegionConfig regionConfig) {
-    ClusterManagementResult<RuntimeRegionConfig> result =
+    ClusterManagementResult<RegionConfig> result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
@@ -92,7 +92,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult<RuntimeRegionConfig> deleteRegion(
+  public ClusterManagementResult<RegionConfig> deleteRegion(
       @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
     RegionConfig config = new RegionConfig();

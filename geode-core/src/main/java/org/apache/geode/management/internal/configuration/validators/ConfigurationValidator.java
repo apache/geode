@@ -14,10 +14,10 @@
  */
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 
-public interface ConfigurationValidator<T extends RestfulEndpoint> {
+public interface ConfigurationValidator<T extends CacheElement> {
 
   /**
    * This is used to validate the configuration object passed in by the user

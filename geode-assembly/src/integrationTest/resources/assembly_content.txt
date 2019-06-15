@@ -680,10 +680,8 @@ javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
-javadoc/org/apache/geode/management/api/Groupable.html
 javadoc/org/apache/geode/management/api/RespondsWith.html
 javadoc/org/apache/geode/management/api/RestfulEndpoint.html
-javadoc/org/apache/geode/management/api/RuntimeResponse.html
 javadoc/org/apache/geode/management/api/Status.html
 javadoc/org/apache/geode/management/api/package-frame.html
 javadoc/org/apache/geode/management/api/package-summary.html
