@@ -32,8 +32,8 @@ import org.apache.geode.internal.statistics.platform.ProcessStats;
  * Only Linux OS is currently allowed.
  */
 public class OsStatisticsProvider {
-  private final int PROCESS_STAT_FLAG = 1;
-  private final int SYSTEM_STAT_FLAG = 2;
+  private static final int PROCESS_STAT_FLAG = 1;
+  private static final int SYSTEM_STAT_FLAG = 2;
   private final boolean osStatsSupported;
   private final String currentOs;
 
@@ -128,6 +128,9 @@ public class OsStatisticsProvider {
    * @since GemFire 3.5
    */
   ProcessStats newProcessStats(Statistics statistics) {
+    if (statistics instanceof LocalStatisticsImpl) {
+      refresh((LocalStatisticsImpl) statistics);
+    } // otherwise its a Dummy implementation so do nothing
     return LinuxProcessStats.createProcessStats(statistics);
   }
 
