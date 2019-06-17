@@ -21,13 +21,14 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.security.SecurityService;
 
 /**
  * This is the SPI for a provider of membership services.
  *
- * @see org.apache.geode.distributed.internal.membership.NetMember
+ * @see NetMember
  */
 public interface MemberServices {
 
@@ -79,7 +80,8 @@ public interface MemberServices {
       InternalDistributedSystem system,
       RemoteTransportConfig transport,
       DMStats stats,
-      SecurityService securityService);
+      SecurityService securityService,
+      final Authenticator authenticator);
 
 
   /**

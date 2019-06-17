@@ -12,15 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.interfaces;
-
-
 /**
- * MessageHandler processes a message received by Messenger. Handlers are registered with Messenger
- * to consume specific classes of message.
+ * Implements the bridge between the geode-core module and the membership module.
+ *
+ * Classes in this package stay inside geode-core but implement interfaces from both core
+ * and membership.
  */
-public interface MessageHandler<T> {
-
-  void processMessage(T m);
-
-}
+package org.apache.geode.distributed.internal.membership.adapter;

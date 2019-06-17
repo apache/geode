@@ -27,7 +27,7 @@ public interface Messenger extends Service {
   /**
    * adds a handler for the given class/interface of messages
    */
-  void addHandler(Class c, MessageHandler h);
+  <T> void addHandler(Class<T> c, MessageHandler<T> h);
 
   /**
    * sends an asynchronous message when the membership view may not have been established. Returns

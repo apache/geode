@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.auth;
+package org.apache.geode.distributed.internal.membership.adapter.auth;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.apache.shiro.subject.Subject;
 import org.junit.Before;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -57,7 +56,6 @@ public abstract class AbstractGMSAuthenticatorTestCase {
   @Mock
   private DistributionConfig distributionConfig;
 
-  @InjectMocks
   protected GMSAuthenticator authenticator;
 
 
@@ -68,6 +66,8 @@ public abstract class AbstractGMSAuthenticatorTestCase {
 
     this.props = new Properties();
     this.securityProps = new Properties();
+    this.authenticator = new GMSAuthenticator(securityProps, securityService, mock(LogWriter.class),
+        mock(LogWriter.class));
 
     when(this.securityService.isIntegratedSecurity()).thenReturn(isIntegratedSecurity());
     when(this.securityService.isPeerSecurityRequired()).thenReturn(true);
@@ -77,8 +77,6 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     when(this.services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
     when(this.services.getConfig()).thenReturn(this.serviceConfig);
     when(this.services.getSecurityService()).thenReturn(this.securityService);
-
-    this.authenticator.init(this.services);
   }
 
   protected abstract boolean isIntegratedSecurity();

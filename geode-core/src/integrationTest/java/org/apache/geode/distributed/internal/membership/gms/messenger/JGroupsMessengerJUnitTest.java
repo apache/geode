@@ -535,14 +535,8 @@ public class JGroupsMessengerJUnitTest {
         -1, 0);
 
     // configure an incoming message handler for JoinRequestMessage
-    final DistributionMessage[] messageReceived = new DistributionMessage[1];
-    MessageHandler handler = new MessageHandler() {
-      @Override
-      public void processMessage(DistributionMessage m) {
-        messageReceived[0] = m;
-      }
-    };
-    messenger.addHandler(JoinRequestMessage.class, handler);
+    final JoinRequestMessage[] messageReceived = new JoinRequestMessage[1];
+    messenger.addHandler(JoinRequestMessage.class, message -> messageReceived[0] = message);
 
     // configure the outgoing message interceptor
     interceptor.unicastSentDataMessages = 0;

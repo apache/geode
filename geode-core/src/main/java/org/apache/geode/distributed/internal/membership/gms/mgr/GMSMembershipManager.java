@@ -265,7 +265,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   /**
    * This is the listener that accepts our membership events
    */
-  private final org.apache.geode.distributed.internal.membership.DistributedMembershipListener listener;
+  private final DistributedMembershipListener listener;
 
   /**
    * Membership failure listeners - for testing

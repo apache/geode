@@ -14,10 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.fd;
 
-import static org.apache.geode.internal.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
-import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.HEARTBEAT_RESPONSE;
-import static org.apache.geode.internal.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -67,7 +63,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
@@ -97,7 +92,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * alive. Then based on removal flag it initiates the suspect processing for that member.
  */
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
-public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
+public class GMSHealthMonitor implements HealthMonitor {
 
   private Services services;
   private volatile NetView currentView;
@@ -918,10 +913,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     services = s;
     memberTimeout = s.getConfig().getMemberTimeout();
     this.stats = services.getStatistics();
-    services.getMessenger().addHandler(HeartbeatRequestMessage.class, this);
-    services.getMessenger().addHandler(HeartbeatMessage.class, this);
-    services.getMessenger().addHandler(SuspectMembersMessage.class, this);
-    services.getMessenger().addHandler(FinalCheckPassedMessage.class, this);
+
+    services.getMessenger().addHandler(HeartbeatRequestMessage.class,
+        this::processMessage);
+    services.getMessenger().addHandler(HeartbeatMessage.class,
+        this::processMessage);
+    services.getMessenger().addHandler(SuspectMembersMessage.class,
+        this::processMessage);
+    services.getMessenger().addHandler(FinalCheckPassedMessage.class,
+        this::processMessage);
   }
 
   @Override
@@ -1067,49 +1067,18 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     this.localAddress = idm;
   }
 
-  @Override
-  public void processMessage(DistributionMessage m) {
+  void processMessage(HeartbeatRequestMessage m) {
     if (isStopping) {
       return;
     }
-
-    logger.trace("processing {}", m);
-
-    switch (m.getDSFID()) {
-      case HEARTBEAT_REQUEST:
-        if (beingSick || playingDead) {
-          logger.debug("sick member is ignoring check request");
-        } else {
-          processHeartbeatRequest((HeartbeatRequestMessage) m);
-        }
-        break;
-      case HEARTBEAT_RESPONSE:
-        if (beingSick || playingDead) {
-          logger.debug("sick member is ignoring check response");
-        } else {
-          processHeartbeat((HeartbeatMessage) m);
-        }
-        break;
-      case SUSPECT_MEMBERS_MESSAGE:
-        if (beingSick || playingDead) {
-          logger.debug("sick member is ignoring suspect message");
-        } else {
-          processSuspectMembersRequest((SuspectMembersMessage) m);
-        }
-        break;
-      case FINAL_CHECK_PASSED_MESSAGE:
-        contactedBy(((FinalCheckPassedMessage) m).getSuspect());
-        break;
-      default:
-        throw new IllegalArgumentException("unknown message type: " + m);
+    if (beingSick || playingDead) {
+      logger.debug("sick member is ignoring check request");
+      return;
     }
-  }
-
-  private void processHeartbeatRequest(HeartbeatRequestMessage m) {
 
     this.stats.incHeartbeatRequestsReceived();
 
-    if (this.isStopping || this.playingDead) {
+    if (this.isStopping) {
       return;
     }
 
@@ -1129,7 +1098,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
   }
 
-  private void processHeartbeat(HeartbeatMessage m) {
+
+
+  void processMessage(HeartbeatMessage m) {
+    if (isStopping) {
+      return;
+    }
+    if (beingSick || playingDead) {
+      logger.debug("sick member is ignoring check response");
+      return;
+    }
+
     this.stats.incHeartbeatsReceived();
     if (m.getRequestId() >= 0) {
       Response resp = requestIdVsResponse.get(m.getRequestId());
@@ -1152,7 +1131,14 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
    * membership coordinator. it will to final check on that member and then it will send remove
    * request for that member
    */
-  private void processSuspectMembersRequest(SuspectMembersMessage incomingRequest) {
+  void processMessage(SuspectMembersMessage incomingRequest) {
+    if (isStopping) {
+      return;
+    }
+    if (beingSick || playingDead) {
+      logger.debug("sick member is ignoring suspect message");
+      return;
+    }
 
     this.stats.incSuspectsReceived();
 
@@ -1175,19 +1161,17 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
     // take care of any suspicion of this member by sending a heartbeat back
-    if (!playingDead) {
-      for (Iterator<SuspectRequest> it = incomingRequest.getMembers().iterator(); it.hasNext();) {
-        SuspectRequest req = it.next();
-        if (req.getSuspectMember().equals(localAddress)) {
-          HeartbeatMessage message = new HeartbeatMessage(-1);
-          message.setRecipient(sender);
-          try {
-            services.getMessenger().send(message);
-            this.stats.incHeartbeatsSent();
-            it.remove();
-          } catch (CancelException e) {
-            return;
-          }
+    for (Iterator<SuspectRequest> it = incomingRequest.getMembers().iterator(); it.hasNext();) {
+      SuspectRequest req = it.next();
+      if (req.getSuspectMember().equals(localAddress)) {
+        HeartbeatMessage message = new HeartbeatMessage(-1);
+        message.setRecipient(sender);
+        try {
+          services.getMessenger().send(message);
+          this.stats.incHeartbeatsSent();
+          it.remove();
+        } catch (CancelException e) {
+          return;
         }
       }
     }
@@ -1239,6 +1223,15 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
     }
 
   }
+
+  void processMessage(FinalCheckPassedMessage m) {
+    if (isStopping) {
+      return;
+    }
+    contactedBy(m.getSuspect());
+  }
+
+
 
   private void logSuspectRequests(SuspectMembersMessage incomingRequest,
       InternalDistributedMember sender) {
@@ -1373,7 +1366,7 @@ public class GMSHealthMonitor implements HealthMonitor, MessageHandler {
                           .singletonList(new SuspectRequest(mbr, "failed availability check")));
               suspectMembersMessage.setSender(localAddress);
               logger.debug("Performing local processing on suspect request");
-              processSuspectMembersRequest(suspectMembersMessage);
+              processMessage(suspectMembersMessage);
             } else {
               logger.info(
                   "Self-check for availability failed - will not continue to suspect {} for now",

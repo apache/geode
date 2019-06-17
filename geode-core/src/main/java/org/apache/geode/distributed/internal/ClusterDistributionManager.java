@@ -67,6 +67,8 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.OSProcess;
@@ -242,7 +244,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Executor for view related messages
    *
-   * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage
+   * @see ViewAckMessage
    */
   public static final int VIEW_EXECUTOR = 79;
 
@@ -417,7 +419,7 @@ public class ClusterDistributionManager implements DistributionManager {
   /**
    * Message processing executor for view messages
    *
-   * @see org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage
+   * @see ViewAckMessage
    */
   private ExecutorService viewThread;
 
@@ -779,7 +781,9 @@ public class ClusterDistributionManager implements DistributionManager {
 
       DMListener l = new DMListener(this);
       membershipManager = MemberFactory.newMembershipManager(l, system, transport,
-          stats, system.getSecurityService());
+          stats, system.getSecurityService(),
+          new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
+              system.getSecurityLogWriter(), system.getInternalLogWriter()));
 
       sb.append(System.currentTimeMillis() - start);
 

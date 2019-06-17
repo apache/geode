@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerRefusedConnectionException;
@@ -390,8 +391,8 @@ public abstract class Handshake {
   }
 
   public static Properties getCredentials(String authInitMethod, Properties securityProperties,
-      DistributedMember server, boolean isPeer, InternalLogWriter logWriter,
-      InternalLogWriter securityLogWriter) throws AuthenticationRequiredException {
+      DistributedMember server, boolean isPeer, LogWriter logWriter,
+      LogWriter securityLogWriter) throws AuthenticationRequiredException {
 
     Properties credentials = null;
     // if no authInit, Try to extract the credentials directly from securityProps
