@@ -21,8 +21,6 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.rules.ExpectedException;
 
-import org.apache.geode.InternalGemFireException;
-
 public class OsStatisticsProviderTest {
 
   @Rule
@@ -56,10 +54,9 @@ public class OsStatisticsProviderTest {
   }
 
   @Test
-  public void givenUnknownOs_thenBuilderThrowsAnException() {
+  public void givenUnknownOs_thenOsStatsAreNotSupported() {
     System.setProperty("os.name", "AnyOtherOS");
-    exceptionGrabber.expect(InternalGemFireException.class);
-    OsStatisticsProvider.build();
+    assertThat(OsStatisticsProvider.build().osStatsSupported()).isFalse();
   }
 
 }

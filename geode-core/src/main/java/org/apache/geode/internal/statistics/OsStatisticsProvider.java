@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.Statistics;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.internal.net.SocketCreator;
@@ -35,33 +34,17 @@ public class OsStatisticsProvider {
   private static final int PROCESS_STAT_FLAG = 1;
   private static final int SYSTEM_STAT_FLAG = 2;
   private final boolean osStatsSupported;
-  private final String currentOs;
 
   public boolean osStatsSupported() {
     return osStatsSupported;
   }
 
   private OsStatisticsProvider() {
-    currentOs = SystemUtils.getOsName();
     osStatsSupported = SystemUtils.isLinux();
-    if (!isSupportedOs(currentOs)) {
-      throw new InternalGemFireException(
-          String.format("Unsupported OS %s. Only Linux(x86) OSs supports OS statistics.",
-              currentOs));
-    }
   }
 
   public static OsStatisticsProvider build() {
     return new OsStatisticsProvider();
-  }
-
-  private boolean isSupportedOs(String os) {
-    boolean result = true;
-    if (!SystemUtils.isLinux() && !SystemUtils.isWindows() && !SystemUtils.isMacOSX()
-        && !SystemUtils.isSolaris()) {
-      result = false;
-    }
-    return result;
   }
 
   int initOSStats() {
