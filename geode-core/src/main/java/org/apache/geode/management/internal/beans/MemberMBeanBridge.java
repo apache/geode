@@ -60,7 +60,6 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.DLockStats;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DirectoryHolder;
 import org.apache.geode.internal.cache.DiskDirectoryStats;
@@ -84,13 +83,11 @@ import org.apache.geode.internal.offheap.OffHeapMemoryStats;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.HostStatHelper;
+import org.apache.geode.internal.statistics.OsStatisticsProvider;
 import org.apache.geode.internal.statistics.StatSamplerStats;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
-import org.apache.geode.internal.statistics.platform.SolarisSystemStats;
-import org.apache.geode.internal.statistics.platform.WindowsSystemStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.management.GemFireProperties;
@@ -312,6 +309,8 @@ public class MemberMBeanBridge {
 
   private ResourceManagerStats resourceManagerStats;
 
+  private final OsStatisticsProvider osStatisticsProvider = OsStatisticsProvider.build();
+
   public MemberMBeanBridge(InternalCache cache, SystemManagementService service) {
     this.cache = cache;
     this.service = service;
@@ -427,18 +426,9 @@ public class MemberMBeanBridge {
       addDistributionStats(distributionStats);
     }
 
-    if (PureJavaMode.osStatsAreAvailable()) {
+    if (osStatisticsProvider.osStatsSupported()) {
       Statistics[] systemStats = null;
-
-      if (HostStatHelper.isSolaris()) {
-        systemStats = system.findStatisticsByType(SolarisSystemStats.getType());
-      } else if (HostStatHelper.isLinux()) {
-        systemStats = system.findStatisticsByType(LinuxSystemStats.getType());
-      } else if (HostStatHelper.isOSX()) {
-        systemStats = null;// @TODO once OSX stats are implemented
-      } else if (HostStatHelper.isWindows()) {
-        systemStats = system.findStatisticsByType(WindowsSystemStats.getType());
-      }
+      systemStats = system.findStatisticsByType(LinuxSystemStats.getType());
 
       if (systemStats != null) {
         systemStat = systemStats[0];
@@ -783,7 +773,7 @@ public class MemberMBeanBridge {
       }
 
       // If Linux System type exists
-      if (PureJavaMode.osStatsAreAvailable() && HostStatHelper.isLinux() && systemStat != null) {
+      if (osStatisticsProvider.osStatsSupported() && systemStat != null) {
 
         try {
           totalPhysicalMemorySize =
