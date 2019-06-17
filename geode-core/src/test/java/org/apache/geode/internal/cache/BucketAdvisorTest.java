@@ -14,18 +14,26 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -43,6 +51,59 @@ public class BucketAdvisorTest {
 
     assertThat(mockBucketAdvisor.basicGetPrimaryMember()).isEqualTo(mockInternalDistributedMember);
     assertThat(mockBucketAdvisor.getBucketRedundancy()).isEqualTo(1);
+  }
+
+  @Test
+  public void whenServerStopsAfterTheFirstIsRunningCheckThenItShouldNotBeAddedToLocations() {
+    InternalCache mockCache = mock(InternalCache.class);
+    ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
+    RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
+    PartitionedRegion mockPartitionedRegion = mock(PartitionedRegion.class);
+    PartitionAttributes mockPartitionAttributes = mock(PartitionAttributes.class);
+    DistributionManager mockDistributionManager = mock(DistributionManager.class);
+    List<CacheServer> cacheServers = new ArrayList<>();
+    CacheServerImpl mockCacheServer = mock(CacheServerImpl.class);
+    cacheServers.add(mockCacheServer);
+
+    when(mockRegionAdvisor.getPartitionedRegion()).thenReturn(mockPartitionedRegion);
+    when(mockPartitionedRegion.getPartitionAttributes()).thenReturn(mockPartitionAttributes);
+    when(mockBucket.getCache()).thenReturn(mockCache);
+    when(mockCache.getCacheServers()).thenReturn(cacheServers);
+    when(mockPartitionAttributes.getColocatedWith()).thenReturn(null);
+    when(mockBucket.getDistributionManager()).thenReturn(mockDistributionManager);
+    doNothing().when(mockDistributionManager).addMembershipListener(any());
+    when(mockCacheServer.isRunning()).thenReturn(true);
+    when(mockCacheServer.getExternalAddress()).thenThrow(
+        new IllegalStateException(CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE));
+
+    BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(mockBucket, mockRegionAdvisor);
+    assertThat(bucketAdvisor.getBucketServerLocations(0).size()).isEqualTo(0);
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void whenServerThrowsIllegalStateExceptionWithoutBindAddressMsgThenExceptionMustBeThrown() {
+    InternalCache mockCache = mock(InternalCache.class);
+    ProxyBucketRegion mockBucket = mock(ProxyBucketRegion.class);
+    RegionAdvisor mockRegionAdvisor = mock(RegionAdvisor.class);
+    PartitionedRegion mockPartitionedRegion = mock(PartitionedRegion.class);
+    PartitionAttributes mockPartitionAttributes = mock(PartitionAttributes.class);
+    DistributionManager mockDistributionManager = mock(DistributionManager.class);
+    List<CacheServer> cacheServers = new ArrayList<>();
+    CacheServerImpl mockCacheServer = mock(CacheServerImpl.class);
+    cacheServers.add(mockCacheServer);
+
+    when(mockRegionAdvisor.getPartitionedRegion()).thenReturn(mockPartitionedRegion);
+    when(mockPartitionedRegion.getPartitionAttributes()).thenReturn(mockPartitionAttributes);
+    when(mockBucket.getCache()).thenReturn(mockCache);
+    when(mockCache.getCacheServers()).thenReturn(cacheServers);
+    when(mockPartitionAttributes.getColocatedWith()).thenReturn(null);
+    when(mockBucket.getDistributionManager()).thenReturn(mockDistributionManager);
+    doNothing().when(mockDistributionManager).addMembershipListener(any());
+    when(mockCacheServer.isRunning()).thenReturn(true);
+    when(mockCacheServer.getExternalAddress()).thenThrow(new IllegalStateException());
+
+    BucketAdvisor bucketAdvisor = BucketAdvisor.createBucketAdvisor(mockBucket, mockRegionAdvisor);
+    bucketAdvisor.getBucketServerLocations(0).size();
   }
 
   @Test
