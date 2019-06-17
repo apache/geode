@@ -19,12 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
-import org.junit.rules.ExpectedException;
 
 public class OsStatisticsProviderTest {
-
-  @Rule
-  public ExpectedException exceptionGrabber = ExpectedException.none();
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
