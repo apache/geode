@@ -16,6 +16,7 @@
 package org.apache.geode.internal;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.statistics.OsStatisticsProvider;
 
 /**
  * Used to determine if product should use pure java mode.
@@ -70,5 +71,10 @@ public class PureJavaMode {
 
   public static boolean is64Bit() {
     return is64Bit;
+  }
+
+  @Deprecated
+  public static boolean osStatsAreAvailable() {
+    return OsStatisticsProvider.build().osStatsSupported();
   }
 }
