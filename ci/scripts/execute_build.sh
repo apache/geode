@@ -100,6 +100,10 @@ GRADLE_ARGS="\
     -PbuildId=${BUILD_ID} \
     build install javadoc spotlessCheck rat checkPom resolveDependencies pmdMain -x test"
 
-EXEC_COMMAND="mkdir -p tmp && cd geode && ${SET_JAVA_HOME} && ./gradlew ${GRADLE_ARGS}"
+EXEC_COMMAND="mkdir -p tmp \
+  && geode/ci/scripts/attach_sha_to_branch.sh geode ${BUILD_BRANCH} \
+  && cd geode \
+  && ${SET_JAVA_HOME} \
+  && ./gradlew ${GRADLE_ARGS}"
 echo "${EXEC_COMMAND}"
 ssh ${SSH_OPTIONS} geode@${INSTANCE_IP_ADDRESS} "${EXEC_COMMAND}"

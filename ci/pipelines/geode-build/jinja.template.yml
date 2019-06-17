@@ -70,6 +70,7 @@ GRADLE_TASK_OPTIONS: {{ test.GRADLE_TASK_OPTIONS }}
   {%- endif %}
 DUNIT_PARALLEL_FORKS: {{ test.DUNIT_PARALLEL_FORKS }}
 MAINTENANCE_VERSION: ((geode-build-branch ))
+BUILD_BRANCH: ((geode-build-branch))
 PARALLEL_DUNIT: {{ test.PARALLEL_DUNIT }}
 {% if test.PARALLEL_GRADLE is defined %}
 PARALLEL_GRADLE: {{ test.PARALLEL_GRADLE }}
@@ -190,12 +191,14 @@ resources:
     initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/passing-version
+{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
 - name: geode-passing-sha
   type: gcs-resource
   source:
     bucket: ((version-bucket))
     json_key: ((!concourse-gcp-key))
     regexp: ((pipeline-prefix))((geode-build-branch))/passing-sha
+{%- endif -%}
 - name: geode-passing-tokens
   type: gcs-resource
   source:
