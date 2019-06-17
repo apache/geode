@@ -147,7 +147,7 @@ public class Put extends BaseCommand {
       byte[] value = valuePart.getSerializedForm();
       boolean isObject = valuePart.isObject();
 
-      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.WRITE, regionName, key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {

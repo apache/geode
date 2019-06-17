@@ -133,7 +133,7 @@ public class Get70 extends BaseCommand {
     GetOperationContext getContext = null;
     try {
       // for integrated security
-      securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
       if (authzRequest != null) {
