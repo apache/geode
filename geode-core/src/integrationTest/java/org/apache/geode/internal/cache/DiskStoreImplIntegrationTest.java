@@ -238,6 +238,60 @@ public class DiskStoreImplIntegrationTest {
         ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
   }
 
+  @Test
+  public void whenMaxOplogFileDoesNotFitInDir_thenNextDirIsSelected() throws Exception {
+
+    File[] diskDirs = new File[3];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+    diskDirs[2] = temporaryDirectory.newFolder("dir3");
+    final int NUM_ENTRIES = 450000;
+    int[] diskDirSizes;
+
+    cache = createCache();
+    diskDirSizes = new int[] {10, 5, 10};
+
+    cache.createDiskStoreFactory().setMaxOplogSize(2).setDiskDirsAndSizes(diskDirs, diskDirSizes)
+        .create(DISK_STORE_NAME);
+    Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+
+    putEntries(region, NUM_ENTRIES);
+
+    File[] dirs = diskStore.getDiskDirs();
+
+    assertThat(oplogFileIsInDir(1, dirs[0])).isTrue();
+    assertThat(oplogFileIsInDir(2, dirs[1])).isTrue();
+    assertThat(oplogFileIsInDir(3, dirs[2])).isTrue();
+
+    assertThat(oplogFileIsInDir(4, dirs[0])).isTrue();
+    assertThat(oplogFileIsInDir(5, dirs[1])).isTrue();
+    assertThat(oplogFileIsInDir(6, dirs[2])).isTrue();
+
+    assertThat(oplogFileIsInDir(7, dirs[0])).isTrue();
+    assertThat(oplogFileIsInDir(8, dirs[1])).isFalse();
+    assertThat(oplogFileIsInDir(8, dirs[2])).isTrue();
+
+    assertThat(oplogFileIsInDir(9, dirs[0])).isFalse();
+
+    cache.close();
+  }
+
+  /**
+   * Returns true if the files of the given oplog file are in the
+   * given directory.
+   */
+  private boolean oplogFileIsInDir(int oplogFileIndex, File dir) {
+    String[] files = dir.list();
+    String pattern = "BACKUP" + DISK_STORE_NAME + "_" + oplogFileIndex;
+    for (String file : files) {
+      if (file.contains(pattern)) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   private void putEntries(int numToPut) {
     putEntries(aRegion, numToPut);
