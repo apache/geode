@@ -221,17 +221,17 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * @return ???
    */
   protected Connection getSQLConnection(PooledConnection poolC) throws SQLException {
-    Connection conn;
+    Connection connection;
     try {
-      conn = poolC.getConnection();
+      connection = poolC.getConnection();
     } catch (SQLException e) {
       provider.returnAndExpireConnection(poolC);
       throw e;
     }
-    boolean val = validateConnection(conn);
-    if (val)
-      return conn;
-    else {
+    boolean val = validateConnection(connection);
+    if (val) {
+      return connection;
+    } else {
       provider.returnAndExpireConnection(poolC);
       throw new SQLException(
           "GemFireConnPooledDataSource::getConnFromConnPool:java.sql.Connection obtained is invalid");
@@ -260,7 +260,7 @@ public class GemFireTransactionDataSource extends AbstractDataSource
    * Used by unit tests
    */
   @VisibleForTesting
-  void setTransManager(TransactionManager txmanager) {
-    transManager = txmanager;
+  void setTransactionManager(TransactionManager transManager) {
+    this.transManager = transManager;
   }
 }
