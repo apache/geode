@@ -123,6 +123,7 @@ public interface Statistics {
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #setLong(int, long)} instead
    */
+  @Deprecated
   void setInt(int id, int value);
 
   /**
@@ -132,6 +133,7 @@ public interface Statistics {
    *         statistic with name <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #setLong(String, long)} instead
    */
+  @Deprecated
   void setInt(String name, int value);
 
   /**
@@ -141,6 +143,7 @@ public interface Statistics {
    *         or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #setLong(StatisticDescriptor, long)} instead
    */
+  @Deprecated
   void setInt(StatisticDescriptor descriptor, int value);
 
   /**
@@ -202,6 +205,7 @@ public interface Statistics {
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #getLong(int)} instead
    */
+  @Deprecated
   int getInt(int id);
 
   /**
@@ -211,6 +215,7 @@ public interface Statistics {
    *         <code>descriptor</code> or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #getLong(StatisticDescriptor)} instead
    */
+  @Deprecated
   int getInt(StatisticDescriptor descriptor);
 
   /**
@@ -220,6 +225,7 @@ public interface Statistics {
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #getLong(String)} instead
    */
+  @Deprecated
   int getInt(String name);
 
   /**
@@ -314,6 +320,7 @@ public interface Statistics {
    * @throws ArrayIndexOutOfBoundsException If the id is invalid.
    * @deprecated as of Geode 1.10, use {@link #incLong(int, long)} instead
    */
+  @Deprecated
   void incInt(int id, int delta);
 
   /**
@@ -323,6 +330,7 @@ public interface Statistics {
    *         or if the described statistic is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #incLong(StatisticDescriptor, long)} instead
    */
+  @Deprecated
   void incInt(StatisticDescriptor descriptor, int delta);
 
   /**
@@ -333,6 +341,7 @@ public interface Statistics {
    *         statistic named <code>name</code> is not of type <code>int</code>.
    * @deprecated as of Geode 1.10, use {@link #incLong(String, long)} instead
    */
+  @Deprecated
   void incInt(String name, int delta);
 
   /**
@@ -413,6 +422,7 @@ public interface Statistics {
    * @since Geode 1.0
    * @deprecated as of Geode 1.10, use {@link #setLongSupplier(int, LongSupplier)} instead
    */
+  @Deprecated
   IntSupplier setIntSupplier(int id, IntSupplier supplier);
 
   /**
@@ -440,6 +450,7 @@ public interface Statistics {
    * @since Geode 1.0
    * @deprecated as of Geode 1.10, use {@link #setLongSupplier(String, LongSupplier)} instead
    */
+  @Deprecated
   IntSupplier setIntSupplier(String name, IntSupplier supplier);
 
 
@@ -469,6 +480,7 @@ public interface Statistics {
    * @deprecated as of Geode 1.10, use {@link #setLongSupplier(StatisticDescriptor, LongSupplier)}
    *             instead
    */
+  @Deprecated
   IntSupplier setIntSupplier(StatisticDescriptor descriptor, IntSupplier supplier);
 
   /**

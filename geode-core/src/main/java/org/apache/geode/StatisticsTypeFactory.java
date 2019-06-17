@@ -95,6 +95,7 @@ public interface StatisticsTypeFactory {
    *
    * @deprecated as of Geode 1.10, use {@link #createLongCounter(String, String, String)} instead
    */
+  @Deprecated
   StatisticDescriptor createIntCounter(String name, String description, String units);
 
   /**
@@ -118,6 +119,7 @@ public interface StatisticsTypeFactory {
    *
    * @deprecated as of Geode 1.10, use {@link #createLongGauge(String, String, String)} instead
    */
+  @Deprecated
   StatisticDescriptor createIntGauge(String name, String description, String units);
 
   /**
@@ -141,6 +143,7 @@ public interface StatisticsTypeFactory {
    * @deprecated as of Geode 1.10, use {@link #createLongCounter(String, String, String, boolean)}
    *             instead
    */
+  @Deprecated
   StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter);
 
@@ -165,6 +168,7 @@ public interface StatisticsTypeFactory {
    * @deprecated as of Geode 1.10, use {@link #createLongGauge(String, String, String, boolean)}
    *             instead
    */
+  @Deprecated
   StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter);
 
