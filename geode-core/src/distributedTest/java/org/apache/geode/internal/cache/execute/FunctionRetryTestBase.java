@@ -262,6 +262,11 @@ public class FunctionRetryTestBase implements Serializable {
         execution = FunctionService.onServers(clusterStartupRule.getClientCache().getDefaultPool())
             .setArguments(200);
         break;
+      case SERVERS_REGION_SERVICE:
+        execution = FunctionService
+            .onServer(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .setArguments(200);
+        break;
       default:
         throw new TestException("unknown ExecutionTarget: " + executionTarget);
     }
