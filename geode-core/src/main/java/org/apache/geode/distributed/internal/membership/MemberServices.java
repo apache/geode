@@ -78,7 +78,7 @@ public interface MemberServices {
   MembershipManager newMembershipManager(DistributedMembershipListener listener,
       RemoteTransportConfig transport,
       DMStats stats,
-      final Authenticator authenticator,
+      Authenticator authenticator,
       DistributionConfig config);
 
 

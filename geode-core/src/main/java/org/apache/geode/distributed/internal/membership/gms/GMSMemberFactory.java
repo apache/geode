@@ -97,10 +97,11 @@ public class GMSMemberFactory implements MemberServices {
   }
 
   @Override
-  public MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      RemoteTransportConfig transport, DMStats stats,
+  public MembershipManager newMembershipManager(
+      final DistributedMembershipListener listener,
+      final RemoteTransportConfig transport, DMStats stats,
       final Authenticator authenticator,
-      DistributionConfig config) throws DistributionException {
+      final DistributionConfig config) throws DistributionException {
     Services services = new Services(listener, transport, stats, authenticator, config);
     try {
       services.init();

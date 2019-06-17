@@ -360,6 +360,7 @@ dependencies {
   testCompile('org.powermock:powermock-module-junit4')
   testCompile('org.powermock:powermock-api-mockito2')
   testCompile('pl.pragmatists:JUnitParams')
+  testCompile('com.tngtech.archunit:archunit-junit4:0.10.2')
 
   testCompile files("${System.getProperty('java.home')}/../lib/tools.jar")
 

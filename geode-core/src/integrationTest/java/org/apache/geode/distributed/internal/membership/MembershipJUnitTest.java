@@ -248,13 +248,13 @@ public class MembershipJUnitTest {
     final DistributedMembershipListener listener = mock(DistributedMembershipListener.class);
     final DMStats stats1 = mock(DMStats.class);
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
-    when(mockSystem.getConfig()).thenReturn(config);
     System.out.println("creating 1st membership manager");
     final SecurityService securityService = SecurityServiceFactory.create();
     final MembershipManager m1 =
-        MemberFactory.newMembershipManager(listener, mockSystem, transport, stats1,
-            securityService, new GMSAuthenticator(config.getSecurityProps(), securityService,
-                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()));
+        MemberFactory.newMembershipManager(listener, transport, stats1,
+            new GMSAuthenticator(config.getSecurityProps(), securityService,
+                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()),
+            config);
     m1.startEventProcessing();
     return Pair.of(m1, listener);
   }
