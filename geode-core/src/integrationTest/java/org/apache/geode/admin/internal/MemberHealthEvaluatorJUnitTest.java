@@ -25,8 +25,8 @@ import org.junit.Test;
 
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.OsStatisticsProvider;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 
 /**
@@ -46,7 +46,7 @@ public class MemberHealthEvaluatorJUnitTest extends HealthEvaluatorTestCase {
    */
   @Test
   public void testCheckVMProcessSize() throws InterruptedException {
-    if (OsStatisticsProvider.build().osStatsSupported()) {
+    if (PureJavaMode.osStatsAreAvailable()) {
       GemFireStatSampler sampler = system.getStatSampler();
       assertNotNull(sampler);
 
