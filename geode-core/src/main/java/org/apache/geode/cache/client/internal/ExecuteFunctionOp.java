@@ -15,12 +15,12 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.execute.Function;
@@ -73,75 +73,56 @@ public class ExecuteFunctionOp {
       ServerFunctionExecutor executor, Object args, MemberMappedArgument memberMappedArg,
       boolean allServers, byte hasResult, ResultCollector rc, boolean isFnSerializationReqd,
       UserAttributes attributes, String[] groups) {
+
     final AbstractOp op = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult, rc,
         isFnSerializationReqd, (byte) 0, groups, allServers, executor.isIgnoreDepartedMembers());
 
     if (allServers && groups.length == 0) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to all servers using pool: {}",
-            op.getMessage(), pool);
-      }
+
       List callableTasks = constructAndGetFunctionTasks(pool, function, args, memberMappedArg,
           hasResult, rc, isFnSerializationReqd, attributes);
 
       SingleHopClientExecutor.submitAll(callableTasks);
-    } else {
-      boolean reexecuteForServ = false;
-      AbstractOp reexecOp = null;
-      int retryAttempts = 0;
-      boolean reexecute = false;
-      int maxRetryAttempts = 0;
-      if (function.isHA())
-        maxRetryAttempts = pool.getRetryAttempts();
 
-      final boolean isDebugEnabled = logger.isDebugEnabled();
+    } else {
+      AbstractOp reexecOp = null;
+      boolean reexecuteForServ = false;
+      boolean reexecute = false;
+
+      int maxRetryAttempts = pool.getRetryAttempts();
+      if (!function.isHA()) {
+        maxRetryAttempts = 0;
+      }
+
       do {
         try {
           if (reexecuteForServ) {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteFunctionOp#execute.reexecuteForServ : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
-                  op.getMessage(), pool, Arrays.toString(groups), allServers,
-                  executor.isIgnoreDepartedMembers());
-            }
             reexecOp = new ExecuteFunctionOpImpl(function, args, memberMappedArg, hasResult, rc,
                 isFnSerializationReqd, (byte) 1/* isReExecute */, groups, allServers,
                 executor.isIgnoreDepartedMembers());
             pool.execute(reexecOp, 0);
           } else {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to server using pool: {} with groups:{} all members:{} ignoreFailedMembers:{}",
-                  op.getMessage(), pool, Arrays.toString(groups), allServers,
-                  executor.isIgnoreDepartedMembers());
-            }
-
             pool.execute(op, 0);
           }
           reexecute = false;
           reexecuteForServ = false;
         } catch (InternalFunctionInvocationTargetException e) {
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed node is {}",
-                e.getFailedNodeSet());
-          }
           reexecute = true;
           rc.clearResults();
+        } catch (ServerOperationException serverOperationException) {
+          throw serverOperationException;
         } catch (ServerConnectivityException se) {
-          retryAttempts++;
 
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryAttempt is : {} maxRetryAttempts  {}",
-                se, retryAttempts, maxRetryAttempts);
+          if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+            // If the retryAttempt is set to default(-1). Try it on all servers once.
+            // Calculating number of servers when function is re-executed as it involves
+            // messaging locator.
+            maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
           }
-          if (se instanceof ServerOperationException) {
+
+          if ((maxRetryAttempts--) < 1) {
             throw se;
           }
-          if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1))
-            throw se;
 
           reexecuteForServ = true;
           rc.clearResults();
@@ -150,7 +131,7 @@ public class ExecuteFunctionOp {
 
       if (reexecute && function.isHA()) {
         ExecuteFunctionOp.reexecute(pool, function, executor, rc, hasResult, isFnSerializationReqd,
-            maxRetryAttempts - 1, groups, allServers);
+            maxRetryAttempts, groups, allServers);
       }
     }
   }
@@ -159,30 +140,26 @@ public class ExecuteFunctionOp {
       ServerFunctionExecutor executor, Object args, MemberMappedArgument memberMappedArg,
       boolean allServers, byte hasResult, ResultCollector rc, boolean isFnSerializationReqd,
       boolean isHA, boolean optimizeForWrite, UserAttributes properties, String[] groups) {
+
     final AbstractOp op = new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
         rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups, allServers,
         executor.isIgnoreDepartedMembers());
+
     if (allServers && groups.length == 0) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to all servers using pool: {}",
-            op.getMessage(), pool);
-      }
       List callableTasks = constructAndGetFunctionTasks(pool, functionId, args, memberMappedArg,
           hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, properties);
 
       SingleHopClientExecutor.submitAll(callableTasks);
     } else {
-      boolean reexecuteForServ = false;
       AbstractOp reexecOp = null;
-      int retryAttempts = 0;
+      boolean reexecuteForServ = false;
       boolean reexecute = false;
-      int maxRetryAttempts = 0;
-      if (isHA) {
-        maxRetryAttempts = pool.getRetryAttempts();
+
+      int maxRetryAttempts = pool.getRetryAttempts();
+      if (!isHA) {
+        maxRetryAttempts = 0;
       }
 
-      final boolean isDebugEnabled = logger.isDebugEnabled();
       do {
         try {
           if (reexecuteForServ) {
@@ -191,37 +168,27 @@ public class ExecuteFunctionOp {
                 executor.isIgnoreDepartedMembers());
             pool.execute(reexecOp, 0);
           } else {
-            if (isDebugEnabled) {
-              logger.debug(
-                  "ExecuteFunctionOp#execute : Sending Function Execution Message:{} to server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
-                  op.getMessage(), pool, Arrays.toString(groups), allServers,
-                  executor.isIgnoreDepartedMembers());
-            }
             pool.execute(op, 0);
           }
           reexecute = false;
           reexecuteForServ = false;
         } catch (InternalFunctionInvocationTargetException e) {
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received InternalFunctionInvocationTargetException. The failed node is {}",
-                e.getFailedNodeSet());
-          }
           reexecute = true;
           rc.clearResults();
+        } catch (ServerOperationException serverOperationException) {
+          throw serverOperationException;
         } catch (ServerConnectivityException se) {
-          retryAttempts++;
 
-          if (isDebugEnabled) {
-            logger.debug(
-                "ExecuteFunctionOp#execute : Received ServerConnectivityException. The exception is {} The retryAttempt is : {} maxRetryAttempts {}",
-                se, retryAttempts, maxRetryAttempts);
+          if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+            // If the retryAttempt is set to default(-1). Try it on all servers once.
+            // Calculating number of servers when function is re-executed as it involves
+            // messaging locator.
+            maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
           }
-          if (se instanceof ServerOperationException) {
+
+          if ((maxRetryAttempts--) < 1) {
             throw se;
           }
-          if ((retryAttempts > maxRetryAttempts && maxRetryAttempts != -1))
-            throw se;
 
           reexecuteForServ = true;
           rc.clearResults();
@@ -230,7 +197,7 @@ public class ExecuteFunctionOp {
 
       if (reexecute && isHA) {
         ExecuteFunctionOp.reexecute(pool, functionId, executor, rc, hasResult,
-            isFnSerializationReqd, maxRetryAttempts - 1, args, isHA, optimizeForWrite, groups,
+            isFnSerializationReqd, maxRetryAttempts, args, isHA, optimizeForWrite, groups,
             allServers);
       }
     }
@@ -238,43 +205,37 @@ public class ExecuteFunctionOp {
 
   public static void reexecute(ExecutablePool pool, Function function,
       ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
-      boolean isFnSerializationReqd, int maxRetryAttempts, String[] groups, boolean allMembers) {
+      boolean isFnSerializationReqd, int retryAttempts, String[] groups, boolean allMembers) {
+
     boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
+    int maxRetryAttempts = retryAttempts;
+
     do {
       reexecute = false;
       AbstractOp reExecuteOp = new ExecuteFunctionOpImpl(function, serverExecutor.getArguments(),
           serverExecutor.getMemberMappedArgument(), hasResult, resultCollector,
           isFnSerializationReqd, (byte) 1, groups, allMembers,
           serverExecutor.isIgnoreDepartedMembers());
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteFunction#reexecute : Sending Function Execution Message:{} to Server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
-            reExecuteOp.getMessage(), pool, Arrays.toString(groups), allMembers,
-            serverExecutor.isIgnoreDepartedMembers());
-      }
+
       try {
         pool.execute(reExecuteOp, 0);
       } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
         reexecute = true;
         resultCollector.clearResults();
+      } catch (ServerOperationException serverOperationException) {
+        throw serverOperationException;
       } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug("ExecuteFunctionOp#reexecute : Received ServerConnectivity Exception.");
+
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
         }
 
-        if (se instanceof ServerOperationException) {
+        if ((maxRetryAttempts--) < 1) {
           throw se;
         }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
 
         reexecute = true;
         resultCollector.clearResults();
@@ -284,11 +245,12 @@ public class ExecuteFunctionOp {
 
   public static void reexecute(ExecutablePool pool, String functionId,
       ServerFunctionExecutor serverExecutor, ResultCollector resultCollector, byte hasResult,
-      boolean isFnSerializationReqd, int maxRetryAttempts, Object args, boolean isHA,
+      boolean isFnSerializationReqd, int retryAttempts, Object args, boolean isHA,
       boolean optimizeForWrite, String[] groups, boolean allMembers) {
+
     boolean reexecute = true;
-    int retryAttempts = 0;
-    final boolean isDebugEnabled = logger.isDebugEnabled();
+    int maxRetryAttempts = retryAttempts;
+
     do {
       reexecute = false;
 
@@ -297,33 +259,25 @@ public class ExecuteFunctionOp {
               hasResult, resultCollector, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
               groups, allMembers, serverExecutor.isIgnoreDepartedMembers());
 
-      if (isDebugEnabled) {
-        logger.debug(
-            "ExecuteFunction#reexecute : Sending Function Execution Message:{} to Server using pool:{} with groups:{} all members:{} ignoreFailedMembers:{}",
-            op.getMessage(), pool, Arrays.toString(groups), allMembers,
-            serverExecutor.isIgnoreDepartedMembers());
-      }
       try {
         pool.execute(op, 0);
       } catch (InternalFunctionInvocationTargetException e) {
-        if (isDebugEnabled) {
-          logger.debug(
-              "ExecuteFunctionOp#reexecute : Received InternalFunctionInvocationTargetException. The failed nodes are {}",
-              e.getFailedNodeSet());
-        }
         reexecute = true;
         resultCollector.clearResults();
+      } catch (ServerOperationException serverOperationException) {
+        throw serverOperationException;
       } catch (ServerConnectivityException se) {
-        if (isDebugEnabled) {
-          logger.debug("ExecuteFunctionOp#reexecute : Received ServerConnectivity Exception.");
+
+        if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+          // If the retryAttempt is set to default(-1). Try it on all servers once.
+          // Calculating number of servers when function is re-executed as it involves
+          // messaging locator.
+          maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
         }
 
-        if (se instanceof ServerOperationException) {
+        if ((maxRetryAttempts--) < 1) {
           throw se;
         }
-        retryAttempts++;
-        if (retryAttempts > maxRetryAttempts && maxRetryAttempts != -2)
-          throw se;
 
         reexecute = true;
         resultCollector.clearResults();

@@ -17,15 +17,21 @@ package org.apache.geode.cache.client.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import junitparams.JUnitParamsRunner;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
+/**
+ * Test multi-hop on region function execution
+ */
 @Category({ClientServerTest.class})
+@RunWith(JUnitParamsRunner.class)
 public class ExecuteRegionFunctionOpTest {
 
   @Test
@@ -60,4 +66,5 @@ public class ExecuteRegionFunctionOpTest {
     assertThat(op.getFunctionException()).isInstanceOf(FunctionException.class);
     assertThat(op.getFunctionException().getExceptions()).contains(cause);
   }
+
 }

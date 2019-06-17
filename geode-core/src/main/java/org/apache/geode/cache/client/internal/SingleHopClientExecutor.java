@@ -30,6 +30,7 @@ import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.ServerOperationException;
 import org.apache.geode.cache.client.internal.GetAllOp.GetAllOpImpl;
@@ -85,11 +86,14 @@ public class SingleHopClientExecutor {
     }
   }
 
-  static boolean submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
-      ResultCollector rc, Set<String> failedNodes) {
+
+  static int submitAllHA(List callableTasks, LocalRegion region, boolean isHA,
+      ResultCollector rc, Set<String> failedNodes,
+      final int retryAttemptsArg,
+      final PoolImpl pool) {
 
     ClientMetadataService cms = region.getCache().getClientMetadataService();
-    boolean reexecute = false;
+    int maxRetryAttempts = 0;
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       List futures = null;
@@ -115,6 +119,18 @@ public class SingleHopClientExecutor {
           } catch (InterruptedException e) {
             throw new InternalGemFireException(e.getMessage());
           } catch (ExecutionException ee) {
+
+            if (maxRetryAttempts == 0) {
+              maxRetryAttempts = retryAttemptsArg;
+            }
+
+            if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
+              // If the retryAttempt is set to default(-1). Try it on all servers once.
+              // Calculating number of servers when function is re-executed as it involves
+              // messaging locator.
+              maxRetryAttempts = pool.getConnectionSource().getAllServers().size() - 1;
+            }
+
             if (ee.getCause() instanceof InternalFunctionInvocationTargetException) {
               if (isDebugEnabled) {
                 logger.debug(
@@ -124,15 +140,15 @@ public class SingleHopClientExecutor {
               try {
                 cms = region.getCache().getClientMetadataService();
               } catch (CacheClosedException e) {
-                return false;
+                return 0;
               }
               cms.removeBucketServerLocation(server);
               cms.scheduleGetPRMetaData(region, false);
-              reexecute = true;
+
               failedNodes.addAll(
                   ((InternalFunctionInvocationTargetException) ee.getCause()).getFailedNodeSet());
               // Clear the results only if isHA so that partial results can be returned.
-              if (isHA) {
+              if (isHA && maxRetryAttempts != 0) {
                 rc.clearResults();
               } else {
                 if (ee.getCause().getCause() != null) {
@@ -177,13 +193,12 @@ public class SingleHopClientExecutor {
               try {
                 cms = region.getCache().getClientMetadataService();
               } catch (CacheClosedException e) {
-                return false;
+                return 0;
               }
               cms.removeBucketServerLocation(server);
               cms.scheduleGetPRMetaData(region, false);
               // Clear the results only if isHA so that partial results can be returned.
-              if (isHA) {
-                reexecute = true;
+              if (isHA && maxRetryAttempts != 0) {
                 rc.clearResults();
               } else {
                 functionExecutionException = (ServerConnectivityException) ee.getCause();
@@ -198,7 +213,7 @@ public class SingleHopClientExecutor {
         }
       }
     }
-    return reexecute;
+    return maxRetryAttempts;
   }
 
   /**
@@ -207,8 +222,10 @@ public class SingleHopClientExecutor {
    *
    * @return the per-server results
    */
-  static Map<ServerLocation, Object> submitBulkOp(List callableTasks, ClientMetadataService cms,
-      LocalRegion region, Map<ServerLocation, RuntimeException> failedServers) {
+  static Map<ServerLocation, Object> submitBulkOp(List callableTasks,
+      ClientMetadataService cms,
+      LocalRegion region,
+      Map<ServerLocation, RuntimeException> failedServers) {
     if (callableTasks != null && !callableTasks.isEmpty()) {
       Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
       boolean anyPartialResults = false;
@@ -285,8 +302,10 @@ public class SingleHopClientExecutor {
     return null;
   }
 
-  static Map<ServerLocation, Object> submitGetAll(Map<ServerLocation, HashSet> serverToFilterMap,
-      List callableTasks, ClientMetadataService cms, LocalRegion region) {
+  static Map<ServerLocation, Object> submitGetAll(
+      Map<ServerLocation, HashSet> serverToFilterMap,
+      List callableTasks, ClientMetadataService cms,
+      LocalRegion region) {
 
     if (callableTasks != null && !callableTasks.isEmpty()) {
       Map<ServerLocation, Object> resultMap = new HashMap<ServerLocation, Object>();
