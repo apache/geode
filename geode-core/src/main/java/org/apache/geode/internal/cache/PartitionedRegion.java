@@ -6797,7 +6797,7 @@ public class PartitionedRegion extends LocalRegion
                 DLockRemoteToken remoteToken = this.lockService.queryLock(this.lockName);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember(lockHolder,
+                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a partitioned region lock in over "
                           + ackWaitThreshold / 1000 + " sec");
                 }
@@ -6884,7 +6884,7 @@ public class PartitionedRegion extends LocalRegion
                 DLockRemoteToken remoteToken = this.lockService.queryLock(key);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember(lockHolder,
+                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a global region entry lock in over "
                           + ackWaitThreshold / 1000 + " sec");
                 }

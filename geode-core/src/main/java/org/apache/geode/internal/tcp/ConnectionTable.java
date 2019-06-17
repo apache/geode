@@ -1227,7 +1227,7 @@ public class ConnectionTable {
           } else if (!suspected) {
             logger.warn("Unable to form a TCP/IP connection to %s in over %s seconds",
                 this.id, (ackTimeout) / 1000);
-            ((GMSMembershipManager) mgr).suspectMember(targetMember,
+            ((GMSMembershipManager) mgr).suspectMember((InternalDistributedMember) targetMember,
                 "Unable to form a TCP/IP connection in a reasonable amount of time");
             suspected = true;
           }

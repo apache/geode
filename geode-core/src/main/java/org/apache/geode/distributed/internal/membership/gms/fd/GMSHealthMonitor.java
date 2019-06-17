@@ -88,7 +88,8 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
  * suspect processing for any member. First is checks whether the member is responding or not. Then
  * it informs probable coordinators to remove that member from view.
  * <p>
- * It has {@link #checkIfAvailable(DistributedMember, String, boolean)} api to see if that member is
+ * It has {@link HealthMonitor#checkIfAvailable(InternalDistributedMember, String, boolean)} api to
+ * see if that member is
  * alive. Then based on removal flag it initiates the suspect processing for that member.
  */
 @SuppressWarnings({"SynchronizationOnLocalVariableOrMethodParameter", "NullableProblems"})
@@ -647,9 +648,10 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval) {
+  public boolean checkIfAvailable(InternalDistributedMember mbr, String reason,
+      boolean initiateRemoval) {
     return inlineCheckIfAvailable(localAddress, currentView, initiateRemoval,
-        (InternalDistributedMember) mbr, reason);
+        mbr, reason);
   }
 
   @Override

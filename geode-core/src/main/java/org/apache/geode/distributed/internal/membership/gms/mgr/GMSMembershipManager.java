@@ -1647,14 +1647,14 @@ public class GMSMembershipManager implements MembershipManager, Manager {
   }
 
   @Override
-  public void suspectMembers(Set members, String reason) {
-    for (final Object member : members) {
-      verifyMember((DistributedMember) member, reason);
+  public void suspectMembers(Set<InternalDistributedMember> members, String reason) {
+    for (final InternalDistributedMember member : members) {
+      verifyMember(member, reason);
     }
   }
 
   @Override
-  public void suspectMember(DistributedMember mbr, String reason) {
+  public void suspectMember(InternalDistributedMember mbr, String reason) {
     if (!this.shutdownInProgress && !this.shutdownMembers.containsKey(mbr)) {
       verifyMember(mbr, reason);
     }
@@ -1672,7 +1672,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
    * @return true if the member checks out
    */
   @Override
-  public boolean verifyMember(DistributedMember mbr, String reason) {
+  public boolean verifyMember(InternalDistributedMember mbr, String reason) {
     return mbr != null && memberExists(mbr)
         && this.services.getHealthMonitor().checkIfAvailable(mbr, reason, false);
   }
