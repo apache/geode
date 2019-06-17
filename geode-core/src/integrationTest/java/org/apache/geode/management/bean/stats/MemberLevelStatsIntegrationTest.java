@@ -42,7 +42,7 @@ import org.apache.geode.management.internal.beans.MemberMBeanBridge;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category({JMXTest.class})
-public class MemberLevelStatsJUnitTest extends MBeanStatsTestCase {
+public class MemberLevelStatsIntegrationTest extends MBeanStatsTestCase {
   @Rule
   public TestName name = new TestName();
 
