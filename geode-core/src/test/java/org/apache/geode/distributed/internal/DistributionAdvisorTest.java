@@ -104,7 +104,7 @@ public class DistributionAdvisorTest {
   }
 
   @Test
-  public void emptyAccessorOfPersistentRegionDoesNotSynchronizeForLostMember() {
+  public void regionSyncNotInvokedIfLostMemberIsAnEmptyAccessorOfPersistentReplicateRegion() {
     when(dataPolicy.withPersistence()).thenReturn(true);
     when(distributedRegion.getPersistentID()).thenReturn(null);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
