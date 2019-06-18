@@ -361,11 +361,10 @@ public class JarDeployer implements Serializable {
         if (deployedJar != null) {
           logger.info("Registering new version of jar: {}", deployedJar);
           DeployedJar oldJar = this.deployedJars.put(deployedJar.getJarName(), deployedJar);
+          ClassPathLoader.getLatest().chainClassloader(deployedJar);
           newVersionToOldVersion.put(deployedJar, oldJar);
         }
       }
-
-      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
 
       // Finally, unregister functions that were removed
       for (Map.Entry<DeployedJar, DeployedJar> entry : newVersionToOldVersion.entrySet()) {
@@ -485,7 +484,7 @@ public class JarDeployer implements Serializable {
         throw new IllegalArgumentException("JAR not deployed");
       }
 
-      ClassPathLoader.getLatest().rebuildClassLoaderForDeployedJars();
+      ClassPathLoader.getLatest().unloadClassloaderForJar(jarName);
 
       deployedJar.cleanUp(null);
 
