@@ -821,7 +821,6 @@ javadoc/org/apache/geode/modules/util/ClassLoaderObjectInputStream.html
 javadoc/org/apache/geode/modules/util/ContextMapper.html
 javadoc/org/apache/geode/modules/util/CreateRegionFunction.html
 javadoc/org/apache/geode/modules/util/DebugCacheListener.html
-javadoc/org/apache/geode/modules/util/ModuleStatistics.html
 javadoc/org/apache/geode/modules/util/RegionConfiguration.html
 javadoc/org/apache/geode/modules/util/RegionConfigurationCacheListener.html
 javadoc/org/apache/geode/modules/util/RegionHelper.html
