@@ -364,21 +364,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   private static void setGroup(Object config, String group) {
-    if (config instanceof Groupable)
+    if (config instanceof Groupable) {
       ((Groupable) config).setGroup(group);
+    }
   }
 
   private static String getGroup(Object config) {
-    if (config instanceof Groupable)
+    if (config instanceof Groupable) {
       return ((Groupable) config).getGroup();
-    else
+    } else {
       return null;
+    }
   }
 
   private static String getConfigGroup(Object config) {
-    if (config instanceof Groupable)
+    if (config instanceof Groupable) {
       return ((Groupable) config).getConfigGroup();
-    else
+    } else {
       return null;
+    }
   }
 }

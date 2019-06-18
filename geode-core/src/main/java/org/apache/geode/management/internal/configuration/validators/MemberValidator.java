@@ -72,10 +72,11 @@ public class MemberValidator {
   }
 
   private static String getConfigGroup(Object config) {
-    if (config instanceof Groupable)
+    if (config instanceof Groupable) {
       return ((Groupable) config).getConfigGroup();
-    else
+    } else {
       return Groupable.CLUSTER;
+    }
   }
 
   public String[] findGroupsWithThisElement(String id, ConfigurationManager manager) {

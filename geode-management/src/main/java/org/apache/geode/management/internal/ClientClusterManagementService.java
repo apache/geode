@@ -123,10 +123,11 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   private static String getGroup(Object config) {
-    if (config instanceof Groupable)
+    if (config instanceof Groupable) {
       return ((Groupable) config).getGroup();
-    else
+    } else {
       return null;
+    }
   }
 
   public boolean isConnected() {

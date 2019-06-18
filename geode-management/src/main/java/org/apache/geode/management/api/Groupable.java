@@ -41,9 +41,10 @@ public interface Groupable {
   @JsonIgnore
   default String getConfigGroup() {
     String group = getGroup();
-    if (StringUtils.isBlank(group))
+    if (StringUtils.isBlank(group)) {
       return CLUSTER;
-    else
+    } else {
       return group;
+    }
   }
 }
