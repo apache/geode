@@ -57,7 +57,6 @@ public class StatisticsImplTest {
     statisticsManager = mock(StatisticsManager.class);
 
     statisticsType = mock(StatisticsTypeImpl.class);
-    when(statisticsType.isValidIntId(anyInt())).thenReturn(true);
     when(statisticsType.isValidLongId(anyInt())).thenReturn(true);
     when(statisticsType.isValidDoubleId(anyInt())).thenReturn(true);
 

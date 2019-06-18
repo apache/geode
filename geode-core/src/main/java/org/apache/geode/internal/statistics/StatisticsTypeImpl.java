@@ -159,13 +159,6 @@ public class StatisticsTypeImpl implements StatisticsType {
   ////////////////////// Instance Methods //////////////////////
 
   /**
-   * Gets the number of statistics in this type that are ints.
-   */
-  public int getIntStatCount() {
-    return 0;
-  }
-
-  /**
    * Gets the number of statistics in this type that are longs.
    */
   public int getLongStatCount() {
@@ -226,10 +219,6 @@ public class StatisticsTypeImpl implements StatisticsType {
       }
     }
     return true;
-  }
-
-  public boolean isValidIntId(int id) {
-    return id < 0;
   }
 
   public boolean isValidLongId(int id) {
