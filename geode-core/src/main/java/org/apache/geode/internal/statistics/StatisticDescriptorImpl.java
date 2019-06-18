@@ -258,10 +258,6 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
     return this.getName().compareTo(o.getName());
   }
 
-  public int checkInt() {
-    return checkLong();
-  }
-
   public int checkLong() {
     if (this.typeCode != LONG) {
       StringBuffer sb = new StringBuffer();
