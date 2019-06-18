@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.util.function.LongSupplier;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -941,11 +943,10 @@ public class DistributionStats implements DMStats {
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
 
+  private final LongSupplier clock;
+
   private final MaxLongGauge maxReplyWaitTime;
   private final MaxLongGauge maxSentMessagesTime;
-
-  // private final HistogramStats replyHandoffHistogram;
-  // private final HistogramStats replyWaitHistogram;
 
   //////////////////////// Constructors ////////////////////////
 
@@ -954,24 +955,16 @@ public class DistributionStats implements DMStats {
    * factory.
    */
   public DistributionStats(StatisticsFactory f, long statId) {
-    this(f.createAtomicStatistics(type, "distributionStats", statId));
-    // this.replyHandoffHistogram = new HistogramStats("ReplyHandOff", "nanoseconds", f,
-    // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
-    // false);
-    // this.replyWaitHistogram = new HistogramStats("ReplyWait", "nanoseconds", f,
-    // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
-    // false);
+    this(f, "distributionStats", statId, DistributionStats::getStatTime);
   }
 
-  /**
-   * Used by tests to create an instance given its already existings stats.
-   */
-  public DistributionStats(Statistics stats) {
-    this.stats = stats;
+  @VisibleForTesting
+  public DistributionStats(StatisticsFactory factory, String textId, long statId,
+      LongSupplier clock) {
+    stats = factory == null ? null : factory.createAtomicStatistics(type, textId, statId);
+    this.clock = clock;
     maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
     maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
-    // this.replyHandoffHistogram = null;
-    // this.replyWaitHistogram = null;
   }
 
   /**
@@ -984,6 +977,10 @@ public class DistributionStats implements DMStats {
   }
 
   ////////////////////// Instance Methods //////////////////////
+
+  private long getTime() {
+    return clock.getAsLong();
+  }
 
   public void close() {
     this.stats.close();
@@ -1153,7 +1150,7 @@ public class DistributionStats implements DMStats {
   @Override
   public void incProcessedMessagesTime(long start) {
     if (enableClockStats) {
-      this.stats.incLong(processedMessagesTimeId, getStatTime() - start);
+      this.stats.incLong(processedMessagesTimeId, getTime() - start);
     }
   }
 
@@ -1383,12 +1380,12 @@ public class DistributionStats implements DMStats {
     } else {
       stats.incInt(asyncSocketWritesInProgressId, 1);
     }
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endSocketWrite(boolean sync, long start, int bytesWritten, int retries) {
-    final long now = getStatTime();
+    final long now = getTime();
     if (sync) {
       stats.incInt(syncSocketWritesInProgressId, -1);
       stats.incInt(syncSocketWritesId, 1);
@@ -1412,12 +1409,12 @@ public class DistributionStats implements DMStats {
   @Override
   public long startSocketLock() {
     stats.incInt(socketLocksInProgressId, 1);
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endSocketLock(long start) {
-    long ts = getStatTime();
+    long ts = getTime();
     stats.incInt(socketLocksInProgressId, -1);
     stats.incInt(socketLocksId, 1);
     stats.incLong(socketLockTimeId, ts - start);
@@ -1426,12 +1423,12 @@ public class DistributionStats implements DMStats {
   @Override
   public long startBufferAcquire() {
     stats.incInt(bufferAcquiresInProgressId, 1);
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endBufferAcquire(long start) {
-    long ts = getStatTime();
+    long ts = getTime();
     stats.incInt(bufferAcquiresInProgressId, -1);
     stats.incInt(bufferAcquiresId, 1);
     stats.incLong(bufferAcquireTimeId, ts - start);
@@ -1483,13 +1480,13 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startSerialization() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endSerialization(long start, int bytes) {
     if (enableClockStats) {
-      stats.incLong(serializationTimeId, getStatTime() - start);
+      stats.incLong(serializationTimeId, getTime() - start);
     }
     stats.incInt(serializationsId, 1);
     stats.incLong(serializedBytesId, bytes);
@@ -1497,13 +1494,13 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startPdxInstanceDeserialization() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endPdxInstanceDeserialization(long start) {
     if (enableClockStats) {
-      stats.incLong(pdxInstanceDeserializationTimeId, getStatTime() - start);
+      stats.incLong(pdxInstanceDeserializationTimeId, getTime() - start);
     }
     stats.incInt(pdxInstanceDeserializationsId, 1);
   }
@@ -1527,13 +1524,13 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startDeserialization() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endDeserialization(long start, int bytes) {
     if (enableClockStats) {
-      stats.incLong(deserializationTimeId, getStatTime() - start);
+      stats.incLong(deserializationTimeId, getTime() - start);
     }
     stats.incInt(deserializationsId, 1);
     stats.incLong(deserializedBytesId, bytes);
@@ -1541,49 +1538,49 @@ public class DistributionStats implements DMStats {
 
   @Override
   public long startMsgSerialization() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endMsgSerialization(long start) {
     if (enableClockStats) {
-      stats.incLong(msgSerializationTimeId, getStatTime() - start);
+      stats.incLong(msgSerializationTimeId, getTime() - start);
     }
   }
 
   @Override
   public long startUDPMsgEncryption() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endUDPMsgEncryption(long start) {
     if (enableClockStats) {
-      stats.incLong(udpMsgEncryptionTimeId, getStatTime() - start);
+      stats.incLong(udpMsgEncryptionTimeId, getTime() - start);
     }
   }
 
   @Override
   public long startMsgDeserialization() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endMsgDeserialization(long start) {
     if (enableClockStats) {
-      stats.incLong(msgDeserializationTimeId, getStatTime() - start);
+      stats.incLong(msgDeserializationTimeId, getTime() - start);
     }
   }
 
   @Override
   public long startUDPMsgDecryption() {
-    return getStatTime();
+    return getTime();
   }
 
   @Override
   public void endUDPMsgDecryption(long start) {
     if (enableClockStats) {
-      stats.incLong(udpMsgDecryptionTimeId, getStatTime() - start);
+      stats.incLong(udpMsgDecryptionTimeId, getTime() - start);
     }
   }
 
@@ -1593,14 +1590,14 @@ public class DistributionStats implements DMStats {
   @Override
   public long startReplyWait() {
     stats.incInt(replyWaitsInProgressId, 1);
-    return getStatTime();
+    return getTime();
   }
 
 
   @Override
   public void endReplyWait(long startNanos, long initTime) {
     if (enableClockStats) {
-      stats.incLong(replyWaitTimeId, getStatTime() - startNanos);
+      stats.incLong(replyWaitTimeId, getTime() - startNanos);
       // this.replyWaitHistogram.endOp(delta);
     }
     if (initTime != 0) {
@@ -1770,7 +1767,7 @@ public class DistributionStats implements DMStats {
   @Override
   public long startAsyncQueueFlush() {
     stats.incInt(asyncQueueFlushesInProgressId, 1);
-    return getStatTime();
+    return getTime();
   }
 
   @Override
@@ -1778,7 +1775,7 @@ public class DistributionStats implements DMStats {
     stats.incInt(asyncQueueFlushesInProgressId, -1);
     stats.incInt(asyncQueueFlushesCompletedId, 1);
     if (enableClockStats) {
-      stats.incLong(asyncQueueFlushTimeId, getStatTime() - start);
+      stats.incLong(asyncQueueFlushTimeId, getTime() - start);
     }
   }
 
@@ -1880,7 +1877,7 @@ public class DistributionStats implements DMStats {
   @Override
   public long startAsyncThread() {
     stats.incInt(asyncThreadInProgressId, 1);
-    return getStatTime();
+    return getTime();
   }
 
   @Override
@@ -1888,7 +1885,7 @@ public class DistributionStats implements DMStats {
     stats.incInt(asyncThreadInProgressId, -1);
     stats.incInt(asyncThreadCompletedId, 1);
     if (enableClockStats) {
-      stats.incLong(asyncThreadTimeId, getStatTime() - start);
+      stats.incLong(asyncThreadTimeId, getTime() - start);
     }
   }
 
@@ -2205,28 +2202,28 @@ public class DistributionStats implements DMStats {
   @Override
   public void incBatchSendTime(long start) {
     if (enableClockStats) {
-      stats.incLong(batchSendTimeId, getStatTime() - start);
+      stats.incLong(batchSendTimeId, getTime() - start);
     }
   }
 
   @Override
   public void incBatchCopyTime(long start) {
     if (enableClockStats) {
-      stats.incLong(batchCopyTimeId, getStatTime() - start);
+      stats.incLong(batchCopyTimeId, getTime() - start);
     }
   }
 
   @Override
   public void incBatchWaitTime(long start) {
     if (enableClockStats) {
-      stats.incLong(batchWaitTimeId, getStatTime() - start);
+      stats.incLong(batchWaitTimeId, getTime() - start);
     }
   }
 
   @Override
   public void incBatchFlushTime(long start) {
     if (enableClockStats) {
-      stats.incLong(batchFlushTimeId, getStatTime() - start);
+      stats.incLong(batchFlushTimeId, getTime() - start);
     }
   }
 
@@ -2332,7 +2329,7 @@ public class DistributionStats implements DMStats {
   @Override
   public void incReplyHandOffTime(long start) {
     if (enableClockStats) {
-      long delta = getStatTime() - start;
+      long delta = getTime() - start;
       stats.incLong(replyHandoffTimeId, delta);
       // this.replyHandoffHistogram.endOp(delta);
     }

@@ -44,6 +44,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionService;
@@ -85,6 +86,7 @@ import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.OsStatisticsProvider;
 import org.apache.geode.internal.statistics.StatSamplerStats;
+import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.VMStatsContract;
 import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
@@ -129,75 +131,24 @@ public class MemberMBeanBridge {
   @Immutable
   private static final TimeUnit nanoSeconds = TimeUnit.NANOSECONDS;
 
-  /** Cache Instance **/
   private InternalCache cache;
-
-  /** Distribution Config **/
   private DistributionConfig config;
 
-  /** Composite type **/
   private GemFireProperties gemFirePropertyData;
-
-  /**
-   * Internal distributed system
-   */
   private InternalDistributedSystem system;
-
-  /**
-   * Distribution manager
-   */
+  private StatisticsManager statisticsManager;
   private DistributionManager dm;
-
-  /**
-   * Command Service
-   */
   private OnlineCommandProcessor commandProcessor;
 
   private String commandServiceInitError;
-
-  /**
-   * Reference to JDK bean MemoryMXBean
-   */
   private MemoryMXBean memoryMXBean;
-
-  /**
-   * Reference to JDK bean ThreadMXBean
-   */
   private ThreadMXBean threadMXBean;
-
-  /**
-   * Reference to JDK bean RuntimeMXBean
-   */
   private RuntimeMXBean runtimeMXBean;
-
-  /**
-   * Reference to JDK bean OperatingSystemMXBean
-   */
   private OperatingSystemMXBean osBean;
-
-  /**
-   * Host name of the member
-   */
   private String hostname;
-
-  /**
-   * The member's process id (pid)
-   */
   private int processId;
-
-  /**
-   * OS MBean Object name
-   */
   private ObjectName osObjectName;
-
-  /**
-   * Last CPU usage calculation time
-   */
   private long lastSystemTime = 0;
-
-  /**
-   * Last ProcessCPU time
-   */
   private long lastProcessCpuTime = 0;
 
   private MBeanStatsMonitor monitor;
@@ -316,6 +267,7 @@ public class MemberMBeanBridge {
     this.service = service;
 
     this.system = (InternalDistributedSystem) cache.getDistributedSystem();
+    this.statisticsManager = system.getStatisticsManager();
 
     this.dm = system.getDistributionManager();
 
@@ -399,7 +351,8 @@ public class MemberMBeanBridge {
     this.resourceManagerStats = cache.getInternalResourceManager().getStats();
   }
 
-  public MemberMBeanBridge() {
+  @VisibleForTesting
+  public MemberMBeanBridge(InternalDistributedSystem system, StatisticsManager statisticsManager) {
     this.monitor =
         new MBeanStatsMonitor("MemberMXBeanMonitor");
     this.diskMonitor = new MemberLevelDiskMonitor(MEMBER_LEVEL_DISK_MONITOR);
@@ -410,7 +363,8 @@ public class MemberMBeanBridge {
     this.systemStatsMonitor =
         new MBeanStatsMonitor("SystemStatsManager");
 
-    this.system = InternalDistributedSystem.getConnectedInstance();
+    this.system = system;
+    this.statisticsManager = statisticsManager;
 
     initializeStats();
   }
@@ -444,8 +398,9 @@ public class MemberMBeanBridge {
       }
     }
 
-    addSystemStats();
-    addVMStats();
+    addProcessStats(fetchProcessStats());
+    addStatSamplerStats(fetchStatSamplerStats());
+    addVMStats(fetchVMStats());
     initializeStats();
 
     return this;
@@ -560,23 +515,34 @@ public class MemberMBeanBridge {
     monitor.addStatisticsToMonitor(stats.getStats());
   }
 
-  public void addSystemStats() {
-    GemFireStatSampler sampler = system.getStatSampler();
+  private ProcessStats fetchProcessStats() {
+    return system.getStatSampler().getProcessStats();
+  }
 
-    ProcessStats processStats = sampler.getProcessStats();
+  private StatSamplerStats fetchStatSamplerStats() {
+    return system.getStatSampler().getStatSamplerStats();
+  }
 
-    StatSamplerStats samplerStats = sampler.getStatSamplerStats();
+  @VisibleForTesting
+  public void addProcessStats(ProcessStats processStats) {
     if (processStats != null) {
       systemStatsMonitor.addStatisticsToMonitor(processStats.getStatistics());
     }
-    if (samplerStats != null) {
-      systemStatsMonitor.addStatisticsToMonitor(samplerStats.getStats());
+  }
+
+  @VisibleForTesting
+  public void addStatSamplerStats(StatSamplerStats statSamplerStats) {
+    if (statSamplerStats != null) {
+      systemStatsMonitor.addStatisticsToMonitor(statSamplerStats.getStats());
     }
   }
 
-  public void addVMStats() {
-    VMStatsContract vmStatsContract = system.getStatSampler().getVMStats();
+  private VMStatsContract fetchVMStats() {
+    return system.getStatSampler().getVMStats();
+  }
 
+  @VisibleForTesting
+  public void addVMStats(VMStatsContract vmStatsContract) {
     if (vmStatsContract != null && vmStatsContract instanceof VMStats50) {
       VMStats50 vmStats50 = (VMStats50) vmStatsContract;
       Statistics vmStats = vmStats50.getVMStats();
@@ -591,7 +557,7 @@ public class MemberMBeanBridge {
 
       StatisticsType gcType = VMStats50.getGCType();
       if (gcType != null) {
-        Statistics[] gcStats = system.findStatisticsByType(gcType);
+        Statistics[] gcStats = statisticsManager.findStatisticsByType(gcType);
         if (gcStats != null && gcStats.length > 0) {
           for (Statistics gcStat : gcStats) {
             if (gcStat != null) {
