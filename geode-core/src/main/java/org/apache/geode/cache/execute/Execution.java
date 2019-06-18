@@ -51,8 +51,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withFilter(
-      Set<?> filter);
+  Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set<?> filter);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -64,8 +63,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @since Geode 1.2
    *
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> setArguments(
-      ArgumentT args);
+  Execution<ArgumentT, ReturnT, AggregatorT> setArguments(ArgumentT args);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -78,8 +76,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @deprecated use {@link #setArguments(Object)} instead
    *
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withArgs(
-      ArgumentT args);
+  Execution<ArgumentT, ReturnT, AggregatorT> withArgs(ArgumentT args);
 
   /**
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
@@ -91,7 +88,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @see ResultCollector
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withCollector(
+  Execution<ArgumentT, ReturnT, AggregatorT> withCollector(
       ResultCollector<ReturnT, AggregatorT> rc);
 
   /**
@@ -108,8 +105,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *
    * @since GemFire 6.0
    */
-  <ReturnT, AggregatorT> ResultCollector<ReturnT, AggregatorT> execute(String functionId)
-      throws FunctionException;
+  ResultCollector<ReturnT, AggregatorT> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -126,6 +122,5 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *
    * @since GemFire 6.0
    */
-  <ReturnT, AggregatorT> ResultCollector<ReturnT, AggregatorT> execute(Function function)
-      throws FunctionException;
+  ResultCollector<ReturnT, AggregatorT> execute(Function function) throws FunctionException;
 }
