@@ -1,6 +1,6 @@
 # RFC Title
 
-**Geode-RFC-###**
+**Geode RFC ###**
 
 **To be Reviewed By:** 
 
@@ -35,7 +35,7 @@
 
 *Is there a need for a deprecation process to provide an upgrade path to users who will need to adjust their applications?*
 
-## Alternatives
+## Prior Art
 *What would be the alternatives to the proposed solution? What would happen if we don’t solve the problem? Why should this proposal be preferred?*
 
 ## FAQ
