@@ -15,7 +15,7 @@
 package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
-import static org.apache.geode.internal.net.SSLConfigurationFactory.*;
+import static org.apache.geode.internal.net.SSLConfigurationFactory.getSSLConfigForComponent;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -80,7 +80,6 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
 import org.apache.geode.internal.net.NioPlainEngine;
-import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.MsgReader.Header;
@@ -1836,8 +1835,8 @@ public class Connection implements Runnable {
           getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort());
 
       if (!clientSocket) {
-         engine.setNeedClientAuth(getSSLConfigForComponent(getConduit().config,
-         SecurableCommunicationChannel.CLUSTER).isRequireAuth());
+        engine.setNeedClientAuth(getSSLConfigForComponent(getConduit().config,
+            SecurableCommunicationChannel.CLUSTER).isRequireAuth());
       }
 
       int packetBufferSize = engine.getSession().getPacketBufferSize();
