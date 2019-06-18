@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import java.util.function.LongSupplier;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
@@ -620,7 +622,7 @@ public class CachePerfStats {
   /** The Statistics object that we delegate most behavior to */
   protected final Statistics stats;
 
-  private final Clock clock;
+  private final LongSupplier clock;
 
   /**
    * Created specially for bug 39348. Should not be invoked in any other case.
@@ -646,7 +648,7 @@ public class CachePerfStats {
   }
 
   @VisibleForTesting
-  CachePerfStats(StatisticsFactory factory, String textId, Clock clock) {
+  public CachePerfStats(StatisticsFactory factory, String textId, LongSupplier clock) {
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
   }
@@ -655,7 +657,7 @@ public class CachePerfStats {
    * Returns the current NanoTime or, if clock stats are disabled, zero.
    *
    * @since GemFire 5.0
-   * @deprecated Please use instance method {@link #getClockTime()} instead.
+   * @deprecated Please use instance method {@link #getTime()} instead.
    */
   @Deprecated
   public static long getStatTime() {
@@ -666,8 +668,8 @@ public class CachePerfStats {
     return type;
   }
 
-  protected long getClockTime() {
-    return clock.getTime();
+  protected long getTime() {
+    return clock.getAsLong();
   }
 
   public int getLoadsCompleted() {
@@ -868,12 +870,12 @@ public class CachePerfStats {
 
   public long startCompression() {
     stats.incLong(compressionCompressionsId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   public void endCompression(long startTime, long startSize, long endSize) {
     if (enableClockStats) {
-      stats.incLong(compressionCompressTimeId, getClockTime() - startTime);
+      stats.incLong(compressionCompressTimeId, getTime() - startTime);
     }
     stats.incLong(compressionPreCompressedBytesId, startSize);
     stats.incLong(compressionPostCompressedBytesId, endSize);
@@ -881,12 +883,12 @@ public class CachePerfStats {
 
   public long startDecompression() {
     stats.incLong(compressionDecompressionsId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   public void endDecompression(long startTime) {
     if (enableClockStats) {
-      stats.incLong(compressionDecompressTimeId, getClockTime() - startTime);
+      stats.incLong(compressionDecompressTimeId, getTime() - startTime);
     }
   }
 
@@ -915,7 +917,7 @@ public class CachePerfStats {
    */
   public long startNetload() {
     stats.incInt(netloadsInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   /**
@@ -923,7 +925,7 @@ public class CachePerfStats {
    */
   public void endNetload(long start) {
     if (enableClockStats) {
-      stats.incLong(netloadTimeId, getClockTime() - start);
+      stats.incLong(netloadTimeId, getTime() - start);
     }
     stats.incInt(netloadsInProgressId, -1);
     stats.incInt(netloadsCompletedId, 1);
@@ -954,7 +956,7 @@ public class CachePerfStats {
    */
   public long startCacheWriterCall() {
     stats.incInt(cacheWriterCallsInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   /**
@@ -962,7 +964,7 @@ public class CachePerfStats {
    */
   public void endCacheWriterCall(long start) {
     if (enableClockStats) {
-      stats.incLong(cacheWriterCallTimeId, getClockTime() - start);
+      stats.incLong(cacheWriterCallTimeId, getTime() - start);
     }
     stats.incInt(cacheWriterCallsInProgressId, -1);
     stats.incInt(cacheWriterCallsCompletedId, 1);
@@ -978,7 +980,7 @@ public class CachePerfStats {
    */
   public long startCacheListenerCall() {
     stats.incInt(cacheListenerCallsInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   /**
@@ -987,7 +989,7 @@ public class CachePerfStats {
    */
   public void endCacheListenerCall(long start) {
     if (enableClockStats) {
-      stats.incLong(cacheListenerCallTimeId, getClockTime() - start);
+      stats.incLong(cacheListenerCallTimeId, getTime() - start);
     }
     stats.incInt(cacheListenerCallsInProgressId, -1);
     stats.incInt(cacheListenerCallsCompletedId, 1);
@@ -1002,7 +1004,7 @@ public class CachePerfStats {
    */
   public long startGetInitialImage() {
     stats.incInt(getInitialImagesInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   /**
@@ -1010,7 +1012,7 @@ public class CachePerfStats {
    */
   public void endGetInitialImage(long start) {
     if (enableClockStats) {
-      stats.incLong(getInitialImageTimeId, getClockTime() - start);
+      stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
     stats.incInt(getInitialImagesCompletedId, 1);
@@ -1021,7 +1023,7 @@ public class CachePerfStats {
    */
   public void endNoGIIDone(long start) {
     if (enableClockStats) {
-      stats.incLong(getInitialImageTimeId, getClockTime() - start);
+      stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
   }
@@ -1036,11 +1038,11 @@ public class CachePerfStats {
 
   public long startIndexUpdate() {
     stats.incInt(indexUpdateInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   public void endIndexUpdate(long start) {
-    long ts = getClockTime();
+    long ts = getTime();
     stats.incLong(indexUpdateTimeId, ts - start);
     stats.incInt(indexUpdateInProgressId, -1);
     stats.incInt(indexUpdateCompletedId, 1);
@@ -1052,11 +1054,11 @@ public class CachePerfStats {
 
   long startIndexInitialization() {
     stats.incInt(indexInitializationInProgressId, 1);
-    return getClockTime();
+    return getTime();
   }
 
   void endIndexInitialization(long start) {
-    long ts = getClockTime();
+    long ts = getTime();
     stats.incLong(indexInitializationTimeId, ts - start);
     stats.incInt(indexInitializationInProgressId, -1);
     stats.incInt(indexInitializationCompletedId, 1);
@@ -1090,7 +1092,7 @@ public class CachePerfStats {
    * @return the timestamp that marks the start of the operation
    */
   public long startGet() {
-    return getClockTime();
+    return getTime();
   }
 
   /**
@@ -1098,7 +1100,7 @@ public class CachePerfStats {
    */
   public void endGet(long start, boolean miss) {
     if (enableClockStats) {
-      long delta = getClockTime() - start;
+      long delta = getTime() - start;
       stats.incLong(getTimeId, delta);
     }
     stats.incLong(getsId, 1L);
@@ -1116,13 +1118,13 @@ public class CachePerfStats {
     if (isUpdate) {
       stats.incLong(updatesId, 1L);
       if (enableClockStats) {
-        total = getClockTime() - start;
+        total = getTime() - start;
         stats.incLong(updateTimeId, total);
       }
     } else {
       stats.incLong(putsId, 1L);
       if (enableClockStats) {
-        total = getClockTime() - start;
+        total = getTime() - start;
         stats.incLong(putTimeId, total);
       }
     }
@@ -1132,13 +1134,13 @@ public class CachePerfStats {
   public void endPutAll(long start) {
     stats.incInt(putAllsId, 1);
     if (enableClockStats)
-      stats.incLong(putAllTimeId, getClockTime() - start);
+      stats.incLong(putAllTimeId, getTime() - start);
   }
 
   public void endRemoveAll(long start) {
     stats.incInt(removeAllsId, 1);
     if (enableClockStats)
-      stats.incLong(removeAllTimeId, getClockTime() - start);
+      stats.incLong(removeAllTimeId, getTime() - start);
   }
 
   public void endQueryExecution(long executionTime) {
@@ -1154,7 +1156,7 @@ public class CachePerfStats {
 
   public void endQueryResultsHashCollisionProbe(long start) {
     if (enableClockStats) {
-      stats.incLong(queryResultsHashCollisionProbeTimeId, getClockTime() - start);
+      stats.incLong(queryResultsHashCollisionProbeTimeId, getTime() - start);
     }
   }
 
@@ -1238,7 +1240,7 @@ public class CachePerfStats {
   void endDeltaUpdate(long start) {
     stats.incInt(deltaUpdatesId, 1);
     if (enableClockStats) {
-      stats.incLong(deltaUpdatesTimeId, getClockTime() - start);
+      stats.incLong(deltaUpdatesTimeId, getTime() - start);
     }
   }
 
@@ -1249,7 +1251,7 @@ public class CachePerfStats {
   public void endDeltaPrepared(long start) {
     stats.incInt(deltasPreparedId, 1);
     if (enableClockStats) {
-      stats.incLong(deltasPreparedTimeId, getClockTime() - start);
+      stats.incLong(deltasPreparedTimeId, getTime() - start);
     }
   }
 
@@ -1475,18 +1477,14 @@ public class CachePerfStats {
   public void endImport(long entryCount, long start) {
     stats.incLong(importedEntriesCountId, entryCount);
     if (enableClockStats) {
-      stats.incLong(importTimeId, getClockTime() - start);
+      stats.incLong(importTimeId, getTime() - start);
     }
   }
 
   public void endExport(long entryCount, long start) {
     stats.incLong(exportedEntriesCountId, entryCount);
     if (enableClockStats) {
-      stats.incLong(exportTimeId, getClockTime() - start);
+      stats.incLong(exportTimeId, getTime() - start);
     }
-  }
-
-  interface Clock {
-    long getTime();
   }
 }
