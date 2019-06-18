@@ -30,7 +30,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -74,9 +73,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
     when(this.securityService.login(this.securityProps)).thenReturn(this.subject);
     when(this.distributionConfig.getSecurityProps()).thenReturn(this.securityProps);
     when(this.serviceConfig.getDistributionConfig()).thenReturn(this.distributionConfig);
-    when(this.services.getSecurityLogWriter()).thenReturn(mock(InternalLogWriter.class));
     when(this.services.getConfig()).thenReturn(this.serviceConfig);
-    when(this.services.getSecurityService()).thenReturn(this.securityService);
   }
 
   protected abstract boolean isIntegratedSecurity();

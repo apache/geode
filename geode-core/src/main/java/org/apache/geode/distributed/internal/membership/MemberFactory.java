@@ -93,8 +93,8 @@ public class MemberFactory {
       DMStats stats,
       SecurityService securityService,
       final Authenticator authenticator) {
-    return services.newMembershipManager(listener, system, transport, stats, securityService,
-        authenticator);
+    return services.newMembershipManager(listener, transport, stats,
+        authenticator, system.getConfig());
   }
 
   /**

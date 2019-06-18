@@ -20,10 +20,9 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -41,8 +40,6 @@ import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMes
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 
 @SuppressWarnings("ConstantConditions")
 public class Services {
@@ -57,17 +54,12 @@ public class Services {
   private final ServiceConfig config;
   private final DMStats stats;
   private final Stopper cancelCriterion;
-  private final SecurityService securityService;
-  private final InternalDistributedSystem distributedSystem;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
 
   private Locator locator;
-
-  private LogWriter logWriter;
-  private LogWriter securityLogWriter;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -100,26 +92,19 @@ public class Services {
     this.joinLeave = null;
     this.healthMon = null;
     this.messenger = null;
-    this.securityService = SecurityServiceFactory.create();
     this.auth = null;
-    this.distributedSystem = null;
   }
 
   public Services(DistributedMembershipListener listener,
-      InternalDistributedSystem system,
-      RemoteTransportConfig transport, DMStats stats, SecurityService securityService,
-      final Authenticator authenticator) {
-    this.distributedSystem = system;
+      RemoteTransportConfig transport, DMStats stats,
+      final Authenticator authenticator, DistributionConfig config) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, system.getConfig());
+    this.config = new ServiceConfig(transport, config);
     this.manager = new GMSMembershipManager(listener);
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
-    this.logWriter = distributedSystem.getLogWriter();
     this.messenger = new JGroupsMessenger();
-    this.securityLogWriter = distributedSystem.getSecurityLogWriter();
-    this.securityService = securityService;
     this.auth = authenticator;
   }
 
@@ -237,32 +222,6 @@ public class Services {
         }
       }
     }
-  }
-
-  public InternalDistributedSystem getDistributedSystem() {
-    return this.distributedSystem;
-  }
-
-  public SecurityService getSecurityService() {
-    return this.securityService;
-  }
-
-  /**
-   * returns the DistributedSystem's log writer
-   *
-   * @deprecated use a log4j-based LogService
-   */
-  public LogWriter getLogWriter() {
-    return this.logWriter;
-  }
-
-  /**
-   * returns the DistributedSystem's security log writer
-   *
-   * @deprecated use a log4j-based LogService
-   */
-  public LogWriter getSecurityLogWriter() {
-    return this.securityLogWriter;
   }
 
   public Authenticator getAuthenticator() {
