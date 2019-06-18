@@ -66,7 +66,7 @@ public class PRHARedundancyProviderTest {
   }
 
   @Test
-  public void buildPartitionedRegionInfo_() {
+  public void buildPartitionedRegionInfo() {
     when(mockPartitionedRegion.getRegionAdvisor().adviseDataStore()).thenReturn(new TreeSet<>());
     when(mockPartitionedRegion.getRegionAdvisor().getProxyBucketArray())
         .thenReturn(new ProxyBucketRegion[] {});
