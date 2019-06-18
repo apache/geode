@@ -238,7 +238,7 @@ public class Put65 extends BaseCommand {
       clientMessage.setMetaRegion(isMetaRegion);
 
       securityService.authorize(Resource.DATA, ResourcePermission.Operation.WRITE, regionName,
-          key.toString());
+          key);
 
       AuthorizeRequest authzRequest = null;
       if (!isMetaRegion) {

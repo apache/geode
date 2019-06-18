@@ -125,7 +125,7 @@ public class Request extends BaseCommand {
         GetOperationContext getContext = null;
 
         try {
-          securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+          securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
           AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
           if (authzRequest != null) {
             getContext = authzRequest.getAuthorize(regionName, key, callbackArg);

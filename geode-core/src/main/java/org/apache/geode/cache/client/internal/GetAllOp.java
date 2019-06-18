@@ -76,8 +76,9 @@ public class GetAllOp {
       List retryList = new ArrayList();
       List callableTasks =
           constructGetAllTasks(region.getFullPath(), serverToFilterMap, (PoolImpl) pool, callback);
-      Map<ServerLocation, Object> results = SingleHopClientExecutor.submitGetAll(serverToFilterMap,
-          callableTasks, cms, (LocalRegion) region);
+      Map<ServerLocation, Object> results =
+          SingleHopClientExecutor.submitGetAll(serverToFilterMap,
+              callableTasks, cms, (LocalRegion) region);
       for (ServerLocation server : results.keySet()) {
         Object serverResult = results.get(server);
         if (serverResult instanceof ServerConnectivityException) {

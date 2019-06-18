@@ -29,7 +29,7 @@ import org.apache.geode.test.junit.categories.PulseTest;
 import org.apache.geode.test.junit.rules.GeodeHttpClientRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
-@Category({PulseTest.class})
+@Category(PulseTest.class)
 public class PulseDataExportTest {
 
   @Rule
@@ -41,8 +41,8 @@ public class PulseDataExportTest {
   public GeodeHttpClientRule client = new GeodeHttpClientRule(server::getHttpPort);
 
   @Before
-  public void before() throws Exception {
-    Region region = server.getCache().getRegion("regionA");
+  public void before() {
+    Region<String, String> region = server.getCache().getRegion("regionA");
     region.put("key1", "value1");
     region.put("key2", "value2");
     region.put("key3", "value3");
@@ -57,6 +57,6 @@ public class PulseDataExportTest {
             .hasStatusCode(200)
             .hasResponseBody()
             .isEqualToIgnoringWhitespace(
-                "{\"result\":[\"value1\",\"value2\",\"value3\"]}");
+                "{\"result\":[[\"java.lang.String\",\"value1\"],[\"java.lang.String\",\"value2\"],[\"java.lang.String\",\"value3\"]]}");
   }
 }

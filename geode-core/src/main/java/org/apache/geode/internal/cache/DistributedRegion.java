@@ -41,6 +41,7 @@ import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InvalidDeltaException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.CacheClosedException;
@@ -143,6 +144,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   private final Object dlockMonitor = new Object();
 
   final CacheDistributionAdvisor distAdvisor;
+  private final SenderIdMonitor senderIdMonitor;
 
   /**
    * GuardedBy {@link #dlockMonitor}
@@ -200,6 +202,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     initializationLatchAfterMemberTimeout =
         new StoppableCountDownLatch(getCancelCriterion(), 1);
     distAdvisor = createDistributionAdvisor(internalRegionArgs);
+    senderIdMonitor = createSenderIdMonitor();
 
     if (getDistributionManager().getConfig().getEnableNetworkPartitionDetection()
         && !isInternalRegion() && !attrs.getScope().isAck() && !doesNotDistribute()
@@ -2741,47 +2744,41 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
   public void addGatewaySenderId(String gatewaySenderId) {
     super.addGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
   }
 
   @Override
   public void removeGatewaySenderId(String gatewaySenderId) {
     super.removeGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
   }
 
   @Override
   public void addAsyncEventQueueId(String asyncEventQueueId) {
     super.addAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
   }
 
   @Override
   public void removeAsyncEventQueueId(String asyncEventQueueId) {
     super.removeAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
+  }
+
+  SenderIdMonitor createSenderIdMonitor() {
+    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
+  }
+
+  void updateSenderIdMonitor() {
+    this.senderIdMonitor.update();
   }
 
   @Override
   void checkSameSenderIdsAvailableOnAllNodes() {
-    List<Set<String>> senderIds =
-        getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
-    if (!senderIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
-
-              getName(), senderIds.get(0), senderIds.get(1)));
-    }
-
-    List<Set<String>> asycnQueueIds = getCacheDistributionAdvisor()
-        .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
-    if (!asycnQueueIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
-
-              getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)));
-    }
+    this.senderIdMonitor.checkSenderIds();
   }
 
   /**
@@ -3959,4 +3956,8 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return getCacheDistributionAdvisor().adviseNetWrite();
   }
 
+  @VisibleForTesting
+  public SenderIdMonitor getSenderIdMonitor() {
+    return senderIdMonitor;
+  }
 }

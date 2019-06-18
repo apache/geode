@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
@@ -49,6 +48,8 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
   private void createCache() {
     // Mock cache
     this.cache = Fakes.cache();
+    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+    when(this.cache.getDistributedSystem()).thenReturn(ids);
   }
 
   private void createGatewaySender() {
@@ -69,12 +70,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn("/dataStoreRegion");
-
-    InternalCache cache = mock(InternalCache.class);
-    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-    when(lr.getCache()).thenReturn(cache);
-    when(cache.getDistributedSystem()).thenReturn(ids);
-    when(ids.getOffHeapStore()).thenReturn(null);
+    when(lr.getCache()).thenReturn(this.cache);
 
     Object lastUpdateValue = "Object_13964_5";
     long lastUpdateSequenceId = 104, lastUpdateShadowKey = 28161;
@@ -89,7 +85,7 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
         "Object_13964", lastUpdateValue, lastUpdateSequenceId, lastUpdateShadowKey));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
-        "Object_13964", null, 102, 28274));
+        "Object_13964", null, 104, 28274));
 
     // Conflate the batch of events
     List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
@@ -113,9 +109,10 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
   @Test
   public void validateBatchConflationWithBatchContainingDuplicateNonConflatableEvents()
       throws Exception {
-    // This is a test for GEODE-4704.
-    // A batch containing events like below is conflated. The conflation code should not affect this
-    // batch.
+    // In certain cases, a batch could contain multiple CREATE events on the same region and key.
+    // These events should not be conflated such that the order is incorrect.
+
+    // Here is an example batch that contains 2 CREATE events on key=Object_14024:
     // SenderEventImpl[id=EventIDid=57bytes;threadID=0x10018|112;sequenceID=100;bucketId=24];operation=CREATE;region=/dataStoreRegion;key=Object_13964;shadowKey=27709]
     // SenderEventImpl[id=EventIDid=57bytes;threadID=0x10018|112;sequenceID=101;bucketId=24];operation=CREATE;region=/dataStoreRegion;key=Object_14024;shadowKey=27822]
     // SenderEventImpl[id=EventIDid=57bytes;threadID=0x10018|112;sequenceID=102;bucketId=24];operation=DESTROY;region=/dataStoreRegion;key=Object_13964;shadowKey=27935]
@@ -125,21 +122,16 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     AbstractGatewaySenderEventProcessor processor =
         ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
 
-    // Create a batch of non-conflatable events with one duplicate
+    // Create a batch of non-conflatable events with one duplicate (not including the shadowKey)
     List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
     LocalRegion lr = mock(LocalRegion.class);
     when(lr.getFullPath()).thenReturn("/dataStoreRegion");
-
-    InternalCache cache = mock(InternalCache.class);
-    InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-    when(lr.getCache()).thenReturn(cache);
-    when(cache.getDistributedSystem()).thenReturn(ids);
-    when(ids.getOffHeapStore()).thenReturn(null);
+    when(lr.getCache()).thenReturn(this.cache);
 
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
         "Object_13964", "Object_13964", 100, 27709));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
-        "Object_14024", "Object_13964", 101, 27822));
+        "Object_14024", "Object_14024", 101, 27822));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
         "Object_13964", null, 102, 27935));
     originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
@@ -150,5 +142,68 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
 
     // Assert no events were conflated incorrectly
     assertThat(originalEvents).isEqualTo(conflatedEvents);
+  }
+
+  @Test
+  public void validateBatchConflationWithBatchContainingDuplicateConflatableAndNonConflatableEvents()
+      throws Exception {
+    // In certain cases, a batch could contain multiple equal conflatable events. These events
+    // should not be conflated such that the order is incorrect.
+
+    // Here is an example batch with multiple equal events on shadowKey=16813 and shadowKey=16700:
+    // SenderEventImpl[id=EventID[threadID=104;sequenceID=2;bucketId=89];action=1;operation=UPDATE;region=/dataStoreRegion;key=Object_6079;shadowKey=16587]
+    // SenderEventImpl[id=EventID[threadID=104;sequenceID=3;bucketId=89];action=2;operation=DESTROY;region=/dataStoreRegion;key=Object_6079;shadowKey=16700]
+    // SenderEventImpl[id=EventID[threadID=112;sequenceID=9;bucketId=89];action=1;operation=PUTALL_UPDATE;region=/dataStoreRegion;key=Object_7731;shadowKey=16813]
+    // SenderEventImpl[id=EventID[threadID=112;sequenceID=12;bucketId=89];action=1;operation=PUTALL_UPDATE;region=/dataStoreRegion;key=Object_6591;shadowKey=16926]
+    // SenderEventImpl[id=EventID[threadID=104;sequenceID=3;bucketId=89];action=2;operation=DESTROY;region=/dataStoreRegion;key=Object_6079;shadowKey=16700]
+    // SenderEventImpl[id=EventID[threadID=112;sequenceID=9;bucketId=89];action=1;operation=PUTALL_UPDATE;region=/dataStoreRegion;key=Object_7731;shadowKey=16813]
+
+    // Create a ParallelGatewaySenderEventProcessor
+    AbstractGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    // Create mock region
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    // Create a batch of conflatable and non-conflatable events with one duplicate conflatable event
+    // and one duplicate non-conflatable event (including the shadowKey)
+    List<GatewaySenderEventImpl> originalEvents = new ArrayList<>();
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_6079", "Object_6079", 104, 2, 89, 16587));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
+        "Object_6079", null, 104, 3, 89, 16700));
+    originalEvents
+        .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
+            "Object_7731", "Object_7731", 112, 9, 89, 16813));
+    originalEvents
+        .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
+            "Object_6591", "Object_6591", 112, 12, 89, 16926));
+    originalEvents.add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.DESTROY,
+        "Object_6079", null, 104, 3, 89, 16700));
+    originalEvents
+        .add(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.PUTALL_UPDATE,
+            "Object_7731", "Object_7731", 112, 9, 89, 16813));
+    logEvents("original", originalEvents);
+
+    // Conflate the batch of events
+    List<GatewaySenderEventImpl> conflatedEvents = processor.conflate(originalEvents);
+    logEvents("conflated", conflatedEvents);
+    assertThat(conflatedEvents.size()).isEqualTo(4);
+    assertThat(originalEvents.get(0)).isEqualTo(conflatedEvents.get(0));
+    assertThat(originalEvents.get(1)).isEqualTo(conflatedEvents.get(1));
+    assertThat(originalEvents.get(2)).isEqualTo(conflatedEvents.get(2));
+    assertThat(originalEvents.get(3)).isEqualTo(conflatedEvents.get(3));
+  }
+
+  private void logEvents(String message, List<GatewaySenderEventImpl> events) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("The list contains the following ").append(events.size()).append(" ")
+        .append(message).append(" events:");
+    for (GatewaySenderEventImpl event : events) {
+      builder.append("\t\n").append(event.toSmallString());
+    }
+    System.out.println(builder);
   }
 }

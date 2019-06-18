@@ -22,6 +22,7 @@ import javax.sql.XADataSource;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -87,5 +88,13 @@ public class TranxPoolCacheImpl extends AbstractPoolCache {
       throw new PoolException(
           "TranxPoolCacheImpl::getNewConnection: ConnectionPoolCache not intialized with XADatasource");
     }
+  }
+
+  /**
+   * Used by unit tests
+   */
+  @VisibleForTesting
+  void setXADataSource(XADataSource xads) {
+    m_xads = xads;
   }
 }

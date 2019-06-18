@@ -188,7 +188,7 @@ public class RegisterInterest61 extends BaseCommand {
       if (interestType == InterestType.REGULAR_EXPRESSION) {
         securityService.authorize(Resource.DATA, Operation.READ, regionName);
       } else {
-        securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
       }
 
       AuthorizeRequest authzRequest = serverConnection.getAuthzRequest();
