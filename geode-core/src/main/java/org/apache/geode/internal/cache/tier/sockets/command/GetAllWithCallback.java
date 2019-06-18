@@ -193,7 +193,7 @@ public class GetAllWithCallback extends BaseCommand {
         }
 
         try {
-          securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+          securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
         } catch (NotAuthorizedException ex) {
           logger.warn(
               String.format("%s: Caught the following exception attempting to get value for key=%s",

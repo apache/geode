@@ -41,7 +41,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -183,6 +182,8 @@ public class DistributionAdvisor {
    */
   private ConcurrentMap<ProfileListener, Boolean> profileListeners = new ConcurrentHashMap<>();
 
+  private volatile InitializationListener initializationListener;
+
   /**
    * The resource getting advise from this.
    */
@@ -277,48 +278,20 @@ public class DistributionAdvisor {
     // interval. This allows client caches to retry an operation that might otherwise be recovered
     // through the sync operation. Without associated event information this could cause the
     // retried operation to be mishandled. See GEODE-5505
-    final long delay = dr.getGemFireCache().getCacheServers().stream()
-        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(0L);
-    dr.getGemFireCache().getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
-      @Override
-      public void run2() {
-        while (!dr.isInitialized()) {
-          if (dr.isDestroyed()) {
-            return;
-          } else {
-            try {
-              if (isDebugEnabled) {
-                logger.debug(
-                    "da.syncForCrashedMember waiting for region to finish initializing: {}", dr);
-              }
-              Thread.sleep(100);
-            } catch (InterruptedException e) {
-              return;
-            }
-          }
-        }
-        if (dr.getDataPolicy().withPersistence() && persistentId == null) {
-          // Fix for 46704. The lost member may be a replicate
-          // or an empty accessor. We don't need to do a synchronization
-          // in that case, because those members send their writes to
-          // a persistent member.
-          if (isDebugEnabled) {
-            logger.debug(
-                "da.syncForCrashedMember skipping sync because crashed member is not persistent: {}",
-                id);
-          }
-          return;
-        }
-        dr.synchronizeForLostMember(id, lostVersionID);
-      }
-    }, delay);
+    final long delay = getDelay(dr);
+    dr.scheduleSynchronizeForLostMember(id, lostVersionID, delay);
     if (dr.getConcurrencyChecksEnabled()) {
       dr.setRegionSynchronizeScheduled(lostVersionID);
     }
   }
 
-  private PersistentMemberID getPersistentID(CacheProfile cp) {
+  PersistentMemberID getPersistentID(CacheProfile cp) {
     return cp.persistentID;
+  }
+
+  long getDelay(DistributedRegion dr) {
+    return dr.getGemFireCache().getCacheServers().stream()
+        .mapToLong(CacheServer::getMaximumTimeBetweenPings).max().orElse(0L);
   }
 
   /** find the region for a delta-gii operation (synch) */
@@ -429,6 +402,17 @@ public class DistributionAdvisor {
     membershipListeners.putIfAbsent(listener, Boolean.TRUE);
   }
 
+  public interface InitializationListener {
+    /**
+     * Called after this DistributionAdvisor has been initialized.
+     */
+    void initialized();
+  }
+
+  public void setInitializationListener(InitializationListener listener) {
+    this.initializationListener = listener;
+  }
+
   public boolean addProfileChangeListener(ProfileListener listener) {
     return null == profileListeners.putIfAbsent(listener, Boolean.TRUE);
   }
@@ -458,10 +442,21 @@ public class DistributionAdvisor {
     if (initialized) {
       return false;
     }
-    synchronized (initializeLock) {
-      if (!initialized) {
-        exchangeProfiles();
-        return true;
+    boolean exchangedProfiles = false;
+    try {
+      synchronized (initializeLock) {
+        if (!initialized) {
+          exchangedProfiles = true;
+          exchangeProfiles();
+          return true;
+        }
+      }
+    } finally {
+      if (exchangedProfiles) {
+        if (this.initializationListener != null) {
+          // this needs to be done outside the initializeLock
+          this.initializationListener.initialized();
+        }
       }
     }
     return false;
@@ -480,7 +475,7 @@ public class DistributionAdvisor {
    *
    * @since GemFire 5.7
    */
-  protected boolean pollIsInitialized() {
+  public boolean pollIsInitialized() {
     return initialized;
   }
 

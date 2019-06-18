@@ -21,12 +21,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -59,20 +57,21 @@ import org.apache.geode.management.internal.configuration.mutators.PdxManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
+import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
+import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
-  private InternalCache cache;
   private ConfigurationPersistenceService persistenceService;
   private Map<Class, ConfigurationManager<? extends CacheElement>> managers;
   private Map<Class, ConfigurationValidator> validators;
+  private MemberValidator memberValidator;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(cache, persistenceService, new HashMap(), new HashMap());
+    this(persistenceService, new HashMap(), new HashMap(), null);
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager(cache));
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
@@ -82,15 +81,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // initialize the list of validators
     validators.put(CacheElement.class, new CacheElementValidator());
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
+    validators.put(GatewayReceiverConfig.class, new GatewayReceiverConfigValidator());
+    memberValidator = new MemberValidator(cache, persistenceService);
   }
 
   @VisibleForTesting
-  public LocatorClusterManagementService(InternalCache cache,
-      ConfigurationPersistenceService persistenceService, Map managers, Map validators) {
-    this.cache = cache;
+  public LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
+      Map managers, Map validators, MemberValidator memberValidator) {
     this.persistenceService = persistenceService;
     this.managers = managers;
     this.validators = validators;
+    this.memberValidator = memberValidator;
   }
 
   @Override
@@ -106,19 +107,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // first validate common attributes of all configuration object
     validators.get(CacheElement.class).validate(CacheElementOperation.CREATE, config);
 
+
     String group = config.getConfigGroup();
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
       validator.validate(CacheElementOperation.CREATE, config);
-      // exit early if config element already exists in cache config
-      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      if (validator.exists(config.getId(), currentPersistedConfig)) {
-        throw new EntityExistsException("Cache element '" + config.getId() + "' already exists");
-      }
     }
 
+    // check if this config already exists on all/some members of this group
+    memberValidator.validateCreate(config, configurationManager);
+
     // execute function on all members
-    Set<DistributedMember> targetedMembers = findMembers(group);
+    Set<DistributedMember> targetedMembers = memberValidator.findMembers(group);
 
     ClusterManagementResult result = new ClusterManagementResult();
 
@@ -174,31 +174,23 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.get(CacheElement.class).validate(CacheElementOperation.DELETE, config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
-    validator.validate(CacheElementOperation.DELETE, config);
+    if (validator != null) {
+      validator.validate(CacheElementOperation.DELETE, config);
+    }
 
-    List<String> relevantGroups = persistenceService.getGroups().stream().filter(g -> {
-      CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(g);
-      if (currentPersistedConfig != null && validator != null) {
-        return validator.exists(config.getId(), currentPersistedConfig);
-      } else {
-        return false;
-      }
-    }).collect(Collectors.toList());
-
-    if (relevantGroups.isEmpty()) {
+    String[] groupsWithThisElement =
+        memberValidator.findGroupsWithThisElement(config.getId(), configurationManager);
+    if (groupsWithThisElement.length == 0) {
       throw new EntityNotFoundException("Cache element '" + config.getId() + "' does not exist");
     }
 
     // execute function on all members
-    Set<DistributedMember> targetedMembers = new HashSet<>();
-    relevantGroups.forEach(g -> targetedMembers.addAll(findMembers(g)));
-
     ClusterManagementResult result = new ClusterManagementResult();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
         Arrays.asList(config, CacheElementOperation.DELETE),
-        targetedMembers);
+        memberValidator.findMembers(groupsWithThisElement));
     functionResults
         .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
             functionResult.isSuccessful(),
@@ -213,7 +205,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // persist configuration in cache config
     List<String> updatedGroups = new ArrayList<>();
     List<String> failedGroups = new ArrayList<>();
-    for (String finalGroup : relevantGroups) {
+    for (String finalGroup : groupsWithThisElement) {
       persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
         try {
           configurationManager.delete(config, cacheConfigForGroup);
@@ -264,7 +256,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<? extends T> listInGroup = manager.list(filter, currentPersistedConfig);
       for (T element : listInGroup) {
-        if (group.equals(element.getConfigGroup()) || element instanceof MultiGroupCacheElement) {
+        if (filter.getGroup() == null || // if listing all groups
+            group.equals(filter.getGroup()) || // if filter group matches this group
+            element instanceof MultiGroupCacheElement) { // if element can span multi groups
           element.setGroup(group);
           resultList.add(element);
         }
@@ -336,17 +330,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public boolean isConnected() {
     return true;
-  }
-
-  @VisibleForTesting
-  Set<DistributedMember> findMembers(String group) {
-    Stream<DistributedMember> memberStream =
-        cache.getDistributionManager().getNormalDistributionManagerIds()
-            .stream().map(DistributedMember.class::cast);
-    if (!"cluster".equals(group)) {
-      memberStream = memberStream.filter(m -> m.getGroups().contains(group));
-    }
-    return memberStream.collect(Collectors.toSet());
   }
 
   @VisibleForTesting

@@ -55,9 +55,8 @@ import org.apache.geode.internal.util.IOUtils;
 import org.apache.geode.internal.util.JavaCommandBuilder;
 
 /**
- * A command line utility inspired by the <code>CacheServerLauncher</code> that is responsible for
- * administering a stand-along GemFire JMX {@link Agent}.
- * <p/>
+ * A command line utility that is responsible for administering a stand-alone GemFire JMX
+ * {@link Agent}.
  *
  * @since GemFire 3.5
  */

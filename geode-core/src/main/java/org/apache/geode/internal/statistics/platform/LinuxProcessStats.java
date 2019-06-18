@@ -20,8 +20,6 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.statistics.HostStatHelper;
-import org.apache.geode.internal.statistics.LocalStatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -63,9 +61,6 @@ public class LinuxProcessStats {
    * @since GemFire 3.5
    */
   public static ProcessStats createProcessStats(final Statistics stats) {
-    if (stats instanceof LocalStatisticsImpl) {
-      HostStatHelper.refresh((LocalStatisticsImpl) stats);
-    } // otherwise its a Dummy implementation so do nothing
     return new ProcessStats(stats) {
       @Override
       public long getProcessSize() {

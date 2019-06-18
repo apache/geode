@@ -14,11 +14,13 @@
  */
 package org.apache.geode.distributed;
 
+import static java.lang.System.lineSeparator;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.AvailablePort.SOCKET;
 import static org.apache.geode.internal.AvailablePort.isPortAvailable;
 import static org.apache.geode.internal.process.ProcessUtils.identifyPid;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -50,7 +52,6 @@ import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.lang.AvailablePid;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
-import org.apache.geode.test.dunit.IgnoredException;
 
 /**
  * Abstract base class for integration tests of both {@link LocatorLauncher} and
@@ -67,8 +68,8 @@ public abstract class LauncherIntegrationTestCase {
 
   protected volatile int localPid;
   protected volatile int fakePid;
+
   private volatile ServerSocket socket;
-  private IgnoredException ignoredException;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -82,15 +83,13 @@ public abstract class LauncherIntegrationTestCase {
   @Before
   public void setUpAbstractLauncherIntegrationTestCase() throws Exception {
     System.setProperty(DistributionConfig.GEMFIRE_PREFIX + MCAST_PORT, Integer.toString(0));
-    ignoredException =
-        IgnoredException.addIgnoredException(EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED);
+    addIgnoredException(EXPECTED_EXCEPTION_MBEAN_NOT_REGISTERED);
     localPid = identifyPid();
     fakePid = new AvailablePid().findAvailablePid(PREFERRED_FAKE_PID);
   }
 
   @After
   public void tearDownAbstractLauncherIntegrationTestCase() throws Exception {
-    ignoredException.remove();
     if (socket != null) {
       socket.close();
     }
@@ -142,7 +141,7 @@ public abstract class LauncherIntegrationTestCase {
       File file = new File(getWorkingDirectory(), getProcessType().getPidFileName());
       FileWriter writer = new FileWriter(file);
       writer.write(String.valueOf(content));
-      writer.write("\n");
+      writer.write(lineSeparator());
       writer.flush();
       writer.close();
       assertTrue(file.exists());
@@ -314,5 +313,4 @@ public abstract class LauncherIntegrationTestCase {
     assertThat(isProcessAlive(pid)).isTrue();
     return pid;
   }
-
 }

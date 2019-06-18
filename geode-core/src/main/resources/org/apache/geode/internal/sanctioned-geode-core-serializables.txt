@@ -247,7 +247,6 @@ org/apache/geode/internal/cache/BucketAdvisor$SetFromMap,true,245465785475754387
 org/apache/geode/internal/cache/BucketNotFoundException,true,2898657229184289911
 org/apache/geode/internal/cache/BucketRegion$SizeOp,false
 org/apache/geode/internal/cache/CacheClientStatus,true,-56148046466517217,_id:org/apache/geode/internal/cache/tier/sockets/ClientProxyMembershipID,_memberId:java/lang/String,_numberOfConnections:int,_socketAddresses:java/util/List,_socketPorts:java/util/List
-org/apache/geode/internal/cache/CacheServerLauncher$Status,true,190943081363646485,baseName:java/lang/String,dsMsg:java/lang/String,exception:java/lang/Throwable,msg:java/lang/String,pid:int,state:int
 org/apache/geode/internal/cache/CommitReplyException,true,-7711083075296622596,exceptions:java/util/Set
 org/apache/geode/internal/cache/DataLocationException,true,-7385193860335007389
 org/apache/geode/internal/cache/DiskInitFile$DiskRegionFlag,false
@@ -480,7 +479,6 @@ org/apache/geode/management/internal/cli/functions/FetchRegionAttributesFunction
 org/apache/geode/management/internal/cli/functions/FetchSharedConfigurationStatusFunction,true,1
 org/apache/geode/management/internal/cli/functions/GarbageCollectionFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewayReceiverCreateFunction,true,8746830191680509335
-org/apache/geode/management/internal/cli/functions/GatewayReceiverFunctionArgs,true,-5158224572470173267,bindAddress:java/lang/String,endPort:java/lang/Integer,gatewayTransportFilters:java/lang/String[],hostnameForSenders:java/lang/String,ifNotExists:java/lang/Boolean,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
 org/apache/geode/management/internal/cli/functions/GatewaySenderCreateFunction,true,8746830191680509335
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunction,true,1
 org/apache/geode/management/internal/cli/functions/GatewaySenderDestroyFunctionArgs,true,3848480256348119530,id:java/lang/String,ifExists:boolean

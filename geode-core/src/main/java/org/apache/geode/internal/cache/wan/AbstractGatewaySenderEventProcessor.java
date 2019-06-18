@@ -772,6 +772,9 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     List<GatewaySenderEventImpl> conflatedEvents = null;
     // Conflate the batch if necessary
     if (this.sender.isBatchConflationEnabled() && events.size() > 1) {
+      if (logger.isDebugEnabled()) {
+        logEvents("original", events);
+      }
       Map<ConflationKey, GatewaySenderEventImpl> conflatedEventsMap =
           new LinkedHashMap<ConflationKey, GatewaySenderEventImpl>();
       conflatedEvents = new ArrayList<GatewaySenderEventImpl>();
@@ -783,12 +786,16 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           ConflationKey key = new ConflationKey(gsEvent.getRegion().getFullPath(),
               gsEvent.getKeyToConflate(), gsEvent.getOperation());
 
-          // Attempt to remove the key. If the entry is removed, that means a
-          // duplicate key was found. If not, this is a no-op.
-          conflatedEventsMap.remove(key);
+          // Get the entry at that key
+          GatewaySenderEventImpl existingEvent = conflatedEventsMap.get(key);
+          if (!gsEvent.equals(existingEvent)) {
+            // Attempt to remove the key. If the entry is removed, that means a
+            // duplicate key was found. If not, this is a no-op.
+            conflatedEventsMap.remove(key);
 
-          // Add the key to the end of the map.
-          conflatedEventsMap.put(key, gsEvent);
+            // Add the key to the end of the map.
+            conflatedEventsMap.put(key, gsEvent);
+          }
         } else {
           // The event should not be conflated (create or destroy). Add it to
           // the map.
@@ -806,10 +813,23 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       // Increment the events conflated from batches statistic
       this.sender.getStatistics()
           .incEventsConflatedFromBatches(events.size() - conflatedEvents.size());
+      if (logger.isDebugEnabled()) {
+        logEvents("conflated", conflatedEvents);
+      }
     } else {
       conflatedEvents = events;
     }
     return conflatedEvents;
+  }
+
+  private void logEvents(String message, List<GatewaySenderEventImpl> events) {
+    StringBuilder builder = new StringBuilder();
+    builder.append("The batch contains the following ").append(events.size()).append(" ")
+        .append(message).append(" events:");
+    for (GatewaySenderEventImpl event : events) {
+      builder.append("\t\n").append(event.toSmallString());
+    }
+    logger.debug(builder);
   }
 
   private List<GatewaySenderEventImpl> addPDXEvent() throws IOException {

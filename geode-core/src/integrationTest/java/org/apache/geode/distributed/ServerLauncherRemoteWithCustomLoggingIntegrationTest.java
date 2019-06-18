@@ -49,22 +49,28 @@ public class ServerLauncherRemoteWithCustomLoggingIntegrationTest
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Before
-  public void setUpServerLauncherRemoteWithCustomLoggingIntegrationTest() throws Exception {
+  public void setUpServerLauncherRemoteWithCustomLoggingIntegrationTest() {
     String configFileName = getClass().getSimpleName() + "_log4j2.xml";
-    customLoggingConfigFile = createFileFromResource(getResource(configFileName),
-        getWorkingDirectory(), configFileName);
+    customLoggingConfigFile = createFileFromResource(
+        getResource(configFileName),
+        getWorkingDirectory(),
+        configFileName);
   }
 
   @Test
   public void startWithCustomLoggingConfiguration() throws Exception {
     startServer(
-        new ServerCommand(this).addJvmArgument(customLoggingConfigArgument())
-            .disableDefaultServer(true).withCommand(Command.START),
-        new ToSystemOut(), new ToSystemOut());
+        new ServerCommand(this)
+            .addJvmArgument(customLoggingConfigArgument())
+            .disableDefaultServer(true)
+            .withCommand(Command.START),
+        new ToSystemOut(),
+        new ToSystemOut());
 
     assertThat(systemOutRule.getLog())
         .contains(CONFIGURATION_FILE_PROPERTY + " = " + getCustomLoggingConfigFilePath());
-    assertThat(systemOutRule.getLog()).contains(CONFIG_LAYOUT_PREFIX);
+    assertThat(systemOutRule.getLog())
+        .contains(CONFIG_LAYOUT_PREFIX);
   }
 
   private String customLoggingConfigArgument() {

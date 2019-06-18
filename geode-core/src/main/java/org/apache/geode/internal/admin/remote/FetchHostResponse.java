@@ -31,7 +31,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.CacheServerLauncher;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -77,7 +76,7 @@ public class FetchHostResponse extends AdminResponse {
         }
       }
       m.host = host;
-      m.isDedicatedCacheServer = CacheServerLauncher.isDedicatedCacheServer;
+      m.isDedicatedCacheServer = false;
 
       DistributionConfig config = dm.getSystem().getConfig();
       m.name = config.getName();

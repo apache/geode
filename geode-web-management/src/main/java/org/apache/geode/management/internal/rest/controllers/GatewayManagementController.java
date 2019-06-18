@@ -19,8 +19,11 @@ import static org.apache.geode.cache.configuration.GatewayReceiverConfig.GATEWAY
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,5 +46,14 @@ public class GatewayManagementController extends AbstractManagementController {
       filter.setGroup(group);
     }
     return clusterManagementService.list(filter);
+  }
+
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
+  @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
+  public ResponseEntity<ClusterManagementResult> createGatewayReceiver(
+      @RequestBody GatewayReceiverConfig gatewayReceiverConfig) {
+    ClusterManagementResult result = clusterManagementService.create(gatewayReceiverConfig);
+    return new ResponseEntity<>(result,
+        result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }

@@ -1933,6 +1933,9 @@ public class InternalDistributedSystem extends DistributedSystem
   private FunctionServiceStats functionServiceStats = null;
 
   public FunctionStats getFunctionStats(String textId) {
+    if (statsDisabled) {
+      return FunctionStats.dummy;
+    }
     return JavaWorkarounds.computeIfAbsent(functionExecutionStatsMap, textId,
         key -> new FunctionStats(this, key));
   }

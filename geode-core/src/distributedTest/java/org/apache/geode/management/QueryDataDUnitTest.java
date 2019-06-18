@@ -32,8 +32,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import javax.management.ObjectName;
 
@@ -169,7 +167,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testQueryOnPartitionedRegion() throws Exception {
+  public void testQueryOnPartitionedRegion() {
     managerVM.invoke(testName.getMethodName(), () -> {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
@@ -197,7 +195,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testQueryOnReplicatedRegion() throws Exception {
+  public void testQueryOnReplicatedRegion() {
     managerVM.invoke(testName.getMethodName(), () -> {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
@@ -213,7 +211,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testMemberWise() throws Exception {
+  public void testMemberWise() {
     managerVM.invoke(testName.getMethodName(), () -> {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
@@ -227,7 +225,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testLimitForQuery() throws Exception {
+  public void testLimitForQuery() {
     memberVMs[0].invoke("putBigInstances", () -> putBigInstances(REPLICATE_REGION_NAME4));
 
     managerVM.invoke(testName.getMethodName(), () -> {
@@ -283,7 +281,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testErrors() throws Exception {
+  public void testErrors() {
     managerVM.invoke(testName.getMethodName(), () -> {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
@@ -327,7 +325,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testNormalRegions() throws Exception {
+  public void testNormalRegions() {
     managerVM.invoke(testName.getMethodName(), () -> {
       DistributedSystemMXBean distributedSystemMXBean =
           managementTestRule.getSystemManagementService().getDistributedSystemMXBean();
@@ -367,14 +365,15 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   @Test
-  public void testRegionsLocalDataSet() throws Exception {
+  public void testRegionsLocalDataSet() {
     String partitionedRegionName = testName.getMethodName() + "_PARTITIONED_REGION";
 
     String[] values1 = new String[] {"val1", "val2", "val3"};
     String[] values2 = new String[] {"val4", "val5", "val6"};
 
     memberVMs[0].invoke(testName.getMethodName() + " Create Region", () -> {
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+      PartitionAttributesFactory<Date, Object> partitionAttributesFactory =
+          new PartitionAttributesFactory<>();
       partitionAttributesFactory.setRedundantCopies(2).setTotalNumBuckets(12);
 
       List<FixedPartitionAttributes> fixedPartitionAttributesList = createFixedPartitionList(1);
@@ -383,10 +382,10 @@ public class QueryDataDUnitTest implements Serializable {
       }
       partitionAttributesFactory.setPartitionResolver(new SingleHopQuarterPartitionResolver());
 
-      RegionFactory regionFactory =
-          managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
+      RegionFactory<Date, Object> regionFactory =
+          managementTestRule.getCache().<Date, Object>createRegionFactory(RegionShortcut.PARTITION)
               .setPartitionAttributes(partitionAttributesFactory.create());
-      Region region = regionFactory.create(partitionedRegionName);
+      Region<Date, Object> region = regionFactory.create(partitionedRegionName);
 
       for (int i = 0; i < values1.length; i++) {
         region.put(getDate(2013, 1, i + 5), values1[i]);
@@ -394,7 +393,8 @@ public class QueryDataDUnitTest implements Serializable {
     });
 
     memberVMs[1].invoke(testName.getMethodName() + " Create Region", () -> {
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+      PartitionAttributesFactory<Date, Object> partitionAttributesFactory =
+          new PartitionAttributesFactory<>();
       partitionAttributesFactory.setRedundantCopies(2).setTotalNumBuckets(12);
 
       List<FixedPartitionAttributes> fixedPartitionAttributesList = createFixedPartitionList(2);
@@ -403,10 +403,10 @@ public class QueryDataDUnitTest implements Serializable {
       }
       partitionAttributesFactory.setPartitionResolver(new SingleHopQuarterPartitionResolver());
 
-      RegionFactory regionFactory =
-          managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
+      RegionFactory<Date, Object> regionFactory =
+          managementTestRule.getCache().<Date, Object>createRegionFactory(RegionShortcut.PARTITION)
               .setPartitionAttributes(partitionAttributesFactory.create());
-      Region region = regionFactory.create(partitionedRegionName);
+      Region<Date, Object> region = regionFactory.create(partitionedRegionName);
 
       for (int i = 0; i < values2.length; i++) {
         region.put(getDate(2013, 5, i + 5), values2[i]);
@@ -414,15 +414,16 @@ public class QueryDataDUnitTest implements Serializable {
     });
 
     memberVMs[2].invoke(testName.getMethodName() + " Create Region", () -> {
-      PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
+      PartitionAttributesFactory<Date, Object> partitionAttributesFactory =
+          new PartitionAttributesFactory<>();
       partitionAttributesFactory.setRedundantCopies(2).setTotalNumBuckets(12);
 
       List<FixedPartitionAttributes> fixedPartitionAttributesList = createFixedPartitionList(3);
       fixedPartitionAttributesList.forEach(partitionAttributesFactory::addFixedPartitionAttributes);
       partitionAttributesFactory.setPartitionResolver(new SingleHopQuarterPartitionResolver());
 
-      RegionFactory regionFactory =
-          managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
+      RegionFactory<Date, Object> regionFactory =
+          managementTestRule.getCache().<Date, Object>createRegionFactory(RegionShortcut.PARTITION)
               .setPartitionAttributes(partitionAttributesFactory.create());
       regionFactory.create(partitionedRegionName);
     });
@@ -482,9 +483,9 @@ public class QueryDataDUnitTest implements Serializable {
 
   private void putDataInRegion(final String regionName, final Object[] portfolio, final int from,
       final int to) {
-    Region region = managementTestRule.getCache().getRegion(regionName);
+    Region<Integer, Object> region = managementTestRule.getCache().getRegion(regionName);
     for (int i = from; i < to; i++) {
-      region.put(new Integer(i), portfolio[i]);
+      region.put(i, portfolio[i]);
     }
   }
 
@@ -521,8 +522,8 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   private void putPdxInstances(final String regionName) throws CacheException {
-    InternalCache cache = (InternalCache) managementTestRule.getCache();
-    Region region = cache.getRegion(regionName);
+    InternalCache cache = managementTestRule.getCache();
+    Region<String, PdxInstance> region = cache.getRegion(regionName);
 
     PdxInstanceFactory pdxInstanceFactory =
         PdxInstanceFactoryImpl.newCreator("Portfolio", false, cache);
@@ -555,7 +556,7 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   private void putBigInstances(final String regionName) {
-    Region region = managementTestRule.getCache().getRegion(regionName);
+    Region<String, List<String>> region = managementTestRule.getCache().getRegion(regionName);
 
     for (int i = 0; i < 1200; i++) {
       List<String> bigCollection = new ArrayList<>();
@@ -577,29 +578,37 @@ public class QueryDataDUnitTest implements Serializable {
   }
 
   private void createColocatedPR() {
-    PartitionResolver testKeyBasedResolver = new TestPartitionResolver();
+    PartitionResolver<Integer, Object> testKeyBasedResolver = new TestPartitionResolver();
     managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(NUM_OF_BUCKETS)
-            .setPartitionResolver(testKeyBasedResolver).create())
+        .setPartitionAttributes(
+            new PartitionAttributesFactory<Integer, Object>().setTotalNumBuckets(NUM_OF_BUCKETS)
+                .setPartitionResolver(testKeyBasedResolver).create())
         .create(PARTITIONED_REGION_NAME1);
     managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(NUM_OF_BUCKETS)
-            .setPartitionResolver(testKeyBasedResolver).setColocatedWith(PARTITIONED_REGION_NAME1)
-            .create())
+        .setPartitionAttributes(
+            new PartitionAttributesFactory<Integer, Object>().setTotalNumBuckets(NUM_OF_BUCKETS)
+                .setPartitionResolver(testKeyBasedResolver)
+                .setColocatedWith(PARTITIONED_REGION_NAME1)
+                .create())
         .create(PARTITIONED_REGION_NAME2);
     managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(NUM_OF_BUCKETS)
-            .setPartitionResolver(testKeyBasedResolver).setColocatedWith(PARTITIONED_REGION_NAME2)
-            .create())
+        .setPartitionAttributes(
+            new PartitionAttributesFactory<Integer, Object>().setTotalNumBuckets(NUM_OF_BUCKETS)
+                .setPartitionResolver(testKeyBasedResolver)
+                .setColocatedWith(PARTITIONED_REGION_NAME2)
+                .create())
         .create(PARTITIONED_REGION_NAME3);
     managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(NUM_OF_BUCKETS)
-            .setPartitionResolver(testKeyBasedResolver).create())
+        .setPartitionAttributes(
+            new PartitionAttributesFactory<Integer, Object>().setTotalNumBuckets(NUM_OF_BUCKETS)
+                .setPartitionResolver(testKeyBasedResolver).create())
         .create(PARTITIONED_REGION_NAME4); // not collocated
     managementTestRule.getCache().createRegionFactory(RegionShortcut.PARTITION)
-        .setPartitionAttributes(new PartitionAttributesFactory().setTotalNumBuckets(NUM_OF_BUCKETS)
-            .setPartitionResolver(testKeyBasedResolver).setColocatedWith(PARTITIONED_REGION_NAME4)
-            .create())
+        .setPartitionAttributes(
+            new PartitionAttributesFactory<Integer, Object>().setTotalNumBuckets(NUM_OF_BUCKETS)
+                .setPartitionResolver(testKeyBasedResolver)
+                .setColocatedWith(PARTITIONED_REGION_NAME4)
+                .create())
         .create(PARTITIONED_REGION_NAME5); // collocated with 4
   }
 
@@ -607,24 +616,23 @@ public class QueryDataDUnitTest implements Serializable {
     managementTestRule.getCache().createRegionFactory(RegionShortcut.REPLICATE).create(regionName);
   }
 
-  private void createRegionsInNodes()
-      throws InterruptedException, TimeoutException, ExecutionException {
+  private void createRegionsInNodes() {
     // Create local Region on servers
-    memberVMs[0].invoke(() -> createLocalRegion());
+    memberVMs[0].invoke(this::createLocalRegion);
 
     // Create ReplicatedRegion on servers
-    memberVMs[0].invoke(() -> createReplicatedRegion());
-    memberVMs[1].invoke(() -> createReplicatedRegion());
-    memberVMs[2].invoke(() -> createReplicatedRegion());
+    memberVMs[0].invoke(this::createReplicatedRegion);
+    memberVMs[1].invoke(this::createReplicatedRegion);
+    memberVMs[2].invoke(this::createReplicatedRegion);
 
     memberVMs[1].invoke(() -> createDistributedRegion(REPLICATE_REGION_NAME2));
     memberVMs[0].invoke(() -> createDistributedRegion(REPLICATE_REGION_NAME3));
     memberVMs[0].invoke(() -> createDistributedRegion(REPLICATE_REGION_NAME4));
 
     // Create two co-located PartitionedRegions On Servers.
-    memberVMs[0].invoke(() -> createColocatedPR());
-    memberVMs[1].invoke(() -> createColocatedPR());
-    memberVMs[2].invoke(() -> createColocatedPR());
+    memberVMs[0].invoke(this::createColocatedPR);
+    memberVMs[1].invoke(this::createColocatedPR);
+    memberVMs[2].invoke(this::createColocatedPR);
 
     managerVM.invoke("Wait for all Region Proxies to get replicated", () -> {
       awaitDistributedRegionMXBean("/" + PARTITIONED_REGION_NAME1, 3);
@@ -639,9 +647,12 @@ public class QueryDataDUnitTest implements Serializable {
     });
   }
 
+  @SuppressWarnings("unchecked")
   private List<String> getLocalDataSet(final String region) {
     PartitionedRegion partitionedRegion =
         PartitionedRegionHelper.getPartitionedRegion(region, managementTestRule.getCache());
+    assertThat(partitionedRegion).isNotNull();
+
     Set<BucketRegion> localPrimaryBucketRegions =
         partitionedRegion.getDataStore().getAllLocalPrimaryBucketRegions();
 
@@ -716,7 +727,7 @@ public class QueryDataDUnitTest implements Serializable {
     return service.getDistributedRegionMXBean(name);
   }
 
-  private static class TestPartitionResolver implements PartitionResolver {
+  private static class TestPartitionResolver implements PartitionResolver<Integer, Object> {
 
     @Override
     public void close() {}

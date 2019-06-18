@@ -12,36 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+package org.apache.geode.cache.configuration;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Before;
 import org.junit.Test;
 
+public class GatewayReceiverConfigTest {
+  private GatewayReceiverConfig receiver;
 
-/**
- * CacheServerLauncher Tester.
- */
-public class CacheServerLauncherJUnitTest {
-
-  @Test
-  public void testSafeEquals() {
-    String string1 = "string1";
-
-    String string2 = string1;
-
-    @SuppressWarnings("RedundantStringConstructorCall")
-    String string3 = new String(string1);
-
-    assertTrue(CacheServerLauncher.safeEquals(string1, string2));
-    assertTrue(CacheServerLauncher.safeEquals(string1, string3));
-    assertTrue(CacheServerLauncher.safeEquals(null, null));
-    assertFalse(CacheServerLauncher.safeEquals(null, string3));
-    assertFalse(CacheServerLauncher.safeEquals(string1, null));
-
-
+  @Before
+  public void before() throws Exception {
+    receiver = new GatewayReceiverConfig();
   }
 
+  @Test
+  public void getId() throws Exception {
+    assertThat(receiver.getId()).isEqualTo("cluster");
 
+    receiver.setGroup("group");
+    assertThat(receiver.getId()).isEqualTo("group");
+  }
+
+  @Test
+  public void getUri() throws Exception {
+    assertThat(receiver.getUri()).isEqualTo("/gateways/receivers/cluster");
+
+    receiver.setGroup("group");
+    assertThat(receiver.getUri()).isEqualTo("/gateways/receivers/group");
+  }
 }

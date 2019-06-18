@@ -24,11 +24,13 @@ import java.util.Map;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.management.cli.CliFunction;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
+import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
 
 public class UpdateCacheFunction extends CliFunction<List> {
@@ -37,6 +39,7 @@ public class UpdateCacheFunction extends CliFunction<List> {
 
   static {
     realizers.put(RegionConfig.class, new RegionConfigRealizer());
+    realizers.put(GatewayReceiverConfig.class, new GatewayReceiverRealizer());
   }
 
   @Override
@@ -54,6 +57,10 @@ public class UpdateCacheFunction extends CliFunction<List> {
 
     switch (operation) {
       case CREATE:
+        if (realizer.exists(cacheElement, cache)) {
+          return new CliFunctionResult(context.getMemberName(), CliFunctionResult.StatusState.OK,
+              "Element with id=" + cacheElement.getId() + " already exists. Skipp creation.");
+        }
         realizer.create(cacheElement, cache);
         break;
       case DELETE:

@@ -81,11 +81,17 @@ public class ParallelGatewaySenderHelper {
 
   public static GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
       Object key, Object value, long sequenceId, long shadowKey) throws Exception {
+    return createGatewaySenderEvent(lr, operation, key, value, 1l, sequenceId, 0, shadowKey);
+  }
+
+  public static GatewaySenderEventImpl createGatewaySenderEvent(LocalRegion lr, Operation operation,
+      Object key, Object value, long threadId, long sequenceId, int bucketId, long shadowKey)
+      throws Exception {
     when(lr.getKeyInfo(key, value, null)).thenReturn(new KeyInfo(key, null, null));
     EntryEventImpl eei = EntryEventImpl.create(lr, operation, key, value, null, false, null);
-    eei.setEventId(new EventID(new byte[16], 1l, sequenceId));
+    eei.setEventId(new EventID(new byte[16], threadId, sequenceId, bucketId));
     GatewaySenderEventImpl gsei =
-        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null);
+        new GatewaySenderEventImpl(getEnumListenerEvent(operation), eei, null, true, bucketId);
     gsei.setShadowKey(shadowKey);
     return gsei;
   }

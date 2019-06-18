@@ -216,8 +216,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       updateLocatorInLocatorList(locator);
       return null;
     } catch (ClassNotFoundException e) {
-      logger.warn(String.format("Received exception from locator %s", locator),
-          e);
+      logger.warn("Received exception from locator {}", locator, e);
       return null;
     } catch (ClassCastException e) {
       if (logger.isDebugEnabled()) {
@@ -245,15 +244,13 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
               locator.getSocketInetAddressNoLookup().getPort());
           HostAddress hostAddress = new HostAddress(changeLoc, locator.getHostName());
           newLocatorsList.add(hostAddress);
-          logger.info("updateLocatorInLocatorList changing locator list: loc form: " + locator
-              + " ,loc to: " + changeLoc);
         } else {
           newLocatorsList.add(tloc);
         }
       }
 
-      logger.info("updateLocatorInLocatorList locator list from:" + locatorList.getLocators()
-          + " to: " + newLocatorsList);
+      logger.info("updateLocatorInLocatorList locator list from: {} to {}",
+          locatorList.getLocators(), newLocatorsList);
 
       LocatorList newLocatorList = new LocatorList(newLocatorsList);
       locators.set(newLocatorList);
@@ -319,8 +316,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
       addedLocators.removeAll(oldLocators.getLocators());
       if (!addedLocators.isEmpty()) {
         locatorCallback.locatorsDiscovered(Collections.unmodifiableList(addedLocators));
-        logger.info("AutoConnectionSource discovered new locators {}",
-            addedLocators);
+        logger.info("AutoConnectionSource discovered new locators {}", addedLocators);
       }
       if (!removedLocators.isEmpty()) {
         locatorCallback.locatorsRemoved(Collections.unmodifiableList(removedLocators));
@@ -381,8 +377,7 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
   private synchronized void reportLiveLocator(InetSocketAddress l) {
     Object prevState = this.locatorState.put(l, null);
     if (prevState != null) {
-      logger.info("Communication has been restored with locator {}.",
-          l);
+      logger.info("Communication has been restored with locator {}.", l);
     }
   }
 
@@ -390,9 +385,9 @@ public class AutoConnectionSourceImpl implements ConnectionSource {
     Object prevState = this.locatorState.put(l, ex);
     if (prevState == null) {
       if (ex instanceof ConnectException) {
-        logger.info(String.format("locator %s is not running.", l), ex);
+        logger.info("locator {} is not running.", l, ex);
       } else {
-        logger.info(String.format("Communication with locator %s failed with %s.", l, ex), ex);
+        logger.info("Communication with locator {} failed", l, ex);
       }
     }
   }

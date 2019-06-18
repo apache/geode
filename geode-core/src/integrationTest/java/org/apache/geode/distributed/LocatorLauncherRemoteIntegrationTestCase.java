@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.geode.internal.DistributionLocator.TEST_OVERRIDE_DEFAULT_PORT_PROPERTY;
 import static org.apache.geode.internal.process.ProcessUtils.isProcessAlive;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -37,6 +37,7 @@ import org.apache.geode.distributed.LocatorLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.process.ProcessStreamReader;
 import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 
 /**
  * Abstract base class for integration tests of {@link LocatorLauncher} as an application main in a
@@ -46,6 +47,8 @@ import org.apache.geode.internal.process.ProcessStreamReader.InputListener;
  */
 public abstract class LocatorLauncherRemoteIntegrationTestCase
     extends LocatorLauncherIntegrationTestCase implements UsesLocatorCommand {
+
+  private static final long TIMEOUT_MILLIS = GeodeAwaitility.getTimeout().getValueInMS();
 
   private final AtomicBoolean threwBindException = new AtomicBoolean();
 
@@ -61,7 +64,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   }
 
   @After
-  public void tearDownAbstractLocatorLauncherRemoteIntegrationTestCase() throws Exception {
+  public void tearDownAbstractLocatorLauncherRemoteIntegrationTestCase() {
     if (process != null) {
       process.destroy();
     }
@@ -77,8 +80,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   public List<String> getJvmArguments() {
     List<String> jvmArguments = new ArrayList<>();
     jvmArguments.add("-D" + DistributionConfig.GEMFIRE_PREFIX + "log-level=config");
-    jvmArguments
-        .add("-D" + TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + String.valueOf(defaultLocatorPort));
+    jvmArguments.add("-D" + TEST_OVERRIDE_DEFAULT_PORT_PROPERTY + "=" + defaultLocatorPort);
     return jvmArguments;
   }
 
@@ -170,7 +172,7 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
   private void awaitStartFail(final LocatorCommand command, final InputListener outListener,
       final InputListener errListener) throws InterruptedException {
     executeCommandWithReaders(command.create(), outListener, errListener);
-    process.waitFor(2, MINUTES);
+    process.waitFor(TIMEOUT_MILLIS, MILLISECONDS);
     assertThatProcessIsNotAlive();
     assertThat(process.exitValue()).isEqualTo(1);
   }
@@ -225,9 +227,13 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     try {
       process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
       processOutReader = new ProcessStreamReader.Builder(process)
-          .inputStream(process.getInputStream()).build().start();
+          .inputStream(process.getInputStream())
+          .build()
+          .start();
       processErrReader = new ProcessStreamReader.Builder(process)
-          .inputStream(process.getErrorStream()).build().start();
+          .inputStream(process.getErrorStream())
+          .build()
+          .start();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
@@ -238,9 +244,15 @@ public abstract class LocatorLauncherRemoteIntegrationTestCase
     try {
       process = new ProcessBuilder(command).directory(getWorkingDirectory()).start();
       processOutReader = new ProcessStreamReader.Builder(process)
-          .inputStream(process.getInputStream()).inputListener(outListener).build().start();
+          .inputStream(process.getInputStream())
+          .inputListener(outListener)
+          .build()
+          .start();
       processErrReader = new ProcessStreamReader.Builder(process)
-          .inputStream(process.getErrorStream()).inputListener(errListener).build().start();
+          .inputStream(process.getErrorStream())
+          .inputListener(errListener)
+          .build()
+          .start();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

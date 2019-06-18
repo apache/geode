@@ -84,11 +84,10 @@ public class ClusterElderManager {
 
   public ElderState getElderState(boolean waitToBecomeElder) throws InterruptedException {
     if (waitToBecomeElder) {
-      // This should always return true.
       waitForElder(clusterDistributionManager.getId());
     }
 
-    if (!isElder()) {
+    if (!isElder() && !waitToBecomeElder) {
       return null; // early return if this clusterDistributionManager is not the elder
     }
 

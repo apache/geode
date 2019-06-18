@@ -37,7 +37,7 @@ Optionally, program your application code to deserialize individual fields out o
     gfsh>configure pdx --read-serialized=true
     ```
 
-    By using gfsh, this configuration can propagated across the cluster through the [Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html). Alternately, you would need to configure `pdx read-serialized` in each server's `cache.xml` file.
+    By using gfsh, this configuration can be propagated across the cluster through the [Cluster Configuration Service](../../configuring/cluster_config/gfsh_persist.html). Alternately, you would need to configure `pdx read-serialized` in each server's `cache.xml` file.
 
 3.  If you are storing any <%=vars.product_name%> data on disk, then you must configure PDX serialization to use persistence. See [Persisting PDX Metadata to Disk](persist_pdx_metadata_to_disk.html) for more information.
 4.  (Optional) Wherever you run explicit application code to retrieve and manage your cached entries, you may want to manage your data objects without using full deserialization. To do this, see [Programming Your Application to Use PdxInstances](program_application_for_pdx.html).

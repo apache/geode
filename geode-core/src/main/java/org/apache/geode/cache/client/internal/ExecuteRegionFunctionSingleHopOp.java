@@ -58,16 +58,15 @@ public class ExecuteRegionFunctionSingleHopOp {
   private ExecuteRegionFunctionSingleHopOp() {}
 
   public static void execute(ExecutablePool pool, Region region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      byte hasResult,
+      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      int mRetryAttempts,
       boolean allBuckets) {
 
-    boolean reexecute = false;
     Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -79,36 +78,33 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
         hasResult, resultCollector, cms, allBuckets);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
-        function.isHA(), resultCollector, failedNodes);
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+            function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}",
           callableTasks.size());
     }
 
-    if (reexecute) {
-      resultCollector.clearResults();
-      if (function.isHA()) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
-      }
+    if (retryAttempts > 0) {
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1);
     }
 
     resultCollector.endResults();
   }
 
   public static void execute(ExecutablePool pool, Region region, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      byte hasResult,
+      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      int mRetryAttempts,
       boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
 
-    boolean reexecute = false;
     Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -120,22 +116,21 @@ public class ExecuteRegionFunctionSingleHopOp {
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
         hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-        resultCollector, failedNodes);
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+            resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug(
           "ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is: {}, reexecute={}",
-          callableTasks.size(), reexecute);
+          callableTasks.size(), retryAttempts);
     }
 
-    if (reexecute) {
+    if (retryAttempts > 0) {
       resultCollector.clearResults();
-      if (isHA) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1,
-            isHA, optimizeForWrite);
-      }
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
+          isHA, optimizeForWrite);
     }
 
     resultCollector.endResults();
