@@ -15,6 +15,7 @@
 package org.apache.geode.internal.tcp;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
+import static org.apache.geode.internal.net.SSLConfigurationFactory.*;
 
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -1835,10 +1836,8 @@ public class Connection implements Runnable {
           getConduit().getSocketCreator().createSSLEngine(address.getHostName(), address.getPort());
 
       if (!clientSocket) {
-        engine.setWantClientAuth(true);
-        engine.setNeedClientAuth(true);
-//        engine.setNeedClientAuth(SSLConfigurationFactory.getSSLConfigForComponent(getConduit().config,
-//            SecurableCommunicationChannel.CLUSTER).isRequireAuth());
+         engine.setNeedClientAuth(getSSLConfigForComponent(getConduit().config,
+         SecurableCommunicationChannel.CLUSTER).isRequireAuth());
       }
 
       int packetBufferSize = engine.getSession().getPacketBufferSize();

@@ -36,21 +36,16 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.test.dunit.VM;
-import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
+import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
-public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCase {
-
-  private Cache cache;
-  private int cacheServerPort;
-  private String hostName;
+public class SSLDualServerNoClientAuthDUnitTest extends JUnit4CacheTestCase {
 
   private static final String SERVER_1_KEYSTORE = "geodeserver1.keystore";
   private static final String SERVER_1_TRUSTSTORE = "geodeserver1.truststore";
@@ -58,37 +53,32 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
   private static final String SERVER_2_KEYSTORE = "geodeserver2.keystore";
   private static final String SERVER_2_TRUSTSTORE = "geodeserver2.truststore";
 
-
-  private static SSLDualServerNoClientAuthDUnitTest instance =
-      new SSLDualServerNoClientAuthDUnitTest();
+  private VM serverVM;
+  private VM server2VM;
+  private VM locator;
 
   @Before
   public void setUp() {
     disconnectAllFromDS();
+    serverVM = getVM(1);
+    server2VM = getVM(2);
+    locator = getVM(3);
   }
 
   @After
   public void tearDown() {
-    VM serverVM = getVM(1);
-    VM server2VM = getVM(2);
-    VM locator = getVM(3);
-
-    locator.invoke(() -> closeLocatorTask());
-    server2VM.invoke(() -> closeCacheTask());
-    serverVM.invoke(() -> closeCacheTask());
+    locator.invoke(() -> {
+      if (Locator.hasLocator()) {
+        Locator.getLocator().stop();
+      }
+    });
   }
 
   @Test
   public void testSSLServerWithNoAuth() {
-    VM serverVM = getVM(1);
-    VM server2VM = getVM(2);
-
-    VM locator = getVM(3);
-
-    Integer locatorPort = locator.invoke(() -> {
+    final int locatorPort = locator.invoke(() -> {
       return setUpLocatorTask();
     });
-    boolean cacheServerSslenabled = true;
 
     serverVM.invoke(() -> setUpServerVMTask(locatorPort));
     server2VM.invoke(() -> setUpServerVMTask(locatorPort));
@@ -97,37 +87,28 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     serverVM.invoke(() -> doServerRegionTestTask());
   }
 
-  private void createCache(Properties props) throws Exception {
-    cache = new CacheFactory(props).create();
-    if (cache == null) {
-      throw new Exception("CacheFactory.create() returned null ");
-    }
-  }
+  private int setUpLocator() throws Exception {
+    final Properties gemFireProps = new Properties();
 
-  private Integer setUpLocator() throws Exception {
-    Properties gemFireProps = new Properties();
-
-    String cacheServerSslprotocols = "any";
-    String cacheServerSslciphers = "any";
-    boolean cacheServerSslRequireAuth = false;
+    final boolean cacheServerSslRequireAuth = false;
 
     System.setProperty("javax.net.debug", "all");
 
-    String keyStore =
+    final String keyStore =
         createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class, SERVER_1_KEYSTORE)
             .getAbsolutePath();
-    String trustStore =
+    final String trustStore =
         createTempFileFromResource(SSLDualServerNoClientAuthDUnitTest.class, SERVER_1_TRUSTSTORE)
             .getAbsolutePath();
     gemFireProps.setProperty(SSL_ENABLED_COMPONENTS, "cluster");
-    gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, "" + cacheServerSslRequireAuth);
-    gemFireProps.setProperty(SSL_KEYSTORE, "" + keyStore);
+    gemFireProps.setProperty(SSL_REQUIRE_AUTHENTICATION, String.valueOf(cacheServerSslRequireAuth));
+    gemFireProps.setProperty(SSL_KEYSTORE, keyStore);
     gemFireProps.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    gemFireProps.setProperty(SSL_TRUSTSTORE, "" + trustStore);
+    gemFireProps.setProperty(SSL_TRUSTSTORE, trustStore);
     gemFireProps.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
 
-    StringWriter sw = new StringWriter();
-    PrintWriter writer = new PrintWriter(sw);
+    final StringWriter sw = new StringWriter();
+    final PrintWriter writer = new PrintWriter(sw);
     gemFireProps.list(writer);
 
     Locator.startLocatorAndDS(0, new File(""), gemFireProps);
@@ -135,14 +116,11 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     return Locator.getLocator().getPort();
   }
 
-  private void setUpAndConnectToDistributedSystem(Integer locatorPort) throws Exception {
-    Properties gemFireProps = new Properties();
+  private void setUpAndConnectToDistributedSystem(final int locatorPort) throws Exception {
+    final Properties gemFireProps = new Properties();
 
-    String cacheServerSslprotocols = "any";
-    String cacheServerSslciphers = "any";
-    boolean cacheServerSslRequireAuth = false;
+    final boolean cacheServerSslRequireAuth = false;
 
-    System.setProperty("javax.net.debug", "all");
     String keyStore;
     String trustStore;
     if (VM.getCurrentVMNum() == 1) {
@@ -172,13 +150,13 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     gemFireProps.setProperty(LOCATORS, "localhost[" + locatorPort + "]");
 
 
-    StringWriter sw = new StringWriter();
-    PrintWriter writer = new PrintWriter(sw);
-    gemFireProps.list(writer);
-    createCache(gemFireProps);
+    final StringWriter stringWriter = new StringWriter();
+    final PrintWriter printWriter = new PrintWriter(stringWriter);
+    gemFireProps.list(printWriter);
 
-    RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
-    Region r = factory.create("serverRegion");
+    final Cache cache = getCache(gemFireProps);
+    final RegionFactory factory = cache.createRegionFactory(RegionShortcut.REPLICATE);
+    final Region r = factory.create("serverRegion");
     r.put("serverkey", "servervalue");
   }
 
@@ -187,27 +165,16 @@ public class SSLDualServerNoClientAuthDUnitTest extends JUnit4DistributedTestCas
     assertEquals("servervalue", region.get("serverkey"));
   }
 
-  private static Integer setUpLocatorTask() throws Exception {
-    return instance.setUpLocator();
+  private int setUpLocatorTask() throws Exception {
+    return setUpLocator();
   }
 
-  private static void setUpServerVMTask(Integer locatorPort) throws Exception {
-    instance.setUpAndConnectToDistributedSystem(locatorPort);
+  private void setUpServerVMTask(final int locatorPort) throws Exception {
+    setUpAndConnectToDistributedSystem(locatorPort);
   }
 
-  private static void doServerRegionTestTask() {
-    instance.doServerRegionTest();
+  private void doServerRegionTestTask() {
+    doServerRegionTest();
   }
 
-  private static void closeCacheTask() {
-    if (instance != null && instance.cache != null) {
-      instance.cache.close();
-    }
-  }
-
-  private static void closeLocatorTask() {
-    if (instance != null && instance.cache != null) {
-      Locator.getLocator().stop();
-    }
-  }
 }
