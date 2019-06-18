@@ -991,8 +991,8 @@ public class CliStrings {
       "The region mentioned for \"" + CliStrings.CREATE_REGION__USEATTRIBUTESFROM
           + "\" exists in this Geode Cluster but with different Scopes or Data Policies on different members. For details, use command \""
           + CliStrings.DESCRIBE_REGION + "\" for \"{0}\".";
-  public static final String CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE =
-      CREATE_REGION__USEATTRIBUTESFROM + " region \"{0}\" is not persistent.";
+  public static final String CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE_OR_OVERFLOW =
+      CREATE_REGION__USEATTRIBUTESFROM + " region \"{0}\" is not persistent or overflow to disk.";
   public static final String CREATE_REGION__MSG__OPTION_0_CAN_BE_USED_ONLY_FOR_PARTITIONEDREGION =
       "Parameter(s) \"{0}\" can be used only for creating a Partitioned Region.";
   public static final String CREATE_REGION__MSG__0_IS_NOT_A_PARITIONEDREGION =
