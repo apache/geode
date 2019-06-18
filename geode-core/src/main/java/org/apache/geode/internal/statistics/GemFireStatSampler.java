@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -82,7 +83,8 @@ public class GemFireStatSampler extends HostStatSampler {
         internalDistributedSystem.getId());
   }
 
-  private GemFireStatSampler(CancelCriterion cancelCriterion,
+  @VisibleForTesting
+  public GemFireStatSampler(CancelCriterion cancelCriterion,
       StatSamplerStats statSamplerStats,
       LogFile logFile,
       StatisticsConfig statisticsConfig,
