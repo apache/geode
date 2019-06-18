@@ -32,7 +32,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
-import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionService;
@@ -77,17 +76,15 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
     SnapshotPacket last = new SnapshotPacket();
     DistributedMember me = region.getCache().getDistributedSystem().getDistributedMember();
 
-    WindowedArgs<K, V> args = new WindowedArgs<>(me, options);
+    WindowedArgs<K, V> args = new WindowedArgs<K, V>(me, options);
     WindowedExportCollector results = new WindowedExportCollector(local, last);
     try {
       // Since the ExportCollector already is a LocalResultsCollector it's ok not
       // to keep the reference to the ResultsCollector returned from execute().
       // Normally discarding the reference can cause issues if GC causes the
       // weak ref in ProcessorKeeper21 to be collected!!
-      Execution<Object, Object, BlockingQueue<SnapshotPacket>> onRegion =
-          FunctionService.onRegion(region);
-      InternalExecution exec =
-          (InternalExecution) onRegion.setArguments(args).withCollector(results);
+      InternalExecution exec = (InternalExecution) FunctionService.onRegion(region)
+          .setArguments(args).withCollector(results);
 
       // Ensure that our collector gets all exceptions so we can shut down the
       // queue properly.
@@ -189,7 +186,7 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
 
       try {
         int bufferSize = 0;
-        List<SnapshotRecord> buffer = new ArrayList<>();
+        List<SnapshotRecord> buffer = new ArrayList<SnapshotRecord>();
         DistributedMember me = region.getCache().getDistributedSystem().getDistributedMember();
         for (Iterator<Entry<K, V>> iter = region.entrySet().iterator(); iter.hasNext()
             && !window.isAborted();) {
@@ -277,10 +274,10 @@ public class WindowedExporter<K, V> implements Exporter<K, V> {
       this.end = end;
 
       done = new AtomicBoolean(false);
-      members = new ConcurrentHashMap<>();
+      members = new ConcurrentHashMap<DistributedMember, Integer>();
 
       // cannot bound queue to exert back pressure
-      entries = new LinkedBlockingQueue<>();
+      entries = new LinkedBlockingQueue<SnapshotPacket>();
     }
 
     @Override

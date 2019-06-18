@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.execute;
 
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.cache.client.Pool;
@@ -33,9 +32,7 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.execute.util.SynchronizedResultCollector;
 
-public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
-    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT>
-    implements Execution<ArgumentT, ReturnT, AggregatorT> {
+public class ServerFunctionExecutor extends AbstractExecution {
 
   private PoolImpl pool;
 
@@ -82,9 +79,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
     this.isMemberMappedArgument = true;
   }
 
-  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final String functionId,
-      boolean result,
-      boolean isHA,
+  protected ResultCollector executeFunction(final String functionId, boolean result, boolean isHA,
       boolean optimizeForWrite) {
     try {
       if (proxyCache != null) {
@@ -113,7 +108,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @Override
-  protected ResultCollector<ReturnT, AggregatorT> executeFunction(final Function function) {
+  protected ResultCollector executeFunction(final Function function) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -126,7 +121,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
       if (function.hasResult()) { // have Results
         hasResult = 1;
         if (this.rc == null) { // Default Result Collector
-          ResultCollector<Object, List<Object>> defaultCollector = new DefaultResultCollector();
+          ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(function, defaultCollector, hasResult);
         } else { // Custome Result COllector
           return executeOnServer(function, this.rc, hasResult);
@@ -141,9 +136,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
 
   }
 
-  private ResultCollector<ReturnT, AggregatorT> executeOnServer(Function function,
-      ResultCollector rc,
-      byte hasResult) {
+  private ResultCollector executeOnServer(Function function, ResultCollector rc, byte hasResult) {
     FunctionStats stats = FunctionStats.getFunctionStats(function.getId());
     try {
       validateExecution(function, null);
@@ -165,9 +158,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
     }
   }
 
-  private ResultCollector<ReturnT, AggregatorT> executeOnServer(String functionId,
-      ResultCollector rc,
-      byte hasResult,
+  private ResultCollector executeOnServer(String functionId, ResultCollector rc, byte hasResult,
       boolean isHA, boolean optimizeForWrite) {
     FunctionStats stats = FunctionStats.getFunctionStats(functionId);
     try {
@@ -237,54 +228,52 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set filter) {
+  public Execution withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
-      Set<Integer> bucketIDs) {
+  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "buckets as filter"));
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> setArguments(Object args) {
+  public Execution setArguments(Object args) {
     if (args == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new ServerFunctionExecutor<>(this, args);
+    return new ServerFunctionExecutor(this, args);
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withArgs(Object args) {
+  public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withCollector(ResultCollector rs) {
+  public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new ServerFunctionExecutor<>(this, rs);
+    return new ServerFunctionExecutor(this, rs);
   }
 
   @Override
-  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
-      MemberMappedArgument argument) {
+  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
               "MemberMapped Args"));
     }
-    return new ServerFunctionExecutor<>(this, argument);
+    return new ServerFunctionExecutor(this, argument);
   }
 
   @Override
@@ -295,7 +284,7 @@ public class ServerFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @Override
-  public ResultCollector<ReturnT, AggregatorT> execute(final String functionName) {
+  public ResultCollector execute(final String functionName) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");

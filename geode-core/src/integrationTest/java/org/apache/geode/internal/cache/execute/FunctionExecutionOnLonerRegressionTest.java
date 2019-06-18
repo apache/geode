@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Set;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -65,7 +64,6 @@ public class FunctionExecutionOnLonerRegressionTest {
   private Region<String, String> region;
   private Set<String> keysForGet;
   private Set<String> expectedValues;
-  private Cache cache;
 
   @Before
   public void setUp() {
@@ -78,7 +76,7 @@ public class FunctionExecutionOnLonerRegressionTest {
     DistributionManager dm = ds.getDistributionManager();
     assertThat(dm).isInstanceOf(LonerDistributionManager.class);
 
-    cache = CacheFactory.create(ds);
+    Cache cache = CacheFactory.create(ds);
 
     RegionFactory<String, String> regionFactory = cache.createRegionFactory(PARTITION);
     region = regionFactory.create("region");
@@ -96,11 +94,6 @@ public class FunctionExecutionOnLonerRegressionTest {
     }
   }
 
-  @After
-  public void tearDown() throws Exception {
-    cache.close();
-  }
-
   private Properties getDistributedSystemProperties() {
     Properties config = new Properties();
     config.setProperty(MCAST_PORT, "0");
@@ -111,10 +104,9 @@ public class FunctionExecutionOnLonerRegressionTest {
   }
 
   @Test
-  public void executeFunctionOnLonerShouldNotThrowClassCastException() {
+  public void executeFunctionOnLonerShouldNotThrowClassCastException() throws Exception {
     Execution<Void, Collection<String>, Collection<String>> execution =
-        FunctionService.onRegion(region);
-    execution = execution.withFilter(keysForGet);
+        FunctionService.onRegion(region).withFilter(keysForGet);
     ResultCollector<Collection<String>, Collection<String>> resultCollector =
         execution.execute(new TestFunction());
     assertThat(resultCollector.getResult())

@@ -67,50 +67,42 @@ public class InternalFunctionExecutionServiceImpl
   // FunctionExecutionService API ----------------------------------------------------------------
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
-      Pool pool) {
+  public Execution onServer(Pool pool) {
     return onServer(pool, EMPTY_GROUPS);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
-      Pool pool) {
+  public Execution onServers(Pool pool) {
     return onServers(pool, EMPTY_GROUPS);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
-      RegionService regionService) {
+  public Execution onServer(RegionService regionService) {
     return onServer(regionService, EMPTY_GROUPS);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
-      RegionService regionService) {
+  public Execution onServers(RegionService regionService) {
     return onServers(regionService, EMPTY_GROUPS);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      DistributedMember distributedMember) {
+  public Execution onMember(DistributedMember distributedMember) {
     return onMember(getDistributedSystem(), distributedMember);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      String... groups) {
+  public Execution onMembers(String... groups) {
     return onMembers(getDistributedSystem(), groups);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      Set<DistributedMember> distributedMembers) {
+  public Execution onMembers(Set<DistributedMember> distributedMembers) {
     return onMembers(getDistributedSystem(), distributedMembers);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      String... groups) {
+  public Execution onMember(String... groups) {
     return onMember(getDistributedSystem(), groups);
   }
 
@@ -119,8 +111,7 @@ public class InternalFunctionExecutionServiceImpl
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onRegion(
-      Region region) {
+  public Execution onRegion(Region region) {
     if (region == null) {
       throw new FunctionException("Region instance passed is null");
     }
@@ -146,12 +137,12 @@ public class InternalFunctionExecutionServiceImpl
     }
 
     if (isClientRegion(region)) {
-      return new ServerRegionFunctionExecutor<>(region, proxyCache);
+      return new ServerRegionFunctionExecutor(region, proxyCache);
     }
     if (PartitionRegionHelper.isPartitionedRegion(region)) {
-      return new PartitionedRegionFunctionExecutor<>(region);
+      return new PartitionedRegionFunctionExecutor(region);
     }
-    return new DistributedRegionFunctionExecutor<>(region);
+    return new DistributedRegionFunctionExecutor(region);
   }
 
   @Override
@@ -214,8 +205,7 @@ public class InternalFunctionExecutionServiceImpl
   // InternalFunctionExecutionService OnServerGroups API -----------------------------------------
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
-      Pool pool, String... groups) {
+  public Execution onServer(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           String.format("%s passed is null", "Pool instance "));
@@ -225,12 +215,11 @@ public class InternalFunctionExecutionServiceImpl
       throw new UnsupportedOperationException();
     }
 
-    return new ServerFunctionExecutor<>(pool, false, groups);
+    return new ServerFunctionExecutor(pool, false, groups);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
-      Pool pool, String... groups) {
+  public Execution onServers(Pool pool, String... groups) {
     if (pool == null) {
       throw new FunctionException(
           String.format("%s passed is null", "Pool instance "));
@@ -240,13 +229,11 @@ public class InternalFunctionExecutionServiceImpl
       throw new UnsupportedOperationException();
     }
 
-    return new ServerFunctionExecutor<>(pool, true, groups);
+    return new ServerFunctionExecutor(pool, true, groups);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
-      RegionService regionService,
-      String... groups) {
+  public Execution onServer(RegionService regionService, String... groups) {
     if (regionService == null) {
       throw new FunctionException(String.format("%s passed is null",
           "RegionService instance "));
@@ -262,16 +249,13 @@ public class InternalFunctionExecutionServiceImpl
       }
     } else {
       ProxyCache proxyCache = (ProxyCache) regionService;
-      return new ServerFunctionExecutor<>(proxyCache.getUserAttributes().getPool(), false,
-          proxyCache,
+      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), false, proxyCache,
           groups);
     }
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
-      RegionService regionService,
-      String... groups) {
+  public Execution onServers(RegionService regionService, String... groups) {
     if (regionService == null) {
       throw new FunctionException(String.format("%s passed is null",
           "RegionService instance "));
@@ -287,8 +271,7 @@ public class InternalFunctionExecutionServiceImpl
       }
     } else {
       ProxyCache proxyCache = (ProxyCache) regionService;
-      return new ServerFunctionExecutor<>(proxyCache.getUserAttributes().getPool(), true,
-          proxyCache,
+      return new ServerFunctionExecutor(proxyCache.getUserAttributes().getPool(), true, proxyCache,
           groups);
     }
   }
@@ -296,9 +279,7 @@ public class InternalFunctionExecutionServiceImpl
   // InternalFunctionExecutionService InDistributedSystem API ------------------------------------
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      DistributedSystem system,
-      DistributedMember distributedMember) {
+  public Execution onMember(DistributedSystem system, DistributedMember distributedMember) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
@@ -307,19 +288,17 @@ public class InternalFunctionExecutionServiceImpl
       throw new FunctionException(String.format("%s passed is null",
           "DistributedMember instance "));
     }
-    return new MemberFunctionExecutor<>(system, distributedMember);
+    return new MemberFunctionExecutor(system, distributedMember);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      DistributedSystem system,
-      String... groups) {
+  public Execution onMembers(DistributedSystem system, String... groups) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
     }
     if (groups.length == 0) {
-      return new MemberFunctionExecutor<>(system);
+      return new MemberFunctionExecutor(system);
     }
     Set<DistributedMember> members = new HashSet<>();
     for (String group : groups) {
@@ -329,13 +308,11 @@ public class InternalFunctionExecutionServiceImpl
       throw new FunctionException(String.format("No members found in group(s) %s",
           Arrays.toString(groups)));
     }
-    return new MemberFunctionExecutor<>(system, members);
+    return new MemberFunctionExecutor(system, members);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      DistributedSystem system,
-      String... groups) {
+  public Execution onMember(DistributedSystem system, String... groups) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
@@ -356,13 +333,11 @@ public class InternalFunctionExecutionServiceImpl
       throw new FunctionException(String.format("No members found in group(s) %s",
           Arrays.toString(groups)));
     }
-    return new MemberFunctionExecutor<>(system, members);
+    return new MemberFunctionExecutor(system, members);
   }
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      DistributedSystem system,
-      Set<DistributedMember> distributedMembers) {
+  public Execution onMembers(DistributedSystem system, Set<DistributedMember> distributedMembers) {
     if (system == null) {
       throw new FunctionException(String.format("%s passed is null",
           "DistributedSystem instance "));
@@ -371,14 +346,13 @@ public class InternalFunctionExecutionServiceImpl
       throw new FunctionException(String.format("%s passed is null",
           "distributedMembers set "));
     }
-    return new MemberFunctionExecutor<>(system, distributedMembers);
+    return new MemberFunctionExecutor(system, distributedMembers);
   }
 
   // InternalFunctionExecutionService OnRegions API ----------------------------------------------
 
   @Override
-  public <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onRegions(
-      Set<Region> regions) {
+  public Execution onRegions(Set<Region> regions) {
     if (regions == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
@@ -398,7 +372,7 @@ public class InternalFunctionExecutionServiceImpl
             "FunctionService#onRegions() is not supported for cache clients in client server mode");
       }
     }
-    return new MultiRegionFunctionExecutor<>(regions);
+    return new MultiRegionFunctionExecutor(regions);
   }
 
   // InternalFunctionExecutionService unregisterAllFunctions API ---------------------------------

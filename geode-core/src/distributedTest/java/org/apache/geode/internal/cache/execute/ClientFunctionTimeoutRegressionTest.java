@@ -183,14 +183,14 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
     Function<Integer> function = new CheckClientReadTimeout();
     FunctionService.registerFunction(function);
-    Execution<Integer, Boolean, List<Boolean>> execution;
+    Execution<Integer, Boolean, List<Boolean>> execution = null;
 
     if (functionServiceTarget == ExecutionTarget.REGION) {
-      execution = FunctionService.onRegion(clientCache.getRegion(regionName));
+      execution =
+          FunctionService.onRegion(clientCache.getRegion(regionName)).setArguments(timeout);
     } else {
-      execution = FunctionService.onServer(clientCache.getDefaultPool());
+      execution = FunctionService.onServer(clientCache.getDefaultPool()).setArguments(timeout);
     }
-    execution = execution.setArguments(timeout);
 
     ResultCollector<Boolean, List<Boolean>> resultCollector = execution.execute(function);
 
@@ -212,7 +212,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
    */
   private static class CheckClientReadTimeout implements Function<Integer> {
 
-    CheckClientReadTimeout() {
+    public CheckClientReadTimeout() {
       // nothing
     }
 
