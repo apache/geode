@@ -86,8 +86,8 @@ public class RegionManagementSecurityRestDUnitTest {
     LocatorClusterManagementService client =
         (LocatorClusterManagementService) context.getLocator().getClusterManagementService();
 
-    ClusterManagementResult result = client.list(new RegionConfig());
-    List<RuntimeRegionConfig> regions = result.getResult(RuntimeRegionConfig.class);
+    ClusterManagementResult<RuntimeRegionConfig> result = client.list(new RegionConfig());
+    List<RuntimeRegionConfig> regions = result.getResult();
 
     regions.forEach(r -> client.delete(new RegionConfig(r)));
   }

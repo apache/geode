@@ -34,6 +34,8 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public abstract class CacheElement implements Identifiable<String>, Serializable {
+  public static final String CLUSTER = "cluster";
+
   protected List<String> groups = new ArrayList<>();
 
   public static <T extends Identifiable> boolean exists(List<T> list, String id) {
@@ -56,10 +58,10 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
   @JsonIgnore
   public String getConfigGroup() {
     String group = getGroup();
-    if (StringUtils.isBlank(group)) {
-      return "cluster";
-    }
-    return group;
+    if (StringUtils.isBlank(group))
+      return CLUSTER;
+    else
+      return group;
   }
 
   /**

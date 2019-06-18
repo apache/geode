@@ -23,6 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 /**
@@ -46,12 +47,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private final RestTemplate restTemplate;
 
-  public ClientClusterManagementService(RestTemplate restTemplate) {
+  ClientClusterManagementService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
+      T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
@@ -60,24 +63,29 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config) {
-    String endPoint = getEndpoint(config);
+  @SuppressWarnings("unchecked")
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+      T config) {
+    String uri = getUri(config);
     return restTemplate
-        .exchange(VERSION + endPoint + "/{id}?group={group}",
+        .exchange(VERSION + uri + "?group={group}",
             HttpMethod.DELETE,
             null,
             ClusterManagementResult.class,
-            config.getId(), config.getGroup())
+            config.getGroup())
         .getBody();
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config) {
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+      T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
-  public ClusterManagementResult list(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> list(
+      T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
         .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
@@ -86,7 +94,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public ClusterManagementResult get(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
+      T config) {
     return restTemplate
         .getForEntity(VERSION + getUri(config), ClusterManagementResult.class)
         .getBody();

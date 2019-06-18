@@ -13,23 +13,20 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
-
-import java.util.List;
-
-import javax.xml.bind.annotation.XmlTransient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+package org.apache.geode.management.api;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 
+/**
+ * provides additional information about a restful service request beyond the minimum required in
+ * {#link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
+ * performed
+ */
+
+// "type parameter is never used" warning is suppressed, because actually it is used to create
+// the linkage between request and response type in the signature of ClusterManagementService.list
+@SuppressWarnings("unused")
 @Experimental
-public interface MultiGroupCacheElement {
-  @XmlTransient
-  List<String> getGroups();
-
-  // this is needed to hide "group" attribute in json serialization
-  @XmlTransient
-  @JsonIgnore
-  String getGroup();
+public interface RespondsWith<R extends CacheElement> {
 }

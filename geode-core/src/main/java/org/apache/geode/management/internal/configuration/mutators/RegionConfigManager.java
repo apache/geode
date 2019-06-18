@@ -34,7 +34,7 @@ import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 public class RegionConfigManager
-    implements ConfigurationManager<RegionConfig> {
+    implements ConfigurationManager<RegionConfig, RuntimeRegionConfig> {
   private InternalCache cache;
 
   @VisibleForTesting

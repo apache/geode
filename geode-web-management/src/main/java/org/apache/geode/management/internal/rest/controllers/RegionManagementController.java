@@ -55,9 +55,9 @@ public class RegionManagementController extends AbstractManagementController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> createRegion(
+  public ResponseEntity<ClusterManagementResult<RegionConfig>> createRegion(
       @RequestBody RegionConfig regionConfig) {
-    ClusterManagementResult result =
+    ClusterManagementResult<RegionConfig> result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
@@ -66,7 +66,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
-  public ClusterManagementResult listRegion(
+  public ClusterManagementResult<RuntimeRegionConfig> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
     RegionConfig filter = new RegionConfig();
@@ -81,7 +81,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult getRegion(
+  public ClusterManagementResult<RuntimeRegionConfig> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
     RegionConfig config = new RegionConfig();
@@ -92,7 +92,8 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult deleteRegion(@PathVariable(name = "id") String id,
+  public ClusterManagementResult<RegionConfig> deleteRegion(
+      @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
     RegionConfig config = new RegionConfig();
     config.setName(id);
@@ -105,15 +106,16 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
-  public ClusterManagementResult listIndex(
+  public ClusterManagementResult<RuntimeIndex> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false) String id) {
 
-    ClusterManagementResult result = getRegion(regionName);
-    RuntimeRegionConfig runtimeRegion = result.getResult(RuntimeRegionConfig.class).get(0);
+    ClusterManagementResult<RuntimeRegionConfig> result0 = getRegion(regionName);
+    RuntimeRegionConfig runtimeRegion = result0.getResult().get(0);
 
     // only send the index information back
     List<RuntimeIndex> runtimeIndexes = runtimeRegion.getRuntimeIndexes(id);
+    ClusterManagementResult<RuntimeIndex> result = new ClusterManagementResult<>();
     result.setResult(runtimeIndexes);
 
     return result;
@@ -122,11 +124,11 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
-  public ClusterManagementResult getIndex(
+  public ClusterManagementResult<RuntimeIndex> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementResult result = listIndex(regionName, id);
-    List<RuntimeIndex> indexList = result.getResult(RuntimeIndex.class);
+    ClusterManagementResult<RuntimeIndex> result = listIndex(regionName, id);
+    List<RuntimeIndex> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new EntityNotFoundException("Index " + id + " not found.");

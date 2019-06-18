@@ -39,7 +39,7 @@ public class GatewayManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = GATEWAY_RECEIVERS_ENDPOINTS)
   @ResponseBody
-  public ClusterManagementResult listGatewayReceivers(
+  public ClusterManagementResult<GatewayReceiverConfig> listGatewayReceivers(
       @RequestParam(required = false) String group) {
     GatewayReceiverConfig filter = new GatewayReceiverConfig();
     if (StringUtils.isNotBlank(group)) {
@@ -50,9 +50,10 @@ public class GatewayManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
-  public ResponseEntity<ClusterManagementResult> createGatewayReceiver(
+  public ResponseEntity<ClusterManagementResult<GatewayReceiverConfig>> createGatewayReceiver(
       @RequestBody GatewayReceiverConfig gatewayReceiverConfig) {
-    ClusterManagementResult result = clusterManagementService.create(gatewayReceiverConfig);
+    ClusterManagementResult<GatewayReceiverConfig> result =
+        clusterManagementService.create(gatewayReceiverConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }

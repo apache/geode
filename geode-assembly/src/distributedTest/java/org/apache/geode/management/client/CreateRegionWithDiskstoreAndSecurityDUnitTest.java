@@ -47,7 +47,6 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
 
   private File diskStoreDir;
 
-  private MemberVM server;
   private MemberVM locator;
 
   @Before
@@ -55,7 +54,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
     locator = cluster.startLocatorVM(0,
         c -> c.withHttpService().withSecurityManager(SimpleSecurityManager.class));
     int locatorPort = locator.getPort();
-    server = cluster.startServerVM(1,
+    cluster.startServerVM(1,
         s -> s.withConnectionToLocator(locatorPort)
             .withProperty("groups", "group-1")
             .withCredential("cluster", "cluster"));
@@ -67,7 +66,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
   }
 
   @Test
-  public void createReplicateRegionWithDiskstoreWithoutDataManage() throws Exception {
+  public void createReplicateRegionWithDiskstoreWithoutDataManage() {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         diskStoreDir.getAbsolutePath()))
         .statusIsSuccess()
@@ -85,14 +84,14 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("user", "user").build();
-    ClusterManagementResult result = client.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     assertThat(result.getStatusMessage()).isEqualTo("user not authorized for DATA:MANAGE");
   }
 
   @Test
-  public void createReplicateRegionWithDiskstoreWithoutClusterWrite() throws Exception {
+  public void createReplicateRegionWithDiskstoreWithoutClusterWrite() {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         diskStoreDir.getAbsolutePath()))
         .statusIsSuccess()
@@ -110,14 +109,14 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data", "data").build();
-    ClusterManagementResult result = client.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     assertThat(result.getStatusMessage()).isEqualTo("data not authorized for CLUSTER:WRITE:DISK");
   }
 
   @Test
-  public void createReplicateRegionWithDiskstoreSuccess() throws Exception {
+  public void createReplicateRegionWithDiskstoreSuccess() {
     gfsh.executeAndAssertThat(String.format("create disk-store --name=DISKSTORE --dir=%s",
         diskStoreDir.getAbsolutePath()))
         .statusIsSuccess()
@@ -137,7 +136,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data,cluster", "data,cluster").build();
-    ClusterManagementResult result = client.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
     gfsh.executeAndAssertThat("describe disk-store --name=DISKSTORE --member=server-1")

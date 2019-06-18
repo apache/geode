@@ -16,14 +16,11 @@
 package org.apache.geode.management.internal.configuration.validators;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -56,8 +53,8 @@ public class MemberValidator {
     Set<DistributedMember> membersOfExistingGroups =
         findMembers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
     Set<DistributedMember> membersOfNewGroup = findMembers(config.getConfigGroup());
-    Collection<DistributedMember> intersection =
-        CollectionUtils.intersection(membersOfExistingGroups, membersOfNewGroup);
+    Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
+    intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
       String members =
           intersection.stream().map(DistributedMember::getName).collect(Collectors.joining(", "));
@@ -105,7 +102,7 @@ public class MemberValidator {
     Set<DistributedMember> allMembers = getAllServers();
 
     // if groups contains "cluster" group, return all members
-    if (Arrays.stream(groups).filter(g -> g.equals("cluster")).findFirst().isPresent()) {
+    if (Arrays.asList(groups).contains(CacheElement.CLUSTER)) {
       return allMembers;
     }
 

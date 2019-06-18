@@ -110,7 +110,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listAll() throws Exception {
     // list all
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(5);
     RuntimeRegionConfig element = CacheElement.findElement(regions, "customers");
     assertThat(element.getGroup()).isNull();
@@ -130,7 +130,7 @@ public class ListRegionManagementDunitTest {
   public void listClusterLevel() throws Exception {
     // list cluster level only
     filter.setGroup("cluster");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers");
     assertThat(regions.get(0).getGroup()).isNull();
@@ -152,7 +152,7 @@ public class ListRegionManagementDunitTest {
     });
 
     filter.setName("customers");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     RuntimeRegionConfig regionConfig = regions.get(0);
     assertThat(regionConfig.getName()).isEqualTo("customers");
@@ -164,7 +164,7 @@ public class ListRegionManagementDunitTest {
   public void listGroup1() throws Exception {
     // list group1
     filter.setGroup("group1");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(3);
     // when filtering by group, the returned list should not have group info
     RuntimeRegionConfig region = CacheElement.findElement(regions, "customers1");
@@ -181,7 +181,7 @@ public class ListRegionManagementDunitTest {
   public void listGroup2() throws Exception {
     // list group1
     filter.setGroup("group2");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(2);
 
     RuntimeRegionConfig region = CacheElement.findElement(regions, "customers2");
@@ -195,14 +195,14 @@ public class ListRegionManagementDunitTest {
   public void listNonExistentGroup() throws Exception {
     // list non-existent group
     filter.setGroup("group3");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(0);
   }
 
   @Test
   public void listRegionByName() throws Exception {
     filter.setName("customers");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers");
     assertThat(regions.get(0).getGroup()).isNull();
@@ -211,7 +211,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName1() throws Exception {
     filter.setName("customers1");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers1");
     assertThat(regions.get(0).getGroup()).isEqualTo("group1");
@@ -220,7 +220,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName2() throws Exception {
     filter.setName("customers2");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(2);
     assertThat(
         regions.stream().map(CacheElement::getGroup).collect(Collectors.toList()))
@@ -234,7 +234,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName3() throws Exception {
     filter.setName("customers3");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers3");
     assertThat(regions.get(0).getGroups()).containsExactlyInAnyOrder("group1", "group2");
@@ -244,7 +244,7 @@ public class ListRegionManagementDunitTest {
   public void listNonExistentRegion() throws Exception {
     // list non-existent region
     filter.setName("customer4");
-    List<RuntimeRegionConfig> regions = client.list(filter).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> regions = client.list(filter).getResult();
     assertThat(regions).hasSize(0);
   }
 }

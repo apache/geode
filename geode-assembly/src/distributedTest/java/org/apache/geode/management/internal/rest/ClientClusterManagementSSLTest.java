@@ -104,7 +104,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "dataManage").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isTrue();
       assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
       assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
@@ -144,7 +144,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "wrongPassword").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -168,7 +168,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -191,7 +191,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", null).build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -214,7 +214,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataRead", "dataRead").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     });
