@@ -1857,7 +1857,7 @@ public class PRHARedundancyProvider {
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
     int createdBucketCount = pr.getRegionAdvisor().getCreatedBucketsCount();
 
-    int lowRedundancyBucketCount = pr.getRedundancyTracker().getLowestBucketCopies();
+    int lowRedundancyBucketCount = pr.getRedundancyTracker().getLowRedundancyBuckets();
     int configuredRedundantCopies = pr.getRedundantCopies();
     int actualRedundantCopies = pr.getRedundancyTracker().getActualRedundancy();
 

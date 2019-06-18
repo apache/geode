@@ -73,7 +73,7 @@ public class PRHARedundancyProviderTest {
 
     when(mockPartitionedRegion.getTotalNumberOfBuckets()).thenReturn(42);
     when(mockPartitionedRegion.getRegionAdvisor().getCreatedBucketsCount()).thenReturn(17);
-    when(mockPartitionedRegion.getRedundancyTracker().getLowestBucketCopies()).thenReturn(3);
+    when(mockPartitionedRegion.getRedundancyTracker().getLowRedundancyBuckets()).thenReturn(3);
     when(mockPartitionedRegion.getRedundantCopies()).thenReturn(12);
     when(mockPartitionedRegion.getRedundancyTracker().getActualRedundancy()).thenReturn(33);
 

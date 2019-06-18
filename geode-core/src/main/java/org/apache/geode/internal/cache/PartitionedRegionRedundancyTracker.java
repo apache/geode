@@ -62,6 +62,10 @@ class PartitionedRegionRedundancyTracker {
     return lowestBucketCopies;
   }
 
+  int getLowRedundancyBuckets() {
+    return lowRedundancyBuckets;
+  }
+
   /**
    * Increments the count of buckets that do not meet redundancy
    */
