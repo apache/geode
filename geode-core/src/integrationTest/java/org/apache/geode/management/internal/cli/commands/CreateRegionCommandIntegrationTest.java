@@ -228,6 +228,55 @@ public class CreateRegionCommandIntegrationTest {
         .containsOutput("Only regions with persistence or overflow to disk can specify DiskStore");
   }
 
+  @Test
+  public void nonPersistentReplicateOverflowRegionWithdiskStore() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create disk-store --name=DISKSTORE --dir=DISKSTORE --auto-compact=false" +
+            " --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true")
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
+    gfsh.executeAndAssertThat("create region --name=/OVERFLOW --type=REPLICATE_OVERFLOW" +
+        " --eviction-action=overflow-to-disk --eviction-entry-count=1000 --disk-store=DISKSTORE")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy region --name=/OVERFLOW").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy disk-store --name=DISKSTORE").statusIsSuccess();
+  }
+
+  @Test
+  public void nonPersistentPartitionOverflowRegionWithdiskStore() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create disk-store --name=DISKSTORE --dir=DISKSTORE --auto-compact=false" +
+            " --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true")
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
+    gfsh.executeAndAssertThat("create region --name=/OVERFLOW --type=PARTITION_OVERFLOW" +
+        " --eviction-action=overflow-to-disk --eviction-entry-count=1000 --disk-store=DISKSTORE")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy region --name=/OVERFLOW").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy disk-store --name=DISKSTORE").statusIsSuccess();
+  }
+
+  @Test
+  public void nonPersistentTemplateOverflowRegionWithdiskStore() throws Exception {
+    gfsh.executeAndAssertThat(
+        "create disk-store --name=DISKSTORE --dir=DISKSTORE --auto-compact=false" +
+            " --compaction-threshold=99 --max-oplog-size=1 --allow-force-compaction=true")
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
+    gfsh.executeAndAssertThat("create region --name=/OVERFLOW --type=PARTITION_OVERFLOW" +
+        " --eviction-action=overflow-to-disk --eviction-entry-count=1000 --disk-store=DISKSTORE")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat(
+        "create region --name=/TEMPLATE --template-region=/OVERFLOW --disk-store=DISKSTORE")
+        .statusIsSuccess();
+
+    gfsh.executeAndAssertThat("destroy region --name=/TEMPLATE").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy region --name=/OVERFLOW").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy disk-store --name=DISKSTORE").statusIsSuccess();
+  }
 
   @Test
   public void invalidDiskStore() throws Exception {

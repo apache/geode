@@ -41,6 +41,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.ClassNameType;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
@@ -336,16 +337,52 @@ public class CreateRegionCommand extends SingleGfshCommand {
       regionAttributes.setGatewaySenderIds(StringUtils.join(gatewaySenderIds, ","));
     }
 
+    // if any single eviction attributes is set, we will replace
+    // the template eviction attributes with this new eviction attributes. we do not combine
+    // the old and new.
+    RegionAttributesType.EvictionAttributes evictionAttributes =
+        RegionAttributesType.EvictionAttributes
+            .generate(evictionAction, evictionMaxMemory, evictionEntryCount, evictionObjectSizer);
+    if (evictionAttributes != null) {
+      regionAttributes.setEvictionAttributes(evictionAttributes);
+    }
+
     // validating and set diskstore
     if (diskStore != null) {
-      if (!regionAttributes.getDataPolicy().isPersistent()) {
-        String subMessage =
-            "Only regions with persistence or overflow to disk can specify DiskStore";
-        String message = subMessage + ". "
-            + CliStrings.format(
-                CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE,
-                new Object[] {templateRegion});
-        return ResultModel.createError(message);
+      if (regionShortcut != null) {
+        if (!regionShortcut.isPersistent() && !regionShortcut.isOverflow()) {
+          String subMessage =
+              "Only regions with persistence or overflow to disk can specify DiskStore";
+          String message = subMessage + ". "
+              + CliStrings.format(CliStrings.CREATE_REGION__MSG__USE_ONE_OF_THESE_SHORTCUTS_0,
+                  new Object[] {String.valueOf(RegionCommandsUtils.PERSISTENT_OVERFLOW_SHORTCUTS)});
+          return ResultModel.createError(message);
+        }
+      } else {
+        EnumActionDestroyOverflow tempEvictionAction = EnumActionDestroyOverflow.LOCAL_DESTROY;
+        RegionAttributesType.EvictionAttributes tempEvictionAttributes =
+            regionAttributes.getEvictionAttributes();
+        if (tempEvictionAttributes != null) {
+          if (tempEvictionAttributes.getLruMemorySize() != null) {
+            tempEvictionAction = tempEvictionAttributes.getLruMemorySize().getAction();
+          } else if (tempEvictionAttributes.getLruEntryCount() != null) {
+            tempEvictionAction = tempEvictionAttributes.getLruEntryCount().getAction();
+          } else if (tempEvictionAttributes.getLruHeapPercentage() != null) {
+            tempEvictionAction = tempEvictionAttributes.getLruHeapPercentage().getAction();
+          }
+        }
+
+        if (!regionAttributes.getDataPolicy().isPersistent()
+            && tempEvictionAction != EnumActionDestroyOverflow.OVERFLOW_TO_DISK) {
+          String subMessage =
+              "Only regions with persistence or overflow to disk can specify DiskStore";
+          String message = subMessage + ". "
+              + CliStrings.format(
+                  CliStrings.CREATE_REGION__MSG__USE_ATTRIBUTES_FROM_REGION_0_IS_NOT_WITH_PERSISTENCE_OR_OVERFLOW,
+                  new Object[] {templateRegion});
+          return ResultModel.createError(message);
+
+        }
       }
 
       if (!diskStoreExists(diskStore)) {
@@ -450,15 +487,6 @@ public class CreateRegionCommand extends SingleGfshCommand {
     regionAttributes.updateRegionTimeToLive(regionExpirationTTL,
         (regionExpirationTTLAction == null) ? null : regionExpirationTTLAction.toXmlString(), null);
 
-    // unlike expiration attributes, if any single eviction attributes is set, we will replace
-    // the template eviction attributes with this new eviction attributes. we do not combine
-    // the old and new.
-    RegionAttributesType.EvictionAttributes evictionAttributes =
-        RegionAttributesType.EvictionAttributes
-            .generate(evictionAction, evictionMaxMemory, evictionEntryCount, evictionObjectSizer);
-    if (evictionAttributes != null) {
-      regionAttributes.setEvictionAttributes(evictionAttributes);
-    }
 
     // creating the RegionFunctionArgs
     CreateRegionFunctionArgs functionArgs =
