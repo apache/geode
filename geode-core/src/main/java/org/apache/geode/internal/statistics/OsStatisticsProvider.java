@@ -65,8 +65,7 @@ public class OsStatisticsProvider {
    */
   private void refreshProcess(LocalStatisticsImpl statistics) {
     int pid = (int) statistics.getNumericId();
-    LinuxProcFsStatistics.refreshProcess(pid, statistics._getIntStorage(),
-        statistics._getLongStorage(), statistics._getDoubleStorage());
+    LinuxProcFsStatistics.refreshProcess(pid, statistics);
   }
 
   /**
@@ -74,8 +73,7 @@ public class OsStatisticsProvider {
    * machine and storing them in the instance.
    */
   private void refreshSystem(LocalStatisticsImpl statistics) {
-    LinuxProcFsStatistics.refreshSystem(statistics._getIntStorage(), statistics._getLongStorage(),
-        statistics._getDoubleStorage());
+    LinuxProcFsStatistics.refreshSystem(statistics);
   }
 
   /**

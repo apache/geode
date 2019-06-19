@@ -196,8 +196,8 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     final StatisticsType ST1 = manager.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1", 1);
-    final int value = 5;
-    incInt(st1_1, "int_counter_1", value);
+    final long value = 5;
+    incInt(st1_1, "int_counter_1", (int) value);
 
     final long sampleIncNanos = NANOS_PER_MILLI * 1000;
     final long sampleTimeNanos = WRITER_PREVIOUS_TIMESTAMP_NANOS + sampleIncNanos;
@@ -277,8 +277,8 @@ public class StatArchiveWriterReaderIntegrationTest {
 
     final StatisticsType ST1 = manager.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1", 1);
-    final int value = 5;
-    incInt(st1_1, "int_gauge_1", value);
+    final long value = 5;
+    incInt(st1_1, "int_gauge_1", (int) value);
 
     final long sampleIncNanos = NANOS_PER_MILLI * 1000;
     final long sampleTimeNanos = WRITER_PREVIOUS_TIMESTAMP_NANOS + sampleIncNanos;
@@ -995,7 +995,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
 
-    assertTrue("Actual stat archive file bytes differ from expected stat archive file bytes!",
+    assertTrue("Actual stat archive file: " + actual.getAbsolutePath()
+        + " bytes differ from expected stat archive file bytes!",
         Arrays.equals(readBytes(expected), readBytes(actual)));
   }
 
@@ -1401,7 +1402,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     assertTrue(expected + " does not exist!", expected.exists());
     assertEquals(expected.length(), actual.length());
 
-    assertTrue("Actual stat archive file bytes differ from expected stat archive file bytes!",
+    assertTrue("Actual stat archive file: " + actual.getAbsolutePath()
+        + " bytes differ from expected stat archive file bytes!",
         Arrays.equals(readBytes(expected), readBytes(actual)));
   }
 

@@ -185,13 +185,13 @@ public class CacheConnectionIntegrationTest {
         distributedSystem.findType(ProtobufClientStatistics.PROTOBUF_CLIENT_STATISTICS));
     assertEquals(1, protobufStats.length);
     Statistics statistics = protobufStats[0];
-    assertEquals(1, statistics.get("currentClientConnections"));
+    assertEquals(1L, statistics.get("currentClientConnections"));
     assertEquals(3L, statistics.get("messagesReceived"));
     assertEquals(3L, statistics.get("messagesSent"));
     assertTrue(statistics.get("bytesReceived").longValue() > 0);
     assertTrue(statistics.get("bytesSent").longValue() > 0);
-    assertEquals(1, statistics.get("clientConnectionStarts"));
-    assertEquals(0, statistics.get("clientConnectionTerminations"));
+    assertEquals(1L, statistics.get("clientConnectionStarts"));
+    assertEquals(0L, statistics.get("clientConnectionTerminations"));
     assertEquals(0L, statistics.get("authorizationViolations"));
     assertEquals(0L, statistics.get("authenticationFailures"));
   }

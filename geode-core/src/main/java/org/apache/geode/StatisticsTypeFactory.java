@@ -28,13 +28,11 @@ import org.apache.geode.internal.statistics.StatArchiveFormat;
  * A <code>StatisticsTypeFactory</code> can create a {@link StatisticDescriptor statistic} of three
  * numeric types: <code>int</code>, <code>long</code>, and <code>double</code>. A statistic
  * (<code>StatisticDescriptor</code>) can either be a <I>gauge</I> meaning that its value can
- * increase and decrease or a <I>counter</I> meaning that its value is strictly increasing. Marking
- * a statistic as a counter allows statistic display tools to properly display a statistics whose
- * value "wraps around" (that is, exceeds its maximum value).
+ * increase and decrease or a <I>counter</I> meaning that its value is strictly increasing.
  *
  * <P>
- * The following code is an example of how to create a type using XML. In this example the type has
- * two stats whose values always increase:
+ * The following code is an example of how to create a type using code. In this example the type has
+ * two counters:
  *
  * <pre>
     StatisticsTypeFactory f = ...;
@@ -42,7 +40,7 @@ import org.apache.geode.internal.statistics.StatArchiveFormat;
         "StatSampler",
         "Stats on the statistic sampler.",
         new StatisticDescriptor[] {
-            f.createIntCounter("sampleCount",
+            f.createLongCounter("sampleCount",
                                "Total number of samples taken by this sampler.",
                                "samples"),
             f.createLongCounter("sampleTime",
@@ -62,7 +60,7 @@ import org.apache.geode.internal.statistics.StatArchiveFormat;
     &lt;statistics&gt;
       &lt;type name="StatSampler"&gt;
         &lt;description&gt;Stats on the statistic sampler.&lt;/description&gt;
-        &lt;stat name="sampleCount" storage="int" counter="true"&gt;
+        &lt;stat name="sampleCount" storage="long" counter="true"&gt;
           &lt;description&gt;Total number of samples taken by this sampler.&lt;/description&gt;
           &lt;unit&gt;samples&lt;/unit&gt;
         &lt;/stat&gt;
@@ -94,7 +92,10 @@ public interface StatisticsTypeFactory {
    * Creates and returns an int counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>units</code>, and with larger values
    * indicating better performance.
+   *
+   * @deprecated as of Geode 1.10, use {@link #createLongCounter(String, String, String)} instead
    */
+  @Deprecated
   StatisticDescriptor createIntCounter(String name, String description, String units);
 
   /**
@@ -115,7 +116,10 @@ public interface StatisticsTypeFactory {
    * Creates and returns an int gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>units</code>, and with smaller values indicating better
    * performance.
+   *
+   * @deprecated as of Geode 1.10, use {@link #createLongGauge(String, String, String)} instead
    */
+  @Deprecated
   StatisticDescriptor createIntGauge(String name, String description, String units);
 
   /**
@@ -135,7 +139,11 @@ public interface StatisticsTypeFactory {
   /**
    * Creates and returns an int counter {@link StatisticDescriptor} with the given
    * <code>name</code>, <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
+   *
+   * @deprecated as of Geode 1.10, use {@link #createLongCounter(String, String, String, boolean)}
+   *             instead
    */
+  @Deprecated
   StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter);
 
@@ -156,7 +164,11 @@ public interface StatisticsTypeFactory {
   /**
    * Creates and returns an int gauge {@link StatisticDescriptor} with the given <code>name</code>,
    * <code>description</code>, <code>largerBetter</code>, and <code>units</code>.
+   *
+   * @deprecated as of Geode 1.10, use {@link #createLongGauge(String, String, String, boolean)}
+   *             instead
    */
+  @Deprecated
   StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter);
 

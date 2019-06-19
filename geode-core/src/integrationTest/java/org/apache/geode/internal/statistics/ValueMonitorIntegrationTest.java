@@ -221,7 +221,7 @@ public class ValueMonitorIntegrationTest {
 
     Map<String, Number> expectedValues = new HashMap<>();
     expectedValues.put("double_counter_1", 1001.1001);
-    expectedValues.put("int_counter_2", 4);
+    expectedValues.put("int_counter_2", 4L);
     expectedValues.put("long_counter_3", 3333333336L);
     int statCount = assertStatisticsNotification(notification, expectedValues);
     assertThat(statCount).isEqualTo(3);
@@ -254,7 +254,7 @@ public class ValueMonitorIntegrationTest {
     notification = notifications.remove(0);
     assertThat(notification.getType()).isEqualTo(StatisticsNotification.Type.VALUE_CHANGED);
     expectedValues = new HashMap<>();
-    expectedValues.put("int_counter_2", 104);
+    expectedValues.put("int_counter_2", 104L);
     statCount = assertStatisticsNotification(notification, expectedValues);
     assertThat(statCount).isEqualTo(1);
   }
