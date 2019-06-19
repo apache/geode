@@ -78,7 +78,7 @@ public class RegionConfigManager
     for (RegionConfig config : staticRegionConfigs) {
       DistributedRegionMXBean distributedRegionMXBean =
           getManagementService().getDistributedRegionMXBean("/" + config.getName());
-      long entryCount = -1;
+      long entryCount = 0;
       if (distributedRegionMXBean != null) {
         entryCount = distributedRegionMXBean.getSystemRegionEntryCount();
       }
