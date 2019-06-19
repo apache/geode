@@ -927,10 +927,6 @@ public class PartitionedRegionStats {
     this.stats.setLong(localMaxMemoryId, l);
   }
 
-  public int getActualRedundantCopies() {
-    return this.stats.getInt(actualRedundantCopiesId);
-  }
-
   public void setActualRedundantCopies(int val) {
     this.stats.setInt(actualRedundantCopiesId, val);
   }
