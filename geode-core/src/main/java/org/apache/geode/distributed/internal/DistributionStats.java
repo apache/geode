@@ -14,6 +14,8 @@
  */
 package org.apache.geode.distributed.internal;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -936,6 +938,8 @@ public class DistributionStats implements DMStats {
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
 
+  private final AtomicLong maxReplyWaitTime = new AtomicLong();
+
   // private final HistogramStats replyHandoffHistogram;
   // private final HistogramStats replyWaitHistogram;
 
@@ -1376,10 +1380,6 @@ public class DistributionStats implements DMStats {
     return stats.getLong(replyWaitTimeId);
   }
 
-  public long getReplyWaitMaxTime() {
-    return stats.getLong(replyWaitMaxTimeId);
-  }
-
   @Override
   public long startSocketWrite(boolean sync) {
     if (sync) {
@@ -1600,23 +1600,39 @@ public class DistributionStats implements DMStats {
     return getStatTime();
   }
 
+
   @Override
   public void endReplyWait(long startNanos, long initTime) {
     if (enableClockStats) {
       stats.incLong(replyWaitTimeId, getStatTime() - startNanos);
       // this.replyWaitHistogram.endOp(delta);
     }
-    if (initTime != 0) {
-      long mswait = System.currentTimeMillis() - initTime;
-      if (mswait > getReplyWaitMaxTime()) {
-        stats.setLong(replyWaitMaxTimeId, mswait);
-      }
-    }
+    recordMaxReplyWaitTime(initTime, System.currentTimeMillis());
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);
 
     Breadcrumbs.setSendSide(null); // clear any recipient breadcrumbs set by the message
     Breadcrumbs.setProblem(null); // clear out reply-wait errors
+  }
+
+  void recordMaxReplyWaitTime(long initTime, long endTime) {
+    if (initTime == 0) {
+      return;
+    }
+
+    long currentWaitTime = endTime - initTime;
+    boolean done = false;
+    while (!done) {
+      long maxWaitTime = maxReplyWaitTime.get();
+      if (currentWaitTime <= maxWaitTime) {
+        done = true;
+      } else {
+        done = maxReplyWaitTime.compareAndSet(maxWaitTime, currentWaitTime);
+        if (done) {
+          stats.incLong(replyWaitMaxTimeId, currentWaitTime - maxWaitTime);
+        }
+      }
+    }
   }
 
   @Override
