@@ -158,7 +158,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = client.create(region);
+    ClusterManagementResult<RegionConfig> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -189,7 +189,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = client.create(region);
+    ClusterManagementResult<RegionConfig> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -219,7 +219,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = client.create(region);
+    ClusterManagementResult<RegionConfig> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
