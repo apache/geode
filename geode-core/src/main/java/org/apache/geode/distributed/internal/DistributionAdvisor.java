@@ -279,6 +279,22 @@ public class DistributionAdvisor {
     // through the sync operation. Without associated event information this could cause the
     // retried operation to be mishandled. See GEODE-5505
     final long delay = getDelay(dr);
+
+    if (!dr.isInitializedWithWait()) {
+      return;
+    }
+    if (dr.getDataPolicy().withPersistence() && persistentId == null) {
+      // Fix for GEODE-6886 (#46704). The lost member may be an empty accessor
+      // of a persistent replicate region. We don't need to do a synchronization
+      // in that case, because those members send their writes to a persistent member.
+      // Only a persistent member can generate the version.
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "da.syncForCrashedMember skipping sync because crashed member is not persistent: {}",
+            id);
+      }
+      return;
+    }
     dr.scheduleSynchronizeForLostMember(id, lostVersionID, delay);
     if (dr.getConcurrencyChecksEnabled()) {
       dr.setRegionSynchronizeScheduled(lostVersionID);

@@ -1289,18 +1289,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
 
   void performSynchronizeForLostMemberTask(InternalDistributedMember member,
       VersionSource lostVersionID) {
-    waitUntilInitialized();
-
-    if (getDataPolicy().withPersistence() && getPersistentID() == null) {
-      // Fix for 46704. The lost member may be a replicate
-      // or an empty accessor. We don't need to do a synchronization
-      // in that case, because those members send their writes to
-      // a persistent member.
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "da.syncForCrashedMember skipping sync because crashed member is not persistent: {}",
-            member);
-      }
+    if (!isInitializedWithWait()) {
       return;
     }
     synchronizeForLostMember(member, lostVersionID);
@@ -1361,10 +1350,10 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     return false;
   }
 
-  void waitUntilInitialized() {
+  public boolean isInitializedWithWait() {
     while (!isInitialized()) {
       if (isDestroyed()) {
-        return;
+        return false;
       } else {
         try {
           if (logger.isDebugEnabled()) {
@@ -1373,10 +1362,11 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
           }
           Thread.sleep(100);
         } catch (InterruptedException e) {
-          return;
+          return false;
         }
       }
     }
+    return true;
   }
 
   /** remove any partial entries received in a failed GII */
