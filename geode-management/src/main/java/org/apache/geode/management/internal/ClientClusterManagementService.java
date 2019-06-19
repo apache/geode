@@ -132,7 +132,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   public boolean isConnected() {
-    return restTemplate.getForEntity("/ping", String.class)
+    return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
         .getBody().equals("pong");
   }
 

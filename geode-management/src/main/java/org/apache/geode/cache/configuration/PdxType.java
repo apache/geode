@@ -215,7 +215,7 @@ public class PdxType extends CacheElement implements RestfulEndpoint, RespondsWi
   }
 
   @Override
-  public String getUri() {
+  public String getIdentityEndPoint() {
     return PDX_ENDPOINT;
   }
 
