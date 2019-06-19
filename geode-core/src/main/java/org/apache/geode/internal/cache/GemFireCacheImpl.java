@@ -1026,23 +1026,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       return null;
     }
 
-    // can't simply return null if server is not using shared configuration, since we need to find
-    // out if the locator is running in secure mode or not, if yes, then we need to throw an
-    // exception if server is not using cluster config.
-
-    Map<InternalDistributedMember, Collection<String>> locatorsWithClusterConfig =
-        getDistributionManager().getAllHostedLocatorsWithSharedConfiguration();
-
-    // If there are no locators with Shared configuration, that means the system has been started
-    // without shared configuration then do not make requests to the locators.
-    if (locatorsWithClusterConfig.isEmpty()) {
-      logger.info("No locator(s) found with cluster configuration service");
-      return null;
-    }
-
     try {
       ConfigurationResponse response = ccLoader.requestConfigurationFromLocators(
-          system.getConfig().getGroups(), locatorsWithClusterConfig.keySet());
+          system.getConfig().getGroups(), getDistributionManager());
 
       // log the configuration received from the locator
       logger.info("Received cluster configuration from the locator");

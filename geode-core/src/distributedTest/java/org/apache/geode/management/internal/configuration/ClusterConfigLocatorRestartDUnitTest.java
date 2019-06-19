@@ -19,15 +19,18 @@ package org.apache.geode.management.internal.configuration;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Properties;
 
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -108,9 +111,12 @@ public class ClusterConfigLocatorRestartDUnitTest {
     // Shut down hard
     rule.crashVM(0);
 
+
     server3.forceDisconnect();
 
-    rule.startServerVM(4, properties, locator1.getPort(), locator0.getPort());
+
+
+    rule.startServerVM(4, locator1.getPort(), locator0.getPort());
 
     gfsh.connectAndVerify(locator1);
 
@@ -118,6 +124,42 @@ public class ClusterConfigLocatorRestartDUnitTest {
         .untilAsserted(() -> gfsh.executeAndAssertThat("list members").statusIsSuccess()
             .tableHasColumnOnlyWithValues("Name", "locator-1", "server-2", "server-3", "server-4"));
   }
+
+  /**
+   * This test demonstrates that killing a locator after join but before getting cluster
+   * configuration results in a lack of cluster configuration.
+   */
+  @Test
+  public void memberStartupFailsIfNoClusterConfigAvailable() {
+    IgnoredException.addIgnoredException("This member is no longer in the membership view");
+    IgnoredException.addIgnoredException("This node is no longer in the membership view");
+    IgnoredException
+        .addIgnoredException("org.apache.geode.ForcedDisconnectException: for testing");
+    IgnoredException.addIgnoredException("Connection refused");
+    IgnoredException.addIgnoredException("cluster configuration service not available");
+
+    Properties properties = new Properties();
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "30000");
+
+    MemberVM locator1 = rule.startLocatorVM(0, properties);
+    VM locator1VM = locator1.getVM();
+
+    MemberVM server2 = rule.startServerVM(2, properties, locator1.getPort());
+
+    VM server3 = VM.getVM(3);
+
+    server3.invoke(() -> {
+      InternalDistributedSystem.addConnectListener(sys -> {
+        locator1VM.invoke(() -> InternalDistributedSystem.getAnyInstance().disconnect());
+      });
+    });
+
+    assertThatThrownBy(() -> this.rule.startServerVM(3, properties, locator1.getPort()))
+        .hasCauseInstanceOf(
+            GemFireConfigException.class);
+
+  }
+
 
   private void addDisconnectListener(MemberVM member) {
     member.invoke(() -> {

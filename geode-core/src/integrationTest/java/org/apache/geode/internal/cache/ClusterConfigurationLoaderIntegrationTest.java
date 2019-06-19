@@ -55,9 +55,11 @@ public class ClusterConfigurationLoaderIntegrationTest {
     locators.add((InternalDistributedMember) locator.getLocator().getDistributedSystem()
         .getDistributedMember());
 
-    assertThatThrownBy(() -> loader.requestConfigurationFromLocators("", locators))
-        .isInstanceOf(FunctionException.class).hasCauseInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("The cluster configuration service is not enabled on this member.");
+    assertThatThrownBy(() -> loader.requestConfigurationFromLocators("",
+        locator.getCache().getDistributionManager()))
+            .isInstanceOf(FunctionException.class).hasCauseInstanceOf(IllegalStateException.class)
+            .hasMessageContaining(
+                "The cluster configuration service is not enabled on this member.");
   }
 
   @Test
@@ -71,9 +73,10 @@ public class ClusterConfigurationLoaderIntegrationTest {
     locators.add((InternalDistributedMember) locator.getLocator().getDistributedSystem()
         .getDistributedMember());
 
-    assertThatThrownBy(() -> loader.requestConfigurationFromLocators("", locators))
-        .isInstanceOf(ClusterConfigurationNotAvailableException.class)
-        .hasMessageContaining("Unable to retrieve cluster configuration from the locator.");
+    assertThatThrownBy(() -> loader.requestConfigurationFromLocators("",
+        locator.getCache().getDistributionManager()))
+            .isInstanceOf(ClusterConfigurationNotAvailableException.class)
+            .hasMessageContaining("Unable to retrieve cluster configuration from the locator.");
 
     assertThat(customAnswer.calls).isEqualTo(6);
   }
@@ -88,7 +91,8 @@ public class ClusterConfigurationLoaderIntegrationTest {
     locators.add((InternalDistributedMember) locator.getLocator().getDistributedSystem()
         .getDistributedMember());
 
-    ConfigurationResponse response = loader.requestConfigurationFromLocators("", locators);
+    ConfigurationResponse response =
+        loader.requestConfigurationFromLocators("", locator.getCache().getDistributionManager());
     Map<String, Configuration> configurationMap = response.getRequestedConfiguration();
     assertThat(configurationMap.size()).isEqualTo(1);
     assertThat(configurationMap.get("cluster")).isNotNull();
@@ -107,7 +111,8 @@ public class ClusterConfigurationLoaderIntegrationTest {
     locators.add((InternalDistributedMember) locator.getLocator().getDistributedSystem()
         .getDistributedMember());
 
-    ConfigurationResponse response = loader.requestConfigurationFromLocators("", locators);
+    ConfigurationResponse response =
+        loader.requestConfigurationFromLocators("", locator.getCache().getDistributionManager());
     Map<String, Configuration> configurationMap = response.getRequestedConfiguration();
     assertThat(configurationMap.size()).isEqualTo(1);
     assertThat(configurationMap.get("cluster")).isNotNull();

@@ -56,6 +56,7 @@ import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConfigSource;
@@ -271,15 +272,16 @@ public class ClusterConfigurationLoader {
    * @return {@link ConfigurationResponse}
    */
   public ConfigurationResponse requestConfigurationFromLocators(String groupList,
-      Set<InternalDistributedMember> locatorList)
+      DistributionManager distributionManager)
       throws ClusterConfigurationNotAvailableException, UnknownHostException {
 
     Set<String> groups = getGroups(groupList);
-
+    Set<InternalDistributedMember> locatorList;
     ConfigurationResponse response = null;
 
     int attempts = 6;
     OUTER: while (attempts > 0) {
+      locatorList = distributionManager.getAllHostedLocators().keySet();
       for (InternalDistributedMember locator : locatorList) {
         logger.info("Attempting to retrieve cluster configuration from {} - {} attempts remaining",
             locator.getName(), attempts);
