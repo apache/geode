@@ -16,12 +16,12 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.cache.ha.HAGIIDUnitTest.checker;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 
+import java.net.ConnectException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
@@ -105,22 +106,26 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
     // Start the client
     client0.invoke(() -> HAGIIDUnitTest.createClientCache(NetworkUtils.getServerHostName(host),
         new Integer(PORT1), new Integer(PORT2)));
+    client0.invoke(() -> checker.resetUpdateCounter());
   }
 
   @Test
   public void testGIIRegionQueue() {
-    client0.invoke(() -> HAGIIDUnitTest.createEntries());
-    client0.invoke(() -> HAGIIDUnitTest.registerInterestList());
-    server0.invoke(() -> HAGIIDUnitTest.put());
+    try (IgnoredException ignoredException =
+        IgnoredException.addIgnoredException(ConnectException.class)) {
+      client0.invoke(() -> HAGIIDUnitTest.createEntries());
+      client0.invoke(() -> HAGIIDUnitTest.registerInterestList());
+      server0.invoke(() -> HAGIIDUnitTest.put());
 
-    server0.invoke(() -> HAGIIDUnitTest.tombstonegc());
+      server0.invoke(() -> HAGIIDUnitTest.tombstonegc());
 
-    client0.invoke(() -> HAGIIDUnitTest.verifyEntries());
-    server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {new Integer(PORT2)});
-    Wait.pause(6000);
-    server0.invoke(() -> HAGIIDUnitTest.stopServer());
-    // pause(10000);
-    client0.invoke(() -> HAGIIDUnitTest.verifyEntriesAfterGiiViaListener());
+      client0.invoke(() -> HAGIIDUnitTest.verifyEntries());
+      server1.invoke(HAGIIDUnitTest.class, "createServer2Cache", new Object[] {new Integer(PORT2)});
+      Wait.pause(6000);
+      server0.invoke(() -> HAGIIDUnitTest.stopServer());
+      // pause(10000);
+      client0.invoke(() -> HAGIIDUnitTest.verifyEntriesAfterGiiViaListener());
+    }
   }
 
   public void createCache(Properties props) throws Exception {
@@ -464,6 +469,10 @@ public class HAGIIDUnitTest extends JUnit4DistributedTestCase {
 
     public int getUpdates() {
       return this.updates;
+    }
+
+    public void resetUpdateCounter() {
+      updates = 0;
     }
 
     public boolean gotFirst() {
