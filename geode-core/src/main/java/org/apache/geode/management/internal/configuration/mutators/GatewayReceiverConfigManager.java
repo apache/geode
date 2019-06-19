@@ -22,7 +22,8 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class GatewayReceiverConfigManager implements ConfigurationManager<GatewayReceiverConfig> {
+public class GatewayReceiverConfigManager
+    implements ConfigurationManager<GatewayReceiverConfig, GatewayReceiverConfig> {
   private final InternalCache cache;
 
   public GatewayReceiverConfigManager(InternalCache cache) {
@@ -46,7 +47,7 @@ public class GatewayReceiverConfigManager implements ConfigurationManager<Gatewa
   }
 
   @Override
-  public List<? extends GatewayReceiverConfig> list(GatewayReceiverConfig filterConfig,
+  public List<GatewayReceiverConfig> list(GatewayReceiverConfig filterConfig,
       CacheConfig existing) {
     GatewayReceiverConfig gatewayReceiver = existing.getGatewayReceiver();
     if (gatewayReceiver == null) {

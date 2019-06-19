@@ -29,18 +29,19 @@ import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class MemberManagementServiceDunitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule(2);
 
-  private static MemberVM locator, server;
+  private static MemberVM locator;
   private static ClusterManagementService cmsClient;
 
   @BeforeClass
   public static void beforeClass() {
-    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
-    server = cluster.startServerVM(1, locator.getPort());
+    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
+    cluster.startServerVM(1, locator.getPort());
     cmsClient =
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
@@ -50,14 +51,14 @@ public class MemberManagementServiceDunitTest {
   @Test
   public void listAllMembers() {
     MemberConfig config = new MemberConfig();
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = cmsClient.list(config);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult(CacheElement.class).size()).isEqualTo(2);
+    assertThat(result.getResult().size()).isEqualTo(2);
 
     RuntimeMemberConfig memberConfig =
-        CacheElement.findElement(result.getResult(RuntimeMemberConfig.class),
+        CacheElement.findElement(result.getResult(),
             "locator-0");
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
@@ -65,29 +66,29 @@ public class MemberManagementServiceDunitTest {
   }
 
   @Test
-  public void listOneMember() throws Exception {
+  public void listOneMember() {
     MemberConfig config = new MemberConfig();
     config.setId("locator-0");
 
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult(CacheElement.class).size()).isEqualTo(1);
+    assertThat(result.getResult().size()).isEqualTo(1);
 
-    RuntimeMemberConfig memberConfig = result.getResult(RuntimeMemberConfig.class).get(0);
+    RuntimeMemberConfig memberConfig = result.getResult().get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isLocator()).isTrue();
     assertThat(memberConfig.getPort()).isEqualTo(locator.getPort());
   }
 
   @Test
-  public void listNonExistentMember() throws Exception {
+  public void listNonExistentMember() {
     MemberConfig config = new MemberConfig();
     config.setId("locator");
-    ClusterManagementResult result = cmsClient.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult(CacheElement.class).size()).isEqualTo(0);
+    assertThat(result.getResult().size()).isEqualTo(0);
   }
 }

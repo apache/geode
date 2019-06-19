@@ -30,17 +30,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.RuntimeMemberConfig;
 
 @Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
-  public ResponseEntity<ClusterManagementResult> getMember(
+  public ResponseEntity<ClusterManagementResult<RuntimeMemberConfig>> getMember(
       @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
     config.setId(id);
-    ClusterManagementResult result = clusterManagementService.get(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = clusterManagementService.get(config);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
@@ -48,13 +49,13 @@ public class MemberManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> listMembers(
+  public ResponseEntity<ClusterManagementResult<RuntimeMemberConfig>> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
-    ClusterManagementResult result = clusterManagementService.list(filter);
+    ClusterManagementResult<RuntimeMemberConfig> result = clusterManagementService.list(filter);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);

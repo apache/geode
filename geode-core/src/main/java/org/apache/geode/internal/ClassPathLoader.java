@@ -21,10 +21,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Proxy;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -73,17 +74,14 @@ public class ClassPathLoader {
   @MakeNotStatic
   private static volatile ClassPathLoader latest;
 
-  private volatile URLClassLoader classLoaderForDeployedJars;
+  public final HashMap<String, DeployJarChildFirstClassLoader> latestJarNamesToClassLoader =
+      new HashMap<>();
+
+  private volatile DeployJarChildFirstClassLoader leafLoader;
 
   private final JarDeployer jarDeployer;
 
   private boolean excludeTCCL;
-
-  void rebuildClassLoaderForDeployedJars() {
-    ClassLoader parent = ClassPathLoader.class.getClassLoader();
-
-    this.classLoaderForDeployedJars = new URLClassLoader(jarDeployer.getDeployedJarURLs(), parent);
-  }
 
   public ClassPathLoader(boolean excludeTCCL) {
     this.excludeTCCL = excludeTCCL;
@@ -116,6 +114,30 @@ public class ClassPathLoader {
    */
   static ClassPathLoader createWithDefaults(final boolean excludeTCCL) {
     return new ClassPathLoader(excludeTCCL);
+  }
+
+  synchronized void rebuildClassLoaderForDeployedJars() {
+    leafLoader = null;
+    Collection<DeployedJar> deployedJars = jarDeployer.getDeployedJars().values();
+    for (DeployedJar deployedJar : deployedJars) {
+      chainClassloader(deployedJar);
+    }
+  }
+
+  ClassLoader getLeafLoader() {
+    if (leafLoader == null) {
+      return ClassPathLoader.class.getClassLoader();
+    }
+    return leafLoader;
+  }
+
+  synchronized void chainClassloader(DeployedJar jar) {
+    this.leafLoader = new DeployJarChildFirstClassLoader(latestJarNamesToClassLoader,
+        new URL[] {jar.getFileURL()}, jar.getJarName(), getLeafLoader());
+  }
+
+  synchronized void unloadClassloaderForJar(String jarName) {
+    latestJarNamesToClassLoader.put(jarName, null);
   }
 
   public URL getResource(final String name) {
@@ -151,13 +173,26 @@ public class ClassPathLoader {
       logger.trace("forName({})", name);
     }
 
+    Class<?> clazz = forName(name, isDebugEnabled);
+    if (clazz != null)
+      return clazz;
+
+    throw new ClassNotFoundException(name);
+  }
+
+  private Class<?> forName(String name, boolean isDebugEnabled) {
     for (ClassLoader classLoader : this.getClassLoaders()) {
       if (isDebugEnabled) {
         logger.trace("forName trying: {}", classLoader);
       }
       try {
+        // Do not look up class definitions in jars that have been unloaded or are old
+        if (classLoader instanceof DeployJarChildFirstClassLoader) {
+          if (((DeployJarChildFirstClassLoader) classLoader).thisIsOld()) {
+            return null;
+          }
+        }
         Class<?> clazz = Class.forName(name, true, classLoader);
-
         if (clazz != null) {
           if (isDebugEnabled) {
             logger.trace("forName found by: {}", classLoader);
@@ -168,8 +203,7 @@ public class ClassPathLoader {
         // try next classLoader
       }
     }
-
-    throw new ClassNotFoundException(name);
+    return null;
   }
 
   /**
@@ -308,10 +342,7 @@ public class ClassPathLoader {
       }
     }
 
-    if (classLoaderForDeployedJars != null) {
-      classLoaders.add(classLoaderForDeployedJars);
-    }
-
+    classLoaders.add(getLeafLoader());
     return classLoaders;
   }
 

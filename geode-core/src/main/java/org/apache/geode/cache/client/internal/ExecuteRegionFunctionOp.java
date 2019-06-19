@@ -15,6 +15,8 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -122,13 +124,14 @@ public class ExecuteRegionFunctionOp {
    * @param resultCollector is used to collect the results from the Server
    * @param hasResult is used to collect the results from the Server
    * @param maxRetryAttempts Maximum number of retry attempts
+   * @param timeoutMs timeout in milliseconds
    */
   public static void execute(ExecutablePool pool, String region, Function function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int maxRetryAttempts) {
+      byte hasResult, int maxRetryAttempts, final int timeoutMs) {
 
     AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
+        resultCollector, hasResult, new HashSet<String>(), timeoutMs);
 
     execute(pool, region, function.getId(), serverRegionExecutor, resultCollector, hasResult,
         maxRetryAttempts, function.isHA(),
@@ -138,10 +141,11 @@ public class ExecuteRegionFunctionOp {
 
   public static void execute(ExecutablePool pool, String region, String function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int maxRetryAttempts, boolean isHA, boolean optimizeForWrite) {
+      byte hasResult, int maxRetryAttempts, boolean isHA, boolean optimizeForWrite,
+      final int timeoutMs) {
 
     AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
+        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true, timeoutMs);
 
     execute(pool, region, function, serverRegionExecutor, resultCollector, hasResult,
         maxRetryAttempts, isHA,
@@ -150,10 +154,10 @@ public class ExecuteRegionFunctionOp {
 
   public static void reexecute(ExecutablePool pool, String region, Function function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int retryAttempts) {
+      byte hasResult, Set<String> failedNodes, int retryAttempts, final int timeoutMs) {
 
     AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>());
+        resultCollector, hasResult, new HashSet<String>(), timeoutMs);
 
     ExecuteRegionFunctionOp.execute(pool, region, function.getId(), serverRegionExecutor,
         resultCollector, hasResult, retryAttempts, function.isHA(),
@@ -164,16 +168,16 @@ public class ExecuteRegionFunctionOp {
   public static void reexecute(ExecutablePool pool, String region, String function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
       byte hasResult, Set<String> failedNodes, int retryAttempts, boolean isHA,
-      boolean optimizeForWrite) {
+      boolean optimizeForWrite, final int timeoutMs) {
 
     AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
-        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
+        resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true, timeoutMs);
 
     ExecuteRegionFunctionOp.execute(pool, region, function, serverRegionExecutor, resultCollector,
         hasResult, retryAttempts, isHA, optimizeForWrite, op, true, failedNodes);
   }
 
-  static class ExecuteRegionFunctionOpImpl extends AbstractOp {
+  static class ExecuteRegionFunctionOpImpl extends AbstractOpWithTimeout {
 
     // To collect the results from the server
     private final ResultCollector resultCollector;
@@ -236,9 +240,9 @@ public class ExecuteRegionFunctionOp {
 
     public ExecuteRegionFunctionOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
-        Set<String> removedNodes) {
+        Set<String> removedNodes, final int timeoutMs) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes));
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes), timeoutMs);
       executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
       byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
@@ -258,8 +262,7 @@ public class ExecuteRegionFunctionOp {
 
     // For testing only
     ExecuteRegionFunctionOpImpl() {
-      super(MessageType.EXECUTE_REGION_FUNCTION,
-          0);
+      super(MessageType.EXECUTE_REGION_FUNCTION, 0, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
       resultCollector = null;
       function = null;
       isReExecute = (byte) 0;
@@ -275,9 +278,9 @@ public class ExecuteRegionFunctionOp {
     public ExecuteRegionFunctionOpImpl(String region, String functionId,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
         Set<String> removedNodes, boolean isHA, boolean optimizeForWrite,
-        boolean calculateFnState) {
+        boolean calculateFnState, final int timeoutMs) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes));
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes), timeoutMs);
 
       byte functionState = hasResult;
       if (calculateFnState) {
@@ -303,13 +306,13 @@ public class ExecuteRegionFunctionOp {
     public ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionSingleHopOpImpl newop) {
       this(newop.getRegionName(), newop.getFunctionId(), newop.getExecutor(),
           newop.getResultCollector(), newop.getHasResult(), new HashSet<String>(), newop.isHA(),
-          newop.optimizeForWrite(), false);
+          newop.optimizeForWrite(), false, newop.getTimeoutMs());
     }
 
     public ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionOpImpl op, byte isReExecute,
         Set<String> removedNodes) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMessagePartCount(op.executor.getFilter().size(), removedNodes));
+          getMessagePartCount(op.executor.getFilter().size(), removedNodes), op.getTimeoutMs());
       this.isReExecute = isReExecute;
       this.resultCollector = op.resultCollector;
       this.function = op.function;
@@ -332,13 +335,12 @@ public class ExecuteRegionFunctionOp {
     }
 
     private void addBytes(byte functionStateOrHasResult) {
-      if (ConnectionImpl
-          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (getTimeoutMs() == DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         getMessage().addBytesPart(new byte[] {functionStateOrHasResult});
       } else {
         byte[] bytes = new byte[5];
         bytes[0] = functionStateOrHasResult;
-        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(getTimeoutMs(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }

@@ -17,6 +17,7 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_HAS_RESULT;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.FUNCTION_NAME;
 import static org.apache.geode.cache.client.internal.ExecuteFunctionTestSupport.OPTIMIZE_FOR_WRITE_SETTING;
+import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -141,8 +142,8 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
     testSupport = new ExecuteFunctionTestSupport(haStatus, failureModeArg,
         (pool, failureMode) -> ExecuteFunctionTestSupport.thenThrow(when(
             pool.executeOn(
-                ArgumentMatchers.<ServerLocation>any(),
-                ArgumentMatchers.<Op>any(),
+                ArgumentMatchers.any(),
+                ArgumentMatchers.any(),
                 ArgumentMatchers.anyBoolean(),
                 ArgumentMatchers.anyBoolean())),
             failureMode));
@@ -183,7 +184,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
                 executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
                 retryAttempts,
                 ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING)));
+                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
@@ -191,7 +192,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
                 function,
                 executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
                 retryAttempts,
-                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING));
+                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
@@ -199,8 +200,8 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
 
     verify(executablePool, times(expectTries))
         .executeOn(
-            ArgumentMatchers.<ServerLocation>any(),
-            ArgumentMatchers.<Op>any(),
+            ArgumentMatchers.any(),
+            ArgumentMatchers.any(),
             ArgumentMatchers.anyBoolean(),
             ArgumentMatchers.anyBoolean());
   }
@@ -211,8 +212,7 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
   private void ignoreServerConnectivityException(final Runnable runnable) {
     try {
       runnable.run();
-    } catch (final ServerConnectivityException e) {
-      // ok
+    } catch (final ServerConnectivityException ignored) {
     }
   }
 

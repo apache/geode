@@ -72,7 +72,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = cms.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
@@ -96,7 +96,7 @@ public class RegionManagementDunitTest {
     config.setRegionAttributes(type);
     cms.create(config);
 
-    List<RuntimeRegionConfig> result = cms.get(config).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> result = cms.get(config).getResult();
 
     assertThat(result).hasSize(1);
     RuntimeRegionConfig config1 = result.get(0);
@@ -119,9 +119,10 @@ public class RegionManagementDunitTest {
   public void createsAPartitionedRegion() throws Exception {
     String json = "{\"name\": \"orders\", \"type\": \"PARTITION\", \"group\": \"group1\"}";
 
-    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(201)
-        .getClusterManagementResult();
+    ClusterManagementResult<RuntimeRegionConfig> result =
+        restClient.doPostAndAssert("/regions", json)
+            .hasStatusCode(201)
+            .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
@@ -144,9 +145,10 @@ public class RegionManagementDunitTest {
     IgnoredException.addIgnoredException("Name of the region has to be specified");
     String json = "{\"type\": \"REPLICATE\"}";
 
-    ClusterManagementResult result = restClient.doPostAndAssert("/regions", json)
-        .hasStatusCode(400)
-        .getClusterManagementResult();
+    ClusterManagementResult<RuntimeRegionConfig> result =
+        restClient.doPostAndAssert("/regions", json)
+            .hasStatusCode(400)
+            .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isFalse();
   }

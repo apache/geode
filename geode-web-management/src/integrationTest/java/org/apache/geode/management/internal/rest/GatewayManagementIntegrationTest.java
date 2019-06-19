@@ -30,7 +30,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -64,9 +63,9 @@ public class GatewayManagementIntegrationTest {
 
   @Test
   public void listEmptyGatewayReceivers() {
-    ClusterManagementResult result = client.list(receiver);
+    ClusterManagementResult<GatewayReceiverConfig> result = client.list(receiver);
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getResult(CacheElement.class).size()).isEqualTo(0);
+    assertThat(result.getResult().size()).isEqualTo(0);
   }
 
   @Test
@@ -86,10 +85,9 @@ public class GatewayManagementIntegrationTest {
       return cacheConfig;
     });
 
-    ClusterManagementResult results = client.list(receiver);
+    ClusterManagementResult<GatewayReceiverConfig> results = client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
-    List<GatewayReceiverConfig> receivers =
-        results.getResult(GatewayReceiverConfig.class);
+    List<GatewayReceiverConfig> receivers = results.getResult();
     assertThat(receivers.size()).isEqualTo(1);
     GatewayReceiverConfig result = receivers.get(0);
     assertThat(result.getBindAddress()).isEqualTo("localhost");

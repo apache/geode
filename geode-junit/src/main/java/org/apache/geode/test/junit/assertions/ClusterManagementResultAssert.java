@@ -25,29 +25,30 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.Status;
 
-public class ClusterManagementResultAssert
-    extends AbstractAssert<ClusterManagementResultAssert, ClusterManagementResult> {
+public class ClusterManagementResultAssert<R extends CacheElement>
+    extends AbstractAssert<ClusterManagementResultAssert<R>, ClusterManagementResult<R>> {
   public ClusterManagementResultAssert(
-      ClusterManagementResult clusterManagementResult, Class<?> selfType) {
+      ClusterManagementResult<R> clusterManagementResult, Class<?> selfType) {
     super(clusterManagementResult, selfType);
   }
 
-  public ClusterManagementResultAssert isSuccessful() {
+  public ClusterManagementResultAssert<R> isSuccessful() {
     assertThat(actual.isSuccessful()).isTrue();
     return this;
   }
 
-  public ClusterManagementResultAssert failed() {
+  public ClusterManagementResultAssert<R> failed() {
     assertThat(actual.isSuccessful()).isFalse();
     return this;
   }
 
-  public ClusterManagementResultAssert hasStatusCode(ClusterManagementResult.StatusCode... codes) {
+  public ClusterManagementResultAssert<R> hasStatusCode(
+      ClusterManagementResult.StatusCode... codes) {
     assertThat(actual.getStatusCode()).isIn(codes);
     return this;
   }
 
-  public ClusterManagementResultAssert containsStatusMessage(String statusMessage) {
+  public ClusterManagementResultAssert<R> containsStatusMessage(String statusMessage) {
     assertThat(actual.getStatusMessage()).contains(statusMessage);
     return this;
   }
@@ -56,20 +57,20 @@ public class ClusterManagementResultAssert
     return assertThat(actual.getMemberStatuses());
   }
 
-  public ListAssert<CacheElement> hasListResult() {
-    return assertThat(actual.getResult(CacheElement.class));
+  public ListAssert<R> hasListResult() {
+    return assertThat(actual.getResult());
   }
 
-  public <T extends CacheElement> T getResult(int index, Class<T> clazz) {
-    return getActual().getResult(clazz).get(index);
+  public R getResult(int index) {
+    return getActual().getResult().get(index);
   }
 
-  public static ClusterManagementResultAssert assertManagementResult(
-      ClusterManagementResult result) {
-    return new ClusterManagementResultAssert(result, ClusterManagementResultAssert.class);
+  public static <R extends CacheElement> ClusterManagementResultAssert<R> assertManagementResult(
+      ClusterManagementResult<R> result) {
+    return new ClusterManagementResultAssert<>(result, ClusterManagementResultAssert.class);
   }
 
-  public ClusterManagementResult getActual() {
+  public ClusterManagementResult<R> getActual() {
     return actual;
   }
 }

@@ -48,7 +48,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   public ClusterStartupRule cluster = new ClusterStartupRule();
 
   private File keyFile = new File(ClusterManagementServiceOnServerTest.class.getClassLoader()
-      .getResource("ssl/trusted.keystore").getFile());;
+      .getResource("ssl/trusted.keystore").getFile());
 
   private MemberVM locator, server;
   private Properties sslProps;
@@ -69,7 +69,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   }
 
   @Test
-  public void serverHasNoSslPropertyAndDoNotUseDefaultSSL() throws Exception {
+  public void serverHasNoSslPropertyAndDoNotUseDefaultSSL() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps));
     int locatorPort = locator.getPort();
     server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort));
@@ -83,7 +83,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   }
 
   @Test
-  public void serverHasNoSslPropertyAndDoUseIncorrectDefaultSSL() throws Exception {
+  public void serverHasNoSslPropertyAndDoUseIncorrectDefaultSSL() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps));
     int locatorPort = locator.getPort();
     Properties serverProps = new Properties();
@@ -105,7 +105,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   }
 
   @Test
-  public void serverHasNoSslPropertyAndDoUseCorrectDefaultSSL() throws Exception {
+  public void serverHasNoSslPropertyAndDoUseCorrectDefaultSSL() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps));
     int locatorPort = locator.getPort();
     Properties serverProps = new Properties();
@@ -125,7 +125,8 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
           buildWithCache().setCache(ClusterStartupRule.getCache())
               .build();
       assertThat(service).isNotNull();
-      ClusterManagementResult clusterManagementResult = service.create(regionConfig);
+      ClusterManagementResult<RegionConfig> clusterManagementResult =
+          service.create(regionConfig);
       assertThat(clusterManagementResult.isSuccessful()).isTrue();
     });
 
@@ -134,7 +135,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
   }
 
   @Test
-  public void useDefaultSSLPropertyTakesPrecedence() throws Exception {
+  public void useDefaultSSLPropertyTakesPrecedence() {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService().withProperties(sslProps));
     int locatorPort = locator.getPort();
     Properties serverProps = new Properties(sslProps);

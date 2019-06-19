@@ -189,7 +189,7 @@ public class CreateIndexCommand extends GfshCommand {
       String regionName) {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(regionName);
-    List<RuntimeRegionConfig> list = cms.list(regionConfig).getResult(RuntimeRegionConfig.class);
+    List<RuntimeRegionConfig> list = cms.list(regionConfig).getResult();
     if (list.isEmpty()) {
       return null;
     } else {

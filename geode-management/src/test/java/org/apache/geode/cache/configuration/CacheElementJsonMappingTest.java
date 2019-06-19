@@ -38,7 +38,7 @@ public class CacheElementJsonMappingTest {
   private static RuntimeRegionConfig region;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
+  public static void beforeClass() {
     member = new RuntimeMemberConfig();
     member.setId("server");
     member.setPid(123);
@@ -81,7 +81,7 @@ public class CacheElementJsonMappingTest {
 
   @Test
   public void serializeResult() throws Exception {
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementResult<CacheElement> result = new ClusterManagementResult<>();
     List<CacheElement> elements = new ArrayList<>();
     elements.add(region);
     elements.add(member);
@@ -90,11 +90,12 @@ public class CacheElementJsonMappingTest {
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
 
-    ClusterManagementResult result1 = mapper.readValue(json, ClusterManagementResult.class);
-    assertThat(result1.getResult(CacheElement.class)).hasSize(2);
-    assertThat(result1.getResult(CacheElement.class).get(0))
+    ClusterManagementResult<?> result1 =
+        mapper.readValue(json, ClusterManagementResult.class);
+    assertThat(result1.getResult()).hasSize(2);
+    assertThat(result1.getResult().get(0))
         .isInstanceOf(RegionConfig.class);
-    assertThat(result1.getResult(CacheElement.class).get(1))
+    assertThat(result1.getResult().get(1))
         .isInstanceOf(MemberConfig.class);
   }
 

@@ -26,16 +26,16 @@ import org.apache.geode.cache.LowMemoryException;
  * This interface is implemented by GemFire. To obtain an instance of it use
  * {@link FunctionService}.
  *
- * @param <ArgumentT> The type of the argument passed into the function, if any
- * @param <ReturnT> The type of results sent by the function
- * @param <AggregatorT> The type of the aggregated result returned by the ResultCollector
+ * @param <IN> The type of the argument passed into the function, if any
+ * @param <OUT> The type of results sent by the function
+ * @param <AGG> The type of the aggregated result returned by the ResultCollector
  *
  * @since GemFire 6.0
  *
  * @see FunctionService
  * @see Function
  */
-public interface Execution<ArgumentT, ReturnT, AggregatorT> {
+public interface Execution<IN, OUT, AGG> {
 
   /**
    * Specifies a data filter of routing objects for selecting the GemFire members to execute the
@@ -51,8 +51,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *         {@link FunctionService#onRegion(org.apache.geode.cache.Region)}
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withFilter(
-      Set<?> filter);
+  Execution<IN, OUT, AGG> withFilter(Set<?> filter);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -64,8 +63,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @since Geode 1.2
    *
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> setArguments(
-      ArgumentT args);
+  Execution<IN, OUT, AGG> setArguments(IN args);
 
   /**
    * Specifies the user data passed to the function when it is executed. The function can retrieve
@@ -78,8 +76,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @deprecated use {@link #setArguments(Object)} instead
    *
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withArgs(
-      ArgumentT args);
+  Execution<IN, OUT, AGG> withArgs(IN args);
 
   /**
    * Specifies the {@link ResultCollector} that will receive the results after the function has been
@@ -91,8 +88,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    * @see ResultCollector
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> withCollector(
-      ResultCollector<ReturnT, AggregatorT> rc);
+  Execution<IN, OUT, AGG> withCollector(ResultCollector<OUT, AGG> rc);
 
   /**
    * Executes the function using its {@linkplain Function#getId() id}
@@ -108,8 +104,7 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *
    * @since GemFire 6.0
    */
-  <ReturnT, AggregatorT> ResultCollector<ReturnT, AggregatorT> execute(String functionId)
-      throws FunctionException;
+  ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -126,6 +121,5 @@ public interface Execution<ArgumentT, ReturnT, AggregatorT> {
    *
    * @since GemFire 6.0
    */
-  <ReturnT, AggregatorT> ResultCollector<ReturnT, AggregatorT> execute(Function function)
-      throws FunctionException;
+  ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
 }

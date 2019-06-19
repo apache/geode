@@ -43,13 +43,18 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
   }
 
   private void validateCreate(CacheElement config) {
-    if ("cluster".equalsIgnoreCase(config.getGroup())) {
-      throw new IllegalArgumentException(
-          "'cluster' is a reserved group name. Do not use it for member groups.");
+    String group = config.getGroup();
+    if (CacheElement.CLUSTER.equalsIgnoreCase(group)) {
+      throw new IllegalArgumentException("'"
+          + CacheElement.CLUSTER
+          + "' is a reserved group name. Do not use it for member groups.");
     }
-    if (config.getGroup() != null && config.getGroup().contains(",")) {
-      throw new IllegalArgumentException(
-          "Group name should not contain comma.");
+    if (group != null && group.contains(",")) {
+      throw new IllegalArgumentException("Group name should not contain comma.");
+    }
+    String id = config.getId();
+    if (id.contains("/")) {
+      throw new IllegalArgumentException("Id should not contain slash.");
     }
   }
 

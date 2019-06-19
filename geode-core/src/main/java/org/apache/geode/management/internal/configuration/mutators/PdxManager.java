@@ -21,7 +21,7 @@ import java.util.List;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.PdxType;
 
-public class PdxManager implements ConfigurationManager<PdxType> {
+public class PdxManager implements ConfigurationManager<PdxType, PdxType> {
   @Override
   public void add(PdxType config, CacheConfig existing) {
     existing.setPdx(config);

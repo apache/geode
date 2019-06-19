@@ -67,7 +67,7 @@ public class ManagementRequestLoggingDUnitTest {
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = service.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
     locator.invoke(() -> {

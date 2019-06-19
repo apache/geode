@@ -25,9 +25,9 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 
-public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<OUT, AGG> {
+public class LocalResultCollectorImpl implements LocalResultCollector {
 
-  private final ResultCollector<OUT, AGG> userRC;
+  private final ResultCollector userRC;
 
   private CountDownLatch latch = new CountDownLatch(1);
 
@@ -39,19 +39,18 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
 
   private FunctionException functionException = null;
 
-  private Function function;
+  private Function function = null;
 
-  private AbstractExecution<?, OUT, AGG> execution;
+  private AbstractExecution execution = null;
 
-  public LocalResultCollectorImpl(Function function, ResultCollector<OUT, AGG> rc,
-      Execution execution) {
+  public LocalResultCollectorImpl(Function function, ResultCollector rc, Execution execution) {
     this.function = function;
     this.userRC = rc;
     this.execution = (AbstractExecution) execution;
   }
 
   @Override
-  public synchronized void addResult(DistributedMember memberID, OUT resultOfSingleExecution) {
+  public synchronized void addResult(DistributedMember memberID, Object resultOfSingleExecution) {
     if (resultsCleared) {
       return;
     }
@@ -62,7 +61,7 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
           if (t.getCause() != null) {
             t = t.getCause();
           }
-          this.userRC.addResult(memberID, (OUT) t);
+          this.userRC.addResult(memberID, t);
         } else {
           if (!(t instanceof InternalFunctionException)) {
             if (this.functionException == null) {
@@ -79,7 +78,7 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
             }
             this.functionException.addException(t);
           } else {
-            this.userRC.addResult(memberID, (OUT) t.getCause());
+            this.userRC.addResult(memberID, t.getCause());
           }
         }
       } else {
@@ -105,7 +104,7 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
   }
 
   @Override
-  public AGG getResult() throws FunctionException {
+  public Object getResult() throws FunctionException {
     if (this.resultCollected) {
       throw new FunctionException(
           "Function results already collected");
@@ -124,7 +123,7 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
             .getCause() instanceof InternalFunctionInvocationTargetException) {
           clearResults();
           this.execution = this.execution.setIsReExecute();
-          ResultCollector<OUT, AGG> newRc;
+          ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
             newRc = this.execution.execute(this.function);
           } else {
@@ -135,12 +134,13 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
       }
       throw this.functionException;
     } else {
-      return this.userRC.getResult();
+      Object result = this.userRC.getResult();
+      return result;
     }
   }
 
   @Override
-  public AGG getResult(long timeout, TimeUnit unit)
+  public Object getResult(long timeout, TimeUnit unit)
       throws FunctionException, InterruptedException {
 
     boolean resultReceived = false;
@@ -166,7 +166,7 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
             .getCause() instanceof InternalFunctionInvocationTargetException) {
           clearResults();
           this.execution = this.execution.setIsReExecute();
-          ResultCollector<OUT, AGG> newRc;
+          ResultCollector newRc = null;
           if (execution.isFnSerializationReqd()) {
             newRc = this.execution.execute(this.function);
           } else {
@@ -177,7 +177,8 @@ public class LocalResultCollectorImpl<OUT, AGG> implements LocalResultCollector<
       }
       throw this.functionException;
     } else {
-      return this.userRC.getResult(timeout, unit);
+      Object result = this.userRC.getResult(timeout, unit);
+      return result;
     }
   }
 

@@ -21,6 +21,9 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public interface MultiGroupCacheElement {
   @XmlTransient
   List<String> getGroups();

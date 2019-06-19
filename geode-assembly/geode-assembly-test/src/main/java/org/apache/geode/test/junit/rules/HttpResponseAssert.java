@@ -32,6 +32,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.AbstractCharSequenceAssert;
 import org.assertj.core.api.ListAssert;
 
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 
@@ -76,7 +77,9 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
     return assertThat(responseBody);
   }
 
-  public ClusterManagementResult getClusterManagementResult() throws Exception {
+  @SuppressWarnings("unchecked")
+  public <R extends CacheElement> ClusterManagementResult<R> getClusterManagementResult()
+      throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementResult.class);
   }

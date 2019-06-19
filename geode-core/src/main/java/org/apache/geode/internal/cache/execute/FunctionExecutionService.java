@@ -50,8 +50,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if the region passed in is null
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onRegion(
-      Region region);
+  Execution onRegion(Region region);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -64,7 +63,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(Pool pool);
+  Execution onServer(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -75,7 +74,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if Pool instance passed in is null
    * @since GemFire 6.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(Pool pool);
+  Execution onServers(Pool pool);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -90,8 +89,7 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServer(
-      RegionService regionService);
+  Execution onServer(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -104,8 +102,7 @@ public interface FunctionExecutionService {
    *         pool
    * @since GemFire 6.5
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onServers(
-      RegionService regionService);
+  Execution onServers(RegionService regionService);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -117,8 +114,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMember is null
    * @since GemFire 7.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      DistributedMember distributedMember);
+  Execution onMember(DistributedMember distributedMember);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -135,8 +131,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      String... groups);
+  Execution onMembers(String... groups);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -147,8 +142,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if distributedMembers is null
    * @since GemFire 7.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMembers(
-      Set<DistributedMember> distributedMembers);
+  Execution onMembers(Set<DistributedMember> distributedMembers);
 
   /**
    * Returns an {@link Execution} object that can be used to execute a data independent function on
@@ -161,8 +155,7 @@ public interface FunctionExecutionService {
    * @throws FunctionException if no members are found belonging to the provided groups
    * @since GemFire 7.0
    */
-  <ArgumentT, ReturnT, AggregatorT> Execution<ArgumentT, ReturnT, AggregatorT> onMember(
-      String... groups);
+  Execution onMember(String... groups);
 
   /**
    * Returns the {@link Function} defined by the functionId, returns null if no function is found

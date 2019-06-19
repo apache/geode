@@ -72,12 +72,12 @@ public class MemberManagementServiceDUnitTest {
   @WithMockUser
   public void listAllMembers() {
     MemberConfig memberConfig = new MemberConfig();
-    ClusterManagementResult result = client.list(memberConfig);
+    ClusterManagementResult<RuntimeMemberConfig> result = client.list(memberConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
-    List<RuntimeMemberConfig> members = result.getResult(RuntimeMemberConfig.class);
+    List<RuntimeMemberConfig> members = result.getResult();
     assertThat(members.size()).isEqualTo(2);
     assertThat(members.stream().map(MemberConfig::getId).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("locator-0", "server-1");
@@ -100,28 +100,28 @@ public class MemberManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void getOneMember() throws Exception {
+  public void getOneMember() {
     MemberConfig config = new MemberConfig();
     config.setId("server-1");
-    ClusterManagementResult result = client.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = client.list(config);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
-    List<MemberConfig> memberConfig = result.getResult(MemberConfig.class);
+    List<RuntimeMemberConfig> memberConfig = result.getResult();
     assertThat(memberConfig.size()).isEqualTo(1);
   }
 
   @Test
   @WithMockUser
-  public void getMemberStatus() throws Exception {
+  public void getMemberStatus() {
     MemberConfig config = new MemberConfig();
     config.setId("locator-0");
-    ClusterManagementResult result = client.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = client.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
-    List<RuntimeMemberConfig> members = result.getResult(RuntimeMemberConfig.class);
+    List<RuntimeMemberConfig> members = result.getResult();
     assertThat(members.size()).isEqualTo(1);
 
     RuntimeMemberConfig memberConfig = members.get(0);
@@ -132,15 +132,15 @@ public class MemberManagementServiceDUnitTest {
 
   @Test
   @WithMockUser
-  public void noMatchWithJavaAPI() throws Exception {
+  public void noMatchWithJavaAPI() {
     MemberConfig config = new MemberConfig();
     // look for a member with a non-existent id
     config.setId("server");
-    ClusterManagementResult result = client.list(config);
+    ClusterManagementResult<RuntimeMemberConfig> result = client.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult(MemberConfig.class).size()).isEqualTo(0);
+    assertThat(result.getResult().size()).isEqualTo(0);
   }
 
   @Test

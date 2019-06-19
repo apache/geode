@@ -36,9 +36,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
-    extends AbstractExecution<ArgumentT, ReturnT, AggregatorT>
-    implements Execution<ArgumentT, ReturnT, AggregatorT> {
+public class MemberFunctionExecutor extends AbstractExecution {
 
   protected InternalDistributedSystem ds;
 
@@ -97,7 +95,7 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @SuppressWarnings("unchecked")
-  private ResultCollector<ReturnT, AggregatorT> executeFunction(final Function function,
+  private ResultCollector executeFunction(final Function function,
       ResultCollector resultCollector) {
     final DistributionManager dm = this.ds.getDistributionManager();
     final Set dest = new HashSet(this.members);
@@ -111,8 +109,7 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
 
     final InternalDistributedMember localVM =
         this.ds.getDistributionManager().getDistributionManagerId();
-    final LocalResultCollector<ReturnT, AggregatorT> localRC =
-        getLocalResultCollector(function, resultCollector);
+    final LocalResultCollector<?, ?> localRC = getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
     if (!dest.contains(localVM)) {
@@ -132,7 +129,7 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
       boolean isTx = false;
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
-        isTx = cache.getTxManager().getTXState() != null;
+        isTx = cache.getTxManager().getTXState() == null ? false : true;
       }
       final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
           getArgumentsForMember(localVM.getId()), resultSender);
@@ -140,7 +137,8 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
     }
 
     if (!dest.isEmpty()) {
-      HashMap<InternalDistributedMember, Object> memberArgs = new HashMap<>();
+      HashMap<InternalDistributedMember, Object> memberArgs =
+          new HashMap<InternalDistributedMember, Object>();
       Iterator<DistributedMember> iter = dest.iterator();
       while (iter.hasNext()) {
         InternalDistributedMember recip = (InternalDistributedMember) iter.next();
@@ -150,7 +148,8 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
       MemberFunctionResultWaiter resultReceiver = new MemberFunctionResultWaiter(this.ds, localRC,
           function, memberArgs, dest, resultSender);
 
-      return resultReceiver.getFunctionResultFrom(dest, function, this);
+      ResultCollector reply = resultReceiver.getFunctionResultFrom(dest, function, this);
+      return reply;
     }
     return localRC;
   }
@@ -185,7 +184,7 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @Override
-  protected ResultCollector<ReturnT, AggregatorT> executeFunction(Function function) {
+  protected ResultCollector executeFunction(Function function) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;
       if (rc == null) {
@@ -199,56 +198,54 @@ public class MemberFunctionExecutor<ArgumentT, ReturnT, AggregatorT>
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> setArguments(Object args) {
+  public Execution setArguments(Object args) {
     if (args == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "args"));
     }
-    return new MemberFunctionExecutor<>(this, args);
+    return new MemberFunctionExecutor(this, args);
   }
 
   // Changing the object!!
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withArgs(Object args) {
+  public Execution withArgs(Object args) {
     return setArguments(args);
   }
 
   // Changing the object!!
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withCollector(ResultCollector rs) {
+  public Execution withCollector(ResultCollector rs) {
     if (rs == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "Result Collector"));
     }
-    return new MemberFunctionExecutor<>(this, rs);
+    return new MemberFunctionExecutor(this, rs);
   }
 
   @Override
-  public Execution<ArgumentT, ReturnT, AggregatorT> withFilter(Set filter) {
+  public Execution withFilter(Set filter) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "filter"));
   }
 
   @Override
-  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withBucketFilter(
-      Set<Integer> bucketIDs) {
+  public InternalExecution withBucketFilter(Set<Integer> bucketIDs) {
     throw new FunctionException(
         String.format("Cannot specify %s for data independent functions",
             "bucket as filter"));
   }
 
   @Override
-  public InternalExecution<ArgumentT, ReturnT, AggregatorT> withMemberMappedArgument(
-      MemberMappedArgument argument) {
+  public InternalExecution withMemberMappedArgument(MemberMappedArgument argument) {
     if (argument == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "MemberMappedArgs"));
     }
-    return new MemberFunctionExecutor<>(this, argument);
+    return new MemberFunctionExecutor(this, argument);
   }
 
   @Override

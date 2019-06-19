@@ -45,7 +45,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
@@ -71,12 +70,12 @@ public class LocatorClusterManagementServiceTest {
   private InternalCache cache;
   private InternalConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
-  private ClusterManagementResult result;
+  private ClusterManagementResult<RegionConfig> result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
-  private ConfigurationValidator<CacheElement> cacheElementValidator;
-  private ConfigurationManager<RegionConfig> regionManager;
+  private CacheElementValidator cacheElementValidator;
+  private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
   private MemberValidator memberValidator;
 
   @Before
@@ -87,7 +86,6 @@ public class LocatorClusterManagementServiceTest {
     regionManager = spy(RegionConfigManager.class);
     cacheElementValidator = spy(CacheElementValidator.class);
     validators.put(RegionConfig.class, regionValidator);
-    validators.put(CacheElement.class, cacheElementValidator);
     managers.put(RegionConfig.class, regionManager);
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
 
@@ -102,7 +100,7 @@ public class LocatorClusterManagementServiceTest {
     doNothing().when(persistenceService).unlockSharedConfiguration();
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
-            memberValidator));
+            memberValidator, cacheElementValidator));
     regionConfig = new RegionConfig();
     regionConfig.setName("region1");
   }
@@ -217,7 +215,7 @@ public class LocatorClusterManagementServiceTest {
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
     List<RuntimeRegionConfig> results =
-        service.list(new RegionConfig()).getResult(RuntimeRegionConfig.class);
+        service.list(new RegionConfig()).getResult();
     assertThat(results).hasSize(1);
     RuntimeRegionConfig result = results.get(0);
     assertThat(result.getName()).isEqualTo("region1");
@@ -308,7 +306,7 @@ public class LocatorClusterManagementServiceTest {
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    ClusterManagementResult result = service.delete(regionConfig);
+    ClusterManagementResult<RegionConfig> result = service.delete(regionConfig);
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);

@@ -44,6 +44,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -65,13 +66,14 @@ import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
   private ConfigurationPersistenceService persistenceService;
-  private Map<Class, ConfigurationManager<? extends CacheElement>> managers;
+  private Map<Class, ConfigurationManager> managers;
   private Map<Class, ConfigurationValidator> validators;
   private MemberValidator memberValidator;
+  private CacheElementValidator commonValidator;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(persistenceService, new HashMap(), new HashMap(), null);
+    this(persistenceService, new HashMap<>(), new HashMap<>(), null, null);
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager(cache));
     managers.put(MemberConfig.class, new MemberConfigManager(cache));
@@ -79,7 +81,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
 
     // initialize the list of validators
-    validators.put(CacheElement.class, new CacheElementValidator());
+    commonValidator = new CacheElementValidator();
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiverConfig.class, new GatewayReceiverConfigValidator());
     memberValidator = new MemberValidator(cache, persistenceService);
@@ -87,26 +89,28 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @VisibleForTesting
   public LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
-      Map managers, Map validators, MemberValidator memberValidator) {
+      Map<Class, ConfigurationManager> managers, Map<Class, ConfigurationValidator> validators,
+      MemberValidator memberValidator, CacheElementValidator commonValidator) {
     this.persistenceService = persistenceService;
     this.managers = managers;
     this.validators = validators;
     this.memberValidator = memberValidator;
+    this.commonValidator = commonValidator;
   }
 
   @Override
-  public ClusterManagementResult create(CacheElement config) {
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
+      T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementResult<>(false,
           "Cluster configuration service needs to be enabled");
     }
 
     // first validate common attributes of all configuration object
-    validators.get(CacheElement.class).validate(CacheElementOperation.CREATE, config);
-
+    commonValidator.validate(CacheElementOperation.CREATE, config);
 
     String group = config.getConfigGroup();
     ConfigurationValidator validator = validators.get(config.getClass());
@@ -120,7 +124,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     Set<DistributedMember> targetedMembers = memberValidator.findMembers(group);
 
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementResult<T> result = new ClusterManagementResult<>();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -161,17 +165,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult delete(CacheElement config) {
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+      T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementResult<>(false,
           "Cluster configuration service needs to be enabled");
     }
 
     // first validate common attributes of all configuration object
-    validators.get(CacheElement.class).validate(CacheElementOperation.DELETE, config);
+    commonValidator.validate(CacheElementOperation.DELETE, config);
 
     ConfigurationValidator validator = validators.get(config.getClass());
     if (validator != null) {
@@ -185,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // execute function on all members
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementResult<T> result = new ClusterManagementResult<>();
 
     List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -230,32 +235,34 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult update(CacheElement config) {
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+      T config) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult list(T filter) {
-    ConfigurationManager<T> manager = (ConfigurationManager<T>) managers.get(filter.getClass());
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> list(
+      T filter) {
+    ConfigurationManager<T, R> manager = managers.get(filter.getClass());
 
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementResult<R> result = new ClusterManagementResult<>();
 
     if (filter instanceof MemberConfig) {
-      List<? extends T> listResults = manager.list(filter, null);
+      List<R> listResults = manager.list(filter, null);
       result.setResult(listResults);
       return result;
     }
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementResult<>(false,
           "Cluster configuration service needs to be enabled");
     }
 
-    List<T> resultList = new ArrayList<>();
+    List<R> resultList = new ArrayList<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-      List<? extends T> listInGroup = manager.list(filter, currentPersistedConfig);
-      for (T element : listInGroup) {
+      List<R> listInGroup = manager.list(filter, currentPersistedConfig);
+      for (R element : listInGroup) {
         if (filter.getGroup() == null || // if listing all groups
             group.equals(filter.getGroup()) || // if filter group matches this group
             element instanceof MultiGroupCacheElement) { // if element can span multi groups
@@ -273,34 +280,33 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // right now the list contains [{regionA, group1}, {regionA, group2}...], if the elements are
     // MultiGroupCacheElement, we need to consolidate the list into [{regionA, [group1, group2]}
     if (resultList.get(0) instanceof MultiGroupCacheElement) {
-      List<MultiGroupCacheElement> multiGroupList = new ArrayList<>();
-      for (T element : resultList) {
+      List<R> multiGroupList = new ArrayList<>();
+      for (R element : resultList) {
         int index = multiGroupList.indexOf(element);
         if (index >= 0) {
-          MultiGroupCacheElement exist = multiGroupList.get(index);
+          MultiGroupCacheElement exist = (MultiGroupCacheElement) multiGroupList.get(index);
           exist.getGroups().add(element.getGroup());
         } else {
-          multiGroupList.add((MultiGroupCacheElement) element);
+          multiGroupList.add(element);
         }
       }
       if (StringUtils.isNotBlank(filter.getGroup())) {
         multiGroupList = multiGroupList.stream()
-            .filter(e -> e.getGroups().contains(filter.getConfigGroup()))
+            .filter(e -> ((MultiGroupCacheElement) e).getGroups().contains(filter.getConfigGroup()))
             .collect(Collectors.toList());
       }
       // if "cluster" is the only group, clear it
-      for (MultiGroupCacheElement element : multiGroupList) {
-        if (element.getGroups().size() == 1 && "cluster".equals(element.getGroup())) {
+      for (R elem : multiGroupList) {
+        MultiGroupCacheElement element = (MultiGroupCacheElement) elem;
+        if (element.getGroups().size() == 1 && CacheElement.CLUSTER.equals(element.getGroup())) {
           element.getGroups().clear();
         }
       }
-      resultList =
-          (List<T>) multiGroupList.stream().map(CacheElement.class::cast)
-              .collect(Collectors.toList());
+      resultList = multiGroupList;
     } else {
       // for non-MultiGroup CacheElement, just clear out the "cluster" group
-      for (T element : resultList) {
-        if ("cluster".equals(element.getGroup())) {
+      for (R element : resultList) {
+        if (CacheElement.CLUSTER.equals(element.getGroup())) {
           element.setGroup(null);
         }
       }
@@ -311,9 +317,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public ClusterManagementResult get(CacheElement config) {
-    ClusterManagementResult list = list(config);
-    List<CacheElement> result = list.getResult(CacheElement.class);
+  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
+      T config) {
+    ClusterManagementResult<R> list = list(config);
+    List<R> result = list.getResult();
     if (result.size() == 0) {
       throw new EntityNotFoundException(
           config.getClass().getSimpleName() + " with id = " + config.getId() + " not found.");
@@ -325,7 +332,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
     return list;
   }
-
 
   @Override
   public boolean isConnected() {
@@ -343,7 +349,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return CliFunctionResult.cleanResults((List<?>) rc.getResult());
   }
 
-  private ConfigurationManager getConfigurationManager(CacheElement config) {
+  @SuppressWarnings("unchecked")
+  private <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ConfigurationManager<T, R> getConfigurationManager(
+      T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
     if (configurationManager == null) {
       throw new IllegalArgumentException(String.format("Configuration type %s is not supported",

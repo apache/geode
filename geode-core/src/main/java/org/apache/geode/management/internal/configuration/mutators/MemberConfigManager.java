@@ -41,7 +41,8 @@ import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
-public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
+public class MemberConfigManager
+    implements ConfigurationManager<MemberConfig, RuntimeMemberConfig> {
 
   private InternalCache cache;
 
@@ -97,11 +98,9 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
 
   private ArrayList<MemberInformation> getMemberInformation(
       Set<DistributedMember> distributedMembers) {
-    Execution<DistributedMember, MemberInformation, ArrayList<MemberInformation>> execution =
-        FunctionService.onMembers(distributedMembers);
-    ResultCollector<MemberInformation, ArrayList<MemberInformation>> resultCollector =
-        execution.execute(new GetMemberInformationFunction());
-    return resultCollector.getResult();
+    Execution execution = FunctionService.onMembers(distributedMembers);
+    ResultCollector<?, ?> resultCollector = execution.execute(new GetMemberInformationFunction());
+    return (ArrayList<MemberInformation>) resultCollector.getResult();
   }
 
   @VisibleForTesting
