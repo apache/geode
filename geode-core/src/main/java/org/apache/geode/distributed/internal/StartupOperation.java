@@ -16,7 +16,6 @@ package org.apache.geode.distributed.internal;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -47,7 +46,7 @@ public class StartupOperation {
    * @return whether all recipients could be contacted. The failure set can be fetched with
    *         getFailureSet??
    */
-  boolean sendStartupMessage(Set recipients, long timeout, Set<InetAddress> interfaces,
+  boolean sendStartupMessage(Set recipients, Set<InetAddress> interfaces,
       String redundancyZone,
       boolean enforceUniqueZone)
       throws InterruptedException, ReplyException, java.net.UnknownHostException, IOException {
@@ -86,45 +85,9 @@ public class StartupOperation {
     }
 
     if (proc.stillWaiting() && logger.isDebugEnabled()) {
-      logger.debug("Waiting {} milliseconds to receive startup responses", timeout);
+      logger.debug("Waiting to receive startup responses");
     }
-    boolean timedOut = true;
-    Set<InternalDistributedMember> unresponsive = null;
-    try {
-      timedOut = !proc.waitForReplies(timeout);
-    } finally {
-      if (timedOut) {
-        unresponsive = new HashSet<>();
-        proc.collectUnresponsiveMembers(unresponsive);
-        if (!unresponsive.isEmpty()) {
-          for (Iterator it = unresponsive.iterator(); it.hasNext();) {
-            InternalDistributedMember um = (InternalDistributedMember) it.next();
-            if (!dm.getViewMembers().contains(um)) {
-              // Member slipped away and we didn't notice.
-              it.remove();
-              dm.handleManagerDeparture(um, true,
-                  "disappeared during startup handshake");
-            } else if (dm.isCurrentMember(um)) {
-              // the member must have connected back to us and now we just
-              // need to get its startup response
-              logger.warn(
-                  "Membership: received connection from <{}> but received no startup response after {} ms.",
-                  new Object[] {um, timeout});
-            }
-          } // for
-
-          // Tell the dm who we expect to be waiting for...
-          this.dm.setUnfinishedStartups(unresponsive);
-
-          // Re-examine list now that we have elided the startup problems....
-          if (!unresponsive.isEmpty()) {
-            logger.warn(
-                "Membership: startup timed out after waiting {} milliseconds for responses from {}",
-                new Object[] {Long.valueOf(timeout), unresponsive});
-          }
-        } // !isEmpty
-      } // timedOut
-    } // finally
+    proc.waitForReplies();
 
     boolean problems;
     problems = this.newlyDeparted != null && this.newlyDeparted.size() > 0;

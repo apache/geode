@@ -18,6 +18,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_S
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -26,6 +27,7 @@ import java.util.Properties;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.IncompatibleSystemException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.Host;
@@ -80,12 +82,9 @@ public class DistributedSystemIdDUnitTest extends JUnit4DistributedTestCase {
 
     int locatorPort = createLocator(vm0, "1");
 
-    try {
-      createSystem(vm1, "2", locatorPort);
-      fail("Should have gotten an exception");
-    } catch (Exception expected) {
-
-    }
+    // Creating a member with a different distributed system id should fail
+    assertThatThrownBy(() -> createSystem(vm1, "2", locatorPort))
+        .hasCauseInstanceOf(IncompatibleSystemException.class);
 
     checkId(vm0, 1);
   }
