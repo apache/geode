@@ -21,21 +21,19 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
+
 /**
  * Implement this interface only when the CacheElement can span multiple groups.
  *
- * the implementation of getGroup should already be implemented by CacheElement, so no need
- * to reimplement that.
+ * The implementation of getGroup should already be implemented by CacheElement
  *
- * the implementation of getGroups should only be "return groups;" if the object is already a
+ * If implementation of getGroups should be simply "return groups" if the object is already a
  * CacheElement.
  *
  * When implementing this interface, the CacheElement also needs to specifically implement
  * Object.equals() method
  */
-
-import org.apache.geode.annotations.Experimental;
-
 @Experimental
 public interface MultiGroupCacheElement {
   @XmlTransient
