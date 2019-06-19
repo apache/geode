@@ -14,67 +14,62 @@
  */
 package org.apache.geode.test.greplogs;
 
+import static java.lang.System.lineSeparator;
+import static java.util.regex.Pattern.compile;
+import static org.apache.geode.test.greplogs.Patterns.BLANK;
+import static org.apache.geode.test.greplogs.Patterns.CAUSED_BY;
+import static org.apache.geode.test.greplogs.Patterns.DEBUG_WROTE_EXCEPTION;
+import static org.apache.geode.test.greplogs.Patterns.ERROR_OR_MORE_LOG_LEVEL;
+import static org.apache.geode.test.greplogs.Patterns.ERROR_SHORT_NAME;
+import static org.apache.geode.test.greplogs.Patterns.EXCEPTION;
+import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_2;
+import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_3;
+import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_4;
+import static org.apache.geode.test.greplogs.Patterns.IGNORED_EXCEPTION;
+import static org.apache.geode.test.greplogs.Patterns.JAVA_LANG_ERROR;
+import static org.apache.geode.test.greplogs.Patterns.LOG_STATEMENT;
+import static org.apache.geode.test.greplogs.Patterns.MISFORMATTED_I18N_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.RMI_WARNING;
+import static org.apache.geode.test.greplogs.Patterns.RVV_BIT_SET_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.WARN_OR_LESS_LOG_LEVEL;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
+import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LogConsumer {
-  private final List<Pattern> expectedExceptions = new ArrayList<>();
-  private boolean skipLogMsgs = false;
-  private boolean infoMsgFlag = false;
-  private int eatLines = 0;
-  private boolean tmpErrFlag = false;
-  private int tmpErrLines = 0;
-  private boolean saveFlag = false;
-  private int savelinenum = 0;
-  private final List<Pattern> testExpectStrs;
-  private StringBuilder all = null;
-  private int lineNumber;
-  private String fileName;
-  private HashMap<String, Integer> individualErrorCount = new HashMap<>();
-  private final int repeatLimit;
 
-  private static final Pattern ExpectedExceptionPattern =
-      Pattern.compile("<ExpectedException action=(add|remove)>(.*)</ExpectedException>");
-  private static final Pattern logPattern =
-      Pattern.compile("^\\[(?:fatal|error|warn|info|debug|trace|severe|warning|fine|finer|finest)");
-  private static final Pattern blankPattern = Pattern.compile("^\\s*$");
-  /**
-   * Any messages at these levels will be skipped
-   */
-  private static final Pattern skipLevelPattern =
-      Pattern.compile("^\\[(?:warn|warning|info|debug|trace|fine|finer|finest)");
-  private static final Pattern fatalOrErrorPattern = Pattern.compile("^\\[(?:fatal|error|severe)");
-  private static final Pattern causedByPattern = Pattern.compile("Caused by");
-  private static final Pattern shortErrPattern =
-      Pattern.compile("^\\[[^\\]]+\\](.*)$", Pattern.MULTILINE | Pattern.DOTALL);
-  private static final Pattern wroteExceptionPattern =
-      Pattern.compile("\\[debug.*Wrote exception:");
-  private static final Pattern rmiWarnPattern = Pattern.compile(
-      "^WARNING: Failed to .*java.rmi.ConnectException: Connection refused to host: .*; nested exception is:");
-  private static final Pattern javaLangErrorPattern = Pattern.compile("^java\\.lang\\.\\S+Error$");
-  private static final Pattern exceptionPattern = Pattern.compile("Exception:");
-  private static final Pattern exceptionPattern2 =
-      Pattern.compile("( [\\w\\.]+Exception: (([\\S]+ ){0,6}))");
-  private static final Pattern exceptionPattern3 = Pattern.compile("( [\\w\\.]+Exception)$");
-  private static final Pattern exceptionPattern4 = Pattern.compile("^([^:]+: (([\\w\"]+ ){0,6}))");
-  private static final Pattern misformatedI18nMessagePattern = Pattern.compile("[^\\d]\\{\\d+\\}");
-  private static final Pattern rvvBitSetMessagePattern =
-      Pattern.compile("RegionVersionVector.+bsv\\d+.+bs=\\{\\d+\\}");
   /** Limit long errors to this many lines */
-  private static int ERROR_BUFFER_LIMIT = 128;
+  private static final int ERROR_BUFFER_LIMIT = 128;
 
+  private final String logName;
+  private final Collection<Pattern> dynamicIgnoredPatterns = new ArrayList<>();
+  private final Collection<Pattern> constantIgnoredPatterns = new ArrayList<>();
+  private final boolean enableLogLevelThreshold;
+  private final int skipLimit;
 
+  private final Map<String, Integer> individualErrorCount = new HashMap<>();
 
-  public LogConsumer(boolean skipLogMsgs, List<Pattern> testExpectStrs, String fileName,
+  private boolean infoMsgFlag;
+  private int eatLines;
+  private boolean tmpErrFlag;
+  private int tmpErrLines;
+  private boolean saveFlag;
+  private int savelinenum;
+  private StringBuilder all;
+  private int lineNumber;
+
+  public LogConsumer(boolean enableLogLevelThreshold, Collection<Pattern> constantIgnoredPatterns,
+      String logName,
       int repeatLimit) {
-    super();
-    this.skipLogMsgs = skipLogMsgs;
-    this.testExpectStrs = testExpectStrs;
-    this.fileName = fileName;
-    this.repeatLimit = repeatLimit;
+    this.enableLogLevelThreshold = enableLogLevelThreshold;
+    this.constantIgnoredPatterns.addAll(constantIgnoredPatterns);
+    this.logName = logName;
+    this.skipLimit = repeatLimit;
   }
 
   public StringBuilder consume(CharSequence line) {
@@ -82,14 +77,14 @@ public class LogConsumer {
 
     // IgnoredException injects lines into the log to start or end ignore periods.
     // Process those lines, then exit.
-    Matcher expectedExceptionMatcher = ExpectedExceptionPattern.matcher(line);
+    Matcher expectedExceptionMatcher = IGNORED_EXCEPTION.matcher(line);
     if (expectedExceptionMatcher.find()) {
       expectedExceptionMatcherHandler(expectedExceptionMatcher);
       return null;
     }
 
     // We may optionally skip info-level logs
-    if (skipLogMsgs && skipThisLogMsg(line)) {
+    if (enableLogLevelThreshold && skipLine(line)) {
       return null;
     }
 
@@ -99,11 +94,11 @@ public class LogConsumer {
       return null;
     }
 
-    if (saveFlag || fatalOrErrorPattern.matcher(line).find()) {
+    if (saveFlag || ERROR_OR_MORE_LOG_LEVEL.matcher(line).find()) {
       if (!saveFlag) {
         setInstanceVariablesForSomeReason(line);
       } else {
-        if (!causedByPattern.matcher(line).find() && checkExpectedStrs(line, expectedExceptions)) {
+        if (!CAUSED_BY.matcher(line).find() && matchesIgnoredPatterns(line)) {
           // reset the counters and throw it all away if it matches
           // one of the registered expected strings
           tmpErrFlag = false;
@@ -113,7 +108,7 @@ public class LogConsumer {
 
         // We save all the lines up to the next blank line so we're
         // looking for a blank line here
-        if (blankPattern.matcher(line).matches()) {
+        if (BLANK.matcher(line).matches()) {
           return enforceErrorLimitsAtShortErrMatcher();
         }
 
@@ -123,15 +118,25 @@ public class LogConsumer {
           addErrLinesToAll(line);
         }
       }
+
     } else if (isWroteOrRMIWarn(line)) {
       handleWroteOrRMIWarn();
       return null;
+
     } else if (isExceptionErrorOrSomeSpecialCase(line)) {
-      if (!checkExpectedStrs(line, expectedExceptions)) {
+      if (!matchesIgnoredPatterns(line)) {
         return enforceErrorLimitOnShortName(line);
       }
     }
 
+    return null;
+  }
+
+  public StringBuilder close() {
+    if (saveFlag) {
+      saveFlag = false;
+      return enforceErrorLimit(1, all.toString(), savelinenum, logName);
+    }
     return null;
   }
 
@@ -154,67 +159,69 @@ public class LogConsumer {
   }
 
   private boolean isWroteOrRMIWarn(CharSequence line) {
-    return wroteExceptionPattern.matcher(line).find() || rmiWarnPattern.matcher(line).find();
+    return DEBUG_WROTE_EXCEPTION.matcher(line).find() || RMI_WARNING.matcher(line).find();
   }
 
   private StringBuilder enforceErrorLimitOnShortName(CharSequence line) {
     // it's the Exception colon that we want to find
-    // along with the next six words and define to shortline
-    // shortline is only used for the unique sting to count the
+    // along with the next six words and define to shortName
+
+    // shortName is only used for the unique string to count the
     // number of times an exception match occurs. This is so
     // we can suppress further printing if we hit the limit
+
     String shortName = getShortName(line);
     if (shortName != null) {
       Integer i = individualErrorCount.get(shortName);
-      int occurrences = (i == null) ? 1 : i + 1;
+      int occurrences = i == null ? 1 : i + 1;
       individualErrorCount.put(shortName, occurrences);
-      return enforceErrorLimit(occurrences, line + "\n", lineNumber, fileName);
-    } else {
-      return enforceErrorLimit(1, line + "\n", lineNumber, fileName);
+      return enforceErrorLimit(occurrences, line + lineSeparator(), lineNumber, logName);
     }
+
+    return enforceErrorLimit(1, line + lineSeparator(), lineNumber, logName);
   }
 
   private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
-    return exceptionPattern.matcher(line).find()
-        || javaLangErrorPattern.matcher(line).find()
-        || (misformatedI18nMessagePattern.matcher(line).find()
-            && !(skipLevelPattern.matcher(line).find()
-                && rvvBitSetMessagePattern.matcher(line).find()));
+    return EXCEPTION.matcher(line).find() ||
+        JAVA_LANG_ERROR.matcher(line).find() ||
+        MISFORMATTED_I18N_MESSAGE.matcher(line).find() &&
+            !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
+                && RVV_BIT_SET_MESSAGE.matcher(line).find());
   }
 
   private void addErrLinesToAll(CharSequence line) {
     if (tmpErrLines < ERROR_BUFFER_LIMIT) {
       tmpErrLines++;
-      all.append(line).append("\n");
+      all.append(line).append(lineSeparator());
     }
     if (tmpErrLines == ERROR_BUFFER_LIMIT) {
       tmpErrLines++; // increment to prevent this line from repeating
       all.append("GrepLogs: ERROR_BUFFER_LIMIT limit reached,")
-          .append(" the error was too long to display completely.\n");
+          .append(" the error was too long to display completely.").append(lineSeparator());
     }
   }
 
   private StringBuilder enforceErrorLimitsAtShortErrMatcher() {
     // we found a blank line so print the suspect string and reset the savetag flag
     saveFlag = false;
-    Matcher shortErrMatcher = shortErrPattern.matcher(all.toString());
+
+    Matcher shortErrMatcher = ERROR_SHORT_NAME.matcher(all.toString());
     if (shortErrMatcher.matches()) {
       String shortName = shortErrMatcher.group(1);
       Integer i = individualErrorCount.get(shortName);
-      int occurrences = (i == null) ? 1 : i + 1;
+      int occurrences = i == null ? 1 : i + 1;
       individualErrorCount.put(shortName, occurrences);
-      return enforceErrorLimit(occurrences, all.toString(), savelinenum, fileName);
-
-    } else {
-      // error in determining shortName, wing it
-      return enforceErrorLimit(1, all.toString(), lineNumber, fileName);
+      return enforceErrorLimit(occurrences, all.toString(), savelinenum, logName);
     }
+
+    // error in determining shortName, wing it
+    return enforceErrorLimit(1, all.toString(), lineNumber, logName);
   }
 
   private void setInstanceVariablesForSomeReason(CharSequence line) {
     saveFlag = true;
     tmpErrFlag = true;
-    if (checkExpectedStrs(line, expectedExceptions)) {
+    if (matchesIgnoredPatterns(line)) {
       saveFlag = false;
       tmpErrFlag = false;
       tmpErrLines = 0;
@@ -222,44 +229,44 @@ public class LogConsumer {
     if (tmpErrFlag) {
       tmpErrLines = 1;
       all = new StringBuilder(line);
-      all.append("\n");
+      all.append(lineSeparator());
       savelinenum = lineNumber;
     }
   }
 
   private String getShortName(CharSequence line) {
-    Matcher m2 = exceptionPattern2.matcher(line);
-    if (m2.find()) {
-      return m2.group(1);
+    Matcher exception2Matcher = EXCEPTION_2.matcher(line);
+    if (exception2Matcher.find()) {
+      return exception2Matcher.group(1);
     }
 
-    Matcher m3 = exceptionPattern3.matcher(line);
-    if (m3.find()) {
-      return m3.group(1);
+    Matcher exception3Matcher = EXCEPTION_3.matcher(line);
+    if (exception3Matcher.find()) {
+      return exception3Matcher.group(1);
     }
 
-    Matcher m4 = exceptionPattern4.matcher(line);
-    if (m4.find()) {
-      return m4.group(1);
+    Matcher exception4Matcher = EXCEPTION_4.matcher(line);
+    if (exception4Matcher.find()) {
+      return exception4Matcher.group(1);
     }
 
     return null;
   }
 
   /** This method returns true if this line should be skipped. */
-  private boolean skipThisLogMsg(CharSequence line) {
+  private boolean skipLine(CharSequence line) {
     if (infoMsgFlag) {
-      if (logPattern.matcher(line).find()) {
+      if (LOG_STATEMENT.matcher(line).find()) {
         infoMsgFlag = false;
-      } else if (blankPattern.matcher(line).matches()) {
-        infoMsgFlag = false;
-        return true;
       } else {
+        if (BLANK.matcher(line).matches()) {
+          infoMsgFlag = false;
+        }
         return true;
       }
     }
 
-    if (skipLevelPattern.matcher(line).find()) {
+    if (WARN_OR_LESS_LOG_LEVEL.matcher(line).find()) {
       infoMsgFlag = true;
       return true;
     }
@@ -267,48 +274,42 @@ public class LogConsumer {
     return false;
   }
 
-  private void expectedExceptionMatcherHandler(Matcher expectedExceptionMatcher) {
+  private void expectedExceptionMatcherHandler(MatchResult expectedExceptionMatcher) {
     if (expectedExceptionMatcher.group(1).equals("add")) {
-      expectedExceptions.add(Pattern.compile(expectedExceptionMatcher.group(2)));
+      dynamicIgnoredPatterns.add(compile(expectedExceptionMatcher.group(2)));
     } else {
       // assume add and remove are the only choices
-      expectedExceptions.remove(Pattern.compile(expectedExceptionMatcher.group(2)));
+      dynamicIgnoredPatterns.remove(compile(expectedExceptionMatcher.group(2)));
     }
   }
 
-  public StringBuilder close() {
-    if (saveFlag) {
-      // Bug fix for severe that occurs at the end of a log file. Since we
-      // collect lines up to a blank line that never happens this prints the
-      // collection of in process suspect strings if we close the file and
-      // we're still trying to save lines
-
-      saveFlag = false;
-      return enforceErrorLimit(1, all.toString(), savelinenum, fileName);
-    }
-    return null;
-  }
-
-  private boolean checkExpectedStrs(CharSequence line, List<Pattern> expectedExceptions) {
-    return expectedExceptions.stream().anyMatch(expected -> expected.matcher(line).find())
-        || testExpectStrs.stream().anyMatch(testExpected -> testExpected.matcher(line).find());
+  private boolean matchesIgnoredPatterns(CharSequence line) {
+    return dynamicIgnoredPatterns.stream().anyMatch(p -> p.matcher(line).find()) ||
+        constantIgnoredPatterns.stream().anyMatch(p -> p.matcher(line).find());
   }
 
   private StringBuilder enforceErrorLimit(int hits, String line, int linenum, String filename) {
-    if (hits < repeatLimit) {
-      StringBuilder buffer = new StringBuilder();
-      buffer.append("-----------------------------------------------------------------------\n")
+    if (hits < skipLimit) {
+      StringBuilder string = new StringBuilder();
+      string
+          .append("-----------------------------------------------------------------------")
+          .append(lineSeparator())
           .append("Found suspect string in ").append(filename).append(" at line ").append(linenum)
-          .append("\n\n").append(line).append("\n");
-      return buffer;
+          .append(lineSeparator()).append(lineSeparator())
+          .append(line).append(lineSeparator());
+      return string;
     }
-    if (hits == repeatLimit) {
-      StringBuilder buffer = new StringBuilder();
-      buffer.append("\n\nHit occurrence limit of ").append(hits).append(" for this string.\n")
-          .append("Further reporting of this type of error will be suppressed.\n");
-      return buffer;
+
+    if (hits == skipLimit) {
+      StringBuilder string = new StringBuilder();
+      string
+          .append(lineSeparator()).append(lineSeparator())
+          .append("Hit occurrence limit of ").append(hits).append(" for this string.")
+          .append(lineSeparator())
+          .append("Further reporting of this type of error will be suppressed.")
+          .append(lineSeparator());
+      return string;
     }
     return null;
   }
-
 }
