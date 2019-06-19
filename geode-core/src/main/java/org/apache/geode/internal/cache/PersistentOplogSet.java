@@ -595,9 +595,7 @@ public class PersistentOplogSet implements OplogSet {
   DirectoryHolder getNextDir(long minAvailableSpace, boolean checkForWarning) {
     DirectoryHolder dirHolder = null;
     DirectoryHolder selectedHolder = null;
-    long MAX_OPLOG_SIZE_IN_BYTES = 1024 * 1024 * 1024 * 10L;
     if (minAvailableSpace < parent.getMaxOplogSizeInBytes()
-        && parent.getMaxOplogSize() != MAX_OPLOG_SIZE_IN_BYTES
         && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
       minAvailableSpace = parent.getMaxOplogSizeInBytes();
     }
