@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,9 +32,10 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.Status;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -62,6 +64,18 @@ public class ConfigurePDXDUnitTest {
     cluster.startServerVM(1, webContext.getLocator().getPort());
   }
 
+  @After
+  public void after() throws Exception {
+    // for the test to be run multiple times, we need to clean out the cluster config
+    InternalConfigurationPersistenceService cps =
+        ((PlainLocatorContextLoader) webContext.getLocator()).getLocatorStartupRule().getLocator()
+            .getConfigurationPersistenceService();
+    cps.updateCacheConfig("cluster", config -> {
+      config.setPdx(null);
+      return config;
+    });
+  }
+
   @Test
   public void configurePdx() {
     PdxType pdxType = new PdxType();
@@ -80,7 +94,8 @@ public class ConfigurePDXDUnitTest {
     assertThat(pdxResult.getGroup()).isNull();
     assertThat(pdxResult.getUri()).isEqualTo(PdxType.PDX_ENDPOINT);
 
-    Status status = result.getMemberStatuses().get("server-1");
+    RealizationResult status = result.getMemberStatuses().get(0);
+    assertThat(status.getMemberName()).isEqualTo("server-1");
     assertThat(status.getMessage())
         .contains("Server needs to be restarted for this configuration change to be realized");
   }

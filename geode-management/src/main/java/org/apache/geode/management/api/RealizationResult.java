@@ -12,33 +12,53 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.management.api;
 
-public class Status {
-  boolean success;
-  String message;
+import java.io.Serializable;
 
-  // needed for json deserialization
-  public Status() {}
 
-  public Status(boolean success, String message) {
-    this.success = success;
-    this.message = message;
-  }
+/**
+ * this holds the information returned by the ConfigurationRealizers to indicate the
+ * success/failure of the realization step.
+ *
+ * It by default should have at least memberName, success and a message.
+ */
 
-  public boolean isSuccess() {
-    return success;
-  }
+public class RealizationResult implements Serializable {
+  private String memberName;
+  private boolean success = true;
+  private String message = "success";
 
-  public void setSuccess(boolean success) {
-    this.success = success;
+  public RealizationResult() {
+    setSuccess(true);
+    setMessage("success");
   }
 
   public String getMessage() {
     return message;
   }
 
-  public void setMessage(String message) {
+  public RealizationResult setMessage(String message) {
     this.message = message;
+    return this;
+  }
+
+  public String getMemberName() {
+    return memberName;
+  }
+
+  public RealizationResult setMemberName(String memberName) {
+    this.memberName = memberName;
+    return this;
+  }
+
+  public boolean isSuccess() {
+    return success;
+  }
+
+  public RealizationResult setSuccess(boolean success) {
+    this.success = success;
+    return this;
   }
 }

@@ -17,13 +17,14 @@ package org.apache.geode.test.junit.assertions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.ListAssert;
-import org.assertj.core.api.MapAssert;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.Status;
+import org.apache.geode.management.api.RealizationResult;
 
 public class ClusterManagementResultAssert<R extends CacheElement>
     extends AbstractAssert<ClusterManagementResultAssert<R>, ClusterManagementResult<R>> {
@@ -53,8 +54,12 @@ public class ClusterManagementResultAssert<R extends CacheElement>
     return this;
   }
 
-  public MapAssert<String, Status> hasMemberStatus() {
+  public ListAssert<RealizationResult> hasMemberStatus() {
     return assertThat(actual.getMemberStatuses());
+  }
+
+  public List<RealizationResult> getMemberStatus() {
+    return actual.getMemberStatuses();
   }
 
   public ListAssert<R> hasListResult() {

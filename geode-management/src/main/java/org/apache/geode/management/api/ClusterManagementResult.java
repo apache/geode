@@ -15,9 +15,7 @@
 package org.apache.geode.management.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -55,7 +53,7 @@ public class ClusterManagementResult<R extends CacheElement> {
     OK
   }
 
-  private Map<String, Status> memberStatuses = new HashMap<>();
+  private List<RealizationResult> memberStatuses = new ArrayList<>();
 
   // we will always have statusCode when the object is created
   private StatusCode statusCode = StatusCode.OK;
@@ -78,9 +76,14 @@ public class ClusterManagementResult<R extends CacheElement> {
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
-    this.memberStatuses.put(member, new Status(success, message));
+    addMemberStatus(new RealizationResult().setMemberName(member)
+        .setSuccess(success).setMessage(message));
+  }
+
+  public void addMemberStatus(RealizationResult result) {
+    this.memberStatuses.add(result);
     // if any member failed, status code will be error
-    if (!success) {
+    if (!result.isSuccess()) {
       statusCode = StatusCode.ERROR;
     }
   }
@@ -97,7 +100,7 @@ public class ClusterManagementResult<R extends CacheElement> {
     this.statusMessage = message;
   }
 
-  public Map<String, Status> getMemberStatuses() {
+  public List<RealizationResult> getMemberStatuses() {
     return memberStatuses;
   }
 

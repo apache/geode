@@ -30,6 +30,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -80,7 +81,8 @@ public class ClusterManagementLocatorReconnectDunitTest {
             .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactly("server-1");
 
     // make sure region is created
     server.invoke(() -> {

@@ -37,6 +37,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
@@ -137,8 +138,10 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult<RegionConfig> result = client.create(region);
-    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
-        "server-3");
+    assertManagementResult(result).isSuccessful().hasMemberStatus()
+        .extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1",
+            "server-3");
 
     // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
@@ -156,8 +159,10 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult<RegionConfig> result = client.create(region);
-    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
-        "server-3");
+    assertManagementResult(result).isSuccessful().hasMemberStatus()
+        .extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1",
+            "server-3");
 
     // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
@@ -185,8 +190,10 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult<RegionConfig> result = client.create(region);
-    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
-        "server-3");
+    assertManagementResult(result).isSuccessful().hasMemberStatus()
+        .extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1",
+            "server-3");
 
     assertManagementResult(client.delete(region)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
@@ -213,14 +220,18 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setType(RegionType.REPLICATE);
 
     ClusterManagementResult<RegionConfig> result = client.create(region);
-    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-1",
-        "server-3");
+    assertManagementResult(result).isSuccessful().hasMemberStatus()
+        .extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1",
+            "server-3");
 
     region.setName("region2");
     region.setGroup("group2");
     result = client.create(region);
-    assertManagementResult(result).isSuccessful().hasMemberStatus().containsOnlyKeys("server-2",
-        "server-3");
+    assertManagementResult(result).isSuccessful().hasMemberStatus()
+        .extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-2",
+            "server-3");
 
     region.setName("region2");
     region.setGroup(null);

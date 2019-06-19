@@ -36,20 +36,22 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
+import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
@@ -126,14 +128,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     ClusterManagementResult<T> result = new ClusterManagementResult<>();
 
-    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+    List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
         Arrays.asList(config, CacheElementOperation.CREATE),
         targetedMembers);
-    functionResults
-        .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
-            functionResult.isSuccessful(),
-            functionResult.getStatusMessage()));
+
+    functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
     if (result.getStatusCode() != ClusterManagementResult.StatusCode.OK) {
@@ -192,14 +192,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     ClusterManagementResult<T> result = new ClusterManagementResult<>();
 
-    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+    List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
         Arrays.asList(config, CacheElementOperation.DELETE),
         memberValidator.findMembers(groupsWithThisElement));
-    functionResults
-        .forEach(functionResult -> result.addMemberStatus(functionResult.getMemberIdOrName(),
-            functionResult.isSuccessful(),
-            functionResult.getStatusMessage()));
+    functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
     if (result.getStatusCode() != ClusterManagementResult.StatusCode.OK) {
@@ -339,14 +336,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @VisibleForTesting
-  List<CliFunctionResult> executeAndGetFunctionResult(Function function, Object args,
+  List<RealizationResult> executeAndGetFunctionResult(Function function, Object args,
       Set<DistributedMember> targetMembers) {
     if (targetMembers.size() == 0) {
       return Collections.emptyList();
     }
 
-    ResultCollector rc = CliUtil.executeFunction(function, args, targetMembers);
-    return CliFunctionResult.cleanResults((List<?>) rc.getResult());
+    Execution execution = FunctionService.onMembers(targetMembers).setArguments(args);
+    ((AbstractExecution) execution).setIgnoreDepartedMembers(true);
+    ResultCollector rc = execution.execute(function);
+
+    return (List<RealizationResult>) rc.getResult();
   }
 
   @SuppressWarnings("unchecked")
