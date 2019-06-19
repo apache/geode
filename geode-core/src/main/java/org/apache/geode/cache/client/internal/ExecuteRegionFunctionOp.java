@@ -168,6 +168,7 @@ public class ExecuteRegionFunctionOp {
 
     AbstractOp op = new ExecuteRegionFunctionOpImpl(region, function, serverRegionExecutor,
         resultCollector, hasResult, new HashSet<String>(), isHA, optimizeForWrite, true);
+
     ExecuteRegionFunctionOp.execute(pool, region, function, serverRegionExecutor, resultCollector,
         hasResult, retryAttempts, isHA, optimizeForWrite, op, true, failedNodes);
   }
@@ -198,12 +199,14 @@ public class ExecuteRegionFunctionOp {
 
     private FunctionException functionException;
 
-    private static int getMsgParts(int filterSize,
+    private static final int PART_COUNT = 8;
+
+    private static int getMessagePartCount(int filterSize,
         Set<String> removedNodes) {
-      return 8 + filterSize + removedNodes.size();
+      return PART_COUNT + filterSize + removedNodes.size();
     }
 
-    private void fillMessage(String region, Object function,
+    private void fillMessage(String region, Function function, String functionId,
         ServerRegionFunctionExecutor serverRegionExecutor,
         Set<String> removedNodes, byte functionState, byte flags) {
       Set routingObjects = serverRegionExecutor.getFilter();
@@ -211,7 +214,12 @@ public class ExecuteRegionFunctionOp {
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
       getMessage().addStringPart(region, true);
-      getMessage().addStringOrObjPart(function);
+      if (function != null && serverRegionExecutor.isFnSerializationReqd()) {
+        getMessage().addStringOrObjPart(function);
+      } else {
+        getMessage().addStringOrObjPart(functionId);
+      }
+
       getMessage().addObjPart(args);
       getMessage().addObjPart(memberMappedArg);
 
@@ -230,13 +238,13 @@ public class ExecuteRegionFunctionOp {
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
         Set<String> removedNodes) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMsgParts(serverRegionExecutor.getFilter().size(), removedNodes));
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes));
       executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
       byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
       fillMessage(region,
-          serverRegionExecutor.isFnSerializationReqd() ? function : function.getId(),
+          function, function.getId(),
           serverRegionExecutor, removedNodes, functionState, flags);
       this.resultCollector = rc;
       this.regionName = region;
@@ -264,12 +272,12 @@ public class ExecuteRegionFunctionOp {
       isHA = true;
     }
 
-    public ExecuteRegionFunctionOpImpl(String region, String function,
+    public ExecuteRegionFunctionOpImpl(String region, String functionId,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
         Set<String> removedNodes, boolean isHA, boolean optimizeForWrite,
         boolean calculateFnState) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMsgParts(serverRegionExecutor.getFilter().size(), removedNodes));
+          getMessagePartCount(serverRegionExecutor.getFilter().size(), removedNodes));
 
       byte functionState = hasResult;
       if (calculateFnState) {
@@ -280,11 +288,12 @@ public class ExecuteRegionFunctionOp {
       this.executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
-      fillMessage(region, function, serverRegionExecutor, removedNodes, functionState, flags);
+      fillMessage(region, null, functionId, serverRegionExecutor, removedNodes, functionState,
+          flags);
 
       this.resultCollector = rc;
       this.regionName = region;
-      this.functionId = function;
+      this.functionId = functionId;
       this.executor = serverRegionExecutor;
       this.hasResult = functionState;
       this.failedNodes = removedNodes;
@@ -300,7 +309,7 @@ public class ExecuteRegionFunctionOp {
     public ExecuteRegionFunctionOpImpl(ExecuteRegionFunctionOpImpl op, byte isReExecute,
         Set<String> removedNodes) {
       super(MessageType.EXECUTE_REGION_FUNCTION,
-          getMsgParts(op.executor.getFilter().size(), removedNodes));
+          getMessagePartCount(op.executor.getFilter().size(), removedNodes));
       this.isReExecute = isReExecute;
       this.resultCollector = op.resultCollector;
       this.function = op.function;
@@ -318,7 +327,7 @@ public class ExecuteRegionFunctionOp {
 
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
-      fillMessage(this.regionName, executor.isFnSerializationReqd() ? function : functionId,
+      fillMessage(this.regionName, function, functionId,
           executor, removedNodes, this.hasResult, flags);
     }
 
