@@ -117,7 +117,7 @@ public class MemberLevelStatsTest {
       PartitionedRegionStats stats = new PartitionedRegionStats(
           statisticsManager, name.getMethodName() + i);
       partitionedRegionStatsArray[i] = stats;
-      memberMBeanBridge.addPartionRegionStats(stats);
+      memberMBeanBridge.addPartitionedRegionStats(stats);
     }
 
     sampleStats();
@@ -327,7 +327,7 @@ public class MemberLevelStatsTest {
     assertThat(memberMBeanBridge.getTotalPrimaryBucketCount()).isEqualTo(4);
 
     for (PartitionedRegionStats stats : partitionedRegionStatsArray) {
-      memberMBeanBridge.removePartionRegionStats(stats);
+      memberMBeanBridge.removePartitionedRegionStats(stats);
       stats.close();
     }
 
