@@ -939,6 +939,7 @@ public class DistributionStats implements DMStats {
   private final Statistics stats;
 
   private final AtomicLong maxReplyWaitTime = new AtomicLong();
+  private final AtomicLong maxSentMessagesTime = new AtomicLong();
 
   // private final HistogramStats replyHandoffHistogram;
   // private final HistogramStats replyWaitHistogram;
@@ -1044,20 +1045,10 @@ public class DistributionStats implements DMStats {
   public void incSentMessagesTime(long nanos) {
     if (enableClockStats) {
       this.stats.incLong(sentMessagesTimeId, nanos);
-      long millis = nanos / 1000000;
-      if (getSentMessagesMaxTime() < millis) {
-        this.stats.setLong(sentMessagesMaxTimeId, millis);
-      }
+      long millis = NanoTimer.nanosToMillis(nanos);
+      recordMaxTime(sentMessagesMaxTimeId, millis, maxSentMessagesTime);
     }
   }
-
-  /**
-   * Returns the longest time required to distribute a message, in nanos
-   */
-  public long getSentMessagesMaxTime() {
-    return this.stats.getLong(sentMessagesMaxTimeId);
-  }
-
 
   /**
    * Returns the total number of messages broadcast by the distribution manager
@@ -1606,8 +1597,8 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(replyWaitTimeId, getStatTime() - startNanos);
       // this.replyWaitHistogram.endOp(delta);
+      recordMaxReplyWaitTime(System.currentTimeMillis() - initTime);
     }
-    recordMaxReplyWaitTime(initTime, System.currentTimeMillis());
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);
 
@@ -1615,21 +1606,20 @@ public class DistributionStats implements DMStats {
     Breadcrumbs.setProblem(null); // clear out reply-wait errors
   }
 
-  void recordMaxReplyWaitTime(long initTime, long endTime) {
-    if (initTime == 0) {
-      return;
-    }
+  void recordMaxReplyWaitTime(long currentWaitTime) {
+    recordMaxTime(replyWaitMaxTimeId, currentWaitTime, maxReplyWaitTime);
+  }
 
-    long currentWaitTime = endTime - initTime;
+  private void recordMaxTime(int statId, long currentTime, AtomicLong maxTime) {
     boolean done = false;
     while (!done) {
-      long maxWaitTime = maxReplyWaitTime.get();
-      if (currentWaitTime <= maxWaitTime) {
+      long maxWaitTime = maxTime.get();
+      if (currentTime <= maxWaitTime) {
         done = true;
       } else {
-        done = maxReplyWaitTime.compareAndSet(maxWaitTime, currentWaitTime);
+        done = maxTime.compareAndSet(maxWaitTime, currentTime);
         if (done) {
-          stats.incLong(replyWaitMaxTimeId, currentWaitTime - maxWaitTime);
+          stats.incLong(statId, currentTime - maxWaitTime);
         }
       }
     }
