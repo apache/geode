@@ -15,9 +15,12 @@
 
 package org.apache.geode.cache.configuration;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
+
+import org.apache.geode.management.api.RestfulEndpoint;
 
 public class PdxTypeTest {
 
@@ -27,4 +30,14 @@ public class PdxTypeTest {
     assertThatThrownBy(() -> type.setGroup("test"))
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  public void getUri() {
+    PdxType config = new PdxType();
+    assertThat(config.getEndpoint())
+        .isEqualTo("/configurations/pdx");
+    assertThat(config.getUri())
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/configurations/pdx");
+  }
+
 }

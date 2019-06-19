@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -245,7 +246,7 @@ public class RegionConfigTest {
   }
 
   @Test
-  public void setAttributesAndType() throws Exception {
+  public void setAttributesAndType() {
     RegionConfig config = new RegionConfig();
     config.setType("REPLICATE");
     RegionAttributesType attributes = new RegionAttributesType();
@@ -257,5 +258,14 @@ public class RegionConfigTest {
     RegionConfigValidator validator = new RegionConfigValidator(mock(InternalCache.class));
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  public void getUri() {
+    regionConfig.setName("regionA");
+    assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
+
+    assertThat(regionConfig.getUri())
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/regions/regionA");
   }
 }

@@ -43,8 +43,9 @@ import org.apache.geode.management.api.RestfulEndpoint;
  * exists.
  */
 public class ClientClusterManagementService implements ClusterManagementService {
-  private static final String VERSION = "/v2";
-
+  // the restTemplate needs to have the context as the baseUrl, and request URI is the part after
+  // the context (including /v2), it needs to be set up this way so that spring test runner's
+  // injected RequestFactory can work
   private final RestTemplate restTemplate;
 
   ClientClusterManagementService(RestTemplate restTemplate) {
@@ -58,7 +59,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
-        .postForEntity(VERSION + endPoint, config, ClusterManagementResult.class)
+        .postForEntity(endPoint, config, ClusterManagementResult.class)
         .getBody();
   }
 
@@ -66,9 +67,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
       T config) {
-    String uri = getUri(config);
+    String uri = getIdentityEndPoint(config);
     return restTemplate
-        .exchange(VERSION + uri + "?group={group}",
+        .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
             null,
             ClusterManagementResult.class,
@@ -88,7 +89,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
       T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
-        .getForEntity(VERSION + endPoint + "/?id={id}&group={group}",
+        .getForEntity(endPoint + "/?id={id}&group={group}",
             ClusterManagementResult.class, config.getId(), config.getGroup())
         .getBody();
   }
@@ -98,7 +99,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
       T config) {
     return restTemplate
-        .getForEntity(VERSION + getUri(config), ClusterManagementResult.class)
+        .getForEntity(getIdentityEndPoint(config), ClusterManagementResult.class)
         .getBody();
   }
 
@@ -109,17 +110,17 @@ public class ClientClusterManagementService implements ClusterManagementService 
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return endpoint;
+    return RestfulEndpoint.URI_VERSION + endpoint;
   }
 
-  private String getUri(CacheElement config) {
+  private String getIdentityEndPoint(CacheElement config) {
     checkIsRestful(config);
-    String uri = ((RestfulEndpoint) config).getUri();
+    String uri = ((RestfulEndpoint) config).getIdentityEndPoint();
     if (uri == null) {
       throw new IllegalArgumentException(
           "unable to construct the uri with the current configuration.");
     }
-    return uri;
+    return RestfulEndpoint.URI_VERSION + uri;
   }
 
   private void checkIsRestful(CacheElement config) {
@@ -131,7 +132,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   public boolean isConnected() {
-    return restTemplate.getForEntity(VERSION + "/ping", String.class)
+    return restTemplate.getForEntity("/ping", String.class)
         .getBody().equals("pong");
   }
 
