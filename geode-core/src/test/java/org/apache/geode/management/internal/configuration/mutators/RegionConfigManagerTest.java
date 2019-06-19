@@ -51,7 +51,7 @@ public class RegionConfigManagerTest {
   }
 
   @Test
-  public void managerCountIsMinusOneIfMbeanNotReady() throws Exception {
+  public void entryCountIsZeroEvenIfMbeanIsNotAvailable() throws Exception {
     CacheConfig existing = mock(CacheConfig.class);
     List<RegionConfig> staticRegionConfigs = new ArrayList<>();
     config1.setName("region1");
@@ -62,7 +62,7 @@ public class RegionConfigManagerTest {
     ManagementService managementService = mock(ManagementService.class);
     doReturn(managementService).when(manager).getManagementService();
     List<RuntimeRegionConfig> result = manager.list(new RegionConfig(), existing);
-    assertThat(result.get(0).getEntryCount()).isEqualTo(-1);
+    assertThat(result.get(0).getEntryCount()).isEqualTo(0);
   }
 
   @Test
