@@ -18,6 +18,7 @@ package org.apache.geode.cache.client.internal;
 import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -75,6 +76,7 @@ public class ExecuteRegionFunctionOp {
     do {
       try {
         if (isReexecute) {
+          failedNodes = allocateFailedNodesIfEmpty(failedNodes);
           op = new ExecuteRegionFunctionOpImpl(op,
               (byte) 1/* isReExecute */, failedNodes);
         }
@@ -87,6 +89,7 @@ public class ExecuteRegionFunctionOp {
         }
         isReexecute = true;
         Set<String> failedNodesIds = e.getFailedNodeSet();
+        failedNodes = allocateFailedNodesIfEmpty(failedNodes);
         failedNodes.clear();
         if (failedNodesIds != null) {
           failedNodes.addAll(failedNodesIds);
@@ -108,9 +111,17 @@ public class ExecuteRegionFunctionOp {
 
         isReexecute = true;
         resultCollector.clearResults();
+        failedNodes = allocateFailedNodesIfEmpty(failedNodes);
         failedNodes.clear();
       }
     } while (true);
+  }
+
+  private static Set<String> allocateFailedNodesIfEmpty(Set<String> failedNodes) {
+    if (failedNodes.equals(Collections.emptySet())) {
+      return new HashSet();
+    }
+    return failedNodes;
   }
 
   /**
@@ -134,7 +145,8 @@ public class ExecuteRegionFunctionOp {
         serverRegionExecutor, resultCollector, timeoutMs);
 
     execute(pool, region, function.getId(), serverRegionExecutor, resultCollector, hasResult,
-        maxRetryAttempts, function.isHA(), function.optimizeForWrite(), op, false, new HashSet<>());
+        maxRetryAttempts, function.isHA(), function.optimizeForWrite(), op, false,
+        Collections.emptySet());
   }
 
   static void execute(ExecutablePool pool, String region, String function,
@@ -147,7 +159,7 @@ public class ExecuteRegionFunctionOp {
         true, timeoutMs);
 
     execute(pool, region, function, serverRegionExecutor, resultCollector, hasResult,
-        maxRetryAttempts, isHA, optimizeForWrite, op, false, new HashSet<>());
+        maxRetryAttempts, isHA, optimizeForWrite, op, false, Collections.emptySet());
   }
 
   static void reexecute(ExecutablePool pool, String region, Function function,
@@ -243,7 +255,7 @@ public class ExecuteRegionFunctionOp {
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
       byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
-      failedNodes = new HashSet();
+      failedNodes = Collections.emptySet();
       fillMessage(region,
           function, function.getId(),
           serverRegionExecutor, failedNodes, functionState, flags);
@@ -287,7 +299,7 @@ public class ExecuteRegionFunctionOp {
       executeOnBucketSet = serverRegionExecutor.getExecuteOnBucketSetFlag();
       byte flags = ExecuteFunctionHelper.createFlags(executeOnBucketSet, isReExecute);
 
-      failedNodes = new HashSet();
+      failedNodes = Collections.emptySet();
       fillMessage(region, null, functionId, serverRegionExecutor, failedNodes, functionState,
           flags);
 
@@ -384,6 +396,7 @@ public class ExecuteRegionFunctionOp {
                     .getCause() instanceof InternalFunctionInvocationTargetException) {
                   InternalFunctionInvocationTargetException ifite =
                       (InternalFunctionInvocationTargetException) ex.getCause();
+                  failedNodes = allocateFailedNodesIfEmpty(failedNodes);
                   failedNodes.addAll(ifite.getFailedNodeSet());
                   addFunctionException((FunctionException) result);
                 } else {
@@ -415,6 +428,7 @@ public class ExecuteRegionFunctionOp {
                     if (resultResponse instanceof ArrayList) {
                       DistributedMember memberID =
                           (DistributedMember) ((ArrayList) resultResponse).get(1);
+                      failedNodes = allocateFailedNodesIfEmpty(failedNodes);
                       failedNodes.add(memberID.getId());
                     }
                     functionException = new FunctionException(fite);
@@ -471,6 +485,7 @@ public class ExecuteRegionFunctionOp {
                   .getCause() instanceof InternalFunctionInvocationTargetException) {
                 InternalFunctionInvocationTargetException ifite =
                     (InternalFunctionInvocationTargetException) ex.getCause();
+                failedNodes = allocateFailedNodesIfEmpty(failedNodes);
                 failedNodes.addAll(ifite.getFailedNodeSet());
               }
               throw ex;
