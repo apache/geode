@@ -133,4 +133,14 @@ public class LogConsumerTest {
 
     assertThat(value).contains(line);
   }
+
+  @Test
+  public void closeReturnsLineIfLineContainsMalformedLog4jStatement() {
+    String line = "[info 2019/06/13 14:41:05.750 PDT <main> tid=0x1] contains {}";
+    logConsumer.consume(line);
+
+    StringBuilder value = logConsumer.close();
+
+    assertThat(value).contains(line);
+  }
 }
