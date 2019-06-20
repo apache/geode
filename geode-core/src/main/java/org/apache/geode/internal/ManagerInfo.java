@@ -296,11 +296,7 @@ public class ManagerInfo implements DataSerializable {
       if (status != STARTED_STATUS_CODE) {
         return false;
       }
-      // Check to see if manager process exists, assume it is for PureJava
-      if (OSProcess.exists(mi.getManagerProcessId())) {
-        return true;
-      }
-      return false;
+      return true;
     } catch (UnstartedSystemException ignore) {
       return false;
     } catch (GemFireIOException ex) {

@@ -22,10 +22,9 @@ import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
 /**
- * The class puts in one place the code that will determine the name of the GemFire shared library.
- * This aids debugging.
+ * The class provides info about some JVM characteristics
  */
-public class SharedLibrary {
+public class JvmSizeUtils {
 
   private static final boolean is64Bit;
   private static final int referenceSize;
@@ -118,6 +117,14 @@ public class SharedLibrary {
     }
   }
 
+  /**
+  * @return true if this process is 64bit
+  * @throws RuntimeException if sun.arch.data.model doesn't fit expectations
+  */
+  public static boolean is64Bit() {
+    return is64Bit;
+  }
+  
   public static int getReferenceSize() {
     return referenceSize;
   }

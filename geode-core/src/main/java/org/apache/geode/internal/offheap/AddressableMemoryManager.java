@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
 /**
@@ -59,9 +60,9 @@ public class AddressableMemoryManager {
       if (err.getMessage() != null && !err.getMessage().isEmpty()) {
         msg += " Cause: " + err.getMessage();
       }
-      if (size >= (1024 * 1024 * 1024)) {
+      if (!JvmSizeUtils.is64Bit() && size >= (1024 * 1024 * 1024)) {
         msg +=
-            " For large amounts of off-heap memory a 64-bit JVM is needed. Verify JVM is not a 32-bit one.";
+            " The JVM looks like a 32-bit one. For large amounts of off-heap memory a 64-bit JVM is needed.";
       }
       throw new OutOfMemoryError(msg);
     }
