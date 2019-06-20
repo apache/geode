@@ -237,8 +237,7 @@ public class ExecuteRegionFunctionOp {
           // messaging locator.
           maxRetryAttempts = ((PoolImpl) pool).getConnectionSource().getAllServers().size() - 1;
         }
-        logger.info("JASON" + maxRetryAttempts + " now"
-        );
+        logger.info("JASON" + maxRetryAttempts + " now");
 
         if ((maxRetryAttempts--) < 1) {
           throw se;
