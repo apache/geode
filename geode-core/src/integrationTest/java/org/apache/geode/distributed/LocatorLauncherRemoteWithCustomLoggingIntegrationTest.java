@@ -50,19 +50,24 @@ public class LocatorLauncherRemoteWithCustomLoggingIntegrationTest
   public SystemOutRule systemOutRule = new SystemOutRule().enableLog();
 
   @Before
-  public void setUpLocatorLauncherRemoteWithCustomLoggingIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherRemoteWithCustomLoggingIntegrationTest() {
     String configFileName = getClass().getSimpleName() + "_log4j2.xml";
-    customLoggingConfigFile = createFileFromResource(getResource(configFileName),
-        getWorkingDirectory(), configFileName);
+    customLoggingConfigFile = createFileFromResource(
+        getResource(configFileName),
+        getWorkingDirectory(),
+        configFileName);
   }
 
   @Test
   public void startWithCustomLoggingConfiguration() {
     startLocator(new LocatorCommand(this)
         .addJvmArgument("-D" + CONFIGURATION_FILE_PROPERTY + "=" + getCustomLoggingConfigFilePath())
-        .withCommand(Command.START), new ToSystemOut(), new ToSystemOut());
+        .withCommand(Command.START),
+        new ToSystemOut(),
+        new ToSystemOut());
 
-    assertThat(systemOutRule.getLog()).contains(CONFIG_LAYOUT_PREFIX)
+    assertThat(systemOutRule.getLog())
+        .contains(CONFIG_LAYOUT_PREFIX)
         .contains(CONFIGURATION_FILE_PROPERTY + " = " + getCustomLoggingConfigFilePath());
   }
 

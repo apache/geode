@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -22,6 +23,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
@@ -62,8 +64,9 @@ public class RegionConfigRealizerIntegrationTest {
     RegionConfigValidator.setShortcutAttributes(config);
     realizer.create(config, server.getCache());
 
-    // the 2nd time with same name and type will not throw an error
-    realizer.create(config, server.getCache());
+    // the 2nd time with same name and type will throw an error
+    assertThatThrownBy(() -> realizer.create(config, server.getCache()))
+        .isInstanceOf(RegionExistsException.class);
   }
 
   @Test

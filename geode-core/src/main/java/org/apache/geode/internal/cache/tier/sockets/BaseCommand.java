@@ -331,7 +331,7 @@ public abstract class BaseCommand implements Command {
                   serverConnection.getModKey(), transId});
         } else {
           logger.debug("EOF exception", eof);
-          logger.info("{}: connection disconnect detected by EOF.",
+          logger.warn("{}: connection disconnect detected by EOF.",
               serverConnection.getName());
         }
       }

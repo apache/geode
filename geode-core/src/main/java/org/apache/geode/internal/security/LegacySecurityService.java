@@ -95,7 +95,7 @@ public class LegacySecurityService implements SecurityService {
 
   @Override
   public void authorize(ResourcePermission.Resource resource,
-      ResourcePermission.Operation operation, String target, String key) {}
+      ResourcePermission.Operation operation, String target, Object key) {}
 
   @Override
   public void authorize(ResourcePermission.Resource resource,

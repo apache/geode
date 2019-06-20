@@ -41,7 +41,8 @@ import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
 import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 
-public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
+public class MemberConfigManager
+    implements ConfigurationManager<MemberConfig, RuntimeMemberConfig> {
 
   private InternalCache cache;
 
@@ -74,6 +75,11 @@ public class MemberConfigManager implements ConfigurationManager<MemberConfig> {
     ArrayList<MemberInformation> memberInformation = getMemberInformation(distributedMembers);
 
     return generateMemberConfigs(memberInformation);
+  }
+
+  @Override
+  public MemberConfig get(String id, CacheConfig existing) {
+    throw new NotImplementedException("Not implemented");
   }
 
   @VisibleForTesting

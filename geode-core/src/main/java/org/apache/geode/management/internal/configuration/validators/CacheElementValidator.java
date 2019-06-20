@@ -17,7 +17,6 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 
@@ -38,32 +37,25 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
         validateCreate(config);
         break;
       case DELETE:
-        validateDelete(config);
         break;
       default:
     }
   }
 
   private void validateCreate(CacheElement config) {
-    if ("cluster".equalsIgnoreCase(config.getGroup())) {
-      throw new IllegalArgumentException(
-          "'cluster' is a reserved group name. Do not use it for member groups.");
+    String group = config.getGroup();
+    if (CacheElement.CLUSTER.equalsIgnoreCase(group)) {
+      throw new IllegalArgumentException("'"
+          + CacheElement.CLUSTER
+          + "' is a reserved group name. Do not use it for member groups.");
     }
-    if (config.getGroup() != null && config.getGroup().contains(",")) {
-      throw new IllegalArgumentException(
-          "Group name should not contain comma.");
+    if (group != null && group.contains(",")) {
+      throw new IllegalArgumentException("Group name should not contain comma.");
     }
-  }
-
-  private void validateDelete(CacheElement config) {
-    if (StringUtils.isNotBlank(config.getGroup())) {
-      throw new IllegalArgumentException(
-          "group is an invalid option when deleting an element from the cache.");
+    String id = config.getId();
+    if (id.contains("/")) {
+      throw new IllegalArgumentException("Id should not contain slash.");
     }
   }
 
-  @Override
-  public boolean exists(String id, CacheConfig persistedConfig) {
-    return false;
-  }
 }

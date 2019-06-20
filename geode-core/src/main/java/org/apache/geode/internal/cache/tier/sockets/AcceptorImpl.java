@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -597,7 +598,9 @@ public class AcceptorImpl implements Acceptor, Runnable {
       StatisticsFactory statisticsFactory =
           internalCache.getInternalDistributedSystem().getStatisticsManager();
       if (isGatewayReceiver()) {
-        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName);
+        MeterRegistry meterRegistry = internalCache.getMeterRegistry();
+        stats = GatewayReceiverStats.createGatewayReceiverStats(statisticsFactory, sockName,
+            meterRegistry);
       } else {
         stats = new CacheServerStats(statisticsFactory, sockName);
       }

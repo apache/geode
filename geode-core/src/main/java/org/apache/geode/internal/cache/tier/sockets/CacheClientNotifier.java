@@ -660,14 +660,7 @@ public class CacheClientNotifier {
       }
     } else {
       HAEventWrapper wrapper = new HAEventWrapper(clientMessage);
-      wrapper.incrementPutInProgressCounter();
-
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Initial increment PutInProgressCounter on HAEventWrapper with Event ID hash code: {}; System ID hash code: {}; Wrapper details: {}",
-            +wrapper.hashCode(), System.identityHashCode(wrapper), wrapper);
-      }
-
+      wrapper.incrementPutInProgressCounter("notify clients");
       conflatable = wrapper;
     }
 

@@ -320,9 +320,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
     };
 
-    // GEODE-5256: set startup properties on CacheServerLauncher statics, used later to start the
-    // server through CacheCreation if a cache.xml or if the cluster-configuration-service is
-    // enabled.
     Integer serverPort =
         (builder.isServerPortSetByUser() && this.serverPort != null) ? this.serverPort : null;
     String serverBindAddress =

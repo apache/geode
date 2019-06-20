@@ -15,6 +15,7 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -60,11 +61,12 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("customer");
     region.setType(RegionType.PARTITION);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-1", "server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1", "server-2");
 
     result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
@@ -77,11 +79,12 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("orders");
     region.setType(RegionType.PARTITION);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-1", "server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-1", "server-2");
   }
 
 
@@ -90,7 +93,7 @@ public class ClientClusterManagementServiceDunitTest {
     RegionConfig region = new RegionConfig();
     region.setName("__test");
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
@@ -103,13 +106,14 @@ public class ClientClusterManagementServiceDunitTest {
     region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
 
     // server 1 should not be in the set
-    assertThat(result.getMemberStatuses()).containsOnlyKeys("server-2");
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactlyInAnyOrder("server-2");
 
     locator.invoke(() -> {
       InternalConfigurationPersistenceService persistenceService =

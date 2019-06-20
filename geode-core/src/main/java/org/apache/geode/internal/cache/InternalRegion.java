@@ -433,4 +433,7 @@ public interface InternalRegion extends Region, HasCachePerfStats, RegionEntryCo
   int getTombstoneCount();
 
   Region.Entry getEntry(Object key, boolean allowTombstones);
+
+  Set<String> getVisibleAsyncEventQueueIds();
+
 }

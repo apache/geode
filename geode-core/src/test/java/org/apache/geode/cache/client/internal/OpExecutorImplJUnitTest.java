@@ -453,7 +453,7 @@ public class OpExecutorImplJUnitTest {
     }
 
     @Override
-    public Connection borrowConnection(ServerLocation server, long aquireTimeout,
+    public Connection borrowConnection(ServerLocation server,
         boolean onlyUseExistingCnx) {
       borrows++;
       return new DummyConnection(server);
@@ -478,8 +478,7 @@ public class OpExecutorImplJUnitTest {
     public void start(ScheduledExecutorService backgroundProcessor) {}
 
     @Override
-    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers,
-        long aquireTimeout) {
+    public Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers) {
       if (excludedServers.size() >= numServers) {
         throw new NoAvailableServersException();
       }

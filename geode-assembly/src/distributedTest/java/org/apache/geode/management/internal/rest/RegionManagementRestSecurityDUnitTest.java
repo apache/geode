@@ -27,6 +27,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
@@ -65,7 +66,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithoutCredentials_failsWithAuthenticationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(401)
             .getClusterManagementResult();
@@ -78,7 +79,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithBadCredentials_failsWithAuthenticationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "baduser", "badpassword")
             .hasStatusCode(401)
             .getClusterManagementResult();
@@ -91,7 +92,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionNotAuthorized_failsWithAuthorizationError() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "notauthorized", "notauthorized")
             .hasStatusCode(403)
             .getClusterManagementResult();
@@ -103,20 +104,22 @@ public class RegionManagementRestSecurityDUnitTest {
 
   @Test
   public void createRegionWithCredentials_CreatesRegion() throws Exception {
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", json, "datamanage", "datamanage")
             .hasStatusCode(201)
             .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactly("server-1");
 
     // make sure region is created
     server.invoke(() -> RegionManagementDunitTest.verifyRegionCreated("customers", "REPLICATE"));
 
     // make sure region is persisted
-    locator.invoke(() -> RegionManagementDunitTest.verifyRegionPersisted("customers", "REPLICATE"));
+    locator.invoke(() -> RegionManagementDunitTest.verifyRegionPersisted("customers", "REPLICATE",
+        "cluster"));
 
     // verify that additional server can be started with the cluster configuration
     cluster.startServerVM(2, config, locator.getPort());

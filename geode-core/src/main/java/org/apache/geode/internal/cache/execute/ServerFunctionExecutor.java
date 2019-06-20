@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
@@ -40,27 +41,27 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private String[] groups;
 
-  public ServerFunctionExecutor(Pool p, boolean allServers, String... groups) {
-    this.pool = (PoolImpl) p;
+
+  ServerFunctionExecutor(Pool pool, boolean allServers, String... groups) {
+    this.pool = (PoolImpl) pool;
     this.allServers = allServers;
     this.groups = groups;
   }
 
-  public ServerFunctionExecutor(Pool p, boolean allServers, ProxyCache proxyCache,
-      String... groups) {
-    this.pool = (PoolImpl) p;
+  ServerFunctionExecutor(Pool pool, boolean allServers, ProxyCache proxyCache, String... groups) {
+    this.pool = (PoolImpl) pool;
     this.allServers = allServers;
     this.proxyCache = proxyCache;
     this.groups = groups;
   }
 
-  public ServerFunctionExecutor(ServerFunctionExecutor sfe) {
+  private ServerFunctionExecutor(ServerFunctionExecutor sfe) {
     super(sfe);
     if (sfe.pool != null) {
-      this.pool = sfe.pool;
+      pool = sfe.pool;
     }
-    this.allServers = sfe.allServers;
-    this.groups = sfe.groups;
+    allServers = sfe.allServers;
+    groups = sfe.groups;
   }
 
   private ServerFunctionExecutor(ServerFunctionExecutor sfe, Object args) {
@@ -70,35 +71,35 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private ServerFunctionExecutor(ServerFunctionExecutor sfe, ResultCollector collector) {
     this(sfe);
-    this.rc = collector != null ? new SynchronizedResultCollector(collector) : collector;
+    rc = collector != null ? new SynchronizedResultCollector(collector) : null;
   }
 
   private ServerFunctionExecutor(ServerFunctionExecutor sfe, MemberMappedArgument argument) {
     this(sfe);
-    this.memberMappedArg = argument;
-    this.isMemberMappedArgument = true;
+    memberMappedArg = argument;
+    isMemberMappedArgument = true;
   }
 
   protected ResultCollector executeFunction(final String functionId, boolean result, boolean isHA,
       boolean optimizeForWrite) {
     try {
       if (proxyCache != null) {
-        if (this.proxyCache.isClosed()) {
+        if (proxyCache.isClosed()) {
           throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
-        UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+        UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
 
       byte hasResult = 0;
-      if (result) { // have Results
+      if (result) {
         hasResult = 1;
-        if (this.rc == null) { // Default Result Collector
+        if (rc == null) {
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite);
-        } else { // Custome Result COllector
-          return executeOnServer(functionId, this.rc, hasResult, isHA, optimizeForWrite);
+        } else {
+          return executeOnServer(functionId, rc, hasResult, isHA, optimizeForWrite);
         }
-      } else { // No results
+      } else {
         executeOnServerNoAck(functionId, hasResult, isHA, optimizeForWrite);
         return new NoResult();
       }
@@ -112,21 +113,21 @@ public class ServerFunctionExecutor extends AbstractExecution {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
-        if (this.proxyCache.isClosed()) {
+        if (proxyCache.isClosed()) {
           throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
-        UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+        UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
 
-      if (function.hasResult()) { // have Results
+      if (function.hasResult()) {
         hasResult = 1;
-        if (this.rc == null) { // Default Result Collector
+        if (rc == null) {
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(function, defaultCollector, hasResult);
-        } else { // Custome Result COllector
-          return executeOnServer(function, this.rc, hasResult);
+        } else {
+          return executeOnServer(function, rc, hasResult);
         }
-      } else { // No results
+      } else {
         executeOnServerNoAck(function, hasResult);
         return new NoResult();
       }
@@ -142,8 +143,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      ExecuteFunctionOp.execute(this.pool, function, this, args, memberMappedArg, this.allServers,
-          hasResult, rc, this.isFnSerializationReqd, UserAttributes.userAttributes.get(), groups);
+      ExecuteFunctionOp.execute(pool, function, this, args, memberMappedArg, allServers,
+          hasResult, rc, isFnSerializationReqd, UserAttributes.userAttributes.get(), groups,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;
@@ -165,9 +167,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      ExecuteFunctionOp.execute(this.pool, functionId, this, args, memberMappedArg, this.allServers,
-          hasResult, rc, this.isFnSerializationReqd, isHA, optimizeForWrite,
-          UserAttributes.userAttributes.get(), groups);
+      ExecuteFunctionOp.execute(pool, functionId, this, args, memberMappedArg, allServers,
+          hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite,
+          UserAttributes.userAttributes.get(), groups, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;
@@ -188,8 +190,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(false);
-      ExecuteFunctionNoAckOp.execute(this.pool, function, args, memberMappedArg, this.allServers,
-          hasResult, this.isFnSerializationReqd, groups);
+      ExecuteFunctionNoAckOp.execute(pool, function, args, memberMappedArg, allServers,
+          hasResult, isFnSerializationReqd, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(false);
@@ -209,8 +211,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(false);
-      ExecuteFunctionNoAckOp.execute(this.pool, functionId, args, memberMappedArg, this.allServers,
-          hasResult, this.isFnSerializationReqd, isHA, optimizeForWrite, groups);
+      ExecuteFunctionNoAckOp.execute(pool, functionId, args, memberMappedArg, allServers,
+          hasResult, isFnSerializationReqd, isHA, optimizeForWrite, groups);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(false);
@@ -224,7 +226,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   }
 
   public Pool getPool() {
-    return this.pool;
+    return pool;
   }
 
   @Override
@@ -289,22 +291,22 @@ public class ServerFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    this.isFnSerializationReqd = false;
+    isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
 
       if (functionAttributes == null) {
-        // GEODE-5618: Set authentication properties before executing the internal function.
+        // Set authentication properties before executing the internal function.
         try {
           if (proxyCache != null) {
-            if (this.proxyCache.isClosed()) {
+            if (proxyCache.isClosed()) {
               throw proxyCache.getCacheClosedException("Cache is closed for this user.");
             }
-            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+            UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
           }
 
-          Object obj = GetFunctionAttributeOp.execute(this.pool, functionName);
+          Object obj = GetFunctionAttributeOp.execute(pool, functionName);
           functionAttributes = (byte[]) obj;
           addFunctionAttributes(functionName, functionAttributes);
         } finally {

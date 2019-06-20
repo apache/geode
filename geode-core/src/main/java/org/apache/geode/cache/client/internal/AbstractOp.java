@@ -366,20 +366,20 @@ public abstract class AbstractOp implements Op {
    * Connection)
    */
   @Override
-  public Object attempt(Connection cnx) throws Exception {
+  public Object attempt(Connection connection) throws Exception {
     failed = true;
     timedOut = false;
-    long start = startAttempt(cnx.getStats());
+    long start = startAttempt(connection.getStats());
     try {
       try {
-        attemptSend(cnx);
+        attemptSend(connection);
         failed = false;
       } finally {
-        endSendAttempt(cnx.getStats(), start);
+        endSendAttempt(connection.getStats(), start);
       }
       failed = true;
       try {
-        Object result = attemptReadResponse(cnx);
+        Object result = attemptReadResponse(connection);
         failed = false;
         return result;
       } catch (SocketTimeoutException ste) {
@@ -388,7 +388,7 @@ public abstract class AbstractOp implements Op {
         throw ste;
       }
     } finally {
-      endAttempt(cnx.getStats(), start);
+      endAttempt(connection.getStats(), start);
     }
   }
 

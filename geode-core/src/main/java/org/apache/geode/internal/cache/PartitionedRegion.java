@@ -54,6 +54,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -326,6 +327,7 @@ public class PartitionedRegion extends LocalRegion
    * The advisor that hold information about this partitioned region
    */
   private final RegionAdvisor distAdvisor;
+  private final SenderIdMonitor senderIdMonitor;
 
   /** Logging mechanism for debugging */
   private static final Logger logger = LogService.getLogger();
@@ -764,6 +766,7 @@ public class PartitionedRegion extends LocalRegion
 
     // Warning: potential early escape of instance
     this.distAdvisor = RegionAdvisor.createRegionAdvisor(this);
+    senderIdMonitor = createSenderIdMonitor();
     // Warning: potential early escape of instance
     this.redundancyProvider = new PRHARedundancyProvider(this);
 
@@ -1221,6 +1224,7 @@ public class PartitionedRegion extends LocalRegion
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
           .addShadowPartitionedRegionForUserPR(this);
     }
+    updateSenderIdMonitor();
   }
 
   public void updatePRConfigWithNewSetOfAsynchronousEventDispatchers(
@@ -1249,6 +1253,7 @@ public class PartitionedRegion extends LocalRegion
   public void removeGatewaySenderId(String gatewaySenderId) {
     super.removeGatewaySenderId(gatewaySenderId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
   }
 
   @Override
@@ -1268,35 +1273,27 @@ public class PartitionedRegion extends LocalRegion
       ((ConcurrentParallelGatewaySenderQueue) senderImpl.getQueues().toArray(new RegionQueue[1])[0])
           .addShadowPartitionedRegionForUserPR(this);
     }
+    updateSenderIdMonitor();
   }
 
   @Override
   public void removeAsyncEventQueueId(String asyncEventQueueId) {
     super.removeAsyncEventQueueId(asyncEventQueueId);
     new UpdateAttributesProcessor(this).distribute();
+    updateSenderIdMonitor();
+  }
+
+  private SenderIdMonitor createSenderIdMonitor() {
+    return SenderIdMonitor.createSenderIdMonitor(this, this.distAdvisor);
+  }
+
+  private void updateSenderIdMonitor() {
+    this.senderIdMonitor.update();
   }
 
   @Override
   void checkSameSenderIdsAvailableOnAllNodes() {
-    List senderIds =
-        this.getCacheDistributionAdvisor().adviseSameGatewaySenderIds(getGatewaySenderIds());
-    if (!senderIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s gateway sender IDs. Another cache has same region with %s gateway sender IDs. For region across all members, gateway sender ids should be same.",
-
-              new Object[] {this.getName(), senderIds.get(0), senderIds.get(1)}));
-    }
-
-    List asycnQueueIds = this.getCacheDistributionAdvisor()
-        .adviseSameAsyncEventQueueIds(getVisibleAsyncEventQueueIds());
-    if (!asycnQueueIds.isEmpty()) {
-      throw new GatewaySenderConfigurationException(
-          String.format(
-              "Region %s has %s AsyncEvent queue IDs. Another cache has same region with %s AsyncEvent queue IDs. For region across all members, AsyncEvent queue IDs should be same.",
-
-              new Object[] {this.getName(), asycnQueueIds.get(0), asycnQueueIds.get(1)}));
-    }
+    this.senderIdMonitor.checkSenderIds();
   }
 
   /**
@@ -10116,5 +10113,10 @@ public class PartitionedRegion extends LocalRegion
     } finally {
       rl.unlock();
     }
+  }
+
+  @VisibleForTesting
+  public SenderIdMonitor getSenderIdMonitor() {
+    return senderIdMonitor;
   }
 }

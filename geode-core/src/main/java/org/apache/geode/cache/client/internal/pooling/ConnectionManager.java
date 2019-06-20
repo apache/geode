@@ -56,7 +56,6 @@ public interface ConnectionManager {
    * no connection is available.
    *
    * @param server The server the connection needs to be to.
-   * @param aquireTimeout The amount of time to wait for a connection to become available.
    * @param onlyUseExistingCnx if true, will not create a new connection if none are available.
    * @return A connection to use.
    * @throws AllConnectionsInUseException If there is no available connection on the desired server,
@@ -67,7 +66,7 @@ public interface ConnectionManager {
    *         to return a connection
    *
    */
-  Connection borrowConnection(ServerLocation server, long aquireTimeout, boolean onlyUseExistingCnx)
+  Connection borrowConnection(ServerLocation server, boolean onlyUseExistingCnx)
       throws AllConnectionsInUseException, NoAvailableServersException;
 
   /**
@@ -105,14 +104,13 @@ public interface ConnectionManager {
    * @param conn connection to exchange. It will be returned to the pool (or destroyed if it has
    *        been invalidated).
    * @param excludedServers servers to exclude when looking for a new connection
-   * @param aquireTimeout The amount of time to wait for a connection to be available
    * @throws InternalGemFireException if the found connection is already active
    * @throws NoAvailableServersException if no servers are available to connect to
    * @throws ServerOperationException if creating a connection fails due to authentication issues
    * @return a new connection to the pool to a server that is not in the list of excluded servers
    */
-  Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers,
-      long aquireTimeout) throws AllConnectionsInUseException;
+  Connection exchangeConnection(Connection conn, Set<ServerLocation> excludedServers)
+      throws AllConnectionsInUseException;
 
   /**
    * Test hook to find out current number of connections this manager has.

@@ -166,6 +166,11 @@ public class DiskStoreMBean extends NotificationBroadcasterSupport implements Di
     bridge.setDiskUsageCriticalPercentage(criticalPercent);
   }
 
+  @Override
+  public float getDiskUsagePercentage() {
+    return bridge.getDiskUsagePercentage();
+  }
+
   public DiskStoreMBeanBridge getBridge() {
     return bridge;
   }

@@ -32,7 +32,7 @@ import org.apache.geode.internal.process.ProcessControllerFactory;
 public class LocatorLauncherLocalFileIntegrationTest extends LocatorLauncherLocalIntegrationTest {
 
   @Before
-  public void setUpLocatorLauncherLocalFileIntegrationTest() throws Exception {
+  public void setUpLocatorLauncherLocalFileIntegrationTest() {
     System.setProperty(ProcessControllerFactory.PROPERTY_DISABLE_ATTACH_API, "true");
     assertThat(new ProcessControllerFactory().isAttachAPIFound()).isFalse();
   }

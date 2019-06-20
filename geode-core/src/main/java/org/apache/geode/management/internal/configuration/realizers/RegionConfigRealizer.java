@@ -20,6 +20,8 @@ package org.apache.geode.management.internal.configuration.realizers;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
@@ -27,7 +29,6 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
-import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.DeclarableType;
@@ -35,6 +36,7 @@ import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
@@ -49,13 +51,10 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
    * @param regionConfig the name in the regionConfig can not contain sub-regions.
    */
   @Override
-  public void create(RegionConfig regionConfig, Cache cache) {
+  public RealizationResult create(RegionConfig regionConfig, Cache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
-    try {
-      factory.create(regionConfig.getName());
-    } catch (RegionExistsException e) {
-      // since we are trying to create this region, ignore this exception
-    }
+    factory.create(regionConfig.getName());
+    return new RealizationResult().setMessage("Region successfully created.");
   }
 
   /**
@@ -66,18 +65,19 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
    * @param regionConfig the name in regionConfig is ignored.
    * @param regionPath this is the full path of the region
    */
-  public void create(RegionConfig regionConfig, String regionPath, Cache cache) {
+  public RealizationResult create(RegionConfig regionConfig, String regionPath, Cache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
     RegionPath regionPathData = new RegionPath(regionPath);
     String regionName = regionPathData.getName();
     String parentRegionPath = regionPathData.getParent();
     if (parentRegionPath == null) {
       factory.create(regionName);
-      return;
+      return new RealizationResult().setMessage("Region successfully created.");
     }
 
     Region parentRegion = cache.getRegion(parentRegionPath);
     factory.createSubregion(parentRegion, regionName);
+    return new RealizationResult().setMessage("Region successfully created.");
   }
 
   private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {
@@ -292,18 +292,20 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
 
   @Override
   public boolean exists(RegionConfig config, Cache cache) {
-    return false;
+    return cache.getRegion("/" + config.getName()) != null;
   }
 
   @Override
-  public void update(RegionConfig config, Cache cache) {}
+  public RealizationResult update(RegionConfig config, Cache cache) {
+    throw new NotImplementedException("Not implemented");
+  }
 
   @Override
-  public void delete(RegionConfig config, Cache cache) {
+  public RealizationResult delete(RegionConfig config, Cache cache) {
     Region region = cache.getRegion(config.getName());
     if (region == null) {
       // Since we are trying to delete this region, we can return early
-      return;
+      return new RealizationResult().setMessage("Region does not exist.");
     }
 
     try {
@@ -311,7 +313,9 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     } catch (RegionDestroyedException dex) {
       // Probably happened as a distirbuted op but it still reflects our current desired action
       // which is why it can be ignored here.
+      return new RealizationResult().setMessage("Region does not exist.");
     }
+    return new RealizationResult().setMessage("Region successfully deleted.");
   }
 
 }

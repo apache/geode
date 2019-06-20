@@ -192,6 +192,11 @@ public interface DiskStoreMXBean {
   float getDiskUsageCriticalPercentage();
 
   /**
+   * Returns the usage percentage of the disk storage
+   */
+  float getDiskUsagePercentage();
+
+  /**
    * Sets the value of the disk usage warning percentage.
    *
    * @param warningPercent the warning percent

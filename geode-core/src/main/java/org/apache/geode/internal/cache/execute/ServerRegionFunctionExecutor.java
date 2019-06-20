@@ -12,6 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
@@ -46,13 +47,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   private final LocalRegion region;
   private boolean executeOnBucketSet = false;
 
-  public ServerRegionFunctionExecutor(Region r, ProxyCache proxyCache) {
+  ServerRegionFunctionExecutor(Region r, ProxyCache proxyCache) {
     if (r == null) {
       throw new IllegalArgumentException(
           String.format("The input %s for the execute function request is null",
               "Region"));
     }
-    this.region = (LocalRegion) r;
+    region = (LocalRegion) r;
     this.proxyCache = proxyCache;
   }
 
@@ -60,22 +61,22 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       Object args) {
     super(serverRegionFunctionExecutor);
 
-    this.region = serverRegionFunctionExecutor.region;
-    this.filter.clear();
-    this.filter.addAll(serverRegionFunctionExecutor.filter);
+    region = serverRegionFunctionExecutor.region;
+    filter.clear();
+    filter.addAll(serverRegionFunctionExecutor.filter);
     this.args = args;
-    this.executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
+    executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
       MemberMappedArgument memberMapargs) {
     super(serverRegionFunctionExecutor);
 
-    this.region = serverRegionFunctionExecutor.region;
-    this.filter.clear();
-    this.filter.addAll(serverRegionFunctionExecutor.filter);
-    this.memberMappedArg = memberMapargs;
-    this.executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
+    region = serverRegionFunctionExecutor.region;
+    filter.clear();
+    filter.addAll(serverRegionFunctionExecutor.filter);
+    memberMappedArg = memberMapargs;
+    executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
 
@@ -83,11 +84,11 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       ResultCollector rc) {
     super(serverRegionFunctionExecutor);
 
-    this.region = serverRegionFunctionExecutor.region;
-    this.filter.clear();
-    this.filter.addAll(serverRegionFunctionExecutor.filter);
+    region = serverRegionFunctionExecutor.region;
+    filter.clear();
+    filter.addAll(serverRegionFunctionExecutor.filter);
     this.rc = rc != null ? new SynchronizedResultCollector(rc) : null;
-    this.executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
+    executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
@@ -95,10 +96,10 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
     super(serverRegionFunctionExecutor);
 
-    this.region = serverRegionFunctionExecutor.region;
-    this.filter.clear();
-    this.filter.addAll(filter2);
-    this.executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
+    region = serverRegionFunctionExecutor.region;
+    filter.clear();
+    filter.addAll(filter2);
+    executeOnBucketSet = serverRegionFunctionExecutor.executeOnBucketSet;
   }
 
   private ServerRegionFunctionExecutor(ServerRegionFunctionExecutor serverRegionFunctionExecutor,
@@ -106,9 +107,9 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
     super(serverRegionFunctionExecutor);
 
-    this.region = serverRegionFunctionExecutor.region;
-    this.filter.clear();
-    this.filter.addAll(bucketsAsFilter);
+    region = serverRegionFunctionExecutor.region;
+    filter.clear();
+    filter.addAll(bucketsAsFilter);
     this.executeOnBucketSet = executeOnBucketSet;
   }
 
@@ -119,7 +120,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
           String.format("The input %s for the execute function request is null",
               "filter"));
     }
-    this.executeOnBucketSet = false;
+    executeOnBucketSet = false;
     return new ServerRegionFunctionExecutor(this, fltr);
   }
 
@@ -138,19 +139,19 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
-        if (this.proxyCache.isClosed()) {
+        if (proxyCache.isClosed()) {
           throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
-        UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+        UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
 
       if (function.hasResult()) { // have Results
         hasResult = 1;
-        if (this.rc == null) { // Default Result Collector
+        if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(function, defaultCollector, hasResult);
         } else { // Custome Result COllector
-          return executeOnServer(function, this.rc, hasResult);
+          return executeOnServer(function, rc, hasResult);
         }
       } else { // No results
         executeOnServerNoAck(function, hasResult);
@@ -165,19 +166,19 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       boolean isHA, boolean optimizeForWrite) {
     try {
       if (proxyCache != null) {
-        if (this.proxyCache.isClosed()) {
+        if (proxyCache.isClosed()) {
           throw proxyCache.getCacheClosedException("Cache is closed for this user.");
         }
-        UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+        UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
       byte hasResult = 0;
       if (resultReq) { // have Results
         hasResult = 1;
-        if (this.rc == null) { // Default Result Collector
+        if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite);
         } else { // Custome Result COllector
-          return executeOnServer(functionId, this.rc, hasResult, isHA, optimizeForWrite);
+          return executeOnServer(functionId, rc, hasResult, isHA, optimizeForWrite);
         }
       } else { // No results
         executeOnServerNoAck(functionId, hasResult, isHA, optimizeForWrite);
@@ -191,12 +192,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   private ResultCollector executeOnServer(Function function, ResultCollector collector,
       byte hasResult) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), this.region.getSystem());
+    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), region.getSystem());
     try {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      srp.executeFunction(this.region.getFullPath(), function, this, collector, hasResult, false);
+      srp.executeFunction(region.getFullPath(), function, this, collector, hasResult, false,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -212,13 +214,13 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       byte hasResult, boolean isHA, boolean optimizeForWrite) throws FunctionException {
 
     ServerRegionProxy srp = getServerRegionProxy();
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId, this.region.getSystem());
+    FunctionStats stats = FunctionStats.getFunctionStats(functionId, region.getSystem());
     try {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      srp.executeFunction(this.region.getFullPath(), functionId, this, collector, hasResult, isHA,
-          optimizeForWrite, false);
+      srp.executeFunction(region.getFullPath(), functionId, this, collector, hasResult, isHA,
+          optimizeForWrite, false, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -233,12 +235,12 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
   private void executeOnServerNoAck(Function function, byte hasResult) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
-    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), this.region.getSystem());
+    FunctionStats stats = FunctionStats.getFunctionStats(function.getId(), region.getSystem());
     try {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(false);
-      srp.executeFunctionNoAck(this.region.getFullPath(), function, this, hasResult, false);
+      srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult, false);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(false);
@@ -252,12 +254,12 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   private void executeOnServerNoAck(String functionId, byte hasResult, boolean isHA,
       boolean optimizeForWrite) throws FunctionException {
     ServerRegionProxy srp = getServerRegionProxy();
-    FunctionStats stats = FunctionStats.getFunctionStats(functionId, this.region.getSystem());
+    FunctionStats stats = FunctionStats.getFunctionStats(functionId, region.getSystem());
     try {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(false);
-      srp.executeFunctionNoAck(this.region.getFullPath(), functionId, this, hasResult, isHA,
+      srp.executeFunctionNoAck(region.getFullPath(), functionId, this, hasResult, isHA,
           optimizeForWrite, false);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
@@ -277,25 +279,21 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       }
       return srp;
     } else {
-      StringBuilder message = new StringBuilder();
-      message.append(srp).append(": ");
-      message
-          .append(
-              "No available connection was found. Server Region Proxy is not available for this region ")
-          .append(region.getName());
-      throw new FunctionException(message.toString());
+      String message = srp + ": "
+          + "No available connection was found. Server Region Proxy is not available for this region "
+          + region.getName();
+      throw new FunctionException(message);
     }
   }
 
   public LocalRegion getRegion() {
-    return this.region;
+    return region;
   }
 
   @Override
   public String toString() {
-    return new StringBuffer().append("[ ServerRegionExecutor:").append("args=").append(this.args)
-        .append(" ;filter=").append(this.filter).append(" ;region=").append(this.region.getName())
-        .append("]").toString();
+    return "[ ServerRegionExecutor:" + "args=" + args + " ;filter=" + filter + " ;region="
+        + region.getName() + "]";
   }
 
   @Override
@@ -349,7 +347,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
-    this.isFnSerializationReqd = false;
+    isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
@@ -358,10 +356,10 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
         // GEODE-5618: Set authentication properties before executing the internal function.
         try {
           if (proxyCache != null) {
-            if (this.proxyCache.isClosed()) {
+            if (proxyCache.isClosed()) {
               throw proxyCache.getCacheClosedException("Cache is closed for this user.");
             }
-            UserAttributes.userAttributes.set(this.proxyCache.getUserAttributes());
+            UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
           }
 
           ServerRegionProxy srp = getServerRegionProxy();
@@ -383,6 +381,6 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   public boolean getExecuteOnBucketSetFlag() {
-    return this.executeOnBucketSet;
+    return executeOnBucketSet;
   }
 }

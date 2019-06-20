@@ -25,6 +25,7 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.DeclarableType;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
@@ -34,7 +35,6 @@ import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.GatewayReceiverCreateFunction;
-import org.apache.geode.management.internal.cli.functions.GatewayReceiverFunctionArgs;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
@@ -84,18 +84,15 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.IFNOTEXISTS, help = CliStrings.IFNOTEXISTS_HELP,
           specifiedDefaultValue = "true", unspecifiedDefaultValue = "false") Boolean ifNotExists) {
 
-    CacheConfig.GatewayReceiver configuration =
+    GatewayReceiverConfig configuration =
         buildConfiguration(manualStart, startPort, endPort, bindAddress, maximumTimeBetweenPings,
             socketBufferSize, gatewayTransportFilters, hostnameForSenders);
-
-    GatewayReceiverFunctionArgs gatewayReceiverFunctionArgs =
-        new GatewayReceiverFunctionArgs(configuration, ifNotExists);
 
     Set<DistributedMember> membersToCreateGatewayReceiverOn = getMembers(onGroups, onMember);
 
     List<CliFunctionResult> gatewayReceiverCreateResults =
         executeAndGetFunctionResult(GatewayReceiverCreateFunction.INSTANCE,
-            gatewayReceiverFunctionArgs, membersToCreateGatewayReceiverOn);
+            new Object[] {configuration, ifNotExists}, membersToCreateGatewayReceiverOn);
 
     ResultModel result = ResultModel.createMemberStatusResult(gatewayReceiverCreateResults);
     result.setConfigObject(configuration);
@@ -104,14 +101,14 @@ public class CreateGatewayReceiverCommand extends SingleGfshCommand {
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
-    config.setGatewayReceiver((CacheConfig.GatewayReceiver) configObject);
+    config.setGatewayReceiver((GatewayReceiverConfig) configObject);
     return true;
   }
 
-  private CacheConfig.GatewayReceiver buildConfiguration(Boolean manualStart, Integer startPort,
+  private GatewayReceiverConfig buildConfiguration(Boolean manualStart, Integer startPort,
       Integer endPort, String bindAddress, Integer maximumTimeBetweenPings,
       Integer socketBufferSize, String[] gatewayTransportFilters, String hostnameForSenders) {
-    CacheConfig.GatewayReceiver configuration = new CacheConfig.GatewayReceiver();
+    GatewayReceiverConfig configuration = new GatewayReceiverConfig();
 
     if (gatewayTransportFilters != null) {
       List<DeclarableType> filters =

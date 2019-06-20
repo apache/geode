@@ -32,7 +32,7 @@ import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.internal.cache.xmlcache.Declarable2;
 
 public class SingleHopQuarterPartitionResolver
-    implements FixedPartitionResolver, Declarable2, DataSerializable {
+    implements FixedPartitionResolver<Date, Object>, Declarable2, DataSerializable {
   private Properties resolveProps;
   Object[][] months = new Object[12][12];
 

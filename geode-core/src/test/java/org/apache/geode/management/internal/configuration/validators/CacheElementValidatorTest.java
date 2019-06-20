@@ -66,14 +66,4 @@ public class CacheElementValidatorTest {
         .hasMessageContaining(
             "Group name should not contain comma");
   }
-
-  @Test
-  public void invalidGroup_delete() throws Exception {
-    config.setName("test");
-    config.setGroup("group1");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.DELETE, config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "group is an invalid option when deleting an element from the cache");
-  }
 }

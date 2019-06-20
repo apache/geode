@@ -34,16 +34,14 @@ public class DisabledClusterConfigTest {
   @ClassRule
   public static RequiresGeodeHome requiresGeodeHome = new RequiresGeodeHome();
 
-  public static GeodeDevRestClient restClient;
-
   @Test
   public void disabledClusterConfig() throws Exception {
     locator.withProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false")
         .withHttpService().startLocator();
-    restClient =
+    GeodeDevRestClient restClient =
         new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
 
-    ClusterManagementResult result =
+    ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", "{\"name\":\"test\"}")
             .hasStatusCode(500)
             .getClusterManagementResult();

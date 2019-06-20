@@ -47,4 +47,8 @@ public class PlainLocatorContextLoader extends BaseLocatorContextLoader {
   public ClusterManagementService getClusterManagementService() {
     return locator.getLocator().getClusterManagementService();
   }
+
+  public LocatorStarterRule getLocatorStartupRule() {
+    return locator;
+  }
 }

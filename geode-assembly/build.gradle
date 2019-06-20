@@ -223,6 +223,7 @@ dependencies {
   }
   distributedTestRuntime('org.codehaus.cargo:cargo-core-uberjar')
   distributedTestRuntime('io.swagger:swagger-annotations')
+  distributedTestRuntime(project(':geode-wan'))
 
 
   // geodeArchives is a direct reflection of what is contained in geode-dependencies.jar. To that

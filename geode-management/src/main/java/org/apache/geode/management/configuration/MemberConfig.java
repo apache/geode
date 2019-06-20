@@ -15,14 +15,17 @@
 
 package org.apache.geode.management.configuration;
 
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RestfulEndpoint {
+@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
+public class MemberConfig extends CacheElement implements RestfulEndpoint,
+    RespondsWith<RuntimeMemberConfig> {
 
   public static final String MEMBER_CONFIG_ENDPOINT = "/members";
 
@@ -41,14 +44,4 @@ public class MemberConfig extends CacheElement implements RestfulEndpoint {
   public String getEndpoint() {
     return MEMBER_CONFIG_ENDPOINT;
   }
-
-  @Override
-  public String getUri() {
-    if (StringUtils.isBlank(getId())) {
-      throw new IllegalArgumentException("Member Id is requied.");
-    }
-    return MEMBER_CONFIG_ENDPOINT + "/" + getId();
-  }
-
-
 }

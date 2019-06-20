@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -43,6 +44,11 @@ public class ClassPathLoaderDeployTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
   @Rule
   public ServerStarterRule server = new ServerStarterRule();
+
+  @After
+  public void resetClassPathLoader() {
+    ClassPathLoader.setLatestToDefault();
+  }
 
   @Test
   public void testDeployWithExistingDependentJars() throws Exception {
@@ -136,7 +142,6 @@ public class ClassPathLoaderDeployTest {
     assertThat(result.get(0)).isEqualTo("Version2");
   }
 
-
   private File createVersionOfJar(String version, String functionName, String jarName)
       throws IOException {
     String classContents =
@@ -147,9 +152,29 @@ public class ClassPathLoaderDeployTest {
             + "public void execute(FunctionContext context) {context.getResultSender().lastResult(\""
             + version + "\");}}";
 
+    return createJarFromClassContents(version, functionName, jarName, classContents);
+  }
+
+  private File createJarFromClassContents(String version, String functionName, String jarName,
+      String classContents)
+      throws IOException {
+
     File jar = new File(this.temporaryFolder.newFolder(version), jarName);
-    ClassBuilder functionClassBuilder = new ClassBuilder();
-    functionClassBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,
+    ClassBuilder classBuilder = new ClassBuilder();
+    classBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,
+        jar);
+
+    return jar;
+  }
+
+  private File createJarFromClassContents(String version, String functionName, String jarName,
+      String classContents, String additionalClassPath)
+      throws IOException {
+
+    File jar = new File(this.temporaryFolder.newFolder(version), jarName);
+    ClassBuilder classBuilder = new ClassBuilder();
+    classBuilder.addToClassPath(additionalClassPath);
+    classBuilder.writeJarFromContent("jddunit/function/" + functionName, classContents,
         jar);
 
     return jar;

@@ -45,20 +45,22 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
+import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
 import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
+import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 
@@ -68,24 +70,26 @@ public class LocatorClusterManagementServiceTest {
   private InternalCache cache;
   private InternalConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
-  private ClusterManagementResult result;
+  private ClusterManagementResult<RegionConfig> result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
-  private ConfigurationValidator<CacheElement> cacheElementValidator;
-  private ConfigurationManager<RegionConfig> regionManager;
+  private CacheElementValidator cacheElementValidator;
+  private ConfigurationManager<RegionConfig, RuntimeRegionConfig> regionManager;
+  private MemberValidator memberValidator;
 
   @Before
   public void before() throws Exception {
+    cache = mock(InternalCache.class);
     regionValidator = mock(RegionConfigValidator.class);
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(RegionConfigManager.class);
     cacheElementValidator = spy(CacheElementValidator.class);
     validators.put(RegionConfig.class, regionValidator);
-    validators.put(CacheElement.class, cacheElementValidator);
     managers.put(RegionConfig.class, regionManager);
+    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
 
-    cache = mock(InternalCache.class);
+    memberValidator = mock(MemberValidator.class);
     persistenceService = spy(InternalConfigurationPersistenceService.class);
 
     Set<String> groups = new HashSet<>();
@@ -95,7 +99,8 @@ public class LocatorClusterManagementServiceTest {
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
     service =
-        spy(new LocatorClusterManagementService(cache, persistenceService, managers, validators));
+        spy(new LocatorClusterManagementService(persistenceService, managers, validators,
+            memberValidator, cacheElementValidator));
     regionConfig = new RegionConfig();
     regionConfig.setName("region1");
   }
@@ -111,22 +116,38 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_validatorIsCalledCorrectly() throws Exception {
-    doReturn(Collections.emptySet()).when(service).findMembers(anyString());
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.create(regionConfig);
     verify(cacheElementValidator).validate(CacheElementOperation.CREATE, regionConfig);
     verify(regionValidator).validate(CacheElementOperation.CREATE, regionConfig);
-    verify(regionValidator).exists(eq(regionConfig.getId()), any());
+    verify(memberValidator).validateCreate(regionConfig, regionManager);
+  }
+
+  @Test
+  public void delete_validatorIsCalledCorrectly() throws Exception {
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(anyString());
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
+        regionConfig.getId(),
+        regionManager);
+    doNothing().when(persistenceService).updateCacheConfig(any(), any());
+    service.delete(regionConfig);
+    verify(cacheElementValidator).validate(CacheElementOperation.DELETE, regionConfig);
+    verify(regionValidator).validate(CacheElementOperation.DELETE, regionConfig);
+    verify(memberValidator).findGroupsWithThisElement(regionConfig.getId(), regionManager);
+    verify(memberValidator).findMembers("cluster");
   }
 
   @Test
   public void create_partialFailureOnMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", false, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(
+        new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findMembers(any());
 
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");
@@ -138,12 +159,13 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_succeedsOnAllMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", true, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(new RealizationResult().setMemberName("member2"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findMembers(any());
 
     CacheConfig cacheConfig = new CacheConfig();
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
@@ -194,7 +216,7 @@ public class LocatorClusterManagementServiceTest {
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
     List<RuntimeRegionConfig> results =
-        service.list(new RegionConfig()).getResult(RuntimeRegionConfig.class);
+        service.list(new RegionConfig()).getResult();
     assertThat(results).hasSize(1);
     RuntimeRegionConfig result = results.get(0);
     assertThat(result.getName()).isEqualTo("region1");
@@ -205,6 +227,7 @@ public class LocatorClusterManagementServiceTest {
   public void delete_unknownRegionFails() {
     RegionConfig config = new RegionConfig();
     config.setName("unknown");
+    doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(EntityNotFoundException.class)
         .hasMessage("Cache element 'unknown' does not exist");
@@ -217,24 +240,27 @@ public class LocatorClusterManagementServiceTest {
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("group is an invalid option when deleting an element from the cache.");
+        .hasMessage("group is an invalid option when deleting region.");
   }
 
   @Test
   public void delete_partialFailureOnMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", false, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(
+        new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any());
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
+        any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findMembers(any());
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("test");
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
-    when(regionValidator.exists(eq("test"), any())).thenReturn(true);
 
     result = service.delete(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
@@ -246,12 +272,15 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void delete_succeedsOnAllMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", true, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(new RealizationResult().setMemberName("member2"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
-    doReturn(Collections.singleton(mock(DistributedMember.class))).when(service).findMembers(any());
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
+        any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
+        .findMembers(any());
 
     CacheConfig config = new CacheConfig();
     RegionConfig regionConfig = new RegionConfig();
@@ -261,7 +290,6 @@ public class LocatorClusterManagementServiceTest {
     doReturn(null).when(persistenceService).getConfiguration(any());
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
-    when(regionValidator.exists(eq("test"), any())).thenReturn(true);
 
     result = service.delete(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
@@ -272,14 +300,15 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void deleteWithNoMember() throws Exception {
     // region exists in cluster configuration
-    when(regionValidator.exists(any(), any())).thenReturn(true);
+    doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
+        any());
     // no members found in any group
-    doReturn(Collections.emptySet()).when(service).findMembers(any());
+    doReturn(Collections.emptySet()).when(memberValidator).findMembers(any());
     doReturn(null).when(persistenceService).getConfiguration(any());
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    ClusterManagementResult result = service.delete(regionConfig);
+    ClusterManagementResult<RegionConfig> result = service.delete(regionConfig);
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);

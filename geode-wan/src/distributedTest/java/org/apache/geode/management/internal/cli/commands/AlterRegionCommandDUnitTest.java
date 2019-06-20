@@ -57,7 +57,9 @@ public class AlterRegionCommandDUnitTest {
 
     gfsh.connectAndVerify(locator);
     gfsh.executeAndAssertThat(
-        "create disk-store --name=diskStore --dir=" + temporaryFolder.getRoot()).statusIsSuccess();
+        "create disk-store --name=diskStore --dir=" + temporaryFolder.getRoot())
+        .statusIsSuccess()
+        .doesNotContainOutput("Did not complete waiting");
   }
 
   @Test

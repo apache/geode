@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -38,6 +40,7 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.internal.cache.backup.BackupService;
+import org.apache.geode.management.internal.ManagementConstants;
 
 
 public class DiskStoreImplIntegrationTest {
@@ -51,6 +54,7 @@ public class DiskStoreImplIntegrationTest {
   private Cache cache;
   private Region aRegion;
   private DiskStoreStats diskStoreStats;
+  final int NUM_ENTRIES = 100000;
 
   @Before
   public void setup() {
@@ -100,9 +104,148 @@ public class DiskStoreImplIntegrationTest {
     await().until(() -> diskStoreStats.getQueueSize() == 0);
   }
 
+  @Test
+  public void givenDiskStoreIsCreatedWithMaxSize_thenGetDiskUsagePercentageShouldBeZero()
+      throws Exception {
+
+    File[] diskDirs = new File[2];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+
+    int[] diskDirSizes = new int[2];
+    diskDirSizes[0] = 20;
+    diskDirSizes[1] = 20;
+
+    cache.createDiskStoreFactory().setMaxOplogSize(2).setDiskDirsAndSizes(diskDirs, diskDirSizes)
+        .create(DISK_STORE_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+
+    assertEquals(0, ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+  }
+
+  @Test
+  public void givenDiskStoreIsCreatedWithMaxSize_whenDataIsStored_thenGetDiskUsagePercentageShouldBeIncreased()
+      throws Exception {
+
+    final int ESTIMATED_USAGE_PERCENTAGE = 7; // Estimated disk percentage for NUM_ENTRIES
+    final int ALLOWED_MARGIN = 2;
+
+    File[] diskDirs = new File[2];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+
+    int[] diskDirSizes = new int[2];
+    diskDirSizes[0] = 20;
+    diskDirSizes[1] = 20;
+
+    cache.createDiskStoreFactory().setMaxOplogSize(2).setDiskDirsAndSizes(diskDirs, diskDirSizes)
+        .create(DISK_STORE_NAME);
+    Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+
+    putEntries(region, NUM_ENTRIES);
+
+    assertNotEquals(0, ((DiskStoreImpl) diskStore).getDiskUsagePercentage());
+
+    assertEquals(ESTIMATED_USAGE_PERCENTAGE, ((DiskStoreImpl) diskStore).getDiskUsagePercentage(),
+        ALLOWED_MARGIN);
+  }
+
+  @Test
+  public void givenDiskStoreIsCreatedWithDefaultSize_thenGetDiskUsagePercentageShouldNotBeAvailable()
+      throws Exception {
+
+    File[] diskDirs = new File[2];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+
+    cache.createDiskStoreFactory().setDiskDirs(diskDirs)
+        .create(DISK_STORE_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+  }
+
+  @Test
+  public void givenDiskStoreIsCreatedWithDefaultSize_whenDataIsStored_thenGetDiskUsagePercentageShouldNotBeAvailable()
+      throws Exception {
+
+    File[] diskDirs = new File[2];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+
+    cache.createDiskStoreFactory().setDiskDirs(diskDirs)
+        .create(DISK_STORE_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+    Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+
+    putEntries(region, NUM_ENTRIES);
+
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+  }
+
+  @Test
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_thenGetDiskUsagePercentageShouldNotBeAvailable()
+      throws Exception {
+
+    File[] diskDirs = new File[3];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+    diskDirs[2] = temporaryDirectory.newFolder("dir3");
+
+    int[] diskDirSizes;
+
+    for (int i = 0; i < 3; i++) {
+      cache = createCache();
+      diskDirSizes = new int[] {10, 10, 10};
+      diskDirSizes[i] = Integer.MAX_VALUE;
+
+      cache.createDiskStoreFactory().setDiskDirsAndSizes(diskDirs, diskDirSizes)
+          .create(DISK_STORE_NAME);
+      DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+
+      assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+          ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+      cache.close();
+    }
+  }
+
+  @Test
+  public void givenDiskStoreIsCreatedWithAtLeastOneDefaultSize_whenDataIsStored_thenGetDiskUsagePercentageShouldNotBeAvailable()
+      throws Exception {
+
+    File[] diskDirs = new File[2];
+    diskDirs[0] = temporaryDirectory.newFolder("dir1");
+    diskDirs[1] = temporaryDirectory.newFolder("dir2");
+
+    int[] diskDirSizes = new int[2];
+    diskDirSizes[0] = 10;
+    diskDirSizes[1] = Integer.MAX_VALUE;
+
+    cache.createDiskStoreFactory().setDiskDirsAndSizes(diskDirs, diskDirSizes)
+        .create(DISK_STORE_NAME);
+    DiskStore diskStore = cache.findDiskStore(DISK_STORE_NAME);
+    Region region = cache.<String, String>createRegionFactory(RegionShortcut.PARTITION_PERSISTENT)
+        .setDiskStoreName(DISK_STORE_NAME).create(REGION_NAME);
+
+    putEntries(region, NUM_ENTRIES);
+
+    assertEquals(ManagementConstants.NOT_AVAILABLE_FLOAT,
+        ((DiskStoreImpl) diskStore).getDiskUsagePercentage(), 0);
+  }
+
+
   private void putEntries(int numToPut) {
+    putEntries(aRegion, numToPut);
+  }
+
+  private void putEntries(Region region, int numToPut) {
     for (int i = 1; i <= numToPut; i++) {
-      aRegion.put(i, i);
+      region.put(i, i);
     }
   }
 

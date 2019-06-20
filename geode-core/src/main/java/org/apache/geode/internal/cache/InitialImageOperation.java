@@ -1918,9 +1918,9 @@ public class InitialImageOperation {
         InternalDistributedMember lostMember, VersionSource lostVersionSource) {
       if (region.setRegionSynchronizedWithIfNotScheduled(lostVersionSource)) {
         // if region synchronization has not been scheduled or performed,
-        // we do synchronization with others right away as we received the synchronization request
+        // we do synchronization with no delay as we received the synchronization request
         // indicating timed task has been triggered on other nodes
-        region.synchronizeForLostMember(lostMember, lostVersionSource);
+        region.scheduleSynchronizeForLostMember(lostMember, lostVersionSource, 0);
       }
     }
 

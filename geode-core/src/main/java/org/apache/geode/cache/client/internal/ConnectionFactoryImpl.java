@@ -66,13 +66,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   @MutableForTesting
   public static boolean testFailedConnectionToServer = false;
 
-  public ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
+  ConnectionFactoryImpl(ConnectionSource source, EndpointManager endpointManager,
       InternalDistributedSystem sys, int socketBufferSize, int handshakeTimeout, int readTimeout,
       ClientProxyMembershipID proxyId, CancelCriterion cancelCriterion, boolean usedByGateway,
       GatewaySender sender, long pingInterval, boolean multiuserSecureMode, PoolImpl pool) {
     this(
         new ConnectionConnector(endpointManager, sys, socketBufferSize, handshakeTimeout,
-            readTimeout, cancelCriterion, usedByGateway, sender,
+            readTimeout, usedByGateway, sender,
             (usedByGateway || sender != null) ? SocketCreatorFactory
                 .getSocketCreatorForComponent(SecurableCommunicationChannel.GATEWAY)
                 : SocketCreatorFactory
@@ -84,11 +84,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
   public ConnectionFactoryImpl(ConnectionConnector connectionConnector, ConnectionSource source,
       long pingInterval, PoolImpl pool, CancelCriterion cancelCriterion) {
+    this.connectionConnector = connectionConnector;
     this.source = source;
-    this.denyList = new ServerDenyList(pingInterval);
     this.pool = pool;
     this.cancelCriterion = cancelCriterion;
-    this.connectionConnector = connectionConnector;
+
+    denyList = new ServerDenyList(pingInterval);
   }
 
   public void start(ScheduledExecutorService background) {
@@ -105,11 +106,9 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throws GemFireSecurityException {
     FailureTracker failureTracker = denyList.getFailureTracker(location);
 
-    boolean initialized = false;
     Connection connection = null;
     try {
       connection = connectionConnector.connectClientToServer(location, forQueue);
-      initialized = true;
       failureTracker.reset();
       authenticateIfRequired(connection);
     } catch (GemFireConfigException | CancelException | GemFireSecurityException
@@ -123,21 +122,15 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
       throw src;
     } catch (Exception e) {
       if (e.getMessage() != null && (e.getMessage().equals("Connection refused")
-          || e.getMessage().equals("Connection reset"))) { // this is the most common case, so don't
-                                                           // print an exception
+          || e.getMessage().equals("Connection reset"))) {
+        // this is the most common case, so don't print an exception
         if (logger.isDebugEnabled()) {
           logger.debug("Unable to connect to {}: connection refused", location);
         }
-      } else {// print a warning with the exception stack trace
+      } else {
         logger.warn("Could not connect to: " + location, e);
       }
       testFailedConnectionToServer = true;
-    } finally {
-      if (!initialized && connection != null) {
-        connection.destroy();
-        failureTracker.addFailure();
-        connection = null;
-      }
     }
 
     return connection;
@@ -160,13 +153,14 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public ServerLocation findBestServer(ServerLocation currentServer, Set excludedServers) {
+  public ServerLocation findBestServer(ServerLocation currentServer,
+      Set<ServerLocation> excludedServers) {
     if (currentServer != null && source.isBalanced()) {
       return currentServer;
     }
-    final Set origExcludedServers = excludedServers;
-    excludedServers = new HashSet(excludedServers);
-    Set denyListedServers = denyList.getBadServers();
+    final Set<ServerLocation> origExcludedServers = excludedServers;
+    excludedServers = new HashSet<>(excludedServers);
+    Set<ServerLocation> denyListedServers = denyList.getBadServers();
     excludedServers.addAll(denyListedServers);
     ServerLocation server = source.findReplacementServer(currentServer, excludedServers);
     if (server == null) {
@@ -183,11 +177,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
   }
 
   @Override
-  public Connection createClientToServerConnection(Set excludedServers)
+  public Connection createClientToServerConnection(Set<ServerLocation> excludedServers)
       throws GemFireSecurityException {
-    final Set origExcludedServers = excludedServers;
-    excludedServers = new HashSet(excludedServers);
-    Set denyListedServers = denyList.getBadServers();
+    final Set<ServerLocation> origExcludedServers = excludedServers;
+    excludedServers = new HashSet<>(excludedServers);
+    Set<ServerLocation> denyListedServers = denyList.getBadServers();
     excludedServers.addAll(denyListedServers);
     Connection conn = null;
     RuntimeException fatalException = null;
@@ -220,14 +214,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
       try {
         conn = createClientToServerConnection(server, false);
-      } catch (CancelException e) {
-        // propagate this up immediately
-        throw e;
-      } catch (GemFireSecurityException e) {
-        // propagate this up immediately
-        throw e;
-      } catch (GatewayConfigurationException e) {
-        // propagate this up immediately
+      } catch (CancelException | GemFireSecurityException | GatewayConfigurationException e) {
         throw e;
       } catch (ServerRefusedConnectionException srce) {
         fatalException = srce;
@@ -253,10 +240,8 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
     if (logger.isDebugEnabled()) {
       logger.debug("Establishing: {}", clientUpdateName);
     }
-    // Launch the thread
-    CacheClientUpdater updater = connectionConnector.connectServerToClient(endpoint, qManager,
-        isPrimary, failedUpdater, clientUpdateName);
 
-    return updater;
+    return connectionConnector.connectServerToClient(endpoint, qManager, isPrimary, failedUpdater,
+        clientUpdateName);
   }
 }

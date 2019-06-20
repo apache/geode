@@ -15,28 +15,60 @@
 
 package org.apache.geode.management.api;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import javax.xml.bind.annotation.XmlTransient;
 
-public interface RestfulEndpoint {
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.apache.commons.lang3.StringUtils;
+
+import org.apache.geode.annotations.Experimental;
+import org.apache.geode.lang.Identifiable;
+
+/**
+ * a restful service request just needs:
+ * 1. an endpoint to list all instances (e.g. "/regions")
+ * 2. an id mechanism to distinguish instance (e.g. "{id}")
+ * 3. an endpoint to update or delete an individual instance (e.g. "/regions/{id}")
+ */
+@Experimental
+public interface RestfulEndpoint extends Identifiable<String> {
+  String URI_CONTEXT = "/geode-management";
+  String URI_VERSION = "/v2";
 
   /**
-   * this needs to return the uri portion after the /geode-management/v2 that points to the
-   * list of entities
+   * this returns the URI that display the list of entries.
+   * it should return URI the part after /v2
    *
    * @return e.g. /regions
    */
   @JsonIgnore
-  // @ApiModelProperty(hidden = true)
+  @XmlTransient
   String getEndpoint();
 
   /**
-   * this needs to return the uri portion after the /geode-management/v2 that points to a single
-   * entity. If the id is not available for the object, this will return null
+   * return the uri that points to a single entity. If the id is not available for the object,
+   * this will return null
+   *
+   * it should return the URI part after /v2
    *
    * @return e.g. /regions/regionA
    */
-  String getUri();
+  @XmlTransient
+  @JsonIgnore
+  default String getIdentityEndPoint() {
+    String id = getId();
+    if (StringUtils.isBlank(id))
+      return null;
+    else {
+      String endpoint = getEndpoint();
+      if (StringUtils.isBlank(endpoint))
+        return null;
+      else
+        return getEndpoint() + "/" + getId();
+    }
+  }
 
-  // exists for json serialization purpose
-  default void setUri(String uri) {};
+  @XmlTransient
+  default String getUri() {
+    return URI_CONTEXT + URI_VERSION + getIdentityEndPoint();
+  }
 }

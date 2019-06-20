@@ -17,9 +17,11 @@ package org.apache.geode.management.internal.cli.json;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
@@ -36,14 +38,18 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
+import org.apache.geode.management.internal.cli.util.JsonUtil;
 import org.apache.geode.pdx.PdxInstance;
+import org.apache.geode.pdx.internal.PdxInstanceImpl;
 
 public abstract class AbstractJSONFormatter {
-
   final ObjectMapper mapper;
+  final boolean generateTypeInformation;
+  final Set<Class> nonOverridableSerializers;
 
-  /**
+  /*
    * serializedObjects is used to prevent recursive serialization in cases where
    * there are cyclical references
    */
@@ -62,21 +68,29 @@ public abstract class AbstractJSONFormatter {
     int serDepth = serializationDepth < 0 ? Integer.MAX_VALUE : serializationDepth;
     int maxElements = maxCollectionElements < 0 ? Integer.MAX_VALUE : maxCollectionElements;
 
-    this.serializedObjects = new IdentityHashMap<>();
     this.mapper = new ObjectMapper();
+    this.serializedObjects = new IdentityHashMap<>();
+    this.generateTypeInformation = generateTypeInformation;
+    this.nonOverridableSerializers = new HashSet<>();
 
-    SimpleModule mapperModule =
-        new PreventReserializationModule(serializedObjects, serDepth);
+    SimpleModule mapperModule = new PreventReserializationModule(serializedObjects, serDepth);
+
+    // insert a Struct serializer that knows about its format
+    mapperModule.addSerializer(StructImpl.class, new StructSerializer());
+    nonOverridableSerializers.add(StructImpl.class);
+
+    // insert a PdxInstance serializer that knows about PDX fields/values
+    mapperModule.addSerializer(PdxInstance.class, new PdxInstanceSerializer());
+    nonOverridableSerializers.add(PdxInstanceImpl.class);
+
+    // insert a RegionEntry serializer because they're too messy looking
+    mapperModule.addSerializer(Region.Entry.class, new RegionEntrySerializer());
+    nonOverridableSerializers.add(Region.Entry.class);
 
     // insert a collection serializer that limits the number of elements generated
     mapperModule.addSerializer(Collection.class, new CollectionSerializer(maxElements));
-    // insert a PdxInstance serializer that knows about PDX fields/values
-    mapperModule.addSerializer(PdxInstance.class, new PdxInstanceSerializer());
-    // insert a Struct serializer that knows about its format
-    mapperModule.addSerializer(StructImpl.class, new StructSerializer());
-    // insert a RegionEntry serializer because they're too messy looking
-    mapperModule.addSerializer(Region.Entry.class, new RegionEntrySerializer());
 
+    // register the custom module
     mapper.registerModule(mapperModule);
 
     // allow objects with no content
@@ -86,24 +100,25 @@ public abstract class AbstractJSONFormatter {
     // sort fields alphabetically
     mapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
-    if (generateTypeInformation) {
-      // add type information (Jackson has no way to force it to do this for all values)
-      mapper.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
-    }
     postCreateMapper();
-
   }
 
   void postCreateMapper() {
     // let subclasses modify the mapper
   }
 
+  // TODO: Re-Implement this class.
+  // Right now we avoid serializing objects that we've already serialized and, instead, just add
+  // some custom markers ('duplicate' / 'reference@') to the JSON document. These markers, however,
+  // can't be effectively used by clients of this class because the originally serialized objects
+  // don't have any kind of 'id' in the resulting document (the 'reference@' marker might be
+  // used BUT the document needs to be de-serialized within the same JVM on which it was
+  // serialized AND IT MUST be Java - System.identityHashCode(object).
   private static class PreventReserializationSerializer extends JsonSerializer {
-
-    private JsonSerializer defaultSerializer;
-    Map<Object, Object> serializedObjects;
-    private final int serializationDepth;
     int depth;
+    Map serializedObjects;
+    private JsonSerializer defaultSerializer;
+    private final int serializationDepth;
 
     PreventReserializationSerializer(JsonSerializer serializer, Map serializedObjects,
         int serializationDepth) {
@@ -112,25 +127,16 @@ public abstract class AbstractJSONFormatter {
       this.serializationDepth = serializationDepth;
     }
 
-    boolean isPrimitiveOrWrapper(Class<?> klass) {
-      return klass.isAssignableFrom(Byte.class) || klass.isAssignableFrom(byte.class)
-          || klass.isAssignableFrom(Short.class) || klass.isAssignableFrom(short.class)
-          || klass.isAssignableFrom(Integer.class) || klass.isAssignableFrom(int.class)
-          || klass.isAssignableFrom(Long.class) || klass.isAssignableFrom(long.class)
-          || klass.isAssignableFrom(Float.class) || klass.isAssignableFrom(float.class)
-          || klass.isAssignableFrom(Double.class) || klass.isAssignableFrom(double.class)
-          || klass.isAssignableFrom(Boolean.class) || klass.isAssignableFrom(boolean.class)
-          || klass.isAssignableFrom(String.class) || klass.isAssignableFrom(char.class)
-          || klass.isAssignableFrom(Character.class) || klass.isAssignableFrom(java.sql.Date.class)
-          || klass.isAssignableFrom(java.util.Date.class)
-          || klass.isAssignableFrom(java.math.BigDecimal.class);
+    private boolean isPrimitiveOrWrapper(Class<?> klass) {
+      return JsonUtil.isPrimitiveOrWrapper(klass);
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void serializeWithType(Object value, JsonGenerator gen,
         SerializerProvider serializers, TypeSerializer typeSer)
         throws IOException {
-      if (value == null || isPrimitiveOrWrapper(value.getClass())) {
+      if (value == null || isPrimitiveOrWrapper(value.getClass()) || value.getClass().isEnum()) {
         defaultSerializer.serializeWithType(value, gen, serializers, typeSer);
         return;
       }
@@ -150,9 +156,10 @@ public abstract class AbstractJSONFormatter {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers)
         throws IOException {
-      if (value == null || isPrimitiveOrWrapper(value.getClass())) {
+      if (value == null || isPrimitiveOrWrapper(value.getClass()) || value.getClass().isEnum()) {
         defaultSerializer.serialize(value, gen, serializers);
         return;
       }
@@ -169,86 +176,19 @@ public abstract class AbstractJSONFormatter {
   }
 
 
-  private static class CollectionSerializer extends JsonSerializer<Collection> {
-    private final int maxCollectionElements;
-
-    public CollectionSerializer(int maxCollectionElements) {
-      this.maxCollectionElements = maxCollectionElements;
-    }
-
-    @Override
-    public void serializeWithType(Collection value, JsonGenerator gen,
-        SerializerProvider serializers, TypeSerializer typeSer)
-        throws IOException {
-      gen.setCurrentValue(value);
-      WritableTypeId typeIdDef = typeSer.writeTypePrefix(gen,
-          typeSer.typeId(value, JsonToken.START_OBJECT));
-      serializeElements(value, gen);
-      typeSer.writeTypeSuffix(gen, typeIdDef);
-    }
-
-    @Override
-    public void serialize(Collection value, JsonGenerator gen, SerializerProvider serializers)
-        throws IOException {
-      gen.writeStartObject();
-      serializeElements(value, gen);
-      gen.writeEndObject();
-    }
-
-    void serializeElements(Collection value, JsonGenerator gen) throws IOException {
-      Iterator<Object> objects = value.iterator();
-      for (int i = 0; i < maxCollectionElements && objects.hasNext(); i++) {
-        Object nextObject = objects.next();
-        gen.writeObjectField("" + i, nextObject);
-      }
-    }
-
-    @Override
-    public Class<Collection> handledType() {
-      return Collection.class;
-    }
-  }
-
-
-  private static class PdxInstanceSerializer extends JsonSerializer<PdxInstance> {
-    @Override
-    public void serializeWithType(PdxInstance value, JsonGenerator gen,
-        SerializerProvider serializers, TypeSerializer typeSer)
-        throws IOException {
-      WritableTypeId writableTypeId = typeSer.typeId(value, JsonToken.START_OBJECT);
-      typeSer.writeTypePrefix(gen, writableTypeId);
-      serializeFields(value, gen);
-      typeSer.writeTypeSuffix(gen, writableTypeId);
-    }
-
-    @Override
-    public void serialize(PdxInstance value, JsonGenerator gen, SerializerProvider serializers)
-        throws IOException {
-      gen.writeStartObject();
-      serializeFields(value, gen);
-      gen.writeEndObject();
-    }
-
-    void serializeFields(PdxInstance value, JsonGenerator gen) throws IOException {
-      for (String field : value.getFieldNames()) {
-        gen.writeObjectField(field, value.getField(field));
-      }
-    }
-
-    @Override
-    public Class<PdxInstance> handledType() {
-      return PdxInstance.class;
-    }
-  }
-
+  /**
+   * A custom JSON serializer for Struct.
+   */
   private static class StructSerializer extends JsonSerializer<StructImpl> {
     @Override
     public void serializeWithType(StructImpl value, JsonGenerator gen,
         SerializerProvider serializers, TypeSerializer typeSer)
         throws IOException {
-      typeSer.writeTypePrefix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
+      // We don't want to expose the internal classes, show interface instead.
+      WritableTypeId typeId = typeSer.typeId(value, Struct.class, JsonToken.START_OBJECT);
+      typeSer.writeTypePrefix(gen, typeId);
       serializeElements(value, gen);
-      typeSer.writeTypeSuffix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
+      typeSer.writeTypeSuffix(gen, typeId);
     }
 
     @Override
@@ -273,12 +213,51 @@ public abstract class AbstractJSONFormatter {
     }
   }
 
+  /**
+   * A custom JSON serializer for PdxInstances.
+   */
+  private static class PdxInstanceSerializer extends JsonSerializer<PdxInstance> {
+    @Override
+    public void serializeWithType(PdxInstance value, JsonGenerator gen,
+        SerializerProvider serializers, TypeSerializer typeSer)
+        throws IOException {
+      // We don't want to expose the internal classes, show interface instead.
+      WritableTypeId typeId = typeSer.typeId(value, PdxInstance.class, JsonToken.START_OBJECT);
+      typeSer.writeTypePrefix(gen, typeId);
+      serializeFields(value, gen);
+      typeSer.writeTypeSuffix(gen, typeId);
+    }
+
+    @Override
+    public void serialize(PdxInstance value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+      gen.writeStartObject();
+      serializeFields(value, gen);
+      gen.writeEndObject();
+    }
+
+    void serializeFields(PdxInstance value, JsonGenerator gen) throws IOException {
+      for (String field : value.getFieldNames()) {
+        gen.writeObjectField(field, value.getField(field));
+      }
+    }
+
+    @Override
+    public Class<PdxInstance> handledType() {
+      return PdxInstance.class;
+    }
+  }
+
+  /**
+   * A custom JSON serializer for region entries.
+   */
   private static class RegionEntrySerializer extends JsonSerializer<Region.Entry> {
     @Override
     public void serializeWithType(Region.Entry value, JsonGenerator gen,
         SerializerProvider serializers, TypeSerializer typeSer)
         throws IOException {
-      typeSer.writeTypePrefix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
+      typeSer.writeTypePrefix(gen,
+          typeSer.typeId(value, Region.Entry.class, JsonToken.START_OBJECT));
       gen.writeObjectField(value.getKey().toString(), value.getValue());
       typeSer.writeTypeSuffix(gen, typeSer.typeId(value, JsonToken.START_OBJECT));
     }
@@ -298,8 +277,51 @@ public abstract class AbstractJSONFormatter {
   }
 
   /**
+   * A JSON serializer for collections to limit the number of elements written to the document.
+   */
+  private static class CollectionSerializer extends JsonSerializer<Collection> {
+    private final int maxCollectionElements;
+
+    CollectionSerializer(int maxCollectionElements) {
+      this.maxCollectionElements = maxCollectionElements;
+    }
+
+    @Override
+    public void serializeWithType(Collection value, JsonGenerator gen,
+        SerializerProvider serializers, TypeSerializer typeSer)
+        throws IOException {
+      gen.setCurrentValue(value);
+      WritableTypeId typeIdDef = typeSer.writeTypePrefix(gen,
+          typeSer.typeId(value, JsonToken.START_OBJECT));
+      serializeElements(value, gen);
+      typeSer.writeTypeSuffix(gen, typeIdDef);
+    }
+
+    @Override
+    public void serialize(Collection value, JsonGenerator gen, SerializerProvider serializers)
+        throws IOException {
+      gen.writeStartObject();
+      serializeElements(value, gen);
+      gen.writeEndObject();
+    }
+
+    void serializeElements(Collection value, JsonGenerator gen) throws IOException {
+      Iterator objects = value.iterator();
+      for (int i = 0; i < maxCollectionElements && objects.hasNext(); i++) {
+        Object nextObject = objects.next();
+        gen.writeObjectField("" + i, nextObject);
+      }
+    }
+
+    @Override
+    public Class<Collection> handledType() {
+      return Collection.class;
+    }
+  }
+
+  /**
    * A Jackson module that installs a serializer-modifier to detect and prevent
-   * reserialization of objects that have already been serialized. W/o this
+   * re-serialization of objects that have already been serialized. W/o this
    * Jackson would throw infinite-recursion exceptions.
    */
   private static class PreventReserializationModule extends SimpleModule {
@@ -325,6 +347,5 @@ public abstract class AbstractJSONFormatter {
         }
       });
     }
-
   }
 }

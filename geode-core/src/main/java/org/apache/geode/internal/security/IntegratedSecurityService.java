@@ -221,8 +221,12 @@ public class IntegratedSecurityService implements SecurityService {
   }
 
   @Override
-  public void authorize(Resource resource, Operation operation, String target, String key) {
-    authorize(new ResourcePermission(resource, operation, target, key));
+  public void authorize(Resource resource, Operation operation, String target, Object key) {
+    String keystr = null;
+    if (key != null) {
+      keystr = key.toString();
+    }
+    authorize(new ResourcePermission(resource, operation, target, keystr));
   }
 
   @Override

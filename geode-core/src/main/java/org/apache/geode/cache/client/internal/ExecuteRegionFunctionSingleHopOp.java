@@ -12,7 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package org.apache.geode.cache.client.internal;
+
+import static org.apache.geode.internal.cache.execute.AbstractExecution.DEFAULT_CLIENT_FUNCTION_TIMEOUT;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -58,16 +61,15 @@ public class ExecuteRegionFunctionSingleHopOp {
   private ExecuteRegionFunctionSingleHopOp() {}
 
   public static void execute(ExecutablePool pool, Region region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
-      boolean allBuckets) {
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      byte hasResult,
+      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      int mRetryAttempts,
+      boolean allBuckets, final int timeoutMs) {
 
-    boolean reexecute = false;
-    Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (function.isHA()) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+    Set<String> failedNodes = new HashSet<>();
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -77,38 +79,36 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
     List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, function,
-        hasResult, resultCollector, cms, allBuckets);
+        hasResult, resultCollector, cms, allBuckets, timeoutMs);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
-        function.isHA(), resultCollector, failedNodes);
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region,
+            function.isHA(), resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug("ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is : {}",
           callableTasks.size());
     }
 
-    if (reexecute) {
-      resultCollector.clearResults();
-      if (function.isHA()) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1);
-      }
+    if (retryAttempts > 0) {
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
+          timeoutMs);
     }
 
     resultCollector.endResults();
   }
 
   public static void execute(ExecutablePool pool, Region region, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Map<ServerLocation, ? extends HashSet> serverToFilterMap, int mRetryAttempts,
-      boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      byte hasResult,
+      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      int mRetryAttempts,
+      boolean allBuckets, boolean isHA, boolean optimizeForWrite, final int timeoutMs) {
 
-    boolean reexecute = false;
-    Set<String> failedNodes = new HashSet<String>();
-    int maxRetryAttempts = 0;
-    if (isHA) {
-      maxRetryAttempts = mRetryAttempts;
-    }
+    Set<String> failedNodes = new HashSet<>();
+
     ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -118,37 +118,36 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
     List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
         region.getFullPath(), serverRegionExecutor, serverToFilterMap, (PoolImpl) pool, functionId,
-        hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite);
+        hasResult, resultCollector, cms, allBuckets, isHA, optimizeForWrite, timeoutMs);
 
-    reexecute = SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
-        resultCollector, failedNodes);
+    final int retryAttempts =
+        SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
+            resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
 
     if (isDebugEnabled) {
       logger.debug(
           "ExecuteRegionFunctionSingleHopOp#execute : The size of callableTask is: {}, reexecute={}",
-          callableTasks.size(), reexecute);
+          callableTasks.size(), retryAttempts);
     }
 
-    if (reexecute) {
+    if (retryAttempts > 0) {
       resultCollector.clearResults();
-      if (isHA) {
-        ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-            serverRegionExecutor, resultCollector, hasResult, failedNodes, maxRetryAttempts - 1,
-            isHA, optimizeForWrite);
-      }
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
+          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
+          isHA, optimizeForWrite, timeoutMs);
     }
 
     resultCollector.endResults();
   }
 
 
-  static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
+  private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
       ServerRegionFunctionExecutor serverRegionExecutor,
       final Map<ServerLocation, ? extends HashSet> serverToFilterMap, final PoolImpl pool,
       final Function function, byte hasResult, ResultCollector rc, ClientMetadataService cms,
-      boolean allBucket) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = new ArrayList<ServerLocation>(serverToFilterMap.keySet());
+      boolean allBucket, final int timeoutMs) {
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
+    ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
 
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing tasks for the servers {}", servers);
@@ -158,7 +157,7 @@ public class ExecuteRegionFunctionSingleHopOp {
           .withFilter(serverToFilterMap.get(server));
 
       AbstractOp op = new ExecuteRegionFunctionSingleHopOpImpl(region, function, executor, rc,
-          hasResult, new HashSet<String>(), allBucket);
+          hasResult, new HashSet<>(), allBucket, timeoutMs);
       SingleHopOperationCallable task =
           new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
               pool, op, UserAttributes.userAttributes.get());
@@ -167,13 +166,13 @@ public class ExecuteRegionFunctionSingleHopOp {
     return tasks;
   }
 
-  static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
+  private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(String region,
       ServerRegionFunctionExecutor serverRegionExecutor,
       final Map<ServerLocation, ? extends HashSet> serverToFilterMap, final PoolImpl pool,
       final String functionId, byte hasResult, ResultCollector rc, ClientMetadataService cms,
-      boolean allBucket, boolean isHA, boolean optimizeForWrite) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<SingleHopOperationCallable>();
-    ArrayList<ServerLocation> servers = new ArrayList<ServerLocation>(serverToFilterMap.keySet());
+      boolean allBucket, boolean isHA, boolean optimizeForWrite, final int timeoutMs) {
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
+    ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
 
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing tasks for the servers {}", servers);
@@ -183,7 +182,7 @@ public class ExecuteRegionFunctionSingleHopOp {
           .withFilter(serverToFilterMap.get(server));
 
       AbstractOp op = new ExecuteRegionFunctionSingleHopOpImpl(region, functionId, executor, rc,
-          hasResult, new HashSet<String>(), allBucket, isHA, optimizeForWrite);
+          hasResult, new HashSet<>(), allBucket, isHA, optimizeForWrite, timeoutMs);
       SingleHopOperationCallable task =
           new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
               pool, op, UserAttributes.userAttributes.get());
@@ -192,7 +191,7 @@ public class ExecuteRegionFunctionSingleHopOp {
     return tasks;
   }
 
-  static class ExecuteRegionFunctionSingleHopOpImpl extends AbstractOp {
+  static class ExecuteRegionFunctionSingleHopOpImpl extends AbstractOpWithTimeout {
 
     private final ResultCollector resultCollector;
 
@@ -204,21 +203,21 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     private final byte hasResult;
 
-    private Set<String> failedNodes = new HashSet<String>();
+    private Set<String> failedNodes;
 
     private boolean isHA;
 
     private boolean optimizeForWrite;
 
-    public ExecuteRegionFunctionSingleHopOpImpl(String region, Function function,
+    ExecuteRegionFunctionSingleHopOpImpl(String region, Function function,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
-        Set<String> removedNodes, boolean allBuckets) {
+        Set<String> removedNodes, boolean allBuckets, final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
       super(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
-          8 + serverRegionExecutor.getFilter().size() + removedNodes.size());
-      this.isHA = function.isHA();
-      this.optimizeForWrite = function.optimizeForWrite();
+          8 + serverRegionExecutor.getFilter().size() + removedNodes.size(), timeoutMs);
+      isHA = function.isHA();
+      optimizeForWrite = function.optimizeForWrite();
       byte functionState = AbstractExecution.getFunctionState(function.isHA(), function.hasResult(),
           function.optimizeForWrite());
       Set routingObjects = serverRegionExecutor.getFilter();
@@ -247,27 +246,28 @@ public class ExecuteRegionFunctionSingleHopOp {
         getMessage().addStringOrObjPart(nodes);
       }
 
-      this.resultCollector = rc;
-      this.regionName = region;
-      this.functionId = function.getId();
-      this.executor = serverRegionExecutor;
+      resultCollector = rc;
+      regionName = region;
+      functionId = function.getId();
+      executor = serverRegionExecutor;
       this.hasResult = functionState;
-      this.failedNodes = removedNodes;
+      failedNodes = removedNodes;
     }
 
-    public ExecuteRegionFunctionSingleHopOpImpl(String region, String functionId,
+    ExecuteRegionFunctionSingleHopOpImpl(String region, String functionId,
         ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector rc, byte hasResult,
-        Set<String> removedNodes, boolean allBuckets, boolean isHA, boolean optimizeForWrite) {
+        Set<String> removedNodes, boolean allBuckets, boolean isHA, boolean optimizeForWrite,
+        final int timeoutMs) {
       // What is this 8 that is getting added to filter and removednode sizes?
       // It should have been used as a constant and documented
       super(MessageType.EXECUTE_REGION_FUNCTION_SINGLE_HOP,
-          8 + serverRegionExecutor.getFilter().size() + removedNodes.size());
+          8 + serverRegionExecutor.getFilter().size() + removedNodes.size(), timeoutMs);
       this.isHA = isHA;
       this.optimizeForWrite = optimizeForWrite;
       Set routingObjects = serverRegionExecutor.getFilter();
       Object args = serverRegionExecutor.getArguments();
       byte functionState = AbstractExecution.getFunctionState(isHA,
-          hasResult == (byte) 1 ? true : false, optimizeForWrite);
+          hasResult == (byte) 1, optimizeForWrite);
       MemberMappedArgument memberMappedArg = serverRegionExecutor.getMemberMappedArgument();
       addBytes(functionState);
       getMessage().addStringPart(region, true);
@@ -288,22 +288,21 @@ public class ExecuteRegionFunctionSingleHopOp {
         getMessage().addStringOrObjPart(nodes);
       }
 
-      this.resultCollector = rc;
-      this.regionName = region;
+      resultCollector = rc;
+      regionName = region;
       this.functionId = functionId;
-      this.executor = serverRegionExecutor;
+      executor = serverRegionExecutor;
       this.hasResult = functionState;
-      this.failedNodes = removedNodes;
+      failedNodes = removedNodes;
     }
 
     private void addBytes(byte functionState) {
-      if (ConnectionImpl
-          .getClientFunctionTimeout() == ConnectionImpl.DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
+      if (getTimeoutMs() == DEFAULT_CLIENT_FUNCTION_TIMEOUT) {
         getMessage().addBytesPart(new byte[] {functionState});
       } else {
         byte[] bytes = new byte[5];
         bytes[0] = functionState;
-        Part.encodeInt(ConnectionImpl.getClientFunctionTimeout(), bytes, 1);
+        Part.encodeInt(getTimeoutMs(), bytes, 1);
         getMessage().addBytesPart(bytes);
       }
     }
@@ -340,16 +339,16 @@ public class ExecuteRegionFunctionSingleHopOp {
                 if (ex instanceof InternalFunctionException) {
                   Throwable cause = ex.getCause();
                   DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
-                  this.resultCollector.addResult(memberID, cause);
+                  resultCollector.addResult(memberID, cause);
                   FunctionStats
-                      .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())
+                      .getFunctionStats(functionId, executor.getRegion().getSystem())
                       .incResultsReceived();
                   continue;
                 } else if (((FunctionException) result)
                     .getCause() instanceof InternalFunctionInvocationTargetException) {
                   InternalFunctionInvocationTargetException ifite =
                       (InternalFunctionInvocationTargetException) ex.getCause();
-                  this.failedNodes.addAll(ifite.getFailedNodeSet());
+                  failedNodes.addAll(ifite.getFailedNodeSet());
                 }
                 if (!ex.getMessage().equals("Buckets are null"))
                   exception = ex;
@@ -364,7 +363,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                         ((CacheClosedException) result).getMessage());
                 if (resultResponse instanceof ArrayList) {
                   DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
-                  this.failedNodes.add(memberID.getId());
+                  failedNodes.add(memberID.getId());
                 }
                 exception = new FunctionException(fite);
               } else if (result instanceof Throwable) {
@@ -372,9 +371,9 @@ public class ExecuteRegionFunctionSingleHopOp {
                 exception = new ServerOperationException(s, (Throwable) result);
               } else {
                 DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
-                this.resultCollector.addResult(memberID, result);
+                resultCollector.addResult(memberID, result);
                 FunctionStats
-                    .getFunctionStats(this.functionId, this.executor.getRegion().getSystem())
+                    .getFunctionStats(functionId, executor.getRegion().getSystem())
                     .incResultsReceived();
               }
             } while (!executeFunctionResponseMsg.isLastChunk());
@@ -404,7 +403,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                   .getCause() instanceof InternalFunctionInvocationTargetException) {
                 InternalFunctionInvocationTargetException ifite =
                     (InternalFunctionInvocationTargetException) ex.getCause();
-                this.failedNodes.addAll(ifite.getFailedNodeSet());
+                failedNodes.addAll(ifite.getFailedNodeSet());
               }
               if (!ex.getMessage().equals("Buckets are null")) {
                 throw ex;
@@ -435,31 +434,31 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     ResultCollector getResultCollector() {
-      return this.resultCollector;
+      return resultCollector;
     }
 
     String getFunctionId() {
-      return this.functionId;
+      return functionId;
     }
 
     String getRegionName() {
-      return this.regionName;
+      return regionName;
     }
 
     ServerRegionFunctionExecutor getExecutor() {
-      return this.executor;
+      return executor;
     }
 
     byte getHasResult() {
-      return this.hasResult;
+      return hasResult;
     }
 
     boolean isHA() {
-      return this.isHA;
+      return isHA;
     }
 
     boolean optimizeForWrite() {
-      return this.optimizeForWrite;
+      return optimizeForWrite;
     }
 
     @Override

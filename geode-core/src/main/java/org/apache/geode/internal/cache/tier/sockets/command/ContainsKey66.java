@@ -114,7 +114,7 @@ public class ContainsKey66 extends BaseCommand {
     }
 
     try {
-      securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+      securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);
       serverConnection.setAsTrue(RESPONDED);

@@ -15,10 +15,7 @@
 package org.apache.geode.management.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,7 +25,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 
 @Experimental
-public class ClusterManagementResult {
+public class ClusterManagementResult<R extends CacheElement> {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
@@ -56,7 +53,7 @@ public class ClusterManagementResult {
     OK
   }
 
-  private Map<String, Status> memberStatuses = new HashMap<>();
+  private List<RealizationResult> memberStatuses = new ArrayList<>();
 
   // we will always have statusCode when the object is created
   private StatusCode statusCode = StatusCode.OK;
@@ -65,7 +62,7 @@ public class ClusterManagementResult {
   // Override the mapper setting so that we always show result
   @JsonInclude
   @JsonProperty
-  private List<? extends CacheElement> result = new ArrayList<>();
+  private List<R> result = new ArrayList<>();
 
   public ClusterManagementResult() {}
 
@@ -79,9 +76,14 @@ public class ClusterManagementResult {
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
-    this.memberStatuses.put(member, new Status(success, message));
+    addMemberStatus(new RealizationResult().setMemberName(member)
+        .setSuccess(success).setMessage(message));
+  }
+
+  public void addMemberStatus(RealizationResult result) {
+    this.memberStatuses.add(result);
     // if any member failed, status code will be error
-    if (!success) {
+    if (!result.isSuccess()) {
       statusCode = StatusCode.ERROR;
     }
   }
@@ -98,7 +100,7 @@ public class ClusterManagementResult {
     this.statusMessage = message;
   }
 
-  public Map<String, Status> getMemberStatuses() {
+  public List<RealizationResult> getMemberStatuses() {
     return memberStatuses;
   }
 
@@ -115,11 +117,11 @@ public class ClusterManagementResult {
     return statusCode;
   }
 
-  public <R extends CacheElement> List<R> getResult(Class<R> clazz) {
-    return result.stream().map(clazz::cast).collect(Collectors.toList());
+  public List<R> getResult() {
+    return result;
   }
 
-  public void setResult(List<? extends CacheElement> result) {
+  public void setResult(List<R> result) {
     this.result = result;
   }
 }

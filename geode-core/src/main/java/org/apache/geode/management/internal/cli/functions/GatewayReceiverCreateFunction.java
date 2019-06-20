@@ -15,20 +15,18 @@
 package org.apache.geode.management.internal.cli.functions;
 
 
-import joptsimple.internal.Strings;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
-import org.apache.geode.cache.wan.GatewayReceiverFactory;
-import org.apache.geode.cache.wan.GatewayTransportFilter;
-import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 
 /**
  * The function to a create GatewayReceiver using given configuration parameters.
@@ -54,14 +52,17 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
     Cache cache = context.getCache();
     String memberNameOrId = context.getMemberName();
 
-    GatewayReceiverFunctionArgs gatewayReceiverCreateArgs =
-        (GatewayReceiverFunctionArgs) context.getArguments();
+    Object[] gatewayReceiverCreateArgs =
+        (Object[]) context.getArguments();
+    GatewayReceiverConfig gatewayReceiverConfig =
+        (GatewayReceiverConfig) gatewayReceiverCreateArgs[0];
+    Boolean ifNotExist = (Boolean) gatewayReceiverCreateArgs[1];
 
     // Exit early if a receiver already exists.
     // Consider this a failure unless --if-not-exists was provided.
     if (gatewayReceiverExists(cache)) {
       CliFunctionResult result;
-      if (gatewayReceiverCreateArgs.getIfNotExists()) {
+      if (ifNotExist) {
         result = new CliFunctionResult(memberNameOrId, CliFunctionResult.StatusState.OK,
             "Skipping: " + A_GATEWAY_RECEIVER_ALREADY_EXISTS_ON_THIS_MEMBER);
       } else {
@@ -75,8 +76,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
 
     try {
-      GatewayReceiver createdGatewayReceiver =
-          createGatewayReceiver(cache, gatewayReceiverCreateArgs);
+      GatewayReceiver createdGatewayReceiver = createGatewayReceiver(cache, gatewayReceiverConfig);
 
       resultSender.lastResult(new CliFunctionResult(memberNameOrId,
           CliFunctionResult.StatusState.OK,
@@ -93,66 +93,12 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
 
   }
 
-  /** GatewayReceiver creation happens here. */
   GatewayReceiver createGatewayReceiver(Cache cache,
-      GatewayReceiverFunctionArgs gatewayReceiverCreateArgs)
-      throws IllegalAccessException, InstantiationException, ClassNotFoundException {
+      GatewayReceiverConfig gatewayReceiverConfig) {
+    GatewayReceiverRealizer receiverRealizer = new GatewayReceiverRealizer();
+    receiverRealizer.create(gatewayReceiverConfig, cache);
 
-    GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
-
-    Integer startPort = gatewayReceiverCreateArgs.getStartPort();
-    if (startPort != null) {
-      gatewayReceiverFactory.setStartPort(startPort);
-    }
-
-    Integer endPort = gatewayReceiverCreateArgs.getEndPort();
-    if (endPort != null) {
-      gatewayReceiverFactory.setEndPort(endPort);
-    }
-
-    String bindAddress = gatewayReceiverCreateArgs.getBindAddress();
-    if (bindAddress != null) {
-      gatewayReceiverFactory.setBindAddress(bindAddress);
-    }
-
-    Integer maxTimeBetweenPings = gatewayReceiverCreateArgs.getMaximumTimeBetweenPings();
-    if (maxTimeBetweenPings != null) {
-      gatewayReceiverFactory.setMaximumTimeBetweenPings(maxTimeBetweenPings);
-    }
-
-    Integer socketBufferSize = gatewayReceiverCreateArgs.getSocketBufferSize();
-    if (socketBufferSize != null) {
-      gatewayReceiverFactory.setSocketBufferSize(socketBufferSize);
-    }
-
-    Boolean manualStart = gatewayReceiverCreateArgs.isManualStart();
-    if (manualStart != null) {
-      gatewayReceiverFactory.setManualStart(manualStart);
-    }
-
-    String[] gatewayTransportFilters = gatewayReceiverCreateArgs.getGatewayTransportFilters();
-    if (gatewayTransportFilters != null) {
-      for (String gatewayTransportFilter : gatewayTransportFilters) {
-        gatewayReceiverFactory.addGatewayTransportFilter(
-            (GatewayTransportFilter) newInstance(gatewayTransportFilter));
-      }
-    }
-
-    String hostnameForSenders = gatewayReceiverCreateArgs.getHostnameForSenders();
-    if (hostnameForSenders != null) {
-      gatewayReceiverFactory.setHostnameForSenders(hostnameForSenders);
-    }
-    return gatewayReceiverFactory.create();
-  }
-
-
-  private Object newInstance(String className)
-      throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-    if (Strings.isNullOrEmpty(className)) {
-      return null;
-    }
-
-    return ClassPathLoader.getLatest().forName(className).newInstance();
+    return cache.getGatewayReceivers().iterator().next();
   }
 
   boolean gatewayReceiverExists(Cache cache) {

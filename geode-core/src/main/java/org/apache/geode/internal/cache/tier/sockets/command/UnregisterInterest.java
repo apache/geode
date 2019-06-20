@@ -107,7 +107,7 @@ public class UnregisterInterest extends BaseCommand {
       if (interestType == InterestType.REGULAR_EXPRESSION) {
         securityService.authorize(Resource.DATA, Operation.READ, regionName);
       } else {
-        securityService.authorize(Resource.DATA, Operation.READ, regionName, key.toString());
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
       }
     } catch (NotAuthorizedException ex) {
       writeException(clientMessage, ex, false, serverConnection);

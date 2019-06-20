@@ -33,6 +33,7 @@ class PartitionedRegionRedundancyTracker {
   private int lowRedundancyBuckets;
   private int noCopiesBuckets;
   private int lowestBucketCopies;
+  private volatile int actualRedundancy;
 
   /**
    * Creates a new PartitionedRegionRedundancyTracker
@@ -59,6 +60,10 @@ class PartitionedRegionRedundancyTracker {
    */
   int getLowestBucketCopies() {
     return lowestBucketCopies;
+  }
+
+  int getLowRedundancyBuckets() {
+    return lowRedundancyBuckets;
   }
 
   /**
@@ -131,7 +136,13 @@ class PartitionedRegionRedundancyTracker {
     }
   }
 
+  public int getActualRedundancy() {
+    return actualRedundancy;
+  }
+
   void setActualRedundancy(int actualRedundancy) {
-    stats.setActualRedundantCopies(Math.max(actualRedundancy, 0));
+    int nonNegativeRedundancy = Math.max(actualRedundancy, 0);
+    this.actualRedundancy = nonNegativeRedundancy;
+    stats.setActualRedundantCopies(nonNegativeRedundancy);
   }
 }
