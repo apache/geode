@@ -14,15 +14,10 @@
  */
 package org.apache.geode.internal;
 
-import java.io.File;
-import java.net.URL;
-import java.net.URLDecoder;
 
 import org.apache.commons.lang3.JavaVersion;
 
-import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.lang.SystemUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
@@ -31,12 +26,6 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  * This aids debugging.
  */
 public class SharedLibrary {
-
-  /**
-   * A suffix added on to distinguish between the Linux and Solaris library names since they reside
-   * in the same directory.
-   */
-  private static final String SOLARIS_LIBRARY_SUFFIX = "_sol";
 
   private static final boolean is64Bit;
   private static final int referenceSize;
@@ -127,107 +116,6 @@ public class SharedLibrary {
       referenceSize = tmpReferenceSize;
       objectHeaderSize = tmpObjectHeaderSize;
     }
-  }
-
-  /**
-   * @return true if this process is 64bit
-   * @throws RuntimeException if sun.arch.data.model doesn't fit expectations
-   */
-  public static boolean is64Bit() {
-    return is64Bit;
-  }
-
-  /**
-   * @return true if this process is running on Solaris, no effort is made to distinguish between
-   *         sparc and x86, the library will simply fail to load.
-   * @throws RuntimeException if sun.arch.data.model doesn't fit expectations
-   */
-  public static boolean isSolaris() {
-    String osName = System.getProperty("os.name");
-    return osName.equals("SunOS");
-  }
-
-  /**
-   * Returns the os specific name of the GemFire shared library.
-   */
-  public static String getName() {
-    StringBuffer result = new StringBuffer("gemfire");
-    if (isSolaris()) {
-      result.append(SOLARIS_LIBRARY_SUFFIX);
-    }
-    if (is64Bit()) {
-      result.append("64");
-    }
-    if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "debug")) {
-      result.append("_g");
-    }
-    return result.toString();
-  }
-
-  public static void loadLibrary(boolean debug) throws UnsatisfiedLinkError {
-    String library = getName();
-    try {
-      URL gemfireJarURL = GemFireVersion.getJarURL();
-
-      if (gemfireJarURL == null) {
-        throw new InternalGemFireError("Unable to locate jar file.");
-      }
-
-      String gemfireJar = null;
-      try {
-        gemfireJar = URLDecoder.decode(gemfireJarURL.getFile(), "UTF-8");
-      } catch (java.io.UnsupportedEncodingException uee) {
-        // This should never happen because UTF-8 is required to be implemented
-        throw new RuntimeException(uee);
-      }
-      int index = gemfireJar.lastIndexOf("/");
-      if (index == -1) {
-        throw new InternalGemFireError("Unable to parse gemfire jar path.");
-      }
-      String libDir = gemfireJar.substring(0, index + 1);
-      File libraryPath = new File(libDir, System.mapLibraryName(library));
-      if (libraryPath.exists()) {
-        System.load(libraryPath.getPath());
-        return;
-      }
-    } catch (InternalGemFireError ige) {
-      /**
-       * Unable to make a guess as to where the gemfire native library is based on its position
-       * relative to gemfire jar.
-       */
-      if (debug) {
-        System.out.println("Problem loading library from URL path: " + ige);
-      }
-    } catch (UnsatisfiedLinkError ule) {
-      /**
-       * Unable to load the gemfire native library in the product tree, This is very unexpected and
-       * should not happen. Reattempting using System.loadLibrary
-       */
-      if (debug) {
-        System.out.println("Problem loading library from URL path: " + ule);
-      }
-    }
-    System.loadLibrary(library);
-  }
-
-  /**
-   * Returns the size in bytes of a C pointer in this shared library, returns 4 for a 32 bit shared
-   * library, and 8 for a 64 bit shared library . This method makes a native call, so you can't use
-   * it to determine which library to load .
-   *
-   */
-  public static int pointerSizeBytes() {
-    return SmHelper.pointerSizeBytes();
-  }
-
-  /**
-   * Accessor method for the is64Bit flag
-   *
-   * @return returns a boolean indicating if the 64bit native library was loaded.
-   * @since GemFire 5.1
-   */
-  public static boolean getIs64Bit() {
-    return PureJavaMode.is64Bit();
   }
 
   public static int getReferenceSize() {

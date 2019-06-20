@@ -28,9 +28,6 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
@@ -38,12 +35,10 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.io.TeePrintStream;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.LoggingThread;
 
 /**
  * Used to interact with operating system processes. Use <code>exec</code> to create a new process
@@ -99,14 +94,6 @@ public class OSProcess {
   @Deprecated
   private static final boolean DISABLE_REDIRECTION_CONFIGURATION =
       Boolean.getBoolean(DISABLE_REDIRECTION_CONFIGURATION_PROPERTY);
-
-  static final boolean pureMode = PureJavaMode.isPure();
-
-  static {
-    if (!pureMode) {
-      registerSigQuitHandler();
-    }
-  }
 
   /**
    * Starts a background command writing its stdout and stderr to the specified log file.
@@ -259,102 +246,92 @@ public class OSProcess {
       System.out.println("logfile=" + logfile.getPath());
     }
     int result = 0;
-    if (pureMode || (env != null && env.size() > 0)) {
-      StringBuffer sb = new StringBuffer();
-      Vector cmdVec = new Vector();
-      // Add shell code to spawn a process silently
-      if (isWindows) {
-        cmdVec.add("cmd.exe");
-        cmdVec.add("/c");
-        sb.append("start /b \"\" ");
-      } else {
-        // to address issue with users that don't have bash shell installed
-        if (commandShell.equals("bash")) {
-          cmdVec.add("bash");
-          cmdVec.add("--norc");
-          cmdVec.add("-c");
-        } else {
-          cmdVec.add(commandShell);
-        }
-      }
-      // Add the actual command
-      for (int i = 0; i < cmdarray.length; i++) {
-        if (i != 0)
-          sb.append(" ");
-        if (cmdarray[i].length() != 0 && cmdarray[i].charAt(0) == '\"') {
-          // The token has already been quoted, see bug 40835
-          sb.append(cmdarray[i]);
-        } else {
-          sb.append("\"");
-          sb.append(cmdarray[i]);
-          sb.append("\"");
-        }
-      }
-      // Add the IO redirction code, this prevents hangs and IO blocking
-      sb.append(" >> ");
-      sb.append(logfile.getPath());
-      sb.append(" 2>&1");
-      if (isWindows) {
-        sb.append(" <NUL");
-      } else {
-        sb.append(" </dev/null &");
-      }
-      cmdVec.add(sb.toString());
 
-      String[] cmdStrings = (String[]) cmdVec.toArray(new String[0]);
-      if (trace != null && trace.length() > 0) {
-        for (int i = 0; i < cmdStrings.length; i++) {
-          System.out.println("cmdStrings[" + i + "] = " + cmdStrings[i]);
-        }
-        System.out.println("workdir=" + workdir.getPath());
-        System.out.println("logfile=" + logfile.getPath());
-      }
-      final ProcessBuilder procBuilder = new ProcessBuilder(cmdStrings);
-      if (env != null && env.size() > 0) {
-        // adjust the environment variables inheriting from parent
-        procBuilder.environment().putAll(env);
-      }
-      procBuilder.directory(workdir);
-      final Process process = procBuilder.start();
-      try {
-        process.getInputStream().close();
-      } catch (IOException ignore) {
-      }
-      try {
-        process.getOutputStream().close();
-      } catch (IOException ignore) {
-      }
-      try {
-        process.getErrorStream().close();
-      } catch (IOException ignore) {
-      }
-      try {
-        // short count = 1000;
-        boolean processIsStillRunning = true;
-        while (processIsStillRunning) {
-          Thread.sleep(10);
-          try {
-            process.exitValue();
-            processIsStillRunning = false;
-          } catch (IllegalThreadStateException itse) {
-            // Ignore this, we are polling the exitStatus
-            // instead of using the blocking Process#waitFor()
-          }
-        }
-      } catch (InterruptedException ie) {
-        Thread.currentThread().interrupt();
-      }
+    StringBuffer sb = new StringBuffer();
+    Vector cmdVec = new Vector();
+    // Add shell code to spawn a process silently
+    if (isWindows) {
+      cmdVec.add("cmd.exe");
+      cmdVec.add("/c");
+      sb.append("start /b \"\" ");
     } else {
-      result = bgexecInternal(cmdarray, workdir.getPath(), logfile.getPath(), inheritLogfile);
-      if (result != -1) {
-        if (pids != null) {
-          pids.add(Integer.valueOf(result));
-          if (trace != null && trace.length() > 0) {
-            System.out.println("bgexec child pid is: " + result);
-          }
-        }
+      // to address issue with users that don't have bash shell installed
+      if (commandShell.equals("bash")) {
+        cmdVec.add("bash");
+        cmdVec.add("--norc");
+        cmdVec.add("-c");
+      } else {
+        cmdVec.add(commandShell);
       }
     }
+    // Add the actual command
+    for (int i = 0; i < cmdarray.length; i++) {
+      if (i != 0)
+        sb.append(" ");
+      if (cmdarray[i].length() != 0 && cmdarray[i].charAt(0) == '\"') {
+        // The token has already been quoted, see bug 40835
+        sb.append(cmdarray[i]);
+      } else {
+        sb.append("\"");
+        sb.append(cmdarray[i]);
+        sb.append("\"");
+      }
+    }
+    // Add the IO redirction code, this prevents hangs and IO blocking
+    sb.append(" >> ");
+    sb.append(logfile.getPath());
+    sb.append(" 2>&1");
+    if (isWindows) {
+      sb.append(" <NUL");
+    } else {
+      sb.append(" </dev/null &");
+    }
+    cmdVec.add(sb.toString());
+
+    String[] cmdStrings = (String[]) cmdVec.toArray(new String[0]);
+    if (trace != null && trace.length() > 0) {
+      for (int i = 0; i < cmdStrings.length; i++) {
+        System.out.println("cmdStrings[" + i + "] = " + cmdStrings[i]);
+      }
+      System.out.println("workdir=" + workdir.getPath());
+      System.out.println("logfile=" + logfile.getPath());
+    }
+    final ProcessBuilder procBuilder = new ProcessBuilder(cmdStrings);
+    if (env != null && env.size() > 0) {
+      // adjust the environment variables inheriting from parent
+      procBuilder.environment().putAll(env);
+    }
+    procBuilder.directory(workdir);
+    final Process process = procBuilder.start();
+    try {
+      process.getInputStream().close();
+    } catch (IOException ignore) {
+    }
+    try {
+      process.getOutputStream().close();
+    } catch (IOException ignore) {
+    }
+    try {
+      process.getErrorStream().close();
+    } catch (IOException ignore) {
+    }
+    try {
+      // short count = 1000;
+      boolean processIsStillRunning = true;
+      while (processIsStillRunning) {
+        Thread.sleep(10);
+        try {
+          process.exitValue();
+          processIsStillRunning = false;
+        } catch (IllegalThreadStateException itse) {
+          // Ignore this, we are polling the exitStatus
+          // instead of using the blocking Process#waitFor()
+        }
+      }
+    } catch (InterruptedException ie) {
+      Thread.currentThread().interrupt();
+    }
+
     return result; // Always 0 for pureJava
   }
 
@@ -382,13 +359,8 @@ public class OSProcess {
    *         not be asked to shutdown.
    */
   public static boolean shutdown(int pid) {
-    if (pureMode) {
-      throw new RuntimeException(
-          "shutdown not allowed in pure java mode");
-    } else {
-      checkPid(pid);
-      return _shutdown(pid);
-    }
+    throw new RuntimeException(
+        "shutdown not allowed in pure java mode");
   }
 
   private static native boolean _shutdown(int pid);
@@ -402,13 +374,8 @@ public class OSProcess {
    * @return true if the process was killed; false if it does not exist or can not be killed.
    */
   public static boolean kill(int pid) {
-    if (pureMode) {
-      throw new RuntimeException(
-          "kill not allowed in pure java mode");
-    } else {
-      checkPid(pid);
-      return _kill(pid);
-    }
+    throw new RuntimeException(
+        "kill not allowed in pure java mode");
   }
 
   private static native boolean _kill(int pid);
@@ -431,7 +398,7 @@ public class OSProcess {
    * @return true if the process was told; false if it does not exist or can not be told.
    */
   public static boolean printStacks(int pid, boolean useNative) {
-    if (pureMode || !useNative) {
+    if (!useNative) {
       if (pid > 0 && pid != myPid[0]) {
         return false;
       }
@@ -561,23 +528,8 @@ public class OSProcess {
    * @return true if the process exists; false if it does not.
    */
   public static boolean exists(int pid) {
-    if (pureMode) {
-      throw new RuntimeException(
-          "exists not allowed in pure java mode");
-    }
-    checkPid(pid);
-
-    if (reapPid(pid)) {
-      try {
-        pids.remove(Integer.valueOf(pid));
-      } catch (Exception ignore) {
-      }
-      String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
-      if (trace != null && trace.length() > 0) {
-        System.out.println("reaped pid: " + pid);
-      }
-    }
-    return nativeExists(pid);
+    throw new RuntimeException(
+        "exists not allowed in pure java mode");
   }
 
   private static native boolean nativeExists(int pid);
@@ -593,12 +545,8 @@ public class OSProcess {
    * immediately.
    */
   public static void waitForPidToExit(int pid) {
-    if (pureMode) {
-      throw new RuntimeException(
-          "waitForPidToExit not allowed in pure java mode");
-    }
-    checkPid(pid);
-    waitForPid(pid);
+    throw new RuntimeException(
+        "waitForPidToExit not allowed in pure java mode");
   }
 
   /**
@@ -607,11 +555,8 @@ public class OSProcess {
    * @return true if current directory was set; false if not.
    */
   public static boolean setCurrentDirectory(File curDir) {
-    if (pureMode) {
-      throw new RuntimeException(
-          "setCurrentDirectory not allowed in pure java mode");
-    }
-    return jniSetCurDir(curDir.getAbsolutePath());
+    throw new RuntimeException(
+        "setCurrentDirectory not allowed in pure java mode");
   }
 
   /**
@@ -648,88 +593,28 @@ public class OSProcess {
   static native int getProcessId();
 
   static {
-    if (pureMode) {
-      // just initialize the pid cache
-      synchronized (myPid) {
-        int pid = 0;
-        // Windows checks have been disabled as the ManagementFactory hack
-        // to find the PID has been seen to work on Windows 7. Add checks
-        // for more specific versions of Windows if this fails on them
-        // if(! System.getProperty("os.name", "").startsWith("Windows")) {
-        String name = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
-        int idx = name.indexOf('@');
-        try {
-          pid = Integer.parseInt(name.substring(0, idx));
-        } catch (NumberFormatException nfe) {
-          // something changed in the RuntimeMXBean name
-        }
-        // }
-        myPid[0] = pid;
-        reaperStarted = true;
+    // just initialize the pid cache
+    synchronized (myPid) {
+      int pid = 0;
+      // Windows checks have been disabled as the ManagementFactory hack
+      // to find the PID has been seen to work on Windows 7. Add checks
+      // for more specific versions of Windows if this fails on them
+      // if(! System.getProperty("os.name", "").startsWith("Windows")) {
+      String name = java.lang.management.ManagementFactory.getRuntimeMXBean().getName();
+      int idx = name.indexOf('@');
+      try {
+        pid = Integer.parseInt(name.substring(0, idx));
+      } catch (NumberFormatException nfe) {
+        // something changed in the RuntimeMXBean name
       }
-    } else {
-      if (reapPid(-1)) {
-        pids = Collections.synchronizedSet(new HashSet());
-        reaperThread = new LoggingThread("osprocess reaper", () -> {
-          synchronized (myPid) {
-            myPid[0] = getProcessId();
-            reaperStarted = true;
-          }
-          String trace = System.getProperty("org.apache.geode.internal.OSProcess.trace");
-          int secondsToSleep = (1000 * 60) * 1; // one minute
-          if (trace != null && trace.length() > 0) {
-            secondsToSleep = 1000; // every second
-          }
-          // reap all the pids we have every once in a while
-          while (true) {
-            SystemFailure.checkFailure();
-            try {
-              Iterator it = pids.iterator();
-              while (it.hasNext()) {
-                Object o = it.next();
-                int pid = ((Integer) o).intValue();
-                if (reapPid(pid)) {
-                  try {
-                    it.remove();
-                    if (trace != null && trace.length() > 0) {
-                      System.out.println("reaped pid: " + pid);
-                    }
-                  } catch (Exception e) {
-                    // make sure and remove it since it was
-                    // reaped.
-                    pids.remove(o);
-                    if (trace != null && trace.length() > 0) {
-                      System.out.println("reaped pid: " + pid);
-                    }
-                    throw e;
-                  }
-                }
-              }
-              Thread.sleep(secondsToSleep);
-            } catch (InterruptedException e) {
-              Thread.currentThread().interrupt();
-              break;
-            } catch (Exception e) {
-              // e.printStackTrace(); // DEBUG
-              // ignore
-            }
-          }
-        });
-        reaperThread.start();
-      } else {
-        // platform does not need a reaper thread,
-        // just initialize the pid cache
-        synchronized (myPid) {
-          myPid[0] = getProcessId();
-          reaperStarted = true;
-        }
-      }
+      // }
+      myPid[0] = pid;
+      reaperStarted = true;
     }
   }
 
   /**
-   * Get the vm's process id. On Linux, this returns the processId of the reaper thread. If we are
-   * in {@linkplain PureJavaMode#isPure pure Java mode}, then <code>0</code> is returned.
+   * Get the vm's process id. On Linux, this returns the processId of the reaper thread.
    *
    * @return the vm's process id.
    */
@@ -775,9 +660,6 @@ public class OSProcess {
             .setBranchOutputStream(new BufferedOutputStream(newFileStream, 128));
       } else {
         System.setErr(newPrintStream);
-      }
-      if (!pureMode) {
-        redirectCOutput(newOutput.getPath());
       }
     }
     return newPrintStream;

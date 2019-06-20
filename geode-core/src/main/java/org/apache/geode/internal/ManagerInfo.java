@@ -259,11 +259,8 @@ public class ManagerInfo implements DataSerializable {
     boolean interrupted = false;
     try {
       ManagerInfo mi = ManagerInfo.loadManagerInfo(directory, locator);
-      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
-        return KILLED_STATUS_CODE;
-      } else {
-        return mi.getManagerStatus();
-      }
+      return mi.getManagerStatus();
+
     } catch (UnstartedSystemException ex) {
       return STOPPED_STATUS_CODE;
     } catch (GemFireIOException ex) {
@@ -300,7 +297,7 @@ public class ManagerInfo implements DataSerializable {
         return false;
       }
       // Check to see if manager process exists, assume it is for PureJava
-      if (PureJavaMode.isPure() || OSProcess.exists(mi.getManagerProcessId())) {
+      if (OSProcess.exists(mi.getManagerProcessId())) {
         return true;
       }
       return false;
@@ -331,10 +328,6 @@ public class ManagerInfo implements DataSerializable {
       int status = mi.getManagerStatus();
       if (status != STARTED_STATUS_CODE && status != STARTING_STATUS_CODE
           && status != STOPPING_STATUS_CODE) {
-        return false;
-      }
-      // Check to see if manager process exists
-      if (!PureJavaMode.isPure() && !OSProcess.exists(mi.getManagerProcessId())) {
         return false;
       }
       return true;

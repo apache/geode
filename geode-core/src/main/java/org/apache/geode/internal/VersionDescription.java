@@ -119,7 +119,7 @@ public class VersionDescription {
   }
 
   private String getNativeCodeVersion() {
-    return SmHelper.getNativeVersion();
+    return "native code unavailable";
   }
 
   void print(PrintWriter pw) {

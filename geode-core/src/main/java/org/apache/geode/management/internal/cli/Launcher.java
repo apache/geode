@@ -26,7 +26,6 @@ import org.springframework.shell.core.ExitShellRequest;
 
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -82,11 +81,6 @@ public class Launcher {
 
   private static final String MSG_INVALID_COMMAND_OR_OPTION = "Invalid command or option : {0}."
       + GfshParser.LINE_SEPARATOR + "Use 'gfsh help' to display additional information.";
-
-  static {
-    // See 47325
-    System.setProperty(PureJavaMode.PURE_MODE_PROPERTY, "true");
-  }
 
   private final Set<String> allowedCommandLineCommands;
   private final OptionParser commandLineParser;
