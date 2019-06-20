@@ -230,7 +230,7 @@ public class ExecuteRegionFunctionOp {
         throw failedException;
       } catch (ServerConnectivityException se) {
 
-        logger.info("JASON" + maxRetryAttempts, e);
+        logger.info("JASON" + maxRetryAttempts, se);
         if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
           // If the retryAttempt is set to default(-1). Try it on all servers once.
           // Calculating number of servers when function is re-executed as it involves
