@@ -1603,17 +1603,13 @@ public class DistributionStats implements DMStats {
     }
     if (initTime != 0) {
       long waitTime = System.currentTimeMillis() - initTime;
-      recordMaxReplyWaitTime(waitTime);
+      maxReplyWaitTime.recordMax(waitTime);
     }
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);
 
     Breadcrumbs.setSendSide(null); // clear any recipient breadcrumbs set by the message
     Breadcrumbs.setProblem(null); // clear out reply-wait errors
-  }
-
-  void recordMaxReplyWaitTime(long waitTime) {
-    maxReplyWaitTime.recordMax(waitTime);
   }
 
   @Override

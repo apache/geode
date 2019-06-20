@@ -14,12 +14,14 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import org.apache.geode.Statistics;
 
@@ -41,14 +43,15 @@ public class DistributionStatsTest {
   }
 
   @Test
-  public void recordMaxReplyWaitTime_singleRecord() {
-    distributionStats.recordMaxReplyWaitTime(12);
+  public void recordMaxReplyWaitTime() {
+    distributionStats.endReplyWait(12000000, 12);
 
-    verify(mockStats).incLong(45, 12L);
+    verify(mockStats).incLong(eq(44), Mockito.anyLong());
+    verify(mockStats).incLong(eq(45), Mockito.anyLong());
   }
 
   @Test
-  public void incSentMessagesTime_oneMessage() {
+  public void incSentMessagesTime() {
     distributionStats.incSentMessagesTime(50000000L);
 
     verify(mockStats).incLong(3, 50000000L);
