@@ -97,16 +97,6 @@ public class LegacyStatCounter implements Counter {
 
     /**
      * Prepares to associate the eventual {@code LegacyStatCounter} with the specified {@code
-     * int} stat. The given {@code Statistics} and {@code statId} must identify an {@code int}
-     * stat.
-     */
-    public Builder intStatistic(Statistics statistics, int statId) {
-      statisticBinding = new IntStatisticBinding(statistics, statId);
-      return this;
-    }
-
-    /**
-     * Prepares to associate the eventual {@code LegacyStatCounter} with the specified {@code
      * long} stat. The given {@code Statistics} and {@code statId} must identify a {@code long}
      * stat.
      */
