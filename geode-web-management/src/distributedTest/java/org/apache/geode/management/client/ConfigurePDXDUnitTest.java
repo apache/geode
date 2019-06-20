@@ -78,7 +78,7 @@ public class ConfigurePDXDUnitTest {
     assertThat(list.size()).isEqualTo(1);
     PdxType pdxResult = list.get(0);
     assertThat(pdxResult.getGroup()).isNull();
-    assertThat(pdxResult.getUri()).isEqualTo(PdxType.PDX_ENDPOINT);
+    assertThat(pdxResult.getUri()).isEqualTo("/geode-management/v2/configurations/pdx");
 
     Status status = result.getMemberStatuses().get("server-1");
     assertThat(status.getMessage())
