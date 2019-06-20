@@ -26,17 +26,21 @@ import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
 public class MaxLongGaugeTest {
   private StripedStatisticsImpl fakeStatistics;
+  private int statId1;
+  private int statId2;
 
   @Before
   public void setup() {
-    StatisticDescriptor descriptor =
+    StatisticDescriptor descriptor1 =
         createLongGauge("1", "", "", true);
     StatisticDescriptor descriptor2 =
         createLongGauge("2", "", "", true);
 
-    StatisticDescriptor[] descriptors = {descriptor, descriptor2};
+    StatisticDescriptor[] descriptors = {descriptor1, descriptor2};
     StatisticsTypeImpl statisticsType = new StatisticsTypeImpl("abc", "test",
         descriptors);
+    statId1 = descriptor1.getId();
+    statId2 = descriptor2.getId();
     fakeStatistics = new StripedStatisticsImpl(
         statisticsType,
         "def", 12, 10,
@@ -49,7 +53,7 @@ public class MaxLongGaugeTest {
 
     maxLongGauge.recordMax(12);
 
-    assertThat(fakeStatistics.getLong(0)).isEqualTo(12);
+    assertThat(fakeStatistics.getLong(statId1)).isEqualTo(12);
   }
 
   @Test
@@ -59,7 +63,7 @@ public class MaxLongGaugeTest {
     maxLongGauge.recordMax(12);
     maxLongGauge.recordMax(13);
 
-    assertThat(fakeStatistics.getLong(0)).isEqualTo(13);
+    assertThat(fakeStatistics.getLong(statId1)).isEqualTo(13);
   }
 
   @Test
@@ -69,7 +73,7 @@ public class MaxLongGaugeTest {
     maxLongGauge.recordMax(12);
     maxLongGauge.recordMax(11);
 
-    assertThat(fakeStatistics.getLong(0)).isEqualTo(12);
+    assertThat(fakeStatistics.getLong(statId1)).isEqualTo(12);
   }
 
   @Test
@@ -78,7 +82,7 @@ public class MaxLongGaugeTest {
 
     maxLongGauge.recordMax(-12);
 
-    assertThat(fakeStatistics.getLong(0)).isEqualTo(0);
+    assertThat(fakeStatistics.getLong(statId1)).isEqualTo(0);
   }
 
   @Test
@@ -87,7 +91,7 @@ public class MaxLongGaugeTest {
 
     maxLongGauge.recordMax(0);
 
-    assertThat(fakeStatistics.getLong(0)).isEqualTo(0);
+    assertThat(fakeStatistics.getLong(statId1)).isEqualTo(0);
   }
 
   @Test
@@ -96,6 +100,6 @@ public class MaxLongGaugeTest {
 
     maxLongGauge.recordMax(17);
 
-    assertThat(fakeStatistics.getLong(1)).isEqualTo(17);
+    assertThat(fakeStatistics.getLong(statId2)).isEqualTo(17);
   }
 }
