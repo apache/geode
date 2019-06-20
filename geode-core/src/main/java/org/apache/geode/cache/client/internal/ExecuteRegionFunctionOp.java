@@ -66,7 +66,7 @@ public class ExecuteRegionFunctionOp {
   private static void execute(ExecutablePool pool, String region, String function,
       ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
       byte hasResult, int maxRetryAttempts, boolean isHA, boolean optimizeForWrite,
-      AbstractOp op, boolean isReexecute, Set<String> failedNodes) {
+      ExecuteRegionFunctionOpImpl op, boolean isReexecute, Set<String> failedNodes) {
 
     if (!isHA) {
       maxRetryAttempts = 0;
@@ -75,7 +75,7 @@ public class ExecuteRegionFunctionOp {
     do {
       try {
         if (isReexecute) {
-          op = new ExecuteRegionFunctionOpImpl((ExecuteRegionFunctionOpImpl) op,
+          op = new ExecuteRegionFunctionOpImpl(op,
               (byte) 1/* isReExecute */, failedNodes);
         }
         pool.execute(op, 0);
