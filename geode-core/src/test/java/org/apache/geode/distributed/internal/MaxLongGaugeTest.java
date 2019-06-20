@@ -25,7 +25,6 @@ import org.apache.geode.internal.statistics.StatisticsTypeImpl;
 import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
 public class MaxLongGaugeTest {
-  private MaxLongGauge maxLongGauge;
   private StripedStatisticsImpl fakeStatistics;
 
   @Before
