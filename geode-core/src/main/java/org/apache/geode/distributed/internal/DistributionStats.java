@@ -14,8 +14,6 @@
  */
 package org.apache.geode.distributed.internal;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.StatisticDescriptor;
@@ -938,8 +936,8 @@ public class DistributionStats implements DMStats {
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
 
-  private final AtomicLong maxReplyWaitTime = new AtomicLong();
-  private final AtomicLong maxSentMessagesTime = new AtomicLong();
+  private final MaxLongGauge maxReplyWaitTime;
+  private final MaxLongGauge maxSentMessagesTime;
 
   // private final HistogramStats replyHandoffHistogram;
   // private final HistogramStats replyWaitHistogram;
@@ -952,6 +950,8 @@ public class DistributionStats implements DMStats {
    */
   public DistributionStats(StatisticsFactory f, long statId) {
     this.stats = f.createAtomicStatistics(type, "distributionStats", statId);
+    maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
+    maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
     // this.replyHandoffHistogram = new HistogramStats("ReplyHandOff", "nanoseconds", f,
     // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
     // false);
@@ -965,6 +965,9 @@ public class DistributionStats implements DMStats {
    */
   public DistributionStats(Statistics stats) {
     this.stats = stats;
+    maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
+    maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
+
     // this.replyHandoffHistogram = null;
     // this.replyWaitHistogram = null;
   }
@@ -1046,7 +1049,7 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       this.stats.incLong(sentMessagesTimeId, nanos);
       long millis = NanoTimer.nanosToMillis(nanos);
-      recordMaxTime(sentMessagesMaxTimeId, millis, maxSentMessagesTime);
+      maxSentMessagesTime.recordMax(millis);
     }
   }
 
@@ -1597,7 +1600,8 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(replyWaitTimeId, getStatTime() - startNanos);
       // this.replyWaitHistogram.endOp(delta);
-      recordMaxReplyWaitTime(System.currentTimeMillis() - initTime);
+      long currentWaitTime = System.currentTimeMillis() - initTime;
+      recordMaxReplyWaitTime(currentWaitTime);
     }
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);
@@ -1606,23 +1610,8 @@ public class DistributionStats implements DMStats {
     Breadcrumbs.setProblem(null); // clear out reply-wait errors
   }
 
-  void recordMaxReplyWaitTime(long currentWaitTime) {
-    recordMaxTime(replyWaitMaxTimeId, currentWaitTime, maxReplyWaitTime);
-  }
-
-  private void recordMaxTime(int statId, long currentTime, AtomicLong maxTime) {
-    boolean done = false;
-    while (!done) {
-      long maxWaitTime = maxTime.get();
-      if (currentTime <= maxWaitTime) {
-        done = true;
-      } else {
-        done = maxTime.compareAndSet(maxWaitTime, currentTime);
-        if (done) {
-          stats.incLong(statId, currentTime - maxWaitTime);
-        }
-      }
-    }
+  void recordMaxReplyWaitTime(long waitTime) {
+    maxReplyWaitTime.recordMax(waitTime);
   }
 
   @Override
