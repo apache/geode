@@ -1600,8 +1600,10 @@ public class DistributionStats implements DMStats {
     if (enableClockStats) {
       stats.incLong(replyWaitTimeId, getStatTime() - startNanos);
       // this.replyWaitHistogram.endOp(delta);
-      long currentWaitTime = System.currentTimeMillis() - initTime;
-      recordMaxReplyWaitTime(currentWaitTime);
+    }
+    if (initTime != 0) {
+      long waitTime = System.currentTimeMillis() - initTime;
+      recordMaxReplyWaitTime(waitTime);
     }
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);

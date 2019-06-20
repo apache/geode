@@ -7,7 +7,7 @@
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless rired y applicable law or agreed to in writing, software distributed under the License
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
@@ -18,6 +18,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.Statistics;
 
+/**
+ * This class holds the max value of a stat inside an AtomicLong. Every time a higher value is found
+ * the class will forward the delta between the old max and the new max to the statistics class.
+ * This pattern is a lock-less alternative to calling Statistics.getLong and then updating the max.
+ */
 class MaxLongGauge {
   private final int statId;
   private final Statistics stats;
