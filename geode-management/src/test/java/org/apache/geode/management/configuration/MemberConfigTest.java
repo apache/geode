@@ -13,39 +13,22 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.configuration;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.RestfulEndpoint;
 
-
-public class GatewayReceiverConfigTest {
-  private GatewayReceiverConfig receiver;
-
-  @Before
-  public void before() throws Exception {
-    receiver = new GatewayReceiverConfig();
-  }
+public class MemberConfigTest {
 
   @Test
-  public void getId() throws Exception {
-    assertThat(receiver.getId()).isEqualTo("cluster");
-
-    receiver.setGroup("group");
-    assertThat(receiver.getId()).isEqualTo("group");
-  }
-
-  @Test
-  public void getUri() throws Exception {
-    assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/gateways/receivers/cluster");
-
-    receiver.setGroup("group");
-    assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/gateways/receivers/group");
+  public void getUri() {
+    MemberConfig config = new MemberConfig();
+    config.setId("memberA");
+    assertThat(config.getEndpoint()).isEqualTo("/members");
+    assertThat(config.getUri()).isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/members/memberA");
   }
 }
