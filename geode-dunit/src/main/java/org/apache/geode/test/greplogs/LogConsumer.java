@@ -28,7 +28,8 @@ import static org.apache.geode.test.greplogs.Patterns.EXCEPTION_4;
 import static org.apache.geode.test.greplogs.Patterns.IGNORED_EXCEPTION;
 import static org.apache.geode.test.greplogs.Patterns.JAVA_LANG_ERROR;
 import static org.apache.geode.test.greplogs.Patterns.LOG_STATEMENT;
-import static org.apache.geode.test.greplogs.Patterns.MISFORMATTED_I18N_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.MALFORMED_I18N_MESSAGE;
+import static org.apache.geode.test.greplogs.Patterns.MALFORMED_LOG4J_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.RMI_WARNING;
 import static org.apache.geode.test.greplogs.Patterns.RVV_BIT_SET_MESSAGE;
 import static org.apache.geode.test.greplogs.Patterns.WARN_OR_LESS_LOG_LEVEL;
@@ -94,7 +95,9 @@ public class LogConsumer {
       return null;
     }
 
-    if (saveFlag || ERROR_OR_MORE_LOG_LEVEL.matcher(line).find()) {
+    if (saveFlag ||
+        ERROR_OR_MORE_LOG_LEVEL.matcher(line).find() ||
+        isExceptionErrorOrSomeSpecialCase(line)) {
       if (!saveFlag) {
         setInstanceVariablesForSomeReason(line);
       } else {
@@ -122,11 +125,6 @@ public class LogConsumer {
     } else if (isWroteOrRMIWarn(line)) {
       handleWroteOrRMIWarn();
       return null;
-
-    } else if (isExceptionErrorOrSomeSpecialCase(line)) {
-      if (!matchesIgnoredPatterns(line)) {
-        return enforceErrorLimitOnShortName(line);
-      }
     }
 
     return null;
@@ -162,31 +160,13 @@ public class LogConsumer {
     return DEBUG_WROTE_EXCEPTION.matcher(line).find() || RMI_WARNING.matcher(line).find();
   }
 
-  private StringBuilder enforceErrorLimitOnShortName(CharSequence line) {
-    // it's the Exception colon that we want to find
-    // along with the next six words and define to shortName
-
-    // shortName is only used for the unique string to count the
-    // number of times an exception match occurs. This is so
-    // we can suppress further printing if we hit the limit
-
-    String shortName = getShortName(line);
-    if (shortName != null) {
-      Integer i = individualErrorCount.get(shortName);
-      int occurrences = i == null ? 1 : i + 1;
-      individualErrorCount.put(shortName, occurrences);
-      return enforceErrorLimit(occurrences, line + lineSeparator(), lineNumber, logName);
-    }
-
-    return enforceErrorLimit(1, line + lineSeparator(), lineNumber, logName);
-  }
-
   private boolean isExceptionErrorOrSomeSpecialCase(CharSequence line) {
-    return EXCEPTION.matcher(line).find() ||
+    return (EXCEPTION.matcher(line).find() ||
         JAVA_LANG_ERROR.matcher(line).find() ||
-        MISFORMATTED_I18N_MESSAGE.matcher(line).find() &&
-            !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find()
-                && RVV_BIT_SET_MESSAGE.matcher(line).find());
+        MALFORMED_I18N_MESSAGE.matcher(line).find() ||
+        MALFORMED_LOG4J_MESSAGE.matcher(line).find()) &&
+        !(WARN_OR_LESS_LOG_LEVEL.matcher(line).find() &&
+            RVV_BIT_SET_MESSAGE.matcher(line).find());
   }
 
   private void addErrLinesToAll(CharSequence line) {

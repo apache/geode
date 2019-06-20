@@ -51,10 +51,12 @@ public enum Patterns {
   EXCEPTION_3(compile("( [\\w\\.]+Exception)$")),
   /** "Exception:" matcher 4 */
   EXCEPTION_4(compile("^([^:]+: (([\\w\"]+ ){0,6}))")),
-  /** Misformatted i18n message */
-  MISFORMATTED_I18N_MESSAGE(compile("[^\\d]\\{\\d+\\}")),
+  /** Malformed i18n message */
+  MALFORMED_I18N_MESSAGE(compile("[^\\d]\\{\\d+\\}")),
   /** RegionVersionVector bit set message */
-  RVV_BIT_SET_MESSAGE(compile("RegionVersionVector.+bsv\\d+.+bs=\\{\\d+\\}"));
+  RVV_BIT_SET_MESSAGE(compile("RegionVersionVector.+bsv\\d+.+bs=\\{\\d+\\}")),
+  /** "{}" literal which is probably unused Log4J parameter */
+  MALFORMED_LOG4J_MESSAGE(compile("\\{\\}"));
 
   private final Pattern pattern;
 
