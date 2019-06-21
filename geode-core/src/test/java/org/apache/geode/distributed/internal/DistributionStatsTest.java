@@ -43,7 +43,7 @@ public class DistributionStatsTest {
   }
 
   @Test
-  public void recordMaxReplyWaitTime() {
+  public void endReplyWait() {
     distributionStats.endReplyWait(12000000, 12);
 
     verify(mockStats).incLong(eq(DistributionStats.replyWaitTimeId), Mockito.anyLong());
