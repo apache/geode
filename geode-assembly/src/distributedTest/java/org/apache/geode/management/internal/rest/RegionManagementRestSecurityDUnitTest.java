@@ -55,7 +55,7 @@ public class RegionManagementRestSecurityDUnitTest {
 
     server = cluster.startServerVM(1, config, locator.getPort());
     restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
 
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");

@@ -37,7 +37,7 @@ public class GeodeManagementFeatureFlagDUnitTest {
         l -> l.withSystemProperty(ClusterManagementService.FEATURE_FLAG, "false")
             .withHttpService());
     restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
     restClient.doGetAndAssert("/ping").hasStatusCode(404);
   }
 
@@ -45,7 +45,7 @@ public class GeodeManagementFeatureFlagDUnitTest {
   public void geodeManagementIsEnabledWithFeatureFlag() throws Exception {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
     restClient.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }
 }

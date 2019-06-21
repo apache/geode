@@ -47,7 +47,7 @@ import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = SecuredLocatorContextLoader.class)
 @WebAppConfiguration
 public class RegionManagementSecurityRestDUnitTest {

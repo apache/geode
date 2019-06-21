@@ -36,7 +36,7 @@ import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = SecuredLocatorContextLoader.class)
 @WebAppConfiguration
 public class PdxManagementTest {
