@@ -96,10 +96,10 @@ public class ExecuteRegionFunctionSingleHopOp {
           new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(), function,
               serverRegionExecutor, resultCollector, timeoutMs);
 
-      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(),
-          function.getId(), serverRegionExecutor, resultCollector, hasResult, failedNodes,
+      ExecuteRegionFunctionOp.reexecute(pool,
+          resultCollector, failedNodes,
           retryAttempts - 1,
-          function.isHA(), function.optimizeForWrite(),
+          function.isHA(),
           executeRegionFunctionOp);
     }
 
@@ -146,9 +146,9 @@ public class ExecuteRegionFunctionSingleHopOp {
               serverRegionExecutor, resultCollector, hasResult, isHA,
               optimizeForWrite, true, timeoutMs);
 
-      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
-          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
-          isHA, optimizeForWrite,
+      ExecuteRegionFunctionOp.reexecute(pool,
+          resultCollector, failedNodes, retryAttempts - 1,
+          isHA,
           executeRegionFunctionOp);
     }
 
