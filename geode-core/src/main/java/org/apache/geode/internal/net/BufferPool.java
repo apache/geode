@@ -17,6 +17,7 @@ package org.apache.geode.internal.net;
 import java.lang.ref.SoftReference;
 import java.nio.ByteBuffer;
 import java.util.IdentityHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.geode.distributed.internal.DMStats;
@@ -43,8 +44,8 @@ public class BufferPool {
   /**
    * A list of soft references to byte buffers.
    */
-  private final ConcurrentLinkedQueue<BBSoftReference> bufferQueue =
-      new ConcurrentLinkedQueue<>();
+  private final ConcurrentLinkedDeque<ByteBufferSoftReference> bufferQueue =
+      new ConcurrentLinkedDeque<>();
 
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
@@ -67,39 +68,18 @@ public class BufferPool {
   private ByteBuffer acquireBuffer(int size, boolean send) {
     ByteBuffer result;
     if (useDirectBuffers) {
-      IdentityHashMap<BBSoftReference, BBSoftReference> alreadySeen = null; // keys are used like a
-                                                                            // set
-      BBSoftReference ref = bufferQueue.poll();
-      while (ref != null) {
-        ByteBuffer bb = ref.getBB();
-        if (bb == null) {
-          // it was garbage collected
-          int refSize = ref.consumeSize();
-          if (refSize > 0) {
-            if (ref.getSend()) { // fix bug 46773
-              stats.incSenderBufferSize(-refSize, true);
-            } else {
-              stats.incReceiverBufferSize(-refSize, true);
-            }
-          }
-        } else if (bb.capacity() >= size) {
-          bb.rewind();
-          bb.limit(size);
-          return bb;
-        } else {
-          // wasn't big enough so put it back in the queue
-          Assert.assertTrue(bufferQueue.offer(ref));
-          if (alreadySeen == null) {
-            alreadySeen = new IdentityHashMap<>();
-          }
-          if (alreadySeen.put(ref, ref) != null) {
-            // if it returns non-null then we have already seen this item
-            // so we have worked all the way through the queue once.
-            // So it is time to give up and allocate a new buffer.
-            break;
-          }
+      for(ByteBufferSoftReference ref : bufferQueue) {
+        bufferQueue.remove(ref);
+
+        if(garbageCollected(ref)){
+          removeFromQueuePermanently(ref);
         }
-        ref = bufferQueue.poll();
+        else if(bigEnough(ref, size)){
+          return borrowFromQueue(ref, size);
+        }
+        else {
+          bufferQueue.offerFirst(ref);
+        }
       }
       result = ByteBuffer.allocateDirect(size);
     } else {
@@ -112,6 +92,33 @@ public class BufferPool {
       stats.incReceiverBufferSize(size, useDirectBuffers);
     }
     return result;
+  }
+
+  private ByteBuffer borrowFromQueue(ByteBufferSoftReference softReference, int size) {
+    ByteBuffer buffer = softReference.getByteBuffer();
+    buffer.rewind();
+    buffer.limit(size);
+
+    return buffer;
+  }
+
+  private boolean bigEnough(ByteBufferSoftReference softReference, int size) {
+    return softReference.getByteBuffer().capacity() >= size;
+  }
+
+  private void removeFromQueuePermanently(ByteBufferSoftReference softReference) {
+    int refSize = softReference.consumeSize();
+    if(refSize > 0) {
+      if (softReference.getSend()) {
+        stats.incSenderBufferSize(-refSize, true);
+      } else {
+        stats.incReceiverBufferSize(-refSize, true);
+      }
+    }
+  }
+
+  private boolean garbageCollected(ByteBufferSoftReference softReference) {
+    return softReference.getByteBuffer() == null;
   }
 
   public void releaseSenderBuffer(ByteBuffer bb) {
@@ -190,7 +197,7 @@ public class BufferPool {
    */
   private void releaseBuffer(ByteBuffer bb, boolean send) {
     if (useDirectBuffers) {
-      BBSoftReference bbRef = new BBSoftReference(bb, send);
+      ByteBufferSoftReference bbRef = new ByteBufferSoftReference(bb, send);
       bufferQueue.offer(bbRef);
     } else {
       if (send) {
@@ -206,11 +213,11 @@ public class BufferPool {
    * think this should be a weak reference. The JVM doesn't seem to clear soft references if it is
    * getting low on direct memory.
    */
-  private static class BBSoftReference extends SoftReference<ByteBuffer> {
+  private static class ByteBufferSoftReference extends SoftReference<ByteBuffer> {
     private int size;
     private final boolean send;
 
-    BBSoftReference(ByteBuffer bb, boolean send) {
+    ByteBufferSoftReference(ByteBuffer bb, boolean send) {
       super(bb);
       this.size = bb.capacity();
       this.send = send;
@@ -230,7 +237,7 @@ public class BufferPool {
       return this.send;
     }
 
-    public ByteBuffer getBB() {
+    public ByteBuffer getByteBuffer() {
       return super.get();
     }
   }
