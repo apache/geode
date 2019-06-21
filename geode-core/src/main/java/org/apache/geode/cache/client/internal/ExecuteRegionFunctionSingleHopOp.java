@@ -91,9 +91,16 @@ public class ExecuteRegionFunctionSingleHopOp {
     }
 
     if (retryAttempts > 0) {
-      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), function,
-          serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
-          timeoutMs);
+
+      final ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl executeRegionFunctionOp =
+          new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(), function,
+              serverRegionExecutor, resultCollector, timeoutMs);
+
+      ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(),
+          function.getId(), serverRegionExecutor, resultCollector, hasResult, failedNodes,
+          retryAttempts - 1,
+          function.isHA(), function.optimizeForWrite(),
+          executeRegionFunctionOp);
     }
 
     resultCollector.endResults();
@@ -105,7 +112,8 @@ public class ExecuteRegionFunctionSingleHopOp {
       byte hasResult,
       Map<ServerLocation, ? extends HashSet> serverToFilterMap,
       int mRetryAttempts,
-      boolean allBuckets, boolean isHA, boolean optimizeForWrite, final int timeoutMs) {
+      boolean allBuckets, boolean isHA, boolean optimizeForWrite,
+      final int timeoutMs) {
 
     Set<String> failedNodes = new HashSet<>();
 
@@ -132,9 +140,16 @@ public class ExecuteRegionFunctionSingleHopOp {
 
     if (retryAttempts > 0) {
       resultCollector.clearResults();
+
+      final ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl executeRegionFunctionOp =
+          new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(), functionId,
+              serverRegionExecutor, resultCollector, hasResult, isHA,
+              optimizeForWrite, true, timeoutMs);
+
       ExecuteRegionFunctionOp.reexecute(pool, region.getFullPath(), functionId,
           serverRegionExecutor, resultCollector, hasResult, failedNodes, retryAttempts - 1,
-          isHA, optimizeForWrite, timeoutMs);
+          isHA, optimizeForWrite,
+          executeRegionFunctionOp);
     }
 
     resultCollector.endResults();

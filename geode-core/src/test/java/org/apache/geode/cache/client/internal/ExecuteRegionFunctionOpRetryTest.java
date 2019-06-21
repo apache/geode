@@ -347,13 +347,19 @@ public class ExecuteRegionFunctionOpRetryTest {
             () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, FUNCTION_NAME,
                 executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts,
                 testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+                OPTIMIZE_FOR_WRITE_SETTING,
+                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, FUNCTION_NAME,
+                    executor, resultCollector, FUNCTION_HAS_RESULT, testSupport.toBoolean(haStatus),
+                    OPTIMIZE_FOR_WRITE_SETTING,
+                    true, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, function,
-                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts,
-                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME,
+                function.getId(), executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts,
+                function.isHA(), function.optimizeForWrite(),
+                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, function,
+                    executor, resultCollector, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
@@ -378,13 +384,19 @@ public class ExecuteRegionFunctionOpRetryTest {
             () -> ExecuteRegionFunctionOp.reexecute(executablePool, REGION_NAME, FUNCTION_NAME,
                 executor, resultCollector, FUNCTION_HAS_RESULT, new HashSet<>(),
                 retryAttempts, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+                OPTIMIZE_FOR_WRITE_SETTING,
+                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, FUNCTION_NAME,
+                    executor, resultCollector, FUNCTION_HAS_RESULT, testSupport.toBoolean(haStatus),
+                    OPTIMIZE_FOR_WRITE_SETTING, true, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.reexecute(executablePool, REGION_NAME, function,
-                executor, resultCollector, FUNCTION_HAS_RESULT, new HashSet<>(), retryAttempts,
-                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+            () -> ExecuteRegionFunctionOp.reexecute(executablePool, REGION_NAME,
+                function.getId(), executor, resultCollector, FUNCTION_HAS_RESULT, new HashSet<>(),
+                retryAttempts,
+                function.isHA(), function.optimizeForWrite(),
+                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, function,
+                    executor, resultCollector, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
