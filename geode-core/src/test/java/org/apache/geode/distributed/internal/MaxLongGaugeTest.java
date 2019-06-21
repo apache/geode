@@ -49,7 +49,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_singleRecord() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(0, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId1, fakeStatistics);
 
     maxLongGauge.recordMax(12);
 
@@ -58,7 +58,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_multipleRecords() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(0, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId1, fakeStatistics);
 
     maxLongGauge.recordMax(12);
     maxLongGauge.recordMax(13);
@@ -68,7 +68,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_recordNothing_ifMaxIsNotExceeded() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(0, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId1, fakeStatistics);
 
     maxLongGauge.recordMax(12);
     maxLongGauge.recordMax(11);
@@ -78,7 +78,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_ignoresNegatives() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(0, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId1, fakeStatistics);
 
     maxLongGauge.recordMax(-12);
 
@@ -87,7 +87,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_ignoresZero() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(0, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId1, fakeStatistics);
 
     maxLongGauge.recordMax(0);
 
@@ -96,7 +96,7 @@ public class MaxLongGaugeTest {
 
   @Test
   public void recordMax_usesStatId() {
-    MaxLongGauge maxLongGauge = new MaxLongGauge(1, fakeStatistics);
+    MaxLongGauge maxLongGauge = new MaxLongGauge(statId2, fakeStatistics);
 
     maxLongGauge.recordMax(17);
 

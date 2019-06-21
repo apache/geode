@@ -46,15 +46,15 @@ public class DistributionStatsTest {
   public void recordMaxReplyWaitTime() {
     distributionStats.endReplyWait(12000000, 12);
 
-    verify(mockStats).incLong(eq(44), Mockito.anyLong());
-    verify(mockStats).incLong(eq(45), Mockito.anyLong());
+    verify(mockStats).incLong(eq(DistributionStats.replyWaitTimeId), Mockito.anyLong());
+    verify(mockStats).incLong(eq(DistributionStats.replyWaitMaxTimeId), Mockito.anyLong());
   }
 
   @Test
   public void incSentMessagesTime() {
     distributionStats.incSentMessagesTime(50000000L);
 
-    verify(mockStats).incLong(3, 50000000L);
-    verify(mockStats).incLong(4, 50L);
+    verify(mockStats).incLong(DistributionStats.sentMessagesTimeId, 50000000L);
+    verify(mockStats).incLong(DistributionStats.sentMessagesMaxTimeId, 50L);
   }
 }

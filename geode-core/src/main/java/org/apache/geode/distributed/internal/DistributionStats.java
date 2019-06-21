@@ -22,6 +22,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.logging.LogService;
@@ -48,8 +49,10 @@ public class DistributionStats implements DMStats {
   private static final int sentMessagesId;
   private static final int sentCommitMessagesId;
   private static final int commitWaitsId;
-  private static final int sentMessagesTimeId;
-  private static final int sentMessagesMaxTimeId;
+  @VisibleForTesting
+  static final int sentMessagesTimeId;
+  @VisibleForTesting
+  static final int sentMessagesMaxTimeId;
   private static final int broadcastMessagesId;
   private static final int broadcastMessagesTimeId;
   private static final int receivedMessagesId;
@@ -91,9 +94,11 @@ public class DistributionStats implements DMStats {
   private static final int serialQueueThrottleCountId;
   private static final int replyWaitsInProgressId;
   private static final int replyWaitsCompletedId;
-  private static final int replyWaitTimeId;
+  @VisibleForTesting
+  static final int replyWaitTimeId;
   private static final int replyTimeoutsId;
-  private static final int replyWaitMaxTimeId;
+  @VisibleForTesting
+  static final int replyWaitMaxTimeId;
   private static final int receiverConnectionsId;
   private static final int failedAcceptsId;
   private static final int failedConnectsId;
@@ -949,9 +954,7 @@ public class DistributionStats implements DMStats {
    * factory.
    */
   public DistributionStats(StatisticsFactory f, long statId) {
-    this.stats = f.createAtomicStatistics(type, "distributionStats", statId);
-    maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
-    maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
+    this(f.createAtomicStatistics(type, "distributionStats", statId));
     // this.replyHandoffHistogram = new HistogramStats("ReplyHandOff", "nanoseconds", f,
     // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
     // false);
@@ -967,7 +970,6 @@ public class DistributionStats implements DMStats {
     this.stats = stats;
     maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
     maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
-
     // this.replyHandoffHistogram = null;
     // this.replyWaitHistogram = null;
   }
