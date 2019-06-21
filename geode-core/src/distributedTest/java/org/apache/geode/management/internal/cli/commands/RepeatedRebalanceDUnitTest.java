@@ -168,7 +168,8 @@ public class RepeatedRebalanceDUnitTest {
     }
   }
 
-  // The following methods are provided to allow easier examination of the output of the rebalance command
+  // The following methods are provided to allow easier examination of the output of the rebalance
+  // command
   private void assertRedundancyChanged(TabularResultModelAssert tabularResultModelAssert) {
     tabularResultModelAssert.hasRow(0).asList()
         .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).last().isNotEqualTo("0");
