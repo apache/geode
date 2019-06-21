@@ -40,7 +40,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = MockLocatorContextLoader.class)
 @WebAppConfiguration
 public class JsonSerializationTest {

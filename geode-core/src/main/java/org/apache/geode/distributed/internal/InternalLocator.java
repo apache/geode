@@ -717,10 +717,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
               + "=true Geode Management API is enabled.");
       myCache.getHttpService().ifPresent(x -> {
         try {
-          x.addWebApplication("/geode-management", gemfireManagementWar, securityServiceAttr,
+          x.addWebApplication("/management", gemfireManagementWar, securityServiceAttr,
               cmServiceAttr);
         } catch (Throwable e) {
-          logger.warn("Unable to start geode-management service: {}", e.getMessage());
+          logger.warn("Unable to start management service: {}", e.getMessage());
         }
       });
     } else {
