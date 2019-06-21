@@ -105,7 +105,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     stringSize = (int) ReflectionSingleObjectSizer.roundUpSize(stringSize);
 
     int charArraySize = sampleKey.length() * 2 + JvmSizeUtils.getObjectHeaderSize() // char array
-                                                                                     // object
+                                                                                    // object
         + 4; // length of char array
     charArraySize = (int) ReflectionSingleObjectSizer.roundUpSize(charArraySize);
     assertEquals(stringSize, ReflectionSingleObjectSizer.sizeof(String.class));

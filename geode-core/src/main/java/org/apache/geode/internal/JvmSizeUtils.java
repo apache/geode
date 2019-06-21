@@ -118,13 +118,13 @@ public class JvmSizeUtils {
   }
 
   /**
-  * @return true if this process is 64bit
-  * @throws RuntimeException if sun.arch.data.model doesn't fit expectations
-  */
+   * @return true if this process is 64bit
+   * @throws RuntimeException if sun.arch.data.model doesn't fit expectations
+   */
   public static boolean is64Bit() {
     return is64Bit;
   }
-  
+
   public static int getReferenceSize() {
     return referenceSize;
   }
