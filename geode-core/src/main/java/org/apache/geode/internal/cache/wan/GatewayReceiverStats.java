@@ -154,7 +154,7 @@ public class GatewayReceiverStats extends CacheServerStats {
             "number of batches which are out of order on this GatewayReceiver", "operations"),
         f.createIntCounter(EARLY_ACKS, "number of early acknowledgements sent to gatewaySenders",
             "operations"),
-        f.createIntCounter(EVENTS_RECEIVED,
+        f.createLongCounter(EVENTS_RECEIVED,
             EVENTS_RECEIVED_COUNTER_DESCRIPTION,
             EVENTS_RECEIVED_COUNTER_UNITS),
         f.createIntCounter(CREAT_REQUESTS,
@@ -191,7 +191,7 @@ public class GatewayReceiverStats extends CacheServerStats {
 
     this.meterRegistry = meterRegistry;
     eventsReceivedCounter = LegacyStatCounter.builder(EVENTS_RECEIVED_COUNTER_NAME)
-        .intStatistic(stats, eventsReceivedId)
+        .longStatistic(stats, eventsReceivedId)
         .description(EVENTS_RECEIVED_COUNTER_DESCRIPTION)
         .baseUnit(EVENTS_RECEIVED_COUNTER_UNITS)
         .register(meterRegistry);

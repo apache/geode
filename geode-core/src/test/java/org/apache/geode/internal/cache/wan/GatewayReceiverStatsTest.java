@@ -87,7 +87,7 @@ public class GatewayReceiverStatsTest {
 
     gatewayReceiverStats.incEventsReceived(delta);
 
-    verify(statistics).incInt(eventsReceivedStatId, delta);
+    verify(statistics).incLong(eventsReceivedStatId, delta);
   }
 
   @Test
@@ -115,8 +115,8 @@ public class GatewayReceiverStatsTest {
     when(statisticsType.nameToId(EVENTS_RECEIVED_STAT_NAME))
         .thenReturn(eventsReceivedId);
 
-    int statValue = 22;
-    when(statistics.getInt(eventsReceivedId))
+    long statValue = 22;
+    when(statistics.getLong(eventsReceivedId))
         .thenReturn(statValue);
 
     gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
@@ -132,7 +132,7 @@ public class GatewayReceiverStatsTest {
 
     ArgumentCaptor<String> descriptionCaptor = ArgumentCaptor.forClass(String.class);
     verify(factory)
-        .createIntCounter(eq(EVENTS_RECEIVED_STAT_NAME), descriptionCaptor.capture(), any());
+        .createLongCounter(eq(EVENTS_RECEIVED_STAT_NAME), descriptionCaptor.capture(), any());
 
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME))
         .as("events received counter")
@@ -148,7 +148,7 @@ public class GatewayReceiverStatsTest {
     gatewayReceiverStats = createGatewayReceiverStats(factory, ownerName, registry);
 
     ArgumentCaptor<String> unitsCaptor = ArgumentCaptor.forClass(String.class);
-    verify(factory).createIntCounter(eq(EVENTS_RECEIVED_STAT_NAME), any(), unitsCaptor.capture());
+    verify(factory).createLongCounter(eq(EVENTS_RECEIVED_STAT_NAME), any(), unitsCaptor.capture());
 
     assertThat(meterNamed(EVENTS_RECEIVED_COUNTER_NAME))
         .as("events received counter")

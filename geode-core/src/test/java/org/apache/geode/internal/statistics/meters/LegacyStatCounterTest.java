@@ -139,35 +139,6 @@ public class LegacyStatCounterTest {
   }
 
   @Test
-  public void withIntStat_increment_incrementsIntStat() {
-    Statistics statistics = mock(Statistics.class);
-    int statId = 93;
-
-    Counter legacyStatCounter = LegacyStatCounter.builder("my.meter.name")
-        .intStatistic(statistics, statId)
-        .register(registry);
-
-    legacyStatCounter.increment(8493.0);
-
-    verify(statistics).incInt(statId, 8493);
-  }
-
-  @Test
-  public void withIntStat_count_readsFromLongStat() {
-    Statistics statistics = mock(Statistics.class);
-    int statId = 93;
-
-    Counter legacyStatCounter = LegacyStatCounter.builder("my.meter.name")
-        .intStatistic(statistics, statId)
-        .register(registry);
-
-    when(statistics.getInt(statId)).thenReturn(47282903);
-
-    assertThat(legacyStatCounter.count())
-        .isEqualTo(47282903.0);
-  }
-
-  @Test
   public void withLongStat_increment_incrementsLongStat() {
     Statistics statistics = mock(Statistics.class);
     int statId = 93;
