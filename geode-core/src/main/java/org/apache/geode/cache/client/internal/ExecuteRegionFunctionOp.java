@@ -76,7 +76,7 @@ public class ExecuteRegionFunctionOp {
     do {
       try {
         if (isReexecute) {
-          failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+          failedNodes = ensureMutability(failedNodes);
           op = new ExecuteRegionFunctionOpImpl(op,
               (byte) 1/* isReExecute */, failedNodes);
         }
@@ -89,7 +89,7 @@ public class ExecuteRegionFunctionOp {
         }
         isReexecute = true;
         Set<String> failedNodesIds = e.getFailedNodeSet();
-        failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+        failedNodes = ensureMutability(failedNodes);
         failedNodes.clear();
         if (failedNodesIds != null) {
           failedNodes.addAll(failedNodesIds);
@@ -111,15 +111,15 @@ public class ExecuteRegionFunctionOp {
 
         isReexecute = true;
         resultCollector.clearResults();
-        failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+        failedNodes = ensureMutability(failedNodes);
         failedNodes.clear();
       }
     } while (true);
   }
 
-  private static Set<String> allocateFailedNodesIfEmpty(Set<String> failedNodes) {
-    if (failedNodes.equals(Collections.emptySet())) {
-      return new HashSet();
+  private static Set<String> ensureMutability(final Set<String> failedNodes) {
+    if (failedNodes == Collections.EMPTY_SET) {
+      return new HashSet<>();
     }
     return failedNodes;
   }
@@ -396,7 +396,7 @@ public class ExecuteRegionFunctionOp {
                     .getCause() instanceof InternalFunctionInvocationTargetException) {
                   InternalFunctionInvocationTargetException ifite =
                       (InternalFunctionInvocationTargetException) ex.getCause();
-                  failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+                  failedNodes = ensureMutability(failedNodes);
                   failedNodes.addAll(ifite.getFailedNodeSet());
                   addFunctionException((FunctionException) result);
                 } else {
@@ -428,7 +428,7 @@ public class ExecuteRegionFunctionOp {
                     if (resultResponse instanceof ArrayList) {
                       DistributedMember memberID =
                           (DistributedMember) ((ArrayList) resultResponse).get(1);
-                      failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+                      failedNodes = ensureMutability(failedNodes);
                       failedNodes.add(memberID.getId());
                     }
                     functionException = new FunctionException(fite);
@@ -485,7 +485,7 @@ public class ExecuteRegionFunctionOp {
                   .getCause() instanceof InternalFunctionInvocationTargetException) {
                 InternalFunctionInvocationTargetException ifite =
                     (InternalFunctionInvocationTargetException) ex.getCause();
-                failedNodes = allocateFailedNodesIfEmpty(failedNodes);
+                failedNodes = ensureMutability(failedNodes);
                 failedNodes.addAll(ifite.getFailedNodeSet());
               }
               throw ex;
