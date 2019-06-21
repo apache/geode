@@ -961,7 +961,17 @@ public class DistributionStats implements DMStats {
   @VisibleForTesting
   public DistributionStats(StatisticsFactory factory, String textId, long statId,
       LongSupplier clock) {
-    stats = factory == null ? null : factory.createAtomicStatistics(type, textId, statId);
+    this(factory == null ? null : factory.createAtomicStatistics(type, textId, statId), clock);
+  }
+
+  @VisibleForTesting
+  public DistributionStats(Statistics statistics) {
+    this(statistics, DistributionStats::getStatTime);
+  }
+
+  @VisibleForTesting
+  public DistributionStats(Statistics statistics, LongSupplier clock) {
+    stats = statistics;
     this.clock = clock;
     maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
     maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
