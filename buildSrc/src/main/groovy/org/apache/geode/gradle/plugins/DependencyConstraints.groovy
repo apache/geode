@@ -246,5 +246,10 @@ class DependencyConstraints implements Plugin<Project> {
       entry('spring-web')
       entry('spring-webmvc')
     }
+
+    dependencySet(group: 'org.openjdk.jmh', version: '1.21') {
+      entry('jmh-core')
+    }
+
   }
 }

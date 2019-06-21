@@ -15,10 +15,13 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'me.champeau.gradle.jmh' version '0.4.8'
+}
+
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 
 apply plugin: 'antlr'
-apply plugin: 'me.champeau.gradle.jmh'
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 apply from: "${project.projectDir}/../gradle/pmd.gradle"
 
@@ -41,6 +44,8 @@ idea {
 configurations {
   //declaring new configuration that will be used to associate with artifacts
   archives
+
+  jmhRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 def generatedResources = "$buildDir/generated-resources/main"
@@ -55,8 +60,21 @@ sourceSets {
 }
 
 jmh {
-  include = project.hasProperty('include') ? project.getProperties().get('include') : '.*'
   duplicateClassesStrategy = 'warn'
+  include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
+  profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
+}
+tasks.jmh.dependsOn jar
+
+jmhJar {
+  from {
+    configurations.jmhRuntimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+  }
+  exclude('**/*.SF')
+  exclude('**/Log4j2Plugins.dat')
+
+  // figure out why changes to source doesn't cause this jar to rebuild.
+  outputs.upToDateWhen { false }
 }
 
 sourceSets {
@@ -157,7 +175,6 @@ dependencies {
   // we must explicitly impose version constraints on these configurations.
   antlr platform(project(':boms:geode-all-bom'))
   jcaAnnotationProcessor(platform(project(':boms:geode-all-bom')))
-  jmhCompile(platform(project(':boms:geode-all-bom')))
 
   
   //A dependency that contains the compiled output of the source. What is this for?
@@ -346,7 +363,8 @@ dependencies {
 
   jcaCompile(sourceSets.main.output)
 
-  jmhCompile('org.apache.logging.log4j:log4j-core')
+  jmhImplementation(platform(project(':boms:geode-all-bom')))
+  jmhImplementation('org.openjdk.jmh:jmh-core')
 
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'

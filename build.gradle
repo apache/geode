@@ -29,7 +29,6 @@ buildscript {
     classpath "org.nosphere.apache:creadur-rat-gradle:0.4.0"
     classpath 'org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:2.7'
     classpath "com.diffplug.spotless:spotless-plugin-gradle:3.21.1"
-    classpath "me.champeau.gradle:jmh-gradle-plugin:0.4.8"
     classpath 'com.github.ben-manes:gradle-versions-plugin:0.21.0'
     classpath 'io.spring.gradle:dependency-management-plugin:1.0.7.RELEASE'
   }
