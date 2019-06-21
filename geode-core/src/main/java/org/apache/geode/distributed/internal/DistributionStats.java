@@ -22,6 +22,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.logging.LogService;
@@ -48,8 +49,10 @@ public class DistributionStats implements DMStats {
   private static final int sentMessagesId;
   private static final int sentCommitMessagesId;
   private static final int commitWaitsId;
-  private static final int sentMessagesTimeId;
-  private static final int sentMessagesMaxTimeId;
+  @VisibleForTesting
+  static final int sentMessagesTimeId;
+  @VisibleForTesting
+  static final int sentMessagesMaxTimeId;
   private static final int broadcastMessagesId;
   private static final int broadcastMessagesTimeId;
   private static final int receivedMessagesId;
@@ -91,9 +94,11 @@ public class DistributionStats implements DMStats {
   private static final int serialQueueThrottleCountId;
   private static final int replyWaitsInProgressId;
   private static final int replyWaitsCompletedId;
-  private static final int replyWaitTimeId;
+  @VisibleForTesting
+  static final int replyWaitTimeId;
   private static final int replyTimeoutsId;
-  private static final int replyWaitMaxTimeId;
+  @VisibleForTesting
+  static final int replyWaitMaxTimeId;
   private static final int receiverConnectionsId;
   private static final int failedAcceptsId;
   private static final int failedConnectsId;
@@ -936,6 +941,9 @@ public class DistributionStats implements DMStats {
   /** The Statistics object that we delegate most behavior to */
   private final Statistics stats;
 
+  private final MaxLongGauge maxReplyWaitTime;
+  private final MaxLongGauge maxSentMessagesTime;
+
   // private final HistogramStats replyHandoffHistogram;
   // private final HistogramStats replyWaitHistogram;
 
@@ -946,7 +954,7 @@ public class DistributionStats implements DMStats {
    * factory.
    */
   public DistributionStats(StatisticsFactory f, long statId) {
-    this.stats = f.createAtomicStatistics(type, "distributionStats", statId);
+    this(f.createAtomicStatistics(type, "distributionStats", statId));
     // this.replyHandoffHistogram = new HistogramStats("ReplyHandOff", "nanoseconds", f,
     // new long[] {100000, 200000, 300000, 400000, 500000, 600000, 700000, 800000, 900000, 1000000},
     // false);
@@ -960,6 +968,8 @@ public class DistributionStats implements DMStats {
    */
   public DistributionStats(Statistics stats) {
     this.stats = stats;
+    maxReplyWaitTime = new MaxLongGauge(replyWaitMaxTimeId, stats);
+    maxSentMessagesTime = new MaxLongGauge(sentMessagesMaxTimeId, stats);
     // this.replyHandoffHistogram = null;
     // this.replyWaitHistogram = null;
   }
@@ -1040,20 +1050,10 @@ public class DistributionStats implements DMStats {
   public void incSentMessagesTime(long nanos) {
     if (enableClockStats) {
       this.stats.incLong(sentMessagesTimeId, nanos);
-      long millis = nanos / 1000000;
-      if (getSentMessagesMaxTime() < millis) {
-        this.stats.setLong(sentMessagesMaxTimeId, millis);
-      }
+      long millis = NanoTimer.nanosToMillis(nanos);
+      maxSentMessagesTime.recordMax(millis);
     }
   }
-
-  /**
-   * Returns the longest time required to distribute a message, in nanos
-   */
-  public long getSentMessagesMaxTime() {
-    return this.stats.getLong(sentMessagesMaxTimeId);
-  }
-
 
   /**
    * Returns the total number of messages broadcast by the distribution manager
@@ -1376,10 +1376,6 @@ public class DistributionStats implements DMStats {
     return stats.getLong(replyWaitTimeId);
   }
 
-  public long getReplyWaitMaxTime() {
-    return stats.getLong(replyWaitMaxTimeId);
-  }
-
   @Override
   public long startSocketWrite(boolean sync) {
     if (sync) {
@@ -1600,6 +1596,7 @@ public class DistributionStats implements DMStats {
     return getStatTime();
   }
 
+
   @Override
   public void endReplyWait(long startNanos, long initTime) {
     if (enableClockStats) {
@@ -1607,10 +1604,8 @@ public class DistributionStats implements DMStats {
       // this.replyWaitHistogram.endOp(delta);
     }
     if (initTime != 0) {
-      long mswait = System.currentTimeMillis() - initTime;
-      if (mswait > getReplyWaitMaxTime()) {
-        stats.setLong(replyWaitMaxTimeId, mswait);
-      }
+      long waitTime = System.currentTimeMillis() - initTime;
+      maxReplyWaitTime.recordMax(waitTime);
     }
     stats.incInt(replyWaitsInProgressId, -1);
     stats.incInt(replyWaitsCompletedId, 1);
