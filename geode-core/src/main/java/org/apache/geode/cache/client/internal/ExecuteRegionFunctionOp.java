@@ -64,7 +64,17 @@ public class ExecuteRegionFunctionOp {
     // no instances allowed
   }
 
-  private static void doExecute(ExecutablePool pool,
+  /**
+   * Does a execute Function on a server using connections from the given pool to communicate with
+   * the server.
+   *
+   * @param boolean isReexecute
+   * @param Set<String> failedNodes
+   * @param pool the pool to use to communicate with the server.
+   * @param resultCollector is used to collect the results from the Server
+   * @param maxRetryAttempts Maximum number of retry attempts
+   */
+  static void execute(ExecutablePool pool,
       ResultCollector resultCollector,
       int maxRetryAttempts, boolean isHA,
       ExecuteRegionFunctionOpImpl op, boolean isReexecute,
@@ -123,35 +133,6 @@ public class ExecuteRegionFunctionOp {
       return new HashSet();
     }
     return failedNodes;
-  }
-
-  /**
-   * Does a execute Function on a server using connections from the given pool to communicate with
-   * the server.
-   *
-   * @param pool the pool to use to communicate with the server.
-   * @param resultCollector is used to collect the results from the Server
-   * @param maxRetryAttempts Maximum number of retry attempts
-   */
-  static void execute(ExecutablePool pool,
-      ResultCollector resultCollector,
-      int maxRetryAttempts,
-      final boolean isHA,
-      final ExecuteRegionFunctionOpImpl executeRegionFunctionOp) {
-
-    doExecute(pool, resultCollector,
-        maxRetryAttempts, isHA, executeRegionFunctionOp, false,
-        Collections.emptySet());
-  }
-
-  static void reexecute(ExecutablePool pool,
-      ResultCollector resultCollector,
-      Set<String> failedNodes, int retryAttempts,
-      final boolean isHA,
-      final ExecuteRegionFunctionOpImpl executeRegionFunctionOp) {
-
-    doExecute(pool, resultCollector,
-        retryAttempts, isHA, executeRegionFunctionOp, true, failedNodes);
   }
 
   static class ExecuteRegionFunctionOpImpl extends AbstractOpWithTimeout {

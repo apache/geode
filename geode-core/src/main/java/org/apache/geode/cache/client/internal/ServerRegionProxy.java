@@ -16,6 +16,7 @@
 package org.apache.geode.cache.client.internal;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -676,11 +677,13 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         if (serverRegionExecutor.getFilter().isEmpty()) {
           HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
+
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool,
                 resultCollector, retryAttempts,
                 function.isHA(),
-                executeRegionFunctionOp);
+                executeRegionFunctionOp, false, Collections.EMPTY_SET);
+
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
@@ -692,11 +695,13 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           Map<ServerLocation, HashSet> serverToFilterMap =
               cms.getServerToFilterMap(serverRegionExecutor.getFilter(), region,
                   function.optimizeForWrite(), isBucketFilter);
+
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
             ExecuteRegionFunctionOp.execute(pool,
                 resultCollector, retryAttempts,
                 function.isHA(),
-                executeRegionFunctionOp);
+                executeRegionFunctionOp, false, Collections.EMPTY_SET);
+
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
@@ -709,13 +714,13 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         ExecuteRegionFunctionOp.execute(pool,
             resultCollector, retryAttempts,
             function.isHA(),
-            executeRegionFunctionOp);
+            executeRegionFunctionOp, false, Collections.EMPTY_SET);
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool,
           resultCollector, retryAttempts,
           function.isHA(),
-          executeRegionFunctionOp);
+          executeRegionFunctionOp, false, Collections.EMPTY_SET);
     }
   }
 
@@ -743,9 +748,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
           if (serverToBuckets == null || serverToBuckets.isEmpty()) {
+
             ExecuteRegionFunctionOp.execute(pool,
                 resultCollector, retryAttempts, isHA,
-                executeRegionFunctionOp);
+                executeRegionFunctionOp, false, Collections.EMPTY_SET);
+
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
@@ -757,9 +764,11 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
           Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(
               serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
           if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
+
             ExecuteRegionFunctionOp.execute(pool,
                 resultCollector, retryAttempts, isHA,
-                executeRegionFunctionOp);
+                executeRegionFunctionOp, false, Collections.EMPTY_SET);
+
             cms.scheduleGetPRMetaData(region, false);
           } else {
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
@@ -771,12 +780,12 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         cms.scheduleGetPRMetaData(region, false);
         ExecuteRegionFunctionOp.execute(pool,
             resultCollector, retryAttempts, isHA,
-            executeRegionFunctionOp);
+            executeRegionFunctionOp, false, Collections.EMPTY_SET);
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool,
           resultCollector, retryAttempts, isHA,
-          executeRegionFunctionOp);
+          executeRegionFunctionOp, false, Collections.EMPTY_SET);
     }
   }
 
