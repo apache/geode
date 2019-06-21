@@ -26,8 +26,10 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.TabularResultModelAssert;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 
 public class RepeatedRebalanceDUnitTest {
@@ -102,44 +104,18 @@ public class RepeatedRebalanceDUnitTest {
     addOrRestartServers(2, 0);
 
     // Because we have 2 redundant copies and begin with 4 servers, redundancy is already satisfied
-    // before this rebalance. As such
-    // we expect to see no redundant copies created.
-    gfsh.executeAndAssertThat("rebalance").containsOutput(
-        "Total bytes in all redundant bucket copies created during this rebalance                        | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent creating redundant bucket copies during this rebalance       | 0")
-        .containsOutput(
-            "Total number of redundant copies created during this rebalance                                  | 0")
-        .doesNotContainOutput(
-            "Total bytes in buckets moved during this rebalance                                              | 0")
-        .doesNotContainOutput(
-            "Total time (in milliseconds) spent moving buckets during this rebalance                         | 0")
-        .doesNotContainOutput(
-            "Total number of buckets moved during this rebalance                                             | 0")
-        .doesNotContainOutput(
-            "Total time (in milliseconds) spent switching the primary state of buckets during this rebalance | 0")
-        .doesNotContainOutput(
-            "Total primaries transferred during this rebalance                                               | 0");
-    System.out.println("DEBR Finished rebalance one");
+    // before this rebalance. As such we expect to see no redundant copies created.
+    TabularResultModelAssert firstRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+    assertRedundancyNotChanged(firstRebalance);
+    assertBucketsMoved(firstRebalance);
+    assertPrimariesTransfered(firstRebalance);
 
-    gfsh.executeAndAssertThat("rebalance").containsOutput(
-        "Total bytes in all redundant bucket copies created during this rebalance                        | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent creating redundant bucket copies during this rebalance       | 0")
-        .containsOutput(
-            "Total number of redundant copies created during this rebalance                                  | 0")
-        .containsOutput(
-            "Total bytes in buckets moved during this rebalance                                              | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent moving buckets during this rebalance                         | 0")
-        .containsOutput(
-            "Total number of buckets moved during this rebalance                                             | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent switching the primary state of buckets during this rebalance | 0")
-        .containsOutput(
-            "Total primaries transferred during this rebalance                                               | 0");
-
-    System.out.println("DEBR Finished rebalance two");
+    TabularResultModelAssert secondRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+    assertRedundancyNotChanged(secondRebalance);
+    assertBucketsNotMoved(secondRebalance);
+    assertPrimariesNotTransfered(secondRebalance);
   }
 
   @Test
@@ -149,39 +125,17 @@ public class RepeatedRebalanceDUnitTest {
 
     addOrRestartServers(2, 1);
 
-    gfsh.executeAndAssertThat("rebalance").doesNotContainOutput(
-        "Total bytes in all redundant bucket copies created during this rebalance                        | 0")
-        .doesNotContainOutput(
-            "Total time (in milliseconds) spent creating redundant bucket copies during this rebalance       | 0")
-        .doesNotContainOutput(
-            "Total number of redundant copies created during this rebalance                                  | 0")
-        .doesNotContainOutput(
-            "Total bytes in buckets moved during this rebalance                                              | 0")
-        .doesNotContainOutput(
-            "Total time (in milliseconds) spent moving buckets during this rebalance                         | 0")
-        .doesNotContainOutput(
-            "Total number of buckets moved during this rebalance                                             | 0")
-        .doesNotContainOutput(
-            "Total time (in milliseconds) spent switching the primary state of buckets during this rebalance | 0")
-        .doesNotContainOutput(
-            "Total primaries transferred during this rebalance                                               | 0");
+    TabularResultModelAssert firstRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+    assertRedundancyChanged(firstRebalance);
+    assertBucketsMoved(firstRebalance);
+    assertPrimariesTransfered(firstRebalance);
 
-    gfsh.executeAndAssertThat("rebalance").containsOutput(
-        "Total bytes in all redundant bucket copies created during this rebalance                        | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent creating redundant bucket copies during this rebalance       | 0")
-        .containsOutput(
-            "Total number of redundant copies created during this rebalance                                  | 0")
-        .containsOutput(
-            "Total bytes in buckets moved during this rebalance                                              | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent moving buckets during this rebalance                         | 0")
-        .containsOutput(
-            "Total number of buckets moved during this rebalance                                             | 0")
-        .containsOutput(
-            "Total time (in milliseconds) spent switching the primary state of buckets during this rebalance | 0")
-        .containsOutput(
-            "Total primaries transferred during this rebalance                                               | 0");
+    TabularResultModelAssert secondRebalance =
+        gfsh.executeAndAssertThat("rebalance").statusIsSuccess().hasTableSection();
+    assertRedundancyNotChanged(secondRebalance);
+    assertBucketsNotMoved(secondRebalance);
+    assertPrimariesNotTransfered(secondRebalance);
   }
 
   public void addDataToRegion(int entriesToAdd) {
@@ -212,5 +166,58 @@ public class RepeatedRebalanceDUnitTest {
         memberList.add(i, cluster.startServerVM(i + 1, locator1.getPort()));
       }
     }
+  }
+
+  // The following methods are provided to allow easier examination of the output of the rebalance command
+  private void assertRedundancyChanged(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(0).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES).last().isNotEqualTo("0");
+    tabularResultModelAssert.hasRow(1).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM).last().isNotEqualTo("0");
+    tabularResultModelAssert.hasRow(2).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED).last().isNotEqualTo("0");
+  }
+
+  private void assertRedundancyNotChanged(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(0)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES, "0");
+    tabularResultModelAssert.hasRow(1)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM, "0");
+    tabularResultModelAssert.hasRow(2)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED, "0");
+  }
+
+  private void assertBucketsMoved(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(3).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES).last().isNotEqualTo("0");
+    tabularResultModelAssert.hasRow(4).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME).last().isNotEqualTo("0");
+    tabularResultModelAssert.hasRow(5).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED).last()
+        .isNotEqualTo("0");
+  }
+
+  private void assertBucketsNotMoved(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(3)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES, "0");
+    tabularResultModelAssert.hasRow(4)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME, "0");
+    tabularResultModelAssert.hasRow(5)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED, "0");
+  }
+
+  private void assertPrimariesTransfered(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(6).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME).last().isNotEqualTo("0");
+    tabularResultModelAssert.hasRow(7).asList()
+        .contains(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED).last()
+        .isNotEqualTo("0");
+  }
+
+  private void assertPrimariesNotTransfered(TabularResultModelAssert tabularResultModelAssert) {
+    tabularResultModelAssert.hasRow(6)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME, "0");
+    tabularResultModelAssert.hasRow(7)
+        .containsExactly(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED, "0");
   }
 }

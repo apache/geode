@@ -18,8 +18,8 @@ package org.apache.geode.management.internal.cli.commands;
 import org.apache.geode.cache.EntryOperation;
 import org.apache.geode.cache.PartitionResolver;
 
-// This PartitionResolver deliberately assigns entries to buckets in the partitioned regions
-// in RepeatedRebalanceDUnitTest to artificially produce buckets with unbalanced data distribution
+// This PartitionResolver deliberately assigns entries to buckets in the partitioned regions in
+// RepeatedRebalanceDUnitTest to artificially produce buckets with unbalanced data distribution
 
 public class RepeatedRebalancePartitionResolver implements PartitionResolver {
 
@@ -32,11 +32,9 @@ public class RepeatedRebalancePartitionResolver implements PartitionResolver {
     int number = Integer.valueOf(key.substring(3));
 
     // The partitioned regions that use this partition resolver in RepeatedRebalanceDUnitTest have
-    // 48 buckets.
-    // In order to create an unbalanced distribution of data between the buckets, for every 108
-    // entries,
-    // one of three "big buckets" (associated with the values 0, 1 and 2) are each assigned an
-    // additional 20 entries.
+    // 48 buckets. In order to create an unbalanced distribution of data between the buckets, for
+    // every 108 entries, one of three "big buckets" (associated with the values 0, 1 and 2) are
+    // each assigned an additional 20 entries.
     int mod = number % 108;
     if (mod > 48) {
       mod = number % 3;
