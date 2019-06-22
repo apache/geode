@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
 
@@ -686,9 +687,16 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
-                serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true, timeoutMs);
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
+                serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts,
+                function.isHA(),
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    region.getFullPath(), function,
+                    executor1, resultCollector,
+                    hasResult, new HashSet<>(), true, timeoutMs),
+                () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
+                    function,
+                    serverRegionExecutor, resultCollector, timeoutMs));
           }
         } else {
           boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -704,9 +712,16 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region, function,
-                serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                isBucketFilter, timeoutMs);
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
+                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
+                function.isHA(),
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    region.getFullPath(), function,
+                    executor1, resultCollector,
+                    hasResult, new HashSet<>(), isBucketFilter, timeoutMs),
+                () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
+                    function,
+                    serverRegionExecutor, resultCollector, timeoutMs));
           }
         }
       } else {
@@ -726,8 +741,10 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
 
   public void executeFunction(String rgnName, String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, boolean isHA, boolean optimizeForWrite, boolean replaying,
+      ServerRegionFunctionExecutor serverRegionExecutor,
+      ResultCollector resultCollector,
+      byte hasResult, boolean isHA, boolean optimizeForWrite,
+      boolean replaying,
       final int timeoutMs) {
 
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 2, functionId,
@@ -744,6 +761,13 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     if (pool.getPRSingleHopEnabled()) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
+
+        final Supplier<AbstractOp> executeRegionFunctionOpSupplier =
+            () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
+                functionId,
+                serverRegionExecutor, resultCollector, hasResult, isHA,
+                optimizeForWrite, true, timeoutMs);
+
         if (serverRegionExecutor.getFilter().isEmpty()) {
           HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
@@ -755,9 +779,17 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
-                serverRegionExecutor, resultCollector, hasResult, serverToBuckets, retryAttempts,
-                true, isHA, optimizeForWrite, timeoutMs);
+            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    region.getFullPath(), functionId,
+                    executor1, resultCollector,
+                    hasResult, new HashSet<>(), true, isHA, optimizeForWrite, timeoutMs);
+
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
+                serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts,
+                isHA,
+                regionFunctionSingleHopOpFunction,
+                executeRegionFunctionOpSupplier);
           }
         } else {
           boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
@@ -771,9 +803,14 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region, functionId,
-                serverRegionExecutor, resultCollector, hasResult, serverToFilterMap, retryAttempts,
-                false, isHA, optimizeForWrite, timeoutMs);
+            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
+                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
+                isHA,
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    region.getFullPath(), functionId,
+                    executor1, resultCollector,
+                    hasResult, new HashSet<>(), false, isHA, optimizeForWrite, timeoutMs),
+                executeRegionFunctionOpSupplier);
           }
         }
       } else {

@@ -68,8 +68,6 @@ public class ExecuteRegionFunctionOp {
    * Does a execute Function on a server using connections from the given pool to communicate with
    * the server.
    *
-   * @param boolean isReexecute
-   * @param Set<String> failedNodes
    * @param pool the pool to use to communicate with the server.
    * @param resultCollector is used to collect the results from the Server
    * @param maxRetryAttempts Maximum number of retry attempts

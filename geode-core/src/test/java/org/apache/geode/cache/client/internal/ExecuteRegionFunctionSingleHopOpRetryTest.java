@@ -180,19 +180,36 @@ public class ExecuteRegionFunctionSingleHopOpRetryTest {
       case STRING:
         ignoreServerConnectivityException(
             () -> ignoreServerConnectivityException(() -> ExecuteRegionFunctionSingleHopOp.execute(
-                executablePool, testSupport.getRegion(), FUNCTION_NAME,
-                executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
+                executablePool, testSupport.getRegion(),
+                executor, resultCollector, serverToFilterMap,
                 retryAttempts,
-                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, testSupport.toBoolean(haStatus),
-                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
+                testSupport.toBoolean(haStatus),
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    testSupport.getRegion().getFullPath(), FUNCTION_NAME,
+                    executor1, resultCollector,
+                    FUNCTION_HAS_RESULT, new HashSet<>(),
+                    ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, testSupport.toBoolean(haStatus),
+                    OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
+                () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(
+                    testSupport.getRegion().getFullPath(), FUNCTION_NAME,
+                    executor, resultCollector, FUNCTION_HAS_RESULT, testSupport.toBoolean(haStatus),
+                    OPTIMIZE_FOR_WRITE_SETTING, true, DEFAULT_CLIENT_FUNCTION_TIMEOUT))));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
             () -> ExecuteRegionFunctionSingleHopOp.execute(executablePool, testSupport.getRegion(),
-                function,
-                executor, resultCollector, FUNCTION_HAS_RESULT, serverToFilterMap,
+                executor, resultCollector, serverToFilterMap,
                 retryAttempts,
-                ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+                function.isHA(),
+                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
+                    testSupport.getRegion().getFullPath(), function,
+                    executor1, resultCollector,
+                    FUNCTION_HAS_RESULT, new HashSet<>(),
+                    ExecuteFunctionTestSupport.ALL_BUCKETS_SETTING,
+                    DEFAULT_CLIENT_FUNCTION_TIMEOUT),
+                () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(
+                    testSupport.getRegion().getFullPath(), function,
+                    executor, resultCollector, DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
