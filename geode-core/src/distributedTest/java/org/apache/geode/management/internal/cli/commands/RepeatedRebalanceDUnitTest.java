@@ -89,13 +89,6 @@ public class RepeatedRebalanceDUnitTest {
         .statusIsSuccess();
   }
 
-  @After
-  public void after() {
-    for (int i = 0; i < memberList.size(); i++) {
-      memberList.get(i).stop();
-    }
-  }
-
   @Test
   public void testSecondRebalanceIsNotNecessaryWithAddedMembers() {
 
