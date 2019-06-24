@@ -86,7 +86,7 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
     this.allStatistics = new HashMap<>();
     this.dir = this.temporaryFolder.getRoot();
     this.archiveFileName =
-        new File(this.dir.getAbsolutePath(), ARCHIVE_FILE_NAME).getAbsolutePath();
+        new File(ARCHIVE_FILE_NAME).getAbsolutePath();
 
     this.manager = new TestStatisticsManager(1, getUniqueName(), WRITER_INITIAL_DATE_MILLIS);
     StatArchiveDescriptor archiveDescriptor =

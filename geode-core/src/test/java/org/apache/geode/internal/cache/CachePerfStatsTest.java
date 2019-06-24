@@ -63,7 +63,6 @@ import org.junit.Test;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
-import org.apache.geode.internal.cache.CachePerfStats.Clock;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StripedStatisticsImpl;
 
@@ -84,16 +83,14 @@ public class CachePerfStatsTest {
 
     StatisticsManager statisticsManager = mock(StatisticsManager.class);
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
-    Clock clock = mock(Clock.class);
 
     statistics = spy(new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager));
 
-    when(clock.getTime()).thenReturn(CLOCK_TIME);
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))
         .thenReturn(statistics);
 
     CachePerfStats.enableClockStats = true;
-    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, clock);
+    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, () -> CLOCK_TIME);
   }
 
   @After

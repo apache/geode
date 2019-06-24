@@ -28,20 +28,13 @@ import org.apache.geode.StatisticsType;
  */
 public class LocalStatisticsImpl extends StatisticsImpl {
 
-  /** In JOM Statistics, the values of the int statistics */
-  private final int[] intStorage;
-
   /** In JOM Statistics, the values of the long statistics */
   private final long[] longStorage;
 
   /** In JOM Statistics, the values of the double statistics */
   private final double[] doubleStorage;
 
-  /**
-   * An array containing the JOM object used to lock a int statistic when it is incremented.
-   */
-  private final transient Object[] intLocks;
-
+  private final int longCount;
   /**
    * An array containing the JOM object used to lock a long statistic when it is incremented.
    */
@@ -72,24 +65,8 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     super(type, textId, numericId, uniqueId, osStatFlags, statisticsManager);
 
     StatisticsTypeImpl realType = (StatisticsTypeImpl) type;
-    int intCount = realType.getIntStatCount();
-    int longCount = realType.getLongStatCount();
+    longCount = realType.getLongStatCount();
     int doubleCount = realType.getDoubleStatCount();
-
-    if (intCount > 0) {
-      this.intStorage = new int[intCount];
-      if (atomicIncrements) {
-        this.intLocks = new Object[intCount];
-        for (int i = 0; i < intLocks.length; i++) {
-          intLocks[i] = new Object();
-        }
-      } else {
-        this.intLocks = null;
-      }
-    } else {
-      this.intStorage = null;
-      this.intLocks = null;
-    }
 
     if (longCount > 0) {
       this.longStorage = new long[longCount];
@@ -144,58 +121,50 @@ public class LocalStatisticsImpl extends StatisticsImpl {
 
   @Override
   public boolean isAtomic() {
-    return intLocks != null || longLocks != null || doubleLocks != null;
+    return longLocks != null || doubleLocks != null;
+  }
+
+  private int getOffsetFromLongId(int id) {
+    return id;
+  }
+
+  private int getOffsetFromDoubleId(int id) {
+    return id - this.longCount;
   }
 
   //////////////////////// store() Methods ///////////////////////
 
   @Override
-  protected void _setInt(int offset, int value) {
-    this.intStorage[offset] = value;
-  }
-
-  @Override
-  protected void _setLong(int offset, long value) {
+  protected void _setLong(int id, long value) {
+    int offset = getOffsetFromLongId(id);
     this.longStorage[offset] = value;
   }
 
   @Override
-  protected void _setDouble(int offset, double value) {
+  protected void _setDouble(int id, double value) {
+    int offset = getOffsetFromDoubleId(id);
     this.doubleStorage[offset] = value;
   }
 
   /////////////////////// get() Methods ///////////////////////
 
   @Override
-  protected int _getInt(int offset) {
-    return this.intStorage[offset];
-  }
-
-  @Override
-  protected long _getLong(int offset) {
+  protected long _getLong(int id) {
+    int offset = getOffsetFromLongId(id);
     return this.longStorage[offset];
   }
 
   @Override
-  protected double _getDouble(int offset) {
+  protected double _getDouble(int id) {
+    int offset = getOffsetFromDoubleId(id);
     return this.doubleStorage[offset];
   }
 
   //////////////////////// inc() Methods ////////////////////////
 
   @Override
-  protected void _incInt(int offset, int delta) {
-    if (this.intLocks != null) {
-      synchronized (this.intLocks[offset]) {
-        this.intStorage[offset] += delta;
-      }
-    } else {
-      this.intStorage[offset] += delta;
-    }
-  }
-
-  @Override
-  protected void _incLong(int offset, long delta) {
+  protected void _incLong(int id, long delta) {
+    int offset = getOffsetFromLongId(id);
     if (this.longLocks != null) {
       synchronized (this.longLocks[offset]) {
         this.longStorage[offset] += delta;
@@ -206,7 +175,8 @@ public class LocalStatisticsImpl extends StatisticsImpl {
   }
 
   @Override
-  protected void _incDouble(int offset, double delta) {
+  protected void _incDouble(int id, double delta) {
+    int offset = getOffsetFromDoubleId(id);
     if (this.doubleLocks != null) {
       synchronized (this.doubleLocks[offset]) {
         this.doubleStorage[offset] += delta;
@@ -214,19 +184,5 @@ public class LocalStatisticsImpl extends StatisticsImpl {
     } else {
       this.doubleStorage[offset] += delta;
     }
-  }
-
-  /////////////////// internal package methods //////////////////
-
-  int[] _getIntStorage() {
-    return this.intStorage;
-  }
-
-  long[] _getLongStorage() {
-    return this.longStorage;
-  }
-
-  double[] _getDoubleStorage() {
-    return this.doubleStorage;
   }
 }

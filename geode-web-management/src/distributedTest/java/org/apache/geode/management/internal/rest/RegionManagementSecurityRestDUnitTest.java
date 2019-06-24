@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -46,7 +47,7 @@ import org.apache.geode.management.internal.api.LocatorClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = SecuredLocatorContextLoader.class)
 @WebAppConfiguration
 public class RegionManagementSecurityRestDUnitTest {
@@ -178,6 +179,18 @@ public class RegionManagementSecurityRestDUnitTest {
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.statusMessage",
             is("Successfully removed config for [cluster]")));
+  }
+
+  @Test
+  public void listRegion_succeeds() throws Exception {
+    createRegion();
+
+    context.perform(get("/v2/regions/" + REGION)
+        .with(httpBasic("clusterRead", "clusterRead"))
+        .content(json))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.statusCode", is("OK")))
+        .andExpect(jsonPath("$.result[0].entryCount", is(0)));
   }
 
   private void createRegion() throws Exception {

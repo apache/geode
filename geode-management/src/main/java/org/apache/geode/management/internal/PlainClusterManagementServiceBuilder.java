@@ -84,7 +84,7 @@ public class PlainClusterManagementServiceBuilder implements
 
     DefaultUriTemplateHandler templateHandler = new DefaultUriTemplateHandler();
     String schema = (sslContext == null) ? "http" : "https";
-    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/geode-management");
+    templateHandler.setBaseUrl(schema + "://" + host + ":" + port + "/management");
     restTemplate.setUriTemplateHandler(templateHandler);
 
     // HttpComponentsClientHttpRequestFactory allows use to preconfigure httpClient for

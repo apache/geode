@@ -39,7 +39,7 @@ public class DisabledClusterConfigTest {
     locator.withProperty(ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION, "false")
         .withHttpService().startLocator();
     GeodeDevRestClient restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
 
     ClusterManagementResult<?> result =
         restClient.doPostAndAssert("/regions", "{\"name\":\"test\"}")

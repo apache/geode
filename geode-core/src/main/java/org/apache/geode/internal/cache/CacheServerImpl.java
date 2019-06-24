@@ -95,6 +95,9 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   private final SecurityService securityService;
 
+  public static final String CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE =
+      "A cache server's bind address is only available if it has been started";
+
   private final AcceptorBuilder acceptorBuilder;
 
   private final boolean sendResourceEvents;
@@ -430,9 +433,8 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public String getExternalAddress(boolean checkServerRunning) {
     if (checkServerRunning) {
       if (!this.isRunning()) {
-        String s = "A cache server's bind address is only available if it has been started";
         this.cache.getCancelCriterion().checkCancelInProgress(null);
-        throw new IllegalStateException(s);
+        throw new IllegalStateException(CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE);
       }
     }
     if (this.hostnameForClients == null || this.hostnameForClients.isEmpty()) {

@@ -118,10 +118,6 @@ public class VersionDescription {
     return error.orElseGet(() -> description.getProperty(key));
   }
 
-  private String getNativeCodeVersion() {
-    return SmHelper.getNativeVersion();
-  }
-
   void print(PrintWriter pw) {
     if (error.isPresent()) {
       pw.println(error.get());
@@ -131,8 +127,6 @@ public class VersionDescription {
       }
     }
 
-    // not stored in the description map
-    pw.println(NATIVE_VERSION + ": " + getNativeCodeVersion());
     pw.println(getRunningOnInfo());
   }
 

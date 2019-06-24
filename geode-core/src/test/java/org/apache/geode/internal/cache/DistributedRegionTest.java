@@ -157,29 +157,27 @@ public class DistributedRegionTest {
   public void regionSyncInvokedInPerformSynchronizeForLostMemberTaskAfterRegionInitialized() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
     when(distributedRegion.getDataPolicy()).thenReturn(mock(DataPolicy.class));
+    when(distributedRegion.isInitializedWithWait()).thenReturn(true);
     doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
         lostMemberVersionID);
     InOrder inOrder = inOrder(distributedRegion);
 
     distributedRegion.performSynchronizeForLostMemberTask(member, lostMemberVersionID);
 
-    inOrder.verify(distributedRegion).waitUntilInitialized();
+    inOrder.verify(distributedRegion).isInitializedWithWait();
     inOrder.verify(distributedRegion).synchronizeForLostMember(member, lostMemberVersionID);
   }
 
   @Test
-  public void emptyAccessorOfPersistentRegionDoesNotSynchronizeForLostMember() {
-    DataPolicy dataPolicy = mock(DataPolicy.class);
+  public void regionSyncNotInvokedInPerformSynchronizeForLostMemberTaskIfRegionNotInitialized() {
     DistributedRegion distributedRegion = mock(DistributedRegion.class);
-    when(distributedRegion.getDataPolicy()).thenReturn(dataPolicy);
-    when(dataPolicy.withPersistence()).thenReturn(true);
-    when(distributedRegion.getPersistentID()).thenReturn(null);
+    when(distributedRegion.getDataPolicy()).thenReturn(mock(DataPolicy.class));
+    when(distributedRegion.isInitializedWithWait()).thenReturn(false);
     doCallRealMethod().when(distributedRegion).performSynchronizeForLostMemberTask(member,
         lostMemberVersionID);
 
     distributedRegion.performSynchronizeForLostMemberTask(member, lostMemberVersionID);
 
-    verify(distributedRegion).waitUntilInitialized();
     verify(distributedRegion, never()).synchronizeForLostMember(member, lostMemberVersionID);
   }
 }

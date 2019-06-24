@@ -36,8 +36,8 @@ import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.SharedLibrary;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -88,7 +88,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     putData("PR1", 2, 1);
     int keySize = 0;
     int valueSize =
-        SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
+        JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
     valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
     int entrySize = keySize + valueSize
         + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
@@ -116,7 +116,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       int keySize = 0;
       int valueSize =
-          SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
+          JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + (1024 * 1024) /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
@@ -132,7 +132,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     {
       putData("PR1", 2, 2);
       int keySize = 0;
-      int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */
+      int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */
           + (1024 * 1024 * 2) /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
       int entrySize = keySize + valueSize
@@ -157,7 +157,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     putCustomizedData(1, new byte[0]);
     {
       int keySize = 0;
-      int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + 0 /* bytes */;
+      int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 0 /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())
@@ -172,7 +172,7 @@ public class EvictionObjectSizerDUnitTest extends CacheTestCase {
     putCustomizedData(2, new byte[4]);
     {
       int keySize = 0;
-      int valueSize = SharedLibrary.getObjectHeaderSize() + 4 /* array length */ + 4 /* bytes */;
+      int valueSize = JvmSizeUtils.getObjectHeaderSize() + 4 /* array length */ + 4 /* bytes */;
       valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
       int entrySize = keySize + valueSize
           + ((HeapLRUController) ((PartitionedRegion) region).getEvictionController())

@@ -12,33 +12,35 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
 
-public class Status {
-  boolean success;
-  String message;
+package org.apache.geode.internal.statistics.meters;
 
-  // needed for json deserialization
-  public Status() {}
+import org.apache.geode.Statistics;
 
-  public Status(boolean success, String message) {
-    this.success = success;
-    this.message = message;
+/**
+ * Increments and reads a {@code double} stat.
+ */
+public class DoubleStatisticBinding implements StatisticBinding {
+  private final Statistics statistics;
+  private final int statId;
+
+  public DoubleStatisticBinding(Statistics statistics, int statId) {
+    this.statistics = statistics;
+    this.statId = statId;
   }
 
-  public boolean isSuccess() {
-    return success;
+  @Override
+  public void add(double amount) {
+    statistics.incDouble(statId, amount);
   }
 
-  public void setSuccess(boolean success) {
-    this.success = success;
+  @Override
+  public double doubleValue() {
+    return statistics.getDouble(statId);
   }
 
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
+  @Override
+  public long longValue() {
+    return (long) statistics.getDouble(statId);
   }
 }

@@ -48,11 +48,11 @@ public class SwaggerManagementVerificationIntegrationTest {
   @Test
   public void isSwaggerRunning() throws Exception {
     // Check the UI
-    assertResponse(client.get("/geode-management/swagger-ui.html")).hasStatusCode(200);
+    assertResponse(client.get("/management/swagger-ui.html")).hasStatusCode(200);
 
     // Check the JSON
     JsonNode json =
-        assertResponse(client.get("/geode-management/v2/api-docs")).hasStatusCode(200)
+        assertResponse(client.get("/management/v2/api-docs")).hasStatusCode(200)
             .getJsonObject();
     assertThat(json.get("swagger").asText(), is("2.0"));
 

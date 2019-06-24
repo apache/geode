@@ -16,6 +16,7 @@ package org.apache.geode.distributed.internal;
 
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,6 +24,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.DistributedRegion;
@@ -38,6 +40,7 @@ public class DistributionAdvisorTest {
   private VersionSource lostVersionID;
   private PersistentMemberID persistentMemberID;
   private long delay = 100;
+  private DataPolicy dataPolicy;
 
   @Before
   public void setup() {
@@ -47,6 +50,13 @@ public class DistributionAdvisorTest {
     profile = mock(CacheDistributionAdvisor.CacheProfile.class);
     lostVersionID = mock(VersionSource.class);
     persistentMemberID = mock(PersistentMemberID.class);
+    dataPolicy = mock(DataPolicy.class);
+
+    when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
+    when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
+    when(distributedRegion.getDataPolicy()).thenReturn(dataPolicy);
+    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(distributedRegion.isInitializedWithWait()).thenReturn(true);
   }
 
   @Test
@@ -58,9 +68,7 @@ public class DistributionAdvisorTest {
 
   @Test
   public void regionSyncScheduledForLostMember() {
-    when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
-    when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
-    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(dataPolicy.withPersistence()).thenReturn(false);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 
     distributionAdvisor.syncForCrashedMember(member, profile);
@@ -71,17 +79,40 @@ public class DistributionAdvisorTest {
 
   @Test
   public void regionSyncScheduledForLostPersistentMember() {
-    when(distributionAdvisor.getRegionForDeltaGII()).thenReturn(distributedRegion);
     when(distributionAdvisor.getPersistentID((CacheDistributionAdvisor.CacheProfile) profile))
         .thenReturn(persistentMemberID);
     when(persistentMemberID.getVersionMember()).thenReturn(lostVersionID);
-    when(distributionAdvisor.getDelay(distributedRegion)).thenReturn(delay);
-    when(distributedRegion.getConcurrencyChecksEnabled()).thenReturn(true);
+    when(dataPolicy.withPersistence()).thenReturn(true);
     doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
 
     distributionAdvisor.syncForCrashedMember(member, profile);
 
     verify(distributedRegion).scheduleSynchronizeForLostMember(member, lostVersionID, delay);
     verify(distributedRegion).setRegionSynchronizeScheduled(lostVersionID);
+  }
+
+  @Test
+  public void regionSyncIsNotScheduledIfRegionIsNotInitialized() {
+    when(distributedRegion.isInitializedWithWait()).thenReturn(false);
+    doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
+
+    distributionAdvisor.syncForCrashedMember(member, profile);
+
+    verify(distributedRegion, never()).scheduleSynchronizeForLostMember(member, lostVersionID,
+        delay);
+    verify(distributedRegion, never()).setRegionSynchronizeScheduled(lostVersionID);
+  }
+
+  @Test
+  public void regionSyncNotInvokedIfLostMemberIsAnEmptyAccessorOfPersistentReplicateRegion() {
+    when(dataPolicy.withPersistence()).thenReturn(true);
+    when(distributedRegion.getPersistentID()).thenReturn(null);
+    doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
+
+    distributionAdvisor.syncForCrashedMember(member, profile);
+
+    verify(distributedRegion, never()).scheduleSynchronizeForLostMember(member, lostVersionID,
+        delay);
+    verify(distributedRegion, never()).setRegionSynchronizeScheduled(lostVersionID);
   }
 }

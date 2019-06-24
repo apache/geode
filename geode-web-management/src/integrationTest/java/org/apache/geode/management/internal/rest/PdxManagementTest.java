@@ -36,7 +36,7 @@ import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(locations = {"classpath*:WEB-INF/geode-management-servlet.xml"},
+@ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
     loader = SecuredLocatorContextLoader.class)
 @WebAppConfiguration
 public class PdxManagementTest {
@@ -66,7 +66,7 @@ public class PdxManagementTest {
             jsonPath("$.statusMessage", containsString("Successfully updated config for cluster")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.result[0].readSerialized", is(true)))
-        .andExpect(jsonPath("$.result[0].uri", is("/configurations/pdx")));
+        .andExpect(jsonPath("$.result[0].uri", is("/geode-management/v2/configurations/pdx")));
   }
 
   @Test

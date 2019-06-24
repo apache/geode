@@ -42,7 +42,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 /**
@@ -184,10 +183,6 @@ public class LonerDMJUnitTest {
     DistributedSystem ds = DistributedSystem.connect(cfg);
     System.out.println("MemberId = " + ds.getMemberId());
     assertEquals(OSProcess.getId(), ds.getDistributedMember().getProcessId());
-    if (!PureJavaMode.isPure()) {
-      String pid = String.valueOf(OSProcess.getId());
-      assertTrue(ds.getMemberId().indexOf(pid) > -1);
-    }
     assertTrue(ds.getMemberId().indexOf(name) > -1);
     // make sure the loner port can be updated
     ((LonerDistributionManager) ((InternalDistributedSystem) ds).getDM()).updateLonerPort(100);

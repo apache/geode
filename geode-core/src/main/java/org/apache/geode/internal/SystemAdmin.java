@@ -186,43 +186,35 @@ public class SystemAdmin {
 
     String[] cmd = (String[]) cmdVec.toArray(new String[cmdVec.size()]);
 
-    try {
-      // start with a fresh log each time
-      if (!logFile.delete() && logFile.exists()) {
-        throw new GemFireIOException("Unable to delete " + logFile.getAbsolutePath());
-      }
-      int managerPid = OSProcess.bgexec(cmd, directory, logFile, false, env);
-      boolean treatAsPure = (env.size() > 0) || PureJavaMode.isPure();
-      /**
-       * A counter used by PureJava to determine when its waited too long to start the locator
-       * process. countDown * 250 = how many seconds to wait before giving up.
-       **/
-      int countDown = 60;
-      // NYI: wait around until we can attach
-      while (!ManagerInfo.isLocatorStarted(directory)) {
-        if (treatAsPure) {
-          countDown--;
-          Thread.sleep(250);
+    // start with a fresh log each time
+    if (!logFile.delete() && logFile.exists()) {
+      throw new GemFireIOException("Unable to delete " + logFile.getAbsolutePath());
+    }
+    boolean treatAsPure = true;
+    /**
+     * A counter used by PureJava to determine when its waited too long to start the locator
+     * process. countDown * 250 = how many seconds to wait before giving up.
+     **/
+    int countDown = 60;
+    // NYI: wait around until we can attach
+    while (!ManagerInfo.isLocatorStarted(directory)) {
+      countDown--;
+      Thread.sleep(250);
+      if (countDown < 0) {
+        try {
+          String msg = tailFile(logFile, false);
+          throw new GemFireIOException(
+              String.format("Start of locator failed. The end of %s contained this message: %s.",
+                  logFile, msg),
+              null);
+        } catch (IOException ignore) {
+          throw new GemFireIOException(
+              String.format("Start of locator failed. Check end of %s for reason.",
+                  logFile),
+              null);
         }
-        if (countDown < 0 || !(treatAsPure || OSProcess.exists(managerPid))) {
-          try {
-            String msg = tailFile(logFile, false);
-            throw new GemFireIOException(
-                String.format("Start of locator failed. The end of %s contained this message: %s.",
-                    logFile, msg),
-                null);
-          } catch (IOException ignore) {
-            throw new GemFireIOException(
-                String.format("Start of locator failed. Check end of %s for reason.",
-                    logFile),
-                null);
-          }
-        }
-        Thread.sleep(500);
       }
-    } catch (IOException io) {
-      throw new GemFireIOException(
-          String.format("Could not exec %s.", cmd[0]), io);
+      Thread.sleep(500);
     }
   }
 
@@ -298,44 +290,21 @@ public class SystemAdmin {
       if (addressOption.trim().length() == 0) {
         addr = info.getManagerAddress();
       }
-      // File infoFile = ManagerInfo.getLocatorInfoFile(directory);
 
       try {
         new TcpClient().stop(addr, port);
       } catch (java.net.ConnectException ce) {
-        if (PureJavaMode.isPure() || OSProcess.exists(pid)) {
-          System.out.println(
-              "Unable to connect to Locator process. Possible causes are that an incorrect bind address/port combination was specified to the stop-locator command or the process is unresponsive.");
-        }
+        System.out.println(
+            "Unable to connect to Locator process. Possible causes are that an incorrect bind address/port combination was specified to the stop-locator command or the process is unresponsive.");
         return;
       }
       // wait for the locator process to go away
-      if (PureJavaMode.isPure()) {
-        // format and change message
-        if (!quiet) {
-          System.out.println(
-              "Waiting 5 seconds for locator process to terminate...");
-        }
-        Thread.sleep(5000);
-      } else {
-        int sleepCount = 0;
-        final int maxSleepCount = 15;
-        while (++sleepCount < maxSleepCount && OSProcess.exists(pid)) {
-          Thread.sleep(1000);
-          if (sleepCount == maxSleepCount / 3 && !quiet) {
-            System.out.println(
-                String.format("Waiting for locator process, with pid %s to terminate...",
-                    Integer.valueOf(pid)));
-          }
-        }
-        if (OSProcess.exists(pid)) {
-          System.out
-              .println("Locator process did not terminate within " + maxSleepCount + " seconds.");
-        } else if (!quiet) {
-          System.out.println(
-              "Locator process has terminated.");
-        }
+      // format and change message
+      if (!quiet) {
+        System.out.println(
+            "Waiting 5 seconds for locator process to terminate...");
       }
+      Thread.sleep(5000);
     } catch (UnstartedSystemException ex) {
       // fix for bug 28133
       throw new UnstartedSystemException(

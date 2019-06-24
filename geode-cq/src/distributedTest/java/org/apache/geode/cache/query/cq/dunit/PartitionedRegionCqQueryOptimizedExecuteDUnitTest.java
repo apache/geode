@@ -96,9 +96,9 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
       public void run2() throws CacheException {
         assertFalse("CqServiceImpl.EXECUTE_QUERY_DURING_INIT flag should be false ",
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
-        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        Number numOfQueryExecutions = ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
-        assertEquals("Number of query executions for cq.execute should be 0 ", 0,
+        assertEquals("Number of query executions for cq.execute should be 0 ", 0L,
             numOfQueryExecutions);
       }
     });
@@ -188,9 +188,9 @@ public class PartitionedRegionCqQueryOptimizedExecuteDUnitTest
             CqServiceImpl.EXECUTE_QUERY_DURING_INIT);
         assertFalse(DistributionConfig.GEMFIRE_PREFIX + "cq.MAINTAIN_KEYS flag should be false ",
             CqServiceProvider.MAINTAIN_KEYS);
-        int numOfQueryExecutions = (Integer) ((GemFireCacheImpl) getCache()).getCachePerfStats()
+        Number numOfQueryExecutions = ((GemFireCacheImpl) getCache()).getCachePerfStats()
             .getStats().get("queryExecutions");
-        assertEquals("Number of query executions for cq.execute should be 0 ", 0,
+        assertEquals("Number of query executions for cq.execute should be 0 ", 0L,
             numOfQueryExecutions);
       }
     });

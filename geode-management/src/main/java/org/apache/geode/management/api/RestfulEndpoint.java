@@ -31,24 +31,30 @@ import org.apache.geode.lang.Identifiable;
  */
 @Experimental
 public interface RestfulEndpoint extends Identifiable<String> {
+  String URI_CONTEXT = "/geode-management";
+  String URI_VERSION = "/v2";
+
   /**
-   * this needs to return the uri portion after the /geode-management/v2 that points to the
-   * list of entities
+   * this returns the URI that display the list of entries.
+   * it should return URI the part after /v2
    *
    * @return e.g. /regions
    */
   @JsonIgnore
-  // @ApiModelProperty(hidden = true)
+  @XmlTransient
   String getEndpoint();
 
   /**
-   * return the uri portion after the /geode-management/v2 that points to a single
-   * entity. If the id is not available for the object, this will return null
+   * return the uri that points to a single entity. If the id is not available for the object,
+   * this will return null
+   *
+   * it should return the URI part after /v2
    *
    * @return e.g. /regions/regionA
    */
   @XmlTransient
-  default String getUri() {
+  @JsonIgnore
+  default String getIdentityEndPoint() {
     String id = getId();
     if (StringUtils.isBlank(id))
       return null;
@@ -59,5 +65,10 @@ public interface RestfulEndpoint extends Identifiable<String> {
       else
         return getEndpoint() + "/" + getId();
     }
+  }
+
+  @XmlTransient
+  default String getUri() {
+    return URI_CONTEXT + URI_VERSION + getIdentityEndPoint();
   }
 }

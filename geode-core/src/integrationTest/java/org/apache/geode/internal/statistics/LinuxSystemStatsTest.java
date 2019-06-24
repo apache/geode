@@ -63,10 +63,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  private int[] ints;
-  private long[] longs;
-  private double[] doubles;
   private LocalStatisticsFactory statisticsFactory;
+  private LocalStatisticsImpl localStats;
 
   @Before
   public void setUp() throws Exception {
@@ -77,12 +75,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     LinuxProcFsStatistics.init();
     initStats();
     StatisticsTypeImpl statisticsType = (StatisticsTypeImpl) LinuxSystemStats.getType();
-    LocalStatisticsImpl statistics = (LocalStatisticsImpl) getStatisticsManager()
+    localStats = (LocalStatisticsImpl) getStatisticsManager()
         .createStatistics(statisticsType, statisticsType.getName());
-
-    ints = statistics._getIntStorage();
-    longs = statistics._getLongStorage();
-    doubles = statistics._getDoubleStorage();
   }
 
   @After
@@ -133,8 +127,8 @@ public class LinuxSystemStatsTest extends StatSamplerTestCase {
     Answer<FileInputStream> answer = new MyStealTimeAnswer(results);
     PowerMockito.whenNew(FileInputStream.class).withArguments(anyString()).thenAnswer(answer);
 
-    LinuxProcFsStatistics.refreshSystem(ints, longs, doubles);
-    LinuxProcFsStatistics.refreshSystem(ints, longs, doubles);
+    LinuxProcFsStatistics.refreshSystem(localStats);
+    LinuxProcFsStatistics.refreshSystem(localStats);
 
     Statistics[] statistics = getStatisticsManager().findStatisticsByTextId("LinuxSystemStats");
     waitForExpectedStatValue(statistics[0], "cpuSteal", expectedStatValue, 20000, 10);

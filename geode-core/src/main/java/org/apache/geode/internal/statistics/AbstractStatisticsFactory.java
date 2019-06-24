@@ -250,7 +250,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return tf.createIntCounter(name, description, units);
+    return createLongCounter(name, description, units);
   }
 
   @Override
@@ -265,7 +265,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return tf.createIntGauge(name, description, units);
+    return createLongGauge(name, description, units);
   }
 
   @Override
@@ -281,7 +281,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public StatisticDescriptor createIntCounter(String name, String description, String units,
       boolean largerBetter) {
-    return tf.createIntCounter(name, description, units, largerBetter);
+    return createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
@@ -299,7 +299,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public StatisticDescriptor createIntGauge(String name, String description, String units,
       boolean largerBetter) {
-    return tf.createIntGauge(name, description, units, largerBetter);
+    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override

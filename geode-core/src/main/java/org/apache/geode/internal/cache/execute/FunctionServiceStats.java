@@ -14,12 +14,15 @@
  */
 package org.apache.geode.internal.cache.execute;
 
+import java.util.function.LongSupplier;
+
 import org.apache.geode.StatisticDescriptor;
 import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.DistributionStats;
 import org.apache.geode.internal.statistics.DummyStatisticsImpl;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
@@ -172,6 +175,8 @@ public class FunctionServiceStats {
   /** The <code>Statistics</code> instance to which most behavior is delegated */
   private final Statistics _stats;
 
+  private final LongSupplier clock;
+
   // ///////////////////// Constructors ///////////////////////
 
   /**
@@ -182,11 +187,18 @@ public class FunctionServiceStats {
    * @param name The name of the <code>Statistics</code>
    */
   public FunctionServiceStats(StatisticsFactory factory, String name) {
-    this._stats = factory.createAtomicStatistics(_type, name);
+    this(factory, name, DistributionStats::getStatTime);
+  }
+
+  @VisibleForTesting
+  public FunctionServiceStats(StatisticsFactory factory, String textId, LongSupplier clock) {
+    _stats = factory == null ? null : factory.createAtomicStatistics(_type, textId);
+    this.clock = clock;
   }
 
   private FunctionServiceStats() {
     this._stats = new DummyStatisticsImpl(this._type, null, 0);
+    clock = DistributionStats::getStatTime;
   }
 
   static FunctionServiceStats createDummy() {
@@ -194,6 +206,10 @@ public class FunctionServiceStats {
   }
 
   // /////////////////// Instance Methods /////////////////////
+
+  private long getTime() {
+    return clock.getAsLong();
+  }
 
   /**
    * Closes the <code>FunctionServiceStats</code>.
@@ -342,7 +358,7 @@ public class FunctionServiceStats {
    * @return the current time (ns)
    */
   public long startTime() {
-    return DistributionStats.getStatTime();
+    return getTime();
   }
 
   /**
@@ -372,7 +388,7 @@ public class FunctionServiceStats {
    *        _functionExecutionHasResultCompleteProcessingTimeId
    */
   public void endFunctionExecution(long start, boolean haveResult) {
-    long ts = DistributionStats.getStatTime();
+    long ts = getTime();
 
     // Increment number of function executions completed
     this._stats.incInt(_functionExecutionsCompletedId, 1);

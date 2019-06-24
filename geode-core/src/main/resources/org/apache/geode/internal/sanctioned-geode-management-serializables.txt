@@ -32,6 +32,7 @@ org/apache/geode/cache/configuration/RegionConfig$Entry,false,key:org/apache/geo
 org/apache/geode/cache/configuration/RegionConfig$Index,false,expression:java/lang/String,fromClause:java/lang/String,imports:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,regionName:java/lang/String,type:java/lang/String
 org/apache/geode/cache/configuration/RegionType,false
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
+org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
 org/apache/geode/management/configuration/MemberConfig,false,id:java/lang/String
 org/apache/geode/management/configuration/RuntimeIndex,false
 org/apache/geode/management/configuration/RuntimeMemberConfig,false,cacheServers:java/util/List,clientConnections:int,host:java/lang/String,initialHeap:long,isCoordinator:boolean,isLocator:boolean,logFile:java/lang/String,maxHeap:long,pid:int,port:java/lang/Integer,status:java/lang/String,usedHeap:long,workingDirectory:java/lang/String

@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.CacheServerImpl.CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -1602,24 +1604,39 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
   @Override
   protected Profile instantiateProfile(InternalDistributedMember memberId, int version) {
     if (!pRegion.isShadowPR()) {
-      InternalCache cache = getProxyBucketRegion().getCache();
-      List<CacheServer> servers = cache.getCacheServers();
-
-      HashSet<BucketServerLocation66> serverLocations = new HashSet<>();
-      for (CacheServer cacheServer : servers) {
-        CacheServerImpl server = (CacheServerImpl) cacheServer;
-        if (server.isRunning() && (server.getExternalAddress() != null)) {
-          BucketServerLocation66 location = new BucketServerLocation66(getBucket().getId(),
-              server.getPort(), server.getExternalAddress(), getBucket().isPrimary(),
-              Integer.valueOf(version).byteValue(), server.getCombinedGroups());
-          serverLocations.add(location);
-        }
-      }
-      if (serverLocations.size() > 0) {
-        return new ServerBucketProfile(memberId, version, getBucket(), serverLocations);
+      Set<BucketServerLocation66> serverLocations = getBucketServerLocations(version);
+      if (!serverLocations.isEmpty()) {
+        return new ServerBucketProfile(memberId, version, getBucket(), (HashSet) serverLocations);
       }
     }
     return new BucketProfile(memberId, version, getBucket());
+  }
+
+  protected Set<BucketServerLocation66> getBucketServerLocations(int version) {
+    InternalCache cache = getProxyBucketRegion().getCache();
+    List<CacheServer> servers = cache.getCacheServers();
+    if (servers.isEmpty()) {
+      return Collections.emptySet();
+    }
+    HashSet<BucketServerLocation66> serverLocations = new HashSet<>();
+    for (CacheServer cacheServer : servers) {
+      CacheServerImpl server = (CacheServerImpl) cacheServer;
+      try {
+        String serverExternalAddress;
+        if (server.isRunning() && ((serverExternalAddress = server.getExternalAddress()) != null)) {
+          BucketServerLocation66 location = new BucketServerLocation66(getBucket().getId(),
+              server.getPort(), serverExternalAddress, getBucket().isPrimary(),
+              Integer.valueOf(version).byteValue(), server.getCombinedGroups());
+          serverLocations.add(location);
+        }
+      } catch (IllegalStateException e) {
+        if (!(e.getMessage() != null
+            && e.getMessage().equals(CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE))) {
+          throw e;
+        }
+      }
+    }
+    return serverLocations;
   }
 
   /**

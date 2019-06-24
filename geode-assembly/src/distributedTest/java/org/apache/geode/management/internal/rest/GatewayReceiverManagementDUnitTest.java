@@ -16,6 +16,9 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -26,6 +29,7 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -72,9 +76,13 @@ public class GatewayReceiverManagementDUnitTest {
 
     receiver.setStartPort("5000");
     receiver.setGroup("group1");
-    assertManagementResult(cms.create(receiver)).isSuccessful()
-        .containsStatusMessage("Successfully updated config for group1")
-        .hasMemberStatus().hasSize(1);
+    List<RealizationResult> results =
+        assertManagementResult(cms.create(receiver)).isSuccessful()
+            .containsStatusMessage("Successfully updated config for group1")
+            .getMemberStatus();
+    assertThat(results).hasSize(1);
+    assertThat(results.get(0).isSuccess()).isTrue();
+    assertThat(results.get(0).getMemberName()).isEqualTo("server-1");
 
     // try create another GWR on the same group
     receiver.setStartPort("5001");

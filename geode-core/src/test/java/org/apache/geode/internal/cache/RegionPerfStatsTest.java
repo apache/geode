@@ -24,27 +24,23 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.cache.CachePerfStats.Clock;
 
 public class RegionPerfStatsTest {
 
   private StatisticsFactory statisticsFactory;
   private CachePerfStats cachePerfStats;
-  private Clock clock;
 
   @Before
   public void setUp() {
     statisticsFactory = mock(StatisticsFactory.class);
     cachePerfStats = mock(CachePerfStats.class);
-    clock = mock(Clock.class);
   }
 
   @Test
   public void textIdIsRegionStatsHyphenRegionName() throws Exception {
     String theRegionName = "TheRegionName";
 
-    new RegionPerfStats(statisticsFactory, cachePerfStats,
-        theRegionName, clock);
+    new RegionPerfStats(statisticsFactory, cachePerfStats, theRegionName, () -> 0);
 
     ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
     verify(statisticsFactory).createAtomicStatistics(any(), captor.capture());

@@ -51,10 +51,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
@@ -140,9 +140,10 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_partialFailureOnMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", false, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(
+        new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
@@ -158,9 +159,9 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void create_succeedsOnAllMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", true, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(new RealizationResult().setMemberName("member2"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(memberValidator)
@@ -244,9 +245,10 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void delete_partialFailureOnMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", false, "failed"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(
+        new RealizationResult().setMemberName("member2").setSuccess(false).setMessage("failed"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
@@ -270,9 +272,9 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void delete_succeedsOnAllMembers() throws Exception {
-    List<CliFunctionResult> functionResults = new ArrayList<>();
-    functionResults.add(new CliFunctionResult("member1", true, "success"));
-    functionResults.add(new CliFunctionResult("member2", true, "success"));
+    List<RealizationResult> functionResults = new ArrayList<>();
+    functionResults.add(new RealizationResult().setMemberName("member1"));
+    functionResults.add(new RealizationResult().setMemberName("member2"));
     doReturn(functionResults).when(service).executeAndGetFunctionResult(any(), any(), any());
 
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),

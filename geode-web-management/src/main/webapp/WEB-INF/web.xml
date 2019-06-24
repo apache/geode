@@ -48,14 +48,14 @@
     <description>
       The Spring DispatcherServlet (FrontController) handling all HTTP requests to the Geode Management REST API.
     </description>
-    <servlet-name>geode-management</servlet-name>
+    <servlet-name>management</servlet-name>
     <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
     <async-supported>true</async-supported>
   </servlet>
    
   <servlet-mapping>
-    <servlet-name>geode-management</servlet-name>
+    <servlet-name>management</servlet-name>
     <url-pattern>/*</url-pattern>
   </servlet-mapping>
 

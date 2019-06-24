@@ -19,15 +19,18 @@ import static org.apache.geode.management.internal.configuration.domain.Declarab
 
 import java.util.List;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
+import org.apache.geode.management.api.RealizationResult;
 
 public class GatewayReceiverRealizer implements ConfigurationRealizer<GatewayReceiverConfig> {
 
   @Override
-  public void create(GatewayReceiverConfig config, Cache cache) {
+  public RealizationResult create(GatewayReceiverConfig config, Cache cache) {
     GatewayReceiverFactory gatewayReceiverFactory = cache.createGatewayReceiverFactory();
 
     String startPort = config.getStartPort();
@@ -74,6 +77,8 @@ public class GatewayReceiverRealizer implements ConfigurationRealizer<GatewayRec
     }
 
     gatewayReceiverFactory.create();
+    RealizationResult result = new RealizationResult().setSuccess(true);
+    return result;
   }
 
   @Override
@@ -82,12 +87,12 @@ public class GatewayReceiverRealizer implements ConfigurationRealizer<GatewayRec
   }
 
   @Override
-  public void update(GatewayReceiverConfig config, Cache cache) {
-
+  public RealizationResult update(GatewayReceiverConfig config, Cache cache) {
+    throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public void delete(GatewayReceiverConfig config, Cache cache) {
-
+  public RealizationResult delete(GatewayReceiverConfig config, Cache cache) {
+    throw new NotImplementedException("Not implemented");
   }
 }

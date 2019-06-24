@@ -34,6 +34,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -59,7 +60,7 @@ public class RegionManagementDunitTest {
     server3 = cluster.startServerVM(3, "group2,group3", locator.getPort());
 
     restClient =
-        new GeodeDevRestClient("/geode-management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
     cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
         .build();
@@ -75,7 +76,8 @@ public class RegionManagementDunitTest {
     ClusterManagementResult<RegionConfig> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactly("server-1");
 
     // make sure region is created
     server1.invoke(() -> verifyRegionCreated("customers", "REPLICATE"));
@@ -125,7 +127,8 @@ public class RegionManagementDunitTest {
             .getClusterManagementResult();
 
     assertThat(result.isSuccessful()).isTrue();
-    assertThat(result.getMemberStatuses()).containsKeys("server-1").hasSize(1);
+    assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
+        .containsExactly("server-1");
 
     // make sure region is created
     server1.invoke(() -> verifyRegionCreated("orders", "PARTITION"));

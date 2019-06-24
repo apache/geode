@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.SharedLibrary;
+import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
 
 /**
@@ -30,8 +30,8 @@ import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
  *
  */
 public class ReflectionSingleObjectSizer implements SingleObjectSizer {
-  public static final int REFERENCE_SIZE = SharedLibrary.getReferenceSize();
-  public static final int OBJECT_SIZE = SharedLibrary.getObjectHeaderSize();
+  public static final int REFERENCE_SIZE = JvmSizeUtils.getReferenceSize();
+  public static final int OBJECT_SIZE = JvmSizeUtils.getObjectHeaderSize();
 
   @Immutable
   private static final UnsafeWrapper unsafe;

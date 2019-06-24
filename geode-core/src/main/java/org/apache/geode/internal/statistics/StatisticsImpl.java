@@ -45,7 +45,7 @@ public abstract class StatisticsImpl implements Statistics {
   private static final Logger logger = LogService.getLogger();
 
   /** The type of this statistics instance */
-  private final StatisticsTypeImpl type;
+  protected final StatisticsTypeImpl type;
 
   /** The display name of this statistics instance */
   private final String textId;
@@ -185,19 +185,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public void setInt(String name, int value) {
-    setInt(nameToDescriptor(name), value);
+    setLong(name, value);
   }
 
   @Override
   public void setInt(StatisticDescriptor descriptor, int value) {
-    setInt(getIntId(descriptor), value);
+    setLong(descriptor, value);
   }
 
   @Override
   public void setInt(int id, int value) {
-    if (isOpen()) {
-      _setInt(id, value);
-    }
+    setLong(id, value);
   }
 
   @Override
@@ -236,28 +234,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public int getInt(String name) {
-    return getInt(nameToDescriptor(name));
+    return (int) getLong(name);
   }
 
   @Override
   public int getInt(StatisticDescriptor descriptor) {
-    try {
-      return getInt(getIntId(descriptor));
-    } catch (IllegalArgumentException e) {
-      if (descriptor.getType() == long.class) {
-        return (int) getLong(descriptor);
-      }
-      throw e;
-    }
+    return (int) getLong(descriptor);
   }
 
   @Override
   public int getInt(int id) {
-    if (isOpen()) {
-      return _getInt(id);
-    } else {
-      return 0;
-    }
+    return (int) getLong(id);
   }
 
   @Override
@@ -273,6 +260,9 @@ public abstract class StatisticsImpl implements Statistics {
   @Override
   public long getLong(int id) {
     if (isOpen()) {
+      if (!type.isValidLongId(id)) {
+        throw new IllegalArgumentException("Id, " + id + ", is not a long statistic.");
+      }
       return _getLong(id);
     } else {
       return 0;
@@ -328,19 +318,17 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public void incInt(String name, int delta) {
-    incInt(nameToDescriptor(name), delta);
+    incLong(name, delta);
   }
 
   @Override
   public void incInt(StatisticDescriptor descriptor, int delta) {
-    incInt(getIntId(descriptor), delta);
+    incLong(descriptor, delta);
   }
 
   @Override
   public void incInt(int id, int delta) {
-    if (isOpen()) {
-      _incInt(id, delta);
-    }
+    incLong(id, delta);
   }
 
   @Override
@@ -379,7 +367,10 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public IntSupplier setIntSupplier(final int id, final IntSupplier supplier) {
-    if (id >= type.getIntStatCount()) {
+    // setIntSupplier is deprecated but it is too much of a pain to wrap the IntSupplier
+    // in a LongSupplier. So the implementation continues to store IntSupplier instances
+    // but all the checks and actions are long based instead of int based.
+    if (!type.isValidLongId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return intSuppliers.put(id, supplier);
@@ -393,12 +384,12 @@ public abstract class StatisticsImpl implements Statistics {
   @Override
   public IntSupplier setIntSupplier(final StatisticDescriptor descriptor,
       final IntSupplier supplier) {
-    return setIntSupplier(getIntId(descriptor), supplier);
+    return setIntSupplier(getLongId(descriptor), supplier);
   }
 
   @Override
   public LongSupplier setLongSupplier(final int id, final LongSupplier supplier) {
-    if (id >= type.getLongStatCount()) {
+    if (!type.isValidLongId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return longSuppliers.put(id, supplier);
@@ -417,7 +408,7 @@ public abstract class StatisticsImpl implements Statistics {
 
   @Override
   public DoubleSupplier setDoubleSupplier(final int id, final DoubleSupplier supplier) {
-    if (id >= type.getDoubleStatCount()) {
+    if (!type.isValidDoubleId(id)) {
       throw new IllegalArgumentException("Id " + id + " is not in range for stat" + type);
     }
     return doubleSuppliers.put(id, supplier);
@@ -468,58 +459,40 @@ public abstract class StatisticsImpl implements Statistics {
   public abstract boolean isAtomic();
 
   /**
-   * Sets the value of a statistic of type {@code int} at the given offset, but performs no
+   * Sets the value of a statistic of type {@code long} at the given id, but performs no
    * type checking.
    */
-  protected abstract void _setInt(int offset, int value);
+  protected abstract void _setLong(int id, long value);
 
   /**
-   * Sets the value of a statistic of type {@code long} at the given offset, but performs no
+   * Sets the value of a statistic of type {@code double} at the given id, but performs no
    * type checking.
    */
-  protected abstract void _setLong(int offset, long value);
+  protected abstract void _setDouble(int id, double value);
 
   /**
-   * Sets the value of a statistic of type {@code double} at the given offset, but performs no
-   * type checking.
-   */
-  protected abstract void _setDouble(int offset, double value);
-
-  /**
-   * Returns the value of the statistic of type {@code int} at the given offset, but performs
+   * Returns the value of the statistic of type {@code long} at the given id, but performs
    * no type checking.
    */
-  protected abstract int _getInt(int offset);
+  protected abstract long _getLong(int id);
 
   /**
-   * Returns the value of the statistic of type {@code long} at the given offset, but performs
-   * no type checking.
-   */
-  protected abstract long _getLong(int offset);
-
-  /**
-   * Returns the value of the statistic of type {@code double} at the given offset, but
+   * Returns the value of the statistic of type {@code double} at the given id, but
    * performs no type checking.
    */
-  protected abstract double _getDouble(int offset);
+  protected abstract double _getDouble(int id);
 
   /**
-   * Increments the value of the statistic of type {@code int} at the given offset by a given
+   * Increments the value of the statistic of type {@code long} at the given id by a given
    * amount, but performs no type checking.
    */
-  protected abstract void _incInt(int offset, int delta);
+  protected abstract void _incLong(int id, long delta);
 
   /**
-   * Increments the value of the statistic of type {@code long} at the given offset by a given
-   * amount, but performs no type checking.
-   */
-  protected abstract void _incLong(int offset, long delta);
-
-  /**
-   * Increments the value of the statistic of type {@code double} at the given offset by a
+   * Increments the value of the statistic of type {@code double} at the given id by a
    * given amount, but performs no type checking.
    */
-  protected abstract void _incDouble(int offset, double delta);
+  protected abstract void _incDouble(int id, double delta);
 
   /**
    * For internal use only. Tells the implementation to prepare the data in this instance for
@@ -541,7 +514,7 @@ public abstract class StatisticsImpl implements Statistics {
     int errors = 0;
     for (Map.Entry<Integer, IntSupplier> entry : intSuppliers.entrySet()) {
       try {
-        _setInt(entry.getKey(), entry.getValue().getAsInt());
+        _setLong(entry.getKey(), entry.getValue().getAsInt());
       } catch (Throwable t) {
         logSupplierError(t, entry.getKey(), entry.getValue());
         errors++;
@@ -598,8 +571,6 @@ public abstract class StatisticsImpl implements Statistics {
    */
   private Number _get(StatisticDescriptorImpl descriptor) {
     switch (descriptor.getTypeCode()) {
-      case StatisticDescriptorImpl.INT:
-        return _getInt(descriptor.getId());
       case StatisticDescriptorImpl.LONG:
         return _getLong(descriptor.getId());
       case StatisticDescriptorImpl.DOUBLE:
@@ -616,8 +587,6 @@ public abstract class StatisticsImpl implements Statistics {
    */
   private long _getRawBits(StatisticDescriptorImpl descriptor) {
     switch (descriptor.getTypeCode()) {
-      case StatisticDescriptorImpl.INT:
-        return _getInt(descriptor.getId());
       case StatisticDescriptorImpl.LONG:
         return _getLong(descriptor.getId());
       case StatisticDescriptorImpl.DOUBLE:
@@ -627,10 +596,6 @@ public abstract class StatisticsImpl implements Statistics {
             String.format("unexpected stat descriptor type code: %s",
                 descriptor.getTypeCode()));
     }
-  }
-
-  private static int getIntId(StatisticDescriptor descriptor) {
-    return ((StatisticDescriptorImpl) descriptor).checkInt();
   }
 
   private static int getLongId(StatisticDescriptor descriptor) {
