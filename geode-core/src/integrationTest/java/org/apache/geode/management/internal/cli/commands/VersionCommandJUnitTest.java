@@ -43,7 +43,7 @@ import org.apache.geode.test.junit.rules.LocatorStarterRule;
 public class VersionCommandJUnitTest {
   private static final String[] EXPECTED_FULL_DATA =
       {BUILD_DATE, BUILD_ID, BUILD_JAVA_VERSION, BUILD_PLATFORM, PRODUCT_NAME, PRODUCT_VERSION,
-          SOURCE_DATE, SOURCE_REPOSITORY, SOURCE_REVISION, "Native version", "Running on"};
+          SOURCE_DATE, SOURCE_REPOSITORY, SOURCE_REVISION, "Running on"};
 
   @ClassRule
   public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();

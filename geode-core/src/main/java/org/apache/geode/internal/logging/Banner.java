@@ -234,7 +234,6 @@ public class Banner {
     SOURCE_DATE(VersionDescription.SOURCE_DATE),
     SOURCE_REPOSITORY(VersionDescription.SOURCE_REPOSITORY),
     SOURCE_REVISION(VersionDescription.SOURCE_REVISION),
-    NATIVE_VERSION(VersionDescription.NATIVE_VERSION),
     RUNNING_ON(VersionDescription.RUNNING_ON),
     COMMUNICATIONS_VERSION("Communications version"),
     PROCESS_ID("Process ID"),

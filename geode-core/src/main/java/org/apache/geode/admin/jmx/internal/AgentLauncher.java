@@ -47,7 +47,6 @@ import org.apache.geode.admin.jmx.AgentFactory;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.PureJavaMode;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
@@ -630,27 +629,6 @@ public class AgentLauncher {
   }
 
   /**
-   * A wrapper method for the readStatus method to make one last check for the GemFire JMX Agent
-   * process if running with the native libraries.
-   *
-   * @return the Status object as returned from readStatus unless running in native mode and a
-   *         determination is made such that the Agent process is not running.
-   * @throws IOException if the state of the Agent process could not be read from the .agent.ser
-   *         status file.
-   * @see #readStatus()
-   */
-  protected Status nativeReadStatus() throws IOException {
-    Status status = readStatus();
-
-    // @see Bug #32760 - the bug is still possible in pure Java mode
-    if (status != null && !PureJavaMode.isPure() && !OSProcess.exists(status.pid)) {
-      status = createStatus(status, SHUTDOWN);
-    }
-
-    return status;
-  }
-
-  /**
    * Reads the JMX Agent's status from the .agent.ser status file. If the status file cannot be read
    * due to I/O problems, the method will keep attempting to read the file for up to 20 seconds.
    * <p/>
@@ -666,7 +644,7 @@ public class AgentLauncher {
 
     while (status == null && clock < endTime) {
       try {
-        status = nativeReadStatus();
+        status = readStatus();
       } catch (Exception ignore) {
         // see bug 31575
         // see bug 36998

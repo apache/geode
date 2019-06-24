@@ -32,7 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.SharedLibrary;
+import org.apache.geode.internal.JvmSizeUtils;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.eviction.EvictionCounters;
 import org.apache.geode.internal.cache.eviction.MemoryLRUController;
@@ -100,16 +100,16 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     assertNotNull(lruStats);
 
     String sampleKey = new String("10000");
-    int stringSize = SharedLibrary.getObjectHeaderSize() // String object
-        + (2 * 4) + SharedLibrary.getReferenceSize(); // 2 ints and a reference on a string
+    int stringSize = JvmSizeUtils.getObjectHeaderSize() // String object
+        + (2 * 4) + JvmSizeUtils.getReferenceSize(); // 2 ints and a reference on a string
     stringSize = (int) ReflectionSingleObjectSizer.roundUpSize(stringSize);
 
-    int charArraySize = sampleKey.length() * 2 + SharedLibrary.getObjectHeaderSize() // char array
-                                                                                     // object
+    int charArraySize = sampleKey.length() * 2 + JvmSizeUtils.getObjectHeaderSize() // char array
+                                                                                    // object
         + 4; // length of char array
     charArraySize = (int) ReflectionSingleObjectSizer.roundUpSize(charArraySize);
     assertEquals(stringSize, ReflectionSingleObjectSizer.sizeof(String.class));
-    assertEquals(ReflectionSingleObjectSizer.roundUpSize(SharedLibrary.getObjectHeaderSize() + 4),
+    assertEquals(ReflectionSingleObjectSizer.roundUpSize(JvmSizeUtils.getObjectHeaderSize() + 4),
         (new ReflectionSingleObjectSizer()).sizeof(new char[0]));
     assertEquals(charArraySize, (new ReflectionSingleObjectSizer()).sizeof(new char[5]));
 
@@ -119,7 +119,7 @@ public class MemLRUEvictionControllerDUnitTest extends JUnit4CacheTestCase {
     // now that keys are inlined the keySize is 0
     keySize = 0;
     byte[] sampleValue = new byte[1000];
-    int valueSize = sampleValue.length + SharedLibrary.getObjectHeaderSize() // byte array object;
+    int valueSize = sampleValue.length + JvmSizeUtils.getObjectHeaderSize() // byte array object;
         + 4; // length of byte array
     valueSize = (int) ReflectionSingleObjectSizer.roundUpSize(valueSize);
     int entrySize = keySize + valueSize + getEntryOverhead(region);
