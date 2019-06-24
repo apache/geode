@@ -29,7 +29,7 @@ public interface TXRegionLockRequest extends DataSerializable {
   Map getKeys();
 
   /** add the key to be locked */
-  void addEntryKey(Object key, Boolean isevent);
+  void addEntryKey(Object key, Boolean isEvent);
 
   /** add the set of keys to be locked */
   void addEntryKeys(Map<Object, Boolean> map);

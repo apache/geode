@@ -227,7 +227,7 @@ public class TXRegionState {
       if (this.uaMods != null) {
         Iterator<Object> it = this.uaMods.keySet().iterator();
         while (it.hasNext()) {
-          // add key with isevent set to TRUE, for keep BC
+          // add key with isEvent set to TRUE, for keep BC
           rlr.addEntryKey(it.next(), Boolean.TRUE);
         }
 

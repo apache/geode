@@ -99,12 +99,12 @@ public class TXRegionLockRequestImpl implements TXRegionLockRequest {
   }
 
   @Override
-  public void addEntryKey(Object key, Boolean isevent) {
+  public void addEntryKey(Object key, Boolean isEvent) {
     if (this.entryKeys == null) {
       this.entryKeys = new HashMap<Object, Boolean>();
     }
     if (!this.entryKeys.getOrDefault(key, Boolean.FALSE)) {
-      this.entryKeys.put(key, isevent);
+      this.entryKeys.put(key, isEvent);
     }
   }
 
