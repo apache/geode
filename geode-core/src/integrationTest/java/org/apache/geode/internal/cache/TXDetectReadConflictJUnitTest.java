@@ -37,6 +37,7 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 
 
 /**
@@ -48,19 +49,22 @@ public class TXDetectReadConflictJUnitTest {
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
   @Rule
+  public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
+
+  @Rule
   public TestName name = new TestName();
 
   private Cache cache = null;
   private Region region = null;
   private Region regionPR = null;
-  private CountDownLatch allowWriteTransactionToCommitLatch = new CountDownLatch(1);
-  private CountDownLatch allowReadTransactionToProceedLatch = new CountDownLatch(1);
-  private final String key = "key";
-  private final String key1 = "key1";
-  private final String value = "value";
-  private final String value1 = "value";
-  private final String newValue = "newValue";
-  private final String newValue1 = "newValue1";
+  private final CountDownLatch allowWriteTransactionToCommitLatch = new CountDownLatch(1);
+  private final CountDownLatch allowReadTransactionToProceedLatch = new CountDownLatch(1);
+  private static final String key = "key";
+  private static final String key1 = "key1";
+  private static final String value = "value";
+  private static final String value1 = "value";
+  private static final String newValue = "newValue";
+  private static final String newValue1 = "newValue1";
 
   @Before
   public void setUp() throws Exception {
@@ -70,16 +74,16 @@ public class TXDetectReadConflictJUnitTest {
 
   protected void createCache() {
     Properties props = new Properties();
-    props.put(MCAST_PORT, "0");
-    props.put(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = new CacheFactory(props).create();
     region = cache.createRegionFactory(RegionShortcut.REPLICATE).create("testRegionRR");
   }
 
   protected void createCachePR() {
     Properties props = new Properties();
-    props.put(MCAST_PORT, "0");
-    props.put(LOCATORS, "");
+    props.setProperty(MCAST_PORT, "0");
+    props.setProperty(LOCATORS, "");
     cache = new CacheFactory(props).create();
     regionPR = cache.createRegionFactory(RegionShortcut.PARTITION).create("testRegionPR");
   }
@@ -90,7 +94,7 @@ public class TXDetectReadConflictJUnitTest {
   }
 
   @Test
-  public void testReadConflictsRR() throws Exception {
+  public void testReadConflictsRR() {
     cache.close();
     createCache();
     region.put(key, value);
@@ -103,7 +107,7 @@ public class TXDetectReadConflictJUnitTest {
   }
 
   @Test
-  public void testReadConflictsPR() throws Exception {
+  public void testReadConflictsPR() {
     cache.close();
     createCachePR();
     regionPR.put(key, value);
@@ -129,8 +133,8 @@ public class TXDetectReadConflictJUnitTest {
     TXState txState =
         (TXState) ((TXStateProxyImpl) TXManagerImpl.getCurrentTXState()).getRealDeal(null, null);
     txState.setAfterReservation(() -> readTransactionAfterReservation());
-    Runnable task = () -> doPutOnReadKeyTransaction();
-    new Thread(task).start();
+    ExecutorServiceRule.ThrowingRunnable task = () -> doPutOnReadKeyTransaction();
+    executorServiceRule.submit(task);
     txManager.commit();
     assertThat(region.get(key)).isSameAs(value);
     assertThat(region.get(key1)).isSameAs(newValue1);
@@ -145,15 +149,11 @@ public class TXDetectReadConflictJUnitTest {
     }
   }
 
-  private void doPutOnReadKeyTransaction() {
+  private void doPutOnReadKeyTransaction() throws Exception {
     TXManagerImpl txManager = (TXManagerImpl) cache.getCacheTransactionManager();
     txManager.begin();
     region.put(key, newValue); // expect commit conflict
-    try {
-      allowWriteTransactionToCommitLatch.await(10, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
+    allowWriteTransactionToCommitLatch.await(10, TimeUnit.SECONDS);
     assertThatThrownBy(() -> txManager.commit()).isExactlyInstanceOf(CommitConflictException.class);
     allowReadTransactionToProceedLatch.countDown();
   }
