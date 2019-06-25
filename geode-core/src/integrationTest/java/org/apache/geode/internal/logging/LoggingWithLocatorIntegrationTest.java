@@ -89,7 +89,8 @@ public class LoggingWithLocatorIntegrationTest {
   public void startLocatorDefaultLoggingConfig() throws Exception {
     Properties config = new Properties();
 
-    locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null);
+    locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
+        temporaryFolder.getRoot());
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -107,7 +108,8 @@ public class LoggingWithLocatorIntegrationTest {
   public void startLocatorDefaultLoggingConfigWithLogFile() throws Exception {
     Properties config = new Properties();
 
-    locator = InternalLocator.startLocator(port, logFile, null, null, null, false, config, null);
+    locator = InternalLocator.startLocator(port, logFile, null, null, null, false, config, null,
+        temporaryFolder.getRoot());
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -164,7 +166,8 @@ public class LoggingWithLocatorIntegrationTest {
     config.setProperty(LOG_FILE, logFile.getAbsolutePath());
     config.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
-    locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null);
+    locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
+        temporaryFolder.getRoot());
     Logger logger = LogService.getLogger();
 
     // assert that logging goes to logFile
