@@ -16,6 +16,8 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.TimeUnit;
+
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -66,7 +68,7 @@ public class FunctionOnServersRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .untilAsserted(
+        .atMost(10, TimeUnit.SECONDS).untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
   }
@@ -76,20 +78,20 @@ public class FunctionOnServersRetryDUnitTest extends FunctionRetryTestBase {
       /*
        * haStatus | clientMetadataStatus | functionIdentifierType | retryAttempts | expectedCalls
        */
-      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
-      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 1",
-      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 1",
-      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 1",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 0 | 3",
+      "NOT_HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3",
+      "NOT_HA | CLIENT_HAS_METADATA | STRING | -1 | 3",
 
       "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | -1 | 3",
-      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 0 | 3",
       "HA | CLIENT_MISSING_METADATA | OBJECT_REFERENCE | 2 | 3",
       "HA | CLIENT_MISSING_METADATA | STRING | -1 | 3",
-      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 1",
+      "HA | CLIENT_MISSING_METADATA | STRING | 0 | 3",
       "HA | CLIENT_MISSING_METADATA | STRING | 2 | 3",
       "HA | CLIENT_HAS_METADATA | OBJECT_REFERENCE | -1 | 3",
       "HA | CLIENT_HAS_METADATA | STRING | -1 | 3",
@@ -108,7 +110,7 @@ public class FunctionOnServersRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .untilAsserted(
+        .atMost(10, TimeUnit.SECONDS).untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
   }
