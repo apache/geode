@@ -16,8 +16,6 @@ package org.apache.geode.internal.cache.execute;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.concurrent.TimeUnit;
-
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -68,7 +66,7 @@ public class FunctionOnServersRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .atMost(10, TimeUnit.SECONDS).untilAsserted(
+        .untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
   }
@@ -110,7 +108,7 @@ public class FunctionOnServersRetryDUnitTest extends FunctionRetryTestBase {
         retryAttempts);
 
     GeodeAwaitility.await("Awaiting getNumberOfFunctionCalls isEqualTo expectedCalls")
-        .atMost(10, TimeUnit.SECONDS).untilAsserted(
+        .untilAsserted(
             () -> assertThat(getNumberOfFunctionCalls(function.getId())).isEqualTo(expectedCalls));
 
   }

@@ -147,9 +147,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
       stats.startFunctionExecution(true);
 
       final ExecuteFunctionOpImpl executeFunctionOp =
-          new ExecuteFunctionOpImpl(function, args, memberMappedArg,
-              rc, isFnSerializationReqd, (byte) 0, groups, allServers, isIgnoreDepartedMembers(),
-              getTimeoutMs());
+          getExecuteFunctionOp(function, rc, args, memberMappedArg, (byte) i,
+              isIgnoreDepartedMembers());
 
       final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
           () -> new ExecuteFunctionOpImpl(function, args, memberMappedArg,
@@ -181,6 +180,17 @@ public class ServerFunctionExecutor extends AbstractExecution {
       stats.endFunctionExecutionWithException(true);
       throw new FunctionException(exception);
     }
+  }
+
+  private ExecuteFunctionOpImpl getExecuteFunctionOp(Function function,
+      ResultCollector rc,
+      Object args,
+      MemberMappedArgument memberMappedArg,
+      byte i,
+      boolean ignoreDepartedMembers) {
+    return new ExecuteFunctionOpImpl(function, args, memberMappedArg,
+        rc, isFnSerializationReqd, i, groups, allServers, ignoreDepartedMembers,
+        getTimeoutMs());
   }
 
   private ResultCollector executeOnServer(String functionId, ResultCollector rc, byte hasResult,
