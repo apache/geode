@@ -92,18 +92,6 @@ public class DistributionAdvisorTest {
   }
 
   @Test
-  public void regionSyncIsNotScheduledIfRegionIsNotInitialized() {
-    when(distributedRegion.isInitializedWithWait()).thenReturn(false);
-    doCallRealMethod().when(distributionAdvisor).syncForCrashedMember(member, profile);
-
-    distributionAdvisor.syncForCrashedMember(member, profile);
-
-    verify(distributedRegion, never()).scheduleSynchronizeForLostMember(member, lostVersionID,
-        delay);
-    verify(distributedRegion, never()).setRegionSynchronizeScheduled(lostVersionID);
-  }
-
-  @Test
   public void regionSyncNotInvokedIfLostMemberIsAnEmptyAccessorOfPersistentReplicateRegion() {
     when(dataPolicy.withPersistence()).thenReturn(true);
     when(distributedRegion.getPersistentID()).thenReturn(null);
