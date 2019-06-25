@@ -104,6 +104,7 @@ public class ExecuteFunctionOp {
           rc.clearResults();
         } catch (ServerOperationException serverOperationException) {
           throw serverOperationException;
+
         } catch (ServerConnectivityException se) {
 
           if (maxRetryAttempts == PoolFactory.DEFAULT_RETRY_ATTEMPTS) {
