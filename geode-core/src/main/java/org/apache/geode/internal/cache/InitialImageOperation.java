@@ -68,7 +68,6 @@ import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
 import org.apache.geode.internal.cache.entries.DiskEntry;
@@ -1886,8 +1885,10 @@ public class InitialImageOperation {
           if (lostMemberVersionID == null) {
             lostMemberVersionID = lostMemberID;
           }
-          waitInAnotherThreadToCheckIfSynchronizationScheduled(targetRegion, lostMemberID,
-              lostMemberVersionID);
+          // check to see if the region in this cache needs to synchronize with others
+          // it is possible that the cache is recover/restart of a member and not
+          // scheduled to synchronize with others
+          synchronizeIfNotScheduled(targetRegion, lostMemberID, lostMemberVersionID);
         }
 
         if (internalAfterSentImageReply != null
@@ -1929,20 +1930,6 @@ public class InitialImageOperation {
               "Live member has been scheduled SynchronizeForLostMember by membership listener.");
         }
       }
-    }
-
-    /**
-     * Pause 1 second in anther thread to wait for membership listener to trigger syncWithLostMember
-     * operation. Otherwise, this is a newly started member, do the syncWithLostMember here.
-     */
-    void waitInAnotherThreadToCheckIfSynchronizationScheduled(DistributedRegion region,
-        InternalDistributedMember lostMember, VersionSource lostVersionSource) {
-      region.getCache().getCCPTimer().schedule(new SystemTimer.SystemTimerTask() {
-        @Override
-        public void run2() {
-          synchronizeIfNotScheduled(region, lostMember, lostVersionSource);
-        }
-      }, 1000);
     }
 
     /**
