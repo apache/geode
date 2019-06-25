@@ -227,6 +227,7 @@ public class DistributedRegionJUnitTest
     boolean skipCallbacks = true;
 
     final EventIDHolder clientEvent = new EventIDHolder(retryEventID);
+    clientEvent.setOperation(Operation.UPDATE);
     clientEvent.setPossibleDuplicate(true);
     VMVersionTag tag = new VMVersionTag();
     tag.setEntryVersion(1);
