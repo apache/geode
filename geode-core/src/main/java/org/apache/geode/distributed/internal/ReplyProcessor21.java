@@ -1068,7 +1068,7 @@ public class ReplyProcessor21 implements MembershipListener {
     // Increment the stat
     getDistributionManager().getStats().incReplyTimeouts();
 
-    final Set suspectMembers;
+    final Set<InternalDistributedMember> suspectMembers;
     if (suspectThem || severeAlert) {
       suspectMembers = new HashSet();
     } else {

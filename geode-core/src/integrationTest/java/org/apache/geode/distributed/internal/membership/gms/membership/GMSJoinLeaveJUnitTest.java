@@ -53,7 +53,6 @@ import org.mockito.internal.verification.Times;
 import org.mockito.verification.Timeout;
 
 import org.apache.geode.SystemConnectException;
-import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -937,7 +936,8 @@ public class GMSJoinLeaveJUnitTest {
     assertTrue(gmsJoinLeave.isCoordinator());
     // wait for suspect processing
 
-    verify(healthMonitor, timeout(10000).atLeast(1)).checkIfAvailable(isA(DistributedMember.class),
+    verify(healthMonitor, timeout(10000).atLeast(1)).checkIfAvailable(
+        isA(InternalDistributedMember.class),
         isA(String.class), isA(Boolean.class));
     // verify(messenger, atLeast(1)).send(isA(RemoveMemberMessage.class));
   }

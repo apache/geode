@@ -238,20 +238,20 @@ public interface MembershipManager {
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
    */
-  boolean verifyMember(DistributedMember mbr, String reason);
+  boolean verifyMember(InternalDistributedMember mbr, String reason);
 
 
   /**
    * Initiate SUSPECT processing for the given members. This may be done if the members have not
    * been responsive. If they fail SUSPECT processing, they will be removed from membership.
    */
-  void suspectMembers(Set members, String reason);
+  void suspectMembers(Set<InternalDistributedMember> members, String reason);
 
   /**
    * Initiate SUSPECT processing for the given member. This may be done if the member has not been
    * responsive. If it fails SUSPECT processing, it will be removed from membership.
    */
-  void suspectMember(DistributedMember member, String reason);
+  void suspectMember(InternalDistributedMember member, String reason);
 
   /**
    * if the manager initiated shutdown, this will return the cause of abnormal termination of

@@ -20,16 +20,14 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -42,9 +40,6 @@ import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMes
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.security.SecurityService;
-import org.apache.geode.internal.security.SecurityServiceFactory;
-import org.apache.geode.security.AuthenticationFailedException;
 
 @SuppressWarnings("ConstantConditions")
 public class Services {
@@ -59,17 +54,12 @@ public class Services {
   private final ServiceConfig config;
   private final DMStats stats;
   private final Stopper cancelCriterion;
-  private final SecurityService securityService;
-  private final InternalDistributedSystem distributedSystem;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
   private volatile Exception shutdownCause;
 
   private Locator locator;
-
-  private LogWriter logWriter;
-  private LogWriter securityLogWriter;
 
   private final Timer timer = new Timer("Geode Membership Timer", true);
 
@@ -102,30 +92,23 @@ public class Services {
     this.joinLeave = null;
     this.healthMon = null;
     this.messenger = null;
-    this.securityService = SecurityServiceFactory.create();
     this.auth = null;
-    this.distributedSystem = null;
   }
 
   public Services(DistributedMembershipListener listener,
-      InternalDistributedSystem system,
-      RemoteTransportConfig transport, DMStats stats, SecurityService securityService) {
-    this.distributedSystem = system;
+      RemoteTransportConfig transport, DMStats stats,
+      final Authenticator authenticator, DistributionConfig config) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, system.getConfig());
+    this.config = new ServiceConfig(transport, config);
     this.manager = new GMSMembershipManager(listener);
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
-    this.logWriter = distributedSystem.getLogWriter();
     this.messenger = new JGroupsMessenger();
-    this.securityLogWriter = distributedSystem.getSecurityLogWriter();
-    this.securityService = securityService;
-    this.auth = new GMSAuthenticator();
+    this.auth = authenticator;
   }
 
   protected void init() {
-    this.auth.init(this);
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
@@ -136,8 +119,6 @@ public class Services {
     boolean started = false;
     try {
       logger.info("Starting membership services");
-      logger.debug("starting Authenticator");
-      this.auth.start();
       logger.debug("starting Messenger");
       this.messenger.start();
       logger.debug("starting JoinLeave");
@@ -156,11 +137,9 @@ public class Services {
         this.healthMon.stop();
         this.joinLeave.stop();
         this.messenger.stop();
-        this.auth.stop();
         this.timer.cancel();
       }
     }
-    this.auth.started();
     this.messenger.started();
     this.joinLeave.started();
     this.healthMon.started();
@@ -181,7 +160,6 @@ public class Services {
   }
 
   public void setLocalAddress(InternalDistributedMember address) {
-    this.auth.setLocalAddress(address);
     this.messenger.setLocalAddress(address);
     this.joinLeave.setLocalAddress(address);
     this.healthMon.setLocalAddress(address);
@@ -202,17 +180,13 @@ public class Services {
         this.healthMon.emergencyClose();
       } finally {
         try {
-          this.auth.emergencyClose();
+          this.messenger.emergencyClose();
         } finally {
           try {
-            this.messenger.emergencyClose();
+            this.manager.emergencyClose();
           } finally {
-            try {
-              this.manager.emergencyClose();
-            } finally {
-              this.cancelCriterion.cancel("Membership services are shut down");
-              this.stopped = true;
-            }
+            this.cancelCriterion.cancel("Membership services are shut down");
+            this.stopped = true;
           }
         }
       }
@@ -236,17 +210,13 @@ public class Services {
           this.healthMon.stop();
         } finally {
           try {
-            this.auth.stop();
+            this.messenger.stop();
           } finally {
             try {
-              this.messenger.stop();
+              this.manager.stop();
             } finally {
-              try {
-                this.manager.stop();
-              } finally {
-                this.cancelCriterion.cancel("Membership services are shut down");
-                this.stopped = true;
-              }
+              this.cancelCriterion.cancel("Membership services are shut down");
+              this.stopped = true;
             }
           }
         }
@@ -254,42 +224,11 @@ public class Services {
     }
   }
 
-  public InternalDistributedSystem getDistributedSystem() {
-    return this.distributedSystem;
-  }
-
-  public SecurityService getSecurityService() {
-    return this.securityService;
-  }
-
-  /**
-   * returns the DistributedSystem's log writer
-   *
-   * @deprecated use a log4j-based LogService
-   */
-  public LogWriter getLogWriter() {
-    return this.logWriter;
-  }
-
-  /**
-   * returns the DistributedSystem's security log writer
-   *
-   * @deprecated use a log4j-based LogService
-   */
-  public LogWriter getSecurityLogWriter() {
-    return this.securityLogWriter;
-  }
-
   public Authenticator getAuthenticator() {
     return this.auth;
   }
 
   public void installView(NetView v) {
-    try {
-      this.auth.installView(v);
-    } catch (AuthenticationFailedException e) {
-      return;
-    }
     if (this.locator != null) {
       this.locator.installView(v);
     }
@@ -307,13 +246,9 @@ public class Services {
         this.healthMon.memberSuspected(initiator, suspect, reason);
       } finally {
         try {
-          this.auth.memberSuspected(initiator, suspect, reason);
+          this.messenger.memberSuspected(initiator, suspect, reason);
         } finally {
-          try {
-            this.messenger.memberSuspected(initiator, suspect, reason);
-          } finally {
-            this.manager.memberSuspected(initiator, suspect, reason);
-          }
+          this.manager.memberSuspected(initiator, suspect, reason);
         }
       }
     }

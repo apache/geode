@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.auth;
+package org.apache.geode.distributed.internal.membership.adapter.auth;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTHENTICATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_PEER_AUTH_INIT;
@@ -25,11 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
-import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -39,42 +36,20 @@ import org.apache.geode.security.ResourcePermission.Resource;
 
 public class GMSAuthenticator implements Authenticator {
 
-  private Services services;
-  private Properties securityProps;
+  private final Properties securityProps;
+  private final SecurityService securityService;
+  private final LogWriter securityLogWriter;
+  private final LogWriter logWriter;
 
-  @Override
-  public void init(Services s) {
-    this.services = s;
-    this.securityProps = this.services.getConfig().getDistributionConfig().getSecurityProps();
+  public GMSAuthenticator(final Properties securityProps,
+      final SecurityService securityService,
+      final LogWriter securityLogWriter,
+      final LogWriter logWriter) {
+    this.securityProps = securityProps;
+    this.securityService = securityService;
+    this.securityLogWriter = securityLogWriter;
+    this.logWriter = logWriter;
   }
-
-  @Override
-  public void start() {}
-
-  @Override
-  public void started() {}
-
-  @Override
-  public void stop() {}
-
-  @Override
-  public void stopped() {}
-
-  @Override
-  public void installView(NetView v) {}
-
-  @Override
-  public void beSick() {}
-
-  @Override
-  public void playDead() {}
-
-  @Override
-  public void beHealthy() {}
-
-  @Override
-  public void memberSuspected(InternalDistributedMember initiator,
-      InternalDistributedMember suspect, String reason) {}
 
   /**
    * Authenticate peer member with authenticator class defined by property
@@ -84,21 +59,16 @@ public class GMSAuthenticator implements Authenticator {
    * @param credentials the credentials used in authentication
    * @return null if authentication succeed (including no authenticator case), otherwise, return
    *         failure message
-   * @throws AuthenticationFailedException this will be removed since return string is used for
-   *         failure
    */
   @Override
-  public String authenticate(InternalDistributedMember member, Properties credentials)
-      throws AuthenticationFailedException {
+  public String authenticate(InternalDistributedMember member, Properties credentials) {
     return authenticate(member, credentials, this.securityProps);
   }
 
   /**
    * Method is package protected to be used in testing.
    */
-  String authenticate(DistributedMember member, Properties credentials, Properties secProps)
-      throws AuthenticationFailedException {
-    SecurityService securityService = this.services.getSecurityService();
+  String authenticate(DistributedMember member, Properties credentials, Properties secProps) {
 
     // For older systems, locator might be started without cache, so secureService may not be
     // initialized here. We need to check if the passed in secProps has peer authenticator or not at
@@ -107,8 +77,6 @@ public class GMSAuthenticator implements Authenticator {
     if (!securityService.isPeerSecurityRequired() && StringUtils.isBlank(authMethod)) {
       return null;
     }
-
-    InternalLogWriter securityLogWriter = (InternalLogWriter) this.services.getSecurityLogWriter();
 
     if (credentials == null) {
       securityLogWriter.warning(String.format("Failed to find credentials from [%s]", member));
@@ -144,9 +112,6 @@ public class GMSAuthenticator implements Authenticator {
       auth = CallbackInstantiator.getObjectOfType(authMethod,
           org.apache.geode.security.Authenticator.class);
 
-      LogWriter logWriter = this.services.getLogWriter();
-      LogWriter securityLogWriter = this.services.getSecurityLogWriter();
-
       // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is
       // expected
       auth.init(this.securityProps, logWriter, securityLogWriter);
@@ -178,7 +143,7 @@ public class GMSAuthenticator implements Authenticator {
 
     } catch (Exception e) {
       String authMethod = securityProps.getProperty(SECURITY_PEER_AUTH_INIT);
-      services.getSecurityLogWriter().warning(
+      securityLogWriter.warning(
           String.format("Failed to obtain credentials using AuthInitialize [%s]. %s",
               new Object[] {authMethod, e.getLocalizedMessage()}));
       return null;
@@ -191,8 +156,8 @@ public class GMSAuthenticator implements Authenticator {
   Properties getCredentials(DistributedMember member, Properties secProps) {
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
     return Handshake.getCredentials(authMethod, secProps, member, true,
-        (InternalLogWriter) services.getLogWriter(),
-        (InternalLogWriter) services.getSecurityLogWriter());
+        logWriter,
+        securityLogWriter);
   }
 
   /**
@@ -202,6 +167,4 @@ public class GMSAuthenticator implements Authenticator {
     return this.securityProps;
   }
 
-  @Override
-  public void emergencyClose() {}
 }

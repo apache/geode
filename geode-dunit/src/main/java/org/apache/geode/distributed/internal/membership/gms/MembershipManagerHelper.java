@@ -24,6 +24,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -77,14 +78,12 @@ public class MembershipManagerHelper {
   }
 
   /** register a test hook with the manager */
-  public static void addTestHook(DistributedSystem sys,
-      org.apache.geode.distributed.internal.membership.MembershipTestHook hook) {
+  public static void addTestHook(DistributedSystem sys, MembershipTestHook hook) {
     getMembershipManager(sys).registerTestHook(hook);
   }
 
   /** remove a registered test hook */
-  public static void removeTestHook(DistributedSystem sys,
-      org.apache.geode.distributed.internal.membership.MembershipTestHook hook) {
+  public static void removeTestHook(DistributedSystem sys, MembershipTestHook hook) {
     getMembershipManager(sys).unregisterTestHook(hook);
   }
 

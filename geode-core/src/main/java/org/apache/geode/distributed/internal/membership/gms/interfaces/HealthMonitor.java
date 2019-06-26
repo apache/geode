@@ -40,7 +40,7 @@ public interface HealthMonitor extends Service {
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
    */
-  boolean checkIfAvailable(DistributedMember mbr, String reason, boolean initiateRemoval);
+  boolean checkIfAvailable(InternalDistributedMember mbr, String reason, boolean initiateRemoval);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been

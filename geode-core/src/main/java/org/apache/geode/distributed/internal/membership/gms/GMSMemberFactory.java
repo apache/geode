@@ -21,26 +21,26 @@ import java.net.UnknownHostException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.DMStats;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.tcp.ConnectionException;
 import org.apache.geode.security.GemFireSecurityException;
 
 /**
  * Create a new Member based on the given inputs.
  *
- * @see org.apache.geode.distributed.internal.membership.NetMember
+ * @see NetMember
  */
 public class GMSMemberFactory implements MemberServices {
 
@@ -98,10 +98,10 @@ public class GMSMemberFactory implements MemberServices {
 
   @Override
   public MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      InternalDistributedSystem system,
       RemoteTransportConfig transport, DMStats stats,
-      SecurityService securityService) throws DistributionException {
-    Services services = new Services(listener, system, transport, stats, securityService);
+      final Authenticator authenticator,
+      DistributionConfig config) throws DistributionException {
+    Services services = new Services(listener, transport, stats, authenticator, config);
     try {
       services.init();
       services.start();

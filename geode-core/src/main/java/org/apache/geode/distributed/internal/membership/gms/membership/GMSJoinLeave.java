@@ -17,15 +17,9 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
-import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
-import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
-import static org.apache.geode.internal.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
 import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_RESPONSE;
 import static org.apache.geode.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
-import static org.apache.geode.internal.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
 import static org.apache.geode.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.VIEW_ACK_MESSAGE;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -65,7 +59,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.MessageHandler;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.messages.HasMemberID;
@@ -87,7 +80,7 @@ import org.apache.geode.security.GemFireSecurityException;
  * GMSJoinLeave handles membership communication with other processes in the distributed system. It
  * replaces the JGroups channel membership services that Geode formerly used for this purpose.
  */
-public class GMSJoinLeave implements JoinLeave, MessageHandler {
+public class GMSJoinLeave implements JoinLeave {
 
   public static final String BYPASS_DISCOVERY_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "bypass-discovery";
@@ -542,7 +535,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    *
    * @param incomingRequest the request to be processed
    */
-  private void processJoinRequest(JoinRequestMessage incomingRequest) {
+  void processMessage(JoinRequestMessage incomingRequest) {
+    if (isStopping) {
+      return;
+    }
 
     logger.info("Received a join request from {}", incomingRequest.getMemberID());
 
@@ -582,7 +578,10 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    *
    * @param incomingRequest the request to be processed
    */
-  private void processLeaveRequest(LeaveRequestMessage incomingRequest) {
+  void processMessage(LeaveRequestMessage incomingRequest) {
+    if (isStopping) {
+      return;
+    }
 
     logger.info("received leave request from {} for {}", incomingRequest.getSender(),
         incomingRequest.getMemberID());
@@ -595,7 +594,8 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
 
     InternalDistributedMember mbr = incomingRequest.getMemberID();
 
-    logger.info(() -> "JoinLeave.processLeaveRequest invoked.  isCoordinator=" + isCoordinator
+    logger.info(() -> "JoinLeave.processMessage(LeaveRequestMessage) invoked.  isCoordinator="
+        + isCoordinator
         + "; isStopping=" + isStopping + "; cancelInProgress="
         + services.getCancelCriterion().isCancelInProgress());
 
@@ -651,7 +651,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    *
    * @param incomingRequest the request to process
    */
-  private void processRemoveRequest(RemoveMemberMessage incomingRequest) {
+  void processMessage(RemoveMemberMessage incomingRequest) {
+    if (isStopping) {
+      return;
+    }
+
     NetView v = currentView;
     boolean fromMe =
         incomingRequest.getSender() == null || incomingRequest.getSender().equals(localAddress);
@@ -1009,7 +1013,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  private void processViewMessage(final InstallViewMessage m) {
+  void processMessage(final InstallViewMessage m) {
+    if (isStopping) {
+      return;
+    }
+
     logger.debug("processing membership view message {}", m);
 
     NetView view = m.getView();
@@ -1106,7 +1114,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     }
   }
 
-  private void processViewAckMessage(ViewAckMessage m) {
+  void processMessage(ViewAckMessage m) {
+    if (isStopping) {
+      return;
+    }
+
     if (m.isPrepareAck()) {
       this.prepareProcessor.processViewResponse(m.getViewId(), m.getSender(), m.getAlternateView());
     } else {
@@ -1380,7 +1392,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
    *
    * @param rsp the response message to process
    */
-  private void processJoinResponse(JoinResponseMessage rsp) {
+  void processMessage(JoinResponseMessage rsp) {
+    if (isStopping) {
+      return;
+    }
+
     synchronized (joinResponse) {
       if (!this.isJoined) {
         // 1. our joinRequest rejected.
@@ -1417,7 +1433,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     joinResponse[0] = jrm;
   }
 
-  private void processFindCoordinatorRequest(FindCoordinatorRequest req) {
+  void processMessage(FindCoordinatorRequest req) {
+    if (isStopping) {
+      return;
+    }
+
     FindCoordinatorResponse resp;
     if (this.isJoined) {
       NetView v = currentView;
@@ -1431,7 +1451,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     services.getMessenger().send(resp);
   }
 
-  private void processFindCoordinatorResponse(FindCoordinatorResponse resp) {
+  void processMessage(FindCoordinatorResponse resp) {
+    if (isStopping) {
+      return;
+    }
+
     synchronized (searchState.responses) {
       searchState.responses.add(resp);
       if (searchState.responsesExpected <= searchState.responses.size()) {
@@ -1447,7 +1471,11 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           response.getCoordinator());
   }
 
-  private void processNetworkPartitionMessage(NetworkPartitionMessage msg) {
+  void processMessage(NetworkPartitionMessage msg) {
+    if (isStopping) {
+      return;
+    }
+
     String str = "Membership coordinator " + msg.getSender()
         + " has declared that a network partition has occurred";
     forceDisconnect(str);
@@ -1756,7 +1784,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       RemoveMemberMessage msg =
           new RemoveMemberMessage(v.getPreferredCoordinators(filter, getMemberID(), 5), m, reason);
       msg.setSender(this.localAddress);
-      processRemoveRequest(msg);
+      processMessage(msg);
       if (!this.isCoordinator) {
         msg.resetRecipients();
         msg.setRecipients(v.getPreferredCoordinators(Collections.emptySet(), localAddress,
@@ -1774,7 +1802,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     LeaveRequestMessage msg = new LeaveRequestMessage(Collections.singleton(this.localAddress),
         (InternalDistributedMember) mbr, reason);
     msg.setSender((InternalDistributedMember) mbr);
-    processLeaveRequest(msg);
+    processMessage(msg);
   }
 
   boolean checkIfAvailable(InternalDistributedMember fmbr) {
@@ -1838,15 +1866,18 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
           + START_LOCATOR + ".");
     }
 
-    services.getMessenger().addHandler(JoinRequestMessage.class, this);
-    services.getMessenger().addHandler(JoinResponseMessage.class, this);
-    services.getMessenger().addHandler(InstallViewMessage.class, this);
-    services.getMessenger().addHandler(ViewAckMessage.class, this);
-    services.getMessenger().addHandler(LeaveRequestMessage.class, this);
-    services.getMessenger().addHandler(RemoveMemberMessage.class, this);
-    services.getMessenger().addHandler(FindCoordinatorRequest.class, this);
-    services.getMessenger().addHandler(FindCoordinatorResponse.class, this);
-    services.getMessenger().addHandler(NetworkPartitionMessage.class, this);
+    services.getMessenger().addHandler(JoinRequestMessage.class, this::processMessage);
+    services.getMessenger().addHandler(JoinResponseMessage.class, this::processMessage);
+    services.getMessenger().addHandler(InstallViewMessage.class, this::processMessage);
+    services.getMessenger().addHandler(ViewAckMessage.class, this::processMessage);
+    services.getMessenger().addHandler(LeaveRequestMessage.class, this::processMessage);
+    services.getMessenger().addHandler(RemoveMemberMessage.class, this::processMessage);
+    services.getMessenger().addHandler(FindCoordinatorRequest.class,
+        this::processMessage);
+    services.getMessenger().addHandler(FindCoordinatorResponse.class,
+        this::processMessage);
+    services.getMessenger().addHandler(NetworkPartitionMessage.class,
+        this::processMessage);
 
     int ackCollectionTimeout = dc.getMemberTimeout() * 2 * 12437 / 10000;
     if (ackCollectionTimeout < 1500) {
@@ -1867,54 +1898,6 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
     locators = GMSUtil.parseLocators(dconfig.getLocators(), bindAddr);
     if (logger.isDebugEnabled()) {
       logger.debug("Parsed locators are {}", locators);
-    }
-  }
-
-  @Override
-  public void processMessage(DistributionMessage m) {
-    if (isStopping) {
-      return;
-    }
-    logger.debug("processing {}", m);
-    switch (m.getDSFID()) {
-      case JOIN_REQUEST:
-        assert m instanceof JoinRequestMessage;
-        processJoinRequest((JoinRequestMessage) m);
-        break;
-      case JOIN_RESPONSE:
-        assert m instanceof JoinResponseMessage;
-        processJoinResponse((JoinResponseMessage) m);
-        break;
-      case INSTALL_VIEW_MESSAGE:
-        assert m instanceof InstallViewMessage;
-        processViewMessage((InstallViewMessage) m);
-        break;
-      case VIEW_ACK_MESSAGE:
-        assert m instanceof ViewAckMessage;
-        processViewAckMessage((ViewAckMessage) m);
-        break;
-      case LEAVE_REQUEST_MESSAGE:
-        assert m instanceof LeaveRequestMessage;
-        processLeaveRequest((LeaveRequestMessage) m);
-        break;
-      case REMOVE_MEMBER_REQUEST:
-        assert m instanceof RemoveMemberMessage;
-        processRemoveRequest((RemoveMemberMessage) m);
-        break;
-      case FIND_COORDINATOR_REQ:
-        assert m instanceof FindCoordinatorRequest;
-        processFindCoordinatorRequest((FindCoordinatorRequest) m);
-        break;
-      case FIND_COORDINATOR_RESP:
-        assert m instanceof FindCoordinatorResponse;
-        processFindCoordinatorResponse((FindCoordinatorResponse) m);
-        break;
-      case NETWORK_PARTITION_MESSAGE:
-        assert m instanceof NetworkPartitionMessage;
-        processNetworkPartitionMessage((NetworkPartitionMessage) m);
-        break;
-      default:
-        throw new IllegalArgumentException("unknown message type: " + m);
     }
   }
 

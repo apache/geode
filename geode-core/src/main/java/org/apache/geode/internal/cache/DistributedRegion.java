@@ -3147,7 +3147,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
                 DLockRemoteToken remoteToken = ((DLockService) getLockService()).queryLock(key);
                 lockHolder = remoteToken.getLessee();
                 if (lockHolder != null) {
-                  dm.getMembershipManager().suspectMember(lockHolder,
+                  dm.getMembershipManager().suspectMember((InternalDistributedMember) lockHolder,
                       "Has not released a global region entry lock in over "
                           + ackWaitThreshold / 1000 + " seconds");
                 }

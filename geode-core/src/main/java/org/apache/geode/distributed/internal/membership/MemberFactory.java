@@ -23,6 +23,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.security.SecurityService;
 
@@ -30,7 +31,7 @@ import org.apache.geode.internal.security.SecurityService;
  * Create a new Member based on the given inputs. TODO: need to implement a real factory
  * implementation based on gemfire.properties
  *
- * @see org.apache.geode.distributed.internal.membership.NetMember
+ * @see NetMember
  */
 public class MemberFactory {
 
@@ -90,8 +91,10 @@ public class MemberFactory {
       InternalDistributedSystem system,
       RemoteTransportConfig transport,
       DMStats stats,
-      SecurityService securityService) {
-    return services.newMembershipManager(listener, system, transport, stats, securityService);
+      SecurityService securityService,
+      final Authenticator authenticator) {
+    return services.newMembershipManager(listener, transport, stats,
+        authenticator, system.getConfig());
   }
 
   /**

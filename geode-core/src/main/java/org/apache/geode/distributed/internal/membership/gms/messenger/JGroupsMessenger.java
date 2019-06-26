@@ -578,7 +578,7 @@ public class JGroupsMessenger implements Messenger {
   public void beHealthy() {}
 
   @Override
-  public void addHandler(Class c, MessageHandler h) {
+  public <T> void addHandler(Class<T> c, MessageHandler<T> h) {
     handlers.put(c, h);
   }
 
