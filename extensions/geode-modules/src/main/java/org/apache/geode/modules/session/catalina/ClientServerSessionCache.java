@@ -15,7 +15,6 @@
 package org.apache.geode.modules.session.catalina;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -38,7 +37,6 @@ import org.apache.geode.modules.session.catalina.callback.SessionExpirationCache
 import org.apache.geode.modules.util.BootstrappingFunction;
 import org.apache.geode.modules.util.CreateRegionFunction;
 import org.apache.geode.modules.util.RegionConfiguration;
-import org.apache.geode.modules.util.RegionSizeFunction;
 import org.apache.geode.modules.util.RegionStatus;
 import org.apache.geode.modules.util.SessionCustomExpiry;
 import org.apache.geode.modules.util.TouchPartitionedRegionEntriesFunction;
@@ -139,17 +137,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
 
   @Override
   public int size() {
-    // Add a single dummy key to force the function to go to one server
-    Set<String> filters = new HashSet<String>();
-    filters.add("test-key");
-
-    // Execute the function on the session region
-    Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(filters);
-    ResultCollector collector = execution.execute(RegionSizeFunction.ID);
-    List<Integer> result = (List<Integer>) collector.getResult();
-
-    // Return the first (and only) element
-    return result.get(0);
+    return getSessionRegion().sizeOnServer();
   }
 
   @Override
