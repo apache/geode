@@ -43,6 +43,10 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
   }
 
   private void validateCreate(CacheElement config) {
+    if (config.getGroups().size() > 1) {
+      throw new IllegalArgumentException("Can only create element in one group at a time.");
+    }
+
     String group = config.getGroup();
     if (CacheElement.CLUSTER.equalsIgnoreCase(group)) {
       throw new IllegalArgumentException("'"

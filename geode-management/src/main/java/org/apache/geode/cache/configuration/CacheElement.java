@@ -69,6 +69,7 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
    * if no group is set, this returns null
    */
   @XmlTransient
+  @JsonIgnore
   public String getGroup() {
     if (groups.size() == 0) {
       return null;
@@ -83,6 +84,15 @@ public abstract class CacheElement implements Identifiable<String>, Serializable
     if (StringUtils.isBlank(group)) {
       return;
     }
+    groups.add(group);
+  }
+
+  @XmlTransient
+  public List<String> getGroups() {
+    return groups;
+  }
+
+  public void addGroup(String group) {
     groups.add(group);
   }
 }

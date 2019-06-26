@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public class RuntimeMemberConfig extends MemberConfig implements MultiGroupCacheElement {
+public class RuntimeMemberConfig extends MemberConfig {
   private boolean isLocator;
   private boolean isCoordinator;
   private String host;
@@ -128,10 +128,6 @@ public class RuntimeMemberConfig extends MemberConfig implements MultiGroupCache
 
   public void addCacheServer(CacheServerConfig cacheServer) {
     cacheServers.add(cacheServer);
-  }
-
-  public List<String> getGroups() {
-    return groups;
   }
 
   public void setGroups(List<String> groups) {

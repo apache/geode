@@ -34,7 +34,6 @@ org/apache/geode/cache/configuration/RegionType,false
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
 org/apache/geode/management/configuration/MemberConfig,false,id:java/lang/String
-org/apache/geode/management/configuration/RuntimeIndex,false
 org/apache/geode/management/configuration/RuntimeMemberConfig,false,cacheServers:java/util/List,clientConnections:int,host:java/lang/String,initialHeap:long,isCoordinator:boolean,isLocator:boolean,logFile:java/lang/String,maxHeap:long,pid:int,port:java/lang/Integer,status:java/lang/String,usedHeap:long,workingDirectory:java/lang/String
 org/apache/geode/management/configuration/RuntimeRegionConfig,false,entryCount:long
 org/apache/geode/management/internal/cli/domain/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties

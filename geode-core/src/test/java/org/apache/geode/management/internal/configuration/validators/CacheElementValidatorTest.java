@@ -66,4 +66,15 @@ public class CacheElementValidatorTest {
         .hasMessageContaining(
             "Group name should not contain comma");
   }
+
+  @Test
+  public void multipleGroups() throws Exception {
+    config.setName("name");
+    config.addGroup("group1");
+    config.addGroup("group2");
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Can only create element in one group at a time");
+  }
 }

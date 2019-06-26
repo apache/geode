@@ -26,7 +26,7 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.RegionConfig;
 
 @Experimental
-public class RuntimeRegionConfig extends RegionConfig implements MultiGroupCacheElement {
+public class RuntimeRegionConfig extends RegionConfig {
   private long entryCount;
 
   public RuntimeRegionConfig() {}
@@ -43,21 +43,14 @@ public class RuntimeRegionConfig extends RegionConfig implements MultiGroupCache
     this.entryCount = entrySize;
   }
 
-  public List<String> getGroups() {
-    return groups;
-  }
-
-  public List<RuntimeIndex> getRuntimeIndexes(String indexId) {
+  public List<Index> getIndexes(String indexId) {
     Stream<Index> stream = getIndexes().stream();
     if (StringUtils.isNotBlank(indexId)) {
       stream = stream.filter(i -> i.getId().equals(indexId));
     }
-    return stream
-        .map(e -> {
-          RuntimeIndex index = new RuntimeIndex(e);
-          index.setRegionName(getName());
-          return index;
-        })
-        .collect(Collectors.toList());
+    return stream.map(index -> {
+      index.setRegionName(getName());
+      return index;
+    }).collect(Collectors.toList());
   }
 }

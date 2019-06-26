@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeMemberConfig;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -137,7 +136,7 @@ public class CacheElementJsonMappingTest {
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
     assertThat(json)
-        .contains("\"group\":\"group1\"");
+        .contains("\"groups\":[\"group1\"]");
   }
 
   @Test
@@ -169,7 +168,7 @@ public class CacheElementJsonMappingTest {
 
     runtimeConfig = mapper.readValue(json, RuntimeRegionConfig.class);
     assertThat(runtimeConfig.getGroups()).containsExactly("group1");
-    List<RuntimeIndex> runtimeIndexes = runtimeConfig.getRuntimeIndexes(null);
+    List<RegionConfig.Index> runtimeIndexes = runtimeConfig.getIndexes(null);
     assertThat(runtimeIndexes).hasSize(1);
     assertThat(runtimeIndexes.get(0).getRegionName()).isEqualTo("region1");
   }
@@ -181,6 +180,6 @@ public class CacheElementJsonMappingTest {
     config.setGroup("cluster");
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
-    assertThat(json).contains("\"group\":\"cluster\"");
+    assertThat(json).contains("\"groups\":[\"cluster\"]");
   }
 }
