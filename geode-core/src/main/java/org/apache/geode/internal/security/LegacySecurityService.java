@@ -136,4 +136,7 @@ public class LegacySecurityService implements SecurityService {
   public PostProcessor getPostProcessor() {
     return null;
   }
+
+  @Override
+  public void logoutJmxUser(String user, Subject subject) {}
 }

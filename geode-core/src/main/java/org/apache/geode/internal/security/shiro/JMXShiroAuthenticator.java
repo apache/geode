@@ -18,6 +18,8 @@ import static org.apache.geode.management.internal.security.ResourceConstants.MI
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.management.Notification;
@@ -37,7 +39,8 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
-  private int numOfJMXConnections = 0;
+  private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap();
+  org.apache.shiro.subject.Subject shiroSubject;
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -59,7 +62,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
-    org.apache.shiro.subject.Subject shiroSubject = this.securityService.login(credProps);
+    shiroSubject = this.securityService.login(credProps);
     Principal principal;
 
     if (shiroSubject == null) {
@@ -77,13 +80,14 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
+      String user = cxNotification.getConnectionId();
       if (JMXConnectionNotification.OPENED.equals(type)) {
-        numOfJMXConnections++;
-      } else if (JMXConnectionNotification.CLOSED.equals(type) && numOfJMXConnections == 1) {
-        this.securityService.logout();
-        numOfJMXConnections--;
+        if (!connectedUsers.containsKey(user)) {
+          connectedUsers.put(user, shiroSubject);
+        }
       } else if (JMXConnectionNotification.CLOSED.equals(type)) {
-        numOfJMXConnections--;
+        this.securityService.logoutJmxUser(user, connectedUsers.get(user));
+        connectedUsers.remove(user);
       }
     }
   }

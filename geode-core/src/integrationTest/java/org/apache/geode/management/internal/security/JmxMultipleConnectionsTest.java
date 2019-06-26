@@ -66,7 +66,7 @@ public class JmxMultipleConnectionsTest {
   }
 
   @Test
-  @ConnectionConfiguration(user = "region1-user", password = "1234567")
+  @ConnectionConfiguration(user = "super-user", password = "1234567")
   public void testMultipleJMXConnection() throws Exception {
 
     assertThat(bean.processCommand("locate entry --key=k1 --region=region1")).isNotNull();
@@ -74,17 +74,24 @@ public class JmxMultipleConnectionsTest {
     JMXServiceURL url =
         new JMXServiceURL("service:jmx:rmi:///jndi/rmi://:" + server.getJmxPort() + "/jmxrmi");
     Map<String, String[]> env = new HashMap<>();
-    String user = "region1-user";
+    String user = "super-user";
     String password = "1234567";
     env.put(JMXConnector.CREDENTIALS, new String[] {user, password});
+    Map<String, String[]> env1 = new HashMap<>();
+    String user1 = "region1-user";
+    String password1 = "1234567";
+    env1.put(JMXConnector.CREDENTIALS, new String[] {user1, password1});
 
-    // create another JMX connection with the same credentials
+    // create JMX connection with the same and different credentials
     JMXConnector jmxConnector = JMXConnectorFactory.connect(url, env);
+    JMXConnector jmxConnector1 = JMXConnectorFactory.connect(url, env1);
 
     assertThat(bean.processCommand("locate entry --key=k1 --region=region1")).isNotNull();
 
     // close one jmx connection
     jmxConnector.close();
+    // close another jmx connections
+    jmxConnector1.close();
 
     assertThat(bean.processCommand("locate entry --key=k1 --region=region1")).isNotNull();
   }

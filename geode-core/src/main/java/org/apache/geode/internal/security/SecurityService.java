@@ -71,4 +71,7 @@ public interface SecurityService {
   SecurityManager getSecurityManager();
 
   PostProcessor getPostProcessor();
+
+  void logoutJmxUser(String user, Subject subject);
+
 }

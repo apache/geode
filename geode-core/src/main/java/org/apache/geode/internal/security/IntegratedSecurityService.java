@@ -104,7 +104,6 @@ public class IntegratedSecurityService implements SecurityService {
     // since threads can be shared between JMX clients.
     javax.security.auth.Subject jmxSubject =
         javax.security.auth.Subject.getSubject(AccessController.getContext());
-
     if (jmxSubject != null) {
       Set<ShiroPrincipal> principals = jmxSubject.getPrincipals(ShiroPrincipal.class);
       if (!principals.isEmpty()) {
@@ -156,6 +155,19 @@ public class IntegratedSecurityService implements SecurityService {
   @Override
   public void logout() {
     Subject currentUser = getSubject();
+    try {
+      logger.debug("Logging out " + currentUser.getPrincipal());
+      currentUser.logout();
+    } catch (ShiroException e) {
+      logger.info("error logging out: " + currentUser.getPrincipal());
+      throw new GemFireSecurityException(e.getMessage(), e);
+    }
+
+    // clean out Shiro's thread local content
+    ThreadContext.remove();
+  }
+
+  public void logoutJmxUser(String user, Subject currentUser) {
     try {
       logger.debug("Logging out " + currentUser.getPrincipal());
       currentUser.logout();
