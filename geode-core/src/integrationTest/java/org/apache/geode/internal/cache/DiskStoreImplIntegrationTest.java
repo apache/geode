@@ -261,6 +261,11 @@ public class DiskStoreImplIntegrationTest {
 
     File[] dirs = diskStore.getDiskDirs();
 
+    /**
+     * 8 oplog files should be created.
+     * The eighth one does not fit in dir1, so that directory should
+     * be skipped, and the file should be stored in dir2.
+     */
     assertThat(oplogFileIsInDir(1, dirs[0])).isTrue();
     assertThat(oplogFileIsInDir(2, dirs[1])).isTrue();
     assertThat(oplogFileIsInDir(3, dirs[2])).isTrue();
@@ -274,8 +279,6 @@ public class DiskStoreImplIntegrationTest {
     assertThat(oplogFileIsInDir(8, dirs[2])).isTrue();
 
     assertThat(oplogFileIsInDir(9, dirs[0])).isFalse();
-
-    cache.close();
   }
 
   /**
