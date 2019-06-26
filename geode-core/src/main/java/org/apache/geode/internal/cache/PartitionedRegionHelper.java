@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,6 +55,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -699,8 +702,7 @@ public class PartitionedRegionHelper {
     // PartitionedRegion.getPRFromId(Integer.parseInt(prid));
 
     Region region;
-    int oldLevel = // Set thread local flag to allow entrance through initialization Latch
-        LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       region = cache.getRegion(prid);
     } finally {

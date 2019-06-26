@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -61,6 +63,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.locks.TXLockId;
 import org.apache.geode.internal.cache.locks.TXLockIdImpl;
 import org.apache.geode.internal.cache.locks.TXLockService;
@@ -605,8 +608,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     if (logger.isDebugEnabled()) {
       logger.debug("begin processing TXCommitMessage for {}", this.txIdent);
     }
-    final int oldLevel =
-        LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+    final InitializationLevel oldLevel =
+        LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
     boolean forceListener = false; // this gets flipped if we need to fire tx listener
     // it needs to default to false because we don't want to fire listeners on pr replicates
     try {

@@ -17,6 +17,7 @@ package org.apache.geode.cache30;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_SYSTEM_ID;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.RegionClearedException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.TombstoneService;
@@ -176,8 +178,8 @@ public class DistributedAckRegionCCEDUnitTest extends DistributedAckRegionDUnitT
               @Override
               public void vMotionDuringGII(Set recipientSet, LocalRegion region) {
                 InitialImageOperation.VMOTION_DURING_GII = false;
-                int oldLevel =
-                    LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+                final InitializationLevel oldLevel =
+                    LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
                 LocalRegion ccregion = (LocalRegion) cache.getRegionByPath("/" + name);
                 try {
                   // wait for the update op (sent below from vm1) to arrive, then allow the GII to

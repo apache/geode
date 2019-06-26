@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -38,6 +40,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
@@ -76,8 +79,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    int oldLevel = // Set thread local flag to allow entrance through initialization Latch
-        LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
 
     PersistentMemberState state = null;
     PersistentMemberID myId = null;

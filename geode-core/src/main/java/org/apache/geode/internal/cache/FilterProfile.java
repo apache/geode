@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -67,6 +69,7 @@ import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.PutAllEntryData;
 import org.apache.geode.internal.cache.DistributedRemoveAllOperation.RemoveAllEntryData;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
@@ -1495,11 +1498,7 @@ public class FilterProfile implements DataSerializableFixedID {
     // Read CQ Info.
     int numCQs = InternalDataSerializer.readArrayLength(in);
     if (numCQs > 0) {
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // do this
-                                                                                      // before
-                                                                                      // CacheFactory.getInstance
-                                                                                      // for bug
-                                                                                      // 33471
+      final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
       try {
         for (int i = 0; i < numCQs; i++) {
           String serverCqName = DataSerializer.readString(in);

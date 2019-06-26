@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.util.Properties;
 
 import org.apache.geode.cache.Cache;
@@ -28,6 +31,7 @@ import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 
 /**
  * Implementation of static methods in {@link CacheFactory} including factory create methods and
@@ -92,9 +96,8 @@ public class CacheFactoryStatics {
   private static Cache basicGetInstance(DistributedSystem system, boolean closeOk) {
     // Avoid synchronization if this is an initialization thread to avoid
     // deadlock when messaging returns to this VM
-    final int initReq = LocalRegion.threadInitLevelRequirement();
-    if (initReq == LocalRegion.ANY_INIT || initReq == LocalRegion.BEFORE_INITIAL_IMAGE) { // fix bug
-      // 33471
+    final InitializationLevel initReq = LocalRegion.getThreadInitLevelRequirement();
+    if (initReq == ANY_INIT || initReq == BEFORE_INITIAL_IMAGE) {
       return basicGetInstancePart2(system, closeOk);
     } else {
       synchronized (InternalCacheBuilder.class) {

@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -61,6 +64,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.EntryEventImpl.OldValueImporter;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.UpdateOperation.UpdateMessage;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
@@ -1089,8 +1093,8 @@ public abstract class DistributedCacheOperation {
       }
 
       EntryLogger.setSource(this.getSender(), "p2p");
-      boolean resetOldLevel = true;
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         if (dm.getDMType() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE) {
           // this was probably a multicast message
@@ -1119,9 +1123,7 @@ public abstract class DistributedCacheOperation {
         SystemFailure.checkFailure();
         thr = t;
       } finally {
-        if (resetOldLevel) {
-          LocalRegion.setThreadInitLevelRequirement(oldLevel);
-        }
+        LocalRegion.setThreadInitLevelRequirement(oldLevel);
         if (sendReply) {
           ReplyException rex = null;
           if (thr != null) {
@@ -1532,7 +1534,7 @@ public abstract class DistributedCacheOperation {
     }
 
     protected boolean notifiesSerialGatewaySender(ClusterDistributionManager dm) {
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+      final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
       try {
         LocalRegion lr = getLocalRegionForProcessing(dm);
         if (lr == null) {

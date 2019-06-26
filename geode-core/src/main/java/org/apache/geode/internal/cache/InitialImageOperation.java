@@ -15,6 +15,9 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.Externalizable;
@@ -70,6 +73,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.ha.HAContainerWrapper;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
@@ -1478,8 +1482,8 @@ public class InitialImageOperation {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     LocalRegion lclRgn = null;
-    int initLevel = targetReinitialized ? LocalRegion.AFTER_INITIAL_IMAGE : LocalRegion.ANY_INIT;
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
+    final InitializationLevel initLevel = targetReinitialized ? AFTER_INITIAL_IMAGE : ANY_INIT;
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
     try {
       if (isDebugEnabled) {
         logger.debug("RequestImageMessage: attempting to get region reference for {}, initLevel={}",

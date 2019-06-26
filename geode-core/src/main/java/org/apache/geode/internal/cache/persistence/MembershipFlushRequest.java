@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,6 +36,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketPersistenceAdvisor;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
 
@@ -61,8 +64,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    int initLevel = LocalRegion.ANY_INIT;
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
 
     ReplyException exception = null;
     try {

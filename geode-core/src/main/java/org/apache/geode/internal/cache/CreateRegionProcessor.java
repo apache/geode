@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -48,6 +50,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.InitialImageAdvice;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.event.EventSequenceNumberHolder;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.partitioned.Bucket;
@@ -266,7 +269,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
             if (localFP != null) {
               List messages = localFP.getQueuedFilterProfileMsgs(reply.getSender());
               // Thread init level is set since region is used during CQ registration.
-              int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+              final InitializationLevel oldLevel =
+                  LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
               try {
                 remoteFP.processQueuedFilterProfileMsgs(messages);
               } finally {
@@ -335,8 +339,8 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     protected void process(ClusterDistributionManager dm) {
-      int oldLevel = // Set thread local flag to allow entrance through initialization Latch
-          LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+      // Set thread local flag to allow entrance through initialization Latch
+      final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
       LocalRegion lclRgn = null;
 
       PersistentMemberID destroyedId = null;

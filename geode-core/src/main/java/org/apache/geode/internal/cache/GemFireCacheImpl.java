@@ -180,6 +180,7 @@ import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
@@ -3206,7 +3207,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     InternalRegion result = getRegionByPath(path);
     if (result == null) {
       stopper.checkCancelInProgress(null);
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // go through
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(InitializationLevel.ANY_INIT); // go through
       // initialization latches
       try {
         String[] pathParts = parsePath(path);
@@ -3274,7 +3276,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public boolean isGlobalRegionInitializing(String fullPath) {
     stopper.checkCancelInProgress(null);
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT); // go through
+    final InitializationLevel oldLevel =
+        LocalRegion.setThreadInitLevelRequirement(InitializationLevel.ANY_INIT); // go through
     // initialization latches
     try {
       return isGlobalRegionInitializing((InternalRegion) getRegion(fullPath));

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -34,6 +36,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -72,7 +75,8 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
     final InternalCache cache = dm.getCache();
     if (cache != null) {
       Iterator iterator = this.messagesList.iterator();
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         while (iterator.hasNext()) {
           final String regionName = (String) iterator.next();
