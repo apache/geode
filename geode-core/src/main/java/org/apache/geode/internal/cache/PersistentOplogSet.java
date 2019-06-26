@@ -592,9 +592,13 @@ public class PersistentOplogSet implements OplogSet {
    *
    * @param minAvailableSpace the minimum amount of space we need in this directory.
    */
-  DirectoryHolder getNextDir(int minAvailableSpace, boolean checkForWarning) {
+  DirectoryHolder getNextDir(long minAvailableSpace, boolean checkForWarning) {
     DirectoryHolder dirHolder = null;
     DirectoryHolder selectedHolder = null;
+    if (minAvailableSpace < parent.getMaxOplogSizeInBytes()
+        && !DiskStoreImpl.SET_IGNORE_PREALLOCATE) {
+      minAvailableSpace = parent.getMaxOplogSizeInBytes();
+    }
     synchronized (parent.directories) {
       for (int i = 0; i < parent.dirLength; ++i) {
         dirHolder = parent.directories[this.dirCounter];
