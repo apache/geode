@@ -76,18 +76,20 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
   }
 
   @Override
-  public synchronized void handleNotification(Notification notification, Object handback) {
+  public void handleNotification(Notification notification, Object handback) {
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
       String user = cxNotification.getConnectionId();
-      if (JMXConnectionNotification.OPENED.equals(type)) {
-        if (!connectedUsers.containsKey(user)) {
-          connectedUsers.put(user, shiroSubject);
+      synchronized (connectedUsers) {
+        if (JMXConnectionNotification.OPENED.equals(type)) {
+          if (!connectedUsers.containsKey(user)) {
+            connectedUsers.put(user, shiroSubject);
+          }
+        } else if (JMXConnectionNotification.CLOSED.equals(type)) {
+          this.securityService.logoutJmxUser(user, connectedUsers.get(user));
+          connectedUsers.remove(user);
         }
-      } else if (JMXConnectionNotification.CLOSED.equals(type)) {
-        this.securityService.logoutJmxUser(user, connectedUsers.get(user));
-        connectedUsers.remove(user);
       }
     }
   }
