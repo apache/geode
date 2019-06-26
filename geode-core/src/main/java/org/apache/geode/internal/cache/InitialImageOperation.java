@@ -1920,7 +1920,15 @@ public class InitialImageOperation {
         // if region synchronization has not been scheduled or performed,
         // we do synchronization with no delay as we received the synchronization request
         // indicating timed task has been triggered on other nodes
+        if (logger.isDebugEnabled()) {
+          logger.debug("Newly joined member is triggered to schedule SynchronizeForLostMember");
+        }
         region.scheduleSynchronizeForLostMember(lostMember, lostVersionSource, 0);
+      } else {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Live member has been scheduled SynchronizeForLostMember by membership listener.");
+        }
       }
     }
 

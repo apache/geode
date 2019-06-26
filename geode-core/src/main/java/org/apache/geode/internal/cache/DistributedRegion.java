@@ -569,6 +569,9 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
       return false;
     }
     if (event.getVersionTag() != null && !event.getVersionTag().isGatewayTag()) {
+      if (logger.isDebugEnabled()) {
+        logger.debug("Not to create a new version tag for retried event {}", event);
+      }
       return false;
     }
     if (event.getOperation().isLocal()) { // bug #45402 - localDestroy generated a version tag

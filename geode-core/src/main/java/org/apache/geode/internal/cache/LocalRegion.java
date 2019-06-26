@@ -10651,6 +10651,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     try {
       event.setContext(client);
 
+      // if this is a replayed operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
+
       // Set the new value to the input byte[] if it isn't null
       if (value != null) {
         // If the byte[] represents an object, then store it serialized
@@ -10704,6 +10708,10 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(client);
+
+      // if this is a replayed operation we may already have a version tag
+      event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
       // Set the new value to the input byte[] if it isn't null
       if (value != null) {
