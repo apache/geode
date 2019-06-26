@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import org.apache.geode.cache.configuration.PdxType;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 
 @Controller("pdxManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -43,9 +43,9 @@ public class PdxManagementController extends AbstractManagementController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = PDX_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult> configurePdx(
+  public ResponseEntity<SimpleClusterManagementResult> configurePdx(
       @RequestBody PdxType pdxType) {
-    ClusterManagementResult<PdxType> result = clusterManagementService.create(pdxType);
+    SimpleClusterManagementResult result = clusterManagementService.create(pdxType);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }

@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 
 @Controller("gatewayManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -50,9 +51,9 @@ public class GatewayManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
-  public ResponseEntity<ClusterManagementResult<GatewayReceiverConfig>> createGatewayReceiver(
+  public ResponseEntity<SimpleClusterManagementResult> createGatewayReceiver(
       @RequestBody GatewayReceiverConfig gatewayReceiverConfig) {
-    ClusterManagementResult<GatewayReceiverConfig> result =
+    SimpleClusterManagementResult result =
         clusterManagementService.create(gatewayReceiverConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);

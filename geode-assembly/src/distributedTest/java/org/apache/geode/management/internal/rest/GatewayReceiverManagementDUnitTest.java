@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.apache.geode.test.junit.assertions.SimpleClusterManagementResultAssert.assertSimpleManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
@@ -63,7 +64,7 @@ public class GatewayReceiverManagementDUnitTest {
         .setHostAddress("localhost", locator.getHttpPort())
         .setCredentials("test", "test").build();
 
-    assertManagementResult(cms.create(receiver)).failed()
+    assertSimpleManagementResult(cms.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.UNAUTHORIZED)
         .containsStatusMessage("test not authorized for CLUSTER:MANAGE");
   }
@@ -77,7 +78,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setStartPort("5000");
     receiver.setGroup("group1");
     List<RealizationResult> results =
-        assertManagementResult(cms.create(receiver)).isSuccessful()
+        assertSimpleManagementResult(cms.create(receiver)).isSuccessful()
             .containsStatusMessage("Successfully updated config for group1")
             .getMemberStatus();
     assertThat(results).hasSize(1);
@@ -87,21 +88,21 @@ public class GatewayReceiverManagementDUnitTest {
     // try create another GWR on the same group
     receiver.setStartPort("5001");
     receiver.setGroup("group1");
-    assertManagementResult(cms.create(receiver)).failed()
+    assertSimpleManagementResult(cms.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort("5002");
     receiver.setGroup("group2");
-    assertManagementResult(cms.create(receiver)).isSuccessful()
+    assertSimpleManagementResult(cms.create(receiver)).isSuccessful()
         .containsStatusMessage("Successfully updated config for group2")
         .hasMemberStatus().hasSize(0);
 
     // try create another GWR on another group but has a common member in another goup
     receiver.setStartPort("5003");
     receiver.setGroup(null);
-    assertManagementResult(cms.create(receiver)).failed()
+    assertSimpleManagementResult(cms.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
 

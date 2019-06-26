@@ -29,7 +29,7 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -64,7 +64,7 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setType(RegionType.PARTITION);
-      ClusterManagementResult<RegionConfig> result =
+      SimpleClusterManagementResult result =
           ClusterStartupRule.getLocator().getClusterManagementService()
               .create(config);
       assertThat(result.isSuccessful()).isTrue();
@@ -90,7 +90,7 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setType(RegionType.REPLICATE);
-      ClusterManagementResult<RegionConfig> result =
+      SimpleClusterManagementResult result =
           ClusterStartupRule.getLocator().getClusterManagementService()
               .create(config);
       assertThat(result.isSuccessful()).isTrue();
@@ -108,7 +108,7 @@ public class RegionAPIDUnitTest {
       RegionConfig config = new RegionConfig();
       config.setName(regionName);
       config.setType(RegionType.PARTITION);
-      ClusterManagementResult<RegionConfig> result =
+      SimpleClusterManagementResult result =
           ClusterStartupRule.getLocator().getClusterManagementService()
               .create(config);
       assertThat(result.isSuccessful()).isTrue();
