@@ -60,8 +60,7 @@ public class ThreadsMonitoringProcess extends TimerTask {
       if (delta >= this.timeLimit) {
         isStuck = true;
         numOfStuck++;
-        logger.warn("Thread {} (0x{}) is stuck", entry1.getKey(),
-            Long.toHexString(entry1.getKey()));
+        logger.warn("Thread <{}> is stuck", entry1.getKey());
         entry1.getValue().handleExpiry(delta);
       }
     }

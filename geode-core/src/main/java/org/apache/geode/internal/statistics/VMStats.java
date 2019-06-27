@@ -38,7 +38,7 @@ public class VMStats implements VMStatsContract {
             f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
                 "cpus", true),
             f.createLongGauge("freeMemory",
-                "An approximation of the total amount of memory currently available for future allocated objects, measured in bytes.",
+                "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
                 "bytes", true),
             f.createLongGauge("totalMemory",
                 "The total amount of memory currently available for current and future objects, measured in bytes.",

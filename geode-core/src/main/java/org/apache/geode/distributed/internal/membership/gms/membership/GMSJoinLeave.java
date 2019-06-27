@@ -2785,7 +2785,7 @@ public class GMSJoinLeave implements JoinLeave, MessageHandler {
       logger.debug("checking availability of these members: {}", checkers);
       ExecutorService svc =
           LoggingExecutors.newFixedThreadPool("Geode View Creator verification thread ",
-              true, suspects.size());
+              false, suspects.size());
       try {
         long giveUpTime = System.currentTimeMillis() + viewAckTimeout;
         // submit the tasks that will remove dead members from the suspects collection

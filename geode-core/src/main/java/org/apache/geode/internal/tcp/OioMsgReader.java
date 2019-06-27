@@ -12,21 +12,28 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.tcp;
 
 import java.io.IOException;
-import java.net.Socket;
+import java.nio.ByteBuffer;
 
-public class PeerConnectionFactory {
-  /**
-   * creates a connection that we accepted (it was initiated by an explicit connect being done on
-   * the other side). We will only receive data on this socket; never send.
-   */
-  public Connection createReceiver(ConnectionTable table, Socket socket)
-      throws IOException, ConnectionException {
-    Connection connection = new Connection(table, socket);
-    connection.initReceiver();
-    return connection;
+import org.apache.geode.internal.Version;
+
+/**
+ * A message reader which reads from the socket using the old io.
+ *
+ */
+public class OioMsgReader extends MsgReader {
+
+  public OioMsgReader(Connection conn, Version version) {
+    super(conn, version);
   }
+
+  @Override
+  public ByteBuffer readAtLeast(int bytes) throws IOException {
+    byte[] buffer = new byte[bytes];
+    conn.readFully(conn.getSocket().getInputStream(), buffer, bytes);
+    return ByteBuffer.wrap(buffer);
+  }
+
 }

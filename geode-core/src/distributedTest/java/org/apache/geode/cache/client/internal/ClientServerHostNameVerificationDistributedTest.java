@@ -89,7 +89,6 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
-
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator");
 
@@ -106,7 +105,6 @@ public class ClientServerHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
-
     CertificateBuilder locatorCertificate = new CertificateBuilder()
         .commonName("locator")
         .sanDnsName("example.com");;
@@ -201,13 +199,10 @@ public class ClientServerHostNameVerificationDistributedTest {
       ClientRegionFactory<String, String> regionFactory =
           clientCache.createClientRegionFactory(ClientRegionShortcut.PROXY);
 
-      IgnoredException.addIgnoredException("Connection reset");
-      IgnoredException.addIgnoredException("java.io.IOException");
       if (expectedExceptionOnClient != null) {
         IgnoredException.addIgnoredException("javax.net.ssl.SSLHandshakeException");
         IgnoredException.addIgnoredException("java.net.SocketException");
         IgnoredException.addIgnoredException("java.security.cert.CertificateException");
-        IgnoredException.addIgnoredException("java.net.ssl.SSLProtocolException");
 
         Region<String, String> clientRegion = regionFactory.create("region");
         assertThatExceptionOfType(expectedExceptionOnClient)

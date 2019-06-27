@@ -22,34 +22,24 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.security.SecurableCommunicationChannel.CLUSTER;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.nio.ByteBuffer;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
@@ -66,10 +56,8 @@ import org.junit.rules.ErrorCollector;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.ByteBufferOutputStream;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -121,8 +109,6 @@ public class SSLSocketIntegrationTest {
     System.setProperty("javax.net.ssl.trustStorePassword", "password");
     System.setProperty("javax.net.ssl.keyStore", keystore.getCanonicalPath());
     System.setProperty("javax.net.ssl.keyStorePassword", "password");
-    // System.setProperty("javax.net.debug", "ssl,handshake");
-
 
     Properties properties = new Properties();
     properties.setProperty(MCAST_PORT, "0");
@@ -193,131 +179,6 @@ public class SSLSocketIntegrationTest {
     assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
   }
 
-  @Test
-  public void testSecuredSocketTransmissionShouldWorkUsingNIO() throws Exception {
-    ServerSocketChannel serverChannel = ServerSocketChannel.open();
-    serverSocket = serverChannel.socket();
-
-    InetSocketAddress addr = new InetSocketAddress(localHost, 0);
-    serverSocket.bind(addr, 10);
-    int serverPort = this.serverSocket.getLocalPort();
-
-    SocketCreator clusterSocketCreator =
-        SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.CLUSTER);
-    this.serverThread = startServerNIO(serverSocket, 15000);
-
-    await().until(() -> serverThread.isAlive());
-
-    SocketChannel clientChannel = SocketChannel.open();
-    await().until(
-        () -> clientChannel.connect(new InetSocketAddress(localHost, serverPort)));
-
-    clientSocket = clientChannel.socket();
-    NioSslEngine engine =
-        clusterSocketCreator.handshakeSSLSocketChannel(clientSocket.getChannel(),
-            clusterSocketCreator.createSSLEngine("localhost", 1234), 0, true,
-            ByteBuffer.allocate(65535), mock(DMStats.class));
-    clientChannel.configureBlocking(true);
-
-    // transmit expected string from Client to Server
-    writeMessageToNIOSSLServer(clientChannel, engine);
-    writeMessageToNIOSSLServer(clientChannel, engine);
-    writeMessageToNIOSSLServer(clientChannel, engine);
-    // this is the real assertion of this test
-    await().until(() -> {
-      return !serverThread.isAlive();
-    });
-    assertNull(serverException);
-    // assertThat(this.messageFromClient.get()).isEqualTo(MESSAGE);
-  }
-
-  private void writeMessageToNIOSSLServer(SocketChannel clientChannel, NioSslEngine engine)
-      throws IOException {
-    System.out.println("client sending Hello World message to server");
-    ByteBufferOutputStream bbos = new ByteBufferOutputStream(5000);
-    DataOutputStream dos = new DataOutputStream(bbos);
-    dos.writeUTF("Hello world");
-    dos.flush();
-    bbos.flush();
-    ByteBuffer buffer = bbos.getContentBuffer();
-    System.out.println(
-        "client buffer position is " + buffer.position() + " and limit is " + buffer.limit());
-    ByteBuffer wrappedBuffer = engine.wrap(buffer);
-    System.out.println("client wrapped buffer position is " + wrappedBuffer.position()
-        + " and limit is " + wrappedBuffer.limit());
-    int bytesWritten = clientChannel.write(wrappedBuffer);
-    System.out.println("client bytes written is " + bytesWritten);
-  }
-
-  private Thread startServerNIO(final ServerSocket serverSocket, int timeoutMillis)
-      throws Exception {
-    Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
-      NioSslEngine engine = null;
-      Socket socket = null;
-      try {
-        ByteBuffer buffer = ByteBuffer.allocate(65535);
-
-        socket = serverSocket.accept();
-        SocketCreator sc = SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER);
-        engine =
-            sc.handshakeSSLSocketChannel(socket.getChannel(), sc.createSSLEngine("localhost", 1234),
-                timeoutMillis,
-                false,
-                ByteBuffer.allocate(500),
-                mock(DMStats.class));
-
-        readMessageFromNIOSSLClient(socket, buffer, engine);
-        readMessageFromNIOSSLClient(socket, buffer, engine);
-        readMessageFromNIOSSLClient(socket, buffer, engine);
-      } catch (Throwable throwable) {
-        throwable.printStackTrace(System.out);
-        serverException = throwable;
-      } finally {
-        if (engine != null && socket != null) {
-          final NioSslEngine nioSslEngine = engine;
-          engine.close(socket.getChannel());
-          assertThatThrownBy(() -> {
-            nioSslEngine.unwrap(ByteBuffer.wrap(new byte[0]));
-          })
-              .isInstanceOf(IllegalStateException.class);
-        }
-      }
-    }, this.testName.getMethodName() + "-server");
-
-    serverThread.start();
-    return serverThread;
-  }
-
-  private void readMessageFromNIOSSLClient(Socket socket, ByteBuffer buffer, NioSslEngine engine)
-      throws IOException {
-
-    ByteBuffer unwrapped = engine.getUnwrappedBuffer(buffer);
-    // if we already have unencrypted data skip unwrapping
-    if (unwrapped.position() == 0) {
-      int bytesRead;
-      // if we already have encrypted data skip reading from the socket
-      if (buffer.position() == 0) {
-        bytesRead = socket.getChannel().read(buffer);
-        buffer.flip();
-      } else {
-        bytesRead = buffer.remaining();
-      }
-      System.out.println("server bytes read is " + bytesRead + ": buffer position is "
-          + buffer.position() + " and limit is " + buffer.limit());
-      unwrapped = engine.unwrap(buffer);
-      unwrapped.flip();
-      System.out.println("server unwrapped buffer position is " + unwrapped.position()
-          + " and limit is " + unwrapped.limit());
-    }
-    ByteBufferInputStream bbis = new ByteBufferInputStream(unwrapped);
-    DataInputStream dis = new DataInputStream(bbis);
-    String welcome = dis.readUTF();
-    engine.doneReading(unwrapped);
-    assertThat(welcome).isEqualTo("Hello world");
-    System.out.println("server read Hello World message from client");
-  }
-
-
   @Test(expected = SocketTimeoutException.class)
   public void handshakeCanTimeoutOnServer() throws Throwable {
     this.serverSocket = this.socketCreator.createServerSocket(0, 0, this.localHost);
@@ -332,33 +193,6 @@ public class SSLSocketIntegrationTest {
         && serverException.getCause() instanceof SocketTimeoutException) {
       throw serverException.getCause();
     }
-    throw serverException;
-  }
-
-  @Test(expected = SocketTimeoutException.class)
-  public void handshakeWithPeerCanTimeout() throws Throwable {
-    ServerSocketChannel serverChannel = ServerSocketChannel.open();
-    serverSocket = serverChannel.socket();
-
-    InetSocketAddress addr = new InetSocketAddress(localHost, 0);
-    serverSocket.bind(addr, 10);
-    int serverPort = this.serverSocket.getLocalPort();
-
-    this.serverThread = startServerNIO(this.serverSocket, 1000);
-
-    Socket socket = new Socket();
-    await().atMost(5, TimeUnit.MINUTES).until(() -> {
-      try {
-        socket.connect(new InetSocketAddress(localHost, serverPort));
-      } catch (ConnectException e) {
-        return false;
-      } catch (SocketException e) {
-        return true; // server socket was closed
-      }
-      return true;
-    });
-    await().untilAsserted(() -> assertFalse(serverThread.isAlive()));
-    assertNotNull(serverException);
     throw serverException;
   }
 
@@ -451,6 +285,7 @@ public class SSLSocketIntegrationTest {
 
   private Thread startServer(final ServerSocket serverSocket, int timeoutMillis) throws Exception {
     Thread serverThread = new Thread(new MyThreadGroup(this.testName.getMethodName()), () -> {
+      long startTime = System.currentTimeMillis();
       try {
         Socket socket = serverSocket.accept();
         SocketCreatorFactory.getSocketCreatorForComponent(CLUSTER).handshakeIfSocketIsSSL(socket,

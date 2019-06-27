@@ -97,10 +97,12 @@ public class ValueToDataThrowsRuntimeExceptionRegressionTest extends JUnit4Cache
       Invoke.invokeInEveryVM(new SerializableCallable() {
         @Override
         public Object call() throws Exception {
+          System.getProperties().remove("p2p.oldIO");
           System.getProperties().remove("p2p.nodirectBuffers");
           return null;
         }
       });
+      System.getProperties().remove("p2p.oldIO");
       System.getProperties().remove("p2p.nodirectBuffers");
     }
   }
@@ -108,6 +110,7 @@ public class ValueToDataThrowsRuntimeExceptionRegressionTest extends JUnit4Cache
   @Override
   public Properties getDistributedSystemProperties() {
     Properties props = new Properties();
+    System.setProperty("p2p.oldIO", "true");
     props.setProperty(CONSERVE_SOCKETS, "true");
     // props.setProperty(DistributionConfig.ConfigurationProperties.MCAST_PORT, "12333");
     // props.setProperty(DistributionConfig.DISABLE_TCP_NAME, "true");

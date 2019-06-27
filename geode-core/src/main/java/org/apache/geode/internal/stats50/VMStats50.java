@@ -232,7 +232,7 @@ public class VMStats50 implements VMStatsContract {
     sds.add(f.createLongCounter("unloadedClasses",
         "Total number of classes unloaded since vm started.", "classes", true));
     sds.add(f.createLongGauge("freeMemory",
-        "An approximation of the total amount of memory currently available for future allocated objects, measured in bytes.",
+        "An approximation fo the total amount of memory currently available for future allocated objects, measured in bytes.",
         "bytes", true));
     sds.add(f.createLongGauge("totalMemory",
         "The total amount of memory currently available for current and future objects, measured in bytes.",

@@ -29,9 +29,7 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -65,7 +63,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
-import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLPeerUnverifiedException;
@@ -87,7 +84,6 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.ClientSocketFactory;
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -99,6 +95,7 @@ import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.wan.TransportFilterServerSocket;
 import org.apache.geode.internal.cache.wan.TransportFilterSocketFactory;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.util.ArgumentRedactor;
 import org.apache.geode.internal.util.PasswordUtil;
 
@@ -171,6 +168,11 @@ public class SocketCreator {
   public static volatile boolean use_client_host_name = true;
 
   /**
+   * True if this SocketCreator has been initialized and is ready to use
+   */
+  private boolean ready = false;
+
+  /**
    * Only print this SocketCreator's config once
    */
   private boolean configShown = false;
@@ -228,9 +230,6 @@ public class SocketCreator {
             inetAddress = ipv6Fallback;
             SocketCreator.useIPv6Addresses = true;
           }
-        }
-        if (inetAddress == null) {
-          inetAddress = InetAddress.getLocalHost();
         }
       }
     } catch (UnknownHostException e) {
@@ -340,6 +339,18 @@ public class SocketCreator {
    */
   private void initialize() {
     try {
+      // set p2p values...
+      if (SecurableCommunicationChannel.CLUSTER
+          .equals(sslConfig.getSecuredCommunicationChannel())) {
+        if (this.sslConfig.isEnabled()) {
+          System.setProperty("p2p.useSSL", "true");
+          System.setProperty("p2p.oldIO", "true");
+          System.setProperty("p2p.nodirectBuffers", "true");
+        } else {
+          System.setProperty("p2p.useSSL", "false");
+        }
+      }
+
       try {
         if (this.sslConfig.isEnabled() && sslContext == null) {
           sslContext = createAndConfigureSSLContext();
@@ -352,7 +363,7 @@ public class SocketCreator {
       org.apache.geode.internal.tcp.TCPConduit.init();
 
       initializeClientSocketFactory();
-
+      this.ready = true;
     } catch (VirtualMachineError err) {
       SystemFailure.initiateFailure(err);
       // If this ever returns, rethrow the error. We're poisoned
@@ -528,7 +539,6 @@ public class SocketCreator {
           System.getProperty("user.home") + System.getProperty("file.separator") + ".keystore";
     }
 
-
     FileInputStream fileInputStream = new FileInputStream(keyStoreFilePath);
     String passwordString = sslConfig.getKeystorePassword();
     char[] password = null;
@@ -629,12 +639,6 @@ public class SocketCreator {
     @Override
     public PrivateKey getPrivateKey(final String alias) {
       return delegate.getPrivateKey(alias);
-    }
-
-    @Override
-    public String chooseEngineClientAlias(String[] keyTypes, Principal[] principals,
-        SSLEngine sslEngine) {
-      return delegate.chooseEngineClientAlias(keyTypes, principals, sslEngine);
     }
 
     @Override
@@ -867,6 +871,14 @@ public class SocketCreator {
   }
 
   /**
+   * Return a client socket. This method is used by peers.
+   */
+  public Socket connectForServer(InetAddress inetadd, int port, int socketBufferSize)
+      throws IOException {
+    return connect(inetadd, port, 0, null, false, socketBufferSize);
+  }
+
+  /**
    * Return a client socket, timing out if unable to connect and timeout > 0 (millis). The parameter
    * <i>timeout</i> is ignored if SSL is being used, as there is no timeout argument in the ssl
    * socket factory
@@ -952,76 +964,6 @@ public class SocketCreator {
         optionalWatcher.afterConnect(socket);
       }
     }
-  }
-
-  /**
-   * Returns an SSLEngine that can be used to perform TLS handshakes and communication
-   */
-  public SSLEngine createSSLEngine(String hostName, int port) {
-    return sslContext.createSSLEngine(hostName, port);
-  }
-
-  /**
-   * @see <a
-   *      href=https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#SSLENG">JSSE
-   *      Reference Guide</a>
-   *
-   * @param socketChannel the socket's NIO channel
-   * @param engine the sslEngine (see createSSLEngine)
-   * @param timeout handshake timeout in milliseconds. No timeout if <= 0
-   * @param clientSocket set to true if you initiated the connect(), false if you accepted it
-   * @param peerNetBuffer the buffer to use in reading data fron socketChannel. This should also be
-   *        used in subsequent I/O operations
-   * @return The SSLEngine to be used in processing data for sending/receiving from the channel
-   */
-  public NioSslEngine handshakeSSLSocketChannel(SocketChannel socketChannel, SSLEngine engine,
-      int timeout,
-      boolean clientSocket,
-      ByteBuffer peerNetBuffer,
-      DMStats stats)
-      throws IOException {
-    engine.setUseClientMode(clientSocket);
-    while (!socketChannel.finishConnect()) {
-      try {
-        Thread.sleep(50);
-      } catch (InterruptedException e) {
-        if (!socketChannel.socket().isClosed()) {
-          socketChannel.close();
-        }
-        throw new IOException("Interrupted while performing handshake", e);
-      }
-    }
-
-    NioSslEngine nioSslEngine = new NioSslEngine(engine, stats);
-
-    boolean blocking = socketChannel.isBlocking();
-    if (blocking) {
-      socketChannel.configureBlocking(false);
-    }
-
-    try {
-      nioSslEngine.handshake(socketChannel, timeout, peerNetBuffer);
-    } catch (SSLException e) {
-      if (!socketChannel.socket().isClosed()) {
-        socketChannel.close();
-      }
-      logger.warn("SSL handshake exception", e);
-      throw e;
-    } catch (InterruptedException e) {
-      if (!socketChannel.socket().isClosed()) {
-        socketChannel.close();
-      }
-      throw new IOException("SSL handshake interrupted");
-    } finally {
-      if (blocking) {
-        try {
-          socketChannel.configureBlocking(true);
-        } catch (IOException ignored) {
-          // problem setting the socket back to blocking mode but the socket's going to be closed
-        }
-      }
-    }
-    return nioSslEngine;
   }
 
   /**
@@ -1142,13 +1084,13 @@ public class SocketCreator {
         }
       } catch (SSLHandshakeException ex) {
         logger
-            .fatal(String.format("Problem forming SSL connection to %s[%s].",
-                socket.getInetAddress(), Integer.valueOf(socket.getPort())),
+            .fatal(String.format("SSL Error in connecting to peer %s[%s].",
+                new Object[] {socket.getInetAddress(), Integer.valueOf(socket.getPort())}),
                 ex);
         throw ex;
       } catch (SSLPeerUnverifiedException ex) {
         if (this.sslConfig.isRequireAuth()) {
-          logger.fatal("SSL authentication exception.", ex);
+          logger.fatal("SSL Error in authenticating peer.", ex);
           throw ex;
         }
       }

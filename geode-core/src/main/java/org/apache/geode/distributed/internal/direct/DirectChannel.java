@@ -101,6 +101,15 @@ public class DirectChannel {
   }
 
   /**
+   * when the initial number of members is known, this method is invoked to ensure that connections
+   * to those members can be established in a reasonable amount of time. See bug 39848
+   *
+   */
+  public void setMembershipSize(int numberOfMembers) {
+    conduit.setMaximumHandshakePoolSize(numberOfMembers);
+  }
+
+  /**
    * Returns the cancel criterion for the channel, which will note if the channel is abnormally
    * closing
    */
@@ -471,9 +480,20 @@ public class DirectChannel {
       if (con.isSharedResource()) {
         continue;
       }
+      int msToWait = (int) (ackTimeout - (System.currentTimeMillis() - startTime));
+      // if the wait threshold has already been reached during transmission
+      // of the message, set a small wait period just to make sure the
+      // acks haven't already come back
+      if (msToWait <= 0) {
+        msToWait = 10;
+      }
+      long msInterval = ackSDTimeout;
+      if (msInterval <= 0) {
+        msInterval = Math.max(ackTimeout, 1000);
+      }
       try {
         try {
-          con.readAck(processor);
+          con.readAck(msToWait, msInterval, processor);
         } catch (SocketTimeoutException ex) {
           handleAckTimeout(ackTimeout, ackSDTimeout, con, processor);
         }
@@ -668,7 +688,7 @@ public class DirectChannel {
       // wait for ack-severe-alert-threshold period first, then wait forever
       if (ackSATimeout > 0) {
         try {
-          c.readAck(processor);
+          c.readAck((int) ackSATimeout, ackSATimeout, processor);
           return;
         } catch (SocketTimeoutException e) {
           Object[] args = new Object[] {Long.valueOf((ackSATimeout + ackTimeout) / 1000),
@@ -679,7 +699,7 @@ public class DirectChannel {
         }
       }
       try {
-        c.readAck(processor);
+        c.readAck(0, 0, processor);
       } catch (SocketTimeoutException ex) {
         // this can never happen when called with timeout of 0
         logger.error(String.format("Unexpected timeout while waiting for ack from %s",

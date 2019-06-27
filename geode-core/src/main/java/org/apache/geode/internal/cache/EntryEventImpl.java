@@ -2123,23 +2123,21 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
     buf.append(getRegion().getFullPath());
     buf.append(";key=");
     buf.append(this.getKey());
-    if (Boolean.getBoolean("gemfire.insecure-logvalues")) {
-      buf.append(";oldValue=");
-      try {
-        synchronized (this.offHeapLock) {
-          ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
-        }
-      } catch (IllegalStateException ignore) {
-        buf.append("OFFHEAP_VALUE_FREED");
+    buf.append(";oldValue=");
+    try {
+      synchronized (this.offHeapLock) {
+        ArrayUtils.objectStringNonRecursive(basicGetOldValue(), buf);
       }
-      buf.append(";newValue=");
-      try {
-        synchronized (this.offHeapLock) {
-          ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
-        }
-      } catch (IllegalStateException ignore) {
-        buf.append("OFFHEAP_VALUE_FREED");
+    } catch (IllegalStateException ignore) {
+      buf.append("OFFHEAP_VALUE_FREED");
+    }
+    buf.append(";newValue=");
+    try {
+      synchronized (this.offHeapLock) {
+        ArrayUtils.objectStringNonRecursive(basicGetNewValue(), buf);
       }
+    } catch (IllegalStateException ignore) {
+      buf.append("OFFHEAP_VALUE_FREED");
     }
     buf.append(";callbackArg=");
     buf.append(this.getRawCallbackArgument());

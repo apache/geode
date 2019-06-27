@@ -810,6 +810,7 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
         getCache().getLogger().fine("SWAP:doingRemove");
         assertTrue(r.remove("key0", "value"));
 
+        getCache().getLogger().fine("Bruce:doingExtraRemoves.  Bug #47010");
         DestroyOp.TEST_HOOK_ENTRY_NOT_FOUND = false;
         assertTrue(r.remove("key0") == null);
         assertTrue(DestroyOp.TEST_HOOK_ENTRY_NOT_FOUND);
