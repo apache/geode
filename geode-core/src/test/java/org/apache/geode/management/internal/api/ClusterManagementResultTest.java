@@ -17,8 +17,8 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.management.api.SimpleClusterManagementResult.StatusCode.ERROR;
-import static org.apache.geode.management.api.SimpleClusterManagementResult.StatusCode.OK;
+import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ERROR;
+import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;

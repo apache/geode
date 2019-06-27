@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.SimpleClusterManagementResultAssert.assertSimpleManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Rule;
@@ -50,7 +50,7 @@ public class ServerRestartTest {
     RegionConfig region = new RegionConfig();
     region.setName("Foo");
     region.setType(RegionType.REPLICATE);
-    assertSimpleManagementResult(cmService.create(region)).hasStatusCode(
+    assertManagementResult(cmService.create(region)).hasStatusCode(
         ClusterManagementResult.StatusCode.OK);
 
     // force reconnect and then server should reconnect after 5 seconds

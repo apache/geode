@@ -19,7 +19,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
@@ -48,7 +47,7 @@ public class ManagementClientCreateRegion {
     config.setName(regionName);
     config.setType(RegionType.REPLICATE);
 
-    SimpleClusterManagementResult result = cms.create(config);
+    ClusterManagementResult<RegionConfig> result = cms.create(config);
 
     if (!result.isSuccessful()) {
       throw new RuntimeException(

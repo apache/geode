@@ -16,7 +16,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -62,7 +61,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("customer");
     region.setType(RegionType.PARTITION);
 
-    SimpleClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -80,7 +79,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("orders");
     region.setType(RegionType.PARTITION);
 
-    SimpleClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -94,7 +93,7 @@ public class ClientClusterManagementServiceDunitTest {
     RegionConfig region = new RegionConfig();
     region.setName("__test");
 
-    SimpleClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
@@ -107,7 +106,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
 
-    SimpleClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);

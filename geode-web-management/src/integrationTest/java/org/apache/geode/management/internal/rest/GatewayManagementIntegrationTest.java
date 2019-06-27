@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 
-import static org.apache.geode.test.junit.assertions.SimpleClusterManagementResultAssert.assertSimpleManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.List;
@@ -104,7 +104,7 @@ public class GatewayManagementIntegrationTest {
   @Test
   public void createWithBindAddress() throws Exception {
     receiver.setBindAddress("test-mbpro");
-    assertSimpleManagementResult(client.create(receiver)).failed()
+    assertManagementResult(client.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("");
   }
@@ -112,7 +112,7 @@ public class GatewayManagementIntegrationTest {
   @Test
   public void createWithHostName() throws Exception {
     receiver.setHostnameForSenders("test-mbpro");
-    assertSimpleManagementResult(client.create(receiver)).failed()
+    assertManagementResult(client.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("");
   }

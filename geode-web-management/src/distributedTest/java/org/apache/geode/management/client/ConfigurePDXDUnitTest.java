@@ -18,6 +18,8 @@ package org.apache.geode.management.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +36,6 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -78,7 +79,7 @@ public class ConfigurePDXDUnitTest {
   @Test
   public void configurePdx() {
     PdxType pdxType = new PdxType();
-    SimpleClusterManagementResult result = client.create(pdxType);
+    ClusterManagementResult<PdxType> result = client.create(pdxType);
 
     // needed to pass StressNewTest since we haven't yet implemented delete(PdxType)
     if (result.getStatusCode() == ClusterManagementResult.StatusCode.ENTITY_EXISTS)
@@ -86,7 +87,12 @@ public class ConfigurePDXDUnitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getUri()).isEqualTo("/management/v2/configurations/pdx");
+
+    List<PdxType> list = result.getResult();
+    assertThat(list.size()).isEqualTo(1);
+    PdxType pdxResult = list.get(0);
+    assertThat(pdxResult.getGroup()).isNull();
+    assertThat(pdxResult.getUri()).isEqualTo("/geode-management/v2/configurations/pdx");
 
     RealizationResult status = result.getMemberStatuses().get(0);
     assertThat(status.getMemberName()).isEqualTo("server-1");

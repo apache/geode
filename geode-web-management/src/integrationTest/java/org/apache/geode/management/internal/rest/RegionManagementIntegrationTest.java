@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.SimpleClusterManagementResultAssert.assertSimpleManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -65,7 +65,7 @@ public class RegionManagementIntegrationTest {
     regionConfig.setType(RegionType.REPLICATE);
 
     // if run multiple times, this could either be OK or ENTITY_EXISTS
-    assertSimpleManagementResult(client.create(regionConfig))
+    assertManagementResult(client.create(regionConfig))
         .hasStatusCode(ClusterManagementResult.StatusCode.OK,
             ClusterManagementResult.StatusCode.ENTITY_EXISTS);
   }
@@ -77,7 +77,7 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
-    assertSimpleManagementResult(client.create(regionConfig))
+    assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("Type LOCAL is not supported in Management V2 API.");
@@ -89,7 +89,7 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");
 
-    assertSimpleManagementResult(client.create(regionConfig))
+    assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("'cluster' is a reserved group name");
@@ -101,7 +101,7 @@ public class RegionManagementIntegrationTest {
     regionConfig.setName("customers");
     regionConfig.setGroup("group1");
 
-    assertSimpleManagementResult(client.create(regionConfig))
+    assertManagementResult(client.create(regionConfig))
         .failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
         .containsStatusMessage("Configuration type RuntimeRegionConfig is not supported");

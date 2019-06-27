@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.SimpleClusterManagementResultAssert.assertSimpleManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -35,7 +35,6 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -74,7 +73,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    SimpleClusterManagementResult result = cms.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -178,12 +177,12 @@ public class RegionManagementDunitTest {
     regionConfig.setName("disJoint");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
-    assertSimpleManagementResult(cms.create(regionConfig)).isSuccessful();
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
     regionConfig.setName("disJoint");
     regionConfig.setGroup("group2");
     regionConfig.setType(RegionType.REPLICATE);
-    assertSimpleManagementResult(cms.create(regionConfig)).isSuccessful();
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
   }
 
   @Test
@@ -192,16 +191,16 @@ public class RegionManagementDunitTest {
     regionConfig.setName("commonMember");
     regionConfig.setGroup("group2");
     regionConfig.setType(RegionType.REPLICATE);
-    assertSimpleManagementResult(cms.create(regionConfig)).isSuccessful();
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
-    assertSimpleManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
         ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("server-2")
         .containsStatusMessage("server-3")
         .containsStatusMessage("already has this element created");
 
     regionConfig.setGroup("group3");
-    assertSimpleManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
         ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-3 already has this element created");
   }
@@ -212,18 +211,18 @@ public class RegionManagementDunitTest {
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group4");
     regionConfig.setType(RegionType.REPLICATE);
-    assertSimpleManagementResult(cms.create(regionConfig)).isSuccessful();
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group5");
     regionConfig.setType(RegionType.PARTITION);
-    assertSimpleManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
+    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
         ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
 
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group5");
     regionConfig.setType(RegionType.REPLICATE_PROXY);
-    assertSimpleManagementResult(cms.create(regionConfig)).isSuccessful();
+    assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
   }
 }

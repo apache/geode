@@ -37,8 +37,8 @@ import org.springframework.web.client.ResourceAccessException;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -125,7 +125,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
           buildWithCache().setCache(ClusterStartupRule.getCache())
               .build();
       assertThat(service).isNotNull();
-      SimpleClusterManagementResult clusterManagementResult =
+      ClusterManagementResult<RegionConfig> clusterManagementResult =
           service.create(regionConfig);
       assertThat(clusterManagementResult.isSuccessful()).isTrue();
     });

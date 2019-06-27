@@ -65,7 +65,8 @@ public class PdxManagementTest {
         .andExpect(
             jsonPath("$.statusMessage", containsString("Successfully updated config for cluster")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.uri", is("/management/v2/configurations/pdx")));
+        .andExpect(jsonPath("$.result[0].readSerialized", is(true)))
+        .andExpect(jsonPath("$.result[0].uri", is("/geode-management/v2/configurations/pdx")));
   }
 
   @Test

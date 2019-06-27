@@ -31,8 +31,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -67,7 +67,7 @@ public class ManagementRequestLoggingDUnitTest {
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
-    SimpleClusterManagementResult result = service.create(regionConfig);
+    ClusterManagementResult<RegionConfig> result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
     locator.invoke(() -> {
