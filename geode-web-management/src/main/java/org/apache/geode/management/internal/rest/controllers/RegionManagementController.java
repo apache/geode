@@ -105,6 +105,7 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementResult<RegionConfig.Index> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false) String id) {
@@ -123,6 +124,7 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
   public ClusterManagementResult<RegionConfig.Index> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
