@@ -100,3 +100,4 @@ org/apache/geode/cache/query/internal/types/TypeUtils$ComparisonStrategy$5
 org/apache/geode/cache/client/internal/pooling/ConnectionManagerImpl$ClosedPoolConnectionList
 org/apache/geode/internal/cache/partitioned/ManageBackupBucketMessage$ReplyType
 org/apache/geode/internal/cache/AfterCompletion$Action
+org/apache/geode/internal/cache/LocalRegion$InitializationLevel
