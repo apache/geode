@@ -159,10 +159,22 @@ class ProcessManager implements ChildVMLauncher {
 
   private void linkStreams(final String version, final int vmNum, final ProcessHolder holder,
       final InputStream in, final PrintStream out) {
-    final String vmName = "[" + VM.getVMName(version, vmNum) + "] ";
+    final String vmName = "[" + VM.getVMName(version, vmNum);
     Thread ioTransport = new Thread() {
       @Override
       public void run() {
+        StringBuffer sb = new StringBuffer();
+        // use low four bytes for backward compatibility
+        long time = System.currentTimeMillis() & 0xffffffffL;
+        for (int i = 0; i < 4; i++) {
+          String hex = Integer.toHexString((int) (time & 0xff));
+          if (hex.length() < 2) {
+            sb.append('0');
+          }
+          sb.append(hex);
+          time = time / 0x100;
+        }
+        String uniqueString = vmName + ", 0x" + sb.toString() + "] ";
         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         try {
           String line = reader.readLine();
@@ -170,7 +182,7 @@ class ProcessManager implements ChildVMLauncher {
             if (line.length() == 0) {
               out.println();
             } else {
-              out.print(vmName);
+              out.print(uniqueString);
               out.println(line);
             }
             line = reader.readLine();
