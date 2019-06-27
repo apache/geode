@@ -134,6 +134,12 @@
         <scope>compile</scope>
       </dependency>
       <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit4</artifactId>
+        <version>0.10.2</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>3.2.0</version>
