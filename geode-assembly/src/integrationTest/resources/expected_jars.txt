@@ -3,7 +3,6 @@ HikariCP
 LatencyUtils
 animal-sniffer-annotations
 antlr
-aopalliance
 byte-buddy
 checker-qual
 classgraph
@@ -98,6 +97,7 @@ spring-context
 spring-core
 spring-expression
 spring-hateoas
+spring-jcl
 spring-ldap-core
 spring-oxm
 spring-plugin-core
