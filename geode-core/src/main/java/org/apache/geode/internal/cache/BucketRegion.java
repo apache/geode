@@ -373,7 +373,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
       Set<Object> removedKeys, EventID eventID, FilterInfo routing) {
-    if (CacheClientNotifier.getInstance() != null) {
+    if (CacheClientNotifier.singletonHasClientProxies()) {
       // Only route the event to clients interested in the partitioned region.
       // We do this by constructing a region-level event and then use it to
       // have the filter profile ferret out all of the clients that have interest
@@ -1647,13 +1647,24 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
       super.invokeTXCallbacks(eventType, event, callThem);
     }
+
+    if (!event.isGenerateCallbacks()) {
+      return;
+    }
+    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
+        && partitionedRegion.shouldDispatchListenerEvent())
+        || CacheClientNotifier.singletonHasClientProxies();
+    if (!needsPrEvent) {
+      return;
+    }
+
     @Released
-    final EntryEventImpl prevent = createEventForPR(event);
+    final EntryEventImpl prEvent = createEventForPR(event);
     try {
-      partitionedRegion.invokeTXCallbacks(eventType, prevent,
+      partitionedRegion.invokeTXCallbacks(eventType, prEvent,
           partitionedRegion.isInitialized() && callDispatchListenerEvent);
     } finally {
-      prevent.release();
+      prEvent.release();
     }
   }
 
@@ -1679,13 +1690,24 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
       super.invokeDestroyCallbacks(eventType, event, callThem, notifyGateways);
     }
+
+    if (!event.isGenerateCallbacks()) {
+      return;
+    }
+    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
+        && partitionedRegion.shouldDispatchListenerEvent())
+        || CacheClientNotifier.singletonHasClientProxies();
+    if (!needsPrEvent) {
+      return;
+    }
+
     @Released
-    final EntryEventImpl prevent = createEventForPR(event);
+    final EntryEventImpl prEvent = createEventForPR(event);
     try {
-      partitionedRegion.invokeDestroyCallbacks(eventType, prevent,
+      partitionedRegion.invokeDestroyCallbacks(eventType, prEvent,
           partitionedRegion.isInitialized() && callDispatchListenerEvent, false);
     } finally {
-      prevent.release();
+      prEvent.release();
     }
   }
 
@@ -1710,13 +1732,24 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       }
       super.invokeInvalidateCallbacks(eventType, event, callThem);
     }
+
+    if (!event.isGenerateCallbacks()) {
+      return;
+    }
+    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
+        && partitionedRegion.shouldDispatchListenerEvent())
+        || CacheClientNotifier.singletonHasClientProxies();
+    if (!needsPrEvent) {
+      return;
+    }
+
     @Released
-    final EntryEventImpl prevent = createEventForPR(event);
+    final EntryEventImpl prEvent = createEventForPR(event);
     try {
-      partitionedRegion.invokeInvalidateCallbacks(eventType, prevent,
+      partitionedRegion.invokeInvalidateCallbacks(eventType, prEvent,
           partitionedRegion.isInitialized() && callDispatchListenerEvent);
     } finally {
-      prevent.release();
+      prEvent.release();
     }
   }
 
@@ -1745,13 +1778,23 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       super.invokePutCallbacks(eventType, event, callThem, notifyGateways);
     }
 
+    if (!event.isGenerateCallbacks()) {
+      return;
+    }
+    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
+        && partitionedRegion.shouldDispatchListenerEvent())
+        || CacheClientNotifier.singletonHasClientProxies();
+    if (!needsPrEvent) {
+      return;
+    }
+
     @Released
-    final EntryEventImpl prevent = createEventForPR(event);
+    final EntryEventImpl prEvent = createEventForPR(event);
     try {
-      partitionedRegion.invokePutCallbacks(eventType, prevent,
+      partitionedRegion.invokePutCallbacks(eventType, prEvent,
           partitionedRegion.isInitialized() && callDispatchListenerEvent, false);
     } finally {
-      prevent.release();
+      prEvent.release();
     }
   }
 
