@@ -39,7 +39,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 
@@ -539,7 +538,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
   @XmlAccessorType(XmlAccessType.FIELD)
   @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
   public static class Index extends CacheElement
-      implements RestfulEndpoint, RespondsWith<RuntimeIndex> {
+      implements RestfulEndpoint, RespondsWith<Index> {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

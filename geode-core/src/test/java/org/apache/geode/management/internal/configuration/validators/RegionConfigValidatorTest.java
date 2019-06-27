@@ -221,5 +221,4 @@ public class RegionConfigValidatorTest {
     validator.validate(CacheElementOperation.CREATE, config);
     assertThat(attributes.getPartitionAttributes().getLocalMaxMemory()).isEqualTo("0");
   }
-
 }

@@ -22,14 +22,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementTest {
 
   private CacheElement element;
-  private MultiGroupCacheElement runtime;
+  private RuntimeRegionConfig runtime;
 
   private static ObjectMapper mapper;
   private String json;
@@ -71,7 +70,7 @@ public class CacheElementTest {
     assertThat(element.getConfigGroup()).isEqualTo("group1");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
-    assertThat(json).contains("\"group\":\"group1\"").doesNotContain("groups");
+    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("group:");
   }
 
   @Test

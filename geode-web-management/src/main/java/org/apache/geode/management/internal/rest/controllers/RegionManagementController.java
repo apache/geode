@@ -37,7 +37,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.configuration.RuntimeIndex;
 import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -106,7 +105,7 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
-  public ClusterManagementResult<RuntimeIndex> listIndex(
+  public ClusterManagementResult<RegionConfig.Index> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false) String id) {
 
@@ -114,8 +113,8 @@ public class RegionManagementController extends AbstractManagementController {
     RuntimeRegionConfig runtimeRegion = result0.getResult().get(0);
 
     // only send the index information back
-    List<RuntimeIndex> runtimeIndexes = runtimeRegion.getRuntimeIndexes(id);
-    ClusterManagementResult<RuntimeIndex> result = new ClusterManagementResult<>();
+    List<RegionConfig.Index> runtimeIndexes = runtimeRegion.getIndexes(id);
+    ClusterManagementResult<RegionConfig.Index> result = new ClusterManagementResult<>();
     result.setResult(runtimeIndexes);
 
     return result;
@@ -124,11 +123,11 @@ public class RegionManagementController extends AbstractManagementController {
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
-  public ClusterManagementResult<RuntimeIndex> getIndex(
+  public ClusterManagementResult<RegionConfig.Index> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementResult<RuntimeIndex> result = listIndex(regionName, id);
-    List<RuntimeIndex> indexList = result.getResult();
+    ClusterManagementResult<RegionConfig.Index> result = listIndex(regionName, id);
+    List<RegionConfig.Index> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new EntityNotFoundException("Index " + id + " not found.");

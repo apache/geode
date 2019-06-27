@@ -50,7 +50,6 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.MultiGroupCacheElement;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
@@ -260,12 +259,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
       List<R> listInGroup = manager.list(filter, currentPersistedConfig);
       for (R element : listInGroup) {
-        if (filter.getGroup() == null || // if listing all groups
-            group.equals(filter.getGroup()) || // if filter group matches this group
-            element instanceof MultiGroupCacheElement) { // if element can span multi groups
-          element.setGroup(group);
-          resultList.add(element);
-        }
+        element.setGroup(group);
+        resultList.add(element);
       }
     }
 
@@ -276,38 +271,31 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // right now the list contains [{regionA, group1}, {regionA, group2}...], if the elements are
     // MultiGroupCacheElement, we need to consolidate the list into [{regionA, [group1, group2]}
-    if (resultList.get(0) instanceof MultiGroupCacheElement) {
-      List<R> multiGroupList = new ArrayList<>();
-      for (R element : resultList) {
-        int index = multiGroupList.indexOf(element);
-        if (index >= 0) {
-          MultiGroupCacheElement exist = (MultiGroupCacheElement) multiGroupList.get(index);
-          exist.getGroups().add(element.getGroup());
-        } else {
-          multiGroupList.add(element);
-        }
-      }
-      if (StringUtils.isNotBlank(filter.getGroup())) {
-        multiGroupList = multiGroupList.stream()
-            .filter(e -> ((MultiGroupCacheElement) e).getGroups().contains(filter.getConfigGroup()))
-            .collect(Collectors.toList());
-      }
-      // if "cluster" is the only group, clear it
-      for (R elem : multiGroupList) {
-        MultiGroupCacheElement element = (MultiGroupCacheElement) elem;
-        if (element.getGroups().size() == 1 && CacheElement.CLUSTER.equals(element.getGroup())) {
-          element.getGroups().clear();
-        }
-      }
-      resultList = multiGroupList;
-    } else {
-      // for non-MultiGroup CacheElement, just clear out the "cluster" group
-      for (R element : resultList) {
-        if (CacheElement.CLUSTER.equals(element.getGroup())) {
-          element.setGroup(null);
-        }
+
+    List<R> consolidatedConfigList = new ArrayList<>();
+    for (R element : resultList) {
+      int index = consolidatedConfigList.indexOf(element);
+      if (index >= 0) {
+        R exist = consolidatedConfigList.get(index);
+        exist.getGroups().add(element.getGroup());
+      } else {
+        consolidatedConfigList.add(element);
       }
     }
+    if (StringUtils.isNotBlank(filter.getGroup())) {
+      consolidatedConfigList = consolidatedConfigList.stream()
+          .filter(e -> (e.getGroups().contains(filter.getConfigGroup())))
+          .collect(Collectors.toList());
+    }
+    // if "cluster" is the only group, clear it
+    for (R element : consolidatedConfigList) {
+      if (element.getGroups().size() == 1 && CacheElement.CLUSTER.equals(element.getGroup())) {
+        element.getGroups().clear();
+      }
+    }
+    resultList = consolidatedConfigList;
+
+
 
     result.setResult(resultList);
     return result;
