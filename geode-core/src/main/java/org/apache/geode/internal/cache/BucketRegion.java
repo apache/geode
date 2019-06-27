@@ -18,6 +18,7 @@ package org.apache.geode.internal.cache;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.Logger;
 
@@ -406,35 +408,28 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   LockObject searchAndLock(Object[] keys) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    LockObject foundLock = null;
-
     synchronized (allKeysMap) {
-      // check if there's any key in map
+      Object alreadyLockedKey = null;
       for (Object key : keys) {
-        if (allKeysMap.containsKey(key)) {
-          foundLock = allKeysMap.get(key);
-          if (isDebugEnabled) {
-            logger.debug("LockKeys: found key: {}:{}", key, foundLock.lockedTimeStamp);
-          }
-          foundLock.waiting();
+        LockObject
+            insertedObject =
+            allKeysMap.computeIfAbsent(key,
+                k -> new LockObject(k, isDebugEnabled ? System.currentTimeMillis() : 0));
+        if (insertedObject == null) {
+          alreadyLockedKey = key;
           break;
         }
       }
-
-      // save the keys when still locked
-      if (foundLock == null) {
-        for (Object key : keys) {
-          LockObject lockValue =
-              new LockObject(key, isDebugEnabled ? System.currentTimeMillis() : 0);
-          allKeysMap.put(key, lockValue);
-          if (isDebugEnabled) {
-            logger.debug("LockKeys: add key: {}:{}", key, lockValue.lockedTimeStamp);
+      if (alreadyLockedKey != null) {
+        for(Object key: keys) {
+          if( key == alreadyLockedKey ) {
+            return allKeysMap.get(key);
           }
+          allKeysMap.remove(key);
         }
       }
     }
-
-    return foundLock;
+    return null;
   }
 
   /**
