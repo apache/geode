@@ -86,7 +86,7 @@ public class ConfigurePDXDUnitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getUri()).isEqualTo("/geode-management/v2/configurations/pdx");
+    assertThat(result.getUri()).isEqualTo("/management/v2/configurations/pdx");
 
     RealizationResult status = result.getMemberStatuses().get(0);
     assertThat(status.getMemberName()).isEqualTo("server-1");
