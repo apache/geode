@@ -780,10 +780,11 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       DMListener l = new DMListener(this);
-      membershipManager = MemberFactory.newMembershipManager(l, system, transport,
-          stats, system.getSecurityService(),
+      membershipManager = MemberFactory.newMembershipManager(l, transport,
+          stats,
           new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
-              system.getSecurityLogWriter(), system.getInternalLogWriter()));
+              system.getSecurityLogWriter(), system.getInternalLogWriter()),
+          system.getConfig());
 
       sb.append(System.currentTimeMillis() - start);
 

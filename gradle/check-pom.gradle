@@ -127,7 +127,7 @@ A possible exception is the listed Geode project dependencies, which are modifie
 
 Once the differences in the above files are reviewed and confirmed to be intentional,
   please update the expected POM file to reflect your changes.
-Alternatively, run './gradlew ${project.name}:updateExpectedPom' to replace the expected POM with the generated POM.
+Alternatively, run './gradlew ${project.path}:updateExpectedPom' to replace the expected POM with the generated POM.
 """
         thisOutput.write(message)
         throw new RuntimeException(message)

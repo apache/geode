@@ -56,7 +56,6 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
-import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
@@ -162,10 +161,11 @@ public class GMSLocatorRecoveryIntegrationTest {
     when(mockSystem.getConfig()).thenReturn(config);
 
     // start the membership manager
-    membershipManager = MemberFactory.newMembershipManager(mockListener, mockSystem, transport,
-        mockDmStats, SecurityServiceFactory.create(),
+    membershipManager = MemberFactory.newMembershipManager(mockListener, transport,
+        mockDmStats,
         new GMSAuthenticator(mockSystem.getSecurityProperties(), mockSystem.getSecurityService(),
-            mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()));
+            mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()),
+        mockSystem.getConfig());
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         membershipManager.getLocalMember().getHost() + "[" + port + "]", true, true,

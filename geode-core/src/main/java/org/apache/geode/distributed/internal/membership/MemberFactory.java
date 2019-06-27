@@ -19,13 +19,12 @@ import java.net.InetAddress;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.security.SecurityService;
 
 /**
  * Create a new Member based on the given inputs. TODO: need to implement a real factory
@@ -87,14 +86,14 @@ public class MemberFactory {
    * @param stats are used for recording statistical communications information
    * @return a MembershipManager
    */
-  public static MembershipManager newMembershipManager(DistributedMembershipListener listener,
-      InternalDistributedSystem system,
-      RemoteTransportConfig transport,
-      DMStats stats,
-      SecurityService securityService,
-      final Authenticator authenticator) {
-    return services.newMembershipManager(listener, transport, stats,
-        authenticator, system.getConfig());
+  public static MembershipManager newMembershipManager(
+      final DistributedMembershipListener listener,
+      final RemoteTransportConfig transport,
+      final DMStats stats,
+      final Authenticator authenticator,
+      final DistributionConfig config) {
+    return services.newMembershipManager(listener, transport, stats, authenticator,
+        config);
   }
 
   /**
