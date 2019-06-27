@@ -25,13 +25,12 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.TestSecurityManager;
 import org.apache.geode.test.junit.categories.SecurityTest;
@@ -48,13 +47,8 @@ public class JmxMultipleConnectionsTest {
       .withProperty(SECURITY_MANAGER, TestSecurityManager.class.getName())
       .withProperty(TestSecurityManager.SECURITY_JSON,
           "org/apache/geode/management/internal/security/cacheServer.json")
+      .withRegion(RegionShortcut.REPLICATE, "region1")
       .withAutoStart();
-
-  @BeforeClass
-  public static void beforeClass() throws Exception {
-    Cache cache = server.getCache();
-    cache.createRegionFactory().create("region1");
-  }
 
   @Rule
   public MBeanServerConnectionRule connectionRule =

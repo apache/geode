@@ -40,7 +40,8 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
 
   private final SecurityService securityService;
   private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap();
-  org.apache.shiro.subject.Subject shiroSubject;
+  private Map<Long, org.apache.shiro.subject.Subject> threadIdUser = new HashMap();
+  org.apache.shiro.subject.Subject currentUser;
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -62,9 +63,10 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       throw new AuthenticationFailedException(MISSING_CREDENTIALS_MESSAGE);
     }
 
-    shiroSubject = this.securityService.login(credProps);
+    org.apache.shiro.subject.Subject shiroSubject = this.securityService.login(credProps);
     Principal principal;
 
+    threadIdUser.put(Thread.currentThread().getId(), shiroSubject);
     if (shiroSubject == null) {
       principal = new JMXPrincipal(username);
     } else {
@@ -80,15 +82,16 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
-      String user = cxNotification.getConnectionId();
+      String connectionId = cxNotification.getConnectionId();
       synchronized (connectedUsers) {
         if (JMXConnectionNotification.OPENED.equals(type)) {
-          if (!connectedUsers.containsKey(user)) {
-            connectedUsers.put(user, shiroSubject);
+          if (!connectedUsers.containsKey(connectionId)) {
+            currentUser = threadIdUser.get(Thread.currentThread().getId());
+            connectedUsers.put(connectionId, currentUser);
           }
         } else if (JMXConnectionNotification.CLOSED.equals(type)) {
-          this.securityService.logoutJmxUser(user, connectedUsers.get(user));
-          connectedUsers.remove(user);
+          this.securityService.logoutJmxUser(connectionId, connectedUsers.get(connectionId));
+          connectedUsers.remove(connectionId);
         }
       }
     }

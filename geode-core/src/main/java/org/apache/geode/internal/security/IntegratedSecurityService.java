@@ -169,7 +169,9 @@ public class IntegratedSecurityService implements SecurityService {
 
   public void logoutJmxUser(String user, Subject currentUser) {
     try {
-      logger.debug("Logging out " + currentUser.getPrincipal());
+      if (logger.isDebugEnabled()) {
+        logger.debug("Logging out {}", currentUser.getPrincipal());
+      }
       currentUser.logout();
     } catch (ShiroException e) {
       logger.info("error logging out: " + currentUser.getPrincipal());
