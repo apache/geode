@@ -12,20 +12,23 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.runtime;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+import org.apache.geode.lang.Identifiable;
 
 
 /***
  * Data class to hold the information of the member Used in describe member command
  *
  */
-public class MemberInformation implements Serializable {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public class MemberInformation implements Identifiable<String>, RuntimeInfo {
   private static final long serialVersionUID = 1L;
   private String name;
   private String id;
@@ -53,6 +56,7 @@ public class MemberInformation implements Serializable {
   private String offHeapMemorySize;
   private boolean webSSL;
   private boolean isSecured;
+  private boolean isCoordinator;
 
   public boolean isSecured() {
     return isSecured;
@@ -262,5 +266,13 @@ public class MemberInformation implements Serializable {
 
   public void setWebSSL(boolean webSSL) {
     this.webSSL = webSSL;
+  }
+
+  public boolean isCoordinator() {
+    return isCoordinator;
+  }
+
+  public void setCoordinator(boolean coordinator) {
+    isCoordinator = coordinator;
   }
 }

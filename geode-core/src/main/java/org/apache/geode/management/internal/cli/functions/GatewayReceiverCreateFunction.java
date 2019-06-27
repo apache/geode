@@ -23,6 +23,7 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -96,7 +97,7 @@ public class GatewayReceiverCreateFunction implements InternalFunction {
   GatewayReceiver createGatewayReceiver(Cache cache,
       GatewayReceiverConfig gatewayReceiverConfig) {
     GatewayReceiverRealizer receiverRealizer = new GatewayReceiverRealizer();
-    receiverRealizer.create(gatewayReceiverConfig, cache);
+    receiverRealizer.create(gatewayReceiverConfig, (InternalCache) cache);
 
     return cache.getGatewayReceivers().iterator().next();
   }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.functions;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
@@ -24,7 +25,6 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedMember;
@@ -42,8 +42,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.internal.cli.CliUtil;
-import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
-import org.apache.geode.management.internal.cli.domain.MemberInformation;
+import org.apache.geode.management.runtime.CacheServerInfo;
+import org.apache.geode.management.runtime.MemberInformation;
 
 /***
  *
@@ -88,82 +88,89 @@ public class GetMemberInformationFunction implements InternalFunction {
           CliUtil.getDistributedMemberByNameOrId(functionContext.getMemberName(),
               (InternalCache) functionContext.getCache());
 
-      MemberInformation memberInfo = new MemberInformation();
-
-      memberInfo.setName(member.getName());
-      memberInfo.setId(member.getId());
-      memberInfo.setHost(member.getHost());
-      memberInfo.setProcessId(member.getProcessId());
-
-      SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(config,
-          SecurableCommunicationChannel.WEB);
-      memberInfo.setWebSSL(sslConfig.isEnabled());
-      memberInfo.setSecured(StringUtils.isNotBlank(config.getSecurityManager()));
-      memberInfo.setGroups(config.getGroups());
-      memberInfo.setLogFilePath(config.getLogFile().getCanonicalPath());
-      memberInfo.setStatArchiveFilePath(config.getStatisticArchiveFile().getCanonicalPath());
-      memberInfo.setWorkingDirPath(System.getProperty("user.dir"));
-      memberInfo.setCacheXmlFilePath(config.getCacheXmlFile().getCanonicalPath());
-      memberInfo.setLocators(config.getLocators());
-      memberInfo.setServerBindAddress(config.getServerBindAddress());
-      memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
-      memberInfo.setHttpServicePort(config.getHttpServicePort());
-      memberInfo.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
-
-      MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
-      MemoryUsage memUsage = memoryMXBean.getHeapMemoryUsage();
-      memberInfo.setHeapUsage(bytesToMeg(memUsage.getUsed()));
-      memberInfo.setMaxHeapSize(bytesToMeg(memUsage.getMax()));
-      memberInfo.setInitHeapSize(bytesToMeg(memUsage.getInit()));
-      memberInfo.setHostedRegions(CliUtil.getAllRegionNames(cache));
-
-      List<CacheServer> csList = cache.getCacheServers();
-
-      // A member is a server only if it has a cacheserver
-      if (csList != null && !csList.isEmpty()) {
-        memberInfo.setServer(true);
-        Iterator<CacheServer> iters = csList.iterator();
-        while (iters.hasNext()) {
-          CacheServer cs = iters.next();
-
-          CacheServerInfo cacheServerInfo = new CacheServerInfo(cs);
-          memberInfo.addCacheServerInfo(cacheServerInfo);
-        }
-        Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients =
-            InternalClientMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
-        Iterator<ClientProxyMembershipID> it = allConnectedClients.keySet().iterator();
-        int numConnections = 0;
-
-        while (it.hasNext()) {
-          CacheClientStatus status = allConnectedClients.get(it.next());
-          numConnections = numConnections + status.getNumberOfConnections();
-        }
-        memberInfo.setClientCount(numConnections);
-
-        ServerLauncher.ServerState state = ServerLauncher.getServerState();
-        if (state != null) {
-          memberInfo.setStatus(state.getStatus().getDescription());
-        }
-      } else {
-        memberInfo.setServer(false);
-        InternalLocator locator = InternalLocator.getLocator();
-        if (locator != null) {
-          memberInfo.setLocatorPort(locator.getPort());
-        }
-
-        LocatorLauncher.LocatorState state = LocatorLauncher.getLocatorState();
-        if (state != null) {
-          memberInfo.setStatus(state.getStatus().getDescription());
-        }
-      }
+      MemberInformation memberInfo = getMemberInformation(cache, config, member);
       functionContext.getResultSender().lastResult(memberInfo);
-    } catch (CacheClosedException e) {
-      functionContext.getResultSender().sendException(e);
     } catch (Exception e) {
       functionContext.getResultSender().sendException(e);
     }
   }
 
+  public MemberInformation getMemberInformation(Cache cache, DistributionConfig config,
+      DistributedMember member) throws IOException {
+    MemberInformation memberInfo = new MemberInformation();
+
+    memberInfo.setName(member.getName());
+    memberInfo.setId(member.getId());
+    memberInfo.setHost(member.getHost());
+    memberInfo.setProcessId(member.getProcessId());
+
+    SSLConfig sslConfig = SSLConfigurationFactory.getSSLConfigForComponent(config,
+        SecurableCommunicationChannel.WEB);
+    memberInfo.setWebSSL(sslConfig.isEnabled());
+    memberInfo.setSecured(StringUtils.isNotBlank(config.getSecurityManager()));
+    memberInfo.setGroups(config.getGroups());
+    memberInfo.setLogFilePath(config.getLogFile().getCanonicalPath());
+    memberInfo.setStatArchiveFilePath(config.getStatisticArchiveFile().getCanonicalPath());
+    memberInfo.setWorkingDirPath(System.getProperty("user.dir"));
+    memberInfo.setCacheXmlFilePath(config.getCacheXmlFile().getCanonicalPath());
+    memberInfo.setLocators(config.getLocators());
+    memberInfo.setServerBindAddress(config.getServerBindAddress());
+    memberInfo.setOffHeapMemorySize(config.getOffHeapMemorySize());
+    memberInfo.setHttpServicePort(config.getHttpServicePort());
+    memberInfo.setHttpServiceBindAddress(config.getHttpServiceBindAddress());
+
+    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    MemoryUsage memUsage = memoryMXBean.getHeapMemoryUsage();
+    memberInfo.setHeapUsage(bytesToMeg(memUsage.getUsed()));
+    memberInfo.setMaxHeapSize(bytesToMeg(memUsage.getMax()));
+    memberInfo.setInitHeapSize(bytesToMeg(memUsage.getInit()));
+    memberInfo.setHostedRegions(CliUtil.getAllRegionNames(cache));
+
+    List<CacheServer> csList = cache.getCacheServers();
+
+    // A member is a server only if it has a cacheserver
+    if (csList != null && !csList.isEmpty()) {
+      memberInfo.setServer(true);
+      Iterator<CacheServer> iters = csList.iterator();
+      while (iters.hasNext()) {
+        CacheServer cs = iters.next();
+        CacheServerInfo cacheServerInfo = new CacheServerInfo();
+        cacheServerInfo.setBindAddress(cs.getBindAddress());
+        cacheServerInfo.setPort(cs.getPort());
+        cacheServerInfo.setRunning(cs.isRunning());
+        cacheServerInfo.setMaxConnections(cs.getMaxConnections());
+        cacheServerInfo.setMaxThreads(cs.getMaxThreads());
+        memberInfo.addCacheServerInfo(cacheServerInfo);
+      }
+      Map<ClientProxyMembershipID, CacheClientStatus> allConnectedClients =
+          InternalClientMembership.getStatusForAllClientsIgnoreSubscriptionStatus();
+      Iterator<ClientProxyMembershipID> it = allConnectedClients.keySet().iterator();
+      int numConnections = 0;
+
+      while (it.hasNext()) {
+        CacheClientStatus status = allConnectedClients.get(it.next());
+        numConnections = numConnections + status.getNumberOfConnections();
+      }
+      memberInfo.setClientCount(numConnections);
+
+      ServerLauncher.ServerState state = ServerLauncher.getServerState();
+      if (state != null) {
+        memberInfo.setStatus(state.getStatus().getDescription());
+      }
+    } else {
+      memberInfo.setServer(false);
+      InternalLocator locator = InternalLocator.getLocator();
+      if (locator != null) {
+        memberInfo.setLocatorPort(locator.getPort());
+      }
+
+      LocatorLauncher.LocatorState state = LocatorLauncher.getLocatorState();
+      if (state != null) {
+        memberInfo.setStatus(state.getStatus().getDescription());
+      }
+    }
+    return memberInfo;
+  }
 
 
   private long bytesToMeg(long bytes) {

@@ -23,7 +23,7 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.internal.cache.InternalCache;
 
 public class GatewayReceiverConfigManager
-    implements ConfigurationManager<GatewayReceiverConfig, GatewayReceiverConfig> {
+    implements ConfigurationManager<GatewayReceiverConfig> {
   private final InternalCache cache;
 
   public GatewayReceiverConfigManager(InternalCache cache) {

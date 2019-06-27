@@ -13,8 +13,37 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.api;
 
-public enum CacheElementOperation {
-  CREATE, DELETE, UPDATE, GET
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.runtime.RuntimeInfo;
+
+public class Response<T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> {
+  private T config;
+  private List<R> runtimeInfo = new ArrayList<>();
+
+  public Response() {}
+
+  public Response(T config) {
+    this.config = config;
+  }
+
+  public T getConfig() {
+    return config;
+  }
+
+  public void setConfig(T config) {
+    this.config = config;
+  }
+
+  public List<R> getRuntimeInfo() {
+    return runtimeInfo;
+  }
+
+  public void setRuntimeInfo(List<R> runtimeInfo) {
+    this.runtimeInfo = runtimeInfo;
+  }
 }

@@ -15,25 +15,14 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
 public class RegionConfigManagerTest {
 
@@ -42,27 +31,11 @@ public class RegionConfigManagerTest {
 
   @Before
   public void before() throws Exception {
-    InternalCache cache = mock(InternalCache.class);
-    manager = spy(new RegionConfigManager(cache));
+    manager = spy(new RegionConfigManager());
     config1 = new RegionConfig();
     config1.setName("test");
     config2 = new RegionConfig();
     config2.setName("test");
-  }
-
-  @Test
-  public void entryCountIsZeroEvenIfMbeanIsNotAvailable() throws Exception {
-    CacheConfig existing = mock(CacheConfig.class);
-    List<RegionConfig> staticRegionConfigs = new ArrayList<>();
-    config1.setName("region1");
-    staticRegionConfigs.add(config1);
-    when(existing.getRegions()).thenReturn(staticRegionConfigs);
-
-
-    ManagementService managementService = mock(ManagementService.class);
-    doReturn(managementService).when(manager).getManagementService();
-    List<RuntimeRegionConfig> result = manager.list(new RegionConfig(), existing);
-    assertThat(result.get(0).getEntryCount()).isEqualTo(0);
   }
 
   @Test

@@ -22,13 +22,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementTest {
 
   private CacheElement element;
-  private RuntimeRegionConfig runtime;
+  private RegionConfig runtime;
 
   private static ObjectMapper mapper;
   private String json;
@@ -41,7 +40,7 @@ public class CacheElementTest {
   @Before
   public void before() throws Exception {
     element = new RegionConfig();
-    runtime = new RuntimeRegionConfig();
+    runtime = new RegionConfig();
   }
 
   @Test
@@ -80,15 +79,6 @@ public class CacheElementTest {
     json = mapper.writeValueAsString(runtime);
     System.out.println(json);
     assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("\"group\"");
-  }
-
-  @Test
-  public void copy() throws Exception {
-    RegionConfig config = new RegionConfig();
-    config.setName("test");
-    runtime = new RuntimeRegionConfig(config);
-    assertThat(runtime.getGroup()).isNull();
-    assertThat(runtime.getGroups()).hasSize(0);
   }
 
   @Test

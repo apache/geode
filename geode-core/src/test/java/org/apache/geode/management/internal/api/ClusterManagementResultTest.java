@@ -21,14 +21,20 @@ import static org.apache.geode.management.api.ClusterManagementResult.StatusCode
 import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.OK;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.Response;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementResultTest {
-  private ClusterManagementResult<?> result;
+  private ClusterManagementResult result;
 
   @Before
   public void setup() {
@@ -109,8 +115,35 @@ public class ClusterManagementResultTest {
   @Test
   public void deserialize() throws Exception {
     String json = "{\"statusCode\":\"OK\"}";
-    ClusterManagementResult<?> result =
+    ClusterManagementResult result =
         GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
     assertThat(result.getResult()).isNotNull().isEmpty();
+  }
+
+  @Test
+  public void serializeResult() throws Exception {
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result =
+        new ClusterManagementResult<>();
+    Response<RegionConfig, RuntimeRegionInfo> response = new Response<>();
+    RegionConfig region = new RegionConfig();
+    region.setName("region");
+    region.setType("REPLICATE");
+    region.setGroup("group1");
+    response.setConfig(region);
+
+    RuntimeRegionInfo info = new RuntimeRegionInfo();
+    info.setEntryCount(3);
+    response.setRuntimeInfo(Collections.singletonList(info));
+    result.setResult(Collections.singletonList(response));
+
+    String json = mapper.writeValueAsString(result);
+    System.out.println(json);
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result1 =
+        mapper.readValue(json, ClusterManagementResult.class);
+    assertThat(result1.getConfigResult()).hasSize(1)
+        .extracting(RegionConfig::getName).containsExactly("region");
+    assertThat(result1.getRuntimeResult()).hasSize(1)
+        .extracting(RuntimeRegionInfo::getEntryCount).containsExactly(3L);
   }
 }

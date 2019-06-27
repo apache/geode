@@ -18,6 +18,7 @@ package org.apache.geode.cache.configuration;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,25 +26,30 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.Response;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeMemberConfig;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.runtime.MemberInformation;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementJsonMappingTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
-  private static RuntimeMemberConfig member;
-  private static RuntimeRegionConfig region;
+  private static MemberInformation member;
+  private static RegionConfig region;
+  private static RuntimeRegionInfo runtimeRegionInfo;
 
   @BeforeClass
   public static void beforeClass() {
-    member = new RuntimeMemberConfig();
+    member = new MemberInformation();
     member.setId("server");
-    member.setPid(123);
+    member.setProcessId(123);
 
-    region = new RuntimeRegionConfig();
+    region = new RegionConfig();
     region.setName("test");
+
+    runtimeRegionInfo = new RuntimeRegionInfo();
+    runtimeRegionInfo.setEntryCount(100);
   }
 
   @Test
@@ -80,16 +86,18 @@ public class CacheElementJsonMappingTest {
 
   @Test
   public void serializeResult() throws Exception {
-    ClusterManagementResult<CacheElement> result = new ClusterManagementResult<>();
-    List<CacheElement> elements = new ArrayList<>();
-    elements.add(region);
-    elements.add(member);
-    result.setResult(elements);
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result =
+        new ClusterManagementResult<>();
+    List<Response<RegionConfig, RuntimeRegionInfo>> responses = new ArrayList<>();
+    Response<RegionConfig, RuntimeRegionInfo> response = new Response<>(region);
+    response.setRuntimeInfo(Collections.singletonList(runtimeRegionInfo));
+    responses.add(response);
+    result.setResult(responses);
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
 
-    ClusterManagementResult<?> result1 =
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result1 =
         mapper.readValue(json, ClusterManagementResult.class);
     assertThat(result1.getResult()).hasSize(2);
     assertThat(result1.getResult().get(0))
@@ -124,7 +132,7 @@ public class CacheElementJsonMappingTest {
   @Test
   public void groups() throws Exception {
     String json = "{'name':'test','groups':['group1','group2']}";
-    RuntimeRegionConfig regionConfig = mapper.readValue(json, RuntimeRegionConfig.class);
+    RegionConfig regionConfig = mapper.readValue(json, RegionConfig.class);
     assertThat(regionConfig.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
@@ -141,7 +149,7 @@ public class CacheElementJsonMappingTest {
 
   @Test
   public void serializeMultipleGroup() throws Exception {
-    RuntimeRegionConfig config = new RuntimeRegionConfig();
+    RegionConfig config = new RegionConfig();
     config.setName("test");
     config.getGroups().add("group1");
     config.getGroups().add("group2");
@@ -162,15 +170,14 @@ public class CacheElementJsonMappingTest {
     index.setRegionName("region1");
     index.setExpression("id");
     config.getIndexes().add(index);
-    RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);
-    String json = mapper.writeValueAsString(runtimeConfig);
+    String json = mapper.writeValueAsString(config);
     System.out.println(json);
 
-    runtimeConfig = mapper.readValue(json, RuntimeRegionConfig.class);
-    assertThat(runtimeConfig.getGroups()).containsExactly("group1");
-    List<RegionConfig.Index> runtimeIndexes = runtimeConfig.getIndexes(null);
-    assertThat(runtimeIndexes).hasSize(1);
-    assertThat(runtimeIndexes.get(0).getRegionName()).isEqualTo("region1");
+    RegionConfig config1 = mapper.readValue(json, RegionConfig.class);
+    assertThat(config1.getGroups()).containsExactly("group1");
+    List<RegionConfig.Index> indexes = config1.getIndexes();
+    assertThat(indexes).hasSize(1);
+    assertThat(indexes.get(0).getRegionName()).isEqualTo("region1");
   }
 
   @Test

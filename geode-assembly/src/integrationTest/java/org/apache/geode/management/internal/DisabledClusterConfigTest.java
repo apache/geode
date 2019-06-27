@@ -41,7 +41,7 @@ public class DisabledClusterConfigTest {
     GeodeDevRestClient restClient =
         new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
 
-    ClusterManagementResult<?> result =
+    ClusterManagementResult result =
         restClient.doPostAndAssert("/regions", "{\"name\":\"test\"}")
             .hasStatusCode(500)
             .getClusterManagementResult();

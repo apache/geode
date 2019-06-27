@@ -17,9 +17,10 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.api.RespondsWith;
 
 /**
  * Defines the behavior to realize a configuration change in the cache on a server. Created with an
@@ -27,12 +28,16 @@ import org.apache.geode.management.api.RealizationResult;
  * configuration change.
  */
 @Experimental
-public interface ConfigurationRealizer<T extends CacheElement> {
-  RealizationResult create(T config, Cache cache);
+public interface ConfigurationRealizer<T extends CacheElement & RespondsWith<R>, R> {
+  RealizationResult create(T config, InternalCache cache);
 
-  boolean exists(T config, Cache cache);
+  default boolean exists(T config, InternalCache cache) {
+    return get(config, cache) != null;
+  }
 
-  RealizationResult update(T config, Cache cache);
+  R get(T config, InternalCache cache);
 
-  RealizationResult delete(T config, Cache cache);
+  RealizationResult update(T config, InternalCache cache);
+
+  RealizationResult delete(T config, InternalCache cache);
 }

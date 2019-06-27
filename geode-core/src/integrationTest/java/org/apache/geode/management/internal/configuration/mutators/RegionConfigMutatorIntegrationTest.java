@@ -37,7 +37,7 @@ public class RegionConfigMutatorIntegrationTest {
   @Before
   public void before() throws Exception {
     config = new RegionConfig();
-    mutator = new RegionConfigManager(locator.getCache());
+    mutator = new RegionConfigManager();
   }
 
   @Test

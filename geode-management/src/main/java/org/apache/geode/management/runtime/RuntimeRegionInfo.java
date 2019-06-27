@@ -13,27 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.management.configuration;
+package org.apache.geode.management.runtime;
 
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.RegionConfig;
 
 @Experimental
-public class RuntimeRegionConfig extends RegionConfig {
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public class RuntimeRegionInfo implements RuntimeInfo {
   private long entryCount;
-
-  public RuntimeRegionConfig() {}
-
-  public RuntimeRegionConfig(RegionConfig config) {
-    super(config);
-  }
 
   public long getEntryCount() {
     return entryCount;
@@ -41,16 +31,5 @@ public class RuntimeRegionConfig extends RegionConfig {
 
   public void setEntryCount(long entrySize) {
     this.entryCount = entrySize;
-  }
-
-  public List<Index> getIndexes(String indexId) {
-    Stream<Index> stream = getIndexes().stream();
-    if (StringUtils.isNotBlank(indexId)) {
-      stream = stream.filter(i -> i.getId().equals(indexId));
-    }
-    return stream.map(index -> {
-      index.setRegionName(getName());
-      return index;
-    }).collect(Collectors.toList());
   }
 }

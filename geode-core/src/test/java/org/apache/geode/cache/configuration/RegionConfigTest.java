@@ -32,6 +32,8 @@ import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
+import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionConfigTest {
@@ -267,5 +269,19 @@ public class RegionConfigTest {
 
     assertThat(regionConfig.getUri())
         .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/regions/regionA");
+  }
+
+  @Test
+  public void getRuntimeClass() throws Exception {
+    RegionConfig config = new RegionConfig();
+    assertThat(config.getRuntimeClass()).isEqualTo(RuntimeRegionInfo.class);
+    assertThat(config.hasRuntimeInfo()).isTrue();
+  }
+
+  @Test
+  public void getIndexRuntimeClass() throws Exception {
+    RegionConfig.Index index = new RegionConfig.Index();
+    assertThat(index.getRuntimeClass()).isEqualTo(RuntimeInfo.class);
+    assertThat(index.hasRuntimeInfo()).isFalse();
   }
 }

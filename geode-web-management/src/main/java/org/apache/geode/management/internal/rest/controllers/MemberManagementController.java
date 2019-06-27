@@ -30,18 +30,24 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
-import org.apache.geode.management.configuration.RuntimeMemberConfig;
+import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.runtime.MemberInformation;
 
 @Controller("members")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
-  public ResponseEntity<ClusterManagementResult<RuntimeMemberConfig>> getMember(
+  public ResponseEntity<ClusterManagementResult<MemberConfig, MemberInformation>> getMember(
       @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
     config.setId(id);
-    ClusterManagementResult<RuntimeMemberConfig> result = clusterManagementService.get(config);
+    ClusterManagementResult<MemberConfig, MemberInformation> result =
+        clusterManagementService.list(config);
+    if (result.getRuntimeResult().size() == 0) {
+      throw new EntityNotFoundException(
+          "Member with id = " + config.getId() + " not found.");
+    }
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
@@ -49,13 +55,14 @@ public class MemberManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult<RuntimeMemberConfig>> listMembers(
+  public ResponseEntity<ClusterManagementResult<MemberConfig, MemberInformation>> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
-    ClusterManagementResult<RuntimeMemberConfig> result = clusterManagementService.list(filter);
+    ClusterManagementResult<MemberConfig, MemberInformation> result =
+        clusterManagementService.list(filter);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);

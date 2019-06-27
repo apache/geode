@@ -31,7 +31,7 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -80,17 +80,17 @@ public class ListIndexManagementDUnitTest {
 
   @Test
   public void listRegion() {
-    List<RuntimeRegionConfig> result =
-        cms.list(new RegionConfig()).getResult();
+    List<RegionConfig> result =
+        cms.list(new RegionConfig()).getConfigResult();
     assertThat(result).hasSize(1);
   }
 
   @Test
   public void getRegion() throws Exception {
     regionConfig.setName("region1");
-    List<RuntimeRegionConfig> regions = cms.get(regionConfig).getResult();
+    List<RegionConfig> regions = cms.get(regionConfig).getConfigResult();
     assertThat(regions).hasSize(1);
-    RuntimeRegionConfig region = regions.get(0);
+    RegionConfig region = regions.get(0);
     List<RegionConfig.Index> indexes = region.getIndexes();
     assertThat(indexes).hasSize(2);
   }
@@ -106,8 +106,8 @@ public class ListIndexManagementDUnitTest {
   public void listIndexForOneRegion() throws Exception {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
-    ClusterManagementResult<RegionConfig.Index> list = cms.list(index);
-    List<RegionConfig.Index> result = list.getResult();
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(2);
   }
 
@@ -116,8 +116,8 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index> list = cms.get(index);
-    List<RegionConfig.Index> result = list.getResult();
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.get(index);
+    List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
     assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
@@ -147,8 +147,8 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index> list = cms.list(index);
-    List<RegionConfig.Index> result = list.getResult();
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
     assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
@@ -171,8 +171,8 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
-    ClusterManagementResult<RegionConfig.Index> list = cms.list(index);
-    List<RegionConfig.Index> result = list.getResult();
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(0);
     assertThat(list.isSuccessful()).isTrue();
   }

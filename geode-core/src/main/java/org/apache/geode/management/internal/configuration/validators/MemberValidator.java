@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
@@ -51,8 +53,8 @@ public class MemberValidator {
     }
 
     Set<DistributedMember> membersOfExistingGroups =
-        findMembers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
-    Set<DistributedMember> membersOfNewGroup = findMembers(config.getConfigGroup());
+        findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
+    Set<DistributedMember> membersOfNewGroup = findServers(config.getConfigGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
@@ -94,22 +96,35 @@ public class MemberValidator {
   /**
    * @param groups should not be null contains no element
    */
-  public Set<DistributedMember> findMembers(String... groups) {
-    if (groups == null || groups.length == 0) {
-      throw new IllegalArgumentException("groups cannot be empty");
+  public Set<DistributedMember> findServers(String... groups) {
+    return findMembers(false, groups);
+  }
+
+  public Set<DistributedMember> findMembers(String id, String... groups) {
+    if (StringUtils.isNotBlank(id)) {
+      return getAllServersAndLocators().stream().filter(m -> m.getName().equals(id))
+          .collect(Collectors.toSet());
     }
 
-    Set<DistributedMember> allMembers = getAllServers();
+    return findMembers(true, groups);
+  }
+
+  public Set<DistributedMember> findMembers(boolean includeLocators, String... groups) {
+    if (groups == null || groups.length == 0) {
+      groups = new String[] {CacheElement.CLUSTER};
+    }
+
+    Set<DistributedMember> all = includeLocators ? getAllServersAndLocators() : getAllServers();
 
     // if groups contains "cluster" group, return all members
     if (Arrays.asList(groups).contains(CacheElement.CLUSTER)) {
-      return allMembers;
+      return all;
     }
 
     Set<DistributedMember> matchingMembers = new HashSet<>();
     for (String group : groups) {
       matchingMembers.addAll(
-          allMembers.stream().filter(m -> m.getGroups() != null && m.getGroups().contains(group))
+          all.stream().filter(m -> m.getGroups() != null && m.getGroups().contains(group))
               .collect(Collectors.toSet()));
     }
     return matchingMembers;
@@ -117,6 +132,11 @@ public class MemberValidator {
 
   Set<DistributedMember> getAllServers() {
     return cache.getDistributionManager().getNormalDistributionManagerIds()
+        .stream().map(DistributedMember.class::cast).collect(Collectors.toSet());
+  }
+
+  Set<DistributedMember> getAllServersAndLocators() {
+    return cache.getDistributionManager().getDistributionManagerIds()
         .stream().map(DistributedMember.class::cast).collect(Collectors.toSet());
   }
 }

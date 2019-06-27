@@ -78,7 +78,7 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
   }
 
   @SuppressWarnings("unchecked")
-  public <R extends CacheElement> ClusterManagementResult<R> getClusterManagementResult()
+  public <R extends CacheElement> ClusterManagementResult getClusterManagementResult()
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementResult.class);

@@ -89,18 +89,18 @@ public class MemberValidatorTest {
 
   @Test
   public void findMembers() throws Exception {
-    assertThatThrownBy(() -> validator.findMembers(null))
+    assertThatThrownBy(() -> validator.findServers(null))
         .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> validator.findMembers(new String[] {}))
+    assertThatThrownBy(() -> validator.findServers(new String[] {}))
         .isInstanceOf(IllegalArgumentException.class);
 
-    assertThat(validator.findMembers("group1")).flatExtracting(DistributedMember::getName)
-        .containsExactlyInAnyOrder("member2", "member4");
-    assertThat(validator.findMembers("group1", "group2")).flatExtracting(DistributedMember::getName)
+    assertThat(validator.findServers("group1")).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder(false, "member2", "member4");
+    assertThat(validator.findServers("group1", "group2")).flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member2", "member3", "member4");
-    assertThat(validator.findMembers("group1", "group3")).flatExtracting(DistributedMember::getName)
+    assertThat(validator.findServers("group1", "group3")).flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member2", "member4", "member5");
-    assertThat(validator.findMembers("cluster", "group3"))
+    assertThat(validator.findServers("cluster", "group3"))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
   }
