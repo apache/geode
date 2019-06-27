@@ -1585,6 +1585,10 @@ public class Connection implements Runnable {
         }
         asyncClose(false);
         this.owner.removeAndCloseThreadOwnedSockets();
+
+        if (this.isSharedResource()) {
+          releaseInputBuffer();
+        }
       }
       // make sure that if the reader thread exits we notify a thread waiting
       // for the handshake.

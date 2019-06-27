@@ -169,7 +169,7 @@ public class SocketCloser {
    *
    * @param socket the socket to close
    * @param address identifies who the socket is connected to
-   * @param extra an optional Runnable with stuff to execute before the socket is closed
+   * @param extra an optional Runnable with stuff to execute in the async thread
    */
   public void asyncClose(final Socket socket, final String address, final Runnable extra) {
     if (socket == null || socket.isClosed()) {
