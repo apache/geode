@@ -338,7 +338,7 @@ public class InternalResourceManager implements ResourceManager {
     }
     executor.shutdown();
     final int secToWait = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 120).intValue();
+        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 5).intValue();
     try {
       executor.awaitTermination(secToWait, TimeUnit.SECONDS);
     } catch (InterruptedException x) {
