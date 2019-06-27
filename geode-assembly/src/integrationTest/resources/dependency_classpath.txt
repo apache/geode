@@ -78,6 +78,7 @@ shiro-event-1.4.0.jar
 shiro-lang-1.4.0.jar
 slf4j-api-1.7.25.jar
 snappy-0.4.jar
-spring-core-4.3.23.RELEASE.jar
+spring-core-5.1.8.RELEASE.jar
+spring-jcl-5.1.8.RELEASE.jar
 spring-shell-1.2.0.RELEASE.jar
 swagger-annotations-1.5.20.jar
