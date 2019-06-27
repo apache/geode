@@ -756,11 +756,6 @@ public class Connection implements Runnable {
   }
 
   private void notifyHandshakeWaiter(boolean success) {
-    if (getConduit().useSSL() && ioFilter != null) {
-      // clear out any remaining handshake bytes
-      ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
-      buffer.position(0).limit(0);
-    }
     synchronized (this.handshakeSync) {
       if (success) {
         this.handshakeRead = true;
@@ -1593,6 +1588,11 @@ public class Connection implements Runnable {
         }
         asyncClose(false);
         this.owner.removeAndCloseThreadOwnedSockets();
+      } else {
+        if (getConduit().useSSL()) {
+          ByteBuffer buffer = ioFilter.getUnwrappedBuffer(inputBuffer);
+          buffer.position(0).limit(0);
+        }
       }
       releaseInputBuffer();
 
