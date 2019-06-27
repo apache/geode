@@ -59,7 +59,6 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.MembershipTest;
 

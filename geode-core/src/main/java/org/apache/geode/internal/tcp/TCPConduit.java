@@ -110,6 +110,7 @@ public class TCPConduit implements Runnable {
   /**
    * use javax.net.ssl.SSLServerSocketFactory?
    */
+  @MakeNotStatic
   static boolean useSSL;
 
   /**
@@ -117,11 +118,13 @@ public class TCPConduit implements Runnable {
    * java VM, NIO cannot be used with IPv6 addresses on Windows. When that condition holds, the
    * useNIO flag must be disregarded.
    */
+  @MakeNotStatic
   private static boolean USE_NIO;
 
   /**
    * use direct ByteBuffers instead of heap ByteBuffers for NIO operations
    */
+  @MakeNotStatic
   static boolean useDirectBuffers;
 
   /**

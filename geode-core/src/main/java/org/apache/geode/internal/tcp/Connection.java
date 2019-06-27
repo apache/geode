@@ -48,7 +48,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.SerializationException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
@@ -98,6 +97,7 @@ public class Connection implements Runnable {
   @MakeNotStatic
   private static final int INITIAL_CAPACITY =
       Integer.getInteger("p2p.readerBufferSize", 32768).intValue();
+  @MakeNotStatic
   private static int P2P_CONNECT_TIMEOUT;
   @MakeNotStatic
   private static boolean IS_P2P_CONNECT_TIMEOUT_INITIALIZED = false;

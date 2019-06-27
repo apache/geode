@@ -28,6 +28,7 @@ public class Buffers {
   /**
    * A list of soft references to byte buffers.
    */
+  @MakeNotStatic
   private static final ConcurrentLinkedQueue bufferQueue = new ConcurrentLinkedQueue();
 
   /**
