@@ -406,35 +406,29 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   LockObject searchAndLock(Object[] keys) {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
-    LockObject foundLock = null;
-
     synchronized (allKeysMap) {
-      // check if there's any key in map
+      Object alreadyLockedKey = null;
       for (Object key : keys) {
-        if (allKeysMap.containsKey(key)) {
-          foundLock = allKeysMap.get(key);
-          if (isDebugEnabled) {
-            logger.debug("LockKeys: found key: {}:{}", key, foundLock.lockedTimeStamp);
-          }
-          foundLock.waiting();
+        LockObject insertedObject =
+            allKeysMap.computeIfAbsent(key,
+                k -> new LockObject(k, isDebugEnabled ? System.currentTimeMillis() : 0));
+        if (insertedObject == null) {
+          alreadyLockedKey = key;
           break;
         }
       }
-
-      // save the keys when still locked
-      if (foundLock == null) {
+      if (alreadyLockedKey != null) {
         for (Object key : keys) {
-          LockObject lockValue =
-              new LockObject(key, isDebugEnabled ? System.currentTimeMillis() : 0);
-          allKeysMap.put(key, lockValue);
-          if (isDebugEnabled) {
-            logger.debug("LockKeys: add key: {}:{}", key, lockValue.lockedTimeStamp);
+          if (key == alreadyLockedKey) {
+            LockObject foundLock = allKeysMap.get(key);
+            foundLock.waiting();
+            return foundLock;
           }
+          allKeysMap.remove(key);
         }
       }
     }
-
-    return foundLock;
+    return null;
   }
 
   /**
