@@ -25,6 +25,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
@@ -54,31 +55,31 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
+  public <T extends CacheElement> SimpleClusterManagementResult create(
       T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
-        .postForEntity(endPoint, config, ClusterManagementResult.class)
+        .postForEntity(endPoint, config, SimpleClusterManagementResult.class)
         .getBody();
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+  public <T extends CacheElement> SimpleClusterManagementResult delete(
       T config) {
     String uri = getIdentityEndPoint(config);
     return restTemplate
         .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
             null,
-            ClusterManagementResult.class,
+            SimpleClusterManagementResult.class,
             config.getGroup())
         .getBody();
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+  public <T extends CacheElement> SimpleClusterManagementResult update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }

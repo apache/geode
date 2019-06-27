@@ -46,6 +46,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -105,7 +106,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "dataManage").build();
 
-      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
+      SimpleClusterManagementResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isTrue();
       assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
       assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -146,7 +147,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "wrongPassword").build();
 
-      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
+      SimpleClusterManagementResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -170,7 +171,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .build();
 
-      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
+      SimpleClusterManagementResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -193,7 +194,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", null).build();
 
-      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
+      SimpleClusterManagementResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode())
           .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
@@ -216,7 +217,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataRead", "dataRead").build();
 
-      ClusterManagementResult<RegionConfig> result = cmsClient.create(region);
+      SimpleClusterManagementResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isFalse();
       assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     });

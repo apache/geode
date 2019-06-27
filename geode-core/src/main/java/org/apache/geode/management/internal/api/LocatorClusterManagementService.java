@@ -49,6 +49,8 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.api.SimpleClusterManagementResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.cli.functions.UpdateCacheFunction;
@@ -100,13 +102,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
-      T config) {
+  public <T extends CacheElement> SimpleClusterManagementResult create(T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult<>(false,
+      return new SimpleClusterManagementResult(false,
           "Cluster configuration service needs to be enabled");
     }
 
@@ -125,7 +126,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     Set<DistributedMember> targetedMembers = memberValidator.findMembers(group);
 
-    ClusterManagementResult<T> result = new ClusterManagementResult<>();
+    SimpleClusterManagementResult result = new SimpleClusterManagementResult();
 
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -157,20 +158,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
     });
 
     // add the config object which includes the HATOS information of the element created
-    if (result.isSuccessful()) {
-      result.setResult(Collections.singletonList(config));
+    if (result.isSuccessful() && config instanceof RestfulEndpoint) {
+      result.setUri(((RestfulEndpoint) config).getUri());
     }
     return result;
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+  public <T extends CacheElement> SimpleClusterManagementResult delete(
       T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult<>(false,
+      return new SimpleClusterManagementResult(false,
           "Cluster configuration service needs to be enabled");
     }
 
@@ -189,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // execute function on all members
-    ClusterManagementResult<T> result = new ClusterManagementResult<>();
+    SimpleClusterManagementResult result = new SimpleClusterManagementResult();
 
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new UpdateCacheFunction(),
@@ -231,7 +232,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+  public <T extends CacheElement> SimpleClusterManagementResult update(
       T config) {
     throw new NotImplementedException("Not implemented");
   }
@@ -337,8 +338,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return (List<RealizationResult>) rc.getResult();
   }
 
-  @SuppressWarnings("unchecked")
-  private <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ConfigurationManager<T, R> getConfigurationManager(
+  private <T extends CacheElement> ConfigurationManager getConfigurationManager(
       T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
     if (configurationManager == null) {
