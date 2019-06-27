@@ -311,14 +311,10 @@ public class NioSslEngine implements NioFilter {
   @Override
   public ByteBuffer ensureWrappedCapacity(int amount, ByteBuffer wrappedBuffer,
       Buffers.BufferType bufferType, DMStats stats) {
-    ByteBuffer buffer = wrappedBuffer;
-    int requiredSize = engine.getSession().getPacketBufferSize();
-    if (buffer == null) {
-      buffer = Buffers.acquireBuffer(bufferType, requiredSize, stats);
-    } else if (buffer.capacity() < requiredSize) {
-      buffer = Buffers.expandWriteBufferIfNeeded(bufferType, buffer, requiredSize, stats);
+    if (wrappedBuffer == null) {
+      wrappedBuffer = Buffers.acquireBuffer(bufferType, amount, stats);
     }
-    return buffer;
+    return wrappedBuffer;
   }
 
   @Override
