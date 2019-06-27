@@ -159,6 +159,23 @@ public class LocalRegionTest {
     future.get();
   }
 
+  @Test
+  public void testSetThreadInitLevelRequirementDoesNotAffectOtherThreads()
+      throws InterruptedException, ExecutionException {
+    ExecutorService executionService1 = Executors.newFixedThreadPool(1);
+    Future future1 = executionService1.submit(() -> {
+      assertThat(LocalRegion.setThreadInitLevelRequirement(ANY_INIT))
+          .isEqualTo(AFTER_INITIAL_IMAGE);
+      assertThat(LocalRegion.getThreadInitLevelRequirement()).isEqualTo(ANY_INIT);
+    });
+    future1.get();
+    ExecutorService executionService2 = Executors.newFixedThreadPool(1);
+    Future future2 =
+        executionService2.submit(() -> assertThat(LocalRegion.getThreadInitLevelRequirement())
+            .isEqualTo(AFTER_INITIAL_IMAGE));
+    future2.get();
+  }
+
   private void createGatewaySender(String senderId, boolean isParallel) {
     // Create set of sender ids
     Set<String> allGatewaySenderIds = Stream.of(senderId).collect(Collectors.toSet());
