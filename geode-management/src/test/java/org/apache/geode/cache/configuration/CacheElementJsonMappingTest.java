@@ -17,17 +17,12 @@ package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.Response;
-import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -80,30 +75,8 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"id\":\"server\"");
 
-    MemberConfig config = mapper.readValue(json, MemberConfig.class);
+    MemberInformation config = mapper.readValue(json, MemberInformation.class);
     assertThat(config.getId()).isEqualTo(member.getId());
-  }
-
-  @Test
-  public void serializeResult() throws Exception {
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result =
-        new ClusterManagementResult<>();
-    List<Response<RegionConfig, RuntimeRegionInfo>> responses = new ArrayList<>();
-    Response<RegionConfig, RuntimeRegionInfo> response = new Response<>(region);
-    response.setRuntimeInfo(Collections.singletonList(runtimeRegionInfo));
-    responses.add(response);
-    result.setResult(responses);
-
-    String json = mapper.writeValueAsString(result);
-    System.out.println(json);
-
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result1 =
-        mapper.readValue(json, ClusterManagementResult.class);
-    assertThat(result1.getResult()).hasSize(2);
-    assertThat(result1.getResult().get(0))
-        .isInstanceOf(RegionConfig.class);
-    assertThat(result1.getResult().get(1))
-        .isInstanceOf(MemberConfig.class);
   }
 
   @Test
