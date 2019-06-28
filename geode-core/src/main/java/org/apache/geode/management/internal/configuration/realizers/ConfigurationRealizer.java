@@ -19,8 +19,9 @@ package org.apache.geode.management.internal.configuration.realizers;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * Defines the behavior to realize a configuration change in the cache on a server. Created with an
@@ -28,7 +29,7 @@ import org.apache.geode.management.api.RespondsWith;
  * configuration change.
  */
 @Experimental
-public interface ConfigurationRealizer<T extends CacheElement & RespondsWith<R>, R> {
+public interface ConfigurationRealizer<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
   RealizationResult create(T config, InternalCache cache);
 
   default boolean exists(T config, InternalCache cache) {

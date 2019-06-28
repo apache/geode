@@ -40,7 +40,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.Response;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -127,9 +127,9 @@ public class RegionManagementController extends AbstractManagementController {
       return e;
     }).filter(Objects::nonNull).collect(Collectors.toList());
 
-    List<Response<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
+    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
     for (RegionConfig.Index index : indexList) {
-      responses.add(new Response<>(index));
+      responses.add(new ConfigurationResult<>(index));
     }
 
     ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result =
@@ -146,7 +146,7 @@ public class RegionManagementController extends AbstractManagementController {
       @PathVariable String regionName,
       @PathVariable String id) {
     ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
-    List<Response<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
+    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new EntityNotFoundException("Index " + id + " not found.");

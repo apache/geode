@@ -27,12 +27,13 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- * provides additional information about a restful service request beyond the minimum required in
- * {#link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
- * performed
+ * provides correlation to the additional object that would be returned with the configuration
+ * to indicate runtime information.
+ * If a cache element has no additional runtime info (yet), it should be declared as
+ * implement CorrespondWith<RuntimeInfo>
  */
 @Experimental
-public interface RespondsWith<R> {
+public interface CorrespondWith<R extends RuntimeInfo> {
   @XmlTransient
   @JsonIgnore
   default Class<R> getRuntimeClass() {

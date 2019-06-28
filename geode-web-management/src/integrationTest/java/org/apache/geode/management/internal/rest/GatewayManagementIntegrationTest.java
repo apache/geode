@@ -34,7 +34,7 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.Response;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
@@ -89,7 +89,7 @@ public class GatewayManagementIntegrationTest {
 
     ClusterManagementResult<GatewayReceiverConfig, RuntimeInfo> results = client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
-    List<Response<GatewayReceiverConfig, RuntimeInfo>> receivers = results.getResult();
+    List<ConfigurationResult<GatewayReceiverConfig, RuntimeInfo>> receivers = results.getResult();
     assertThat(receivers.size()).isEqualTo(1);
     GatewayReceiverConfig result = receivers.get(0).getConfig();
     assertThat(result.getBindAddress()).isEqualTo("localhost");

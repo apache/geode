@@ -19,14 +19,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.MemberInformation;
 
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class MemberConfig extends CacheElement implements RestfulEndpoint,
-    RespondsWith<MemberInformation> {
+    CorrespondWith<MemberInformation> {
 
   public static final String MEMBER_CONFIG_ENDPOINT = "/members";
 
