@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 import static org.apache.geode.internal.lang.SystemUtils.getLineSeparator;
 import static org.apache.geode.internal.offheap.annotations.OffHeapIdentifier.ENTRY_EVENT_NEW_VALUE;
 
@@ -257,16 +260,15 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   // initialization level
-  public static final int AFTER_INITIAL_IMAGE = 0;
-
-  public static final int BEFORE_INITIAL_IMAGE = 1;
-
-  public static final int ANY_INIT = 2;
+  public enum InitializationLevel {
+    AFTER_INITIAL_IMAGE, BEFORE_INITIAL_IMAGE, ANY_INIT
+  }
 
   /**
    * thread local to indicate that this thread should bypass the initialization Latch
    */
-  private static final ThreadLocal<Integer> initializationThread = new ThreadLocal<>();
+  private static final ThreadLocal<InitializationLevel> initializationThread =
+      ThreadLocal.withInitial(() -> AFTER_INITIAL_IMAGE);
 
   private Object regionUserAttribute;
 
@@ -2420,10 +2422,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     Set<Index> indexes = new HashSet<>();
     Set<Index> prIndexes = new HashSet<>();
-    int initLevel = 0;
+    // Release the initialization latch for index creation.
+    final InitializationLevel initLevel = setThreadInitLevelRequirement(ANY_INIT);
     try {
-      // Release the initialization latch for index creation.
-      initLevel = setThreadInitLevelRequirement(ANY_INIT);
       for (Object o : oqlIndexes) {
         IndexCreationData icd = (IndexCreationData) o;
         try {
@@ -4606,12 +4607,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Called by a thread that is doing region initialization. Causes the initialization Latch to be
    * bypassed by this thread.
    */
-  public static int setThreadInitLevelRequirement(int level) {
-    int oldLevel = threadInitLevelRequirement();
-    if (level == AFTER_INITIAL_IMAGE) {
-      // if setting to default, just reset
-      initializationThread.remove();
-    } else {
+  public static InitializationLevel setThreadInitLevelRequirement(InitializationLevel level) {
+    final InitializationLevel oldLevel = getThreadInitLevelRequirement();
+    if (level != oldLevel) {
       initializationThread.set(level);
     }
     return oldLevel;
@@ -4623,12 +4621,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * initialized (the default) BEFORE_INITIAL_IMAGE: Must have had first latch opened ANY_INIT:
    * Thread uses region as soon as possible
    */
-  static int threadInitLevelRequirement() {
-    Integer initLevel = initializationThread.get();
-    if (initLevel == null) {
-      return AFTER_INITIAL_IMAGE;
-    }
-    return initLevel;
+  static InitializationLevel getThreadInitLevelRequirement() {
+    return initializationThread.get();
   }
 
   @Override
@@ -4636,7 +4630,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (initialized) {
       return true;
     }
-    switch (threadInitLevelRequirement()) {
+    switch (getThreadInitLevelRequirement()) {
       case AFTER_INITIAL_IMAGE:
         return checkForInitialization(getInitializationLatchAfterGetInitialImage());
       case BEFORE_INITIAL_IMAGE:
@@ -4645,7 +4639,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         return true;
       default:
         throw new InternalGemFireError(
-            "Unexpected threadInitLevelRequirement");
+            "Unexpected getThreadInitLevelRequirement");
     }
   }
 
@@ -4661,7 +4655,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     if (initialized) {
       return;
     }
-    switch (threadInitLevelRequirement()) {
+    switch (getThreadInitLevelRequirement()) {
       case AFTER_INITIAL_IMAGE:
         waitOnInitialization(getInitializationLatchAfterGetInitialImage());
         break;
@@ -4672,7 +4666,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         return;
       default:
         throw new InternalGemFireError(
-            "Unexpected threadInitLevelRequirement");
+            "Unexpected getThreadInitLevelRequirement");
     }
   }
 
@@ -7095,7 +7089,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     // because it would cause a deadlock. If the region is ready for a
     // CreateRegion message, it would have been in the subregions map.
 
-    if (region == null && threadInitLevelRequirement() != ANY_INIT) {
+    if (region == null && getThreadInitLevelRequirement() != ANY_INIT) {
       String thePath = getFullPath() + SEPARATOR + name;
       if (logger.isDebugEnabled()) {
         logger.debug("Trying reinitializing region, fullPath={}", thePath);
@@ -9609,7 +9603,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       Map subregionSerialNumbers, boolean regionDestroyed) {
 
     // go through initialization latches
-    final int oldLevel = setThreadInitLevelRequirement(ANY_INIT);
+    final InitializationLevel oldLevel = setThreadInitLevelRequirement(ANY_INIT);
     try {
       basicHandleRemoteLocalRegionDestroyOrClose(sender, topSerial, subregionSerialNumbers, false,
           regionDestroyed);

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.File;
@@ -86,6 +88,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
@@ -1392,7 +1395,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     long mostRecent = basicGetLastModifiedTime();
 
     // don't need to wait on getInitialImage for this operation in subregions
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       for (Object region : subregions(false)) {
         try {
@@ -1436,7 +1439,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     checkReadiness();
     long mostRecent = basicGetLastAccessedTime();
     // don't need to wait on getInitialImage for this operation in subregions
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       for (Object region : subregions(false)) {
         try {
@@ -1462,7 +1465,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     long mostRecentModified = basicGetLastModifiedTime();
 
     // don't need to wait on getInitialImage for this operation in subregions
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
     try {
       for (Object region : subregions(false)) {
         try {

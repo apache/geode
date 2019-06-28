@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan.parallel;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -68,6 +70,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.PrimaryBucketException;
@@ -709,7 +712,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
     try {
       if (brq == null) {
         // Set the threadInitLevel to BEFORE_INITIAL_IMAGE.
-        int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+        final InitializationLevel oldLevel =
+            LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
         try {
           // Full path of the bucket:
 

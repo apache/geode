@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.mock;
@@ -22,6 +25,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -124,6 +131,49 @@ public class LocalRegionTest {
     createGatewaySender("sender1", true);
     doCallRealMethod().when(region).notifiesSerialGatewaySender();
     assertThat(region.notifiesSerialGatewaySender()).isFalse();
+  }
+
+  @Test
+  public void testInitializationThreadInitValue() throws InterruptedException, ExecutionException {
+    ExecutorService executionService = Executors.newFixedThreadPool(1);
+    Future future =
+        executionService.submit(() -> assertThat(LocalRegion.getThreadInitLevelRequirement())
+            .isEqualTo(AFTER_INITIAL_IMAGE));
+    future.get();
+  }
+
+  @Test
+  public void testSetThreadInitLevelRequirement() throws InterruptedException, ExecutionException {
+    ExecutorService executionService = Executors.newFixedThreadPool(1);
+    Future future = executionService.submit(() -> {
+      assertThat(LocalRegion.setThreadInitLevelRequirement(ANY_INIT))
+          .isEqualTo(AFTER_INITIAL_IMAGE);
+      assertThat(LocalRegion.getThreadInitLevelRequirement()).isEqualTo(ANY_INIT);
+      assertThat(LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE))
+          .isEqualTo(ANY_INIT);
+      assertThat(LocalRegion.getThreadInitLevelRequirement()).isEqualTo(BEFORE_INITIAL_IMAGE);
+      assertThat(LocalRegion.setThreadInitLevelRequirement(AFTER_INITIAL_IMAGE))
+          .isEqualTo(BEFORE_INITIAL_IMAGE);
+      assertThat(LocalRegion.getThreadInitLevelRequirement()).isEqualTo(AFTER_INITIAL_IMAGE);
+    });
+    future.get();
+  }
+
+  @Test
+  public void testSetThreadInitLevelRequirementDoesNotAffectOtherThreads()
+      throws InterruptedException, ExecutionException {
+    ExecutorService executionService1 = Executors.newFixedThreadPool(1);
+    Future future1 = executionService1.submit(() -> {
+      assertThat(LocalRegion.setThreadInitLevelRequirement(ANY_INIT))
+          .isEqualTo(AFTER_INITIAL_IMAGE);
+      assertThat(LocalRegion.getThreadInitLevelRequirement()).isEqualTo(ANY_INIT);
+    });
+    future1.get();
+    ExecutorService executionService2 = Executors.newFixedThreadPool(1);
+    Future future2 =
+        executionService2.submit(() -> assertThat(LocalRegion.getThreadInitLevelRequirement())
+            .isEqualTo(AFTER_INITIAL_IMAGE));
+    future2.get();
   }
 
   private void createGatewaySender(String senderId, boolean isParallel) {

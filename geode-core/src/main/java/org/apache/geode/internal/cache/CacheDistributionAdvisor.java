@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -43,6 +45,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.partitioned.PRLocallyDestroyedException;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
@@ -701,7 +704,7 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
         Assert.assertTrue(adviseePath != null, "adviseePath was null");
 
         InternalRegion lclRgn;
-        int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.ANY_INIT);
+        final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(ANY_INIT);
         try {
           InternalCache cache = dm.getCache();
           lclRgn = cache == null ? null : cache.getRegionByPath(adviseePath);

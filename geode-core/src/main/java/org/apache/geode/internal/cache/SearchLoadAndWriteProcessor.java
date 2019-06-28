@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.BEFORE_INITIAL_IMAGE;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -64,6 +66,7 @@ import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
@@ -1504,7 +1507,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
         return;
       }
 
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         // check to see if we would have to wait on initialization latch (if global)
         // if so abort and reply with null
@@ -1854,7 +1858,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
       boolean authoritative = false;
       VersionTag versionTag = null;
 
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         LocalRegion region = (LocalRegion) dm.getExistingCache().getRegion(this.regionName);
         if (region != null) {
@@ -2213,7 +2218,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     private void doLoad(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);
@@ -2471,7 +2477,8 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
     @Override
     protected void process(ClusterDistributionManager dm) {
       long startTime = dm.cacheTimeMillis();
-      int oldLevel = LocalRegion.setThreadInitLevelRequirement(LocalRegion.BEFORE_INITIAL_IMAGE);
+      final InitializationLevel oldLevel =
+          LocalRegion.setThreadInitLevelRequirement(BEFORE_INITIAL_IMAGE);
       try {
         InternalCache gfc = dm.getExistingCache();
         LocalRegion region = (LocalRegion) gfc.getRegion(this.regionName);

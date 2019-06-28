@@ -14,6 +14,9 @@
  */
 package org.apache.geode.internal.cache.persistence;
 
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.AFTER_INITIAL_IMAGE;
+import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -39,6 +42,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
@@ -92,9 +96,9 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
   @Override
   protected void process(ClusterDistributionManager dm) {
-    int initLevel =
-        this.targetReinitializing ? LocalRegion.AFTER_INITIAL_IMAGE : LocalRegion.ANY_INIT;
-    int oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
+    final InitializationLevel initLevel =
+        this.targetReinitializing ? AFTER_INITIAL_IMAGE : ANY_INIT;
+    final InitializationLevel oldLevel = LocalRegion.setThreadInitLevelRequirement(initLevel);
 
     PersistentMembershipView view = null;
     ReplyException exception = null;
