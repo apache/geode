@@ -60,10 +60,10 @@ public interface ClusterManagementService {
    */
   <T extends CacheElement> ClusterManagementResult<?, ?> update(T config);
 
-  <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
+  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T config);
 
-  <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
+  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config);
 
   /**

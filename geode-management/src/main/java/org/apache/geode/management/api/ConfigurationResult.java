@@ -18,16 +18,25 @@ package org.apache.geode.management.api;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
-public class Response<T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> {
+/**
+ * A simple object that holds a configuration object and its corresponding runtime info on each
+ * member.
+ *
+ * @param <T> the config type
+ * @param <R> the runtimeInfo type
+ */
+@Experimental
+public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
   private T config;
   private List<R> runtimeInfo = new ArrayList<>();
 
-  public Response() {}
+  public ConfigurationResult() {}
 
-  public Response(T config) {
+  public ConfigurationResult(T config) {
     this.config = config;
   }
 

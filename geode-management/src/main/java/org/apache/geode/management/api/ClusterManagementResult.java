@@ -27,7 +27,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 @Experimental
-public class ClusterManagementResult<T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> {
+public class ClusterManagementResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
@@ -126,15 +126,15 @@ public class ClusterManagementResult<T extends CacheElement & RespondsWith<R>, R
   // Override the mapper setting so that we always show result
   @JsonInclude
   @JsonProperty
-  private List<Response<T, R>> result = new ArrayList<>();
+  private List<ConfigurationResult<T, R>> result = new ArrayList<>();
 
-  public List<Response<T, R>> getResult() {
+  public List<ConfigurationResult<T, R>> getResult() {
     return result;
   }
 
   @JsonIgnore
   public List<T> getConfigResult() {
-    return result.stream().map(Response::getConfig).collect(Collectors.toList());
+    return result.stream().map(ConfigurationResult::getConfig).collect(Collectors.toList());
   }
 
   @JsonIgnore
@@ -142,7 +142,8 @@ public class ClusterManagementResult<T extends CacheElement & RespondsWith<R>, R
     return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
   }
 
-  public void setResult(List<Response<T, R>> result) {
+  public void setResult(List<ConfigurationResult<T, R>> result) {
     this.result = result;
   }
+
 }

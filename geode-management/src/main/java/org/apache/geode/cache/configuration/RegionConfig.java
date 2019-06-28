@@ -37,7 +37,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -162,7 +162,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class RegionConfig extends CacheElement implements RestfulEndpoint,
-    RespondsWith<RuntimeRegionInfo> {
+    CorrespondWith<RuntimeRegionInfo> {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -544,7 +544,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
   @XmlAccessorType(XmlAccessType.FIELD)
   @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
   public static class Index extends CacheElement
-      implements RestfulEndpoint, RespondsWith<RuntimeInfo> {
+      implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

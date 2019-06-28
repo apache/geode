@@ -33,7 +33,7 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.Response;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -190,7 +190,8 @@ public class CreateIndexCommand extends GfshCommand {
       String regionName) {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(regionName);
-    List<Response<RegionConfig, RuntimeRegionInfo>> list = cms.list(regionConfig).getResult();
+    List<ConfigurationResult<RegionConfig, RuntimeRegionInfo>> list =
+        cms.list(regionConfig).getResult();
     if (list.isEmpty()) {
       return null;
     } else {

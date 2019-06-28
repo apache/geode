@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.Response;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -125,7 +125,7 @@ public class ClusterManagementResultTest {
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
     ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result =
         new ClusterManagementResult<>();
-    Response<RegionConfig, RuntimeRegionInfo> response = new Response<>();
+    ConfigurationResult<RegionConfig, RuntimeRegionInfo> response = new ConfigurationResult<>();
     RegionConfig region = new RegionConfig();
     region.setName("region");
     region.setType("REPLICATE");

@@ -23,7 +23,7 @@ import org.springframework.web.client.RestTemplate;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.RespondsWith;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -85,7 +85,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
@@ -96,7 +96,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config) {
     return restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementResult.class)

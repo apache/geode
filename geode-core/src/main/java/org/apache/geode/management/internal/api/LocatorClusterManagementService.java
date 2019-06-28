@@ -47,9 +47,9 @@ import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.api.RespondsWith;
-import org.apache.geode.management.api.Response;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -237,10 +237,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T filter) {
-    ConfigurationManager<T> manager = managers.get(filter.getClass());
-
     ClusterManagementResult<T, R> result = new ClusterManagementResult<>();
 
     if (persistenceService == null) {
@@ -253,6 +251,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (filter instanceof MemberConfig) {
       resultList.add(filter);
     } else {
+      ConfigurationManager<T> manager = getConfigurationManager(filter);
       // gather elements on all the groups, consolidate the group information and then do the filter
       // so that when we filter by a specific group, we still show that a particular element might
       // also belong to another group.
@@ -291,12 +290,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // gather the runtime info for each configuration objects
-    List<Response<T, R>> responses = new ArrayList<>();
+    List<ConfigurationResult<T, R>> responses = new ArrayList<>();
     boolean hasRuntimeInfo = filter.hasRuntimeInfo();
 
     for (T element : resultList) {
       List<String> groups = element.getGroups();
-      Response<T, R> response = new Response<>(element);
+      ConfigurationResult<T, R> response = new ConfigurationResult<>(element);
 
       // if "cluster" is the only group, clear it, so that the returning json does not show
       // "cluster" as a group value
@@ -341,10 +340,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config) {
     ClusterManagementResult<T, R> list = list(config);
-    List<Response<T, R>> result = list.getResult();
+    List<ConfigurationResult<T, R>> result = list.getResult();
 
     if (result.size() == 0) {
       throw new EntityNotFoundException(
@@ -363,7 +362,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return true;
   }
 
-  @SuppressWarnings("unchecked")
   private <T extends CacheElement> ConfigurationManager<T> getConfigurationManager(
       T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
