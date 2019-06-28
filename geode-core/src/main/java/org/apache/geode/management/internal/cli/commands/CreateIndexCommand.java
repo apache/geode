@@ -33,16 +33,17 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.Response;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateIndexCommand extends GfshCommand {
@@ -86,7 +87,7 @@ public class CreateIndexCommand extends GfshCommand {
     // we will find the applicable members based on the what group this region is on
     if (ccService != null && memberNameOrID == null) {
       regionName = getValidRegionName(regionPath, cms);
-      RuntimeRegionConfig config = getRuntimeRegionConfig(cms, regionName);
+      RegionConfig config = getRegionConfig(cms, regionName);
       if (config == null) {
         return ResultModel.createError("Region " + regionName + " does not exist.");
       }
@@ -173,7 +174,7 @@ public class CreateIndexCommand extends GfshCommand {
     String regionName = regionPath.trim().split(" ")[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
     while (regionName.contains(".")) {
-      RuntimeRegionConfig region = getRuntimeRegionConfig(cms, regionName);
+      RegionConfig region = getRegionConfig(cms, regionName);
       if (region != null) {
         break;
       }
@@ -185,15 +186,15 @@ public class CreateIndexCommand extends GfshCommand {
     return regionName;
   }
 
-  RuntimeRegionConfig getRuntimeRegionConfig(ClusterManagementService cms,
+  RegionConfig getRegionConfig(ClusterManagementService cms,
       String regionName) {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(regionName);
-    List<RuntimeRegionConfig> list = cms.list(regionConfig).getResult();
+    List<Response<RegionConfig, RuntimeRegionInfo>> list = cms.list(regionConfig).getResult();
     if (list.isEmpty()) {
       return null;
     } else {
-      return list.get(0);
+      return list.get(0).getConfig();
     }
   }
 

@@ -35,14 +35,17 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.internal.cache.EvictionAttributesImpl;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionAttributesImpl;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.cli.CliUtil;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.RegionPath;
 import org.apache.geode.management.internal.configuration.domain.DeclarableTypeInstantiator;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
-public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig> {
+public class RegionConfigRealizer
+    implements ConfigurationRealizer<RegionConfig, RuntimeRegionInfo> {
   public RegionConfigRealizer() {}
 
   /**
@@ -51,7 +54,7 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
    * @param regionConfig the name in the regionConfig can not contain sub-regions.
    */
   @Override
-  public RealizationResult create(RegionConfig regionConfig, Cache cache) {
+  public RealizationResult create(RegionConfig regionConfig, InternalCache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
     factory.create(regionConfig.getName());
     return new RealizationResult().setMessage("Region successfully created.");
@@ -65,7 +68,8 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
    * @param regionConfig the name in regionConfig is ignored.
    * @param regionPath this is the full path of the region
    */
-  public RealizationResult create(RegionConfig regionConfig, String regionPath, Cache cache) {
+  public RealizationResult create(RegionConfig regionConfig, String regionPath,
+      InternalCache cache) {
     RegionFactory factory = getRegionFactory(cache, regionConfig.getRegionAttributes());
     RegionPath regionPathData = new RegionPath(regionPath);
     String regionName = regionPathData.getName();
@@ -290,18 +294,27 @@ public class RegionConfigRealizer implements ConfigurationRealizer<RegionConfig>
     return partitionAttributes;
   }
 
-  @Override
-  public boolean exists(RegionConfig config, Cache cache) {
-    return cache.getRegion("/" + config.getName()) != null;
-  }
 
   @Override
-  public RealizationResult update(RegionConfig config, Cache cache) {
+  public RuntimeRegionInfo get(RegionConfig config, InternalCache cache) {
+    Region<Object, Object> region = cache.getRegion("/" + config.getName());
+    if (region == null) {
+      return null;
+    }
+
+    RuntimeRegionInfo info = new RuntimeRegionInfo();
+    info.setEntryCount(region.size());
+    return info;
+  }
+
+
+  @Override
+  public RealizationResult update(RegionConfig config, InternalCache cache) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public RealizationResult delete(RegionConfig config, Cache cache) {
+  public RealizationResult delete(RegionConfig config, InternalCache cache) {
     Region region = cache.getRegion(config.getName());
     if (region == null) {
       // Since we are trying to delete this region, we can return early

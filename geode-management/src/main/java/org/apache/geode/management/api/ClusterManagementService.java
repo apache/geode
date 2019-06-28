@@ -17,6 +17,7 @@ package org.apache.geode.management.api;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * this is responsible for applying and persisting cache configuration changes on locators and/or
@@ -35,8 +36,7 @@ public interface ClusterManagementService {
    *        cluster, as well as the group this config belongs to
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
-      T config);
+  <T extends CacheElement> ClusterManagementResult<?, ?> create(T config);
 
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
@@ -47,8 +47,7 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
-      T config);
+  <T extends CacheElement> ClusterManagementResult<?, ?> delete(T config);
 
   /**
    * This method will update the element on all the applicable members in the cluster and persist
@@ -59,13 +58,12 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+  <T extends CacheElement> ClusterManagementResult<?, ?> update(T config);
+
+  <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T config);
 
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> list(
-      T config);
-
-  <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
+  <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config);
 
   /**

@@ -17,36 +17,19 @@
 
 package org.apache.geode.management.internal.configuration.mutators;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.management.DistributedRegionMXBean;
-import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 
-public class RegionConfigManager
-    implements ConfigurationManager<RegionConfig, RuntimeRegionConfig> {
-  private InternalCache cache;
+public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
 
-  @VisibleForTesting
-  RegionConfigManager() {}
-
-  public RegionConfigManager(InternalCache cache) {
-    this.cache = cache;
-  }
-
-  ManagementService getManagementService() {
-    return ManagementService.getExistingManagementService(cache);
-  }
+  public RegionConfigManager() {}
 
   @Override
   public void add(RegionConfig configElement, CacheConfig existingConfig) {
@@ -64,29 +47,17 @@ public class RegionConfigManager
   }
 
   @Override
-  public List<RuntimeRegionConfig> list(RegionConfig filter, CacheConfig existing) {
-    List<RegionConfig> staticRegionConfigs;
+  public List<RegionConfig> list(RegionConfig filter, CacheConfig existing) {
+    List<RegionConfig> regionConfigs;
     if (StringUtils.isBlank(filter.getName())) {
-      staticRegionConfigs = existing.getRegions();
+      regionConfigs = existing.getRegions();
     } else {
-      staticRegionConfigs =
+      regionConfigs =
           existing.getRegions().stream().filter(r -> filter.getName().equals(r.getName())).collect(
               Collectors.toList());
     }
 
-    List<RuntimeRegionConfig> results = new ArrayList<>();
-    for (RegionConfig config : staticRegionConfigs) {
-      DistributedRegionMXBean distributedRegionMXBean =
-          getManagementService().getDistributedRegionMXBean("/" + config.getName());
-      long entryCount = 0;
-      if (distributedRegionMXBean != null) {
-        entryCount = distributedRegionMXBean.getSystemRegionEntryCount();
-      }
-      RuntimeRegionConfig runtimeConfig = new RuntimeRegionConfig(config);
-      runtimeConfig.setEntryCount(entryCount);
-      results.add(runtimeConfig);
-    }
-    return results;
+    return regionConfigs;
   }
 
   @Override

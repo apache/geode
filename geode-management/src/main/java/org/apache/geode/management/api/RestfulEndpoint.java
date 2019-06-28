@@ -31,7 +31,7 @@ import org.apache.geode.lang.Identifiable;
  */
 @Experimental
 public interface RestfulEndpoint extends Identifiable<String> {
-  String URI_CONTEXT = "/geode-management";
+  String URI_CONTEXT = "/management";
   String URI_VERSION = "/v2";
 
   /**
@@ -69,6 +69,9 @@ public interface RestfulEndpoint extends Identifiable<String> {
 
   @XmlTransient
   default String getUri() {
+    if (getIdentityEndPoint() == null) {
+      return null;
+    }
     return URI_CONTEXT + URI_VERSION + getIdentityEndPoint();
   }
 }

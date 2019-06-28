@@ -16,6 +16,7 @@ package org.apache.geode.management.api;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -23,9 +24,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 @Experimental
-public class ClusterManagementResult<R extends CacheElement> {
+public class ClusterManagementResult<T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
@@ -58,11 +60,7 @@ public class ClusterManagementResult<R extends CacheElement> {
   // we will always have statusCode when the object is created
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
-
-  // Override the mapper setting so that we always show result
-  @JsonInclude
-  @JsonProperty
-  private List<R> result = new ArrayList<>();
+  private String uri;
 
   public ClusterManagementResult() {}
 
@@ -108,6 +106,14 @@ public class ClusterManagementResult<R extends CacheElement> {
     return statusMessage;
   }
 
+  public String getUri() {
+    return uri;
+  }
+
+  public void setUri(String uri) {
+    this.uri = uri;
+  }
+
   @JsonIgnore
   public boolean isSuccessful() {
     return statusCode == StatusCode.OK;
@@ -117,11 +123,26 @@ public class ClusterManagementResult<R extends CacheElement> {
     return statusCode;
   }
 
-  public List<R> getResult() {
+  // Override the mapper setting so that we always show result
+  @JsonInclude
+  @JsonProperty
+  private List<Response<T, R>> result = new ArrayList<>();
+
+  public List<Response<T, R>> getResult() {
     return result;
   }
 
-  public void setResult(List<R> result) {
+  @JsonIgnore
+  public List<T> getConfigResult() {
+    return result.stream().map(Response::getConfig).collect(Collectors.toList());
+  }
+
+  @JsonIgnore
+  public List<R> getRuntimeResult() {
+    return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
+  }
+
+  public void setResult(List<Response<T, R>> result) {
     this.result = result;
   }
 }

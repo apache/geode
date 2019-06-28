@@ -18,7 +18,10 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -37,8 +40,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.api.Response;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
 import org.apache.geode.security.ResourcePermission.Resource;
 
@@ -54,9 +59,9 @@ public class RegionManagementController extends AbstractManagementController {
       @ApiResponse(code = 500, message = "GemFire throws an error or exception.")})
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REGION_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult<RegionConfig>> createRegion(
+  public ResponseEntity<ClusterManagementResult> createRegion(
       @RequestBody RegionConfig regionConfig) {
-    ClusterManagementResult<RegionConfig> result =
+    ClusterManagementResult result =
         clusterManagementService.create(regionConfig);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
@@ -65,7 +70,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
-  public ClusterManagementResult<RuntimeRegionConfig> listRegion(
+  public ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
     RegionConfig filter = new RegionConfig();
@@ -80,7 +85,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult<RuntimeRegionConfig> getRegion(
+  public ClusterManagementResult<RegionConfig, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
     RegionConfig config = new RegionConfig();
@@ -91,7 +96,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult<RegionConfig> deleteRegion(
+  public ClusterManagementResult deleteRegion(
       @PathVariable(name = "id") String id,
       @RequestParam(required = false) String group) {
     RegionConfig config = new RegionConfig();
@@ -106,18 +111,30 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementResult<RegionConfig.Index> listIndex(
+  public ClusterManagementResult<RegionConfig.Index, RuntimeInfo> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false) String id) {
 
-    ClusterManagementResult<RuntimeRegionConfig> result0 = getRegion(regionName);
-    RuntimeRegionConfig runtimeRegion = result0.getResult().get(0);
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result0 = getRegion(regionName);
+    RegionConfig regionConfig = result0.getResult().get(0).getConfig();
 
     // only send the index information back
-    List<RegionConfig.Index> runtimeIndexes = runtimeRegion.getIndexes(id);
-    ClusterManagementResult<RegionConfig.Index> result = new ClusterManagementResult<>();
-    result.setResult(runtimeIndexes);
+    List<RegionConfig.Index> indexList = regionConfig.getIndexes().stream().map(e -> {
+      if (StringUtils.isNotBlank(id) && !e.getId().equals(id)) {
+        return null;
+      }
+      e.setRegionName(regionName);
+      return e;
+    }).filter(Objects::nonNull).collect(Collectors.toList());
 
+    List<Response<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
+    for (RegionConfig.Index index : indexList) {
+      responses.add(new Response<>(index));
+    }
+
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result =
+        new ClusterManagementResult<>();
+    result.setResult(responses);
     return result;
   }
 
@@ -125,11 +142,11 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementResult<RegionConfig.Index> getIndex(
+  public ClusterManagementResult<RegionConfig.Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementResult<RegionConfig.Index> result = listIndex(regionName, id);
-    List<RegionConfig.Index> indexList = result.getResult();
+    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
+    List<Response<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new EntityNotFoundException("Index " + id + " not found.");

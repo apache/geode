@@ -28,13 +28,13 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
-import org.apache.geode.management.internal.cli.domain.CacheServerInfo;
-import org.apache.geode.management.internal.cli.domain.MemberInformation;
 import org.apache.geode.management.internal.cli.functions.GetMemberInformationFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.DataResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
+import org.apache.geode.management.runtime.CacheServerInfo;
+import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.security.ResourcePermission;
 
 public class DescribeMemberCommand extends GfshCommand {
@@ -84,7 +84,7 @@ public class DescribeMemberCommand extends GfshCommand {
     memberInfo.addData("Locators", memberInformation.getLocators());
 
     if (memberInformation.isServer()) {
-      List<CacheServerInfo> csList = memberInformation.getCacheServeInfo();
+      List<CacheServerInfo> csList = memberInformation.getCacheServerInfo();
       if (csList != null) {
         int serverCount = 0;
         for (CacheServerInfo cacheServerInfo : csList) {

@@ -13,8 +13,12 @@
  * the License.
  */
 
-package org.apache.geode.management.internal;
+package org.apache.geode.management.runtime;
 
-public enum CacheElementOperation {
-  CREATE, DELETE, UPDATE, GET
+import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public interface RuntimeInfo extends Serializable {
 }

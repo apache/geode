@@ -36,7 +36,6 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -73,7 +72,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> result = cms.create(regionConfig);
+    ClusterManagementResult<?, ?> result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -98,10 +97,10 @@ public class RegionManagementDunitTest {
     config.setRegionAttributes(type);
     cms.create(config);
 
-    List<RuntimeRegionConfig> result = cms.get(config).getResult();
+    List<RegionConfig> result = cms.get(config).getConfigResult();
 
     assertThat(result).hasSize(1);
-    RuntimeRegionConfig config1 = result.get(0);
+    RegionConfig config1 = result.get(0);
     assertThat(config1.getType()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getDataPolicy().name()).isEqualTo("PARTITION");
     assertThat(config1.getRegionAttributes().getValueConstraint()).isEqualTo("java.lang.Integer");
@@ -121,7 +120,7 @@ public class RegionManagementDunitTest {
   public void createsAPartitionedRegion() throws Exception {
     String json = "{\"name\": \"orders\", \"type\": \"PARTITION\", \"group\": \"group1\"}";
 
-    ClusterManagementResult<RuntimeRegionConfig> result =
+    ClusterManagementResult<?, ?> result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(201)
             .getClusterManagementResult();
@@ -148,7 +147,7 @@ public class RegionManagementDunitTest {
     IgnoredException.addIgnoredException("Name of the region has to be specified");
     String json = "{\"type\": \"REPLICATE\"}";
 
-    ClusterManagementResult<RuntimeRegionConfig> result =
+    ClusterManagementResult<?, ?> result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(400)
             .getClusterManagementResult();

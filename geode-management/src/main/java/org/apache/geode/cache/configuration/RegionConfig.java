@@ -39,7 +39,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
+import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 
 /**
@@ -161,7 +162,7 @@ import org.apache.geode.management.configuration.RuntimeRegionConfig;
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class RegionConfig extends CacheElement implements RestfulEndpoint,
-    RespondsWith<RuntimeRegionConfig> {
+    RespondsWith<RuntimeRegionInfo> {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -203,6 +204,11 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
     this.regionElements = config.getCustomRegionElements();
     this.regions = config.getRegions();
     this.setGroup(config.getGroup());
+  }
+
+  @Override
+  public boolean isGlobalRuntime() {
+    return true;
   }
 
   @Override
@@ -538,7 +544,7 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
   @XmlAccessorType(XmlAccessType.FIELD)
   @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
   public static class Index extends CacheElement
-      implements RestfulEndpoint, RespondsWith<Index> {
+      implements RestfulEndpoint, RespondsWith<RuntimeInfo> {
     @XmlAttribute(name = "name", required = true)
     protected String name;
     @XmlAttribute(name = "expression")

@@ -12,11 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.runtime;
 
 import java.io.Serializable;
-
-import org.apache.geode.cache.server.CacheServer;
 
 public class CacheServerInfo implements Serializable {
 
@@ -27,14 +25,6 @@ public class CacheServerInfo implements Serializable {
   private boolean isRunning;
   private int maxConnections;
   private int maxThreads;
-
-  public CacheServerInfo(CacheServer cacheServer) {
-    bindAddress = cacheServer.getBindAddress();
-    port = cacheServer.getPort();
-    isRunning = cacheServer.isRunning();
-    maxConnections = cacheServer.getMaxConnections();
-    maxThreads = cacheServer.getMaxThreads();
-  }
 
   public String getBindAddress() {
     return bindAddress;
@@ -54,6 +44,26 @@ public class CacheServerInfo implements Serializable {
 
   public boolean isRunning() {
     return isRunning;
+  }
+
+  public void setBindAddress(String bindAddress) {
+    this.bindAddress = bindAddress;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public void setRunning(boolean running) {
+    isRunning = running;
+  }
+
+  public void setMaxConnections(int maxConnections) {
+    this.maxConnections = maxConnections;
+  }
+
+  public void setMaxThreads(int maxThreads) {
+    this.maxThreads = maxThreads;
   }
 
   public String toString() {

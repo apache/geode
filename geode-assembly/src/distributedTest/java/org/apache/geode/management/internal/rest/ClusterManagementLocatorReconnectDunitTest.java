@@ -31,7 +31,6 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -75,7 +74,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    ClusterManagementResult<RuntimeRegionConfig> result =
+    ClusterManagementResult<?, ?> result =
         restClient.doPostAndAssert("/regions", json, "test", "test")
             .hasStatusCode(201)
             .getClusterManagementResult();

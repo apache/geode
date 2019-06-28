@@ -25,6 +25,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RespondsWith;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * Implementation of {@link ClusterManagementService} interface which represents the cluster
@@ -54,8 +55,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> create(
-      T config) {
+  public <T extends CacheElement> ClusterManagementResult<?, ?> create(T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
@@ -65,7 +65,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> delete(
+  public <T extends CacheElement> ClusterManagementResult<?, ?> delete(
       T config) {
     String uri = getIdentityEndPoint(config);
     return restTemplate
@@ -78,14 +78,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<T> update(
+  public <T extends CacheElement> ClusterManagementResult<?, ?> update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> list(
+  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T config) {
     String endPoint = getEndpoint(config);
     return restTemplate
@@ -96,7 +96,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & RespondsWith<R>, R extends CacheElement> ClusterManagementResult<R> get(
+  public <T extends CacheElement & RespondsWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config) {
     return restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementResult.class)

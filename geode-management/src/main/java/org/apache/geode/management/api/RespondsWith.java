@@ -15,18 +15,52 @@
 
 package org.apache.geode.management.api;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+
+import javax.xml.bind.annotation.XmlTransient;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * provides additional information about a restful service request beyond the minimum required in
  * {#link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
  * performed
  */
-
-// "type parameter is never used" warning is suppressed, because actually it is used to create
-// the linkage between request and response type in the signature of ClusterManagementService.list
-@SuppressWarnings("unused")
 @Experimental
-public interface RespondsWith<R extends CacheElement> {
+public interface RespondsWith<R> {
+  @XmlTransient
+  @JsonIgnore
+  default Class<R> getRuntimeClass() {
+    Type[] genericInterfaces = getClass().getGenericInterfaces();
+
+    ParameterizedType type =
+        Arrays.stream(genericInterfaces).filter(ParameterizedType.class::isInstance)
+            .map(ParameterizedType.class::cast)
+            .findFirst().orElse(null);
+
+    if (type == null) {
+      return null;
+    }
+    return (Class<R>) type.getActualTypeArguments()[0];
+  };
+
+  default boolean hasRuntimeInfo() {
+    return !RuntimeInfo.class.equals(getRuntimeClass());
+  }
+
+  @XmlTransient
+  @JsonIgnore
+  /**
+   * this is to indicate when we need to go gather runtime information for this configuration,
+   * should we go to all members in the group, or just any member in the group
+   */
+  default boolean isGlobalRuntime() {
+    return false;
+  }
+
 }

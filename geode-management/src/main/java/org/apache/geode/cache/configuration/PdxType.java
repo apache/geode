@@ -78,7 +78,7 @@ import org.apache.geode.management.api.RestfulEndpoint;
     propOrder = {"pdxSerializer"})
 @Experimental
 @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
-public class PdxType extends CacheElement implements RestfulEndpoint, RespondsWith<PdxType> {
+public class PdxType extends CacheElement implements RestfulEndpoint, RespondsWith<Void> {
   @XmlElement(name = "pdx-serializer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType pdxSerializer;
   @XmlAttribute(name = "read-serialized")

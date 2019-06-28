@@ -84,7 +84,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("user", "user").build();
-    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
+    ClusterManagementResult<?, ?> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     assertThat(result.getStatusMessage()).isEqualTo("user not authorized for DATA:MANAGE");
@@ -109,7 +109,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data", "data").build();
-    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
+    ClusterManagementResult<?, ?> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
     assertThat(result.getStatusMessage()).isEqualTo("data not authorized for CLUSTER:WRITE:DISK");
@@ -136,7 +136,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data,cluster", "data,cluster").build();
-    ClusterManagementResult<RegionConfig> result = client.create(regionConfig);
+    ClusterManagementResult<?, ?> result = client.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
     gfsh.executeAndAssertThat("describe disk-store --name=DISKSTORE --member=server-1")

@@ -38,9 +38,9 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.configuration.RuntimeRegionConfig;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
+import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
 @RunWith(SpringRunner.class)
@@ -72,16 +72,16 @@ public class ClientClusterManagementServiceDUnitTest {
 
   @After
   public void deleteAllRegions() {
-    List<RuntimeRegionConfig> regions = client.list(new RegionConfig())
-        .getResult();
+    List<RegionConfig> regions = client.list(new RegionConfig())
+        .getConfigResult();
 
     regions.forEach(r -> {
       r.setGroup(null);
       client.delete(r);
     });
 
-    List<RuntimeRegionConfig> moreRegions = client.list(new RegionConfig())
-        .getResult();
+    List<RegionConfig> moreRegions = client.list(new RegionConfig())
+        .getConfigResult();
     assertThat(moreRegions).isEmpty();
   }
 
@@ -92,14 +92,15 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setName("customer");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> createResult = client.create(region);
+    ClusterManagementResult<?, ?> createResult = client.create(region);
     assertManagementResult(createResult).hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementResult<RegionConfig> deleteResult = client.delete(region);
+    ClusterManagementResult<?, ?> deleteResult = client.delete(region);
     assertManagementResult(deleteResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementResult<RuntimeRegionConfig> listResult = client.list(new RegionConfig());
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listResult =
+        client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasListResult()
@@ -114,15 +115,16 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> createResult = client.create(region);
+    ClusterManagementResult<?, ?> createResult = client.create(region);
     assertManagementResult(createResult).hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
     region.setGroup(null);
-    ClusterManagementResult<RegionConfig> deleteResult = client.delete(region);
+    ClusterManagementResult<?, ?> deleteResult = client.delete(region);
     assertManagementResult(deleteResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementResult<RuntimeRegionConfig> listResult = client.list(new RegionConfig());
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listResult =
+        client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasListResult()
@@ -137,7 +139,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> result = client.create(region);
+    ClusterManagementResult<?, ?> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -158,7 +160,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> result = client.create(region);
+    ClusterManagementResult<?, ?> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -170,12 +172,12 @@ public class ClientClusterManagementServiceDUnitTest {
         ClusterManagementResult.StatusCode.ENTITY_EXISTS);
 
     region.setGroup(null);
-    ClusterManagementResult<RegionConfig> deleteResult = client.delete(region);
+    ClusterManagementResult<?, ?> deleteResult = client.delete(region);
 
     assertManagementResult(deleteResult).isSuccessful();
 
-    List<RuntimeRegionConfig> listResult = client.list(new RegionConfig())
-        .getResult();
+    List<RuntimeRegionInfo> listResult = client.list(new RegionConfig())
+        .getRuntimeResult();
 
     assertThat(listResult).hasSize(0);
   }
@@ -189,7 +191,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> result = client.create(region);
+    ClusterManagementResult<?, ?> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -206,7 +208,7 @@ public class ClientClusterManagementServiceDUnitTest {
     RegionConfig region = new RegionConfig();
     region.setName("unknown");
 
-    ClusterManagementResult<RegionConfig> result = client.delete(region);
+    ClusterManagementResult<?, ?> result = client.delete(region);
     assertManagementResult(result).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
   }
@@ -219,7 +221,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group1");
     region.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<RegionConfig> result = client.create(region);
+    ClusterManagementResult<?, ?> result = client.create(region);
     assertManagementResult(result).isSuccessful().hasMemberStatus()
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1",
@@ -239,11 +241,12 @@ public class ClientClusterManagementServiceDUnitTest {
     assertManagementResult(result)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK);
 
-    ClusterManagementResult<RuntimeRegionConfig> listResult = client.list(new RegionConfig());
+    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listResult =
+        client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
         .hasListResult()
-        .extracting(RegionConfig::getId)
+        .extracting(r -> r.getConfig().getId())
         .containsExactly("region1");
   }
 
