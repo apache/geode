@@ -642,6 +642,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
             RemoteOperationException ex = new RemoteOperationException(
                 "unable to perform put, but operation should not fail");
             sendReply(getSender(), getProcessorId(), dm, new ReplyException(ex), r, startTime);
+            return false;
           }
         }
       } catch (CacheWriterException cwe) {
