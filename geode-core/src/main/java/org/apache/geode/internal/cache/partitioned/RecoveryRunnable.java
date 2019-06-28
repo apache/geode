@@ -49,7 +49,8 @@ public abstract class RecoveryRunnable implements Runnable {
   @Override
   public void run() {
     CancelCriterion stopper =
-        redundancyProvider.prRegion.getGemFireCache().getDistributedSystem().getCancelCriterion();
+        redundancyProvider.getPartitionedRegion().getGemFireCache().getDistributedSystem()
+            .getCancelCriterion();
     DistributedSystem.setThreadsSocketPolicy(true /* conserve sockets */);
     SystemFailure.checkFailure();
     if (stopper.isCancelInProgress()) {
