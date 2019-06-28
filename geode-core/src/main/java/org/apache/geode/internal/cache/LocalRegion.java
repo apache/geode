@@ -3101,7 +3101,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-  private void cacheWriteBeforeRegionClear(RegionEventImpl event)
+  protected void cacheWriteBeforeRegionClear(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
@@ -5428,6 +5428,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       event.setContext(memberId);
       // if this is a replayed or WAN operation we may already have a version tag
       event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
       try {
         basicDestroy(event, true, null);
       } catch (ConcurrentCacheModificationException ignore) {
@@ -5459,6 +5460,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
       // if this is a replayed operation we may already have a version tag
       event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
       try {
         basicInvalidate(event);
@@ -5485,6 +5487,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     // if this is a replayed operation we may already have a version tag
     event.setVersionTag(clientEvent.getVersionTag());
+    event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
 
     try {
       basicUpdateEntryVersion(event);
@@ -8429,6 +8432,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     RegionVersionVector myVector = getVersionVector();
+    System.out.println(Thread.currentThread().getName() + ": LocalRegion.clearRegionLocally region="
+        + getName() + "; myVector=" + myVector);
     if (myVector != null) {
       if (isRvvDebugEnabled) {
         logger.trace(LogMarker.RVV_VERBOSE, "processing version information for {}", regionEvent);
@@ -10764,6 +10769,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
 
     try {
       event.setContext(memberId);
+      event.setVersionTag(clientEvent.getVersionTag());
+      event.setPossibleDuplicate(clientEvent.isPossibleDuplicate());
       // we rely on exceptions to tell us that the operation didn't take
       // place. AbstractRegionMap performs the checks and throws the exception
       try {
