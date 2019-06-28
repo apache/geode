@@ -1628,7 +1628,18 @@ public class BucketRegion extends DistributedRegion implements Bucket {
     }
   }
 
-
+  private boolean skipPrEvent(final EntryEventImpl event, final boolean callDispatchListenerEvent) {
+    if (!event.isGenerateCallbacks()) {
+      return true;
+    }
+    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
+        && partitionedRegion.shouldDispatchListenerEvent())
+        || CacheClientNotifier.singletonHasClientProxies();
+    if (!needsPrEvent) {
+      return true;
+    }
+    return false;
+  }
 
   @Override
   public void invokeTXCallbacks(final EnumListenerEvent eventType, final EntryEventImpl event,
@@ -1648,13 +1659,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       super.invokeTXCallbacks(eventType, event, callThem);
     }
 
-    if (!event.isGenerateCallbacks()) {
-      return;
-    }
-    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
-        && partitionedRegion.shouldDispatchListenerEvent())
-        || CacheClientNotifier.singletonHasClientProxies();
-    if (!needsPrEvent) {
+    if (skipPrEvent(event, callDispatchListenerEvent)) {
       return;
     }
 
@@ -1691,13 +1696,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       super.invokeDestroyCallbacks(eventType, event, callThem, notifyGateways);
     }
 
-    if (!event.isGenerateCallbacks()) {
-      return;
-    }
-    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
-        && partitionedRegion.shouldDispatchListenerEvent())
-        || CacheClientNotifier.singletonHasClientProxies();
-    if (!needsPrEvent) {
+    if (skipPrEvent(event, callDispatchListenerEvent)) {
       return;
     }
 
@@ -1733,13 +1732,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       super.invokeInvalidateCallbacks(eventType, event, callThem);
     }
 
-    if (!event.isGenerateCallbacks()) {
-      return;
-    }
-    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
-        && partitionedRegion.shouldDispatchListenerEvent())
-        || CacheClientNotifier.singletonHasClientProxies();
-    if (!needsPrEvent) {
+    if (skipPrEvent(event, callDispatchListenerEvent)) {
       return;
     }
 
@@ -1778,13 +1771,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
       super.invokePutCallbacks(eventType, event, callThem, notifyGateways);
     }
 
-    if (!event.isGenerateCallbacks()) {
-      return;
-    }
-    boolean needsPrEvent = (partitionedRegion.isInitialized() && callDispatchListenerEvent
-        && partitionedRegion.shouldDispatchListenerEvent())
-        || CacheClientNotifier.singletonHasClientProxies();
-    if (!needsPrEvent) {
+    if (skipPrEvent(event, callDispatchListenerEvent)) {
       return;
     }
 
