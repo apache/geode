@@ -191,14 +191,14 @@ resources:
     initial_version: 1.10.0
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/passing-version
-{% if repository.sanitized_fork == "apache" or repository.branch == "develop" %}
+{% if repository.sanitized_fork == "apache" or repository.branch == "develop" -%}
 - name: geode-passing-sha
   type: gcs-resource
   source:
     bucket: ((version-bucket))
     json_key: ((!concourse-gcp-key))
     regexp: ((pipeline-prefix))((geode-build-branch))/passing-sha
-{%- endif -%}
+{% endif -%}
 - name: geode-passing-tokens
   type: gcs-resource
   source:
