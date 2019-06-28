@@ -239,8 +239,6 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
       T filter) {
-    ConfigurationManager<T> manager = getConfigurationManager(filter);
-
     ClusterManagementResult<T, R> result = new ClusterManagementResult<>();
 
     if (persistenceService == null) {
@@ -253,6 +251,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (filter instanceof MemberConfig) {
       resultList.add(filter);
     } else {
+      ConfigurationManager<T> manager = getConfigurationManager(filter);
       // gather elements on all the groups, consolidate the group information and then do the filter
       // so that when we filter by a specific group, we still show that a particular element might
       // also belong to another group.
