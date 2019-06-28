@@ -8432,8 +8432,6 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
 
     RegionVersionVector myVector = getVersionVector();
-    System.out.println(Thread.currentThread().getName() + ": LocalRegion.clearRegionLocally region="
-        + getName() + "; myVector=" + myVector);
     if (myVector != null) {
       if (isRvvDebugEnabled) {
         logger.trace(LogMarker.RVV_VERBOSE, "processing version information for {}", regionEvent);
