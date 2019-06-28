@@ -94,9 +94,7 @@ public class MsgReader {
     try {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
-      DistributionMessage result =
-          (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
-      return result;
+      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
     } catch (RuntimeException e) {
       throw e;
     } catch (IOException e) {

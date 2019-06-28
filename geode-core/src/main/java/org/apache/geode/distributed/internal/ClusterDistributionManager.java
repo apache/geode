@@ -790,6 +790,8 @@ public class ClusterDistributionManager implements DistributionManager {
 
       localAddress = membershipManager.getLocalMember();
 
+      membershipManager.postConnect();
+
       sb.append(" ms)");
 
       logger.info("Starting DistributionManager {}. {}",
