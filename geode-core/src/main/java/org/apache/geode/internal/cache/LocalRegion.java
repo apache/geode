@@ -3101,7 +3101,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     return result;
   }
 
-  protected void cacheWriteBeforeRegionClear(RegionEventImpl event)
+  private void cacheWriteBeforeRegionClear(RegionEventImpl event)
       throws CacheWriterException, TimeoutException {
     // copy into local var to prevent race condition
     CacheWriter writer = basicGetWriter();
