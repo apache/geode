@@ -145,7 +145,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       verifyCreatedEntry(getVM(i));
     }
     for (int iteration = 1; iteration < 6; iteration++) {
-      System.out.println("Performing update #" + iteration);
       performUpdate(getVM(1));
     }
     for (int i = 1; i <= NUM_SERVERS; i++) {
