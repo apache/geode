@@ -16,8 +16,13 @@
 package org.apache.geode.management.internal;
 
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
@@ -25,6 +30,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.operation.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -34,8 +40,8 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * In order to manipulate Geode components (Regions, etc.) clients can construct instances of {@link
  * CacheElement}s and call the corresponding
  * {@link ClientClusterManagementService#create(CacheElement)},
- * {@link ClientClusterManagementService#delete(CacheElement)} or
- * {@link ClientClusterManagementService#update(CacheElement)} method. The returned {@link
+ * {@link ClientClusterManagementService#delete(CacheElement)} or {@link
+ * ClientClusterManagementService#update(CacheElement)} method. The returned {@link
  * ClusterManagementResult} will contain all necessary information about the outcome of the call.
  * This will include the result of persisting the config as part of the cluster configuration as
  * well as creating the actual component in the cluster.
@@ -48,6 +54,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
   // the context (including /v2), it needs to be set up this way so that spring test runner's
   // injected RequestFactory can work
   private final RestTemplate restTemplate;
+
+  private final int OPERATION_RESULT_RETRIEVAL_INTERVAL = 5000;
 
   ClientClusterManagementService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
@@ -103,6 +111,70 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody();
   }
 
+  /**
+   * Perform the given operation asynchronously and return a {@link CompletableFuture}. The current
+   * implementation will use a background thread to poll for completion of the operation. If the
+   * operation fails, it will still return a {@link OperationResult} with a FAILED status. If the
+   * polling thread is interrupted or an exception is thrown by the actual poll request (perhaps
+   * due to a network error) the {@code CompletableFuture} will be set as completed exceptionally.
+   *
+   * @return a {@code CompletableFuture<OperationResult>} that will eventually contain the completed
+   *         {@code OperationResult}
+   */
+  @Override
+  public CompletableFuture<OperationResult> perform(String operation,
+      Map<String, String> arguments) {
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
+
+    ResponseEntity<?> response = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION
+        + "/operations/" + operation, arguments, null);
+    if (response.getStatusCode() != HttpStatus.ACCEPTED) {
+      future.completeExceptionally(new RuntimeException("Operation not accepted. Response code is: "
+          + response.getStatusCodeValue()));
+      return future;
+    }
+
+    Thread background = new Thread(() -> {
+      while (true) {
+        try {
+          OperationResult result = getOperationResult(operation);
+          if (result != null) {
+            future.complete(result);
+            break;
+          }
+
+          try {
+            Thread.sleep(OPERATION_RESULT_RETRIEVAL_INTERVAL);
+          } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            future.completeExceptionally(ex);
+            break;
+          }
+        } catch (Exception e) {
+          future.completeExceptionally(e);
+          break;
+        }
+      }
+    }, operation);
+
+    background.setDaemon(true);
+    background.start();
+
+    return future;
+  }
+
+  @Override
+  public OperationResult getOperationResult(String operation) {
+    return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/operations/" + operation,
+        OperationResult.class).getBody();
+  }
+
+  @Override
+  public boolean isConnected() {
+    return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
+        .getBody().equals("pong");
+  }
+
   private String getEndpoint(CacheElement config) {
     checkIsRestful(config);
     String endpoint = ((RestfulEndpoint) config).getEndpoint();
@@ -131,9 +203,5 @@ public class ClientClusterManagementService implements ClusterManagementService 
     }
   }
 
-  public boolean isConnected() {
-    return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
-        .getBody().equals("pong");
-  }
 
 }

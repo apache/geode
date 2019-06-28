@@ -26,7 +26,7 @@ import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 public class SpringClusterManagemnetServiceBuilder implements
     ClusterManagementServiceBuilder.HttpRequestFactoryBuilder {
 
-  protected ClientHttpRequestFactory requestFactory;
+  private ClientHttpRequestFactory requestFactory;
 
   public ClusterManagementService build() {
     RestTemplate restTemplate = new RestTemplate();

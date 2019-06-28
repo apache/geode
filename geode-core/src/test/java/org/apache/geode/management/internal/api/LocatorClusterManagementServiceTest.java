@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -62,6 +64,9 @@ import org.apache.geode.management.internal.configuration.validators.Configurati
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.operations.OperationExecutor;
+import org.apache.geode.management.internal.operations.OperationManager;
+import org.apache.geode.management.operation.OperationResult;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -76,6 +81,7 @@ public class LocatorClusterManagementServiceTest {
   private CacheElementValidator cacheElementValidator;
   private ConfigurationManager<RegionConfig> regionManager;
   private MemberValidator memberValidator;
+  private OperationManager operationManager;
 
   @Before
   public void before() throws Exception {
@@ -90,6 +96,7 @@ public class LocatorClusterManagementServiceTest {
 
     memberValidator = mock(MemberValidator.class);
     persistenceService = spy(InternalConfigurationPersistenceService.class);
+    operationManager = new OperationManager();
 
     Set<String> groups = new HashSet<>();
     groups.add("cluster");
@@ -99,7 +106,7 @@ public class LocatorClusterManagementServiceTest {
     doNothing().when(persistenceService).unlockSharedConfiguration();
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
-            memberValidator, cacheElementValidator));
+            memberValidator, cacheElementValidator, operationManager));
     regionConfig = new RegionConfig();
     regionConfig.setName("region1");
   }
@@ -313,4 +320,74 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage()).contains("Successfully removed config for [cluster]");
   }
+
+  @Test
+  public void runOperationIsSuccessful() throws Exception {
+    OperationExecutor operation = new OperationExecutor() {
+      @Override
+      public CompletableFuture<OperationResult> run(Map<String, String> arguments,
+          OperationResult operationResult, Executor exe) {
+        final CompletableFuture<OperationResult> future = new CompletableFuture<>();
+        exe.execute(() -> {
+          operationResult.setStartTime(System.currentTimeMillis());
+          // Do stuff
+          operationResult.setEndTime(System.currentTimeMillis());
+          operationResult.setStatus(OperationResult.Status.COMPLETED);
+          future.complete(operationResult);
+        });
+
+        return future;
+      }
+
+      @Override
+      public String getId() {
+        return "test-operation";
+      }
+    };
+
+    operationManager.registerOperation(operation);
+
+    CompletableFuture<OperationResult> future = service.perform("test-operation", null);
+    OperationResult result = future.get();
+
+    assertThat(result.getStatus()).isEqualTo(OperationResult.Status.COMPLETED);
+
+    OperationResult tempResult = service.getOperationResult("test-operation");
+    assertThat(tempResult.getStartTime()).isEqualTo(result.getStartTime());
+    assertThat(tempResult.getEndTime()).isEqualTo(result.getEndTime());
+    assertThat(tempResult.getStatus()).isEqualTo(result.getStatus());
+  }
+
+  @Test
+  public void runOperationHasError() throws Exception {
+    OperationExecutor operation = new OperationExecutor() {
+      @Override
+      public CompletableFuture<OperationResult> run(
+          Map<String, String> arguments, OperationResult operationResult,
+          Executor exe) {
+        final CompletableFuture<OperationResult> future = new CompletableFuture<>();
+        exe.execute(() -> {
+          operationResult.setStartTime(System.currentTimeMillis());
+          operationResult.setEndTime(System.currentTimeMillis());
+          operationResult.setStatus(OperationResult.Status.FAILED);
+          future.complete(operationResult);
+        });
+
+        return future;
+      }
+
+      @Override
+      public String getId() {
+        return "test-operation";
+      }
+    };
+
+    operationManager.registerOperation(operation);
+
+    CompletableFuture<OperationResult> future = service.perform("test-operation", null);
+
+    OperationResult result = future.get();
+    assertThat(result.getStatus()).isEqualTo(OperationResult.Status.FAILED);
+  }
+
 }

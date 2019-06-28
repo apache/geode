@@ -15,8 +15,12 @@
 
 package org.apache.geode.management.api;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.operation.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -65,6 +69,24 @@ public interface ClusterManagementService {
 
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
       T config);
+
+  /**
+   * Execute a given operation asynchronously.
+   *
+   * @param operation name of the operation
+   * @param arguments arguments to the operation
+   * @return a {@code CompletableFuture} which will provide the final result of the operation
+   */
+  CompletableFuture<OperationResult> perform(String operation, Map<String, String> arguments);
+
+  /**
+   * Retrieve the latest result of an operation. If no operation is currently executing, then this
+   * will be the result of the last executed operation. If an operation is in progress, then this is
+   * an intermediate result which may contain progress information.
+   *
+   * @param operation to query
+   */
+  OperationResult getOperationResult(String operation);
 
   /**
    * Test to see if this instance of ClusterManagementService retrieved from the client side is

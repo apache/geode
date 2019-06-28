@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -64,6 +65,9 @@ import org.apache.geode.management.internal.configuration.validators.GatewayRece
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.operations.OperationExecutor;
+import org.apache.geode.management.internal.operations.OperationManager;
+import org.apache.geode.management.operation.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
@@ -73,31 +77,38 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private Map<Class, ConfigurationValidator> validators;
   private MemberValidator memberValidator;
   private CacheElementValidator commonValidator;
+  private OperationManager operationManager;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(persistenceService, new HashMap<>(), new HashMap<>(), null, null);
+    this(persistenceService, new HashMap<>(), new HashMap<>(),
+        new MemberValidator(cache, persistenceService),
+        new CacheElementValidator(),
+        new OperationManager());
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager());
     managers.put(PdxType.class, new PdxManager());
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
 
     // initialize the list of validators
-    commonValidator = new CacheElementValidator();
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiverConfig.class, new GatewayReceiverConfigValidator());
-    memberValidator = new MemberValidator(cache, persistenceService);
+
+    // Initialize the list of possible operations
+    // operationManager.registerOperation("rebalance", ...);
   }
 
   @VisibleForTesting
-  public LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
+  LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
       Map<Class, ConfigurationManager> managers, Map<Class, ConfigurationValidator> validators,
-      MemberValidator memberValidator, CacheElementValidator commonValidator) {
+      MemberValidator memberValidator, CacheElementValidator commonValidator,
+      OperationManager operationManager) {
     this.persistenceService = persistenceService;
     this.managers = managers;
     this.validators = validators;
     this.memberValidator = memberValidator;
     this.commonValidator = commonValidator;
+    this.operationManager = operationManager;
   }
 
   @Override
@@ -358,10 +369,27 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
+  public CompletableFuture<OperationResult> perform(String operation,
+      Map<String, String> arguments) {
+    return operationManager.run(operation, arguments);
+  }
+
+  @Override
+  public OperationResult getOperationResult(String operationType) {
+    return operationManager.getResult(operationType);
+  }
+
+  @Override
   public boolean isConnected() {
     return true;
   }
 
+  @VisibleForTesting
+  public void registerOperation(OperationExecutor executor) {
+    operationManager.registerOperation(executor);
+  }
+
+  @SuppressWarnings("unchecked")
   private <T extends CacheElement> ConfigurationManager<T> getConfigurationManager(
       T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
