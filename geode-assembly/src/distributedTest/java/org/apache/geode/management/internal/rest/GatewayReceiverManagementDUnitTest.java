@@ -26,13 +26,14 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.ClusterManagementResultAssert;
 
 public class GatewayReceiverManagementDUnitTest {
   @ClassRule
@@ -44,12 +45,10 @@ public class GatewayReceiverManagementDUnitTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    locator = cluster.startLocatorVM(0,
-        l -> l.withSecurityManager(SimpleSecurityManager.class).withHttpService());
+    locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     int locatorPort = locator.getPort();
     server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
-        .withProperty("groups", "group1")
-        .withCredential("cluster", "cluster"));
+        .withProperty("groups", "group1"));
   }
 
   @Before
@@ -58,18 +57,7 @@ public class GatewayReceiverManagementDUnitTest {
   }
 
   @Test
-  public void withInsuffientCredential() throws Exception {
-    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort())
-        .setCredentials("test", "test").build();
-
-    assertManagementResult(cms.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.UNAUTHORIZED)
-        .containsStatusMessage("test not authorized for CLUSTER:MANAGE");
-  }
-
-  @Test
-  public void createGWR() throws Exception {
+  public void createGWRAndList() throws Exception {
     cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
         .setCredentials("cluster", "cluster").build();
@@ -105,7 +93,9 @@ public class GatewayReceiverManagementDUnitTest {
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
 
-    assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful()
-        .hasListResult().hasSize(2);
+    ClusterManagementResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
+        assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
+    listAssert.hasConfigurations().hasSize(2);
   }
+
 }

@@ -23,13 +23,14 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
-import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 public class GatewayReceiverRealizer
-    implements ConfigurationRealizer<GatewayReceiverConfig, RuntimeInfo> {
+    implements ConfigurationRealizer<GatewayReceiverConfig, GatewayReceiverInfo> {
 
   @Override
   public RealizationResult create(GatewayReceiverConfig config, InternalCache cache) {
@@ -89,8 +90,19 @@ public class GatewayReceiverRealizer
   }
 
   @Override
-  public RuntimeInfo get(GatewayReceiverConfig config, InternalCache cache) {
-    return null;
+  public GatewayReceiverInfo get(GatewayReceiverConfig config, InternalCache cache) {
+    if (cache.getGatewayReceivers() == null || cache.getGatewayReceivers().size() == 0) {
+      return null;
+    }
+
+    GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+
+    GatewayReceiverInfo info = new GatewayReceiverInfo();
+    info.setBindAddress(receiver.getBindAddress());
+    info.setHostnameForSenders(receiver.getHostnameForSenders());
+    info.setPort(receiver.getPort());
+    info.setRunning(receiver.isRunning());
+    return info;
   }
 
   @Override

@@ -15,21 +15,41 @@
 
 package org.apache.geode.management.runtime;
 
+public class GatewayReceiverInfo extends RuntimeInfo {
+  private boolean running;
+  private int port;
+  private String hostnameForSenders;
+  private String bindAddress;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import org.apache.geode.annotations.Experimental;
-
-@Experimental
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public class RuntimeRegionInfo extends RuntimeInfo {
-  private long entryCount;
-
-  public long getEntryCount() {
-    return entryCount;
+  public boolean isRunning() {
+    return running;
   }
 
-  public void setEntryCount(long entrySize) {
-    this.entryCount = entrySize;
+  public void setRunning(boolean running) {
+    this.running = running;
+  }
+
+  public int getPort() {
+    return port;
+  }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public String getHostnameForSenders() {
+    return hostnameForSenders;
+  }
+
+  public void setHostnameForSenders(String hostnameForSenders) {
+    this.hostnameForSenders = hostnameForSenders;
+  }
+
+  public String getBindAddress() {
+    return bindAddress;
+  }
+
+  public void setBindAddress(String bindAddress) {
+    this.bindAddress = bindAddress;
   }
 }

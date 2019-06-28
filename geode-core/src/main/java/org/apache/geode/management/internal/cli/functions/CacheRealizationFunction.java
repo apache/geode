@@ -31,6 +31,7 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -38,6 +39,7 @@ import org.apache.geode.management.internal.configuration.realizers.Configuratio
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
 import org.apache.geode.management.internal.configuration.realizers.MemberConfigRealizer;
 import org.apache.geode.management.internal.configuration.realizers.RegionConfigRealizer;
+import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class CacheRealizationFunction implements InternalFunction<List> {
   private static final Logger logger = LogService.getLogger();
@@ -58,7 +60,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
 
     if (operation == CacheElementOperation.GET) {
       try {
-        context.getResultSender().lastResult(executeGet(cache, cacheElement));
+        context.getResultSender().lastResult(executeGet(context, cache, cacheElement));
       } catch (Exception e) {
         logger.error(e.getMessage(), e);
         context.getResultSender().lastResult(null);
@@ -77,14 +79,23 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     }
   }
 
-  public Object executeGet(InternalCache cache,
+  public RuntimeInfo executeGet(FunctionContext<List> context,
+      InternalCache cache,
       CacheElement cacheElement) {
     ConfigurationRealizer realizer = realizers.get(cacheElement.getClass());
 
     if (realizer == null) {
       return null;
     }
-    return realizer.get(cacheElement, cache);
+    RuntimeInfo runtimeInfo = realizer.get(cacheElement, cache);
+
+    // set the membername if this is not a global runtime
+    if (cacheElement instanceof CorrespondWith
+        && !((CorrespondWith) cacheElement).isGlobalRuntime()) {
+      runtimeInfo.setMemberName(context.getMemberName());
+    }
+
+    return runtimeInfo;
   }
 
   public RealizationResult executeUpdate(FunctionContext<List> context,

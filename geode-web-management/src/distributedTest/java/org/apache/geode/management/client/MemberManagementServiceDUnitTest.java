@@ -79,7 +79,7 @@ public class MemberManagementServiceDUnitTest {
 
     List<MemberInformation> members = result.getRuntimeResult();
     assertThat(members.size()).isEqualTo(2);
-    assertThat(members.stream().map(MemberInformation::getName).collect(Collectors.toList()))
+    assertThat(members.stream().map(MemberInformation::getMemberName).collect(Collectors.toList()))
         .containsExactlyInAnyOrder("locator-0", "server-1");
     for (MemberInformation oneMember : members) {
       if (!oneMember.isServer()) {
