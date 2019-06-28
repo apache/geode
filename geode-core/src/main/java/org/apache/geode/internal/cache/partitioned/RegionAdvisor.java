@@ -58,7 +58,6 @@ import org.apache.geode.internal.cache.BucketServerLocation66;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.FixedPartitionAttributesImpl;
 import org.apache.geode.internal.cache.InternalRegionArguments;
-import org.apache.geode.internal.cache.PRHARedundancyProvider.DataStoreBuckets;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.ProxyBucketRegion;

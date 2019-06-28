@@ -3428,10 +3428,10 @@ public class PartitionedRegion extends LocalRegion
     // conditions
     final long startTime = PartitionedRegionStats.startTime();
     if (isDataStore()) {
-      ret = this.redundancyProvider.createBucketAtomically(bucketId, size, startTime, false,
+      ret = this.redundancyProvider.createBucketAtomically(bucketId, size, false,
           partitionName);
     } else {
-      ret = this.redundancyProvider.createBucketOnDataStore(bucketId, size, startTime, snoozer);
+      ret = this.redundancyProvider.createBucketOnDataStore(bucketId, size, snoozer);
     }
     return ret;
   }

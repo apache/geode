@@ -78,7 +78,8 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
   public PersistentBucketRecoverer(PRHARedundancyProvider prhaRedundancyProvider,
       int proxyBuckets) {
     super(prhaRedundancyProvider);
-    PartitionedRegion baseRegion = ColocationHelper.getLeaderRegion(redundancyProvider.prRegion);
+    PartitionedRegion baseRegion =
+        ColocationHelper.getLeaderRegion(redundancyProvider.getPartitionedRegion());
     List<PartitionedRegion> colocatedRegions =
         getColocatedChildRegions(baseRegion);
     List<RegionStatus> allRegions = new ArrayList<RegionStatus>(colocatedRegions.size() + 1);
@@ -104,7 +105,9 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
 
   public void startLoggingThread() {
     Thread loggingThread = new LoggingThread(
-        "PersistentBucketRecoverer for region " + redundancyProvider.prRegion.getName(), false,
+        "PersistentBucketRecoverer for region "
+            + redundancyProvider.getPartitionedRegion().getName(),
+        false,
         this);
     loggingThread.start();
   }
@@ -287,7 +290,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
         }
 
         return (new PersistentMemberID(null, localHost, diskDir, name,
-            redundancyProvider.prRegion.getCache().cacheTimeMillis(), (short) 0));
+            redundancyProvider.getPartitionedRegion().getCache().cacheTimeMillis(), (short) 0));
       }
     }
 
@@ -419,7 +422,7 @@ public class PersistentBucketRecoverer extends RecoveryRunnable implements Persi
     boolean interrupted = false;
     while (true) {
       try {
-        redundancyProvider.prRegion.getCancelCriterion().checkCancelInProgress(null);
+        redundancyProvider.getPartitionedRegion().getCancelCriterion().checkCancelInProgress(null);
         boolean done = allBucketsRecoveredFromDisk.await(timeout, unit);
         if (done) {
           break;

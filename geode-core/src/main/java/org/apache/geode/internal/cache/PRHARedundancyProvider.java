@@ -12,8 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
+
+import static java.lang.System.lineSeparator;
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
+import static org.apache.geode.distributed.internal.DistributionConfig.GEMFIRE_PREFIX;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,13 +41,11 @@ import org.apache.geode.CancelException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.PartitionedRegionStorageException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.persistence.PartitionOfflineException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
@@ -59,6 +60,7 @@ import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.cache.partitioned.BucketBackupMessage;
 import org.apache.geode.internal.cache.partitioned.CreateBucketMessage;
 import org.apache.geode.internal.cache.partitioned.CreateMissingBucketsTask;
+import org.apache.geode.internal.cache.partitioned.DataStoreBuckets;
 import org.apache.geode.internal.cache.partitioned.EndBucketCreationMessage;
 import org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage;
 import org.apache.geode.internal.cache.partitioned.FetchPartitionDetailsMessage.FetchPartitionDetailsResponse;
@@ -83,70 +85,84 @@ import org.apache.geode.internal.cache.partitioned.rebalance.FPRDirector;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 import org.apache.geode.internal.cache.persistence.MembershipFlushRequest;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
-import org.apache.geode.internal.cache.persistence.PersistentStateListener;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 
 /**
  * This class provides the redundancy management for partitioned region. It will provide the
- * following to the PartitionedRegion: <br>
- * (1) Redundancy Management at the time of bucket creation.</br>
- * <br>
- * (2) Redundancy management at the new node arrival.</br>
- * <br>
- * (3) Redundancy management when the node leaves the partitioned region distributed system
- * gracefully. i.e. Cache.close()</br>
- * <br>
- * (4) Redundancy management at random node failure.</br>
+ * following to the PartitionedRegion:
  *
+ * <pre>
+ * (1) Redundancy Management at the time of bucket creation.
+ * (2) Redundancy management at the new node arrival.
+ * (3) Redundancy management when the node leaves the partitioned region distributed system
+ * gracefully. i.e. Cache.close()
+ * (4) Redundancy management at random node failure.
+ * </pre>
  */
 public class PRHARedundancyProvider {
   private static final Logger logger = LogService.getLogger();
 
+  public static final String TIMEOUT_MSG =
+      "If your system has sufficient space, perhaps it is under membership or region creation stress?";
+
+  /**
+   * Signature string indicating that not enough stores are available.
+   */
+  public static final String INSUFFICIENT_STORES_MSG =
+      "Advise you to start enough data store nodes";
+
   private static final boolean DISABLE_CREATE_BUCKET_RANDOMNESS =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_CREATE_BUCKET_RANDOMNESS");
+      Boolean.getBoolean(GEMFIRE_PREFIX + "DISABLE_CREATE_BUCKET_RANDOMNESS");
 
-  public static class ArrayListWithClearState<T> extends ArrayList<T> {
-    private static final long serialVersionUID = 1L;
-    private boolean wasCleared = false;
+  private static final String DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME =
+      GEMFIRE_PREFIX + "partitionedRegionDatastoreDiscoveryTimeout";
 
-    public boolean wasCleared() {
-      return this.wasCleared;
-    }
+  /**
+   * Signature string indicating that there are enough stores available.
+   */
+  private static final String SUFFICIENT_STORES_MSG = "Found a member to host a bucket.";
 
-    @Override
-    public void clear() {
-      super.clear();
-      this.wasCleared = true;
-    }
-  }
+  /**
+   * string indicating the attempt to allocate a bucket
+   */
+  private static final String ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
+      "allocate enough members to host a new bucket";
 
-  public static final String DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME =
-      DistributionConfig.GEMFIRE_PREFIX + "partitionedRegionDatastoreDiscoveryTimeout";
+  private static final long INSUFFICIENT_LOGGING_THROTTLE_TIME = TimeUnit.SECONDS.toNanos(
+      Integer.getInteger(GEMFIRE_PREFIX + "InsufficientLoggingThrottleTime", 2));
+
+  private static final ThreadLocal<Boolean> forceLocalPrimaries = new ThreadLocal<>();
+
   @MakeNotStatic
-  static volatile Long DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS =
+  private static final Long DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS =
       Long.getLong(DATASTORE_DISCOVERY_TIMEOUT_PROPERTY_NAME);
 
-  public final PartitionedRegion prRegion;
   @MakeNotStatic
   private static final AtomicLong insufficientLogTimeStamp = new AtomicLong(0);
+
   @MakeNotStatic
-  private final AtomicBoolean firstInsufficentStoresLogged = new AtomicBoolean(false);
+  private final AtomicBoolean firstInsufficientStoresLogged = new AtomicBoolean(false);
+
+  private final PartitionedRegion prRegion;
 
   /**
    * An executor to submit tasks for redundancy recovery too. It makes sure that there will only be
    * one redundancy recovery task in the queue at a time.
    */
-  protected final OneTaskOnlyExecutor recoveryExecutor;
-  private volatile ScheduledFuture<?> recoveryFuture;
+  private final OneTaskOnlyExecutor recoveryExecutor;
+
   private final Object shutdownLock = new Object();
-  private boolean shutdown = false;
+
+  private volatile ScheduledFuture<?> recoveryFuture;
 
   /**
    * Used to consolidate logging for bucket regions waiting on other members to come online.
    */
-  private volatile PersistentBucketRecoverer persistentBucketRecoverer = null;
+  private volatile PersistentBucketRecoverer persistentBucketRecoverer;
+
+  private boolean shutdown;
 
   /**
    * Constructor for PRHARedundancyProvider.
@@ -154,16 +170,12 @@ public class PRHARedundancyProvider {
    * @param region The PartitionedRegion for which the HA redundancy is required to be managed.
    */
   public PRHARedundancyProvider(final PartitionedRegion region) {
-    this.prRegion = region;
+    prRegion = region;
     final InternalResourceManager resourceManager =
         region.getGemFireCache().getInternalResourceManager();
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
-        new OneTaskOnlyExecutor.ConflatedTaskListener() {
-          @Override
-          public void taskDropped() {
-            InternalResourceManager.getResourceObserver().recoveryConflated(region);
-          }
-        }, getThreadMonitorObj());
+        () -> InternalResourceManager.getResourceObserver().recoveryConflated(region),
+        getThreadMonitorObj());
   }
 
   /**
@@ -175,34 +187,37 @@ public class PRHARedundancyProvider {
    * @param forLog true if the generated string is for a log message
    * @return the description string
    */
-  public static String regionStatus(PartitionedRegion prRegion, Set allStores,
-      Collection alreadyUsed, boolean forLog) {
-    StringBuffer sb = new StringBuffer();
-    sb.append("Partitioned Region name = " + prRegion.getFullPath());
-    final char newLine;
+  private static String regionStatus(PartitionedRegion prRegion,
+      Collection<InternalDistributedMember> allStores,
+      Collection<InternalDistributedMember> alreadyUsed, boolean forLog) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Partitioned Region name = ").append(prRegion.getFullPath());
+    final String newLine;
     final String spaces;
     if (forLog) {
-      newLine = ' ';
+      newLine = " ";
       spaces = "";
     } else {
-      newLine = '\n';
+      newLine = lineSeparator();
       spaces = "   ";
     }
     if (allStores != null) {
-      sb.append(newLine + spaces + "Redundancy level set to " + prRegion.getRedundantCopies());
-      sb.append(newLine + ". Number of available data stores: " + allStores.size());
-      sb.append(newLine + spaces + ". Number successfully allocated = " + alreadyUsed.size());
-      sb.append(newLine + ". Data stores: " + PartitionedRegionHelper.printCollection(allStores));
-      sb.append(newLine + ". Data stores successfully allocated: "
-          + PartitionedRegionHelper.printCollection(alreadyUsed));
-      sb.append(newLine + ". Equivalent members: " + PartitionedRegionHelper
-          .printCollection(prRegion.getDistributionManager().getMembersInThisZone()));
+      sb.append(newLine).append(spaces).append("Redundancy level set to ")
+          .append(prRegion.getRedundantCopies());
+      sb.append(newLine).append(". Number of available data stores: ").append(allStores.size());
+      sb.append(newLine).append(spaces).append(". Number successfully allocated = ")
+          .append(alreadyUsed.size());
+      sb.append(newLine).append(". Data stores: ")
+          .append(PartitionedRegionHelper.printCollection(allStores));
+      sb.append(newLine).append(". Data stores successfully allocated: ")
+          .append(PartitionedRegionHelper.printCollection(alreadyUsed));
+      sb.append(newLine).append(". Equivalent members: ").append(PartitionedRegionHelper
+          .printCollection(prRegion
+              .getDistributionManager()
+              .getMembersInThisZone()));
     }
     return sb.toString();
   }
-
-  public static final String TIMEOUT_MSG =
-      "If your system has sufficient space, perhaps it is under membership or region creation stress?";
 
   /**
    * Indicate a timeout due to excessive retries among available peers
@@ -211,14 +226,19 @@ public class PRHARedundancyProvider {
    * @param alreadyUsed those that have already accepted, only used if allStores != null
    * @param opString description of the operation which timed out
    */
-  public static void timedOut(PartitionedRegion prRegion, Set allStores, Collection alreadyUsed,
+  public static void timedOut(PartitionedRegion prRegion, Set<InternalDistributedMember> allStores,
+      Collection<InternalDistributedMember> alreadyUsed,
       String opString, long timeOut) {
     final String tooManyRetries =
         String.format("Timed out attempting to %s in the partitioned region.%sWaited for: %s ms.",
-            new Object[] {opString,
-                regionStatus(prRegion, allStores, alreadyUsed, true), Long.valueOf(timeOut)})
+            opString,
+            regionStatus(prRegion, allStores, alreadyUsed, true), timeOut)
             + TIMEOUT_MSG;
     throw new PartitionedRegionStorageException(tooManyRetries);
+  }
+
+  public PartitionedRegion getPartitionedRegion() {
+    return prRegion;
   }
 
   private Set<InternalDistributedMember> getAllStores(String partitionName) {
@@ -227,10 +247,10 @@ public class PRHARedundancyProvider {
       return getFixedPartitionStores(partitionName);
     }
     final Set<InternalDistributedMember> allStores =
-        this.prRegion.getRegionAdvisor().adviseDataStore(true);
-    PartitionedRegionDataStore myDS = this.prRegion.getDataStore();
+        prRegion.getRegionAdvisor().adviseDataStore(true);
+    PartitionedRegionDataStore myDS = prRegion.getDataStore();
     if (myDS != null) {
-      allStores.add(this.prRegion.getDistributionManager().getId());
+      allStores.add(prRegion.getDistributionManager().getId());
     }
     return allStores;
   }
@@ -243,38 +263,19 @@ public class PRHARedundancyProvider {
    */
   private Set<InternalDistributedMember> getFixedPartitionStores(String partitionName) {
     Set<InternalDistributedMember> members =
-        this.prRegion.getRegionAdvisor().adviseFixedPartitionDataStores(partitionName);
+        prRegion.getRegionAdvisor().adviseFixedPartitionDataStores(partitionName);
 
-    List<FixedPartitionAttributesImpl> FPAs = this.prRegion.getFixedPartitionAttributesImpl();
+    List<FixedPartitionAttributesImpl> FPAs = prRegion.getFixedPartitionAttributesImpl();
 
     if (FPAs != null) {
       for (FixedPartitionAttributesImpl fpa : FPAs) {
         if (fpa.getPartitionName().equals(partitionName)) {
-          members.add((InternalDistributedMember) this.prRegion.getMyId());
+          members.add(prRegion.getMyId());
         }
       }
     }
     return members;
   }
-
-  /**
-   * Signature string indicating that not enough stores are available.
-   */
-  public static final String INSUFFICIENT_STORES_MSG =
-      "Advise you to start enough data store nodes";
-
-  /**
-   * Signature string indicating that there are enough stores available.
-   */
-  public static final String SUFFICIENT_STORES_MSG =
-      "Found a member to host a bucket.";
-
-  /**
-   * string indicating the attempt to allocate a bucket
-   */
-  private static final String ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET =
-      "allocate enough members to host a new bucket";
-
 
   /**
    * Indicate that we are unable to allocate sufficient stores and the timeout period has passed
@@ -283,13 +284,14 @@ public class PRHARedundancyProvider {
    * @param alreadyUsed ones already committed
    * @param onlyLog true if only a warning log messages should be generated.
    */
-  private void insufficientStores(Set allStores, Collection alreadyUsed, boolean onlyLog) {
-    final String regionStat = regionStatus(this.prRegion, allStores, alreadyUsed, onlyLog);
-    final char newLine;
+  private void insufficientStores(Set<InternalDistributedMember> allStores,
+      Collection<InternalDistributedMember> alreadyUsed, boolean onlyLog) {
+    final String regionStat = regionStatus(prRegion, allStores, alreadyUsed, onlyLog);
+    final String newLine;
     if (onlyLog) {
-      newLine = ' ';
+      newLine = " ";
     } else {
-      newLine = '\n';
+      newLine = lineSeparator();
     }
     final String notEnoughValidNodes;
     if (alreadyUsed.isEmpty()) {
@@ -300,7 +302,7 @@ public class PRHARedundancyProvider {
           "Configured redundancy level could not be satisfied. %s to satisfy redundancy for the region.%s";
     }
     final Object[] notEnoughValidNodesArgs = new Object[] {
-        PRHARedundancyProvider.INSUFFICIENT_STORES_MSG, newLine + regionStat + newLine};
+        INSUFFICIENT_STORES_MSG, newLine + regionStat + newLine};
     if (onlyLog) {
       logger.warn(String.format(notEnoughValidNodes, notEnoughValidNodesArgs));
     } else {
@@ -321,7 +323,7 @@ public class PRHARedundancyProvider {
    * @throws PartitionedRegionStorageException if there are not enough data stores
    */
   private InternalDistributedMember createBucketInstance(int bucketId, final int newBucketSize,
-      final Set<InternalDistributedMember> excludedMembers,
+      final Collection<InternalDistributedMember> excludedMembers,
       Collection<InternalDistributedMember> alreadyUsed,
       ArrayListWithClearState<InternalDistributedMember> failedMembers, final long timeOut,
       final Set<InternalDistributedMember> allStores) {
@@ -329,8 +331,7 @@ public class PRHARedundancyProvider {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
     // Recalculate list of candidates
-    HashSet<InternalDistributedMember> candidateMembers =
-        new HashSet<InternalDistributedMember>(allStores);
+    Set<InternalDistributedMember> candidateMembers = new HashSet<>(allStores);
     candidateMembers.removeAll(alreadyUsed);
     candidateMembers.removeAll(excludedMembers);
     candidateMembers.removeAll(failedMembers);
@@ -339,19 +340,20 @@ public class PRHARedundancyProvider {
       logger.debug("AllStores={} AlreadyUsed={} excluded={} failed={}", allStores, alreadyUsed,
           excludedMembers, failedMembers);
     }
-    if (candidateMembers.size() == 0) {
-      this.prRegion.checkReadiness(); // fix for bug #37207
+    if (candidateMembers.isEmpty()) {
+      prRegion.checkReadiness();
 
       // Run out of candidates. Refetch?
       if (System.currentTimeMillis() > timeOut) {
         if (isDebugEnabled) {
           logger.debug("createBucketInstance: ran out of candidates and timed out");
         }
-        return null; // fail, let caller signal error
+        // fail, let caller signal error
+        return null;
       }
 
       // Recalculate
-      candidateMembers = new HashSet<InternalDistributedMember>(allStores);
+      candidateMembers = new HashSet<>(allStores);
       candidateMembers.removeAll(alreadyUsed);
       candidateMembers.removeAll(excludedMembers);
       failedMembers.clear();
@@ -360,29 +362,30 @@ public class PRHARedundancyProvider {
     if (isDebugEnabled) {
       logger.debug("createBucketInstance: candidateMembers = {}", candidateMembers);
     }
-    InternalDistributedMember candidate = null;
 
     // If there are no candidates, early out.
-    if (candidateMembers.size() == 0) { // no options
+    if (candidateMembers.isEmpty()) {
+      // no options
       if (isDebugEnabled) {
         logger.debug("createBucketInstance: no valid candidates");
       }
-      return null; // failure
-    } // no options
-    else {
-      // In case of FPR, candidateMembers is the set of members on which
-      // required fixed partition is defined.
-      if (this.prRegion.isFixedPartitionedRegion()) {
-        candidate = candidateMembers.iterator().next();
+      // failure
+      return null;
+    }
+
+    // In case of FPR, candidateMembers is the set of members on which
+    // required fixed partition is defined.
+    InternalDistributedMember candidate;
+    if (prRegion.isFixedPartitionedRegion()) {
+      candidate = candidateMembers.iterator().next();
+    } else {
+      String prName = prRegion.getAttributes().getPartitionAttributes().getColocatedWith();
+      if (prName != null) {
+        candidate = getColocatedDataStore(candidateMembers, alreadyUsed, bucketId, prName);
       } else {
-        String prName = this.prRegion.getAttributes().getPartitionAttributes().getColocatedWith();
-        if (prName != null) {
-          candidate = getColocatedDataStore(candidateMembers, alreadyUsed, bucketId, prName);
-        } else {
-          final ArrayList<InternalDistributedMember> orderedCandidates =
-              new ArrayList<InternalDistributedMember>(candidateMembers);
-          candidate = getPreferredDataStore(orderedCandidates, alreadyUsed);
-        }
+        final Collection<InternalDistributedMember> orderedCandidates =
+            new ArrayList<>(candidateMembers);
+        candidate = getPreferredDataStore(orderedCandidates, alreadyUsed);
       }
     }
 
@@ -391,8 +394,8 @@ public class PRHARedundancyProvider {
       return null;
     }
 
-    if (!this.prRegion.isShadowPR()
-        && !ColocationHelper.checkMembersColocation(this.prRegion, candidate)) {
+    if (!prRegion.isShadowPR()
+        && !ColocationHelper.checkMembersColocation(prRegion, candidate)) {
       if (isDebugEnabled) {
         logger.debug(
             "createBucketInstances - Member does not have all of the regions colocated with prRegion {}",
@@ -402,17 +405,17 @@ public class PRHARedundancyProvider {
       return null;
     }
 
-    if (!(candidate.equals(this.prRegion.getMyId()))) { // myself
-      PartitionProfile pp = this.prRegion.getRegionAdvisor().getPartitionProfile(candidate);
+    if (!candidate.equals(prRegion.getMyId())) {
+      PartitionProfile pp = prRegion.getRegionAdvisor().getPartitionProfile(candidate);
       if (pp == null) {
         if (isDebugEnabled) {
           logger.debug("createBucketInstance: {}: no partition profile for {}",
-              this.prRegion.getFullPath(), candidate);
+              prRegion.getFullPath(), candidate);
         }
         failedMembers.add(candidate);
         return null;
       }
-    } // myself
+    }
 
     // Coordinate with any remote close occurring, causing it to wait until
     // this create bucket attempt has been made.
@@ -421,12 +424,13 @@ public class PRHARedundancyProvider {
 
     // Add targetNode to bucketNodes if successful, else to failedNodeList
     if (response.isAcceptance()) {
-      return candidate; // success!
+      // success!
+      return candidate;
     }
 
     if (isDebugEnabled) {
       logger.debug("createBucketInstance: {}: candidate {} declined to manage bucketId={}: {}",
-          this.prRegion.getFullPath(), candidate, this.prRegion.bucketStringForLogs(bucketId),
+          prRegion.getFullPath(), candidate, prRegion.bucketStringForLogs(bucketId),
           response);
     }
     if (response.equals(ManageBucketRsp.CLOSED)) {
@@ -434,37 +438,27 @@ public class PRHARedundancyProvider {
     } else {
       failedMembers.add(candidate);
     }
-    candidate = null; // failure
 
     return null;
   }
 
-  public static final long INSUFFICIENT_LOGGING_THROTTLE_TIME = TimeUnit.SECONDS.toNanos(
-      Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "InsufficientLoggingThrottleTime", 2)
-          .intValue());
-  @MutableForTesting
-  public static volatile boolean TEST_MODE = false;
-  // since 6.6, please use the distributed system property enforce-unique-host instead.
-  // public static final boolean ENFORCE_UNIQUE_HOST_STORAGE_ALLOCATION =
-  // DistributionConfig.DEFAULT_ENFORCE_UNIQUE_HOST;
-
-  public InternalDistributedMember createBucketOnDataStore(int bucketId, int size, long startTime,
+  InternalDistributedMember createBucketOnDataStore(int bucketId, int size,
       RetryTimeKeeper snoozer) {
-    Set<InternalDistributedMember> attempted = new HashSet<InternalDistributedMember>();
-    InternalDistributedMember ret;
     InternalDistributedMember primaryForFixedPartition = null;
-    if (this.prRegion.isFixedPartitionedRegion()) {
+    if (prRegion.isFixedPartitionedRegion()) {
       primaryForFixedPartition =
-          this.prRegion.getRegionAdvisor().adviseFixedPrimaryPartitionDataStore(bucketId);
+          prRegion.getRegionAdvisor().adviseFixedPrimaryPartitionDataStore(bucketId);
     }
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
+    InternalDistributedMember ret;
+    Collection<InternalDistributedMember> attempted = new HashSet<>();
     do {
-      this.prRegion.checkReadiness();
+      prRegion.checkReadiness();
       Set<InternalDistributedMember> available =
-          this.prRegion.getRegionAdvisor().adviseInitializedDataStore();
-      InternalDistributedMember target = null;
+          prRegion.getRegionAdvisor().adviseInitializedDataStore();
       available.removeAll(attempted);
+      InternalDistributedMember target = null;
       for (InternalDistributedMember member : available) {
         if (available.contains(primaryForFixedPartition)) {
           target = primaryForFixedPartition;
@@ -483,10 +477,10 @@ public class PRHARedundancyProvider {
       try {
         if (isDebugEnabled) {
           logger.debug("Attempting to get data store {} to create the bucket {} for us", target,
-              this.prRegion.bucketStringForLogs(bucketId));
+              prRegion.bucketStringForLogs(bucketId));
         }
         CreateBucketMessage.NodeResponse response =
-            CreateBucketMessage.send(target, this.prRegion, bucketId, size);
+            CreateBucketMessage.send(target, prRegion, bucketId, size);
         ret = response.waitForResponse();
         if (ret != null) {
           return ret;
@@ -495,7 +489,7 @@ public class PRHARedundancyProvider {
         // do nothing, we will already check again for a primary.
       }
       attempted.add(target);
-    } while ((ret = this.prRegion.getNodeForBucketWrite(bucketId, snoozer)) == null);
+    } while ((ret = prRegion.getNodeForBucketWrite(bucketId, snoozer)) == null);
     return ret;
   }
 
@@ -508,15 +502,14 @@ public class PRHARedundancyProvider {
    *
    * <p>
    * This method is synchronized to enforce a single threaded ordering, allowing for a more accurate
-   * picture of bucket distribution in the face of concurrency. See bug 37275.
-   * </p>
+   * picture of bucket distribution in the face of concurrency.
    *
+   * <p>
    * This method is now slightly misnamed. Another member could be in the process of creating this
    * same bucket at the same time.
    *
    * @param bucketId Id of the bucket to be created.
    * @param newBucketSize size of the first entry.
-   * @param startTime a time stamp prior to calling the method, used to update bucket creation stats
    * @return the primary member for the newly created bucket
    * @throws PartitionedRegionStorageException if required # of buckets can not be created to
    *         satisfy redundancy.
@@ -525,8 +518,8 @@ public class PRHARedundancyProvider {
    *         region referred to in the query.
    */
   public InternalDistributedMember createBucketAtomically(final int bucketId,
-      final int newBucketSize, final long startTime, final boolean finishIncompleteCreation,
-      String partitionName) throws PartitionedRegionStorageException, PartitionedRegionException,
+      final int newBucketSize, final boolean finishIncompleteCreation, String partitionName)
+      throws PartitionedRegionStorageException, PartitionedRegionException,
       PartitionOfflineException {
     final boolean isDebugEnabled = logger.isDebugEnabled();
 
@@ -537,30 +530,25 @@ public class PRHARedundancyProvider {
     earlySufficientStoresCheck(partitionName);
 
     synchronized (this) {
-      if (this.prRegion.getCache().isCacheAtShutdownAll()) {
+      if (prRegion.getCache().isCacheAtShutdownAll()) {
         throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
       }
 
       if (isDebugEnabled) {
         logger.debug("Starting atomic creation of bucketId={}",
-            this.prRegion.bucketStringForLogs(bucketId));
+            prRegion.bucketStringForLogs(bucketId));
       }
-      Collection<InternalDistributedMember> acceptedMembers =
-          new ArrayList<InternalDistributedMember>(); // ArrayList<DataBucketStores>
-      Set<InternalDistributedMember> excludedMembers = new HashSet<InternalDistributedMember>();
-      ArrayListWithClearState<InternalDistributedMember> failedMembers =
-          new ArrayListWithClearState<InternalDistributedMember>();
       final long timeOut = System.currentTimeMillis() + computeTimeout();
       BucketMembershipObserver observer = null;
       boolean needToElectPrimary = true;
       InternalDistributedMember bucketPrimary = null;
       try {
-        this.prRegion.checkReadiness();
+        prRegion.checkReadiness();
 
-        Bucket toCreate = this.prRegion.getRegionAdvisor().getBucket(bucketId);
+        Bucket toCreate = prRegion.getRegionAdvisor().getBucket(bucketId);
 
         if (!finishIncompleteCreation) {
-          bucketPrimary = this.prRegion.getBucketPrimary(bucketId);
+          bucketPrimary = prRegion.getBucketPrimary(bucketId);
           if (bucketPrimary != null) {
             if (isDebugEnabled) {
               logger.debug(
@@ -573,45 +561,41 @@ public class PRHARedundancyProvider {
         }
 
         observer = new BucketMembershipObserver(toCreate).beginMonitoring();
-        boolean loggedInsufficentStores = false; // track if insufficient data stores have been
         // detected
-        for (;;) {
-          this.prRegion.checkReadiness();
-          if (this.prRegion.getCache().isCacheAtShutdownAll()) {
+        ArrayListWithClearState<InternalDistributedMember> failedMembers =
+            new ArrayListWithClearState<>();
+        Set<InternalDistributedMember> excludedMembers = new HashSet<>();
+        Collection<InternalDistributedMember> acceptedMembers = new ArrayList<>();
+        for (boolean loggedInsufficientStores = false;;) {
+          prRegion.checkReadiness();
+          if (prRegion.getCache().isCacheAtShutdownAll()) {
             if (isDebugEnabled) {
               logger.debug("Aborted createBucketAtomically due to ShutdownAll");
             }
             throw prRegion.getCache().getCacheClosedException("Cache is shutting down");
           }
-          // this.prRegion.getCache().getLogger().config(
-          // "DEBUG createBucketAtomically: "
-          // + " bucketId=" + this.prRegion.getBucketName(bucketId) +
-          // " accepted: " + acceptedMembers +
-          // " failed: " + failedMembers);
 
           long timeLeft = timeOut - System.currentTimeMillis();
           if (timeLeft < 0) {
             // It took too long.
-            timedOut(this.prRegion, getAllStores(partitionName), acceptedMembers,
+            timedOut(prRegion, getAllStores(partitionName), acceptedMembers,
                 ALLOCATE_ENOUGH_MEMBERS_TO_HOST_BUCKET, computeTimeout());
-            // NOTREACHED
           }
           if (isDebugEnabled) {
             logger.debug("createBucketAtomically: have {} ms left to finish this", timeLeft);
           }
 
-          // Always go back to the advisor, see if any fresh data stores are
-          // present.
+          // Always go back to the advisor, see if any fresh data stores are present.
           Set<InternalDistributedMember> allStores = getAllStores(partitionName);
 
-          loggedInsufficentStores = checkSufficientStores(allStores, loggedInsufficentStores);
+          loggedInsufficientStores = checkSufficientStores(allStores, loggedInsufficientStores);
 
           InternalDistributedMember candidate = createBucketInstance(bucketId, newBucketSize,
               excludedMembers, acceptedMembers, failedMembers, timeOut, allStores);
           if (candidate != null) {
-            if (this.prRegion.getDistributionManager().enforceUniqueZone()) {
-              // enforceUniqueZone property has no effect for a loner. Fix for defect #47181
-              if (!(this.prRegion.getDistributionManager() instanceof LonerDistributionManager)) {
+            if (prRegion.getDistributionManager().enforceUniqueZone()) {
+              // enforceUniqueZone property has no effect for a loner
+              if (!(prRegion.getDistributionManager() instanceof LonerDistributionManager)) {
                 Set<InternalDistributedMember> exm = getBuddyMembersInZone(candidate, allStores);
                 exm.remove(candidate);
                 exm.removeAll(acceptedMembers);
@@ -632,8 +616,7 @@ public class PRHARedundancyProvider {
             logger.debug("Accepted members: {}", acceptedMembers);
           }
 
-          // [sumedh] set the primary as the candidate in the first iteration if
-          // the candidate has accepted
+          // set the primary as the candidate in the first iteration if the candidate has accepted
           if (bucketPrimary == null && acceptedMembers.contains(candidate)) {
             bucketPrimary = candidate;
           }
@@ -647,8 +630,8 @@ public class PRHARedundancyProvider {
           // select the primary.
 
           // Have we exhausted all candidates?
-          final int potentialCandidateCount = (allStores.size()
-              - (excludedMembers.size() + acceptedMembers.size() + failedMembers.size()));
+          final int potentialCandidateCount = allStores.size()
+              - (excludedMembers.size() + acceptedMembers.size() + failedMembers.size());
           // Determining exhausted members competes with bucket balancing; it's
           // important to re-visit all failed members since "failed" set may
           // contain datastores which at the moment are imbalanced, but yet could
@@ -657,8 +640,8 @@ public class PRHARedundancyProvider {
           final boolean exhaustedPotentialCandidates =
               failedMembers.wasCleared() && potentialCandidateCount <= 0;
           final boolean redundancySatisfied =
-              acceptedMembers.size() > this.prRegion.getRedundantCopies();
-          final boolean bucketNotCreated = acceptedMembers.size() == 0;
+              acceptedMembers.size() > prRegion.getRedundantCopies();
+          final boolean bucketNotCreated = acceptedMembers.isEmpty();
 
           if (isDebugEnabled) {
             logger.debug(
@@ -677,15 +660,13 @@ public class PRHARedundancyProvider {
           }
 
           // Allow the thread to potentially finish bucket creation even if redundancy was not met.
-          // Fix for bug 39283
           if (redundancySatisfied || exhaustedPotentialCandidates) {
             // Tell one of the members to become primary.
-            // The rest of the members will be allowed to
-            // volunteer for primary.
+            // The rest of the members will be allowed to volunteer for primary.
             endBucketCreation(bucketId, acceptedMembers, bucketPrimary, partitionName);
 
             final int expectedRemoteHosts = acceptedMembers.size()
-                - (acceptedMembers.contains(this.prRegion.getMyId()) ? 1 : 0);
+                - (acceptedMembers.contains(prRegion.getMyId()) ? 1 : 0);
             boolean interrupted = Thread.interrupted();
             try {
               BucketMembershipObserverResults results = observer
@@ -697,7 +678,7 @@ public class PRHARedundancyProvider {
               bucketPrimary = results.primary;
             } catch (InterruptedException e) {
               interrupted = true;
-              this.prRegion.getCancelCriterion().checkCancelInProgress(e);
+              prRegion.getCancelCriterion().checkCancelInProgress(e);
             } finally {
               if (interrupted) {
                 Thread.currentThread().interrupt();
@@ -705,20 +686,11 @@ public class PRHARedundancyProvider {
             }
             needToElectPrimary = false;
             return bucketPrimary;
-          } // almost done
-        } // for
-      } catch (CancelException e) {
-        // Fix for 43544 - We don't need to elect a primary
-        // if the cache was closed. The other members will
-        // take care of it. This ensures we don't compromise
-        // redundancy.
-        needToElectPrimary = false;
-        throw e;
-      } catch (RegionDestroyedException e) {
-        // Fix for 43544 - We don't need to elect a primary
-        // if the region was destroyed. The other members will
-        // take care of it. This ensures we don't compromise
-        // redundancy.
+          }
+        }
+      } catch (CancelException | RegionDestroyedException e) {
+        // We don't need to elect a primary if the cache was closed. The other members will
+        // take care of it. This ensures we don't compromise redundancy.
         needToElectPrimary = false;
         throw e;
       } catch (PartitionOfflineException e) {
@@ -728,10 +700,6 @@ public class PRHARedundancyProvider {
           logger.debug("Unable to create new bucket {}: {}", bucketId, e.getMessage(), e);
         }
 
-        // If we're finishing an incomplete bucket creation, don't blast out
-        // another message to peers to do so.
-        // TODO - should we ignore a PartitionRegionStorageException, rather
-        // than reattempting on other nodes?
         if (!finishIncompleteCreation) {
           cleanUpBucket(bucketId);
         }
@@ -748,7 +716,7 @@ public class PRHARedundancyProvider {
           } catch (Exception e) {
             // if region is going down, then no warning level logs
             if (e instanceof CancelException
-                || (prRegion.getCancelCriterion().isCancelInProgress())) {
+                || prRegion.getCancelCriterion().isCancelInProgress()) {
               logger.debug("Exception trying choose a primary after bucket creation failure", e);
             } else {
               logger.warn("Exception trying choose a primary after bucket creation failure", e);
@@ -756,7 +724,7 @@ public class PRHARedundancyProvider {
           }
         }
       }
-    } // synchronized(this)
+    }
   }
 
   /**
@@ -771,10 +739,7 @@ public class PRHARedundancyProvider {
     if (acceptedMembers.isEmpty()) {
       return;
     }
-    acceptedMembers = new HashSet<InternalDistributedMember>(acceptedMembers);
-
-    // TODO prpersist - we need to factor out a method that just chooses
-    // the primary. But this will do the trick for the moment.
+    acceptedMembers = new HashSet<>(acceptedMembers);
 
     // This is for FPR, for a given bucket id , make sure that for given bucket
     // id , only the datastore on which primary partition is defined for this
@@ -782,10 +747,10 @@ public class PRHARedundancyProvider {
     // secondary partition will become primary
     if (partitionName != null) {
       if (isLocalPrimary(partitionName)) {
-        targetPrimary = this.prRegion.getMyId();
+        targetPrimary = prRegion.getMyId();
       } else {
         targetPrimary =
-            this.prRegion.getRegionAdvisor().adviseFixedPrimaryPartitionDataStore(bucketId);
+            prRegion.getRegionAdvisor().adviseFixedPrimaryPartitionDataStore(bucketId);
         if (targetPrimary == null) {
           Set<InternalDistributedMember> fpDataStores = getFixedPartitionStores(partitionName);
           targetPrimary = fpDataStores.iterator().next();
@@ -793,33 +758,21 @@ public class PRHARedundancyProvider {
       }
     }
     if (targetPrimary == null) {
-      // [sumedh] we need to select the same primary as chosen earlier (e.g.
+      // we need to select the same primary as chosen earlier (e.g.
       // the parent's in case of colocation) so it is now passed
-      // InternalDistributedMember targetPrimary = getPreferredDataStore(
-      // acceptedMembers, Collections.<InternalDistributedMember> emptySet());
       targetPrimary =
-          getPreferredDataStore(acceptedMembers, Collections.<InternalDistributedMember>emptySet());
+          getPreferredDataStore(acceptedMembers, Collections.emptySet());
     }
     boolean isHosting = acceptedMembers.remove(prRegion.getDistributionManager().getId());
-    EndBucketCreationMessage.send(acceptedMembers, targetPrimary, this.prRegion, bucketId);
-
-    // Observer for testing purpose
-    final EndBucketCreationObserver observer = testEndObserverInstance;
-    if (observer != null) {
-      observer.afterEndBucketCreationMessageSend(this.prRegion, bucketId);
-    }
+    EndBucketCreationMessage.send(acceptedMembers, targetPrimary, prRegion, bucketId);
 
     if (isHosting) {
       endBucketCreationLocally(bucketId, targetPrimary);
     }
-
-    if (observer != null) {
-      observer.afterEndBucketCreation(this.prRegion, bucketId);
-    }
   }
 
   private boolean isLocalPrimary(String partitionName) {
-    List<FixedPartitionAttributesImpl> FPAs = this.prRegion.getFixedPartitionAttributesImpl();
+    List<FixedPartitionAttributesImpl> FPAs = prRegion.getFixedPartitionAttributesImpl();
     if (FPAs != null) {
       for (FixedPartitionAttributesImpl fpa : FPAs) {
         if (fpa.getPartitionName().equals(partitionName) && fpa.isPrimary()) {
@@ -830,35 +783,16 @@ public class PRHARedundancyProvider {
     return false;
   }
 
-  @MutableForTesting
-  private static volatile EndBucketCreationObserver testEndObserverInstance;
-
-  // Observer for testing purpose
-  public static void setTestEndBucketCreationObserver(EndBucketCreationObserver observer) {
-    testEndObserverInstance = observer;
-  }
-
-  /**
-   * Test observer to help reproduce #42429.
-   */
-  public interface EndBucketCreationObserver {
-
-    void afterEndBucketCreationMessageSend(PartitionedRegion pr, int bucketId);
-
-    void afterEndBucketCreation(PartitionedRegion pr, int bucketId);
-  }
-
   public void endBucketCreationLocally(int bucketId, InternalDistributedMember newPrimary) {
-
-    // Don't elect ourselves as primary or tell others to persist our ID if this member
-    // has been destroyed.
+    // Don't elect ourselves as primary or tell others to persist our ID
+    // if this member has been destroyed.
     if (prRegion.getCancelCriterion().isCancelInProgress() || prRegion.isDestroyed()) {
       return;
     }
 
     if (logger.isDebugEnabled()) {
       logger.debug("endBucketCreationLocally: for region {} bucketId={} new primary: {}",
-          this.prRegion.getFullPath(), bucketId, newPrimary);
+          prRegion.getFullPath(), bucketId, newPrimary);
     }
     BucketAdvisor bucketAdvisor = prRegion.getRegionAdvisor().getBucketAdvisor(bucketId);
 
@@ -866,8 +800,6 @@ public class PRHARedundancyProvider {
     BucketPersistenceAdvisor persistentAdvisor = proxyBucketRegion.getPersistenceAdvisor();
 
     // prevent multiple threads from ending bucket creation at the same time.
-    // This fixes an issue with 41336, where multiple threads were calling endBucketCreation
-    // on the persistent advisor and marking a bucket as initialized twice.
     synchronized (proxyBucketRegion) {
       if (persistentAdvisor != null) {
         BucketRegion realBucket = proxyBucketRegion.getCreatedBucketRegion();
@@ -878,12 +810,11 @@ public class PRHARedundancyProvider {
       }
 
       // We've received an endBucketCreationMessage, but the primary
-      // may not have. So now we wait for the chosen member to become
-      // primary.
+      // may not have. So now we wait for the chosen member to become primary.
       bucketAdvisor.setPrimaryElector(newPrimary);
 
       if (prRegion.getGemFireCache().getMyId().equals(newPrimary)) {
-        // If we're the choosen primary, volunteer for primary now
+        // If we're the chosen primary, volunteer for primary now
         if (bucketAdvisor.isHosting()) {
           bucketAdvisor.clearPrimaryElector();
           bucketAdvisor.volunteerForPrimary();
@@ -896,9 +827,8 @@ public class PRHARedundancyProvider {
           bucketAdvisor.volunteerForPrimary();
         }
 
-        // If the bucket has had a primary, that means the
-        // chosen bucket was primary for a while. Go ahead and
-        // clear the primary elector field.
+        // If the bucket has had a primary, that means the chosen bucket was primary for a while.
+        // Go ahead and clear the primary elector field.
         if (bucketAdvisor.getHadPrimary()) {
           bucketAdvisor.clearPrimaryElector();
           bucketAdvisor.volunteerForPrimary();
@@ -924,18 +854,13 @@ public class PRHARedundancyProvider {
    *
    * @return set of members on the same host, not including accepted member
    * @since GemFire 5.9
-   *
    */
   private Set<InternalDistributedMember> getBuddyMembersInZone(
       final InternalDistributedMember acceptedMember,
-      final Set<InternalDistributedMember> allStores) {
-    HashSet<InternalDistributedMember> allMembersOnSystem =
-        new HashSet<InternalDistributedMember>();
-    DistributionManager dm = this.prRegion.getDistributionManager();
+      final Collection<InternalDistributedMember> allStores) {
+
+    DistributionManager dm = prRegion.getDistributionManager();
     Set<InternalDistributedMember> buddies = dm.getMembersInSameZone(acceptedMember);
-    // TODO Dan - I'm not sure this retain all is necessary, but there may have been a reason we
-    // were
-    // passing this set in before.
     buddies.retainAll(allStores);
     return buddies;
   }
@@ -948,12 +873,12 @@ public class PRHARedundancyProvider {
    */
   private void earlySufficientStoresCheck(String partitionName) {
     assert Assert.assertHoldsLock(this, false);
-    Set currentStores = getAllStores(partitionName);
+    Set<InternalDistributedMember> currentStores = getAllStores(partitionName);
     if (currentStores.isEmpty()) {
       if (shouldLogInsufficientStores()) {
-        insufficientStores(currentStores, Collections.EMPTY_LIST, true);
+        insufficientStores(currentStores, Collections.emptyList(), true);
       }
-      insufficientStores(currentStores, Collections.EMPTY_LIST, false);
+      insufficientStores(currentStores, Collections.emptyList(), false);
     }
   }
 
@@ -967,13 +892,12 @@ public class PRHARedundancyProvider {
   private boolean shouldLogInsufficientStores() {
     long now = NanoTimer.getTime();
     long delta = now - insufficientLogTimeStamp.get();
-    if (this.firstInsufficentStoresLogged.compareAndSet(false, true)
+    if (firstInsufficientStoresLogged.compareAndSet(false, true)
         || delta >= INSUFFICIENT_LOGGING_THROTTLE_TIME) {
       insufficientLogTimeStamp.set(now);
       return true;
-    } else {
-      return false;
     }
+    return false;
   }
 
   /**
@@ -985,12 +909,13 @@ public class PRHARedundancyProvider {
    */
   private long computeTimeout() {
     if (DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS != null) {
-      long millis = DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS.longValue();
-      if (millis > 0) { // only positive values allowed
+      long millis = DATASTORE_DISCOVERY_TIMEOUT_MILLISECONDS;
+      // only positive values allowed
+      if (millis > 0) {
         return millis;
       }
     }
-    return this.prRegion.getRetryTimeout();
+    return prRegion.getRetryTimeout();
   }
 
   /**
@@ -998,36 +923,28 @@ public class PRHARedundancyProvider {
    * Log a warning or throw an exception indicating when there are not enough datastore VMs.
    *
    * @param allStores All known data store instances (including local)
-   * @param loggedInsufficentStores indicates whether a warning has been logged
+   * @param loggedInsufficientStores indicates whether a warning has been logged
    * @return true when a warning has been logged, false if a warning should be logged.
    */
-  private boolean checkSufficientStores(final Set allStores,
-      final boolean loggedInsufficentStores) {
+  private boolean checkSufficientStores(final Set<InternalDistributedMember> allStores,
+      final boolean loggedInsufficientStores) {
     // Report (only once) if insufficient data store have been detected.
-    if (!loggedInsufficentStores) {
-      if (allStores.size() == 0) {
-        insufficientStores(allStores, Collections.EMPTY_LIST, true);
+    if (!loggedInsufficientStores) {
+      if (allStores.isEmpty()) {
+        insufficientStores(allStores, Collections.emptyList(), true);
         return true;
       }
     } else {
-      if (allStores.size() > 0) {
+      if (!allStores.isEmpty()) {
         // Excellent, sufficient resources were found!
         final String logStr = "{} Region name, {}";
-        final Object[] logArgs =
-            new Object[] {SUFFICIENT_STORES_MSG, prRegion.getFullPath()};
-        if (TEST_MODE) {
-          logger.fatal(logStr, logArgs);
-        } else {
-          logger.info(logStr, logArgs);
-        }
+        logger.info(logStr, SUFFICIENT_STORES_MSG, prRegion.getFullPath());
         return false;
-      } else {
-        // Already logged warning, there are no datastores
-        insufficientStores(allStores, Collections.EMPTY_LIST, false);
-        // UNREACHABLE
       }
+      // Already logged warning, there are no datastores
+      insufficientStores(allStores, Collections.emptyList(), false);
     }
-    return loggedInsufficentStores;
+    return loggedInsufficientStores;
   }
 
   /**
@@ -1036,19 +953,18 @@ public class PRHARedundancyProvider {
    * @param buck the bucket identifier
    */
   private void cleanUpBucket(int buck) {
-    Set dataStores = this.prRegion.getRegionAdvisor().adviseDataStore();
-    BucketBackupMessage.send(dataStores, this.prRegion, buck);
+    Set<InternalDistributedMember> dataStores = prRegion.getRegionAdvisor().adviseDataStore();
+    BucketBackupMessage.send(dataStores, prRegion, buck);
   }
 
   public void finishIncompleteBucketCreation(int bucketId) {
     String partitionName = null;
-    final long startTime = PartitionedRegionStats.startTime();
-    if (this.prRegion.isFixedPartitionedRegion()) {
+    if (prRegion.isFixedPartitionedRegion()) {
       FixedPartitionAttributesImpl fpa =
-          PartitionedRegionHelper.getFixedPartitionAttributesForBucket(this.prRegion, bucketId);
+          PartitionedRegionHelper.getFixedPartitionAttributesForBucket(prRegion, bucketId);
       partitionName = fpa.getPartitionName();
     }
-    createBucketAtomically(bucketId, 0, startTime, true, partitionName);
+    createBucketAtomically(bucketId, 0, true, partitionName);
   }
 
   /**
@@ -1061,44 +977,38 @@ public class PRHARedundancyProvider {
   public boolean createBackupBucketOnMember(final int bucketId,
       final InternalDistributedMember targetNMember, final boolean isRebalance,
       boolean replaceOfflineData, InternalDistributedMember moveSource, boolean forceCreation) {
-
     if (logger.isDebugEnabled()) {
       logger.debug("createBackupBucketOnMember for bucketId={} member: {}",
-          this.prRegion.bucketStringForLogs(bucketId), targetNMember);
+          prRegion.bucketStringForLogs(bucketId), targetNMember);
     }
 
-    if (!(targetNMember.equals(this.prRegion.getMyId()))) {
-      // final StoppableReentrantReadWriteLock.StoppableReadLock isClosingReadLock;
-      PartitionProfile pp = this.prRegion.getRegionAdvisor().getPartitionProfile(targetNMember);
-      if (pp != null) {
-        // isClosingReadLock = pp.getIsClosingReadLock(
-        // this.prRegion.getCancelCriterion());
-      } else {
+    if (!targetNMember.equals(prRegion.getMyId())) {
+      PartitionProfile pp = prRegion.getRegionAdvisor().getPartitionProfile(targetNMember);
+      if (pp == null) {
         return false;
       }
 
       try {
         ManageBackupBucketMessage.NodeResponse response =
-            ManageBackupBucketMessage.send(targetNMember, this.prRegion, bucketId, isRebalance,
+            ManageBackupBucketMessage.send(targetNMember, prRegion, bucketId, isRebalance,
                 replaceOfflineData, moveSource, forceCreation);
 
         if (response.waitForAcceptance()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "createBackupBucketOnMember: Bucket creation succeed for bucketId={} on member = {}",
-                this.prRegion.bucketStringForLogs(bucketId), targetNMember);
+                prRegion.bucketStringForLogs(bucketId), targetNMember);
           }
 
           return true;
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "createBackupBucketOnMember: Bucket creation failed for bucketId={} on member = {}",
-                this.prRegion.bucketStringForLogs(bucketId), targetNMember);
-          }
-
-          return false;
         }
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "createBackupBucketOnMember: Bucket creation failed for bucketId={} on member = {}",
+              prRegion.bucketStringForLogs(bucketId), targetNMember);
+        }
+
+        return false;
       } catch (VirtualMachineError err) {
         SystemFailure.initiateFailure(err);
         // If this ever returns, rethrow the error. We're poisoned
@@ -1112,43 +1022,34 @@ public class PRHARedundancyProvider {
         // is still usable:
         SystemFailure.checkFailure();
         if (e instanceof ForceReattemptException) {
-          // no log needed see bug 37569
+          // no log needed
         } else if (e instanceof CancelException
-            || (e.getCause() != null && (e.getCause() instanceof CancelException))) {
+            || e.getCause() != null && e.getCause() instanceof CancelException) {
           // no need to log exceptions caused by cache closure
         } else {
-          logger.warn("Exception creating partition on " +
-              targetNMember,
-              e);
+          logger.warn("Exception creating partition on {}", targetNMember, e);
         }
         return false;
       }
-    } else {
-      final PartitionedRegionDataStore prDS = this.prRegion.getDataStore();
-      boolean bucketManaged = prDS != null && prDS.grabBucket(bucketId, moveSource, forceCreation,
-          replaceOfflineData, isRebalance, null, false).equals(CreateBucketResult.CREATED);
-      if (!bucketManaged) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "createBackupBucketOnMember: Local data store refused to accommodate the data for bucketId={} prDS={}",
-              this.prRegion.bucketStringForLogs(bucketId), prDS);
-        }
-      }
-      return bucketManaged;
     }
-  }
-
-  private static final ThreadLocal forceLocalPrimaries = new ThreadLocal();
-
-  public static void setForceLocalPrimaries(boolean v) {
-    forceLocalPrimaries.set(Boolean.valueOf(v));
+    final PartitionedRegionDataStore prDS = prRegion.getDataStore();
+    boolean bucketManaged = prDS != null && prDS.grabBucket(bucketId, moveSource, forceCreation,
+        replaceOfflineData, isRebalance, null, false).equals(CreateBucketResult.CREATED);
+    if (!bucketManaged) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "createBackupBucketOnMember: Local data store refused to accommodate the data for bucketId={} prDS={}",
+            prRegion.bucketStringForLogs(bucketId), prDS);
+      }
+    }
+    return bucketManaged;
   }
 
   private boolean getForceLocalPrimaries() {
     boolean result = false;
-    Boolean v = (Boolean) forceLocalPrimaries.get();
+    Boolean v = forceLocalPrimaries.get();
     if (v != null) {
-      result = v.booleanValue();
+      result = v;
     }
     return result;
   }
@@ -1160,52 +1061,42 @@ public class PRHARedundancyProvider {
    *        ignoring it's maximums
    * @return a response object
    */
-  public ManageBucketRsp createBucketOnMember(final int bucketId,
+  private ManageBucketRsp createBucketOnMember(final int bucketId,
       final InternalDistributedMember targetNMember, final int newBucketSize,
       boolean forceCreation) {
     if (logger.isDebugEnabled()) {
       logger.debug("createBucketOnMember for bucketId={} member: {}{}",
-          this.prRegion.bucketStringForLogs(bucketId), targetNMember,
-          (forceCreation ? " forced" : ""));
+          prRegion.bucketStringForLogs(bucketId), targetNMember,
+          forceCreation ? " forced" : "");
     }
 
-    if (!(targetNMember.equals(this.prRegion.getMyId()))) {
-      // final StoppableReentrantReadWriteLock.StoppableReadLock isClosingReadLock;
-      PartitionProfile pp = this.prRegion.getRegionAdvisor().getPartitionProfile(targetNMember);
-      if (pp != null) {
-        // isClosingReadLock = pp.getIsClosingReadLock(
-        // this.prRegion.getCancelCriterion());
-      } else {
+    if (!targetNMember.equals(prRegion.getMyId())) {
+      PartitionProfile pp = prRegion.getRegionAdvisor().getPartitionProfile(targetNMember);
+      if (pp == null) {
         return ManageBucketRsp.NO;
       }
 
       try {
-        // isClosingReadLock.lock(); // Grab the read lock, preventing any region closures
-        // on this remote Node until this bucket is fully published, forcing the closing
-        // Node to recognize any pre-natal buckets.
-        NodeResponse response = ManageBucketMessage.send(targetNMember, this.prRegion, bucketId,
+        NodeResponse response = ManageBucketMessage.send(targetNMember, prRegion, bucketId,
             newBucketSize, forceCreation);
 
         if (response.waitForAcceptance()) {
           if (logger.isDebugEnabled()) {
             logger.debug(
                 "createBucketOnMember: Bucket creation succeed for bucketId={} on member = {}",
-                this.prRegion.bucketStringForLogs(bucketId), targetNMember);
+                prRegion.bucketStringForLogs(bucketId), targetNMember);
           }
 
-          // lockList.add(isClosingReadLock);
           return ManageBucketRsp.YES;
-        } else {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "createBucketOnMember: Bucket creation failed for bucketId={} on member = {}",
-                this.prRegion.bucketStringForLogs(bucketId), targetNMember);
-          }
-
-          // isClosingReadLock.unlock();
-          return response.rejectedDueToInitialization() ? ManageBucketRsp.NO_INITIALIZING
-              : ManageBucketRsp.NO;
         }
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "createBucketOnMember: Bucket creation failed for bucketId={} on member = {}",
+              prRegion.bucketStringForLogs(bucketId), targetNMember);
+        }
+
+        return response.rejectedDueToInitialization() ? ManageBucketRsp.NO_INITIALIZING
+            : ManageBucketRsp.NO;
       } catch (PartitionOfflineException e) {
         throw e;
       } catch (VirtualMachineError err) {
@@ -1221,32 +1112,31 @@ public class PRHARedundancyProvider {
         // is still usable:
         SystemFailure.checkFailure();
         if (e instanceof CancelException
-            || (e.getCause() != null && (e.getCause() instanceof CancelException))) {
+            || e.getCause() != null && e.getCause() instanceof CancelException) {
           // no need to log exceptions caused by cache closure
           return ManageBucketRsp.CLOSED;
-        } else if (e instanceof ForceReattemptException) {
-          // no log needed see bug 37569
+        }
+        if (e instanceof ForceReattemptException) {
+          // no log needed
         } else {
           logger.warn("Exception creating partition on " +
               targetNMember,
               e);
         }
-        // isClosingReadLock.unlock();
         return ManageBucketRsp.NO;
       }
-    } else {
-      final PartitionedRegionDataStore prDS = this.prRegion.getDataStore();
-      boolean bucketManaged = prDS != null && prDS.handleManageBucketRequest(bucketId,
-          newBucketSize, this.prRegion.getMyId(), forceCreation);
-      if (!bucketManaged) {
-        if (logger.isDebugEnabled()) {
-          logger.debug(
-              "createBucketOnMember: Local data store not able to accommodate the data for bucketId={}",
-              this.prRegion.bucketStringForLogs(bucketId));
-        }
-      }
-      return ManageBucketRsp.valueOf(bucketManaged);
     }
+    final PartitionedRegionDataStore prDS = prRegion.getDataStore();
+    boolean bucketManaged = prDS != null && prDS.handleManageBucketRequest(bucketId,
+        newBucketSize, prRegion.getMyId(), forceCreation);
+    if (!bucketManaged) {
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "createBucketOnMember: Local data store not able to accommodate the data for bucketId={}",
+            prRegion.bucketStringForLogs(bucketId));
+      }
+    }
+    return ManageBucketRsp.valueOf(bucketManaged);
   }
 
   /**
@@ -1260,14 +1150,14 @@ public class PRHARedundancyProvider {
   private InternalDistributedMember getColocatedDataStore(
       Collection<InternalDistributedMember> candidates,
       Collection<InternalDistributedMember> alreadyUsed, int bucketId, String prName) {
-    Assert.assertTrue(prName != null); // precondition1
-    PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(this.prRegion);
-    Region prRoot = PartitionedRegionHelper.getPRRoot(prRegion.getCache());
+    Assert.assertTrue(prName != null);
+    PartitionedRegion colocatedRegion = ColocationHelper.getColocatedRegion(prRegion);
+    Region<?, ?> prRoot = PartitionedRegionHelper.getPRRoot(prRegion.getCache());
     PartitionRegionConfig config =
         (PartitionRegionConfig) prRoot.get(prRegion.getRegionIdentifier());
     if (!config.isColocationComplete()) {
-      throw new IllegalStateException("Cannot create buckets, as colocated regions are not "
-          + "configured to be at the same nodes.");
+      throw new IllegalStateException(
+          "Cannot create buckets, as colocated regions are not configured to be at the same nodes.");
     }
 
     RegionAdvisor advisor = colocatedRegion.getRegionAdvisor();
@@ -1278,9 +1168,9 @@ public class PRHARedundancyProvider {
       }
       return primary;
     }
-    Set bucketOwnersSet = advisor.getBucketOwners(bucketId);
+    Set<InternalDistributedMember> bucketOwnersSet = advisor.getBucketOwners(bucketId);
     bucketOwnersSet.retainAll(candidates);
-    ArrayList members = new ArrayList(bucketOwnersSet);
+    Collection<InternalDistributedMember> members = new ArrayList<>(bucketOwnersSet);
     if (members.isEmpty()) {
       return null;
     }
@@ -1300,13 +1190,13 @@ public class PRHARedundancyProvider {
   private InternalDistributedMember getPreferredDataStore(
       Collection<InternalDistributedMember> candidates,
       final Collection<InternalDistributedMember> alreadyUsed) {
-    /* has a primary already been chosen? */
-    final boolean forPrimary = alreadyUsed.size() == 0;
+    // has a primary already been chosen?
+    final boolean forPrimary = alreadyUsed.isEmpty();
 
     if (forPrimary && getForceLocalPrimaries()) {
-      PartitionedRegionDataStore myDS = this.prRegion.getDataStore();
+      PartitionedRegionDataStore myDS = prRegion.getDataStore();
       if (myDS != null) {
-        return this.prRegion.getMyId();
+        return prRegion.getMyId();
       }
     }
 
@@ -1316,17 +1206,17 @@ public class PRHARedundancyProvider {
     Assert.assertTrue(candidates.size() > 1);
 
     // Convert peers to DataStoreBuckets
-    ArrayList<DataStoreBuckets> stores = this.prRegion.getRegionAdvisor()
-        .adviseFilteredDataStores(new HashSet<InternalDistributedMember>(candidates));
+    ArrayList<DataStoreBuckets> stores = prRegion.getRegionAdvisor()
+        .adviseFilteredDataStores(new HashSet<>(candidates));
 
-    final DistributionManager dm = this.prRegion.getDistributionManager();
-    // Add ourself as a candidate, if appropriate
+    final DistributionManager dm = prRegion.getDistributionManager();
+    // Add local member as a candidate, if appropriate
     InternalDistributedMember moi = dm.getId();
-    PartitionedRegionDataStore myDS = this.prRegion.getDataStore();
+    PartitionedRegionDataStore myDS = prRegion.getDataStore();
     if (myDS != null && candidates.contains(moi)) {
       int bucketCount = myDS.getBucketsManaged();
       int priCount = myDS.getNumberOfPrimaryBucketsManaged();
-      int localMaxMemory = this.prRegion.getLocalMaxMemory();
+      int localMaxMemory = prRegion.getLocalMaxMemory();
       stores.add(new DataStoreBuckets(moi, bucketCount, priCount, localMaxMemory));
     }
     if (stores.isEmpty()) {
@@ -1335,50 +1225,46 @@ public class PRHARedundancyProvider {
 
     // ---------------------------------------------
     // Calculate all hosts who already have this bucket
-    final HashSet<InternalDistributedMember> existingHosts =
-        new HashSet<InternalDistributedMember>();
-    Iterator<InternalDistributedMember> it = alreadyUsed.iterator();
-    while (it.hasNext()) {
-      InternalDistributedMember mem = it.next();
+    final Set<InternalDistributedMember> existingHosts = new HashSet<>();
+    for (InternalDistributedMember mem : alreadyUsed) {
       existingHosts.addAll(dm.getMembersInSameZone(mem));
     }
 
-    Comparator<DataStoreBuckets> comparator = new Comparator<DataStoreBuckets>() {
-      @Override
-      public int compare(DataStoreBuckets d1, DataStoreBuckets d2) {
-        boolean host1Used = existingHosts.contains(d1.memberId);
-        boolean host2Used = existingHosts.contains(d2.memberId);
+    Comparator<DataStoreBuckets> comparator = (d1, d2) -> {
+      boolean host1Used = existingHosts.contains(d1.memberId());
+      boolean host2Used = existingHosts.contains(d2.memberId());
 
-        if (!host1Used && host2Used) {
-          return -1; // host1 preferred
-        }
-        if (host1Used && !host2Used) {
-          return 1; // host2 preferred
-        }
-
-        // Six eggs, half a dozen. Look for least loaded.
-        float metric1, metric2;
-        if (forPrimary) {
-          metric1 = d1.numPrimaries / (float) d1.localMaxMemoryMB;
-          metric2 = d2.numPrimaries / (float) d2.localMaxMemoryMB;
-        } else {
-          metric1 = d1.numBuckets / (float) d1.localMaxMemoryMB;
-          metric2 = d2.numBuckets / (float) d2.localMaxMemoryMB;
-        }
-        int result = Float.compare(metric1, metric2);
-        if (result == 0) {
-          // if they have the same load, choose the member with the
-          // higher localMaxMemory
-          result = d2.localMaxMemoryMB - d1.localMaxMemoryMB;
-        }
-        return result;
+      if (!host1Used && host2Used) {
+        // host1 preferred
+        return -1;
       }
+      if (host1Used && !host2Used) {
+        // host2 preferred
+        return 1;
+      }
+
+      // Look for least loaded
+      float metric1;
+      float metric2;
+      if (forPrimary) {
+        metric1 = d1.numPrimaries() / (float) d1.localMaxMemoryMB();
+        metric2 = d2.numPrimaries() / (float) d2.localMaxMemoryMB();
+      } else {
+        metric1 = d1.numBuckets() / (float) d1.localMaxMemoryMB();
+        metric2 = d2.numBuckets() / (float) d2.localMaxMemoryMB();
+      }
+      int result = Float.compare(metric1, metric2);
+      if (result == 0) {
+        // if they have the same load, choose the member with the higher localMaxMemory
+        result = d2.localMaxMemoryMB() - d1.localMaxMemoryMB();
+      }
+      return result;
     };
 
     // ---------------------------------------------
     // First step is to sort datastores first by those whose hosts don't
     // hold this bucket, and then secondarily by loading.
-    Collections.sort(stores, comparator);
+    stores.sort(comparator);
     if (logger.isDebugEnabled()) {
       logger.debug(fancyFormatBucketAllocation("Sorted ", stores, existingHosts));
     }
@@ -1386,17 +1272,16 @@ public class PRHARedundancyProvider {
     // ---------------------------------------------
     // Always add the first datastore and note just how good it is.
     DataStoreBuckets bestDataStore = stores.get(0);
-    ArrayList<DataStoreBuckets> bestStores = new ArrayList<DataStoreBuckets>();
+    List<DataStoreBuckets> bestStores = new ArrayList<>();
     bestStores.add(bestDataStore);
 
-    final boolean allStoresInUse = alreadyUsed.contains(bestDataStore.memberId);
+    final boolean allStoresInUse = alreadyUsed.contains(bestDataStore.memberId());
 
     // ---------------------------------------------
-    // Collect all of the other hosts in this sorted list that are as good
-    // as the very first one.
+    // Collect all of the other hosts in this sorted list that are as good as the very first one.
     for (int i = 1; i < stores.size(); i++) {
       DataStoreBuckets aDataStore = stores.get(i);
-      if (!allStoresInUse && alreadyUsed.contains(aDataStore.memberId)) {
+      if (!allStoresInUse && alreadyUsed.contains(aDataStore.memberId())) {
         // Only choose between the ones not in use.
         break;
       }
@@ -1419,14 +1304,14 @@ public class PRHARedundancyProvider {
       chosen = PartitionedRegion.RANDOM.nextInt(bestStores.size());
     }
     DataStoreBuckets aDataStore = bestStores.get(chosen);
-    return aDataStore.memberId;
+    return aDataStore.memberId();
   }
 
   /**
    * Adds a membership listener to watch for member departures, and schedules a task to recover
    * redundancy of existing buckets
    */
-  public void startRedundancyRecovery() {
+  void startRedundancyRecovery() {
     prRegion.getRegionAdvisor().addMembershipListener(new PRMembershipListener());
     scheduleRedundancyRecovery(null);
   }
@@ -1439,6 +1324,7 @@ public class PRHARedundancyProvider {
    * member2: -10/5
    * </pre>
    *
+   * <p>
    * After the member name, the +/- indicates whether or not this bucket is already hosted on the
    * given member. This is followed by the number of hosted primaries followed by the number of
    * hosted non-primary buckets.
@@ -1447,68 +1333,29 @@ public class PRHARedundancyProvider {
    * @param dataStores list of stores
    * @param existingStores to mark those already in use
    */
-  private String fancyFormatBucketAllocation(String prefix, List dataStores, Set existingStores) {
-    StringBuffer logStr = new StringBuffer();
+  private String fancyFormatBucketAllocation(String prefix, Iterable<DataStoreBuckets> dataStores,
+      Collection<InternalDistributedMember> existingStores) {
+    StringBuilder logStr = new StringBuilder();
     if (prefix != null) {
       logStr.append(prefix);
     }
-    logStr.append("Bucket Allocation for prId=" + this.prRegion.getPRId() + ":\n");
-    for (Iterator i = dataStores.iterator(); i.hasNext();) {
-      DataStoreBuckets dsb = (DataStoreBuckets) i.next();
-      logStr.append(dsb.memberId).append(": ");
-      if (existingStores.contains(dsb.memberId)) {
+    logStr.append("Bucket Allocation for prId=").append(prRegion.getPRId()).append(":").append(
+        lineSeparator());
+    for (Object dataStore : dataStores) {
+      DataStoreBuckets dsb = (DataStoreBuckets) dataStore;
+      logStr.append(dsb.memberId()).append(": ");
+      if (existingStores.contains(dsb.memberId())) {
         logStr.append("+");
       } else {
         logStr.append("-");
       }
-      logStr.append(Integer.toString(dsb.numPrimaries));
+      logStr.append(dsb.numPrimaries());
       logStr.append("/");
-      logStr.append(Integer.toString(dsb.numBuckets - dsb.numPrimaries));
-      // for (int j = 0; j < dsb.numPrimaries; j++) {
-      // logStr.append('#');
-      // }
-      // int nonPrimary = dsb.numBuckets - dsb.numPrimaries;
-      // for (int j = 0; j < nonPrimary; j++) {
-      // logStr.append('*');
-      // }
-      logStr.append('\n');
+      logStr.append(dsb.numBuckets() - dsb.numPrimaries());
+
+      logStr.append(lineSeparator());
     }
     return logStr.toString();
-  }
-
-  public static class DataStoreBuckets {
-    public final InternalDistributedMember memberId;
-    public final int numBuckets;
-    public final int numPrimaries;
-    private final int localMaxMemoryMB;
-
-    public DataStoreBuckets(InternalDistributedMember mem, int buckets, int primaryBuckets,
-        int localMaxMemory) {
-      this.memberId = mem;
-      this.numBuckets = buckets;
-      this.numPrimaries = primaryBuckets;
-      this.localMaxMemoryMB = localMaxMemory;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if ((obj == null) || !(obj instanceof DataStoreBuckets)) {
-        return false;
-      }
-      DataStoreBuckets other = (DataStoreBuckets) obj;
-      return this.numBuckets == other.numBuckets && this.memberId.equals(other.memberId);
-    }
-
-    @Override
-    public int hashCode() {
-      return this.memberId.hashCode();
-    }
-
-    @Override
-    public String toString() {
-      return "DataStoreBuckets memberId=" + this.memberId + "; numBuckets=" + this.numBuckets
-          + "; numPrimaries=" + this.numPrimaries;
-    }
   }
 
   /**
@@ -1518,7 +1365,8 @@ public class PRHARedundancyProvider {
    *
    * @param members collection of members to scan and modify
    */
-  void verifyBucketNodes(Collection<InternalDistributedMember> members, String partitionName) {
+  private void verifyBucketNodes(Collection<InternalDistributedMember> members,
+      String partitionName) {
     if (members == null || members.isEmpty()) {
       return;
     }
@@ -1526,37 +1374,33 @@ public class PRHARedundancyProvider {
     // Revisit region advisor, get current bucket stores.
     final Set<InternalDistributedMember> availableMembers = getAllStores(partitionName);
 
-    // boolean debugAnyRemoved = false;
     for (Iterator<InternalDistributedMember> itr = members.iterator(); itr.hasNext();) {
       InternalDistributedMember node = itr.next();
       if (!availableMembers.contains(node)) {
         if (logger.isDebugEnabled()) {
           logger.debug("verifyBucketNodes: removing member {}", node);
-          // debugAnyRemoved = true;
         }
         itr.remove();
         Assert.assertTrue(!members.contains(node), "return value does not contain " + node);
       }
-    } // for
+    }
   }
 
   /**
    * Schedule a task to perform redundancy recovery for a new node or for the node departed.
    */
-  public void scheduleRedundancyRecovery(Object failedMemId) {
-
-    final boolean isStartup = failedMemId == null ? true : false;
-    final InternalCache cache = this.prRegion.getCache();
-    final int redundantCopies = PRHARedundancyProvider.this.prRegion.getRedundantCopies();
+  private void scheduleRedundancyRecovery(Object failedMemberId) {
+    // note: isStartup is true even when not starting
+    final boolean isStartup = failedMemberId == null;
     final long delay;
     final boolean movePrimaries;
 
     if (isStartup) {
-      delay = this.prRegion.getPartitionAttributes().getStartupRecoveryDelay();
+      delay = prRegion.getPartitionAttributes().getStartupRecoveryDelay();
       movePrimaries = !Boolean
-          .getBoolean(DistributionConfig.GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
+          .getBoolean(GEMFIRE_PREFIX + "DISABLE_MOVE_PRIMARIES_ON_STARTUP");
     } else {
-      delay = this.prRegion.getPartitionAttributes().getRecoveryDelay();
+      delay = prRegion.getPartitionAttributes().getRecoveryDelay();
       movePrimaries = false;
     }
     final boolean requiresRedundancyRecovery = delay >= 0;
@@ -1564,7 +1408,7 @@ public class PRHARedundancyProvider {
     if (!requiresRedundancyRecovery) {
       return;
     }
-    if (!PRHARedundancyProvider.this.prRegion.isDataStore()) {
+    if (!prRegion.isDataStore()) {
       return;
     }
     Runnable task = new RecoveryRunnable(this) {
@@ -1572,12 +1416,10 @@ public class PRHARedundancyProvider {
       public void run2() {
         try {
           final boolean isFixedPartitionedRegion =
-              PRHARedundancyProvider.this.prRegion.isFixedPartitionedRegion();
+              prRegion.isFixedPartitionedRegion();
 
-
-          // Fix for 43582 - always replace offline data for fixed partitioned
-          // regions - this guarantees we create the buckets we are supposed to
-          // create on this node.
+          // always replace offline data for fixed partitioned regions -
+          // this guarantees we create the buckets we are supposed to create on this node.
           boolean replaceOfflineData = isFixedPartitionedRegion || !isStartup;
 
           RebalanceDirector director;
@@ -1588,9 +1430,9 @@ public class PRHARedundancyProvider {
           }
 
           final PartitionedRegionRebalanceOp rebalance = new PartitionedRegionRebalanceOp(
-              PRHARedundancyProvider.this.prRegion, false, director, replaceOfflineData, false);
+              prRegion, false, director, replaceOfflineData, false);
 
-          long start = PRHARedundancyProvider.this.prRegion.getPrStats().startRecovery();
+          long start = prRegion.getPrStats().startRecovery();
 
           if (isFixedPartitionedRegion) {
             rebalance.executeFPA();
@@ -1598,32 +1440,31 @@ public class PRHARedundancyProvider {
             rebalance.execute();
           }
 
-          PRHARedundancyProvider.this.prRegion.getPrStats().endRecovery(start);
-          PRHARedundancyProvider.this.recoveryFuture = null;
+          prRegion.getPrStats().endRecovery(start);
+          recoveryFuture = null;
         } catch (CancelException e) {
           logger.debug("Cache closed while recovery in progress");
         } catch (RegionDestroyedException e) {
           logger.debug("Region destroyed while recovery in progress");
         } catch (Exception e) {
-          logger.error("Unexpected exception during bucket recovery",
-              e);
+          logger.error("Unexpected exception during bucket recovery", e);
         }
       }
     };
 
-    synchronized (this.shutdownLock) { // possible fix for bug 41094
-      if (!this.shutdown) {
+    synchronized (shutdownLock) {
+      if (!shutdown) {
         try {
           if (logger.isDebugEnabled()) {
             if (isStartup) {
-              logger.debug(this.prRegion + " scheduling redundancy recovery in {} ms", delay);
+              logger.debug(prRegion + " scheduling redundancy recovery in {} ms", delay);
             } else {
               logger.debug(
                   "prRegion scheduling redundancy recovery after departure/crash/error in {} in {} ms",
-                  failedMemId, delay);
+                  failedMemberId, delay);
             }
           }
-          recoveryFuture = this.recoveryExecutor.schedule(task, delay, TimeUnit.MILLISECONDS);
+          recoveryFuture = recoveryExecutor.schedule(task, delay, MILLISECONDS);
         } catch (RejectedExecutionException e) {
           // ok, the executor is shutting down.
         }
@@ -1632,11 +1473,11 @@ public class PRHARedundancyProvider {
   }
 
   public boolean isRedundancyImpaired() {
-    int numBuckets = this.prRegion.getPartitionAttributes().getTotalNumBuckets();
-    int targetRedundancy = this.prRegion.getPartitionAttributes().getRedundantCopies();
+    int numBuckets = prRegion.getPartitionAttributes().getTotalNumBuckets();
+    int targetRedundancy = prRegion.getPartitionAttributes().getRedundantCopies();
 
     for (int i = 0; i < numBuckets; i++) {
-      int redundancy = this.prRegion.getRegionAdvisor().getBucketRedundancy(i);
+      int redundancy = prRegion.getRegionAdvisor().getBucketRedundancy(i);
       if (redundancy < targetRedundancy && redundancy != -1 || redundancy > targetRedundancy) {
         return true;
       }
@@ -1645,14 +1486,13 @@ public class PRHARedundancyProvider {
     return false;
   }
 
-  public boolean recoverPersistentBuckets() {
-
-    /**
+  boolean recoverPersistentBuckets() {
+    /*
      * To handle a case where ParallelGatewaySender is persistent but userPR is not First recover
      * the GatewaySender buckets for ParallelGatewaySender irrespective of whether colocation is
      * complete or not.
      */
-    PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(this.prRegion);
+    PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(prRegion);
 
 
     // Check if the leader region or some child shadow PR region is persistent
@@ -1673,12 +1513,6 @@ public class PRHARedundancyProvider {
       return false;
     }
 
-    // TODO prpersist - It would make sense to hold the lock here in some cases
-    // to prevent confusing members that are trying to rebalance. BUT, these persistent regions
-    // need to wait for other members to recover during initialization.
-    // RecoveryLock lock = leaderRegion.getRecoveryLock();
-    // lock.lock();
-    // try {
     final ProxyBucketRegion[] proxyBucketArray =
         persistentLeader.getRegionAdvisor().getProxyBucketArray();
 
@@ -1689,24 +1523,20 @@ public class PRHARedundancyProvider {
     for (ProxyBucketRegion proxyBucket : proxyBucketArray) {
       proxyBucket.initializePersistenceAdvisor();
     }
-    Set<InternalDistributedMember> peers = this.prRegion.getRegionAdvisor().adviseGeneric();
+    Set<InternalDistributedMember> peers = prRegion.getRegionAdvisor().adviseGeneric();
 
-    // TODO prpersist - Ok, this is super lame. We need to make sure here that we don't run into
-    // this race condition
+    // We need to make sure here that we don't run into this race condition:
     // 1) We get a membership view from member A
     // 2) Member B removes itself, and distributes to us and A. We don't remove B
     // 3) We apply the membership view from A, which includes B.
     // That will add B back into the set.
     // This state flush will make sure that any membership changes
     // That are in progress on the peers are finished.
-    MembershipFlushRequest.send(peers, this.prRegion.getDistributionManager(),
-        this.prRegion.getFullPath());
+    MembershipFlushRequest.send(peers, prRegion.getDistributionManager(),
+        prRegion.getFullPath());
 
-
-    ArrayList<ProxyBucketRegion> bucketsNotHostedLocally =
-        new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
-    ArrayList<ProxyBucketRegion> bucketsHostedLocally =
-        new ArrayList<ProxyBucketRegion>(proxyBucketArray.length);
+    List<ProxyBucketRegion> bucketsNotHostedLocally = new ArrayList<>(proxyBucketArray.length);
+    List<ProxyBucketRegion> bucketsHostedLocally = new ArrayList<>(proxyBucketArray.length);
 
     createPersistentBucketRecoverer(proxyBucketArray.length);
 
@@ -1732,8 +1562,7 @@ public class PRHARedundancyProvider {
 
           @Override
           public void run() {
-            // Fix for 44551 - make sure that we always count down
-            // this latch, even if the region was destroyed.
+            // make sure that we always count down this latch, even if the region was destroyed.
             try {
               super.run();
             } finally {
@@ -1759,10 +1588,8 @@ public class PRHARedundancyProvider {
     }
 
     try {
-      // Partial fix for 44045, try to recover the local
-      // buckets before the proxy buckets. This will allow us
-      // to detect any ConflictingDataException before the proxy
-      // buckets update their membership view.
+      // try to recover the local buckets before the proxy buckets. This will allow us to detect any
+      // ConflictingDataException before the proxy buckets update their membership view.
       for (final ProxyBucketRegion proxyBucket : bucketsHostedLocally) {
         proxyBucket.waitForPrimaryPersistentRecovery();
       }
@@ -1776,9 +1603,6 @@ public class PRHARedundancyProvider {
     }
 
     return true;
-    // } finally {
-    // lock.unlock();
-    // }
   }
 
   private void createPersistentBucketRecoverer(int proxyBuckets) {
@@ -1798,9 +1622,8 @@ public class PRHARedundancyProvider {
    * @return the most senior region in the colocation chain (closest to the leader) that is
    *         persistent.
    */
-  protected PartitionedRegion getPersistentLeader() {
-    PartitionedRegion leader = ColocationHelper.getLeaderRegion(this.prRegion);
-
+  private PartitionedRegion getPersistentLeader() {
+    PartitionedRegion leader = ColocationHelper.getLeaderRegion(prRegion);
     return findPersistentRegionRecursively(leader);
   }
 
@@ -1817,23 +1640,23 @@ public class PRHARedundancyProvider {
     return null;
   }
 
-  public void scheduleCreateMissingBuckets() {
-    if (this.prRegion.getColocatedWith() != null
-        && ColocationHelper.isColocationComplete(this.prRegion)) {
+  void scheduleCreateMissingBuckets() {
+    if (prRegion.getColocatedWith() != null
+        && ColocationHelper.isColocationComplete(prRegion)) {
       Runnable task = new CreateMissingBucketsTask(this);
       final InternalResourceManager resourceManager =
-          this.prRegion.getGemFireCache().getInternalResourceManager();
+          prRegion.getGemFireCache().getInternalResourceManager();
       resourceManager.getExecutor().execute(task);
     }
   }
 
   public void shutdown() {
-    synchronized (this.shutdownLock) { // possible fix for bug 41094
-      this.shutdown = true;
+    synchronized (shutdownLock) {
+      shutdown = true;
       ScheduledFuture<?> recoveryFuture = this.recoveryFuture;
       if (recoveryFuture != null) {
-        recoveryFuture.cancel(false/* mayInterruptIfRunning */);
-        this.recoveryExecutor.purge();
+        recoveryFuture.cancel(false);
+        recoveryExecutor.purge();
       }
     }
   }
@@ -1847,8 +1670,7 @@ public class PRHARedundancyProvider {
    */
   public InternalPRInfo buildPartitionedRegionInfo(final boolean internal,
       final LoadProbe loadProbe) {
-
-    final PartitionedRegion pr = this.prRegion;
+    final PartitionedRegion pr = prRegion;
 
     if (pr == null) {
       return null;
@@ -1865,9 +1687,7 @@ public class PRHARedundancyProvider {
 
     Set<InternalDistributedMember> datastores = pr.getRegionAdvisor().adviseDataStore();
 
-    // int size = datastores.size() + (ds == null ? 0 : 1);
-
-    Set<InternalPartitionDetails> memberDetails = new TreeSet<InternalPartitionDetails>();
+    Set<InternalPartitionDetails> memberDetails = new TreeSet<>();
 
     OfflineMemberDetails offlineMembers = null;
     boolean fetchOfflineMembers = false;
@@ -1890,13 +1710,9 @@ public class PRHARedundancyProvider {
 
     String colocatedWithPath = pr.getColocatedWith();
 
-
-
-    InternalPRInfo details = new PartitionRegionInfoImpl(pr.getFullPath(), configuredBucketCount,
+    return new PartitionRegionInfoImpl(pr.getFullPath(), configuredBucketCount,
         createdBucketCount, lowRedundancyBucketCount, configuredRedundantCopies,
         actualRedundantCopies, memberDetails, colocatedWithPath, offlineMembers);
-
-    return details;
   }
 
   /**
@@ -1907,7 +1723,7 @@ public class PRHARedundancyProvider {
     Set<PersistentMemberID>[] offlineMembers = new Set[proxyBuckets.length];
     for (int i = 0; i < proxyBuckets.length; i++) {
       ProxyBucketRegion proxy = proxyBuckets[i];
-      if (this.prRegion.getDataPolicy().withPersistence()) {
+      if (prRegion.getDataPolicy().withPersistence()) {
         Set<PersistentMemberID> persistedMembers =
             proxy.getPersistenceAdvisor().getMissingMembers();
         if (persistedMembers == null) {
@@ -1930,43 +1746,38 @@ public class PRHARedundancyProvider {
    */
   public InternalPartitionDetails buildPartitionMemberDetails(final boolean internal,
       final LoadProbe loadProbe) {
-
-    final PartitionedRegion pr = this.prRegion;
+    final PartitionedRegion pr = prRegion;
 
     PartitionedRegionDataStore ds = pr.getDataStore();
     if (ds == null) {
       return null;
     }
 
-    InternalPartitionDetails localDetails = null;
-
     long size = 0;
-    InternalDistributedMember localMember = (InternalDistributedMember) pr.getMyId();
+    InternalDistributedMember localMember = pr.getMyId();
 
     int configuredBucketCount = pr.getTotalNumberOfBuckets();
     long[] bucketSizes = new long[configuredBucketCount];
     // key: bid, value: size
     Map<Integer, Integer> bucketSizeMap = ds.getSizeLocally();
-    for (Iterator<Map.Entry<Integer, Integer>> iter = bucketSizeMap.entrySet().iterator(); iter
-        .hasNext();) {
-      Map.Entry<Integer, Integer> me = iter.next();
-      int bid = me.getKey().intValue();
+    for (Map.Entry<Integer, Integer> me : bucketSizeMap.entrySet()) {
+      int bid = me.getKey();
       long bucketSize = ds.getBucketSize(bid);
       bucketSizes[bid] = bucketSize;
       size += bucketSize;
     }
 
+    InternalPartitionDetails localDetails;
     if (internal) {
       waitForPersistentBucketRecoveryOrClose();
 
-
       PRLoad prLoad = loadProbe.getLoad(pr);
       localDetails =
-          new PartitionMemberInfoImpl(localMember, pr.getLocalMaxMemory() * (1024L * 1024L), size,
+          new PartitionMemberInfoImpl(localMember, pr.getLocalMaxMemory() * 1024L * 1024L, size,
               ds.getBucketsManaged(), ds.getNumberOfPrimaryBucketsManaged(), prLoad, bucketSizes);
     } else {
       localDetails =
-          new PartitionMemberInfoImpl(localMember, pr.getLocalMaxMemory() * (1024L * 1024L), size,
+          new PartitionMemberInfoImpl(localMember, pr.getLocalMaxMemory() * 1024L * 1024L, size,
               ds.getBucketsManaged(), ds.getNumberOfPrimaryBucketsManaged());
     }
     return localDetails;
@@ -1976,14 +1787,14 @@ public class PRHARedundancyProvider {
    * Wait for all persistent buckets to be recovered from disk, or for the region to be closed,
    * whichever happens first.
    */
-  protected void waitForPersistentBucketRecoveryOrClose() {
+  private void waitForPersistentBucketRecoveryOrClose() {
     if (getPersistentBucketRecoverer() != null) {
       getPersistentBucketRecoverer().await(
-          PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION, TimeUnit.MILLISECONDS);
+          PartitionedRegionHelper.DEFAULT_WAIT_PER_RETRY_ITERATION, MILLISECONDS);
     }
 
     List<PartitionedRegion> colocatedRegions =
-        ColocationHelper.getColocatedChildRegions(this.prRegion);
+        ColocationHelper.getColocatedChildRegions(prRegion);
     for (PartitionedRegion child : colocatedRegions) {
       child.getRedundancyProvider().waitForPersistentBucketRecoveryOrClose();
     }
@@ -1993,14 +1804,14 @@ public class PRHARedundancyProvider {
    * Wait for all persistent buckets to be recovered from disk, regardless of whether the region is
    * currently being closed.
    */
-  protected void waitForPersistentBucketRecovery() {
+  void waitForPersistentBucketRecovery() {
     if (getPersistentBucketRecoverer() != null) {
       getPersistentBucketRecoverer().await();
     }
   }
 
-  public boolean isPersistentRecoveryComplete() {
-    if (!ColocationHelper.checkMembersColocation(this.prRegion, this.prRegion.getMyId())) {
+  boolean isPersistentRecoveryComplete() {
+    if (!ColocationHelper.checkMembersColocation(prRegion, prRegion.getMyId())) {
       return false;
     }
 
@@ -2010,7 +1821,7 @@ public class PRHARedundancyProvider {
     }
 
     Map<String, PartitionedRegion> colocatedRegions =
-        ColocationHelper.getAllColocationRegions(this.prRegion);
+        ColocationHelper.getAllColocationRegions(prRegion);
 
     for (PartitionedRegion region : colocatedRegions.values()) {
       PRHARedundancyProvider redundancyProvider = region.getRedundancyProvider();
@@ -2022,111 +1833,58 @@ public class PRHARedundancyProvider {
     return true;
   }
 
-  private static class ManageBucketRsp {
-    @Immutable
-    static final ManageBucketRsp NO = new ManageBucketRsp("NO");
-    @Immutable
-    static final ManageBucketRsp YES = new ManageBucketRsp("YES");
-    @Immutable
-    static final ManageBucketRsp NO_INITIALIZING = new ManageBucketRsp("NO_INITIALIZING");
-    @Immutable
-    public static final ManageBucketRsp CLOSED = new ManageBucketRsp("CLOSED");
-
-    private final String name;
-
-    private ManageBucketRsp(String name) {
-      this.name = name;
+  private ThreadsMonitoring getThreadMonitorObj() {
+    DistributionManager distributionManager = prRegion.getDistributionManager();
+    if (distributionManager != null) {
+      return distributionManager.getThreadMonitoring();
     }
-
-    boolean isRejection() {
-      return this == NO || this == NO_INITIALIZING || this == CLOSED;
-    }
-
-    boolean isAcceptance() {
-      return this == YES;
-    }
-
-    boolean isInitializing() {
-      return this == NO_INITIALIZING;
-    }
-
-    @Override
-    public String toString() {
-      return "ManageBucketRsp(" + this.name + ")";
-    }
-
-    /** return YES if the argument is true, NO if not */
-    static ManageBucketRsp valueOf(boolean managed) {
-      return managed ? YES : NO;
-    }
-  }
-
-  private static class BucketMembershipObserverResults {
-    final boolean problematicDeparture;
-    final InternalDistributedMember primary;
-
-    BucketMembershipObserverResults(boolean re, InternalDistributedMember p) {
-      problematicDeparture = re;
-      primary = p;
-    }
-
-    @Override
-    public String toString() {
-      return "pDepart:" + problematicDeparture + " primary:" + primary;
-    }
+    return null;
   }
 
   /**
    * Monitors distributed membership for a given bucket
-   *
    */
   private class BucketMembershipObserver implements MembershipListener {
-    final Bucket bucketToMonitor;
-    final AtomicInteger arrivals = new AtomicInteger(0);
-    final AtomicBoolean departures = new AtomicBoolean(false);
+    private final Bucket bucketToMonitor;
+    private final AtomicInteger arrivals = new AtomicInteger(0);
+    private final AtomicBoolean departures = new AtomicBoolean(false);
 
-    public BucketMembershipObserver(Bucket b) {
-      this.bucketToMonitor = b;
+    private BucketMembershipObserver(Bucket b) {
+      bucketToMonitor = b;
     }
 
-    public BucketMembershipObserver beginMonitoring() {
-      int profilesPresent = this.bucketToMonitor.getBucketAdvisor()
+    private BucketMembershipObserver beginMonitoring() {
+      int profilesPresent = bucketToMonitor.getBucketAdvisor()
           .addMembershipListenerAndAdviseGeneric(this).size();
       arrivals.addAndGet(profilesPresent);
       return this;
     }
 
-    public void stopMonitoring() {
-      this.bucketToMonitor.getBucketAdvisor().removeMembershipListener(this);
+    private void stopMonitoring() {
+      bucketToMonitor.getBucketAdvisor().removeMembershipListener(this);
     }
 
     @Override
     public void memberJoined(DistributionManager distributionManager,
         InternalDistributedMember id) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Observer for bucket {} member joined {}", this.bucketToMonitor, id);
+        logger.debug("Observer for bucket {} member joined {}", bucketToMonitor, id);
       }
       synchronized (this) {
-        // TODO manipulate failedNodes and verifiedNodeList directly
         arrivals.addAndGet(1);
-        notify();
+        notifyAll();
       }
     }
-
-    @Override
-    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
-        InternalDistributedMember whoSuspected, String reason) {}
 
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         InternalDistributedMember id, boolean crashed) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Observer for bucket {} member departed {}", this.bucketToMonitor, id);
+        logger.debug("Observer for bucket {} member departed {}", bucketToMonitor, id);
       }
       synchronized (this) {
-        // TODO manipulate failedNodes and verifiedNodeList directly
         departures.getAndSet(true);
-        notify();
+        notifyAll();
       }
     }
 
@@ -2139,13 +1897,13 @@ public class PRHARedundancyProvider {
      * @param expectedOwners the list of owners used when a departure is detected
      * @return if no problematic departures are detected, the primary
      */
-    public BucketMembershipObserverResults waitForOwnersGetPrimary(final int expectedCount,
+    private BucketMembershipObserverResults waitForOwnersGetPrimary(final int expectedCount,
         final Collection<InternalDistributedMember> expectedOwners, String partitionName)
         throws InterruptedException {
       boolean problematicDeparture = false;
       synchronized (this) {
-        for (;;) {
-          this.bucketToMonitor.getCancelCriterion().checkCancelInProgress(null);
+        while (true) {
+          bucketToMonitor.getCancelCriterion().checkCancelInProgress(null);
 
           // If any departures, need to rethink much...
           boolean oldDepartures = departures.get();
@@ -2154,7 +1912,7 @@ public class PRHARedundancyProvider {
             if (expectedOwners.isEmpty()) {
               problematicDeparture = true; // need to pick new victims
             }
-            // reselect = true; // need to pick new victims
+            // need to pick new victims
             arrivals.set(expectedOwners.size());
             departures.set(false);
             if (problematicDeparture) {
@@ -2173,7 +1931,7 @@ public class PRHARedundancyProvider {
           }
           if (logger.isDebugEnabled()) {
             logger.debug("Waiting for bucket {} to finish being created",
-                prRegion.bucketStringForLogs(this.bucketToMonitor.getId()));
+                prRegion.bucketStringForLogs(bucketToMonitor.getId()));
           }
 
           prRegion.checkReadiness();
@@ -2183,59 +1941,50 @@ public class PRHARedundancyProvider {
           if (oldArrivals == arrivals.get() && oldDepartures == departures.get()) {
             logger.warn(
                 "Time out waiting {} ms for creation of bucket for partitioned region {}. Members requested to create the bucket are: {}",
-                new Object[] {Integer.valueOf(creationWaitMillis), prRegion.getFullPath(),
+                new Object[] {creationWaitMillis, prRegion.getFullPath(),
                     expectedOwners});
           }
-        } // for (;;)
-      } // synchronized
+        }
+      }
       if (problematicDeparture) {
         return new BucketMembershipObserverResults(true, null);
       }
-      InternalDistributedMember primmy = bucketToMonitor.getBucketAdvisor().getPrimary();
-      if (primmy == null) {
+      InternalDistributedMember primary = bucketToMonitor.getBucketAdvisor().getPrimary();
+      if (primary == null) {
         /*
          * Handle a race where nobody has the bucket. We can't return a null member here because we
          * haven't created the bucket, need to let the higher level code loop.
          */
         return new BucketMembershipObserverResults(true, null);
-      } else {
-        return new BucketMembershipObserverResults(false, primmy);
       }
+      return new BucketMembershipObserverResults(false, primary);
     }
-
-    @Override
-    public void quorumLost(DistributionManager distributionManager,
-        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
   }
 
   /**
    * This class extends MembershipListener to perform cleanup when a node leaves DistributedSystem.
-   *
    */
-  protected class PRMembershipListener implements MembershipListener {
+  private class PRMembershipListener implements MembershipListener {
     @Override
     public void memberDeparted(DistributionManager distributionManager,
         final InternalDistributedMember id, final boolean crashed) {
       try {
-        DistributedMember dmem = prRegion.getSystem().getDistributedMember();
+        DistributedMember member = prRegion.getSystem().getDistributedMember();
         if (logger.isDebugEnabled()) {
           logger.debug(
-              "MembershipListener invoked on DistributedMember = {} for failed memberId = {}", dmem,
+              "MembershipListener invoked on DistributedMember = {} for failed memberId = {}",
+              member,
               id);
         }
 
-        if (!prRegion.isCacheClosing() && !prRegion.isDestroyed() && !dmem.equals(id)) {
-
+        if (!prRegion.isCacheClosing() && !prRegion.isDestroyed() && !member.equals(id)) {
           Runnable postRecoveryTask = null;
 
           // Only schedule redundancy recovery if this not a fixed PR.
-          if (!PRHARedundancyProvider.this.prRegion.isFixedPartitionedRegion()) {
-            postRecoveryTask = new Runnable() {
-              @Override
-              public void run() {
-                // After the metadata has been cleaned, recover redundancy.
-                scheduleRedundancyRecovery(id);
-              }
+          if (!prRegion.isFixedPartitionedRegion()) {
+            postRecoveryTask = () -> {
+              // After the metadata has been cleaned, recover redundancy.
+              scheduleRedundancyRecovery(id);
             };
           }
           // Schedule clean up the metadata for the failed member.
@@ -2246,58 +1995,66 @@ public class PRHARedundancyProvider {
         // ignore
       }
     }
+  }
 
-    @Override
-    public void memberSuspect(DistributionManager distributionManager, InternalDistributedMember id,
-        InternalDistributedMember whoSuspected, String reason) {}
+  private static class ManageBucketRsp {
+    @Immutable
+    private static final ManageBucketRsp NO = new ManageBucketRsp("NO");
+    @Immutable
+    private static final ManageBucketRsp YES = new ManageBucketRsp("YES");
+    @Immutable
+    private static final ManageBucketRsp NO_INITIALIZING = new ManageBucketRsp("NO_INITIALIZING");
+    @Immutable
+    private static final ManageBucketRsp CLOSED = new ManageBucketRsp("CLOSED");
 
-    @Override
-    public void memberJoined(DistributionManager distributionManager,
-        InternalDistributedMember id) {
-      // no action required
+    private final String name;
+
+    private ManageBucketRsp(String name) {
+      this.name = name;
+    }
+
+    private boolean isAcceptance() {
+      return this == YES;
     }
 
     @Override
-    public void quorumLost(DistributionManager distributionManager,
-        Set<InternalDistributedMember> failures, List<InternalDistributedMember> remaining) {}
-  }
+    public String toString() {
+      return "ManageBucketRsp(" + name + ")";
+    }
 
-  /**
-   * This class extends MembershipListener to start redundancy recovery when a persistent member is
-   * revoked
-   *
-   */
-  protected class PRPersistenceListener extends PersistentStateListener.PersistentStateAdapter {
-
-    // TODO prpersist It seems like this might trigger recovery too often. For example, a rebalance
-    // can end up removing a bucket, which would trigger recovery here. We really need to only
-    // trigger this thing when a PR region is destroyed. And isn't that code already in there?
-    @Override
-    public void memberRemoved(PersistentMemberID persistentID, boolean revoked) {
-      if (!revoked) {
-        return;
-      }
-
-      DistributedMember dmem = prRegion.getSystem().getDistributedMember();
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Persistent Membership Listener invoked on DistributedMember = {} for removed memberId = {}",
-            dmem, persistentID);
-      }
-
-      if (!prRegion.isCacheClosing() && !prRegion.isDestroyed()
-          && !prRegion.isFixedPartitionedRegion()) {
-        scheduleRedundancyRecovery(persistentID);
-      }
+    /** return YES if the argument is true, NO if not */
+    private static ManageBucketRsp valueOf(boolean managed) {
+      return managed ? YES : NO;
     }
   }
 
-  private ThreadsMonitoring getThreadMonitorObj() {
-    DistributionManager distributionManager = this.prRegion.getDistributionManager();
-    if (distributionManager != null) {
-      return distributionManager.getThreadMonitoring();
-    } else {
-      return null;
+  private static class BucketMembershipObserverResults {
+    private final boolean problematicDeparture;
+    final InternalDistributedMember primary;
+
+    BucketMembershipObserverResults(boolean re, InternalDistributedMember p) {
+      problematicDeparture = re;
+      primary = p;
+    }
+
+    @Override
+    public String toString() {
+      return "pDepart:" + problematicDeparture + " primary:" + primary;
+    }
+  }
+
+  private static class ArrayListWithClearState<T> extends ArrayList<T> {
+    private static final long serialVersionUID = 1L;
+    private volatile boolean wasCleared;
+
+    private boolean wasCleared() {
+      return wasCleared;
+    }
+
+    @Override
+    public void clear() {
+      super.clear();
+      wasCleared = true;
     }
   }
 }

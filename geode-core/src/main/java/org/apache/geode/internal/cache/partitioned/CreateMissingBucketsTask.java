@@ -31,11 +31,12 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
 
   @Override
   public void run2() {
-    PartitionedRegion leaderRegion = ColocationHelper.getLeaderRegion(redundancyProvider.prRegion);
+    PartitionedRegion leaderRegion =
+        ColocationHelper.getLeaderRegion(redundancyProvider.getPartitionedRegion());
     RecoveryLock lock = leaderRegion.getRecoveryLock();
     lock.lock();
     try {
-      createMissingBuckets(redundancyProvider.prRegion);
+      createMissingBuckets(redundancyProvider.getPartitionedRegion());
     } finally {
       lock.unlock();
     }
@@ -56,7 +57,7 @@ public class CreateMissingBucketsTask extends RecoveryRunnable {
           .getRegionAdvisor().getBucketAdvisor(i).getBucketRedundancy()) {
         /* if (leaderRegion.getRegionAdvisor().isStorageAssignedForBucket(i)) { */
         final long startTime = PartitionedRegionStats.startTime();
-        region.getRedundancyProvider().createBucketAtomically(i, 0, startTime, true, null);
+        region.getRedundancyProvider().createBucketAtomically(i, 0, true, null);
       }
     }
   }
