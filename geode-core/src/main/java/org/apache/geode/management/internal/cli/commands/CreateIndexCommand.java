@@ -87,7 +87,7 @@ public class CreateIndexCommand extends GfshCommand {
     // we will find the applicable members based on the what group this region is on
     if (ccService != null && memberNameOrID == null) {
       regionName = getValidRegionName(regionPath, cms);
-      RegionConfig config = getRuntimeRegionConfig(cms, regionName);
+      RegionConfig config = getRegionConfig(cms, regionName);
       if (config == null) {
         return ResultModel.createError("Region " + regionName + " does not exist.");
       }
@@ -174,7 +174,7 @@ public class CreateIndexCommand extends GfshCommand {
     String regionName = regionPath.trim().split(" ")[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
     while (regionName.contains(".")) {
-      RegionConfig region = getRuntimeRegionConfig(cms, regionName);
+      RegionConfig region = getRegionConfig(cms, regionName);
       if (region != null) {
         break;
       }
@@ -186,7 +186,7 @@ public class CreateIndexCommand extends GfshCommand {
     return regionName;
   }
 
-  RegionConfig getRuntimeRegionConfig(ClusterManagementService cms,
+  RegionConfig getRegionConfig(ClusterManagementService cms,
       String regionName) {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(regionName);

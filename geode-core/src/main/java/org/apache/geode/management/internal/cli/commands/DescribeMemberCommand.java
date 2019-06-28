@@ -84,7 +84,7 @@ public class DescribeMemberCommand extends GfshCommand {
     memberInfo.addData("Locators", memberInformation.getLocators());
 
     if (memberInformation.isServer()) {
-      List<CacheServerInfo> csList = memberInformation.getCacheServeInfo();
+      List<CacheServerInfo> csList = memberInformation.getCacheServerInfo();
       if (csList != null) {
         int serverCount = 0;
         for (CacheServerInfo cacheServerInfo : csList) {

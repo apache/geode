@@ -73,14 +73,14 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[*].id", contains("locator-0")))
-        .andExpect(jsonPath("$.result[0].port", greaterThan(0)))
-        .andExpect(jsonPath("$.result[0].locator", is(true)))
-        .andExpect(jsonPath("$.result[0].status", is("online")))
-        .andExpect(jsonPath("$.result[0].cacheServers").doesNotExist())
-        .andExpect(jsonPath("$.result[0].logFile", endsWith("locator-0.log")))
-        .andExpect(jsonPath("$.result[0].workingDirectory", notNullValue()))
-        .andExpect(jsonPath("$.result[0].usedHeap", greaterThan(0)));
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name", contains("locator-0")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", greaterThan(0)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(false)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].status", is("online")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo").doesNotExist())
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].logFilePath", endsWith("locator-0.log")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].workingDirPath", notNullValue()))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test
@@ -91,17 +91,18 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[*].id", contains("server-1")))
-        .andExpect(jsonPath("$.result[0].port").doesNotExist())
-        .andExpect(jsonPath("$.result[0].locator", is(false)))
-        .andExpect(jsonPath("$.result[0].cacheServers[0].port", greaterThan(0)))
-        .andExpect(jsonPath("$.result[0].cacheServers[0].maxConnections", equalTo(800)))
-        .andExpect(jsonPath("$.result[0].cacheServers[0].maxThreads", equalTo(0)))
-        .andExpect(jsonPath("$.result[0].groups", containsInAnyOrder("group-1", "group-2")))
-        .andExpect(jsonPath("$.result[0].logFile", endsWith("server-1.log")))
-        .andExpect(jsonPath("$.result[0].workingDirectory", endsWith("vm1")))
-        .andExpect(jsonPath("$.result[0].clientConnections", equalTo(0)))
-        .andExpect(jsonPath("$.result[0].usedHeap", greaterThan(0)));
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name", contains("server-1")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", is(0)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(true)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].port", greaterThan(0)))
+        .andExpect(
+            jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].maxConnections", equalTo(800)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].maxThreads", equalTo(0)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].groups", equalTo("group-1,group-2")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].logFilePath", endsWith("server-1.log")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].workingDirPath", endsWith("vm1")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].clientCount", equalTo(0)))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[0].heapUsage", greaterThan(0)));
   }
 
   @Test
@@ -111,6 +112,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[*].id", containsInAnyOrder("locator-0", "server-1")));
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name",
+            containsInAnyOrder("locator-0", "server-1")));
   }
 }

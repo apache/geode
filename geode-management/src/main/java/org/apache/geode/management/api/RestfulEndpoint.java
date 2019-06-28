@@ -69,6 +69,9 @@ public interface RestfulEndpoint extends Identifiable<String> {
 
   @XmlTransient
   default String getUri() {
+    if (getIdentityEndPoint() == null) {
+      return null;
+    }
     return URI_CONTEXT + URI_VERSION + getIdentityEndPoint();
   }
 }

@@ -226,7 +226,7 @@ public class MemberInformation implements Identifiable<String>, RuntimeInfo {
     this.isServer = isServer;
   }
 
-  public List<CacheServerInfo> getCacheServeInfo() {
+  public List<CacheServerInfo> getCacheServerInfo() {
     return cacheServerList;
   }
 

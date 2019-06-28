@@ -20,6 +20,7 @@ import static org.apache.geode.management.internal.rest.controllers.AbstractMana
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiOperation;
@@ -118,12 +119,13 @@ public class RegionManagementController extends AbstractManagementController {
     RegionConfig regionConfig = result0.getResult().get(0).getConfig();
 
     // only send the index information back
-    List<RegionConfig.Index> indexList = regionConfig.getIndexes();
-    if (StringUtils.isNotBlank(id)) {
-      // filter by id
-      indexList =
-          indexList.stream().filter(item -> item.getId().equals(id)).collect(Collectors.toList());
-    }
+    List<RegionConfig.Index> indexList = regionConfig.getIndexes().stream().map(e -> {
+      if (StringUtils.isNotBlank(id) && !e.getId().equals(id)) {
+        return null;
+      }
+      e.setRegionName(regionName);
+      return e;
+    }).filter(Objects::nonNull).collect(Collectors.toList());
 
     List<Response<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
     for (RegionConfig.Index index : indexList) {

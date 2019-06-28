@@ -31,10 +31,6 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * {#link RestfulEndpoint}, namely the return type to expect when `list` or other operations are
  * performed
  */
-
-// "type parameter is never used" warning is suppressed, because actually it is used to create
-// the linkage between request and response type in the signature of ClusterManagementService.list
-@SuppressWarnings("unused")
 @Experimental
 public interface RespondsWith<R> {
   @XmlTransient
@@ -54,7 +50,7 @@ public interface RespondsWith<R> {
   };
 
   default boolean hasRuntimeInfo() {
-    return !getRuntimeClass().equals(RuntimeInfo.class);
+    return !RuntimeInfo.class.equals(getRuntimeClass());
   }
 
   @XmlTransient

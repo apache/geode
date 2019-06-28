@@ -34,7 +34,7 @@ import org.apache.geode.management.runtime.MemberInformation;
 
 public class MemberConfigRealizer
     implements ConfigurationRealizer<MemberConfig, MemberInformation> {
-  private static Logger logger = LogService.getLogger();
+  private static final Logger logger = LogService.getLogger();
 
   @Override
   public RealizationResult create(MemberConfig config, InternalCache cache) {

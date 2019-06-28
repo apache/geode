@@ -86,17 +86,17 @@ public class MemberManagementServiceDUnitTest {
         assertThat(oneMember.isCoordinator()).isTrue();
         assertThat(oneMember.getLocatorPort())
             .as("port for locator member should not be null").isNotNull().isGreaterThan(0);
-        assertThat(oneMember.getCacheServeInfo().size())
+        assertThat(oneMember.getCacheServerInfo().size())
             .as("locators should not have cache servers").isEqualTo(0);
       } else {
         assertThat(oneMember.isCoordinator()).isFalse();
         assertThat(oneMember.getLocatorPort()).as("port for server member should be 0")
             .isEqualTo(0);
-        assertThat(oneMember.getCacheServeInfo().size())
+        assertThat(oneMember.getCacheServerInfo().size())
             .as("server should have one cache server").isEqualTo(1);
-        assertThat(oneMember.getCacheServeInfo().get(0).getPort()).isGreaterThan(0);
-        assertThat(oneMember.getCacheServeInfo().get(0).getMaxConnections()).isGreaterThan(0);
-        assertThat(oneMember.getCacheServeInfo().get(0).getMaxThreads()).isEqualTo(0);
+        assertThat(oneMember.getCacheServerInfo().get(0).getPort()).isGreaterThan(0);
+        assertThat(oneMember.getCacheServerInfo().get(0).getMaxConnections()).isGreaterThan(0);
+        assertThat(oneMember.getCacheServerInfo().get(0).getMaxThreads()).isEqualTo(0);
       }
     }
   }

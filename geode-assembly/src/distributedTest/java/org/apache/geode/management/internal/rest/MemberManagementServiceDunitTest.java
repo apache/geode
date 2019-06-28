@@ -21,7 +21,6 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -55,11 +54,10 @@ public class MemberManagementServiceDunitTest {
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(2);
+    assertThat(result.getRuntimeResult().size()).isEqualTo(2);
 
-    MemberInformation memberConfig =
-        CacheElement.findElement(result.getRuntimeResult(),
-            "locator-0");
+    MemberInformation memberConfig = result.getRuntimeResult().stream()
+        .filter(r -> "locator-0".equals(r.getName())).findFirst().orElse(null);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isServer()).isFalse();
     assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());
@@ -73,7 +71,7 @@ public class MemberManagementServiceDunitTest {
     ClusterManagementResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(1);
+    assertThat(result.getRuntimeResult().size()).isEqualTo(1);
 
     MemberInformation memberConfig = result.getRuntimeResult().get(0);
     assertThat(memberConfig.isCoordinator()).isTrue();
@@ -89,6 +87,6 @@ public class MemberManagementServiceDunitTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getResult().size()).isEqualTo(0);
+    assertThat(result.getRuntimeResult().size()).isEqualTo(0);
   }
 }
