@@ -297,6 +297,9 @@ public interface DMStats {
    */
   void incReconnectAttempts();
 
+
+  int getReconnectAttempts();
+
   /**
    * @since GemFire 4.1
    */

@@ -66,6 +66,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -143,7 +144,10 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     for (int i = 1; i <= NUM_SERVERS; i++) {
       verifyCreatedEntry(getVM(i));
     }
-    performUpdate(getVM(1));
+    for (int iteration = 1; iteration < 6; iteration++) {
+      System.out.println("Performing update #" + iteration);
+      performUpdate(getVM(1));
+    }
     for (int i = 1; i <= NUM_SERVERS; i++) {
       verifyUpdatedEntry(getVM(i));
     }
@@ -239,8 +243,13 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   private void performUpdate(VM memberVM) {
-    memberVM.invoke("perform update", () -> cache
-        .getRegion(regionName).put("testKey", "updatedTestValue"));
+    memberVM.invoke("perform update", () -> {
+      DMStats stats = ((InternalDistributedSystem) cache.getDistributedSystem())
+          .getDistributionManager().getStats();
+      int reconnectAttempts = stats.getReconnectAttempts();
+      cache.getRegion(regionName).put("testKey", "updatedTestValue");
+      assertThat(stats.getReconnectAttempts()).isEqualTo(reconnectAttempts);
+    });
   }
 
   private void performCreateWithLargeValue(VM memberVM) {

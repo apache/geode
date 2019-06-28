@@ -58,9 +58,6 @@ public class MsgReader {
 
     Assert.assertTrue(unwrappedBuffer.remaining() >= Connection.MSG_HEADER_BYTES);
 
-    int position = unwrappedBuffer.position();
-    int limit = unwrappedBuffer.limit();
-
     try {
       int nioMessageLength = unwrappedBuffer.getInt();
       /* nioMessageVersion = */
@@ -94,13 +91,12 @@ public class MsgReader {
     Assert.assertTrue(nioInputBuffer.remaining() >= header.messageLength);
     this.getStats().incMessagesBeingReceived(true, header.messageLength);
     long startSer = this.getStats().startMsgDeserialization();
-    int position = nioInputBuffer.position();
-    int limit = nioInputBuffer.limit();
     try {
       byteBufferInputStream.setBuffer(nioInputBuffer);
       ReplyProcessor21.initMessageRPId();
-      // dumpState("readMessage ready to deserialize", null, nioInputBuffer, position, limit);
-      return (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+      DistributionMessage result =
+          (DistributionMessage) InternalDataSerializer.readDSFID(byteBufferInputStream);
+      return result;
     } catch (RuntimeException e) {
       throw e;
     } catch (IOException e) {
@@ -108,7 +104,7 @@ public class MsgReader {
     } finally {
       this.getStats().endMsgDeserialization(startSer);
       this.getStats().decMessagesBeingReceived(header.messageLength);
-      ioFilter.doneReading(nioInputBuffer);
+      ioFilter.doneReadingDirectAck(nioInputBuffer);
     }
   }
 

@@ -57,6 +57,13 @@ public interface NioFilter {
       throws IOException;
 
   /**
+   * When done reading a direct ack message invoke this method
+   */
+  default void doneReadingDirectAck(ByteBuffer unwrappedBuffer) {
+    doneReading(unwrappedBuffer);
+  }
+
+  /**
    * You must invoke this when done reading from the unwrapped buffer
    */
   default void doneReading(ByteBuffer unwrappedBuffer) {
