@@ -263,7 +263,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
         }
 
         // Add a listener to close vm0 when we send a distributed operation
-        // this will cause a retry after we have applied the original put all to
+        // this will cause a retry after we have applied the original operation to
         // the cache, causing a retry
         DistributionMessageObserver
             .setInstance(new DistributionMessageObserver() {
@@ -287,7 +287,7 @@ public class ClientsWithVersioningRetryDUnitTest extends JUnit4CacheTestCase {
       }
     });
 
-    // this put operation will trigger vm1 to be closed, and the put will be retried
+    // this operation will trigger vm0 to be closed, and the operation will be retried
     vm3.invoke(new SerializableCallable("perform update in client") {
       @Override
       public Object call() throws Exception {
