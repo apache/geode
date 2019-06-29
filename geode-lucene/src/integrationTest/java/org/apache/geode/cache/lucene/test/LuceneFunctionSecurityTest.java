@@ -15,8 +15,10 @@
 
 package org.apache.geode.cache.lucene.test;
 
-import java.util.HashMap;
-import java.util.Map;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -33,10 +35,14 @@ import org.apache.geode.cache.lucene.internal.cli.functions.LuceneDestroyIndexFu
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneListIndexFunction;
 import org.apache.geode.cache.lucene.internal.cli.functions.LuceneSearchIndexFunction;
 import org.apache.geode.cache.lucene.internal.directory.DumpDirectoryFiles;
+import org.apache.geode.cache.lucene.internal.distributed.IndexingInProgressFunction;
 import org.apache.geode.cache.lucene.internal.distributed.LuceneQueryFunction;
 import org.apache.geode.cache.lucene.internal.distributed.WaitUntilFlushedFunction;
 import org.apache.geode.cache.lucene.internal.results.LuceneGetPageFunction;
 import org.apache.geode.examples.SimpleSecurityManager;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.junit.categories.LuceneTest;
 import org.apache.geode.test.junit.categories.SecurityTest;
 import org.apache.geode.test.junit.rules.ConnectionConfiguration;
@@ -46,43 +52,102 @@ import org.apache.geode.test.junit.rules.ServerStarterRule;
 @Category({SecurityTest.class, LuceneTest.class})
 public class LuceneFunctionSecurityTest {
   private static final String RESULT_HEADER = "Message";
+  private static final String REGION_NAME = "testRegion";
 
   @ClassRule
   public static ServerStarterRule server =
-      new ServerStarterRule().withJMXManager().withSecurityManager(SimpleSecurityManager.class)
-          .withRegion(RegionShortcut.PARTITION, "testRegion").withAutoStart();
+      new ServerStarterRule().withJMXManager()
+          .withSecurityManager(SimpleSecurityManager.class)
+          .withRegion(RegionShortcut.PARTITION, REGION_NAME).withAutoStart();
 
   @Rule
   public GfshCommandRule gfsh =
-      new GfshCommandRule(server::getJmxPort, GfshCommandRule.PortType.jmxManager);
+      new GfshCommandRule(server::getJmxPort,
+          GfshCommandRule.PortType.jmxManager);
 
-  private static Map<Function, String> functionStringMap = new HashMap<>();
+  private static HashSet<Function> functions = new HashSet<>();
+  private static HashSet<Function> functionsWithDataRead = new HashSet<>();
 
   @BeforeClass
-  public static void setupClass() {
-    functionStringMap.put(new LuceneCreateIndexFunction(), "*");
-    functionStringMap.put(new LuceneDescribeIndexFunction(), "*");
-    functionStringMap.put(new LuceneDestroyIndexFunction(), "*");
-    functionStringMap.put(new LuceneListIndexFunction(), "*");
-    functionStringMap.put(new LuceneSearchIndexFunction(), "*");
-    functionStringMap.put(new LuceneQueryFunction(), "*");
-    functionStringMap.put(new WaitUntilFlushedFunction(), "*");
-    functionStringMap.put(new LuceneGetPageFunction(), "*");
+  public static void setupFunctions() {
+    functions.add(new LuceneCreateIndexFunction());
+    functions.add(new LuceneDescribeIndexFunction());
+    functions.add(new LuceneDestroyIndexFunction());
+    functions.add(new LuceneListIndexFunction());
+    functions.add(new LuceneSearchIndexFunction());
+    functions.add(new LuceneQueryFunction());
+    functions.add(new WaitUntilFlushedFunction());
+    functions.add(new LuceneGetPageFunction());
+    functions.add(new IndexingInProgressFunction());
 
-    functionStringMap.keySet().forEach(FunctionService::registerFunction);
+    functions.forEach(FunctionService::registerFunction);
     FunctionService.registerFunction(new DumpDirectoryFiles());
+
+    for (Function function : functions) {
+      Collection<ResourcePermission> permissions = function
+          .getRequiredPermissions(REGION_NAME);
+      if (permissions.contains(ResourcePermissions.DATA_READ)) {
+        functionsWithDataRead.add(function);
+      }
+    }
   }
 
   @Test
   @ConnectionConfiguration(user = "user", password = "user")
   public void functionRequireExpectedPermission() throws Exception {
-    functionStringMap.entrySet().stream().forEach(entry -> {
-      Function function = entry.getKey();
-      String permission = entry.getValue();
-      gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + function.getId())
+    functions.stream().forEach(function -> {
+      Collection<ResourcePermission> permissions = function
+          .getRequiredPermissions(REGION_NAME);
+      ResourcePermission resourcePermission = (ResourcePermission) permissions
+          .toArray()[0];
+      String permission = resourcePermission.toString();
+
+      gfsh.executeAndAssertThat(
+          "execute function --region=" + REGION_NAME + " --id=" + function.getId())
           .tableHasRowCount(1)
           .tableHasRowWithValues(RESULT_HEADER, "Exception: user not authorized for " + permission)
           .statusIsError();
+    });
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "DATAREAD", password = "DATAREAD")
+  public void functionRequireExpectedReadPermissionToPass() throws Exception {
+    IgnoredException.addIgnoredException("did not send last result");
+    assertThat(functionsWithDataRead).isNotEmpty();
+
+    functionsWithDataRead.stream().forEach(function -> {
+      String permission = "*";
+      Collection<ResourcePermission> permissions = function
+          .getRequiredPermissions(REGION_NAME);
+      for (ResourcePermission resourcePermission : permissions) {
+        if (permission.equals(ResourcePermissions.DATA_READ)) {
+          permission = resourcePermission.toString();
+        }
+      }
+      gfsh.executeAndAssertThat(
+          "execute function --region=" + REGION_NAME + " --id=" + function.getId())
+          .doesNotContainOutput("Exception: user not authorized for ")
+          .statusIsError();
+    });
+  }
+
+  @Test
+  @ConnectionConfiguration(user = "user", password = "user")
+  public void functionWithoutExpectedPermissionWillFail() throws Exception {
+    IgnoredException.addIgnoredException("did not send last result");
+    assertThat(functionsWithDataRead).isNotEmpty();
+
+    functionsWithDataRead.stream().forEach(function -> {
+      Collection<ResourcePermission> permissions = function
+          .getRequiredPermissions(REGION_NAME);
+      ResourcePermission resourcePermission = (ResourcePermission) permissions
+          .toArray()[0];
+      String permission = resourcePermission.toString();
+      gfsh.executeAndAssertThat(
+          "execute function --region=" + REGION_NAME + " --id=" + function.getId())
+          .statusIsError().hasTableSection().hasRowSize(1).hasRow(0).asList().last()
+          .isEqualTo("Exception: user not authorized for " + permission);
     });
   }
 
@@ -91,16 +156,20 @@ public class LuceneFunctionSecurityTest {
   @Test
   @ConnectionConfiguration(user = "clusterManage", password = "clusterManage")
   public void dumpDirectoryFileRequiresAll_insufficientUser() {
-    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
+    gfsh.executeAndAssertThat(
+        "execute function --region=" + REGION_NAME + " --id=" + DumpDirectoryFiles.ID)
         .tableHasRowCount(1)
-        .tableHasRowWithValues(RESULT_HEADER, "Exception: clusterManage not authorized for *")
+        .tableHasRowWithValues(RESULT_HEADER,
+            "Exception: clusterManage not authorized for *")
         .statusIsError();
   }
 
   @Test
   @ConnectionConfiguration(user = "*", password = "*")
   public void dumpDirectoryFileRequiresAll_validUser() {
-    gfsh.executeAndAssertThat("execute function --region=testRegion --id=" + DumpDirectoryFiles.ID)
-        .tableHasRowCount(1).doesNotContainOutput("not authorized").statusIsError();
+    gfsh.executeAndAssertThat(
+        "execute function --region=" + REGION_NAME + " --id=" + DumpDirectoryFiles.ID)
+        .tableHasRowCount(1).doesNotContainOutput("not authorized")
+        .statusIsError();
   }
 }
