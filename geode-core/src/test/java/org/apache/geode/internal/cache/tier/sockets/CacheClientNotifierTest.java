@@ -233,6 +233,7 @@ public class CacheClientNotifierTest {
     ccn.addClientProxy(proxy);
 
     // check ClientProxy Map is not empty
+
     assertTrue(CacheClientNotifier.singletonHasClientProxies());
 
     when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
