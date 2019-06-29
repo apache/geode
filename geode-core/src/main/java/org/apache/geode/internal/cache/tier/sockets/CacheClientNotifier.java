@@ -599,6 +599,18 @@ public class CacheClientNotifier {
     }
   }
 
+  public static boolean singletonHasClientProxies() {
+    CacheClientNotifier instance = ccnSingleton;
+    if (instance != null) {
+      return instance.hasClientProxies();
+    }
+    return false;
+  }
+
+  private boolean hasClientProxies() {
+    return !this._clientProxies.isEmpty() || !this._initClientProxies.isEmpty();
+  }
+
   /**
    * notify interested clients of the given cache event using the given update message. The event
    * should have routing information in it that determines which clients will receive the event.
@@ -611,6 +623,10 @@ public class CacheClientNotifier {
   }
 
   private void singletonNotifyClients(InternalCacheEvent event, ClientUpdateMessage cmsg) {
+    if (!hasClientProxies()) {
+      return;
+    }
+
     FilterInfo filterInfo = event.getLocalFilterInfo();
 
     if (filterInfo != null) {
@@ -2078,5 +2094,10 @@ public class CacheClientNotifier {
     CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
         int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
         OverflowAttributes overflowAttributes, boolean isGatewayReceiver);
+  }
+
+  @VisibleForTesting
+  public void addClientProxyToMap(CacheClientProxy proxy) {
+    _clientProxies.put(proxy.getProxyID(), proxy);
   }
 }

@@ -373,7 +373,7 @@ public class BucketRegion extends DistributedRegion implements Bucket {
   @Override
   void notifyClientsOfTombstoneGC(Map<VersionSource, Long> regionGCVersions,
       Set<Object> removedKeys, EventID eventID, FilterInfo routing) {
-    if (CacheClientNotifier.getInstance() != null) {
+    if (CacheClientNotifier.singletonHasClientProxies()) {
       // Only route the event to clients interested in the partitioned region.
       // We do this by constructing a region-level event and then use it to
       // have the filter profile ferret out all of the clients that have interest

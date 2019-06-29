@@ -24,6 +24,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +45,13 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.client.internal.ServerRegionProxy;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.internal.SystemTimer;
+import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 
 public class LocalRegionTest {
   private LocalRegion region;
@@ -50,6 +61,7 @@ public class LocalRegionTest {
   private CancelCriterion cancelCriterion;
   private RegionAttributes regionAttributes;
   private InternalCache cache;
+  private CacheClientProxy proxy;
 
   private final Object key = new Object();
   private final String value = "value";
@@ -62,6 +74,7 @@ public class LocalRegionTest {
     cancelCriterion = mock(CancelCriterion.class);
     regionAttributes = mock(RegionAttributes.class);
     cache = mock(InternalCache.class);
+    proxy = mock(CacheClientProxy.class);
 
     when(region.getServerProxy()).thenReturn(serverRegionProxy);
     when(event.isFromServer()).thenReturn(false);
@@ -189,4 +202,66 @@ public class LocalRegionTest {
     when(cache.getAllGatewaySenders()).thenReturn(allGatewaySenders);
   }
 
+  @Test
+  public void testDoNotNotifyClientsOfTombstoneGCNoCacheClientNotifier() {
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterInfo routing = new FilterInfo();
+
+    doCallRealMethod().when(region).notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved,
+        eventID, routing);
+    region.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+    verify(region, never()).getFilterProfile();
+  }
+
+  @Test
+  public void testDoNotNotifyClientsOfTombstoneGCNoProxy() {
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterInfo routing = null;
+    when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    doCallRealMethod().when(region).notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved,
+        eventID, routing);
+    region.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+    verify(region, never()).getFilterProfile();
+
+    when(cache.getCacheServers()).thenReturn(Collections.emptyList());
+    ccn.shutdown(111);
+  }
+
+  @Test
+  public void testNotifyClientsOfTombstoneGC() {
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterInfo routing = null;
+    when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
+    ccn.addClientProxyToMap(proxy);
+    doCallRealMethod().when(region).notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved,
+        eventID, routing);
+    when(region.getFilterProfile()).thenReturn(null);
+
+    region.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+
+    when(cache.getCacheServers()).thenReturn(Collections.emptyList());
+    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
+
+    ccn.shutdown(111);
+  }
 }
