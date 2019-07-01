@@ -18,6 +18,8 @@ import static org.apache.geode.management.internal.security.ResourceConstants.MI
 
 import java.security.Principal;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.management.Notification;
@@ -30,6 +32,7 @@ import javax.security.auth.Subject;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
+import org.apache.geode.security.ResourcePermission;
 
 /**
  * this will make JMX authentication to use Shiro for Authentication
@@ -37,6 +40,7 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
+  private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap<>();
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -76,8 +80,17 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
     if (notification instanceof JMXConnectionNotification) {
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
-      if (JMXConnectionNotification.CLOSED.equals(type)) {
-        this.securityService.logout();
+      String connectionId = cxNotification.getConnectionId();
+      synchronized (connectedUsers) {
+        if (JMXConnectionNotification.OPENED.equals(type)) {
+          if (!connectedUsers.containsKey(connectionId)) {
+            connectedUsers.put(connectionId, securityService.getSubject());
+          }
+        } else if (JMXConnectionNotification.CLOSED.equals(type)) {
+          org.apache.shiro.subject.Subject subject = connectedUsers.remove(connectionId);
+          securityService.bindSubject(subject);
+          securityService.logout();
+        }
       }
     }
   }
