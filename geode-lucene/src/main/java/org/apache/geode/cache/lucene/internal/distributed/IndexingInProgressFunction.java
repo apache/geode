@@ -68,7 +68,6 @@ public class IndexingInProgressFunction implements InternalFunction<Object> {
 
   @Override
   public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    System.out.println("GGG");
     return Collections.singletonList(ResourcePermissions.DATA_READ);
   }
 }
