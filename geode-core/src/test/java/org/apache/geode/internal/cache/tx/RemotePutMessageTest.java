@@ -15,27 +15,42 @@
 package org.apache.geode.internal.cache.tx;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.RegionDestroyedException;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalDataView;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 
 public class RemotePutMessageTest {
+
+  @Rule
+  public TestName testName = new TestName();
+
   @Test
   public void testDistributeNotFailWithRegionDestroyedException() throws RemoteOperationException {
     EntryEventImpl event = mock(EntryEventImpl.class);
@@ -62,5 +77,45 @@ public class RemotePutMessageTest {
     when(dm.putOutgoing(any())).thenReturn(null);
 
     RemotePutMessage.distribute(event, 1, false, false, expectedOldValue, false, false);
+  }
+
+  @Test
+  public void testSendReplyInvokedOnceWithFalseResult() throws RemoteOperationException {
+    // Create the RemotePutMessage
+    InternalDistributedMember recipient = mock(InternalDistributedMember.class);
+    EntryEventImpl event = mock(EntryEventImpl.class);
+    EventID eventID = mock(EventID.class);
+    when(event.getEventId()).thenReturn(eventID);
+    RemotePutMessage.RemotePutResponse response = mock(RemotePutMessage.RemotePutResponse.class);
+    long lastModified = 0l;
+    boolean ifNew = false, ifOld = false, requiredOldValue = false;
+    Object expectedOldValue = null;
+    RemotePutMessage message = new RemotePutMessage(recipient, testName.getMethodName(),
+        response, event, lastModified, ifNew,
+        ifOld, expectedOldValue, requiredOldValue, false,
+        false);
+    message.setSender(mock(InternalDistributedMember.class));
+    RemotePutMessage messageSpy = spy(message);
+
+    // Invoke operateOnRegion on the spy
+    ClusterDistributionManager manager = mock(ClusterDistributionManager.class);
+    LocalRegion region = mock(LocalRegion.class);
+    InternalCache cache = mock(InternalCache.class);
+    when(region.getCache()).thenReturn(cache);
+    when(cache.getDistributedSystem()).thenReturn(mock(InternalDistributedSystem.class));
+    InternalDataView dataView = mock(InternalDataView.class);
+    when(region.getDataView()).thenReturn(dataView);
+    when(dataView.putEntry(event, ifNew, ifOld, expectedOldValue, requiredOldValue, lastModified,
+        true)).thenReturn(false);
+    long startTime = 0l;
+    messageSpy.operateOnRegion(manager, region, startTime);
+
+    // Verify the sendReply method containing the exception was called once
+    verify(messageSpy, times(1)).sendReply(eq(message.getSender()), eq(0), eq(manager),
+        any(ReplyException.class), eq(region), eq(0l));
+
+    // Verify the normal sendReply method was not called
+    verify(messageSpy, times(0)).sendReply(eq(message.getSender()), eq(0), eq(manager), eq(null),
+        eq(region), eq(0l), any(EntryEventImpl.class));
   }
 }

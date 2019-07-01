@@ -204,7 +204,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
    */
   public RemotePutMessage() {}
 
-  private RemotePutMessage(DistributedMember recipient, String regionPath,
+  protected RemotePutMessage(DistributedMember recipient, String regionPath,
       DirectReplyProcessor processor, EntryEventImpl event, final long lastModified, boolean ifNew,
       boolean ifOld, Object expectedOldValue, boolean requireOldValue, boolean useOriginRemote,
       boolean possibleDuplicate) {
