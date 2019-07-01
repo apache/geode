@@ -135,7 +135,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       boolean doUpdate = true; // start with assumption we have key and need value
       if (shouldDoRemoteCreate(rgn, ev)) {
         if (logger.isDebugEnabled()) {
-          logger.debug("doPutOrCreate: attempting to create entry");
+          logger.debug("doPutOrCreate: attempting to update or create entry");
         }
         final long startPut = CachePerfStats.getStatTime();
         final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();

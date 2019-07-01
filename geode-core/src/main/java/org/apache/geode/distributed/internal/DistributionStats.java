@@ -1657,6 +1657,11 @@ public class DistributionStats implements DMStats {
   }
 
   @Override
+  public int getReconnectAttempts() {
+    return stats.getInt(reconnectAttemptsId);
+  }
+
+  @Override
   public void incLostLease() {
     stats.incInt(lostConnectionLeaseId, 1);
   }

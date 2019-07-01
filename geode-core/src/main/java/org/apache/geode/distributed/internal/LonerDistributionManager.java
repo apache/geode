@@ -553,6 +553,11 @@ public class LonerDistributionManager implements DistributionManager {
     public void incReconnectAttempts() {}
 
     @Override
+    public int getReconnectAttempts() {
+      return 0;
+    }
+
+    @Override
     public void incLostLease() {}
 
     @Override
