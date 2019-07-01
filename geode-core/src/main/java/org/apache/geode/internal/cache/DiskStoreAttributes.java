@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
@@ -42,7 +43,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   public long timeInterval;
 
   public int[] diskDirSizes;
-
+  private DiskDirSizesUnit diskDirSizesUnit;
   public File[] diskDirs;
 
   public String name;
@@ -61,6 +62,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     this.queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
     this.diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
     this.diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
+    this.diskDirSizesUnit = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES_UNIT;
     this.diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
     this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
   }
@@ -112,6 +114,11 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     return result;
   }
 
+  @Override
+  public DiskDirSizesUnit getDiskDirSizesUnit() {
+    return this.diskDirSizesUnit;
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -131,7 +138,6 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
    */
   @Override
   public long getMaxOplogSize() {
-    // TODO Auto-generated method stub
     return this.maxOplogSizeInBytes / (1024 * 1024);
   }
 
@@ -222,5 +228,10 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     DiskStoreMonitor.checkCritical(criticalPercent);
     diskUsageCriticalPct = criticalPercent;
+  }
+
+  @Override
+  public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
+    this.diskDirSizesUnit = unit;
   }
 }

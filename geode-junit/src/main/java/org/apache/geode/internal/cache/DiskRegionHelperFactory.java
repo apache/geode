@@ -19,6 +19,7 @@ import java.io.File;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
@@ -69,12 +70,9 @@ public class DiskRegionHelperFactory {
       dsf.setQueueSize((int) diskProps.getBytesThreshold());
     }
     factory.setDiskSynchronous(diskProps.isSynchronous());
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      factory.setDiskStoreName(dsf.create(diskProps.getRegionName()).getName());
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    dsf.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    factory.setDiskStoreName(dsf.create(diskProps.getRegionName()).getName());
+
     if (diskProps.isPersistBackup()) {
       factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     }

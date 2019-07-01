@@ -101,6 +101,11 @@ public interface DiskStoreFactory {
   int DEFAULT_DISK_DIR_SIZE = Integer.MAX_VALUE; // unlimited for bug 41863
 
   /**
+   * The default disk directory size unit. Only change it for testing purposes.
+   */
+  DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
+
+  /**
    * The default disk directory sizes.
    * <p>
    * Current value: {@link #DEFAULT_DISK_DIR_SIZE} which is two petabytes each.
@@ -219,6 +224,13 @@ public interface DiskStoreFactory {
    *         the dir array
    */
   DiskStoreFactory setDiskDirsAndSizes(File[] diskDirs, int[] diskDirSizes);
+
+  /**
+   * Sets the directory size unit to be used, megabytes by default. Only used for testing purposes.
+   *
+   * @return a reference to <code>this</code>
+   */
+  DiskStoreFactory setDiskDirSizesUnit(DiskDirSizesUnit unit);
 
   /**
    * Sets the warning threshold for disk usage as a percentage of the total disk volume.

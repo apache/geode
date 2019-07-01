@@ -38,6 +38,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
@@ -130,14 +131,10 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
     dir.deleteOnExit();
     File[] dirs = {dir};
     dsf.setDiskDirsAndSizes(dirs, new int[] {Integer.MAX_VALUE});
-
     dsf.setAutoCompact(false);
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      factory.setDiskStoreName(dsf.create(regionName).getName());
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    dsf.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+
+    factory.setDiskStoreName(dsf.create(regionName).getName());
     factory.setDiskSynchronous(true);
     factory.setDataPolicy(DataPolicy.NORMAL);
 

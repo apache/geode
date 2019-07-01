@@ -79,6 +79,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -152,6 +153,8 @@ public class DiskStoreImpl implements DiskStore {
       DistributionConfig.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
 
   static final int MINIMUM_DIR_SIZE = 1024;
+
+  private DiskDirSizesUnit diskDirSizesUnit = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES_UNIT;
 
   /**
    * The static field delays the joining of the close/clear/destroy & forceFlush operation, with the
@@ -236,16 +239,16 @@ public class DiskStoreImpl implements DiskStore {
    * by default be ON but in order to switch it off you need to explicitly
    */
   static final boolean PREALLOCATE_IF =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
-          .equalsIgnoreCase("false");
+      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
+          .equalsIgnoreCase("true");
 
   /**
    * This system property indicates that Oplogs should be preallocated till the maxOplogSize as
    * specified for the disk store.
    */
   static final boolean PREALLOCATE_OPLOGS =
-      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
-          .equalsIgnoreCase("false");
+      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
+          .equalsIgnoreCase("true");
 
   /**
    * For some testing purposes we would not consider top property if this flag is set to true
@@ -421,6 +424,7 @@ public class DiskStoreImpl implements DiskStore {
     this.writeBufferSize = props.getWriteBufferSize();
     this.diskDirs = props.getDiskDirs();
     this.diskDirSizes = props.getDiskDirSizes();
+    this.diskDirSizesUnit = props.getDiskDirSizesUnit();
     this.warningPercent = props.getDiskUsageWarningPercentage();
     this.criticalPercent = props.getDiskUsageCriticalPercentage();
 
@@ -461,6 +465,9 @@ public class DiskStoreImpl implements DiskStore {
     long tempMaxDirSize = 0;
 
     this.totalDiskStoreSpace = 0;
+    if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
+      DirectoryHolder.DISK_DIR_SIZES_UNIT = this.diskDirSizesUnit;
+    }
     for (int i = 0; i < length; i++) {
       directories[i] =
           new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
@@ -3455,6 +3462,16 @@ public class DiskStoreImpl implements DiskStore {
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     DiskStoreMonitor.checkCritical(criticalPercent);
     this.criticalPercent = criticalPercent;
+  }
+
+  @Override
+  public DiskDirSizesUnit getDiskDirSizesUnit() {
+    return this.diskDirSizesUnit;
+  }
+
+  @Override
+  public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
+    this.diskDirSizesUnit = unit;
   }
 
   public static class AsyncDiskEntry {

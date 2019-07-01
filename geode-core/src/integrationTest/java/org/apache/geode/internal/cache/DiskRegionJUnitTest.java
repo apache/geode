@@ -58,6 +58,7 @@ import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.EntryEvent;
@@ -2475,12 +2476,8 @@ public class DiskRegionJUnitTest {
       DiskStoreFactory diskStoreFactory,
       long maxOplogSizeInBytes) {
     ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      return diskStoreFactory.create(diskStoreName);
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    diskStoreFactory.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    return diskStoreFactory.create(diskStoreName);
   }
 
   private DiskStoreImpl toDiskStoreImpl(DiskStore diskStore) {

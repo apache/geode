@@ -42,6 +42,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskAccessException;
+import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
@@ -149,12 +150,8 @@ public class DiskRegionCompactorCloseIntegrationTest {
       DiskStoreFactory diskStoreFactory,
       long maxOplogSizeInBytes) {
     ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      diskStoreFactory.create(diskStoreName);
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    diskStoreFactory.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    diskStoreFactory.create(diskStoreName);
   }
 
   private class CompactorCacheObserver extends CacheObserverAdapter {
