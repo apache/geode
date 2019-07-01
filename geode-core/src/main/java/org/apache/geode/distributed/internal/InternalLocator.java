@@ -1155,42 +1155,43 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         throw new IllegalStateException(
             "A locator can not be created because one already exists in this JVM.");
       }
-      internalDistributedSystem = newSystem;
-      internalCache = newCache;
-      internalDistributedSystem.setDependentLocator(this);
-      logger.info("Locator restart: initializing TcpServer");
-
-      try {
-        server.restarting(newSystem, newCache, configurationPersistenceService);
-      } catch (CancelException e) {
-        internalDistributedSystem = null;
-        internalCache = null;
-        logger.info("Locator restart: attempt to restart location services failed", e);
-        throw e;
-      }
-
-      if (productUseLog.isClosed()) {
-        productUseLog.reopen();
-      }
-
-      productUseLog.monitorUse(newSystem);
-
-      if (isSharedConfigurationEnabled()) {
-        configurationPersistenceService =
-            new InternalConfigurationPersistenceService(newCache);
-        startClusterManagementService();
-      }
-
-      if (!server.isAlive()) {
-        logger.info("Locator restart: starting TcpServer");
-        startTcpServer();
-      }
-
-      logger.info("Locator restart: initializing JMX manager");
-      startJmxManagerLocationService(newCache);
-      endStartLocator(internalDistributedSystem);
-      logger.info("Locator restart completed");
     }
+    internalDistributedSystem = newSystem;
+    internalCache = newCache;
+    internalDistributedSystem.setDependentLocator(this);
+    logger.info("Locator restart: initializing TcpServer");
+
+    try {
+      server.restarting(newSystem, newCache, configurationPersistenceService);
+    } catch (CancelException e) {
+      internalDistributedSystem = null;
+      internalCache = null;
+      logger.info("Locator restart: attempt to restart location services failed", e);
+      throw e;
+    }
+
+    if (productUseLog.isClosed()) {
+      productUseLog.reopen();
+    }
+
+    productUseLog.monitorUse(newSystem);
+
+    if (isSharedConfigurationEnabled()) {
+      configurationPersistenceService =
+          new InternalConfigurationPersistenceService(newCache);
+      startClusterManagementService();
+    }
+
+    if (!server.isAlive()) {
+      logger.info("Locator restart: starting TcpServer");
+      startTcpServer();
+    }
+
+    logger.info("Locator restart: initializing JMX manager");
+    startJmxManagerLocationService(newCache);
+    endStartLocator(internalDistributedSystem);
+    logger.info("Locator restart completed");
+
     server.restartCompleted(newSystem);
   }
 

@@ -25,6 +25,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_ADDRESS
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_FLOW_CONTROL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MEMBERSHIP_PORT_RANGE;
+import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.ConfigurationProperties.TCP_PORT;
 import static org.apache.geode.distributed.internal.ClusterDistributionManager.NORMAL_DM_TYPE;
@@ -292,6 +293,31 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
       assertThatThrownBy(() -> DistributedSystem.connect(config))
           .isInstanceOfAny(GemFireConfigException.class, SystemConnectException.class);
+    });
+  }
+
+  @Test
+  public void memberShouldWaitUntilAStartupResponseIsReceived() {
+
+    VM vm0 = VM.getVM(0);
+    VM vm1 = VM.getVM(1);
+
+    Properties properties = new Properties();
+    properties.setProperty(REDUNDANCY_ZONE, "testzone");
+
+    vm0.invoke(() -> {
+      getSystem(properties);
+    });
+
+    vm1.invoke(() -> {
+      InternalDistributedSystem system = getSystem(properties);
+
+      // Redundancy zone is part of the data that is sent with the startup response
+      // If we receive a startup response, we should see that vm0 is in the same
+      // redundancy zone as the current member.
+      assertThat(
+          system.getDistributionManager().getMembersInSameZone(system.getDistributedMember()))
+              .hasSize(2);
     });
   }
 
