@@ -24,6 +24,7 @@ import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -63,6 +64,10 @@ public class ClusterManagementResultAssert<T extends CacheElement & CorrespondWi
   public List<RealizationResult> getMemberStatus() {
     return actual.getMemberStatuses();
   }
+
+  public List<ConfigurationResult<T, R>> getResult() {
+    return actual.getResult();
+  };
 
   public ListAssert<T> hasConfigurations() {
     return assertThat(getActual().getConfigResult());

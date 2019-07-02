@@ -73,7 +73,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name", contains("locator-0")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName", contains("locator-0")))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", greaterThan(0)))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(false)))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].status", is("online")))
@@ -91,7 +91,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name", contains("server-1")))
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName", contains("server-1")))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].locatorPort", is(0)))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].server", is(true)))
         .andExpect(jsonPath("$.result[0].runtimeInfo[0].cacheServerInfo[0].port", greaterThan(0)))
@@ -112,7 +112,7 @@ public class MemberManagementServiceRestIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.result[0].runtimeInfo[*].name",
+        .andExpect(jsonPath("$.result[0].runtimeInfo[*].memberName",
             containsInAnyOrder("locator-0", "server-1")));
   }
 }
