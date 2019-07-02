@@ -15,8 +15,6 @@
 
 package org.apache.geode.cache.lucene.internal.results;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -33,8 +31,6 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.management.internal.security.ResourcePermissions;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * {@link LuceneGetPageFunction} Returns the values of entries back to the user This behaves
@@ -89,10 +85,5 @@ public class LuceneGetPageFunction implements InternalFunction<Object> {
   @Override
   public boolean optimizeForWrite() {
     return false;
-  }
-
-  @Override
-  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
-    return Collections.singletonList(ResourcePermissions.DATA_READ);
   }
 }
