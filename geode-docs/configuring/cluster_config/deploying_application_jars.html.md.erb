@@ -80,9 +80,9 @@ Sample output:
 ``` pre
  
  Member   |     Deployed JAR     |                JAR Location            
---------- | -------------------- | ---------------------------------------------------
-datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
-datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/vf.gf#group1_functions.jar#1
+--------- | -------------------- | -------------------------------------------------
+datanode1 | group1_functions.jar | /usr/local/gemfire/deploy/group1_functions.v1.jar
+datanode2 | group1_functions.jar | /usr/local/gemfire/deploy/group1_functions.v1.jar
 ```
 
 For more information on `gfsh` usage, see [gfsh](../../tools_modules/gfsh/chapter_overview.html).
@@ -106,7 +106,7 @@ See [Overview of the Cluster Configuration Service](gfsh_persist.html).
 
 ## <a id="concept_4436C021FB934EC4A330D27BD026602C__section_D9219C5EEED64672930200677C2118C9" class="no-quick-link"></a>Versioning of JAR Files
 
-When you deploy JAR files to a cluster or member group, the JAR file is modified to indicate version information in its name. Each JAR filename is prefixed with `vf.gf#` and contains a version number at the end of the filename. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `vf.gf#MyClasses.jar#5` when you list all deployed jars.
+When you deploy JAR files to a cluster or member group, the JAR file is modified to indicate version information in its name. Each JAR filename contains a version number inserted just before the `.jar` suffix. For example, if you deploy `MyClasses.jar` five times, the filename is displayed as `MyClasses.v5.jar` when you list all deployed jars.
 
 When you deploy a new JAR file, the member receiving the deployment checks whether the JAR file is a duplicate, either because the JAR file has already been deployed on that member or because the JAR file has already been deployed to a shared deployment working directory that other members are also using. If another member has already deployed this JAR file to the shared directory (determined by doing a byte-for-byte compare to the latest version in its directory), the member receiving the latest deployment does not write the file to disk. Instead, the member updates the ClassPathLoader to use the already deployed JAR file. If a newer version of the JAR file is detected on disk and is already in use, the deployment is canceled.
 
