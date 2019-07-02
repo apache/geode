@@ -116,7 +116,7 @@ import org.apache.geode.test.junit.rules.ExecutorServiceRule;
  */
 @RunWith(JUnitParamsRunner.class)
 @SuppressWarnings("serial")
-public class RebalanceOperationDUnitTest extends CacheTestCase {
+public class RebalanceOperationDistributedTest extends CacheTestCase {
 
   private static final long TIMEOUT_SECONDS = GeodeAwaitility.getTimeout().getValue();
 
