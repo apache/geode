@@ -2317,7 +2317,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return the map of bucketIds and their associated sizes, or {@link Collections#EMPTY_MAP}when
    *         the size is zero
    */
-  public Map getSizeLocally() {
+  public Map<Integer, Integer> getSizeLocally() {
     return getSizeLocally(false);
   }
 
@@ -2331,7 +2331,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     if (this.localBucket2RegionMap.isEmpty()) {
       return Collections.EMPTY_MAP;
     }
-    mySizeMap = new HashMap<Integer, Integer>(this.localBucket2RegionMap.size());
+    mySizeMap = new HashMap<>(this.localBucket2RegionMap.size());
     Map.Entry<Integer, BucketRegion> me;
     BucketRegion r;
     for (Iterator<Map.Entry<Integer, BucketRegion>> itr =
@@ -2350,7 +2350,6 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
           }
         }
       } catch (CacheRuntimeException skip) {
-        continue;
       }
     } // for
     if (logger.isDebugEnabled()) {
