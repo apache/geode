@@ -27,6 +27,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 
@@ -133,6 +134,7 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
    */
   @Test
   public void oldEventShouldBeProcessedAtNewSender() {
+    IgnoredException.addIgnoredException("This is normal if the locator was shutdown.");
     // Roll mixed site locator to current
     rollLocatorToCurrent(site1Locator, site1LocatorPort, site1DistributedSystemId, site1Locators,
         site2Locators);
@@ -182,6 +184,7 @@ public class WANRollingUpgradeNewSenderProcessOldEvent
    */
   @Test
   public void oldEventShouldBeProcessedAtTwoNewSender() {
+    IgnoredException.addIgnoredException("This is normal if the locator was shutdown.");
     // Roll mixed site locator to current
     rollLocatorToCurrent(site1Locator, site1LocatorPort, site1DistributedSystemId, site1Locators,
         site2Locators);
