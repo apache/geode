@@ -133,7 +133,7 @@ public class LuceneClientSecurityDUnitTest extends LuceneQueriesAccessorBase {
   protected LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] getSearchIndexUserNameAndExpectedResponses() {
     return new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse[] {
         new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("nopermissions", true,
-            "nopermissions not authorized for *"),
-        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("*", false, null)};
+            "nopermissions not authorized for DATA:READ"),
+        new LuceneCommandsSecurityDUnitTest.UserNameAndExpectedResponse("DATAREAD", false, null)};
   }
 }
