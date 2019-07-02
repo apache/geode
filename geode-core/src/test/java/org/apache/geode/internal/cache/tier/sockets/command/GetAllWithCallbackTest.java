@@ -35,6 +35,7 @@ import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.cache.tier.CachedRegionHelper;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.ObjectPartList;
@@ -105,6 +106,7 @@ public class GetAllWithCallbackTest {
 
     when(this.serverConnection.getCache()).thenReturn(this.cache);
     when(this.serverConnection.getAuthzRequest()).thenReturn(this.authzRequest);
+    when(this.serverConnection.getCachedRegionHelper()).thenReturn(mock(CachedRegionHelper.class));
     when(this.serverConnection.getChunkedResponseMessage()).thenReturn(this.chunkedResponseMessage);
   }
 
@@ -151,18 +153,8 @@ public class GetAllWithCallbackTest {
 
     this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    for (Object key : KEYS) {
-      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
-          key.toString());
-    }
-
-    ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
-
-    assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for (Object key : argument.getValue().getObjects()) {
-      assertThat(key).isExactlyInstanceOf(NotAuthorizedException.class);
-    }
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+        KEYS[0]);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }

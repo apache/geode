@@ -157,18 +157,8 @@ public class GetAll70Test {
 
     this.getAll70.cmdExecute(this.message, this.serverConnection, this.securityService, 0);
 
-    for (Object key : KEYS) {
-      verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
-          key.toString());
-    }
-
-    ArgumentCaptor<ObjectPartList> argument = ArgumentCaptor.forClass(ObjectPartList.class);
-    verify(this.chunkedResponseMessage).addObjPartNoCopying(argument.capture());
-
-    assertThat(argument.getValue().getObjects()).hasSize(KEYS.length);
-    for (Object key : argument.getValue().getObjects()) {
-      assertThat(key).isExactlyInstanceOf(NotAuthorizedException.class);
-    }
+    verify(this.securityService).authorize(Resource.DATA, Operation.READ, REGION_NAME,
+        KEYS[0]);
 
     verify(this.chunkedResponseMessage).sendChunk(eq(this.serverConnection));
   }

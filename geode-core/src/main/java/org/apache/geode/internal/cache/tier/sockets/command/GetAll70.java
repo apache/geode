@@ -193,6 +193,9 @@ public class GetAll70 extends BaseCommand {
         if (isDebugEnabled) {
           logger.debug("{}: Getting value for key={}", servConn.getName(), key);
         }
+
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
+
         // Determine if the user authorized to get this key
         GetOperationContext getContext = null;
         if (authzRequest != null) {
@@ -209,17 +212,6 @@ public class GetAll70 extends BaseCommand {
             values.addExceptionPart(key, ex);
             continue;
           }
-        }
-
-        try {
-          securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
-        } catch (NotAuthorizedException ex) {
-          logger.warn(
-              String.format("%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
-              ex);
-          values.addExceptionPart(key, ex);
-          continue;
         }
 
         // Get the value and update the statistics. Do not deserialize
