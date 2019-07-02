@@ -103,6 +103,7 @@ public interface DiskStoreFactory {
   /**
    * The default disk directory size unit. Only change it for testing purposes.
    */
+  @MakeImmutable
   DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
 
   /**
