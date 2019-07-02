@@ -15,6 +15,9 @@
 package org.apache.geode.cache.lucene.internal.distributed;
 
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.execute.FunctionContext;
@@ -24,6 +27,8 @@ import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneService;
 import org.apache.geode.cache.lucene.LuceneServiceProvider;
 import org.apache.geode.internal.cache.execute.InternalFunction;
+import org.apache.geode.management.internal.security.ResourcePermissions;
+import org.apache.geode.security.ResourcePermission;
 
 public class IndexingInProgressFunction implements InternalFunction<Object> {
 
@@ -59,5 +64,10 @@ public class IndexingInProgressFunction implements InternalFunction<Object> {
   @Override
   public boolean optimizeForWrite() {
     return true;
+  }
+
+  @Override
+  public Collection<ResourcePermission> getRequiredPermissions(String regionName) {
+    return Collections.singletonList(ResourcePermissions.DATA_READ);
   }
 }
