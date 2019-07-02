@@ -59,6 +59,7 @@ org/apache/geode/cache/CommitDistributionException,true,-3517820638706581823,reg
 org/apache/geode/cache/CommitIncompleteException,true,1017741483744420800
 org/apache/geode/cache/DataPolicy,true,2095573273889467233,ordinal:byte
 org/apache/geode/cache/DiskAccessException,true,5799100281147167888
+org/apache/geode/cache/DiskDirSizesUnit,false
 org/apache/geode/cache/DiskWriteAttributesFactory,true,-4077746249663727235,props:java/util/Properties
 org/apache/geode/cache/DuplicatePrimaryPartitionException,true,1
 org/apache/geode/cache/EntryDestroyedException,true,831865939772672542
@@ -250,7 +251,7 @@ org/apache/geode/internal/cache/CacheClientStatus,true,-56148046466517217,_id:or
 org/apache/geode/internal/cache/CommitReplyException,true,-7711083075296622596,exceptions:java/util/Set
 org/apache/geode/internal/cache/DataLocationException,true,-7385193860335007389
 org/apache/geode/internal/cache/DiskInitFile$DiskRegionFlag,false
-org/apache/geode/internal/cache/DiskStoreAttributes,true,1,allowForceCompaction:boolean,autoCompact:boolean,compactionThreshold:int,diskDirSizes:int[],diskDirs:java/io/File[],diskUsageCriticalPct:float,diskUsageWarningPct:float,maxOplogSizeInBytes:long,name:java/lang/String,queueSize:int,timeInterval:long,writeBufferSize:int
+org/apache/geode/internal/cache/DiskStoreAttributes,true,1,allowForceCompaction:boolean,autoCompact:boolean,compactionThreshold:int,diskDirSizes:int[],diskDirSizesUnit:org/apache/geode/cache/DiskDirSizesUnit,diskDirs:java/io/File[],diskUsageCriticalPct:float,diskUsageWarningPct:float,maxOplogSizeInBytes:long,name:java/lang/String,queueSize:int,timeInterval:long,writeBufferSize:int
 org/apache/geode/internal/cache/DiskStoreImpl$KillCompactorException,false
 org/apache/geode/internal/cache/DiskWriteAttributesImpl,true,-4269181954992768424,bytesThreshold:long,compactOplogs:boolean,isSynchronous:boolean,maxOplogSize:long,timeInterval:long
 org/apache/geode/internal/cache/DistTXCommitMessage$DistTxCommitExceptionCollectingException,true,-2681117727592137893,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map
