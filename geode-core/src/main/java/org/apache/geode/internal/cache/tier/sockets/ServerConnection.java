@@ -838,8 +838,9 @@ public abstract class ServerConnection implements Runnable {
           } else if (uniqueId == 0) {
             logger.debug("No unique ID yet. {}, {}", messageType, getName());
           } else {
-            logger.error("Failed to bind the subject of uniqueId {} for message {} with {}",
-                uniqueId, messageType, getName());
+            logger.warn(
+                "Failed to bind the subject of uniqueId {} for message {} with {} : Possible re-authentication required",
+                uniqueId, messageType, this.getName());
             throw new AuthenticationRequiredException("Failed to find the authenticated user.");
           }
         }
