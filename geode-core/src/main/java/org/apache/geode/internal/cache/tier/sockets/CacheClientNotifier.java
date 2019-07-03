@@ -608,7 +608,7 @@ public class CacheClientNotifier {
   }
 
   private boolean hasClientProxies() {
-    return !this._clientProxies.isEmpty() || !this._initClientProxies.isEmpty();
+    return !this._initClientProxies.isEmpty() || !this._clientProxies.isEmpty();
   }
 
   /**

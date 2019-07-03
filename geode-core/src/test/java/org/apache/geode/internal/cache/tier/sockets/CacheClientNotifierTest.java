@@ -208,6 +208,31 @@ public class CacheClientNotifierTest {
     when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
     ccn.addClientProxy(proxy);
 
+    // check ClientProxy Map is not empty
+    assertTrue(CacheClientNotifier.singletonHasClientProxies());
+
+    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
+    ccn.shutdown(111);
+  }
+
+  @Test
+  public void testSingletonHasInitClientProxiesTrue() {
+    InternalCache internalCache = Fakes.cache();
+    CacheClientProxy proxy = mock(CacheClientProxy.class);
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(internalCache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
+    ccn.addClientInitProxy(proxy);
+
+    // check InitClientProxy Map is not empty
+    assertTrue(CacheClientNotifier.singletonHasClientProxies());
+
+    ccn.addClientProxy(proxy);
+
+    // check ClientProxy Map is not empty
     assertTrue(CacheClientNotifier.singletonHasClientProxies());
 
     when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
