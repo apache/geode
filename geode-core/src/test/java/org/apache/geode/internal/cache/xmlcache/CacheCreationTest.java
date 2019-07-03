@@ -52,7 +52,7 @@ import org.apache.geode.distributed.ServerLauncherParameters;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class CacheCreationJUnitTest {
+public class CacheCreationTest {
 
   @Mock
   private InternalCache cache;
