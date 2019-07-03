@@ -746,7 +746,7 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   Map<Long, Oplog> getOplogIdToOplog() {
-    return getOplogSet().oplogIdToOplog;
+    return getOplogSet().getOplogIdToOplog();
   }
 
   void testHookCloseAllOverflowChannels() {
