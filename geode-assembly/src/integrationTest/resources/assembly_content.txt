@@ -731,6 +731,11 @@ javadoc/org/apache/geode/management/membership/UniversalMembershipListenerAdapte
 javadoc/org/apache/geode/management/membership/package-frame.html
 javadoc/org/apache/geode/management/membership/package-summary.html
 javadoc/org/apache/geode/management/membership/package-tree.html
+javadoc/org/apache/geode/management/operation/OperationResult.Status.html
+javadoc/org/apache/geode/management/operation/OperationResult.html
+javadoc/org/apache/geode/management/operation/package-frame.html
+javadoc/org/apache/geode/management/operation/package-summary.html
+javadoc/org/apache/geode/management/operation/package-tree.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html

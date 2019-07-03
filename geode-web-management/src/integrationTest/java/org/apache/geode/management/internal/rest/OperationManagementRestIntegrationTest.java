@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 import org.junit.Before;
@@ -55,6 +56,8 @@ public class OperationManagementRestIntegrationTest {
   // needs to be used together with any BaseLocatorContextLoader
   private LocatorWebContext context;
 
+  private CountDownLatch latch = new CountDownLatch(0);
+
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
@@ -71,6 +74,7 @@ public class OperationManagementRestIntegrationTest {
           operationResult.setEndTime(System.currentTimeMillis());
           operationResult.setStatus(OperationResult.Status.COMPLETED);
           future.complete(operationResult);
+          latch.countDown();
         });
 
         return future;
@@ -93,6 +97,7 @@ public class OperationManagementRestIntegrationTest {
           operationResult.setStatus(OperationResult.Status.FAILED);
           operationResult.setMessage("operation failed");
           future.completeExceptionally(new RuntimeException("operation failed"));
+          latch.countDown();
         });
 
         return future;
@@ -120,10 +125,12 @@ public class OperationManagementRestIntegrationTest {
 
   @Test
   public void querySuccessfulOperation() throws Exception {
+    latch = new CountDownLatch(1);
     context.perform(post("/v2/operations/good-operation"))
         .andDo(print())
         .andExpect(status().isAccepted())
         .andExpect(header().string("Location", "http://localhost/v2/operations/good-operation"));
+    latch.await();
 
     context.perform(get("/v2/operations/good-operation"))
         .andDo(print())
@@ -135,10 +142,12 @@ public class OperationManagementRestIntegrationTest {
 
   @Test
   public void queryOperationWithException() throws Exception {
+    latch = new CountDownLatch(1);
     context.perform(post("/v2/operations/bad-operation"))
         .andDo(print())
         .andExpect(status().isAccepted())
         .andExpect(header().string("Location", "http://localhost/v2/operations/bad-operation"));
+    latch.await();
 
     context.perform(get("/v2/operations/bad-operation"))
         .andDo(print())

@@ -72,12 +72,12 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
   private static final Logger logger = LogService.getLogger();
-  private ConfigurationPersistenceService persistenceService;
-  private Map<Class, ConfigurationManager> managers;
-  private Map<Class, ConfigurationValidator> validators;
-  private MemberValidator memberValidator;
-  private CacheElementValidator commonValidator;
-  private OperationManager operationManager;
+  private final ConfigurationPersistenceService persistenceService;
+  private final Map<Class, ConfigurationManager> managers;
+  private final Map<Class, ConfigurationValidator> validators;
+  private final MemberValidator memberValidator;
+  private final CacheElementValidator commonValidator;
+  private final OperationManager operationManager;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {

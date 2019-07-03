@@ -33,14 +33,16 @@ public class OperationResult implements Cloneable {
   private long endTime;
 
   public enum Status {
+    PENDING,
+    RUNNING,
     COMPLETED,
-    FAILED,
-    RUNNING
+    FAILED
   }
 
   @JsonCreator
   public OperationResult(@JsonProperty("name") String name) {
     this.name = name;
+    this.status = Status.PENDING;
   }
 
   private OperationResult(String name, Status status, long startTime, long endTime,
