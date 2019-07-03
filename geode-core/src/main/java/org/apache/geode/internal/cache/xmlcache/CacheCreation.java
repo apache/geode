@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.xmlcache;
 
+import static java.lang.String.format;
+import static org.apache.geode.internal.logging.LogWriterFactory.toSecurityLogWriter;
 import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
 
 import java.io.File;
@@ -41,6 +43,7 @@ import javax.naming.Context;
 import javax.transaction.TransactionManager;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.GemFireIOException;
@@ -49,6 +52,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.CacheTransactionManager;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.CacheXmlException;
@@ -74,20 +78,14 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.query.CqAttributes;
-import org.apache.geode.cache.query.CqException;
-import org.apache.geode.cache.query.CqExistsException;
 import org.apache.geode.cache.query.CqQuery;
 import org.apache.geode.cache.query.CqServiceStatistics;
 import org.apache.geode.cache.query.Index;
-import org.apache.geode.cache.query.IndexExistsException;
 import org.apache.geode.cache.query.IndexInvalidException;
-import org.apache.geode.cache.query.IndexNameConflictException;
 import org.apache.geode.cache.query.IndexType;
-import org.apache.geode.cache.query.MultiIndexCreationException;
 import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryInvalidException;
 import org.apache.geode.cache.query.QueryService;
-import org.apache.geode.cache.query.RegionNotFoundException;
 import org.apache.geode.cache.query.internal.InternalQueryService;
 import org.apache.geode.cache.query.internal.MethodInvocationAuthorizer;
 import org.apache.geode.cache.query.internal.QueryMonitor;
@@ -155,7 +153,7 @@ import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.jndi.JNDIInvoker;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LocalLogWriter;
-import org.apache.geode.internal.logging.LogWriterFactory;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
@@ -176,25 +174,38 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  */
 public class CacheCreation implements InternalCache {
 
+  private static final Logger logger = LogService.getLogger();
+
+  @Immutable
+  private static final RegionAttributes defaults = new AttributesFactory().create();
+
+  /**
+   * Store the current CacheCreation that is doing a create. Used from PoolManager to defer to
+   * CacheCreation as a manager of pools.
+   *
+   * @since GemFire 5.7
+   */
+  private static final ThreadLocal<PoolManagerImpl> createInProgress = new ThreadLocal<>();
+
   /**
    * The amount of time to wait for a distributed lock
    */
   private int lockTimeout = GemFireCacheImpl.DEFAULT_LOCK_TIMEOUT;
-  private boolean hasLockTimeout = false;
+  private boolean hasLockTimeout;
 
   /**
    * The duration of a lease on a distributed lock
    */
   private int lockLease = GemFireCacheImpl.DEFAULT_LOCK_LEASE;
-  private boolean hasLockLease = false;
+  private boolean hasLockLease;
 
   /**
    * The amount of time to wait for a {@code netSearch}
    */
   private int searchTimeout = GemFireCacheImpl.DEFAULT_SEARCH_TIMEOUT;
-  private boolean hasSearchTimeout = false;
+  private boolean hasSearchTimeout;
 
-  private boolean hasMessageSyncInterval = false;
+  private boolean hasMessageSyncInterval;
 
   /**
    * This cache's roots keyed on name
@@ -204,14 +215,14 @@ public class CacheCreation implements InternalCache {
   /**
    * Are dynamic regions enabled in this cache?
    */
-  private DynamicRegionFactory.Config dynamicRegionFactoryConfig = null;
-  private boolean hasDynamicRegionFactory = false;
+  private DynamicRegionFactory.Config dynamicRegionFactoryConfig;
+  private boolean hasDynamicRegionFactory;
 
   /**
    * Is this a cache server?
    */
-  private boolean isServer = false;
-  private boolean hasServer = false;
+  private boolean isServer;
+  private boolean hasServer;
 
   /**
    * The cache servers configured for this cache
@@ -221,24 +232,6 @@ public class CacheCreation implements InternalCache {
   // Stores the properties used to initialize declarables.
   private final Map<Declarable, Properties> declarablePropertiesMap = new HashMap<>();
   private final List<DeclarableAndProperties> declarablePropertiesList = new ArrayList<>();
-
-  private static class DeclarableAndProperties {
-    private final Declarable declarable;
-    private final Properties properties;
-
-    public DeclarableAndProperties(Declarable d, Properties p) {
-      declarable = d;
-      properties = p;
-    }
-
-    public Declarable getDeclarable() {
-      return declarable;
-    }
-
-    public Properties getProperties() {
-      return properties;
-    }
-  }
 
   private final Set<GatewaySender> gatewaySenders = new HashSet<>();
 
@@ -252,12 +245,12 @@ public class CacheCreation implements InternalCache {
    * The copyOnRead attribute
    */
   private boolean copyOnRead = GemFireCacheImpl.DEFAULT_COPY_ON_READ;
-  private boolean hasCopyOnRead = false;
+  private boolean hasCopyOnRead;
 
   /**
    * The CacheTransactionManager representative for this Cache
    */
-  CacheTransactionManagerCreation txMgrCreation = null;
+  private CacheTransactionManagerCreation cacheTransactionManagerCreation;
 
   /**
    * The named region attributes associated with this cache
@@ -269,13 +262,13 @@ public class CacheCreation implements InternalCache {
    * ensures that named region attributes are processed in the correct order. That is, "parent"
    * named region attributes will be processed before "children" named region attributes.
    */
-  final List<String> regionAttributesNames = new ArrayList<>();
+  private final List<String> regionAttributesNames = new ArrayList<>();
 
   /**
    * The named disk store attributes associated with this cache. Made this linked so its iteration
    * would be in insert order. This is important for unit testing 44914.
    */
-  protected final Map<String, DiskStore> diskStores = new LinkedHashMap<>();
+  private final Map<String, DiskStore> diskStores = new LinkedHashMap<>();
 
   private final List<File> backups = new ArrayList<>();
 
@@ -284,11 +277,9 @@ public class CacheCreation implements InternalCache {
   /**
    * A logger that is used in debugging
    */
-  private final InternalLogWriter logWriter =
-      new LocalLogWriter(ALL.intLevel(), System.out);
+  private final InternalLogWriter logWriter = new LocalLogWriter(ALL.intLevel(), System.out);
 
-  private final InternalLogWriter securityLogWriter =
-      LogWriterFactory.toSecurityLogWriter(this.logWriter);
+  private final InternalLogWriter securityLogWriter = toSecurityLogWriter(logWriter);
 
   /**
    * {@link ExtensionPoint} support.
@@ -297,11 +288,42 @@ public class CacheCreation implements InternalCache {
    */
   private final SimpleExtensionPoint<Cache> extensionPoint = new SimpleExtensionPoint<>(this, this);
 
+  private final PoolManagerImpl poolManager = new PoolManagerImpl(false);
+
+  private volatile FunctionServiceCreation functionServiceCreation;
+
+  private volatile boolean hasFunctionService;
+
+  private volatile boolean hasResourceManager;
+
+  private volatile ResourceManagerCreation resourceManagerCreation;
+
+  private volatile SerializerCreation serializerCreation;
+
+  private Declarable initializer;
+
+  private Properties initializerProps;
+
+  private final InternalQueryService queryService = createInternalQueryService();
+
   /**
    * Creates a new {@code CacheCreation} with no root regions
    */
   public CacheCreation() {
     this(false);
+  }
+
+  /**
+   * @param forParsing if true then this creation is used for parsing xml; if false then it is used
+   *        for generating xml.
+   *
+   * @since GemFire 5.7
+   */
+  public CacheCreation(boolean forParsing) {
+    initializeRegionShortcuts();
+    if (!forParsing) {
+      createInProgress.set(poolManager);
+    }
   }
 
   /**
@@ -312,26 +334,11 @@ public class CacheCreation implements InternalCache {
   }
 
   /**
-   * @param forParsing if true then this creation is used for parsing xml; if false then it is used
-   *        for generating xml.
-   * @since GemFire 5.7
-   */
-  public CacheCreation(boolean forParsing) {
-    initializeRegionShortcuts();
-    if (!forParsing) {
-      createInProgress.set(this.poolManager);
-    }
-  }
-
-  /**
    * @since GemFire 5.7
    */
   void startingGenerate() {
     createInProgress.set(null);
   }
-
-  @Immutable
-  private static final RegionAttributes defaults = new AttributesFactory().create();
 
   RegionAttributes getDefaultAttributes() {
     return defaults;
@@ -348,60 +355,59 @@ public class CacheCreation implements InternalCache {
    *         {@code root}.
    */
   void addRootRegion(RegionCreation root) throws RegionExistsException {
-
     String name = root.getName();
-    RegionCreation existing = (RegionCreation) this.roots.get(name);
+    RegionCreation existing = (RegionCreation) roots.get(name);
+
     if (existing != null) {
       throw new RegionExistsException(existing);
-
-    } else {
-      this.roots.put(root.getName(), root);
     }
+
+    roots.put(root.getName(), root);
   }
 
   @Override
   public int getLockTimeout() {
-    return this.lockTimeout;
+    return lockTimeout;
   }
 
   @Override
   public void setLockTimeout(int seconds) {
-    this.lockTimeout = seconds;
-    this.hasLockTimeout = true;
+    lockTimeout = seconds;
+    hasLockTimeout = true;
   }
 
   boolean hasLockTimeout() {
-    return this.hasLockTimeout;
+    return hasLockTimeout;
   }
 
   @Override
   public int getLockLease() {
-    return this.lockLease;
+    return lockLease;
   }
 
   @Override
   public void setLockLease(int seconds) {
-    this.lockLease = seconds;
-    this.hasLockLease = true;
+    lockLease = seconds;
+    hasLockLease = true;
   }
 
   boolean hasLockLease() {
-    return this.hasLockLease;
+    return hasLockLease;
   }
 
   @Override
   public int getSearchTimeout() {
-    return this.searchTimeout;
+    return searchTimeout;
   }
 
   @Override
   public void setSearchTimeout(int seconds) {
-    this.searchTimeout = seconds;
-    this.hasSearchTimeout = true;
+    searchTimeout = seconds;
+    hasSearchTimeout = true;
   }
 
   boolean hasSearchTimeout() {
-    return this.hasSearchTimeout;
+    return hasSearchTimeout;
   }
 
   @Override
@@ -416,17 +422,16 @@ public class CacheCreation implements InternalCache {
           "The 'message-sync-interval' property for cache cannot be negative");
     }
     HARegionQueue.setMessageSyncInterval(seconds);
-    this.hasMessageSyncInterval = true;
+    hasMessageSyncInterval = true;
   }
 
   boolean hasMessageSyncInterval() {
-    return this.hasMessageSyncInterval;
+    return hasMessageSyncInterval;
   }
 
   @Override
   public Set<Region<?, ?>> rootRegions() {
-    Set<Region<?, ?>> regions = new LinkedHashSet<>(this.roots.values());
-    return Collections.unmodifiableSet(regions);
+    return Collections.unmodifiableSet(new LinkedHashSet<>(roots.values()));
   }
 
   /**
@@ -438,14 +443,6 @@ public class CacheCreation implements InternalCache {
   public DiskStoreFactory createDiskStoreFactory() {
     return new DiskStoreFactoryImpl(this);
   }
-
-  /**
-   * Store the current CacheCreation that is doing a create. Used from PoolManager to defer to
-   * CacheCreation as a manager of pools.
-   *
-   * @since GemFire 5.7
-   */
-  private static final ThreadLocal<PoolManagerImpl> createInProgress = new ThreadLocal<>();
 
   /**
    * Returns null if the current thread is not doing a CacheCreation create. Otherwise returns the
@@ -462,9 +459,9 @@ public class CacheCreation implements InternalCache {
    */
   void create(InternalCache cache)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
-    this.extensionPoint.beforeCreate(cache);
+    extensionPoint.beforeCreate(cache);
 
-    cache.setDeclarativeCacheConfig(this.cacheConfig);
+    cache.setDeclarativeCacheConfig(cacheConfig);
 
     if (cache.isClient()) {
       throw new IllegalStateException(
@@ -477,21 +474,22 @@ public class CacheCreation implements InternalCache {
       getFunctionServiceCreation().create();
     }
 
-    if (this.hasLockLease()) {
-      cache.setLockLease(this.lockLease);
+    if (hasLockLease()) {
+      cache.setLockLease(lockLease);
     }
-    if (this.hasLockTimeout()) {
-      cache.setLockTimeout(this.lockTimeout);
+    if (hasLockTimeout()) {
+      cache.setLockTimeout(lockTimeout);
     }
-    if (this.hasSearchTimeout()) {
-      cache.setSearchTimeout(this.searchTimeout);
+    if (hasSearchTimeout()) {
+      cache.setSearchTimeout(searchTimeout);
     }
-    if (this.hasMessageSyncInterval()) {
-      cache.setMessageSyncInterval(this.getMessageSyncInterval());
+    if (hasMessageSyncInterval()) {
+      cache.setMessageSyncInterval(getMessageSyncInterval());
     }
-    if (this.gatewayConflictResolver != null) {
-      cache.setGatewayConflictResolver(this.gatewayConflictResolver);
+    if (gatewayConflictResolver != null) {
+      cache.setGatewayConflictResolver(gatewayConflictResolver);
     }
+
     // create connection pools
     Map<String, Pool> pools = getPools();
     if (!pools.isEmpty()) {
@@ -503,7 +501,6 @@ public class CacheCreation implements InternalCache {
     }
 
     if (hasResourceManager()) {
-      // moved this up to fix bug 42128
       getResourceManager().configure(cache.getResourceManager());
     }
 
@@ -511,46 +508,47 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    for (DiskStore diskStore : this.diskStores.values()) {
+    for (DiskStore diskStore : diskStores.values()) {
       DiskStoreAttributesCreation creation = (DiskStoreAttributesCreation) diskStore;
       if (creation != pdxRegDSC) {
         createDiskStore(creation, cache);
       }
     }
 
-    if (this.hasDynamicRegionFactory()) {
-      DynamicRegionFactory.get().open(this.getDynamicRegionFactoryConfig());
+    if (hasDynamicRegionFactory()) {
+      DynamicRegionFactory.get().open(getDynamicRegionFactoryConfig());
     }
-    if (this.hasServer()) {
-      cache.setIsServer(this.isServer);
+    if (hasServer()) {
+      cache.setIsServer(isServer);
     }
-    if (this.hasCopyOnRead()) {
-      cache.setCopyOnRead(this.copyOnRead);
+    if (hasCopyOnRead()) {
+      cache.setCopyOnRead(copyOnRead);
     }
 
-    if (this.txMgrCreation != null && this.txMgrCreation.getListeners().length > 0
+    if (cacheTransactionManagerCreation != null
+        && cacheTransactionManagerCreation.getListeners().length > 0
         && cache.getCacheTransactionManager() != null) {
-      cache.getCacheTransactionManager().initListeners(this.txMgrCreation.getListeners());
+      cache.getCacheTransactionManager()
+          .initListeners(cacheTransactionManagerCreation.getListeners());
     }
 
-    if (this.txMgrCreation != null && cache.getCacheTransactionManager() != null) {
-      cache.getCacheTransactionManager().setWriter(this.txMgrCreation.getWriter());
+    if (cacheTransactionManagerCreation != null && cache.getCacheTransactionManager() != null) {
+      cache.getCacheTransactionManager().setWriter(cacheTransactionManagerCreation.getWriter());
     }
 
-    for (GatewaySender senderCreation : this.getGatewaySenders()) {
+    for (GatewaySender senderCreation : getGatewaySenders()) {
       GatewaySenderFactory factory = cache.createGatewaySenderFactory();
       ((InternalGatewaySenderFactory) factory).configureGatewaySender(senderCreation);
       GatewaySender gatewaySender =
           factory.create(senderCreation.getId(), senderCreation.getRemoteDSId());
       // Start the sender if it is not set to manually start
       if (gatewaySender.isManualStart()) {
-        cache.getLogger().info(
-            String.format("%s is not being started since it is configured for manual start",
-                gatewaySender));
+        logger.info("{} is not being started since it is configured for manual start",
+            gatewaySender);
       }
     }
 
-    for (AsyncEventQueue asyncEventQueueCreation : this.getAsyncEventQueues()) {
+    for (AsyncEventQueue asyncEventQueueCreation : getAsyncEventQueues()) {
       AsyncEventQueueFactoryImpl asyncQueueFactory =
           (AsyncEventQueueFactoryImpl) cache.createAsyncEventQueueFactory();
       asyncQueueFactory.configureAsyncEventQueue(asyncEventQueueCreation);
@@ -564,7 +562,7 @@ public class CacheCreation implements InternalCache {
 
     cache.initializePdxRegistry();
 
-    for (String id : this.regionAttributesNames) {
+    for (String id : regionAttributesNames) {
       RegionAttributesCreation creation = (RegionAttributesCreation) getRegionAttributes(id);
       creation.inheritAttributes(cache, false);
 
@@ -575,17 +573,14 @@ public class CacheCreation implements InternalCache {
       cache.setRegionAttributes(id, attrs);
     }
 
-    initializeRegions(this.roots, cache);
+    initializeRegions(roots, cache);
 
     cache.readyDynamicRegionFactory();
 
-    // Create and start the BridgeServers. This code was moved from
-    // before region initialization to after it to fix bug 33587.
     // Create and start the CacheServers after the gateways have been initialized
-    // to fix bug 39736.
     startCacheServers(getCacheServers(), cache, ServerLauncherParameters.INSTANCE);
 
-    for (GatewayReceiver receiverCreation : this.getGatewayReceivers()) {
+    for (GatewayReceiver receiverCreation : getGatewayReceivers()) {
       GatewayReceiverFactory factory = cache.createGatewayReceiverFactory();
       factory.setBindAddress(receiverCreation.getBindAddress());
       factory.setMaximumTimeBetweenPings(receiverCreation.getMaximumTimeBetweenPings());
@@ -599,35 +594,34 @@ public class CacheCreation implements InternalCache {
       factory.setHostnameForSenders(receiverCreation.getHostnameForSenders());
       GatewayReceiver receiver = factory.create();
       if (receiver.isManualStart()) {
-        cache.getLogger().info(
-            String.format("%s is not being started since it is configured for manual start",
-                receiver));
+        logger.info("{} is not being started since it is configured for manual start", receiver);
       }
     }
 
-    cache.setBackupFiles(this.backups);
+    cache.setBackupFiles(backups);
 
     runInitializer(cache);
     cache.setInitializer(getInitializer(), getInitializerProps());
 
     // Create all extensions
-    this.extensionPoint.fireCreate(cache);
+    extensionPoint.fireCreate(cache);
   }
 
   public void initializeDeclarablesMap(InternalCache cache) {
-    for (DeclarableAndProperties struct : this.declarablePropertiesList) {
+    for (DeclarableAndProperties struct : declarablePropertiesList) {
       Declarable declarable = struct.getDeclarable();
       Properties properties = struct.getProperties();
       try {
         declarable.initialize(cache, properties);
-        declarable.init(properties); // for backwards compatibility
+        // for backwards compatibility
+        declarable.init(properties);
       } catch (Exception ex) {
         throw new CacheXmlException(
             "Exception while initializing an instance of " + declarable.getClass().getName(), ex);
       }
-      this.declarablePropertiesMap.put(declarable, properties);
+      declarablePropertiesMap.put(declarable, properties);
     }
-    cache.addDeclarableProperties(this.declarablePropertiesMap);
+    cache.addDeclarableProperties(declarablePropertiesMap);
   }
 
   void initializeRegions(Map<String, Region<?, ?>> declarativeRegions, Cache cache) {
@@ -643,34 +637,43 @@ public class CacheCreation implements InternalCache {
    * @param serverImpl CacheServer implementation.
    * @param parameters Parameters to reconfigure the server.
    */
-  void reconfigureServer(CacheServerImpl serverImpl, ServerLauncherParameters parameters) {
-    if (parameters == null)
+  private void reconfigureServer(CacheServerImpl serverImpl, ServerLauncherParameters parameters) {
+    if (parameters == null) {
       return;
+    }
 
     if (parameters.getPort() != null
-        && parameters.getPort() != CacheServer.DEFAULT_PORT)
+        && parameters.getPort() != CacheServer.DEFAULT_PORT) {
       serverImpl.setPort(parameters.getPort());
+    }
     if (parameters.getMaxThreads() != null
-        && parameters.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS)
+        && parameters.getMaxThreads() != CacheServer.DEFAULT_MAX_THREADS) {
       serverImpl.setMaxThreads(parameters.getMaxThreads());
+    }
     if (parameters.getMaxConnections() != null
-        && parameters.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS)
+        && parameters.getMaxConnections() != CacheServer.DEFAULT_MAX_CONNECTIONS) {
       serverImpl.setMaxConnections(parameters.getMaxConnections());
+    }
     if (parameters.getMaxMessageCount() != null
-        && parameters.getMaxMessageCount() != CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT)
+        && parameters.getMaxMessageCount() != CacheServer.DEFAULT_MAXIMUM_MESSAGE_COUNT) {
       serverImpl.setMaximumMessageCount(parameters.getMaxMessageCount());
+    }
     if (parameters.getSocketBufferSize() != null
-        && parameters.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE)
+        && parameters.getSocketBufferSize() != CacheServer.DEFAULT_SOCKET_BUFFER_SIZE) {
       serverImpl.setSocketBufferSize(parameters.getSocketBufferSize());
+    }
     if (parameters.getBindAddress() != null
-        && parameters.getBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS)
+        && parameters.getBindAddress() != CacheServer.DEFAULT_BIND_ADDRESS) {
       serverImpl.setBindAddress(parameters.getBindAddress().trim());
+    }
     if (parameters.getMessageTimeToLive() != null
-        && parameters.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE)
+        && parameters.getMessageTimeToLive() != CacheServer.DEFAULT_MESSAGE_TIME_TO_LIVE) {
       serverImpl.setMessageTimeToLive(parameters.getMessageTimeToLive());
+    }
     if (parameters.getHostnameForClients() != null
-        && parameters.getHostnameForClients() != CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS)
+        && parameters.getHostnameForClients() != CacheServer.DEFAULT_HOSTNAME_FOR_CLIENTS) {
       serverImpl.setHostnameForClients(parameters.getHostnameForClients());
+    }
   }
 
   /**
@@ -749,24 +752,16 @@ public class CacheCreation implements InternalCache {
         }
 
       } catch (IOException ex) {
-        throw new GemFireIOException(
-            String.format("While starting cache server %s", impl),
-            ex);
+        throw new GemFireIOException(format("While starting cache server %s", impl), ex);
       }
     }
-  }
-
-  void removeCacheServers(List<CacheServer> declarativeCacheServers, Cache cache,
-      Integer serverPort, String serverBindAdd, Boolean disableDefaultServer) {
-
-    throw new UnsupportedOperationException("Should not be invoked");
   }
 
   /**
    * Returns a description of the disk store used by the pdx registry.
    */
   DiskStoreAttributesCreation initializePdxDiskStore(InternalCache cache) {
-    // to fix bug 44271 create the disk store used by the pdx registry first.
+    // Create the disk store used by the pdx registry first.
     // If it is using the default disk store we need to create it now.
     // If the cache has a pool then no need to create disk store.
     DiskStoreAttributesCreation pdxRegDSC = null;
@@ -775,8 +770,7 @@ public class CacheCreation implements InternalCache {
       if (pdxRegDsName == null) {
         pdxRegDsName = DiskStoreFactory.DEFAULT_DISK_STORE_NAME;
       }
-      // make sure pdxRegDSC gets set to fix for bug 44914
-      pdxRegDSC = (DiskStoreAttributesCreation) this.diskStores.get(pdxRegDsName);
+      pdxRegDSC = (DiskStoreAttributesCreation) diskStores.get(pdxRegDsName);
       if (pdxRegDSC == null) {
         if (pdxRegDsName.equals(DiskStoreFactory.DEFAULT_DISK_STORE_NAME)) {
           // need to create default disk store
@@ -799,192 +793,183 @@ public class CacheCreation implements InternalCache {
    * Returns whether or not this {@code CacheCreation} is equivalent to another {@code Cache}.
    */
   public boolean sameAs(Cache other) {
-    boolean sameConfig = other.getLockLease() == this.getLockLease()
-        && other.getLockTimeout() == this.getLockTimeout()
-        && other.getSearchTimeout() == this.getSearchTimeout()
-        && other.getMessageSyncInterval() == this.getMessageSyncInterval()
-        && other.getCopyOnRead() == this.getCopyOnRead() && other.isServer() == this.isServer();
+    boolean sameConfig = other.getLockLease() == getLockLease()
+        && other.getLockTimeout() == getLockTimeout()
+        && other.getSearchTimeout() == getSearchTimeout()
+        && other.getMessageSyncInterval() == getMessageSyncInterval()
+        && other.getCopyOnRead() == getCopyOnRead() && other.isServer() == isServer();
 
     if (!sameConfig) {
       throw new RuntimeException("!sameConfig");
+    }
+
+    DynamicRegionFactory.Config drc1 = getDynamicRegionFactoryConfig();
+    if (drc1 != null) {
+      // we have a dynamic region factory
+      DynamicRegionFactory.Config drc2;
+      if (other instanceof CacheCreation) {
+        drc2 = ((CacheCreation) other).getDynamicRegionFactoryConfig();
+      } else {
+        drc2 = DynamicRegionFactory.get().getConfig();
+      }
+      if (drc2 == null) {
+        return false;
+      }
+      if (!drc1.equals(drc2)) {
+        return false;
+      }
 
     } else {
-      DynamicRegionFactory.Config drc1 = this.getDynamicRegionFactoryConfig();
-      if (drc1 != null) {
-        // we have a dynamic region factory
-        DynamicRegionFactory.Config drc2 = null;
-        if (other instanceof CacheCreation) {
-          drc2 = ((CacheCreation) other).getDynamicRegionFactoryConfig();
-        } else {
-          drc2 = DynamicRegionFactory.get().getConfig();
-        }
-        if (drc2 == null) {
-          return false;
-        }
-        if (!drc1.equals(drc2)) {
+      // we have no dynamic region factory; how about other?
+      if (other instanceof CacheCreation) {
+        if (((CacheCreation) other).getDynamicRegionFactoryConfig() != null) {
           return false;
         }
       } else {
-        // we have no dynamic region factory; how about other?
-        if (other instanceof CacheCreation) {
-          if (((CacheCreation) other).getDynamicRegionFactoryConfig() != null) {
-            return false;
-          }
-        } else {
-          // other must be real cache in which case we compare to DynamicRegionFactory
-          if (DynamicRegionFactory.get().isOpen()) {
-            return false;
-          }
+        // other must be real cache in which case we compare to DynamicRegionFactory
+        if (DynamicRegionFactory.get().isOpen()) {
+          return false;
+        }
+      }
+    }
+
+    Collection<CacheServer> myBridges = getCacheServers();
+    Collection<CacheServer> otherBridges = other.getCacheServers();
+    if (myBridges.size() != otherBridges.size()) {
+      throw new RuntimeException("cacheServers size");
+    }
+
+    for (CacheServer myBridge1 : myBridges) {
+      CacheServerCreation myBridge = (CacheServerCreation) myBridge1;
+      boolean found = false;
+      for (CacheServer otherBridge : otherBridges) {
+        if (myBridge.sameAs(otherBridge)) {
+          found = true;
+          break;
         }
       }
 
-      Collection<CacheServer> myBridges = this.getCacheServers();
-      Collection<CacheServer> otherBridges = other.getCacheServers();
-      if (myBridges.size() != otherBridges.size()) {
-        throw new RuntimeException(
-            "cacheServers size");
+      if (!found) {
+        throw new RuntimeException(format("cache server %s not found", myBridge));
       }
+    }
 
-      for (CacheServer myBridge1 : myBridges) {
-        CacheServerCreation myBridge = (CacheServerCreation) myBridge1;
-        boolean found = false;
-        for (CacheServer otherBridge : otherBridges) {
-          if (myBridge.sameAs(otherBridge)) {
-            found = true;
-            break;
-          }
-        }
+    // compare connection pools
+    Map<String, Pool> connectionPools1 = getPools();
+    Map<String, Pool> connectionPools2 =
+        other instanceof CacheCreation ? ((CacheCreation) other).getPools()
+            : PoolManager.getAll();
+    int connectionPools1Size = connectionPools1.size();
 
-        if (!found) {
-          throw new RuntimeException(
-              String.format("cache server %s not found", myBridge));
-        }
+    // ignore any gateway instances
+    for (Pool connectionPool : connectionPools1.values()) {
+      if (((PoolImpl) connectionPool).isUsedByGateway()) {
+        connectionPools1Size--;
       }
+    }
 
-      // compare connection pools
-      Map<String, Pool> m1 = getPools();
-      Map<String, Pool> m2 = other instanceof CacheCreation ? ((CacheCreation) other).getPools()
-          : PoolManager.getAll();
-      int m1Size = m1.size();
+    int connectionPools2Size = connectionPools2.size();
 
-      // ignore any gateway instances
-      for (Pool cp : m1.values()) {
-        if (((PoolImpl) cp).isUsedByGateway()) {
-          m1Size--;
-        }
+    // ignore any gateway instances
+    for (Pool connectionPool : connectionPools2.values()) {
+      if (((PoolImpl) connectionPool).isUsedByGateway()) {
+        connectionPools2Size--;
       }
+    }
 
-      int m2Size = m2.size();
-
-      // ignore any gateway instances
-      for (Pool cp : m2.values()) {
-        if (((PoolImpl) cp).isUsedByGateway()) {
-          m2Size--;
-        }
+    if (connectionPools2Size == 1) {
+      // if it is just the DEFAULT pool then ignore it
+      Pool connectionPool = connectionPools2.values().iterator().next();
+      if (connectionPool.getName().equals("DEFAULT")) {
+        connectionPools2Size = 0;
       }
+    }
 
-      if (m2Size == 1) {
-        // if it is just the DEFAULT pool then ignore it
-        Pool p = (Pool) m2.values().iterator().next();
-        if (p.getName().equals("DEFAULT")) {
-          m2Size = 0;
-        }
-      }
+    if (connectionPools1Size != connectionPools2Size) {
+      throw new RuntimeException("pool sizes differ connectionPools1Size=" + connectionPools1Size
+          + " connectionPools2Size=" + connectionPools2Size
+          + " connectionPools1=" + connectionPools1.values() + " connectionPools2="
+          + connectionPools2.values());
+    }
 
-      if (m1Size != m2Size) {
-        throw new RuntimeException("pool sizes differ m1Size=" + m1Size + " m2Size=" + m2Size
-            + " m1=" + m1.values() + " m2=" + m2.values());
-      }
-
-      if (m1Size > 0) {
-        for (Pool pool : m1.values()) {
-          PoolImpl poolImpl = (PoolImpl) pool;
-          // ignore any gateway instances
-          if (!poolImpl.isUsedByGateway()) {
-            poolImpl.sameAs(m2.get(poolImpl.getName()));
-          }
+    if (connectionPools1Size > 0) {
+      for (Pool pool : connectionPools1.values()) {
+        PoolImpl poolImpl = (PoolImpl) pool;
+        // ignore any gateway instances
+        if (!poolImpl.isUsedByGateway()) {
+          poolImpl.sameAs(connectionPools2.get(poolImpl.getName()));
         }
       }
+    }
 
-      // compare disk stores
-      for (DiskStore diskStore : this.diskStores.values()) {
-        DiskStoreAttributesCreation dsac = (DiskStoreAttributesCreation) diskStore;
-        String name = dsac.getName();
-        DiskStore ds = other.findDiskStore(name);
-        if (ds == null) {
-          getLogger().fine("Disk store " + name + " not found.");
-          throw new RuntimeException(
-              String.format("Disk store %s not found", name));
-        } else {
-          if (!dsac.sameAs(ds)) {
-            getLogger().fine("Attributes for disk store " + name + " do not match");
-            throw new RuntimeException(
-                String.format("Attributes for disk store %s do not match",
-                    name));
-          }
-        }
+    // compare disk stores
+    for (DiskStore diskStore : diskStores.values()) {
+      DiskStoreAttributesCreation dsac = (DiskStoreAttributesCreation) diskStore;
+      String name = dsac.getName();
+      DiskStore otherDiskStore = other.findDiskStore(name);
+      if (otherDiskStore == null) {
+        logger.debug("Disk store {} not found.", name);
+        throw new RuntimeException(format("Disk store %s not found", name));
       }
-
-      Map<String, RegionAttributes<?, ?>> myNamedAttributes = this.listRegionAttributes();
-      Map<String, RegionAttributes<Object, Object>> otherNamedAttributes =
-          other.listRegionAttributes();
-      if (myNamedAttributes.size() != otherNamedAttributes.size()) {
-        throw new RuntimeException(
-            "namedAttributes size");
+      if (!dsac.sameAs(otherDiskStore)) {
+        logger.debug("Attributes for disk store {} do not match", name);
+        throw new RuntimeException(format("Attributes for disk store %s do not match", name));
       }
+    }
 
-      for (Object object : myNamedAttributes.entrySet()) {
-        Entry myEntry = (Entry) object;
-        String myId = (String) myEntry.getKey();
-        Assert.assertTrue(myEntry.getValue() instanceof RegionAttributesCreation,
-            "Entry value is a " + myEntry.getValue().getClass().getName());
-        RegionAttributesCreation myAttrs = (RegionAttributesCreation) myEntry.getValue();
-        RegionAttributes<Object, Object> otherAttrs = other.getRegionAttributes(myId);
-        if (otherAttrs == null) {
-          getLogger().fine("No attributes for " + myId);
-          throw new RuntimeException(
-              String.format("No attributes for %s", myId));
+    Map<String, RegionAttributes<?, ?>> myNamedAttributes = listRegionAttributes();
+    Map<String, RegionAttributes<Object, Object>> otherNamedAttributes =
+        other.listRegionAttributes();
+    if (myNamedAttributes.size() != otherNamedAttributes.size()) {
+      throw new RuntimeException("namedAttributes size");
+    }
 
-        } else {
-          if (!myAttrs.sameAs(otherAttrs)) {
-            getLogger().fine("Attributes for " + myId + " do not match");
-            throw new RuntimeException(String.format("Attributes for %s do not match",
-                myId));
-          }
-        }
+    for (Object object : myNamedAttributes.entrySet()) {
+      Entry myEntry = (Entry) object;
+      String myId = (String) myEntry.getKey();
+      Assert.assertTrue(myEntry.getValue() instanceof RegionAttributesCreation,
+          "Entry value is a " + myEntry.getValue().getClass().getName());
+      RegionAttributesCreation myAttrs = (RegionAttributesCreation) myEntry.getValue();
+      RegionAttributes<Object, Object> otherAttrs = other.getRegionAttributes(myId);
+      if (otherAttrs == null) {
+        logger.debug("No attributes for {}", myId);
+        throw new RuntimeException(format("No attributes for %s", myId));
       }
-
-      Collection<Region<?, ?>> myRoots = this.roots.values();
-      Collection<Region<?, ?>> otherRoots = other.rootRegions();
-      if (myRoots.size() != otherRoots.size()) {
-        throw new RuntimeException("roots size");
+      if (!myAttrs.sameAs(otherAttrs)) {
+        logger.debug("Attributes for " + myId + " do not match");
+        throw new RuntimeException(format("Attributes for %s do not match", myId));
       }
+    }
 
-      for (final Region<?, ?> myRoot : myRoots) {
-        RegionCreation rootRegion = (RegionCreation) myRoot;
-        Region<Object, Object> otherRegion = other.getRegion(rootRegion.getName());
-        if (otherRegion == null) {
-          throw new RuntimeException(
-              String.format("no root %s", rootRegion.getName()));
-        } else if (!rootRegion.sameAs(otherRegion)) {
-          throw new RuntimeException(
-              "regions differ");
-        }
+    Collection<Region<?, ?>> myRoots = roots.values();
+    Collection<Region<?, ?>> otherRoots = other.rootRegions();
+    if (myRoots.size() != otherRoots.size()) {
+      throw new RuntimeException("roots size");
+    }
+
+    for (final Region<?, ?> myRoot : myRoots) {
+      RegionCreation rootRegion = (RegionCreation) myRoot;
+      Region<Object, Object> otherRegion = other.getRegion(rootRegion.getName());
+      if (otherRegion == null) {
+        throw new RuntimeException(format("no root %s", rootRegion.getName()));
       }
+      if (!rootRegion.sameAs(otherRegion)) {
+        throw new RuntimeException("regions differ");
+      }
+    }
 
-      // If both have a listener, make sure they are equal.
-      if (getCacheTransactionManager() != null) {
-        // Currently the GemFireCache always has a CacheTransactionManager,
-        // whereas that is not true for CacheTransactionManagerCreation.
+    // If both have a listener, make sure they are equal.
+    if (getCacheTransactionManager() != null) {
+      // Currently the GemFireCache always has a CacheTransactionManager,
+      // whereas that is not true for CacheTransactionManagerCreation.
 
-        List<TransactionListener> otherTxListeners =
-            Arrays.asList(other.getCacheTransactionManager().getListeners());
-        List<TransactionListener> thisTxListeners =
-            Arrays.asList(getCacheTransactionManager().getListeners());
+      List<TransactionListener> otherTxListeners =
+          Arrays.asList(other.getCacheTransactionManager().getListeners());
+      List<TransactionListener> thisTxListeners =
+          Arrays.asList(getCacheTransactionManager().getListeners());
 
-        if (!thisTxListeners.equals(otherTxListeners)) {
-          throw new RuntimeException("txListener");
-        }
+      if (!thisTxListeners.equals(otherTxListeners)) {
+        throw new RuntimeException("txListener");
       }
     }
 
@@ -1011,7 +996,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public boolean waitUntilReconnected(long time, TimeUnit units) throws InterruptedException {
+  public boolean waitUntilReconnected(long time, TimeUnit units) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -1027,22 +1012,22 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public LogWriter getLogger() {
-    return this.logWriter;
+    return logWriter;
   }
 
   @Override
   public LogWriter getSecurityLogger() {
-    return this.securityLogWriter;
+    return securityLogWriter;
   }
 
   @Override
   public LogWriterI18n getLoggerI18n() {
-    return this.logWriter.convertToLogWriterI18n();
+    return logWriter.convertToLogWriterI18n();
   }
 
   @Override
   public LogWriterI18n getSecurityLoggerI18n() {
-    return this.securityLogWriter.convertToLogWriterI18n();
+    return securityLogWriter.convertToLogWriterI18n();
   }
 
   @Override
@@ -1067,7 +1052,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public InternalQueryService getQueryService() {
-    return this.queryService;
+    return queryService;
   }
 
   @Override
@@ -1123,14 +1108,14 @@ public class CacheCreation implements InternalCache {
     AttributesFactory.validateAttributes(aRegionAttributes);
     RegionCreation region = new RegionCreation(this, name, null);
     region.setAttributes(aRegionAttributes);
-    this.addRootRegion(region);
+    addRootRegion(region);
     return region;
   }
 
   public Region createRegion(String name, String refid)
       throws RegionExistsException, TimeoutException {
     RegionCreation region = new RegionCreation(this, name, refid);
-    this.addRootRegion(region);
+    addRootRegion(region);
     return region;
   }
 
@@ -1139,13 +1124,13 @@ public class CacheCreation implements InternalCache {
     if (path.contains("/")) {
       throw new UnsupportedOperationException("Region path '" + path + "' contains '/'");
     }
-    return this.roots.get(path);
+    return roots.get(path);
   }
 
   @Override
   public CacheServer addCacheServer() {
     CacheServer bridge = new CacheServerCreation(this, false);
-    this.bridgeServers.add(bridge);
+    bridgeServers.add(bridge);
     return bridge;
   }
 
@@ -1186,7 +1171,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void reLoadClusterConfiguration() throws IOException, ClassNotFoundException {
+  public void reLoadClusterConfiguration() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -1196,17 +1181,17 @@ public class CacheCreation implements InternalCache {
   }
 
   void addDeclarableProperties(final Declarable declarable, final Properties properties) {
-    this.declarablePropertiesList.add(new DeclarableAndProperties(declarable, properties));
+    declarablePropertiesList.add(new DeclarableAndProperties(declarable, properties));
   }
 
   @Override
   public List<CacheServer> getCacheServers() {
-    return this.bridgeServers;
+    return bridgeServers;
   }
 
   @Override
   public void addGatewaySender(GatewaySender sender) {
-    this.gatewaySenders.add(sender);
+    gatewaySenders.add(sender);
   }
 
   @Override
@@ -1357,7 +1342,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void addGatewayReceiver(GatewayReceiver receiver) {
-    this.gatewayReceivers.add(receiver);
+    gatewayReceivers.add(receiver);
   }
 
   @Override
@@ -1366,13 +1351,13 @@ public class CacheCreation implements InternalCache {
   }
 
   public void addAsyncEventQueue(AsyncEventQueue asyncEventQueue) {
-    this.asyncEventQueues.add(asyncEventQueue);
+    asyncEventQueues.add(asyncEventQueue);
   }
 
   @Override
   public Set<GatewaySender> getGatewaySenders() {
     Set<GatewaySender> tempSet = new HashSet<>();
-    for (GatewaySender sender : this.gatewaySenders) {
+    for (GatewaySender sender : gatewaySenders) {
       if (!((AbstractGatewaySender) sender).isForInternalUse()) {
         tempSet.add(sender);
       }
@@ -1382,7 +1367,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public GatewaySender getGatewaySender(String id) {
-    for (GatewaySender sender : this.gatewaySenders) {
+    for (GatewaySender sender : gatewaySenders) {
       if (sender.getId().equals(id)) {
         return sender;
       }
@@ -1392,17 +1377,17 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public Set<GatewayReceiver> getGatewayReceivers() {
-    return this.gatewayReceivers;
+    return gatewayReceivers;
   }
 
   @Override
   public Set<AsyncEventQueue> getAsyncEventQueues() {
-    return this.asyncEventQueues;
+    return asyncEventQueues;
   }
 
   @Override
   public Set<AsyncEventQueue> getAsyncEventQueues(boolean visibleOnly) {
-    return this.asyncEventQueues;
+    return asyncEventQueues;
   }
 
   @Override
@@ -1412,7 +1397,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public AsyncEventQueue getAsyncEventQueue(String id) {
-    for (AsyncEventQueue asyncEventQueue : this.asyncEventQueues) {
+    for (AsyncEventQueue asyncEventQueue : asyncEventQueues) {
       if (asyncEventQueue.getId().equals(id)) {
         return asyncEventQueue;
       }
@@ -1423,34 +1408,34 @@ public class CacheCreation implements InternalCache {
   @Override
   public void setIsServer(boolean isServer) {
     this.isServer = isServer;
-    this.hasServer = true;
+    hasServer = true;
   }
 
   @Override
   public boolean isServer() {
-    return this.isServer || !this.bridgeServers.isEmpty();
+    return isServer || !bridgeServers.isEmpty();
   }
 
   boolean hasServer() {
-    return this.hasServer;
+    return hasServer;
   }
 
   public void setDynamicRegionFactoryConfig(DynamicRegionFactory.Config v) {
-    this.dynamicRegionFactoryConfig = v;
-    this.hasDynamicRegionFactory = true;
+    dynamicRegionFactoryConfig = v;
+    hasDynamicRegionFactory = true;
   }
 
   boolean hasDynamicRegionFactory() {
-    return this.hasDynamicRegionFactory;
+    return hasDynamicRegionFactory;
   }
 
   DynamicRegionFactory.Config getDynamicRegionFactoryConfig() {
-    return this.dynamicRegionFactoryConfig;
+    return dynamicRegionFactoryConfig;
   }
 
   @Override
   public CacheTransactionManager getCacheTransactionManager() {
-    return this.txMgrCreation;
+    return cacheTransactionManagerCreation;
   }
 
   /**
@@ -1461,7 +1446,7 @@ public class CacheCreation implements InternalCache {
   @Override
   public void setCopyOnRead(boolean copyOnRead) {
     this.copyOnRead = copyOnRead;
-    this.hasCopyOnRead = true;
+    hasCopyOnRead = true;
   }
 
   /**
@@ -1471,11 +1456,11 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public boolean getCopyOnRead() {
-    return this.copyOnRead;
+    return copyOnRead;
   }
 
   boolean hasCopyOnRead() {
-    return this.hasCopyOnRead;
+    return hasCopyOnRead;
   }
 
   /**
@@ -1485,8 +1470,9 @@ public class CacheCreation implements InternalCache {
    * @see GemFireCacheImpl
    * @since GemFire 4.0
    */
-  public void addCacheTransactionManagerCreation(CacheTransactionManagerCreation txm) {
-    this.txMgrCreation = txm;
+  public void addCacheTransactionManagerCreation(
+      CacheTransactionManagerCreation cacheTransactionManagerCreation) {
+    this.cacheTransactionManagerCreation = cacheTransactionManagerCreation;
   }
 
   /**
@@ -1502,11 +1488,11 @@ public class CacheCreation implements InternalCache {
     if (name == null) {
       name = GemFireCacheImpl.getDefaultDiskStoreName();
     }
-    return this.diskStores.get(name);
+    return diskStores.get(name);
   }
 
   public void addDiskStore(DiskStore ds) {
-    this.diskStores.put(ds.getName(), ds);
+    diskStores.put(ds.getName(), ds);
   }
 
   /**
@@ -1516,31 +1502,31 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public Collection<DiskStore> listDiskStores() {
-    return this.diskStores.values();
+    return diskStores.values();
   }
 
-  void setDiskStore(String name, DiskStoreAttributesCreation dsac) {
-    this.diskStores.put(name, dsac);
+  void setDiskStore(String name, DiskStoreAttributesCreation diskStoreAttributesCreation) {
+    diskStores.put(name, diskStoreAttributesCreation);
   }
 
   @Override
   public RegionAttributes getRegionAttributes(String id) {
-    return this.namedRegionAttributes.get(id);
+    return namedRegionAttributes.get(id);
   }
 
   @Override
   public void setRegionAttributes(String id, RegionAttributes attrs) {
-    RegionAttributes a = attrs;
-    if (!(a instanceof RegionAttributesCreation)) {
-      a = new RegionAttributesCreation(this, a, false);
+    RegionAttributes regionAttributes = attrs;
+    if (!(regionAttributes instanceof RegionAttributesCreation)) {
+      regionAttributes = new RegionAttributesCreation(this, regionAttributes, false);
     }
-    this.namedRegionAttributes.put(id, a);
-    this.regionAttributesNames.add(id);
+    namedRegionAttributes.put(id, regionAttributes);
+    regionAttributesNames.add(id);
   }
 
   @Override
   public Map<String, RegionAttributes<?, ?>> listRegionAttributes() {
-    return Collections.unmodifiableMap(this.namedRegionAttributes);
+    return Collections.unmodifiableMap(namedRegionAttributes);
   }
 
   @Override
@@ -1554,68 +1540,56 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
-  private final PoolManagerImpl poolManager = new PoolManagerImpl(false);
-
-  private volatile FunctionServiceCreation functionServiceCreation;
-
   public Map<String, Pool> getPools() {
-    return this.poolManager.getMap();
+    return poolManager.getMap();
   }
 
   public PoolFactory createPoolFactory() {
-    return new PoolFactoryImpl(this.poolManager).setStartDisabled(true);
+    return new PoolFactoryImpl(poolManager).setStartDisabled(true);
   }
 
-  private volatile boolean hasFunctionService = false;
-
   boolean hasFunctionService() {
-    return this.hasFunctionService;
+    return hasFunctionService;
   }
 
   public void setFunctionServiceCreation(FunctionServiceCreation functionServiceCreation) {
-    this.hasFunctionService = true;
+    hasFunctionService = true;
     this.functionServiceCreation = functionServiceCreation;
   }
 
-  public FunctionServiceCreation getFunctionServiceCreation() {
-    return this.functionServiceCreation;
+  FunctionServiceCreation getFunctionServiceCreation() {
+    return functionServiceCreation;
   }
 
-  private volatile boolean hasResourceManager = false;
-
-  private volatile ResourceManagerCreation resourceManagerCreation;
-
   public void setResourceManagerCreation(ResourceManagerCreation resourceManagerCreation) {
-    this.hasResourceManager = true;
+    hasResourceManager = true;
     this.resourceManagerCreation = resourceManagerCreation;
   }
 
   @Override
   public ResourceManagerCreation getResourceManager() {
-    return this.resourceManagerCreation;
+    return resourceManagerCreation;
   }
 
   boolean hasResourceManager() {
-    return this.hasResourceManager;
+    return hasResourceManager;
   }
-
-  private volatile SerializerCreation serializerCreation;
 
   public void setSerializerCreation(SerializerCreation serializerCreation) {
     this.serializerCreation = serializerCreation;
   }
 
   SerializerCreation getSerializerCreation() {
-    return this.serializerCreation;
+    return serializerCreation;
   }
 
   public void addBackup(File backup) {
-    this.backups.add(backup);
+    backups.add(backup);
   }
 
   @Override
   public List<File> getBackupFiles() {
-    return Collections.unmodifiableList(this.backups);
+    return Collections.unmodifiableList(backups);
   }
 
   @Override
@@ -1669,59 +1643,59 @@ public class CacheCreation implements InternalCache {
   }
 
   public void setPdxReadSerialized(boolean readSerialized) {
-    this.cacheConfig.setPdxReadSerialized(readSerialized);
+    cacheConfig.setPdxReadSerialized(readSerialized);
   }
 
   public void setPdxIgnoreUnreadFields(boolean ignore) {
-    this.cacheConfig.setPdxIgnoreUnreadFields(ignore);
+    cacheConfig.setPdxIgnoreUnreadFields(ignore);
   }
 
   public void setPdxSerializer(PdxSerializer serializer) {
-    this.cacheConfig.setPdxSerializer(serializer);
+    cacheConfig.setPdxSerializer(serializer);
   }
 
   public void setPdxDiskStore(String diskStore) {
-    this.cacheConfig.setPdxDiskStore(diskStore);
+    cacheConfig.setPdxDiskStore(diskStore);
   }
 
   public void setPdxPersistent(boolean persistent) {
-    this.cacheConfig.setPdxPersistent(persistent);
+    cacheConfig.setPdxPersistent(persistent);
   }
 
   /**
    * Returns whether PdxInstance is preferred for PDX types instead of Java object.
    *
-   * @see org.apache.geode.cache.CacheFactory#setPdxReadSerialized(boolean)
+   * @see CacheFactory#setPdxReadSerialized(boolean)
    * @since GemFire 6.6
    */
   @Override
   public boolean getPdxReadSerialized() {
-    return this.cacheConfig.isPdxReadSerialized();
+    return cacheConfig.isPdxReadSerialized();
   }
 
   @Override
   public PdxSerializer getPdxSerializer() {
-    return this.cacheConfig.getPdxSerializer();
+    return cacheConfig.getPdxSerializer();
   }
 
   @Override
   public String getPdxDiskStore() {
-    return this.cacheConfig.getPdxDiskStore();
+    return cacheConfig.getPdxDiskStore();
   }
 
   @Override
   public boolean getPdxPersistent() {
-    return this.cacheConfig.isPdxPersistent();
+    return cacheConfig.isPdxPersistent();
   }
 
   @Override
   public boolean getPdxIgnoreUnreadFields() {
-    return this.cacheConfig.getPdxIgnoreUnreadFields();
+    return cacheConfig.getPdxIgnoreUnreadFields();
   }
 
   @Override
   public CacheConfig getCacheConfig() {
-    return this.cacheConfig;
+    return cacheConfig;
   }
 
   @Override
@@ -1769,24 +1743,20 @@ public class CacheCreation implements InternalCache {
     return Collections.emptySet();
   }
 
-  private Declarable initializer = null;
-
-  private Properties initializerProps = null;
-
   @Override
   public Declarable getInitializer() {
-    return this.initializer;
+    return initializer;
   }
 
   @Override
   public Properties getInitializerProps() {
-    return this.initializerProps;
+    return initializerProps;
   }
 
   @Override
   public void setInitializer(Declarable declarable, Properties props) {
-    this.initializer = declarable;
-    this.initializerProps = props;
+    initializer = declarable;
+    initializerProps = props;
   }
 
   @Override
@@ -1854,18 +1824,19 @@ public class CacheCreation implements InternalCache {
     Declarable initializer = getInitializer();
     if (initializer != null) {
       initializer.initialize(cache, getInitializerProps());
-      initializer.init(getInitializerProps()); // for backwards compatibility
+      // for backwards compatibility
+      initializer.init(getInitializerProps());
     }
   }
 
   @Override
   public void setGatewayConflictResolver(GatewayConflictResolver resolver) {
-    this.gatewayConflictResolver = resolver;
+    gatewayConflictResolver = resolver;
   }
 
   @Override
   public GatewayConflictResolver getGatewayConflictResolver() {
-    return this.gatewayConflictResolver;
+    return gatewayConflictResolver;
   }
 
   @Override
@@ -1889,7 +1860,7 @@ public class CacheCreation implements InternalCache {
    */
   @Override
   public ExtensionPoint<Cache> getExtensionPoint() {
-    return this.extensionPoint;
+    return extensionPoint;
   }
 
   @Override
@@ -1907,235 +1878,225 @@ public class CacheCreation implements InternalCache {
     return null;
   }
 
-  private final InternalQueryService queryService = new InternalQueryService() {
+  private InternalQueryService createInternalQueryService() {
+    return new InternalQueryService() {
 
-    private final Map<String, List<Index>> indexes = new HashMap<>();
+      private final Map<String, List<Index>> indexes = new HashMap<>();
 
-    @Override
-    public Query newQuery(String queryString) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
-
-    @Override
-    public Index createHashIndex(String indexName, String indexedExpression, String regionPath)
-        throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
-        RegionNotFoundException, UnsupportedOperationException {
-      return createHashIndex(indexName, indexedExpression, regionPath, "");
-    }
-
-    @Override
-    public Index createHashIndex(String indexName, String indexedExpression, String regionPath,
-        String imports) throws IndexInvalidException, IndexNameConflictException,
-        IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
-      return createIndex(indexName, IndexType.HASH, indexedExpression, regionPath, imports);
-    }
-
-    @Override
-    public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
-        String fromClause) throws IndexInvalidException, IndexNameConflictException,
-        IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
-      return createIndex(indexName, indexType, indexedExpression, fromClause, "");
-    }
-
-    /**
-     * Due to not having the full implementation to determine region names etc this implementation
-     * will only match a single region with no alias at this time
-     */
-    @Override
-    public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
-        String fromClause, String imports) throws IndexInvalidException, IndexNameConflictException,
-        IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
-      IndexCreationData indexData = new IndexCreationData(indexName);
-      indexData.setFunctionalIndexData(fromClause, indexedExpression, imports);
-      indexData.setIndexType(indexType.toString());
-      List<Index> indexesForRegion = this.indexes.get(fromClause);
-      if (indexesForRegion == null) {
-        indexesForRegion = new ArrayList<>();
-        this.indexes.put(fromClause, indexesForRegion);
+      @Override
+      public Query newQuery(String queryString) {
+        throw new UnsupportedOperationException("Should not be invoked");
       }
-      indexesForRegion.add(indexData);
-      return indexData;
-    }
 
-    @Override
-    public Index createIndex(String indexName, String indexedExpression, String regionPath)
-        throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
-        RegionNotFoundException, UnsupportedOperationException {
-      return createIndex(indexName, indexedExpression, regionPath, "");
-    }
+      @Override
+      public Index createHashIndex(String indexName, String indexedExpression, String regionPath)
+          throws IndexInvalidException, UnsupportedOperationException {
+        return createHashIndex(indexName, indexedExpression, regionPath, "");
+      }
 
-    @Override
-    public Index createIndex(String indexName, String indexedExpression, String regionPath,
-        String imports) throws IndexInvalidException, IndexNameConflictException,
-        IndexExistsException, RegionNotFoundException, UnsupportedOperationException {
-      return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, regionPath, imports);
+      @Override
+      public Index createHashIndex(String indexName, String indexedExpression, String regionPath,
+          String imports) throws IndexInvalidException, UnsupportedOperationException {
+        return createIndex(indexName, IndexType.HASH, indexedExpression, regionPath, imports);
+      }
 
-    }
+      @Override
+      public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
+          String fromClause) throws IndexInvalidException, UnsupportedOperationException {
+        return createIndex(indexName, indexType, indexedExpression, fromClause, "");
+      }
 
-    @Override
-    public Index createKeyIndex(String indexName, String indexedExpression, String regionPath)
-        throws IndexInvalidException, IndexNameConflictException, IndexExistsException,
-        RegionNotFoundException, UnsupportedOperationException {
-      return createIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, regionPath, "");
+      /**
+       * Due to not having the full implementation to determine region names etc this implementation
+       * will only match a single region with no alias at this time
+       */
+      @Override
+      public Index createIndex(String indexName, IndexType indexType, String indexedExpression,
+          String fromClause, String imports)
+          throws IndexInvalidException, UnsupportedOperationException {
+        IndexCreationData indexData = new IndexCreationData(indexName);
+        indexData.setFunctionalIndexData(fromClause, indexedExpression, imports);
+        indexData.setIndexType(indexType.toString());
+        List<Index> indexesForRegion = indexes.get(fromClause);
+        if (indexesForRegion == null) {
+          indexesForRegion = new ArrayList<>();
+          indexes.put(fromClause, indexesForRegion);
+        }
+        indexesForRegion.add(indexData);
+        return indexData;
+      }
 
-    }
+      @Override
+      public Index createIndex(String indexName, String indexedExpression, String regionPath)
+          throws IndexInvalidException, UnsupportedOperationException {
+        return createIndex(indexName, indexedExpression, regionPath, "");
+      }
 
-    @Override
-    public Index getIndex(Region<?, ?> region, String indexName) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public Index createIndex(String indexName, String indexedExpression, String regionPath,
+          String imports) throws IndexInvalidException, UnsupportedOperationException {
+        return createIndex(indexName, IndexType.FUNCTIONAL, indexedExpression, regionPath, imports);
+      }
 
-    @Override
-    public Collection<Index> getIndexes() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public Index createKeyIndex(String indexName, String indexedExpression, String regionPath)
+          throws IndexInvalidException, UnsupportedOperationException {
+        return createIndex(indexName, IndexType.PRIMARY_KEY, indexedExpression, regionPath, "");
+      }
 
-    @Override
-    public Collection<Index> getIndexes(Region<?, ?> region) {
-      Collection<Index> indexes = this.indexes.get(region.getFullPath());
-      return (indexes != null) ? indexes : Collections.emptyList();
-    }
+      @Override
+      public Index getIndex(Region<?, ?> region, String indexName) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public Collection<Index> getIndexes(Region<?, ?> region, IndexType indexType) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public Collection<Index> getIndexes() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void removeIndex(Index index) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public Collection<Index> getIndexes(Region<?, ?> region) {
+        Collection<Index> indexes = this.indexes.get(region.getFullPath());
+        return indexes != null ? indexes : Collections.emptyList();
+      }
 
-    @Override
-    public void removeIndexes() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public Collection<Index> getIndexes(Region<?, ?> region, IndexType indexType) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void removeIndexes(Region<?, ?> region) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void removeIndex(Index index) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery newCq(String queryString, CqAttributes cqAttr)
-        throws QueryInvalidException, CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void removeIndexes() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable)
-        throws QueryInvalidException, CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void removeIndexes(Region<?, ?> region) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery newCq(String name, String queryString, CqAttributes cqAttr)
-        throws QueryInvalidException, CqExistsException, CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery newCq(String queryString, CqAttributes cqAttr) throws QueryInvalidException {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable)
-        throws QueryInvalidException, CqExistsException, CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery newCq(String queryString, CqAttributes cqAttr, boolean isDurable)
+          throws QueryInvalidException {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void closeCqs() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery newCq(String name, String queryString, CqAttributes cqAttr)
+          throws QueryInvalidException {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery[] getCqs() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery newCq(String name, String queryString, CqAttributes cqAttr, boolean isDurable)
+          throws QueryInvalidException {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery[] getCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void closeCqs() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqQuery getCq(String cqName) {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery[] getCqs() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void executeCqs() throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery[] getCqs(String regionName) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void stopCqs() throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public CqQuery getCq(String cqName) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void executeCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void executeCqs() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void stopCqs(String regionName) throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void stopCqs() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public List<String> getAllDurableCqsFromServer() throws CqException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void executeCqs(String regionName) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public CqServiceStatistics getCqStatistics() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void stopCqs(String regionName) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
+
+      @Override
+      public List<String> getAllDurableCqsFromServer() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
+
+      @Override
+      public CqServiceStatistics getCqStatistics() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
 
-    @Override
-    public void defineKeyIndex(String indexName, String indexedExpression, String regionPath)
-        throws RegionNotFoundException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void defineKeyIndex(String indexName, String indexedExpression, String regionPath) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void defineHashIndex(String indexName, String indexedExpression, String regionPath)
-        throws RegionNotFoundException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void defineHashIndex(String indexName, String indexedExpression, String regionPath) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
-        String imports) throws RegionNotFoundException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void defineHashIndex(String indexName, String indexedExpression, String regionPath,
+          String imports) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void defineIndex(String indexName, String indexedExpression, String regionPath)
-        throws RegionNotFoundException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void defineIndex(String indexName, String indexedExpression, String regionPath) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public void defineIndex(String indexName, String indexedExpression, String regionPath,
-        String imports) throws RegionNotFoundException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public void defineIndex(String indexName, String indexedExpression, String regionPath,
+          String imports) {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public List<Index> createDefinedIndexes() throws MultiIndexCreationException {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public List<Index> createDefinedIndexes() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public boolean clearDefinedIndexes() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
+      @Override
+      public boolean clearDefinedIndexes() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
 
-    @Override
-    public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
-      throw new UnsupportedOperationException("Should not be invoked");
-    }
-  };
+      @Override
+      public MethodInvocationAuthorizer getMethodInvocationAuthorizer() {
+        throw new UnsupportedOperationException("Should not be invoked");
+      }
+    };
+  }
 
   @Override
   public <T extends CacheService> T getService(Class<T> clazz) {
@@ -2153,7 +2114,7 @@ public class CacheCreation implements InternalCache {
   }
 
   @Override
-  public void cleanupForClient(final CacheClientNotifier ccn,
+  public void cleanupForClient(final CacheClientNotifier cacheClientNotifier,
       final ClientProxyMembershipID client) {
     throw new UnsupportedOperationException("Should not be invoked");
   }
@@ -2181,7 +2142,7 @@ public class CacheCreation implements InternalCache {
   @Override
   public <K, V> Region<K, V> createVMRegion(final String name, final RegionAttributes<K, V> p_attrs,
       final InternalRegionArguments internalRegionArgs)
-      throws RegionExistsException, TimeoutException, IOException, ClassNotFoundException {
+      throws RegionExistsException, TimeoutException {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
@@ -2458,5 +2419,31 @@ public class CacheCreation implements InternalCache {
   @Override
   public Set<MeterRegistry> getMeterSubregistries() {
     throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  CacheTransactionManagerCreation getCacheTransactionManagerCreation() {
+    return cacheTransactionManagerCreation;
+  }
+
+  List<String> getRegionAttributesNames() {
+    return regionAttributesNames;
+  }
+
+  private static class DeclarableAndProperties {
+    private final Declarable declarable;
+    private final Properties properties;
+
+    private DeclarableAndProperties(Declarable d, Properties p) {
+      declarable = d;
+      properties = p;
+    }
+
+    public Declarable getDeclarable() {
+      return declarable;
+    }
+
+    public Properties getProperties() {
+      return properties;
+    }
   }
 }

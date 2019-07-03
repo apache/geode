@@ -233,20 +233,23 @@ public class ClientCacheCreation extends CacheCreation implements ClientCache {
       cache.setCopyOnRead(getCopyOnRead());
     }
 
-    if (this.txMgrCreation != null && this.txMgrCreation.getListeners().length > 0
+    if (this.getCacheTransactionManagerCreation() != null
+        && this.getCacheTransactionManagerCreation().getListeners().length > 0
         && cache.getCacheTransactionManager() != null) {
-      cache.getCacheTransactionManager().initListeners(this.txMgrCreation.getListeners());
+      cache.getCacheTransactionManager()
+          .initListeners(this.getCacheTransactionManagerCreation().getListeners());
     }
 
-    if (this.txMgrCreation != null && cache.getCacheTransactionManager() != null
-        && this.txMgrCreation.getWriter() != null) {
+    if (this.getCacheTransactionManagerCreation() != null
+        && cache.getCacheTransactionManager() != null
+        && this.getCacheTransactionManagerCreation().getWriter() != null) {
       throw new IllegalStateException(
           "A TransactionWriter cannot be registered on a client");
     }
 
     cache.initializePdxRegistry();
 
-    for (String id : this.regionAttributesNames) {
+    for (String id : this.getRegionAttributesNames()) {
       RegionAttributesCreation creation = (RegionAttributesCreation) getRegionAttributes(id);
       creation.inheritAttributes(cache, false);
 
