@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -56,5 +57,14 @@ public class DistributionStatsTest {
 
     verify(mockStats).incLong(DistributionStats.sentMessagesTimeId, 50000000L);
     verify(mockStats).incLong(DistributionStats.sentMessagesMaxTimeId, 50L);
+  }
+
+  @Test
+  public void incSerialQueueBytes() {
+    distributionStats.incSerialQueueBytes(50000000);
+    distributionStats.incSerialQueueBytes(20000000);
+    assertThat(distributionStats.getInternalSerialQueueBytes()).isEqualTo(70000000);
+    verify(mockStats).incInt(DistributionStats.serialQueueBytesId, 50000000);
+    verify(mockStats).incInt(DistributionStats.serialQueueBytesId, 20000000);
   }
 }

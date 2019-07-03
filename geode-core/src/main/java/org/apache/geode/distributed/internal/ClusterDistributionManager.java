@@ -3231,13 +3231,13 @@ public class ClusterDistributionManager implements DistributionManager {
       ExecutorService executor = getSerialExecutor(sender);
 
       // Get the total serial queue size.
-      int totalSerialQueueMemSize = stats.getSerialQueueBytes();
+      int totalSerialQueueMemSize = stats.getInternalSerialQueueBytes();
 
       // for tcp socket reader threads, this code throttles the thread
       // to keep the sender-side from overwhelming the receiver.
       // UDP readers are throttled in the FC protocol, which queries
       // the queue to see if it should throttle
-      if (stats.getSerialQueueBytes() > TOTAL_SERIAL_QUEUE_THROTTLE
+      if (stats.getInternalSerialQueueBytes() > TOTAL_SERIAL_QUEUE_THROTTLE
           && !DistributionMessage.isPreciousThread()) {
         do {
           boolean interrupted = Thread.interrupted();
@@ -3257,7 +3257,7 @@ public class ClusterDistributionManager implements DistributionManager {
             }
           }
           stats.getSerialQueueHelper().incThrottleCount();
-        } while (stats.getSerialQueueBytes() >= TOTAL_SERIAL_QUEUE_BYTE_LIMIT);
+        } while (stats.getInternalSerialQueueBytes() >= TOTAL_SERIAL_QUEUE_BYTE_LIMIT);
       }
       return executor;
     }
