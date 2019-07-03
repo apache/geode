@@ -2049,7 +2049,7 @@ public class DiskStoreImpl implements DiskStore {
   }
 
   void initializeIfNeeded() {
-    if (!getPersistentOplogs().alreadyRecoveredOnce.get()) {
+    if (!getPersistentOplogs().getAlreadyRecoveredOnce().get()) {
       recoverRegionsThatAreReady();
     }
   }
@@ -2756,7 +2756,7 @@ public class DiskStoreImpl implements DiskStore {
     if (!all && max > MAX_OPLOGS_PER_COMPACTION && MAX_OPLOGS_PER_COMPACTION > 0) {
       max = MAX_OPLOGS_PER_COMPACTION;
     }
-    getPersistentOplogs().getCompactableOplogs(l, max);
+    getPersistentOplogs().getCompactableOplogs(l);
 
     // Note this always puts overflow oplogs on the end of the list.
     // They may get starved.
