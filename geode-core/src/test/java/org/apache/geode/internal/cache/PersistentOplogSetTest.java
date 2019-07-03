@@ -38,7 +38,6 @@ public class PersistentOplogSetTest {
   private Oplog oplog;
 
   private PersistentOplogSet persistentOplogSet;
-  private OplogSet oplogSet;
 
   @Before
   public void setUp() {
@@ -51,46 +50,51 @@ public class PersistentOplogSetTest {
     oplog = mock(Oplog.class);
 
     persistentOplogSet = new PersistentOplogSet(diskStore);
-    persistentOplogSet.setChild(oplog);
-
-    oplogSet = persistentOplogSet;
   }
 
   @Test
   public void createDelegatesToChildOplog() {
-    oplogSet.create(region, entry, value, true);
+    persistentOplogSet.setChild(oplog);
+
+    persistentOplogSet.create(region, entry, value, true);
 
     verify(oplog).create(same(region), same(entry), same(value), eq(true));
   }
 
   @Test
   public void modifyDelegatesToChildOplog() {
-    oplogSet.modify(region, entry, value, true);
+    persistentOplogSet.setChild(oplog);
+
+    persistentOplogSet.modify(region, entry, value, true);
 
     verify(oplog).modify(same(region), same(entry), same(value), eq(true));
   }
 
   @Test
   public void removeDelegatesToChildOplog() {
-    oplogSet.remove(region, entry, false, true);
+    persistentOplogSet.setChild(oplog);
+
+    persistentOplogSet.remove(region, entry, false, true);
 
     verify(oplog).remove(same(region), same(entry), eq(false), eq(true));
   }
 
   @Test
   public void getChildReturnsChildOplogIfOplogIdMatches() {
+    persistentOplogSet.setChild(oplog);
     when(oplog.getOplogId()).thenReturn(42L);
 
-    CompactableOplog value = oplogSet.getChild(42L);
+    CompactableOplog value = persistentOplogSet.getChild(42L);
 
     assertThat(value).isSameAs(oplog);
   }
 
   @Test
   public void getChildReturnsNullIfOplogIdDoesNotMatch() {
+    persistentOplogSet.setChild(oplog);
     when(oplog.getOplogId()).thenReturn(42L);
 
-    CompactableOplog value = oplogSet.getChild(24L);
+    CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isNull();
   }
@@ -101,7 +105,7 @@ public class PersistentOplogSetTest {
     persistentOplogSet.setChild(null);
     persistentOplogSet.getOplogIdToOplog().put(24L, oplog);
 
-    CompactableOplog value = oplogSet.getChild(24L);
+    CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isSameAs(oplog);
   }
@@ -112,7 +116,7 @@ public class PersistentOplogSetTest {
     persistentOplogSet.setChild(null);
     persistentOplogSet.getOplogIdToOplog().put(42L, oplog);
 
-    CompactableOplog value = oplogSet.getChild(24L);
+    CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isNull();
   }
@@ -125,7 +129,7 @@ public class PersistentOplogSetTest {
     when(diskStore.getStats()).thenReturn(diskStoreStats);
     persistentOplogSet.addInactive(oplog);
 
-    CompactableOplog value = oplogSet.getChild(24L);
+    CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isSameAs(oplog);
   }
@@ -138,7 +142,7 @@ public class PersistentOplogSetTest {
     when(diskStore.getStats()).thenReturn(diskStoreStats);
     persistentOplogSet.addInactive(oplog);
 
-    CompactableOplog value = oplogSet.getChild(24L);
+    CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isNull();
   }
