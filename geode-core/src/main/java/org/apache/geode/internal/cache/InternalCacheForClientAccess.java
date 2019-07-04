@@ -1251,4 +1251,9 @@ public class InternalCacheForClientAccess implements InternalCache {
   public Set<MeterRegistry> getMeterSubregistries() {
     return delegate.getMeterSubregistries();
   }
+
+  @Override
+  public void saveCacheXmlForReconnect() {
+    delegate.saveCacheXmlForReconnect();
+  }
 }

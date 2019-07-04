@@ -82,16 +82,10 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
-import org.apache.geode.internal.cache.CacheServerImpl;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
-import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -1566,47 +1560,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
   }
 
-  /** generate XML for the cache before shutting down due to forced disconnect */
-  private void saveCacheXmlForReconnect() {
-    // there are two versions of this method so it can be unit-tested
-    boolean sharedConfigEnabled =
-        services.getConfig().getDistributionConfig().getUseSharedConfiguration();
-    saveCacheXmlForReconnect(sharedConfigEnabled);
-  }
 
-  /** generate XML from the cache before shutting down due to forced disconnect */
-  public void saveCacheXmlForReconnect(boolean sharedConfigEnabled) {
-    // first save the current cache description so reconnect can rebuild the cache
-    InternalCache cache = GemFireCacheImpl.getInstance();
-    if (cache != null) {
-      if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
-          && !sharedConfigEnabled) {
-        try {
-          logger.info("generating XML to rebuild the cache after reconnect completes");
-          StringPrintWriter pw = new StringPrintWriter();
-          CacheXmlGenerator.generate(cache, pw, false);
-          String cacheXML = pw.toString();
-          cache.getCacheConfig().setCacheXMLDescription(cacheXML);
-          logger.info("XML generation completed: {}", cacheXML);
-        } catch (CancelException e) {
-          logger.info("Unable to generate XML description for reconnect of cache due to exception",
-              e);
-        }
-      } else if (sharedConfigEnabled && !cache.getCacheServers().isEmpty()) {
-        // we need to retain a cache-server description if this JVM was started by gfsh
-        List<CacheServerCreation> list = new ArrayList<>(cache.getCacheServers().size());
-        for (final Object o : cache.getCacheServers()) {
-          CacheServerImpl cs = (CacheServerImpl) o;
-          if (cs.isDefaultServer()) {
-            CacheServerCreation bsc = new CacheServerCreation(cache, cs);
-            list.add(bsc);
-          }
-        }
-        cache.getCacheConfig().setCacheServerCreation(list);
-        logger.info("CacheServer configuration saved");
-      }
-    }
-  }
 
   @Override
   public boolean requestMemberRemoval(DistributedMember mbr, String reason) {
@@ -1637,9 +1591,8 @@ public class GMSMembershipManager implements MembershipManager, Manager {
           }
         }
       }
-      if (!services.getConfig().getDistributionConfig().getDisableAutoReconnect()) {
-        saveCacheXmlForReconnect();
-      }
+      listener.saveConfig();
+
       listener.membershipFailure("Channel closed", problem);
       throw new DistributedSystemDisconnectedException("Channel closed", problem);
     }
@@ -2571,9 +2524,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
       return;
     }
 
-    if (!services.getConfig().getDistributionConfig().getDisableAutoReconnect()) {
-      saveCacheXmlForReconnect();
-    }
+    listener.saveConfig();
 
     Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
       // stop server locators immediately since they may not have correct

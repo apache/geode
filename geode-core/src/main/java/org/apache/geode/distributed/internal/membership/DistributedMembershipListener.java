@@ -64,17 +64,6 @@ public interface DistributedMembershipListener extends DirectChannelListener {
   void messageReceived(DistributionMessage o);
 
   /**
-   * Indicates whether, during the shutdown sequence, if other members of the distributed system
-   * have been notified.
-   *
-   * This allows a membership manager to identify potential race conditions during the shutdown
-   * process.
-   *
-   * @return true if other members of the distributed system have been notified.
-   */
-  boolean isShutdownMsgSent();
-
-  /**
    * Event indicating that the membership service has failed catastrophically.
    *
    */
@@ -86,5 +75,14 @@ public interface DistributedMembershipListener extends DirectChannelListener {
    * @return a printable string for this listener
    */
   String toString();
+
+  /**
+   * Save the configuration before a force disconnect.
+   *
+   * This method should probably be merged with memberFailure, but currently the
+   * places we save the configuration don't line up with where we call
+   * memberFailure.
+   */
+  void saveConfig();
 
 }
