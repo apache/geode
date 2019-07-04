@@ -65,7 +65,8 @@ public class DirectoryHolder {
       // convert megabytes to bytes
       this.capacity = space * 1024 * 1024;
     } else {
-      throw new IllegalArgumentException("Invalid value for disk size units. Only megabytes and bytes are accepted.");
+      throw new IllegalArgumentException(
+          "Invalid value for disk size units. Only megabytes and bytes are accepted.");
     }
     this.index = index;
     this.dirStats = new DiskDirectoryStats(factory, ownersName);
