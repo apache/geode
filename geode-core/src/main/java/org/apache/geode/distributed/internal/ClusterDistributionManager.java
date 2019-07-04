@@ -3385,11 +3385,6 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public boolean isShutdownMsgSent() {
-      return shutdownMsgSent;
-    }
-
-    @Override
     public void membershipFailure(String reason, Throwable t) {
       exceptionInThreads = true;
       rootCause = t;
@@ -3453,6 +3448,12 @@ public class ClusterDistributionManager implements DistributionManager {
       return dm;
     }
 
+    @Override
+    public void saveConfig() {
+      if (!getConfig().getDisableAutoReconnect()) {
+        cache.saveCacheXmlForReconnect();
+      }
+    }
   }
 
 

@@ -2421,6 +2421,11 @@ public class CacheCreation implements InternalCache {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 
+  @Override
+  public void saveCacheXmlForReconnect() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
   CacheTransactionManagerCreation getCacheTransactionManagerCreation() {
     return cacheTransactionManagerCreation;
   }

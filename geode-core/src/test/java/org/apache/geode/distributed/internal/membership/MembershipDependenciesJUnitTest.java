@@ -71,13 +71,9 @@ import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
-import org.apache.geode.internal.cache.CacheConfig;
-import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
-import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
@@ -87,7 +83,6 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
-import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.JavaWorkarounds;
@@ -244,13 +239,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(DistributedMember.class))
-
-              // TODO: This stuff is just used in GMSMembershipManager.saveCacheXmlForReconnect
-              .or(type(CacheServerImpl.class))
-              .or(type(StringPrintWriter.class))
-              .or(type(CacheXmlGenerator.class))
-              .or(type(CacheServerCreation.class))
-              .or(type(CacheConfig.class))
 
               // TODO:
               .or(type(JavaWorkarounds.class))

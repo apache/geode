@@ -383,4 +383,6 @@ public interface InternalCache extends Cache, Extensible<Cache>, CacheTime, Reco
   void throwCacheExistsException();
 
   MeterRegistry getMeterRegistry();
+
+  void saveCacheXmlForReconnect();
 }

@@ -18,15 +18,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.Properties;
+
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -53,6 +54,13 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
   }
 
   @Override
+  public Properties getDistributedSystemProperties() {
+    Properties props = new Properties(super.getDistributedSystemProperties());
+    props.setProperty(ConfigurationProperties.USE_CLUSTER_CONFIGURATION, "true");
+    return props;
+  }
+
+  @Override
   public final void preTearDownCacheTestCase() throws Exception {
     if (addedCacheServer && this.cache != null && !this.cache.isClosed()) {
       // since I polluted the cache I should shut it down in order
@@ -70,9 +78,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
     InternalCache gc = (InternalCache) this.cache;
 
     // fool the system into thinking cluster-config is being used
-    GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
-        .getMembershipManager(gc.getDistributedSystem());
-    mgr.saveCacheXmlForReconnect(true);
+    gc.saveCacheXmlForReconnect();
 
     // the cache server config should now be stored in the cache's config
     assertFalse(gc.getCacheServers().isEmpty());
@@ -87,11 +93,7 @@ public class ReconnectedCacheServerDUnitTest extends JUnit4CacheTestCase {
 
     GemFireCacheImpl gc = (GemFireCacheImpl) this.cache;
 
-    // fool the system into thinking cluster-config is being used
-    GMSMembershipManager mgr = (GMSMembershipManager) MembershipManagerHelper
-        .getMembershipManager(gc.getDistributedSystem());
-    final boolean sharedConfigEnabled = true;
-    mgr.saveCacheXmlForReconnect(sharedConfigEnabled);
+    gc.saveCacheXmlForReconnect();
 
     // the cache server config should now be stored in the cache's config
     assertFalse(gc.getCacheServers().isEmpty());

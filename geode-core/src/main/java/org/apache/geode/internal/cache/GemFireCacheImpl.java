@@ -210,6 +210,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAdvisor;
 import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizationListener;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderQueue;
+import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
+import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlParser;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlPropertyResolver;
 import org.apache.geode.internal.cache.xmlcache.PropertyResolver;
@@ -230,6 +232,7 @@ import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
+import org.apache.geode.internal.shared.StringPrintWriter;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -948,6 +951,40 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
   @Override
   public MeterRegistry getMeterRegistry() {
     return meterRegistry;
+  }
+
+  /** generate XML for the cache before shutting down due to forced disconnect */
+  public void saveCacheXmlForReconnect() {
+    // there are two versions of this method so it can be unit-tested
+    boolean sharedConfigEnabled =
+        getDistributionManager().getConfig().getUseSharedConfiguration();
+
+    if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "autoReconnect-useCacheXMLFile")
+        && !sharedConfigEnabled) {
+      try {
+        logger.info("generating XML to rebuild the cache after reconnect completes");
+        StringPrintWriter pw = new StringPrintWriter();
+        CacheXmlGenerator.generate((Cache) this, pw, false);
+        String cacheXML = pw.toString();
+        getCacheConfig().setCacheXMLDescription(cacheXML);
+        logger.info("XML generation completed: {}", cacheXML);
+      } catch (CancelException e) {
+        logger.info("Unable to generate XML description for reconnect of cache due to exception",
+            e);
+      }
+    } else if (sharedConfigEnabled && !getCacheServers().isEmpty()) {
+      // we need to retain a cache-server description if this JVM was started by gfsh
+      List<CacheServerCreation> list = new ArrayList<>(getCacheServers().size());
+      for (final Object o : getCacheServers()) {
+        CacheServerImpl cs = (CacheServerImpl) o;
+        if (cs.isDefaultServer()) {
+          CacheServerCreation bsc = new CacheServerCreation(this, cs);
+          list.add(bsc);
+        }
+      }
+      getCacheConfig().setCacheServerCreation(list);
+      logger.info("CacheServer configuration saved");
+    }
   }
 
   @Override
