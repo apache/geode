@@ -64,10 +64,19 @@ public class ExecuteRegionFunctionOp {
     // no instances allowed
   }
 
-  private static void execute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int maxRetryAttempts, boolean isHA, boolean optimizeForWrite,
-      ExecuteRegionFunctionOpImpl op, boolean isReexecute, Set<String> failedNodes) {
+  /**
+   * Does a execute Function on a server using connections from the given pool to communicate with
+   * the server.
+   *
+   * @param pool the pool to use to communicate with the server.
+   * @param resultCollector is used to collect the results from the Server
+   * @param maxRetryAttempts Maximum number of retry attempts
+   */
+  static void execute(ExecutablePool pool,
+      ResultCollector resultCollector,
+      int maxRetryAttempts, boolean isHA,
+      ExecuteRegionFunctionOpImpl op, boolean isReexecute,
+      Set<String> failedNodes) {
 
     if (!isHA) {
       maxRetryAttempts = 0;
@@ -124,67 +133,6 @@ public class ExecuteRegionFunctionOp {
     return failedNodes;
   }
 
-  /**
-   * Does a execute Function on a server using connections from the given pool to communicate with
-   * the server.
-   *
-   * @param pool the pool to use to communicate with the server.
-   * @param region the name of the region to do the put on
-   * @param function to be executed
-   * @param serverRegionExecutor which will return argument and filter
-   * @param resultCollector is used to collect the results from the Server
-   * @param hasResult is used to collect the results from the Server
-   * @param maxRetryAttempts Maximum number of retry attempts
-   * @param timeoutMs timeout in milliseconds
-   */
-  static void execute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int maxRetryAttempts, final int timeoutMs) {
-
-    ExecuteRegionFunctionOpImpl op = new ExecuteRegionFunctionOpImpl(region, function,
-        serverRegionExecutor, resultCollector, timeoutMs);
-
-    execute(pool, region, function.getId(), serverRegionExecutor, resultCollector, hasResult,
-        maxRetryAttempts, function.isHA(), function.optimizeForWrite(), op, false,
-        Collections.emptySet());
-  }
-
-  static void execute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, int maxRetryAttempts, boolean isHA, boolean optimizeForWrite,
-      final int timeoutMs) {
-
-    ExecuteRegionFunctionOpImpl op = new ExecuteRegionFunctionOpImpl(region, function,
-        serverRegionExecutor, resultCollector, hasResult, isHA, optimizeForWrite,
-        true, timeoutMs);
-
-    execute(pool, region, function, serverRegionExecutor, resultCollector, hasResult,
-        maxRetryAttempts, isHA, optimizeForWrite, op, false, Collections.emptySet());
-  }
-
-  static void reexecute(ExecutablePool pool, String region, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int retryAttempts, final int timeoutMs) {
-
-    ExecuteRegionFunctionOpImpl op = new ExecuteRegionFunctionOpImpl(region, function,
-        serverRegionExecutor, resultCollector, timeoutMs);
-
-    execute(pool, region, function.getId(), serverRegionExecutor, resultCollector, hasResult,
-        retryAttempts, function.isHA(), function.optimizeForWrite(), op, true, failedNodes);
-  }
-
-  static void reexecute(ExecutablePool pool, String region, String function,
-      ServerRegionFunctionExecutor serverRegionExecutor, ResultCollector resultCollector,
-      byte hasResult, Set<String> failedNodes, int retryAttempts, boolean isHA,
-      boolean optimizeForWrite, final int timeoutMs) {
-
-    ExecuteRegionFunctionOpImpl op = new ExecuteRegionFunctionOpImpl(region, function,
-        serverRegionExecutor, resultCollector, hasResult, isHA,
-        optimizeForWrite, true, timeoutMs);
-
-    execute(pool, region, function, serverRegionExecutor, resultCollector, hasResult,
-        retryAttempts, isHA, optimizeForWrite, op, true, failedNodes);
-  }
 
   static class ExecuteRegionFunctionOpImpl extends AbstractOpWithTimeout {
 
