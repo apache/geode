@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.DiskDirSizesUnit;
 
 /**
@@ -46,20 +45,27 @@ public class DirectoryHolder {
   private final DiskDirectoryStats dirStats;
 
   /** For testing purposes we can set the disk directory size in bytes **/
-  @MutableForTesting
-  static DiskDirSizesUnit DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
+  DiskDirSizesUnit diskDirSizesUnit;
 
   DirectoryHolder(StatisticsFactory factory, File dir, long space, int index) {
     this(dir.getPath(), factory, dir, space, index);
   }
 
   DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index) {
+    this(ownersName, factory, dir, space, index, DiskDirSizesUnit.MEGABYTES);
+  }
+
+  DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index,
+      DiskDirSizesUnit unit) throws RuntimeException {
     this.dir = dir;
-    if (DISK_DIR_SIZES_UNIT == DiskDirSizesUnit.BYTES) {
+    this.diskDirSizesUnit = unit;
+    if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
       this.capacity = space;
-    } else {
+    } else if (this.diskDirSizesUnit == DiskDirSizesUnit.MEGABYTES) {
       // convert megabytes to bytes
       this.capacity = space * 1024 * 1024;
+    } else {
+      throw new IllegalArgumentException("Invalid value for disk size units. Only megabytes and bytes are accepted.");
     }
     this.index = index;
     this.dirStats = new DiskDirectoryStats(factory, ownersName);

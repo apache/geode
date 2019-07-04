@@ -239,16 +239,16 @@ public class DiskStoreImpl implements DiskStore {
    * by default be ON but in order to switch it off you need to explicitly
    */
   static final boolean PREALLOCATE_IF =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
-          .equalsIgnoreCase("true");
+      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateIF", "true")
+          .equalsIgnoreCase("false");
 
   /**
    * This system property indicates that Oplogs should be preallocated till the maxOplogSize as
    * specified for the disk store.
    */
   static final boolean PREALLOCATE_OPLOGS =
-      System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
-          .equalsIgnoreCase("true");
+      !System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "preAllocateDisk", "true")
+          .equalsIgnoreCase("false");
 
   /**
    * For some testing purposes we would not consider top property if this flag is set to true
@@ -463,14 +463,12 @@ public class DiskStoreImpl implements DiskStore {
     int length = dirs.length;
     this.directories = new DirectoryHolder[length];
     long tempMaxDirSize = 0;
-
     this.totalDiskStoreSpace = 0;
-    if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
-      DirectoryHolder.DISK_DIR_SIZES_UNIT = this.diskDirSizesUnit;
-    }
+
     for (int i = 0; i < length; i++) {
       directories[i] =
-          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
+          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i,
+              this.diskDirSizesUnit);
 
       if (tempMaxDirSize < dirSizes[i]) {
         tempMaxDirSize = dirSizes[i];
