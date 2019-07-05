@@ -14,8 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import java.io.File;
 import java.net.InetAddress;
+import java.nio.file.Path;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -88,5 +88,5 @@ public interface MemberServices {
    */
   NetLocator newLocatorHandler(InetAddress bindAddress, String locatorString,
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
-      LocatorStats stats, String securityUDPDHAlgo, File workingDirectory);
+      LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory);
 }

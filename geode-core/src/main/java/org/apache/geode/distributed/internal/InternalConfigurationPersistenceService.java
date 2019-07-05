@@ -27,7 +27,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +47,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -60,6 +58,7 @@ import org.xml.sax.SAXException;
 import org.apache.geode.CancelException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
+import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
@@ -92,7 +91,6 @@ import org.apache.geode.management.internal.configuration.messages.Configuration
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
-@SuppressWarnings({"deprecation", "unchecked"})
 public class InternalConfigurationPersistenceService implements ConfigurationPersistenceService {
   private static final Logger logger = LogService.getLogger();
 
@@ -121,40 +119,57 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   public static final String CONFIG_REGION_NAME = "_ConfigurationRegion";
   private static final String CACHE_CONFIG_VERSION = "1.0";
 
-  private final String configDirPath;
-  private final String configDiskDirPath;
+  private final Path configDirPath;
+  private final Path configDiskDirPath;
 
   private final Set<PersistentMemberPattern> newerSharedConfigurationLocatorInfo = new HashSet<>();
   private final AtomicReference<SharedConfigurationStatus> status = new AtomicReference<>();
 
   private final InternalCache cache;
-  private DistributedLockService sharedConfigLockingService;
-  private JAXBService jaxbService;
+  private final DistributedLockService sharedConfigLockingService;
+  private final JAXBService jaxbService;
+
+  public InternalConfigurationPersistenceService(InternalCache cache, Path workingDirectory,
+      Class<?>... xsdClasses)
+      throws IOException {
+    this(cache, cache.getDistributedSystem(), jaxbService(xsdClasses), workingDirectory);
+  }
 
   @VisibleForTesting
   InternalConfigurationPersistenceService(Class<?>... xsdClasses) {
-    configDirPath = null;
-    configDiskDirPath = null;
-    cache = null;
-    jaxbService = new JAXBService(xsdClasses);
-    jaxbService.validateWithLocalCacheXSD();
+    this(null, null, new JAXBService(xsdClasses), null, null);
   }
 
-  @VisibleForTesting
-  InternalConfigurationPersistenceService() {
-    configDirPath = null;
-    configDiskDirPath = null;
-    cache = null;
-    jaxbService = new JAXBService(CacheConfig.class);
+  private InternalConfigurationPersistenceService(InternalCache cache, DistributedSystem system,
+      JAXBService jaxbService, Path workingDirectory) {
+    this(cache,
+        sharedConfigLockService(system),
+        jaxbService,
+        workingDirectory.resolve(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME),
+        workingDirectory.resolve(CLUSTER_CONFIG_DISK_DIR_PREFIX + system.getName()));
   }
 
-  public JAXBService getJaxbService() {
-    return jaxbService;
-  }
-
-  public InternalConfigurationPersistenceService(InternalCache cache, Class<?>... xsdClasses)
-      throws IOException {
+  private InternalConfigurationPersistenceService(InternalCache cache,
+      DistributedLockService sharedConfigLockingService, JAXBService jaxbService,
+      Path configDirPath, Path configDiskDirPath) {
     this.cache = cache;
+    this.configDirPath = configDirPath;
+    this.configDiskDirPath = configDiskDirPath;
+    this.sharedConfigLockingService = sharedConfigLockingService;
+    status.set(SharedConfigurationStatus.NOT_STARTED);
+    this.jaxbService = jaxbService;
+    this.jaxbService.validateWithLocalCacheXSD();
+  }
+
+  private static JAXBService jaxbService(Class<?>... xsdClasses) {
+    if (xsdClasses != null && xsdClasses.length > 0) {
+      return new JAXBService(xsdClasses);
+    }
+    // else, scan the classpath to find all the classes annotated with XSDRootElement
+    return new JAXBService(scanForClasses().toArray(new Class[0]));
+  }
+
+  private static String clusterConfigRootDir(Cache cache) throws IOException {
     Properties properties = cache.getDistributedSystem().getProperties();
     // resolve the cluster config dir
     String clusterConfigRootDir = properties.getProperty(CLUSTER_CONFIGURATION_DIR);
@@ -170,32 +185,19 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     }
     clusterConfigRootDir = new File(clusterConfigRootDir).getAbsolutePath();
 
-    // resolve the file paths
-    String configDiskDirName =
-        CLUSTER_CONFIG_DISK_DIR_PREFIX + cache.getDistributedSystem().getName();
-
-    this.configDirPath =
-        FilenameUtils.concat(clusterConfigRootDir, CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-    this.configDiskDirPath = FilenameUtils.concat(clusterConfigRootDir, configDiskDirName);
-    this.sharedConfigLockingService = getSharedConfigLockService(cache.getDistributedSystem());
-    this.status.set(SharedConfigurationStatus.NOT_STARTED);
-    if (xsdClasses != null && xsdClasses.length > 0) {
-      this.jaxbService = new JAXBService(xsdClasses);
-    }
-    // else, scan the classpath to find all the classes annotated with XSDRootElement
-    else {
-      Set<String> packages = getPackagesToScan();
-      try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages)) {
-        Set<Class<?>> scannedClasses = scanner.scanClasspathForAnnotation(XSDRootElement.class,
-            packages.toArray(new String[] {}));
-        this.jaxbService =
-            new JAXBService(scannedClasses.toArray(new Class[scannedClasses.size()]));
-      }
-    }
-    jaxbService.validateWithLocalCacheXSD();
+    return clusterConfigRootDir;
   }
 
-  protected Set<String> getPackagesToScan() {
+  private static Set<Class<?>> scanForClasses() {
+    // scan the classpath to find all the classes annotated with XSDRootElement
+    Set<String> packages = getPackagesToScan();
+    try (ClasspathScanLoadHelper scanner = new ClasspathScanLoadHelper(packages)) {
+      return scanner.scanClasspathForAnnotation(XSDRootElement.class,
+          packages.toArray(new String[] {}));
+    }
+  }
+
+  protected static Set<String> getPackagesToScan() {
     Set<String> packages = new HashSet<>();
     String sysProperty = SystemPropertyHelper.getProperty(SystemPropertyHelper.PACKAGES_TO_SCAN);
     if (sysProperty != null) {
@@ -209,7 +211,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   /**
    * Gets or creates (if not created) shared configuration lock service
    */
-  private DistributedLockService getSharedConfigLockService(DistributedSystem ds) {
+  private static DistributedLockService sharedConfigLockService(DistributedSystem ds) {
     DistributedLockService sharedConfigDls =
         DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     try {
@@ -221,6 +223,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       return DLockService.getServiceNamed(SHARED_CONFIG_LOCK_SERVICE_NAME);
     }
     return sharedConfigDls;
+  }
+
+  public JAXBService getJaxbService() {
+    return jaxbService;
   }
 
   /**
@@ -355,14 +361,13 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
           createConfigDirIfNecessary(group);
         }
 
-        String groupDir = FilenameUtils.concat(this.configDirPath, group);
+        Path groupDir = configDirPath.resolve(group);
         Set<String> jarNames = new HashSet<>();
         for (String jarFullPath : jarFullPaths) {
           File stagedJar = new File(jarFullPath);
           jarNames.add(stagedJar.getName());
-          String filePath = FilenameUtils.concat(groupDir, stagedJar.getName());
-          File jarFile = new File(filePath);
-          FileUtils.copyFile(stagedJar, jarFile);
+          Path filePath = groupDir.resolve(stagedJar.getName());
+          FileUtils.copyFile(stagedJar, filePath.toFile());
         }
 
         // update the record after writing the jars to the file system, since the listener
@@ -491,7 +496,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
             InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
-        loadSharedConfigurationFromDir(new File(this.configDirPath));
+        loadSharedConfigurationFromDir(configDirPath.toFile());
       } else {
         persistSecuritySettings(configRegion);
         // for those groups that have jar files, need to download the jars from other locators
@@ -651,17 +656,15 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       DiskStore configDiskStore = this.cache.findDiskStore(CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
       if (configDiskStore != null) {
         configDiskStore.destroy();
-        File file = new File(this.configDiskDirPath);
-        FileUtils.deleteDirectory(file);
       }
-      FileUtils.deleteDirectory(new File(this.configDirPath));
+      FileUtils.deleteDirectory(configDirPath.toFile());
     } catch (Exception exception) {
       throw new AssertionError(exception);
     }
   }
 
   public Path getPathToJarOnThisLocator(String groupName, String jarName) {
-    return new File(this.configDirPath).toPath().resolve(groupName).resolve(jarName);
+    return configDirPath.resolve(groupName).resolve(jarName);
   }
 
   public Configuration getConfiguration(String groupName) {
@@ -686,17 +689,8 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     return getConfigurationRegion().keySet();
   }
 
-  /**
-   * Returns the path of Shared configuration directory
-   *
-   * @return {@link String} path of the shared configuration directory
-   */
-  public String getSharedConfigurationDirPath() {
-    return configDirPath;
-  }
-
   public Path getClusterConfigDirPath() {
-    return Paths.get(configDirPath);
+    return configDirPath;
   }
 
   /**
@@ -730,7 +724,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
       boolean needToCopyJars = true;
-      if (configDir.getAbsolutePath().equals(getSharedConfigurationDirPath())) {
+      if (configDir.getAbsolutePath().equals(configDirPath)) {
         needToCopyJars = false;
       }
 
@@ -781,12 +775,11 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
     FileUtils.writeStringToFile(xmlFile, configuration.getCacheXmlContent(), "UTF-8");
 
     // copy the jars if the rootDir is different than the configDirPath
-    if (rootDir.getAbsolutePath().equals(getSharedConfigurationDirPath())) {
+    if (rootDir.getAbsolutePath().equals(configDirPath)) {
       return;
     }
 
-    File locatorConfigDir =
-        new File(getSharedConfigurationDirPath(), configuration.getConfigName());
+    File locatorConfigDir = configDirPath.resolve(configuration.getConfigName()).toFile();
     if (locatorConfigDir.exists()) {
       File[] jarFiles = locatorConfigDir.listFiles(x -> x.getName().endsWith(".jar"));
       for (File file : jarFiles) {
@@ -815,13 +808,10 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
 
     try {
       if (configRegion == null) {
-        File diskDir = new File(this.configDiskDirPath);
+        File diskDir = configDiskDirPath.toFile();
 
-        if (!diskDir.exists()) {
-          if (!diskDir.mkdirs()) {
-            // TODO: throw caught by containing try statement
-            throw new IOException("Cannot create directory at " + this.configDiskDirPath);
-          }
+        if (!diskDir.exists() && !diskDir.mkdirs()) {
+          throw new IOException("Cannot create directory at " + this.configDiskDirPath);
         }
 
         File[] diskDirs = {diskDir};
@@ -884,23 +874,19 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * Creates a directory for this configuration if it doesn't already exist.
    */
   private File createConfigDirIfNecessary(final String configName) throws IOException {
-    return createConfigDirIfNecessary(new File(getSharedConfigurationDirPath()), configName);
+    return createConfigDirIfNecessary(configDirPath.toFile(), configName);
   }
 
   private File createConfigDirIfNecessary(File clusterConfigDir, final String configName)
       throws IOException {
-    if (!clusterConfigDir.exists()) {
-      if (!clusterConfigDir.mkdirs()) {
-        throw new IOException("Cannot create directory : " + getSharedConfigurationDirPath());
-      }
+    if (!clusterConfigDir.exists() && !clusterConfigDir.mkdirs()) {
+      throw new IOException("Cannot create directory : " + configDirPath);
     }
     Path configDirPath = clusterConfigDir.toPath().resolve(configName);
 
     File configDir = configDirPath.toFile();
-    if (!configDir.exists()) {
-      if (!configDir.mkdir()) {
-        throw new IOException("Cannot create directory : " + configDirPath);
-      }
+    if (!configDir.exists() && !configDir.mkdir()) {
+      throw new IOException("Cannot create directory : " + configDirPath);
     }
 
     return configDir;

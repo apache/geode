@@ -23,6 +23,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,7 +76,7 @@ public class GMSLocator implements Locator, NetLocator {
   private final Set<InternalDistributedMember> registrants = new HashSet<>();
   private final Map<InternalDistributedMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
-  private final File workingDirectory;
+  private final Path workingDirectory;
 
   private volatile boolean isCoordinator;
 
@@ -102,7 +103,7 @@ public class GMSLocator implements Locator, NetLocator {
    */
   public GMSLocator(InetAddress bindAddress, String locatorString, boolean usePreferredCoordinators,
       boolean networkPartitionDetectionEnabled, LocatorStats locatorStats,
-      String securityUDPDHAlgo, File workingDirectory) {
+      String securityUDPDHAlgo, Path workingDirectory) {
     this.usePreferredCoordinators = usePreferredCoordinators;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.securityUDPDHAlgo = securityUDPDHAlgo;
@@ -167,8 +168,7 @@ public class GMSLocator implements Locator, NetLocator {
   @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (viewFile == null) {
-      viewFile =
-          new File(workingDirectory, "locator" + server.getPort() + "view.dat").getAbsoluteFile();
+      viewFile = workingDirectory.resolve("locator" + server.getPort() + "view.dat").toFile();
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",

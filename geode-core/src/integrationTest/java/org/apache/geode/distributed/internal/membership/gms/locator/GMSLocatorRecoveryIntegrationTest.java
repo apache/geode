@@ -77,7 +77,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
     gmsLocator = new GMSLocator(null, null, false, false, new LocatorStats(), "",
-        temporaryFolder.getRoot());
+        temporaryFolder.getRoot().toPath());
     gmsLocator.setViewFile(stateFile);
   }
 
@@ -143,7 +143,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     // this locator will hook itself up with the first MembershipManager to be created
     locator = InternalLocator.startLocator(port, null, null, null, localHost, false,
-        new Properties(), null, temporaryFolder.getRoot());
+        new Properties(), null, temporaryFolder.getRoot().toPath());
 
     // create configuration objects
     Properties nonDefault = new Properties();
@@ -169,7 +169,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
     GMSLocator gmsLocator = new GMSLocator(localHost,
         membershipManager.getLocalMember().getHost() + "[" + port + "]", true, true,
-        new LocatorStats(), "", temporaryFolder.getRoot());
+        new LocatorStats(), "", temporaryFolder.getRoot().toPath());
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
     gmsLocator.init(null);
 

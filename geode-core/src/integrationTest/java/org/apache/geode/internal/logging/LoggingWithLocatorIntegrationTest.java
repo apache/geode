@@ -90,7 +90,7 @@ public class LoggingWithLocatorIntegrationTest {
     Properties config = new Properties();
 
     locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
-        temporaryFolder.getRoot());
+        temporaryFolder.getRoot().toPath());
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -109,7 +109,7 @@ public class LoggingWithLocatorIntegrationTest {
     Properties config = new Properties();
 
     locator = InternalLocator.startLocator(port, logFile, null, null, null, false, config, null,
-        temporaryFolder.getRoot());
+        temporaryFolder.getRoot().toPath());
 
     LogConfig logConfig = locator.getLogConfig();
 
@@ -167,7 +167,7 @@ public class LoggingWithLocatorIntegrationTest {
     config.setProperty(ENABLE_CLUSTER_CONFIGURATION, "false");
 
     locator = InternalLocator.startLocator(port, null, null, null, null, false, config, null,
-        temporaryFolder.getRoot());
+        temporaryFolder.getRoot().toPath());
     Logger logger = LogService.getLogger();
 
     // assert that logging goes to logFile

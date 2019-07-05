@@ -42,7 +42,8 @@ public class GMSLocatorIntegrationTest {
     tcpServer = mock(TcpServer.class);
     view = new NetView();
     gmsLocator =
-        new GMSLocator(null, null, false, false, new LocatorStats(), "", temporaryFolder.getRoot());
+        new GMSLocator(null, null, false, false, new LocatorStats(), "",
+            temporaryFolder.getRoot().toPath());
   }
 
   @Test

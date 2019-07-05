@@ -134,7 +134,7 @@ public class MembershipJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false,
-          new Properties(), null, temporaryFolder.getRoot());
+          new Properties(), null, temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();
@@ -285,7 +285,7 @@ public class MembershipJUnitTest {
       // this locator will hook itself up with the first MembershipManager
       // to be created
       l = InternalLocator.startLocator(port, new File(""), null, null, localHost, false, p, null,
-          temporaryFolder.getRoot());
+          temporaryFolder.getRoot().toPath());
 
       // create configuration objects
       Properties nonDefault = new Properties();

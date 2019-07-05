@@ -57,7 +57,9 @@ import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
-  private InternalConfigurationPersistenceService service, service2;
+
+  private InternalConfigurationPersistenceService service;
+  private InternalConfigurationPersistenceService service2;
   private Configuration configuration;
 
   @Rule
