@@ -329,7 +329,7 @@ public class DiskStoreImpl implements DiskStore {
   private final AtomicReference<DiskAccessException> diskException =
       new AtomicReference<DiskAccessException>();
 
-  private PersistentOplogSet persistentOplogs = new PersistentOplogSet(this);
+  private PersistentOplogSet persistentOplogs = new PersistentOplogSet(this, System.out);
 
   OverflowOplogSet overflowOplogs = new OverflowOplogSet(this);
 
@@ -2756,7 +2756,7 @@ public class DiskStoreImpl implements DiskStore {
     if (!all && max > MAX_OPLOGS_PER_COMPACTION && MAX_OPLOGS_PER_COMPACTION > 0) {
       max = MAX_OPLOGS_PER_COMPACTION;
     }
-    getPersistentOplogs().getCompactableOplogs(l);
+    getPersistentOplogs().getCompactableOplogs(l, max);
 
     // Note this always puts overflow oplogs on the end of the list.
     // They may get starved.
