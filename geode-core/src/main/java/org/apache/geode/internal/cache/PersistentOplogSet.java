@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskAccessException;
 import org.apache.geode.internal.cache.DiskStoreImpl.OplogEntryIdSet;
 import org.apache.geode.internal.cache.entries.DiskEntry;
@@ -71,6 +73,8 @@ public class PersistentOplogSet implements OplogSet {
 
   private final AtomicBoolean alreadyRecoveredOnce = new AtomicBoolean(false);
 
+  private final PrintStream out;
+
   /** The active oplog * */
   private volatile Oplog child;
 
@@ -82,8 +86,9 @@ public class PersistentOplogSet implements OplogSet {
   /** counter used for round-robin logic * */
   private int dirCounter = -1;
 
-  public PersistentOplogSet(DiskStoreImpl parent) {
+  public PersistentOplogSet(DiskStoreImpl parent, PrintStream out) {
     this.parent = parent;
+    this.out = out;
   }
 
   /**
@@ -411,7 +416,7 @@ public class PersistentOplogSet implements OplogSet {
                 }
               } else {
                 parent.incLiveEntryCount(vdr.size());
-                System.out.println(vdr.getName() + ": entryCount=" + vdr.size());
+                out.println(vdr.getName() + ": entryCount=" + vdr.size());
               }
             }
           }
@@ -420,6 +425,8 @@ public class PersistentOplogSet implements OplogSet {
         if (parent.isValidating()) {
           for (Map.Entry<String, Integer> me : prSizes.entrySet()) {
             parent.incLiveEntryCount(me.getValue());
+            out.println(me.getKey() + " entryCount=" + me.getValue() + " bucketCount="
+                + prBuckets.get(me.getKey()));
           }
         }
 
@@ -1005,10 +1012,12 @@ public class PersistentOplogSet implements OplogSet {
   /**
    * Add compactable oplogs to the list, up to the maximum size.
    */
-  void getCompactableOplogs(List<CompactableOplog> compactableOplogs) {
+  void getCompactableOplogs(List<CompactableOplog> compactableOplogs, int max) {
     synchronized (getOplogIdToOplog()) {
-      // Sort this list so we compact the oldest first instead of the first compactable one
       for (Oplog oplog : getOplogIdToOplog().values()) {
+        if (compactableOplogs.size() >= max) {
+          return;
+        }
         if (oplog.needsCompaction()) {
           compactableOplogs.add(oplog);
         }
@@ -1122,5 +1131,10 @@ public class PersistentOplogSet implements OplogSet {
 
   AtomicBoolean getAlreadyRecoveredOnce() {
     return alreadyRecoveredOnce;
+  }
+
+  @VisibleForTesting
+  Map<Long, DiskRecoveryStore> getPendingRecoveryMap() {
+    return pendingRecoveryMap;
   }
 }

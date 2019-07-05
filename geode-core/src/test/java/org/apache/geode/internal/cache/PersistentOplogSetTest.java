@@ -21,11 +21,19 @@ import static org.mockito.Mockito.same;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
+import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
+import org.apache.geode.internal.cache.persistence.DiskRegionView;
 
 public class PersistentOplogSetTest {
 
@@ -49,7 +57,7 @@ public class PersistentOplogSetTest {
     value = mock(ValueWrapper.class);
     oplog = mock(Oplog.class);
 
-    persistentOplogSet = new PersistentOplogSet(diskStore);
+    persistentOplogSet = new PersistentOplogSet(diskStore, System.out);
   }
 
   @Test
@@ -145,5 +153,149 @@ public class PersistentOplogSetTest {
     CompactableOplog value = persistentOplogSet.getChild(24L);
 
     assertThat(value).isNull();
+  }
+
+  @Test
+  public void getCompactableOplogsGathersOnlyOplogsThatNeedCompaction() {
+    Oplog oplogNeedingCompaction1 = oplog(true);
+    Oplog oplogNeedingCompaction2 = oplog(true);
+    Map<Long, Oplog> oplogMap = persistentOplogSet.getOplogIdToOplog();
+    oplogMap.put(0L, oplog(false));
+    oplogMap.put(1L, oplogNeedingCompaction1);
+    oplogMap.put(2L, oplogNeedingCompaction2);
+    oplogMap.put(3L, oplog(false));
+    List<CompactableOplog> compactableOplogs = new ArrayList<>();
+    persistentOplogSet.getCompactableOplogs(compactableOplogs, 5);
+
+    assertThat(compactableOplogs)
+        .containsExactlyInAnyOrder(oplogNeedingCompaction1, oplogNeedingCompaction2);
+  }
+
+  @Test
+  public void getCompactableOplogsGathersOplogsInOrderUpToMax() {
+    Oplog oplogNeedingCompaction1 = oplog(true);
+    Oplog oplogNeedingCompaction2 = oplog(true);
+    Oplog oplogNeedingCompaction3 = oplog(true);
+    Map<Long, Oplog> oplogMap = persistentOplogSet.getOplogIdToOplog();
+    oplogMap.put(1L, oplogNeedingCompaction1);
+    oplogMap.put(2L, oplogNeedingCompaction2);
+    oplogMap.put(3L, oplogNeedingCompaction3);
+    List<CompactableOplog> compactableOplogs = new ArrayList<>();
+    persistentOplogSet.getCompactableOplogs(compactableOplogs, 2);
+
+    assertThat(compactableOplogs)
+        .containsExactly(oplogNeedingCompaction1, oplogNeedingCompaction2) // in order
+        .doesNotContain(oplogNeedingCompaction3);
+  }
+
+  @Test
+  public void getCompactableOplogsGathersAdditionalOplogsUpToMaxSize() {
+    Oplog oplogNeedingCompaction1 = oplog(true);
+    Oplog oplogNeedingCompaction2 = oplog(true);
+    Map<Long, Oplog> oplogMap = persistentOplogSet.getOplogIdToOplog();
+    oplogMap.put(1L, oplogNeedingCompaction1);
+    oplogMap.put(2L, oplogNeedingCompaction2);
+    List<CompactableOplog> compactableOplogs = new ArrayList<>();
+
+    Oplog existingOplogAlreadyInList = oplog(true);
+    compactableOplogs.add(existingOplogAlreadyInList);
+
+    persistentOplogSet.getCompactableOplogs(compactableOplogs, 2);
+
+    assertThat(compactableOplogs)
+        .containsExactly(existingOplogAlreadyInList, oplogNeedingCompaction1) // in order
+        .doesNotContain(oplogNeedingCompaction2);
+  }
+
+  @Test
+  public void getCompactableOplogsDoesNotAddToListOfMaxSize() {
+    Oplog oplogNeedingCompaction1 = oplog(true);
+    Map<Long, Oplog> oplogMap = persistentOplogSet.getOplogIdToOplog();
+    oplogMap.put(1L, oplogNeedingCompaction1);
+    List<CompactableOplog> compactableOplogs = new ArrayList<>();
+
+    Oplog existingOplogAlreadyInList1 = oplog(true);
+    Oplog existingOplogAlreadyInList2 = oplog(true);
+    compactableOplogs.add(existingOplogAlreadyInList1);
+    compactableOplogs.add(existingOplogAlreadyInList2);
+
+    persistentOplogSet.getCompactableOplogs(compactableOplogs, 2);
+
+    assertThat(compactableOplogs)
+        .containsExactly(existingOplogAlreadyInList1, existingOplogAlreadyInList2) // in order
+        .doesNotContain(oplogNeedingCompaction1);
+  }
+
+  @Test
+  public void recoverRegionsThatAreReadyPrintsBucketEntries() {
+    PrintStream outputStream = mock(PrintStream.class);
+    persistentOplogSet = new PersistentOplogSet(diskStore, outputStream);
+    when(diskStore.getDiskInitFile()).thenReturn(mock(DiskInitFile.class));
+    when(diskStore.isValidating()).thenReturn(true);
+    when(diskStore.getStats()).thenReturn(mock(DiskStoreStats.class));
+
+    String prName = "prName";
+    int entryCount = 9;
+    Map<Long, DiskRecoveryStore> currentRecoveryMap = persistentOplogSet.getPendingRecoveryMap();
+    ValidatingDiskRegion validatingDiskRegion = validatingDiskRegionForBucket(prName, entryCount);
+    currentRecoveryMap.put(0L, validatingDiskRegion);
+
+    persistentOplogSet.recoverRegionsThatAreReady();
+
+    ArgumentCaptor<String> printedString = ArgumentCaptor.forClass(String.class);
+    verify(outputStream).println(printedString.capture());
+
+    assertThat(printedString.getValue())
+        .startsWith(prName)
+        .contains("entryCount=" + 9)
+        .contains("bucketCount=" + 1);
+  }
+
+  @Test
+  public void recoverRegionsThatAreReadyPrintsRegionSize() {
+    PrintStream outputStream = mock(PrintStream.class);
+    persistentOplogSet = new PersistentOplogSet(diskStore, outputStream);
+    when(diskStore.getDiskInitFile()).thenReturn(mock(DiskInitFile.class));
+    when(diskStore.isValidating()).thenReturn(true);
+    when(diskStore.getStats()).thenReturn(mock(DiskStoreStats.class));
+
+    String regionName = "regionName";
+    int entryCount = 13;
+    Map<Long, DiskRecoveryStore> currentRecoveryMap = persistentOplogSet.getPendingRecoveryMap();
+    ValidatingDiskRegion validatingDiskRegion = validatingDiskRegion(regionName, entryCount);
+    currentRecoveryMap.put(0L, validatingDiskRegion);
+
+    persistentOplogSet.recoverRegionsThatAreReady();
+
+    ArgumentCaptor<String> printedString = ArgumentCaptor.forClass(String.class);
+    verify(outputStream).println(printedString.capture());
+
+    assertThat(printedString.getValue())
+        .startsWith(regionName)
+        .contains("entryCount=" + entryCount);
+  }
+
+  private ValidatingDiskRegion validatingDiskRegionForBucket(String prName, int entryCount) {
+    ValidatingDiskRegion validatingDiskRegion = mock(ValidatingDiskRegion.class);
+    when(validatingDiskRegion.isBucket()).thenReturn(true);
+    when(validatingDiskRegion.getDiskRegionView()).thenReturn(mock(DiskRegionView.class));
+    when(validatingDiskRegion.getPrName()).thenReturn(prName);
+    when(validatingDiskRegion.size()).thenReturn(entryCount);
+    return validatingDiskRegion;
+  }
+
+  private ValidatingDiskRegion validatingDiskRegion(String regionName, int entryCount) {
+    ValidatingDiskRegion validatingDiskRegion = mock(ValidatingDiskRegion.class);
+    when(validatingDiskRegion.getName()).thenReturn(regionName);
+    when(validatingDiskRegion.isBucket()).thenReturn(false);
+    when(validatingDiskRegion.getDiskRegionView()).thenReturn(mock(DiskRegionView.class));
+    when(validatingDiskRegion.size()).thenReturn(entryCount);
+    return validatingDiskRegion;
+  }
+
+  private Oplog oplog(boolean needsCompaction) {
+    Oplog oplog = mock(Oplog.class);
+    when(oplog.needsCompaction()).thenReturn(needsCompaction);
+    return oplog;
   }
 }
