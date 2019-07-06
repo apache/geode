@@ -72,6 +72,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogConfigListener;
@@ -1182,7 +1183,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
 
       if (isSharedConfigurationEnabled()) {
         configurationPersistenceService =
-            new InternalConfigurationPersistenceService(newCache, workingDirectory);
+            new InternalConfigurationPersistenceService(newCache, workingDirectory,
+                JAXBService.create());
         startClusterManagementService();
       }
 
@@ -1339,7 +1341,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       if (locator.configurationPersistenceService == null) {
         // configurationPersistenceService will already be created in case of auto-reconnect
         locator.configurationPersistenceService =
-            new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory);
+            new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory,
+                JAXBService.create());
       }
       locator.configurationPersistenceService
           .initSharedConfiguration(locator.loadFromSharedConfigDir());
