@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.when;
@@ -65,7 +66,7 @@ public class InternalLocatorIntegrationTest {
 
   @Before
   public void setUp() throws IOException {
-    port = 42;
+    port = getRandomAvailableTCPPort();
     hostnameForClients = "";
     bindAddress = null;
 
