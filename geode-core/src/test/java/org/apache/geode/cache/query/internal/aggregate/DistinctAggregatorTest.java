@@ -14,31 +14,41 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import org.apache.geode.cache.query.Aggregator;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import org.apache.geode.cache.query.QueryService;
 
-/**
- * Computes the count of the non distinct rows for replicated & PR based queries.
- */
-public class Count implements Aggregator {
-  private int count = 0;
+public class DistinctAggregatorTest {
+  DistinctAggregator distinctAggregator;
 
-  int getCount() {
-    return count;
+  @Before
+  public void setUp() {
+    distinctAggregator = new DistinctAggregator();
   }
 
-  @Override
-  public void init() {}
+  @Test
+  public void accumulateShouldIgnoreNull() {
+    distinctAggregator.accumulate(null);
 
-  @Override
-  public void accumulate(Object value) {
-    if (value != null && value != QueryService.UNDEFINED) {
-      ++this.count;
-    }
+    assertThat(distinctAggregator.getDistinct()).isEmpty();
   }
 
-  @Override
-  public Object terminate() {
-    return count;
+  @Test
+  public void accumulateShouldIgnoreUndefined() {
+    distinctAggregator.accumulate(QueryService.UNDEFINED);
+
+    assertThat(distinctAggregator.getDistinct()).isEmpty();
+  }
+
+  @Test
+  public void accumulateShouldComputeIntermediateAdditions() {
+    distinctAggregator.accumulate(20);
+    assertThat(distinctAggregator.getDistinct()).isNotEmpty().hasSize(1);
+
+    distinctAggregator.accumulate(20);
+    assertThat(distinctAggregator.getDistinct()).isNotEmpty().hasSize(1);
   }
 }

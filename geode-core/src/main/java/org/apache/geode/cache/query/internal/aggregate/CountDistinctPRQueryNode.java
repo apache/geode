@@ -16,10 +16,10 @@ package org.apache.geode.cache.query.internal.aggregate;
 
 import java.util.Set;
 
+import org.apache.geode.cache.query.QueryService;
+
 /**
  * Computes the count of the distinct rows on the PR query node.
- *
- *
  */
 public class CountDistinctPRQueryNode extends DistinctAggregator {
 
@@ -28,13 +28,13 @@ public class CountDistinctPRQueryNode extends DistinctAggregator {
    */
   @Override
   public void accumulate(Object value) {
-    this.distinct.addAll((Set) value);
-
+    if (value != null && value != QueryService.UNDEFINED) {
+      this.distinct.addAll((Set) value);
+    }
   }
 
   @Override
   public Object terminate() {
-    return Integer.valueOf(this.distinct.size());
+    return this.distinct.size();
   }
-
 }

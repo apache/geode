@@ -17,14 +17,16 @@ package org.apache.geode.cache.query.internal.aggregate;
 import org.apache.geode.cache.query.QueryService;
 
 /**
- * The aggregator for compuing average which is used on the bucket node for partitioned region based
+ * The aggregator for computing average which is used on the bucket node for partitioned region
+ * based
  * queries.
- *
- *
  */
 public class AvgBucketNode extends Sum {
-
   private int count = 0;
+
+  int getCount() {
+    return count;
+  }
 
   @Override
   public void accumulate(Object value) {
@@ -39,7 +41,6 @@ public class AvgBucketNode extends Sum {
    */
   @Override
   public Object terminate() {
-    return new Object[] {Integer.valueOf(count), super.terminate()};
+    return new Object[] {count, super.terminate()};
   }
-
 }

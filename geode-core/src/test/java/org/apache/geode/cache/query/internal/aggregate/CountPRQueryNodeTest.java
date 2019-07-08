@@ -14,31 +14,35 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import org.apache.geode.cache.query.Aggregator;
-import org.apache.geode.cache.query.QueryService;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Computes the count of the non distinct rows for replicated & PR based queries.
- */
-public class Count implements Aggregator {
-  private int count = 0;
+import org.junit.Before;
+import org.junit.Test;
 
-  int getCount() {
-    return count;
+public class CountPRQueryNodeTest {
+  private CountPRQueryNode countPRQueryNode;
+
+  @Before
+  public void setUp() {
+    countPRQueryNode = new CountPRQueryNode();
   }
 
-  @Override
-  public void init() {}
+  @Test
+  public void accumulateShouldComputeIntermediateAdditions() {
+    countPRQueryNode.accumulate(2);
+    countPRQueryNode.accumulate(3);
 
-  @Override
-  public void accumulate(Object value) {
-    if (value != null && value != QueryService.UNDEFINED) {
-      ++this.count;
-    }
+    assertThat(countPRQueryNode.getCount()).isEqualTo(5);
   }
 
-  @Override
-  public Object terminate() {
-    return count;
+  @Test
+  public void terminateShouldCorrectlyComputeAggregatedValuesCount() {
+    countPRQueryNode.accumulate(50);
+    countPRQueryNode.accumulate(50);
+    countPRQueryNode.accumulate(23);
+
+    Object result = countPRQueryNode.terminate();
+    assertThat(result).isInstanceOf(Number.class);
+    assertThat(((Number) result).intValue()).isEqualTo(123);
   }
 }
