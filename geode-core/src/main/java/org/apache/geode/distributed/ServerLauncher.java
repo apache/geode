@@ -184,6 +184,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER =
       new DefaultServerLauncherCacheProvider();
 
+  private static final Logger logger = LogService.getLogger();
   private volatile boolean debug;
 
   private final ControlNotificationHandler controlHandler;
