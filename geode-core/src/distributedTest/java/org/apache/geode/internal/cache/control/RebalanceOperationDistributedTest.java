@@ -36,6 +36,7 @@ import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.io.File;
@@ -566,7 +567,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
       PartitionedRegion origRegion = (PartitionedRegion) cache.getRegion("region1");
       PartitionedRegion spyRegion = spy(origRegion);
-      PRHARedundancyProvider redundancyProvider = spy(new PRHARedundancyProvider(spyRegion));
+      PRHARedundancyProvider redundancyProvider =
+          spy(new PRHARedundancyProvider(spyRegion, mock(InternalResourceManager.class)));
 
       // return the spied region when ever getPartitionedRegions() is invoked
       Set<PartitionedRegion> parRegions = cache.getPartitionedRegions();

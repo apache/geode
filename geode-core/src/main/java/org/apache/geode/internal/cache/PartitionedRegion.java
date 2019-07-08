@@ -768,7 +768,7 @@ public class PartitionedRegion extends LocalRegion
     this.distAdvisor = RegionAdvisor.createRegionAdvisor(this);
     senderIdMonitor = createSenderIdMonitor();
     // Warning: potential early escape of instance
-    this.redundancyProvider = new PRHARedundancyProvider(this);
+    this.redundancyProvider = new PRHARedundancyProvider(this, cache.getInternalResourceManager());
 
     // localCacheEnabled = ra.getPartitionAttributes().isLocalCacheEnabled();
     // This is to make sure that local-cache get and put works properly.
