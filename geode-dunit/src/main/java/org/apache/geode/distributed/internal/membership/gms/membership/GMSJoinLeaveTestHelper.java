@@ -20,8 +20,8 @@ import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
@@ -68,7 +68,7 @@ public class GMSJoinLeaveTestHelper {
   }
 
   public static InternalDistributedMember getCurrentCoordinator() {
-    return getGmsJoinLeave().getView().getCoordinator();
+    return new InternalDistributedMember(getGmsJoinLeave().getView().getCoordinator());
   }
 
   public static Integer getViewId() {

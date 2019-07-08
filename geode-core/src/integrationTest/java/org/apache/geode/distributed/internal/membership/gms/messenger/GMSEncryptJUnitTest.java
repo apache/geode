@@ -31,8 +31,8 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -47,9 +47,9 @@ public class GMSEncryptJUnitTest {
 
   Services services;
 
-  InternalDistributedMember mockMembers[];
+  GMSMember mockMembers[];
 
-  NetView netView;
+  GMSMembershipView netView;
 
   @Rule
   public ConcurrencyRule concurrencyRule = new ConcurrencyRule();
@@ -70,18 +70,18 @@ public class GMSEncryptJUnitTest {
     services = mock(Services.class);
     when(services.getConfig()).thenReturn(serviceConfig);
 
-    mockMembers = new InternalDistributedMember[4];
+    mockMembers = new GMSMember[4];
     for (int i = 0; i < mockMembers.length; i++) {
-      mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
+      mockMembers[i] = new GMSMember("localhost", 8888 + i);
     }
     int viewId = 1;
-    List<InternalDistributedMember> mbrs = new LinkedList<>();
+    List<GMSMember> mbrs = new LinkedList<>();
     mbrs.add(mockMembers[0]);
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
 
     // prepare the view
-    netView = new NetView(mockMembers[0], viewId, mbrs);
+    netView = new GMSMembershipView(mockMembers[0], viewId, mbrs);
 
   }
 

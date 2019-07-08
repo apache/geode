@@ -18,11 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.internal.Version;
 
-public class HeartbeatMessage extends HighPriorityDistributionMessage {
+public class HeartbeatMessage extends GMSMessage {
   /**
    * RequestId identifies the HeartbeatRequestMessage for which this is a response. If it is < 0
    * this is a periodic heartbeat message.
@@ -43,11 +41,6 @@ public class HeartbeatMessage extends HighPriorityDistributionMessage {
   @Override
   public int getDSFID() {
     return HEARTBEAT_RESPONSE;
-  }
-
-  @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   @Override

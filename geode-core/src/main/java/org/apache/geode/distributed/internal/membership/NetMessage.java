@@ -15,16 +15,38 @@
 package org.apache.geode.distributed.internal.membership;
 
 import java.util.List;
-import java.util.Set;
 
-public interface NetView {
-  int getViewId();
+public interface NetMessage {
 
-  NetMember getCreator();
 
-  List<NetMember> getNetMembers();
+  /** is this a high priority message that should be sent out-of-band? */
+  boolean isHighPriority();
 
-  Set<NetMember> getShutdownNetMembers();
 
-  Set<NetMember> getCrashedNetMembers();
+  /** register any reply processor prior to transmission, if necessary */
+  default void registerProcessor() {
+    // no-op
+  }
+
+  List<NetMember> getNetRecipients();
+
+  /** from DataSerializableFixedID */
+  int getDSFID();
+
+  default boolean forAll() {
+    return false;
+  }
+
+  default boolean getMulticast() {
+    return false;
+  }
+
+  default void setMulticast(boolean useMulticast) {
+    // no-op by default
+  }
+
+  /** establishes the sender of a message on the receiving side of a communications channel */
+  void setNetSender(NetMember sender);
+
+  NetMember getNetSender();
 }

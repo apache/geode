@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
@@ -102,7 +103,9 @@ public class GMSMemberFactory implements MemberServices {
       final RemoteTransportConfig transport, DMStats stats,
       final Authenticator authenticator,
       final DistributionConfig config) throws DistributionException {
-    Services services = new Services(listener, transport, stats, authenticator, config);
+    GMSMembershipManager gmsMembershipManager = new GMSMembershipManager(listener);
+    Services services =
+        new Services(gmsMembershipManager.getGMSManager(), transport, stats, authenticator, config);
     try {
       services.init();
       services.start();
@@ -116,7 +119,7 @@ public class GMSMemberFactory implements MemberServices {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
-    return (MembershipManager) services.getManager();
+    return gmsMembershipManager;
   }
 
   @Override

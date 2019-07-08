@@ -28,7 +28,6 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.UUID;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.net.SocketCreator;
 
@@ -52,17 +51,6 @@ public class JGAddress extends UUID {
 
   // Used only by Externalization
   public JGAddress() {}
-
-  public JGAddress(InternalDistributedMember idm) {
-    super();
-    GMSMember mbr = (GMSMember) idm.getNetMember();
-    this.mostSigBits = mbr.getUuidMSBs();
-    this.leastSigBits = mbr.getUuidLSBs();
-    this.ip_addr = idm.getInetAddress();
-    this.port = idm.getPort();
-    this.vmViewId = idm.getVmViewId();
-  }
-
 
   public JGAddress(GMSMember mbr) {
     super();

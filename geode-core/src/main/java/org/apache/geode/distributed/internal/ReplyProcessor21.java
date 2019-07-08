@@ -29,6 +29,7 @@ import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.UnsupportedVersionException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
@@ -1103,7 +1104,8 @@ public class ReplyProcessor21 implements MembershipListener {
           cause);
     } else if (suspectThem) {
       if (suspectMembers != null && suspectMembers.size() > 0) {
-        getDistributionManager().getMembershipManager().suspectMembers(suspectMembers,
+        getDistributionManager().getMembershipManager().suspectMembers(
+            (Set<DistributedMember>) (Set<?>) suspectMembers,
             "Failed to respond within ack-wait-threshold");
       }
     }

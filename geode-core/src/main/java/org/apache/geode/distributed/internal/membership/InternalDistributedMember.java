@@ -174,9 +174,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /**
    * Construct a InternalDistributedMember based on the given NetMember.
-   * <p>
-   * This is not the preferred way of creating an instance since the NetMember may not have all
-   * required information (e.g., a JGroups address without direct-port and other information).
    *
    */
   public InternalDistributedMember(NetMember m) {
@@ -192,7 +189,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
-    this.isPartial = true;
+    this.isPartial = false;
   }
 
   /**

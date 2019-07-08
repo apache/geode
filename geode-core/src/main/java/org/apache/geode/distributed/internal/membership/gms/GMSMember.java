@@ -19,17 +19,18 @@ import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.jgroups.util.UUID;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.net.SocketCreator;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -44,6 +45,18 @@ import org.apache.geode.internal.Version;
  *
  */
 public class GMSMember implements NetMember, DataSerializableFixedID {
+  /** The DM type for regular distribution managers */
+  public static final int NORMAL_DM_TYPE = 10;
+
+  /** The DM type for locator distribution managers */
+  public static final int LOCATOR_DM_TYPE = 11;
+
+  /** The DM type for Console (admin-only) distribution managers */
+  public static final int ADMIN_ONLY_DM_TYPE = 12;
+
+  /** The DM type for stand-alone members */
+  public static final int LONER_DM_TYPE = 13;
+
   private int udpPort = 0;
   private boolean preferredForCoordinator;
   private boolean networkPartitionDetectionEnabled;
@@ -64,6 +77,19 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   // Used only by Externalization
   public GMSMember() {}
+
+  @VisibleForTesting
+  public GMSMember(String localhost, int udpPort, Version version) {
+    this.inetAddr = SocketCreator.toInetAddress(localhost);
+    this.udpPort = udpPort;
+    this.versionOrdinal = version.ordinal();
+    this.vmKind = NORMAL_DM_TYPE;
+    this.preferredForCoordinator = true;
+    this.vmViewId = -1;
+    this.processId = -1;
+    this.directPort = -1;
+    setUUID(UUID.randomUUID());
+  }
 
   @Override
   public MemberAttributes getAttributes() {
@@ -92,13 +118,9 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @param i the hostname, must be for the current host
    * @param p the membership listening port
    */
+  @VisibleForTesting
   public GMSMember(String i, int p) {
-    udpPort = p;
-    try {
-      inetAddr = InetAddress.getByName(i);
-    } catch (UnknownHostException e) {
-      // oops
-    }
+    this(i, p, Version.CURRENT);
   }
 
   /**
@@ -231,6 +253,10 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    */
   @Override
   public int compareTo(NetMember o) {
+    return compareTo(o, true);
+  }
+
+  public int compareTo(NetMember o, boolean compareUUIDs) {
     if (o == this) {
       return 0;
     }
@@ -273,7 +299,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
         result = 1;
       }
     }
-    if (result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {
+    if (compareUUIDs && result == 0 && this.uuidMSBs != 0 && his.uuidMSBs != 0) {
       if (this.uuidMSBs < his.uuidMSBs) {
         result = -1;
       } else if (his.uuidMSBs < this.uuidMSBs) {
@@ -328,7 +354,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     String uuid = formatUUID();
 
     sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
-        .append(";processId=").append(processId).append(";name=").append(name).append(uuid)
+        .append(";kind=").append(vmKind).append(";processId=").append(processId).append(";name=")
+        .append(name).append(uuid)
         .append("]");
     return sb.toString();
   }
@@ -572,5 +599,34 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   private String formatUUID() {
     return ";uuid=" + getUUID().toStringLong();
+  }
+
+
+  public static class GMSMemberWrapper {
+    GMSMember mbr;
+
+    public GMSMemberWrapper(GMSMember m) {
+      this.mbr = m;
+    }
+
+    public GMSMember getMbr() {
+      return mbr;
+    }
+
+    @Override
+    public int hashCode() {
+      return mbr.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      GMSMember other = ((GMSMemberWrapper) obj).mbr;
+      return mbr.compareTo(other) == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "GMSMemberWrapper [mbr=" + mbr + "]";
+    }
   }
 }

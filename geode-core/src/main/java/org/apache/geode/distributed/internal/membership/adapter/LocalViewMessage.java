@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.mgr;
+package org.apache.geode.distributed.internal.membership.adapter;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.MembershipView;
 
 
 /**
@@ -35,9 +35,9 @@ public class LocalViewMessage extends SerialDistributionMessage {
 
   private GMSMembershipManager manager;
   private long viewId;
-  private NetView view;
+  private MembershipView view;
 
-  public LocalViewMessage(InternalDistributedMember addr, long viewId, NetView view,
+  public LocalViewMessage(InternalDistributedMember addr, long viewId, MembershipView view,
       GMSMembershipManager manager) {
     super();
     this.sender = addr;

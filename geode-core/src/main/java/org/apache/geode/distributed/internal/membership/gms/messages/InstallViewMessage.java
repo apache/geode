@@ -20,27 +20,27 @@ import java.io.IOException;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.internal.Version;
 
-public class InstallViewMessage extends HighPriorityDistributionMessage {
+public class InstallViewMessage extends GMSMessage {
+
   enum messageType {
     INSTALL, PREPARE, SYNC
   }
 
-  private NetView view;
+  private GMSMembershipView view;
   private Object credentials;
   private messageType kind;
   private int previousViewId;
 
-  public InstallViewMessage(NetView view, Object credentials, boolean preparing) {
+  public InstallViewMessage(GMSMembershipView view, Object credentials, boolean preparing) {
     this.view = view;
     this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
     this.credentials = credentials;
   }
 
-  public InstallViewMessage(NetView view, Object credentials, int previousViewId,
+  public InstallViewMessage(GMSMembershipView view, Object credentials, int previousViewId,
       boolean preparing) {
     this.view = view;
     this.kind = preparing ? messageType.PREPARE : messageType.INSTALL;
@@ -56,12 +56,8 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
     return kind == messageType.SYNC;
   }
 
-  public NetView getView() {
+  public GMSMembershipView getView() {
     return view;
-  }
-
-  public int getPreviousViewId() {
-    return previousViewId;
   }
 
   public Object getCredentials() {
@@ -73,18 +69,17 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
+  public Version[] getSerializationVersions() {
+    return null;
+  }
+
+  @Override
   public int getDSFID() {
     return INSTALL_VIEW_MESSAGE;
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
-  }
-
-  @Override
   public void toData(DataOutput out) throws IOException {
-    super.toData(out);
     out.writeInt(previousViewId);
     out.writeInt(kind.ordinal());
     DataSerializer.writeObject(this.view, out);
@@ -93,7 +88,6 @@ public class InstallViewMessage extends HighPriorityDistributionMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
     this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
     this.view = DataSerializer.readObject(in);
