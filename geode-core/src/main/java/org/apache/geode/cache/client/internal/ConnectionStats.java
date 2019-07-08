@@ -43,15 +43,6 @@ public class ConnectionStats implements MessageStats {
     return sendType;
   }
 
-  ///////////////////////////////////////////////////////////////////////
-  /*
-   * private static final int opInProgressId; private static final int opSendInProgressId; private
-   * static final int opSendFailedId; private static final int opSendId; private static final int
-   * opSendDurationId; private static final int opTimedOutId; private static final int opFailedId;
-   * private static final int opId; private static final int opDurationId;
-   */
-  ///////////////////////////////////////////////////////////////////////
-
   private static final int getInProgressId;
   private static final int getSendInProgressId;
   private static final int getSendFailedId;
@@ -456,17 +447,6 @@ public class ConnectionStats implements MessageStats {
       StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
       type = f.createType("ClientStats", "Statistics about client to server communication",
           new StatisticDescriptor[] {
-              ///////////////////////////////////////////////////////////////////////
-              /*
-               * f.createIntGauge("opsInProgress", "Current number of ops being executed", "ops"),
-               * f.createIntCounter("ops", "Total number of ops completed successfully", "ops"),
-               * f.createIntCounter("opFailures", "Total number of op attempts that have failed",
-               * "ops"), f.createIntCounter("opTimeouts",
-               * "Total number of op attempts that have timed out", "ops"),
-               * f.createLongCounter("opTime",
-               * "Total amount of time, in nanoseconds spent doing ops", "nanoseconds"),
-               */
-              ///////////////////////////////////////////////////////////////////////
               f.createIntGauge("getsInProgress", "Current number of gets being executed", "gets"),
               f.createLongCounter("gets", "Total number of gets completed successfully", "gets"),
               f.createLongCounter("getFailures", "Total number of get attempts that have failed",
@@ -941,16 +921,6 @@ public class ConnectionStats implements MessageStats {
 
       sendType = f.createType("ClientSendStats", "Statistics about client to server communication",
           new StatisticDescriptor[] {
-              ///////////////////////////////////////////////////////////////////////
-              /*
-               * f.createIntGauge("opSendsInProgress", "Current number of op sends being executed",
-               * "sends"), f.createIntCounter("opSends",
-               * "Total number of op sends that have completed successfully", "sends"),
-               * f.createIntCounter("opSendFailures", "Total number of op sends that have failed",
-               * "sends"), f.createLongCounter("opSendTime",
-               * "Total amount of time, in nanoseconds spent doing op sends", "nanoseconds"),
-               */
-              ///////////////////////////////////////////////////////////////////////
               f.createIntGauge("getSendsInProgress", "Current number of get sends being executed",
                   "sends"),
               f.createIntCounter("getSends",
@@ -1304,16 +1274,7 @@ public class ConnectionStats implements MessageStats {
               f.createLongCounter("addPdxTypeSendTime",
                   "Total amount of time, in nanoseconds spent sending addPdxType operation's request messages successfully/unsuccessfully from the client to server",
                   "nanoseconds"),});
-      ///////////////////////////////////////////////////////////////////////
-      /*
-       * opInProgressId = type.nameToId("opsInProgress"); opSendInProgressId =
-       * sendType.nameToId("opSendsInProgress"); opSendFailedId =
-       * sendType.nameToId("opSendFailures"); opSendId = sendType.nameToId("opSends");
-       * opSendDurationId = sendType.nameToId("opSendTime"); opTimedOutId =
-       * type.nameToId("opTimeouts"); opFailedId = type.nameToId("opFailures"); opId =
-       * type.nameToId("ops"); opDurationId = type.nameToId("opTime");
-       */
-      ///////////////////////////////////////////////////////////////////////
+
       getInProgressId = type.nameToId("getsInProgress");
       getSendInProgressId = sendType.nameToId("getSendsInProgress");
       getSendFailedId = sendType.nameToId("getSendFailures");
@@ -1722,10 +1683,16 @@ public class ConnectionStats implements MessageStats {
   private final Statistics sendStats;
   private final PoolStats poolStats;
 
-  public ConnectionStats(StatisticsFactory factory, String name,
-      PoolStats poolStats/* , GatewayStats gatewayStats */) {
+  public ConnectionStats(StatisticsFactory factory, String name, PoolStats poolStats) {
     this.stats = factory.createAtomicStatistics(type, "ClientStats-" + name);
     this.sendStats = factory.createAtomicStatistics(sendType, "ClientSendStats-" + name);
+    this.poolStats = poolStats;
+  }
+
+  public ConnectionStats(StatisticsFactory factory, String prefix, String name,
+      PoolStats poolStats) {
+    this.stats = factory.createAtomicStatistics(type, prefix + "Stats-" + name);
+    this.sendStats = factory.createAtomicStatistics(sendType, prefix + "SendStats-" + name);
     this.poolStats = poolStats;
   }
 
