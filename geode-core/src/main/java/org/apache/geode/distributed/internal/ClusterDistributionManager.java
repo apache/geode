@@ -3231,7 +3231,7 @@ public class ClusterDistributionManager implements DistributionManager {
       ExecutorService executor = getSerialExecutor(sender);
 
       // Get the total serial queue size.
-      int totalSerialQueueMemSize = stats.getInternalSerialQueueBytes();
+      long totalSerialQueueMemSize = stats.getInternalSerialQueueBytes();
 
       // for tcp socket reader threads, this code throttles the thread
       // to keep the sender-side from overwhelming the receiver.

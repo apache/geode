@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.LongSupplier;
 
 import org.apache.logging.log4j.Logger;
@@ -949,7 +949,7 @@ public class DistributionStats implements DMStats {
 
   private final MaxLongGauge maxReplyWaitTime;
   private final MaxLongGauge maxSentMessagesTime;
-  private AtomicInteger serialQueueBytes = new AtomicInteger();
+  private LongAdder serialQueueBytes = new LongAdder();
 
   //////////////////////// Constructors ////////////////////////
 
@@ -1256,16 +1256,12 @@ public class DistributionStats implements DMStats {
   }
 
   protected void incSerialQueueBytes(int amount) {
-    serialQueueBytes.addAndGet(amount);
+    serialQueueBytes.add(amount);
     this.stats.incInt(serialQueueBytesId, amount);
   }
 
-  public int getSerialQueueBytes() {
-    return this.stats.getInt(serialQueueBytesId);
-  }
-
-  public int getInternalSerialQueueBytes() {
-    return serialQueueBytes.get();
+  public long getInternalSerialQueueBytes() {
+    return serialQueueBytes.longValue();
   }
 
   protected void incSerialPooledThread() {
