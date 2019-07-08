@@ -22,14 +22,9 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
  */
 public class DummyCachePerfStats extends CachePerfStats {
 
-  // ////////////////////// Constructors ////////////////////////
-
-  /**
-   * Creates a new <code>DummyCachePerfStats</code>
-   */
-  public DummyCachePerfStats() {}
-
-  // //////////////////// Accessing Stats //////////////////////
+  DummyCachePerfStats() {
+    super(null);
+  }
 
   @Override
   public int getLoadsCompleted() {
@@ -328,10 +323,10 @@ public class DummyCachePerfStats extends CachePerfStats {
   @Override
   public void txRollback(long opTime, long txLifeTime, int txChanges) {}
 
-  // //// Special Instance Methods /////
-
   @Override
-  void close() {}
+  protected void close() {
+    // nothing
+  }
 
   @Override
   public boolean isClosed() {
@@ -357,11 +352,6 @@ public class DummyCachePerfStats extends CachePerfStats {
 
   @Override
   public void incEntryCount(int delta) {}
-
-  @Override
-  public long getEntries() {
-    return 0;
-  }
 
   @Override
   public void incRetries() {}

@@ -624,33 +624,37 @@ public class CachePerfStats {
 
   private final LongSupplier clock;
 
-  /**
-   * Created specially for bug 39348. Should not be invoked in any other case.
-   */
-  public CachePerfStats() {
-    this(null);
-  }
-
-  /**
-   * Creates a new <code>CachePerfStats</code> and registers itself with the given statistics
-   * factory.
-   */
   public CachePerfStats(StatisticsFactory factory) {
-    this(factory, "cachePerfStats", enableClockStats ? NanoTimer::getTime : () -> 0);
-  }
-
-  /**
-   * Creates a new <code>CachePerfStats</code> and registers itself with the given statistics
-   * factory.
-   */
-  public CachePerfStats(StatisticsFactory factory, String regionName) {
-    this(factory, "RegionStats-" + regionName, enableClockStats ? NanoTimer::getTime : () -> 0);
+    this(factory, "cachePerfStats");
   }
 
   @VisibleForTesting
-  public CachePerfStats(StatisticsFactory factory, String textId, LongSupplier clock) {
-    stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
+  public CachePerfStats(StatisticsFactory factory, LongSupplier clock) {
+    this(factory, "cachePerfStats", clock);
+  }
+
+  public CachePerfStats(StatisticsFactory factory, String textId) {
+    this(factory, textId, createClock());
+  }
+
+  CachePerfStats(StatisticsFactory factory, String textId, LongSupplier clock) {
+    this(createStatistics(factory, textId), clock);
+  }
+
+  private CachePerfStats(Statistics stats, LongSupplier clock) {
+    this.stats = stats;
     this.clock = clock;
+  }
+
+  private static Statistics createStatistics(StatisticsFactory factory, String textId) {
+    if (factory == null) {
+      return null;
+    }
+    return factory.createAtomicStatistics(type, textId);
+  }
+
+  private static LongSupplier createClock() {
+    return enableClockStats ? NanoTimer::getTime : () -> 0;
   }
 
   /**
@@ -666,6 +670,15 @@ public class CachePerfStats {
 
   public static StatisticsType getStatisticsType() {
     return type;
+  }
+
+  /**
+   * Returns the Statistics instance that stores the cache perf stats.
+   *
+   * @since GemFire 3.5
+   */
+  public Statistics getStats() {
+    return stats;
   }
 
   protected long getTime() {
@@ -1273,7 +1286,7 @@ public class CachePerfStats {
    *
    * @since GemFire 3.5
    */
-  void close() {
+  protected void close() {
     stats.close();
   }
 
@@ -1308,10 +1321,6 @@ public class CachePerfStats {
 
   public void incEntryCount(int delta) {
     stats.incLong(entryCountId, delta);
-  }
-
-  public long getEntries() {
-    return stats.getLong(entryCountId);
   }
 
   public void incRetries() {
@@ -1360,15 +1369,6 @@ public class CachePerfStats {
 
   public void incEvictWorkTime(long delta) {
     stats.incLong(evictWorkTimeId, delta);
-  }
-
-  /**
-   * Returns the Statistics instance that stores the cache perf stats.
-   *
-   * @since GemFire 3.5
-   */
-  public Statistics getStats() {
-    return stats;
   }
 
   /**
