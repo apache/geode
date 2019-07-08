@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.statistics.SuppliableStatistics.toSuppliableStatistics;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -86,7 +87,7 @@ public class MemberLevelStatsTest {
 
     statSampler.start();
 
-    cachePerfStats = new CachePerfStats(statisticsManager, "cachePerfStats", clockTime::get);
+    cachePerfStats = new CachePerfStats(statisticsManager, clockTime::get);
     funcServiceStats = new FunctionServiceStats(statisticsManager, "FunctionExecution",
         clockTime::get);
     distributionStats =
@@ -340,6 +341,7 @@ public class MemberLevelStatsTest {
   }
 
   private void sampleStats() {
+    toSuppliableStatistics(cachePerfStats.getStats()).updateSuppliedValues();
     statSampler.getSampleCollector().sample(clockTime.get());
   }
 

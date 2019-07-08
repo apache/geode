@@ -64,7 +64,7 @@ public class CallbackSampler {
     try {
       for (Statistics stats : statisticsManager.getStatsList()) {
         StatisticsImpl statistics = (StatisticsImpl) stats;
-        errors += statistics.invokeSuppliers();
+        errors += statistics.updateSuppliedValues();
         suppliers += statistics.getSupplierCount();
       }
     } catch (VirtualMachineError e) {

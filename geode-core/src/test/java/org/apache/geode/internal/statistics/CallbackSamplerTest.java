@@ -61,8 +61,8 @@ public class CallbackSamplerTest {
 
     StatisticsImpl stats1 = mock(StatisticsImpl.class);
     StatisticsImpl stats2 = mock(StatisticsImpl.class);
-    when(stats1.invokeSuppliers()).thenReturn(3);
-    when(stats2.invokeSuppliers()).thenReturn(2);
+    when(stats1.updateSuppliedValues()).thenReturn(3);
+    when(stats2.updateSuppliedValues()).thenReturn(2);
     when(stats1.getSupplierCount()).thenReturn(7);
     when(stats2.getSupplierCount()).thenReturn(8);
     when(statisticsManager.getStatsList()).thenReturn(Arrays.asList(stats1, stats2));

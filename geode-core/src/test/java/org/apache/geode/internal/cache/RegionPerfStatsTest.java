@@ -16,35 +16,195 @@ package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
+import java.util.function.LongSupplier;
+
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.cache.DataPolicy;
 
 public class RegionPerfStatsTest {
 
+  private static final String REGION_NAME = "region1";
+  private static final String TEXT_ID = "textId";
+  private static final DataPolicy DATA_POLICY = DataPolicy.PERSISTENT_REPLICATE;
+
+  private MeterRegistry meterRegistry;
   private StatisticsFactory statisticsFactory;
   private CachePerfStats cachePerfStats;
 
+  private RegionPerfStats regionPerfStats;
+  private RegionPerfStats regionPerfStats2;
+  private Statistics statistics;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
   @Before
   public void setUp() {
-    statisticsFactory = mock(StatisticsFactory.class);
+    meterRegistry = new SimpleMeterRegistry();
     cachePerfStats = mock(CachePerfStats.class);
+    statisticsFactory = mock(StatisticsFactory.class);
+    statistics = mock(Statistics.class);
+
+    when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(statistics);
+
+    regionPerfStats =
+        new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats, REGION_NAME, DATA_POLICY,
+            meterRegistry);
+  }
+
+  @After
+  public void closeStats() {
+    if (regionPerfStats != null) {
+      regionPerfStats.close();
+    }
+    if (regionPerfStats2 != null) {
+      regionPerfStats2.close();
+    }
   }
 
   @Test
-  public void textIdIsRegionStatsHyphenRegionName() throws Exception {
-    String theRegionName = "TheRegionName";
+  public void createsStatisticsUsingTextId() {
+    StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
-    new RegionPerfStats(statisticsFactory, cachePerfStats, theRegionName, () -> 0);
+    new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats, REGION_NAME, DataPolicy.NORMAL,
+        meterRegistry);
 
-    ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-    verify(statisticsFactory).createAtomicStatistics(any(), captor.capture());
+    verify(statisticsFactory).createAtomicStatistics(any(), eq(TEXT_ID));
+  }
 
-    assertThat(captor.getValue()).isEqualTo("RegionStats-" + theRegionName);
+  @Test
+  public void constructor_createsEntriesGauge_taggedWithRegionName() {
+    Gauge entriesGauge = meterRegistry
+        .find("member.region.entries")
+        .gauge();
+
+    assertThat(entriesGauge.getId().getTag("region.name"))
+        .as("region.name tag")
+        .isEqualTo(REGION_NAME);
+  }
+
+  @Test
+  public void constructor_createsEntriesGauge_taggedWithDataPolicy() {
+    Gauge entriesGauge = meterRegistry
+        .find("member.region.entries")
+        .gauge();
+    assertThat(entriesGauge.getId().getTag("data.policy"))
+        .as("data.policy tag")
+        .isEqualTo(DATA_POLICY.toString());
+  }
+
+  @Test
+  public void suppliesEntryCountStatWithAccumulatedEntryCount() {
+    ArgumentCaptor<LongSupplier> supplierCaptor = ArgumentCaptor.forClass(LongSupplier.class);
+
+    verify(statistics).setLongSupplier(eq(RegionPerfStats.entryCountId), supplierCaptor.capture());
+
+    LongSupplier capturedSupplier = supplierCaptor.getValue();
+    assertThat(capturedSupplier.getAsLong())
+        .as("Initial value of supplier")
+        .isEqualTo(0);
+
+    regionPerfStats.incEntryCount(3);
+    regionPerfStats.incEntryCount(7);
+    regionPerfStats.incEntryCount(-4);
+
+    assertThat(capturedSupplier.getAsLong())
+        .as("Accumulated value of supplier")
+        .isEqualTo(6);
+  }
+
+  @Test
+  public void incEntryCount_incrementsCachePerfStatsEntryCount() {
+    regionPerfStats.incEntryCount(2);
+
+    verify(cachePerfStats).incEntryCount(2);
+  }
+
+  @Test
+  public void incEntryCount_updatesMeterForThisRegion() {
+    regionPerfStats.incEntryCount(1);
+    regionPerfStats.incEntryCount(3);
+    regionPerfStats.incEntryCount(-1);
+
+    Gauge entriesGauge = meterRegistry
+        .find("member.region.entries")
+        .tag("region.name", REGION_NAME)
+        .gauge();
+    assertThat(entriesGauge.value()).isEqualTo(3);
+  }
+
+  @Test
+  public void incEntryCount_doesNotUpdateMeterForOtherRegion() {
+    regionPerfStats2 =
+        new RegionPerfStats(statisticsFactory, "region2", () -> 0, cachePerfStats, "region2",
+            DataPolicy.NORMAL, meterRegistry);
+
+    regionPerfStats.incEntryCount(1);
+    regionPerfStats.incEntryCount(3);
+    regionPerfStats.incEntryCount(-1);
+
+    Gauge region2EntriesGauge = meterRegistry
+        .find("member.region.entries")
+        .tag("region.name", "region2")
+        .gauge();
+    assertThat(region2EntriesGauge.value()).isZero();
+  }
+
+  @Test
+  public void close_removesItsOwnMetersFromTheRegistry() {
+    assertThat(meterNamed("member.region.entries"))
+        .as("entries gauge before closing the stats")
+        .isNotNull();
+
+    regionPerfStats.close();
+
+    assertThat(meterNamed("member.region.entries"))
+        .as("entries gauge after closing the stats")
+        .isNull();
+
+    regionPerfStats = null;
+  }
+
+  @Test
+  public void close_doesNotRemoveMetersItDoesNotOwn() {
+    String foreignMeterName = "some.meter.not.created.by.the.gateway.receiver.stats";
+
+    Timer.builder(foreignMeterName)
+        .register(meterRegistry);
+
+    regionPerfStats.close();
+
+    assertThat(meterNamed(foreignMeterName))
+        .as("foreign meter after closing the stats")
+        .isNotNull();
+
+    regionPerfStats = null;
+  }
+
+  private Meter meterNamed(String meterName) {
+    return meterRegistry
+        .find(meterName)
+        .meter();
   }
 }
