@@ -50,6 +50,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
@@ -89,7 +90,9 @@ public class LocatorClusterManagementServiceTest {
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
 
     memberValidator = mock(MemberValidator.class);
-    persistenceService = spy(InternalConfigurationPersistenceService.class);
+
+    persistenceService = spy(new InternalConfigurationPersistenceService(
+        JAXBService.create(CacheConfig.class)));
 
     Set<String> groups = new HashSet<>();
     groups.add("cluster");

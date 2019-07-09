@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,6 +32,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.test.junit.rules.GfshParserRule;
 
 public class AlterAsyncEventQueueCommandTest {
@@ -46,9 +46,10 @@ public class AlterAsyncEventQueueCommandTest {
   private Set<String> groupSet = new HashSet<>();
 
   @Before
-  public void before() throws Exception {
+  public void setUp() {
     command = spy(AlterAsyncEventQueueCommand.class);
-    service = spy(InternalConfigurationPersistenceService.class);
+    service =
+        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
     configRegion = mock(AbstractRegion.class);
 
     doReturn(service).when(command).getConfigurationPersistenceService();
@@ -75,26 +76,26 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void mandatoryOption() throws Exception {
+  public void mandatoryOption() {
     gfsh.executeAndAssertThat(command, "alter async-event-queue").statusIsError()
         .containsOutput("Invalid command");
   }
 
   @Test
-  public void noOptionToModify() throws Exception {
+  public void noOptionToModify() {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test").statusIsError()
         .containsOutput("need to specify at least one option to modify.");
   }
 
   @Test
-  public void emptyConfiguration() throws Exception {
+  public void emptyConfiguration() {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
         .statusIsError().containsOutput("Can not find an async event queue");
 
   }
 
   @Test
-  public void emptyConfiguration_ifExists() throws Exception {
+  public void emptyConfiguration_ifExists() {
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --id=test --batch-size=100 --if-exists").statusIsSuccess()
         .containsOutput("Skipping: Can not find an async event queue with id");
@@ -102,14 +103,14 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void cluster_config_service_not_available() throws Exception {
+  public void cluster_config_service_not_available() {
     doReturn(null).when(command).getConfigurationPersistenceService();
     gfsh.executeAndAssertThat(command, "alter async-event-queue --id=test --batch-size=100")
         .statusIsError().containsOutput("Cluster Configuration Service is not available");
   }
 
   @Test
-  public void queueIdNotFoundInTheMap() throws Exception {
+  public void queueIdNotFoundInTheMap() {
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-size=100 --id=queue")
         .statusIsError().containsOutput("Can not find an async event queue");
@@ -117,7 +118,7 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void queueIdFoundInTheMap_updateBatchSize() throws Exception {
+  public void queueIdFoundInTheMap_updateBatchSize() {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --batch-size=100 --id=queue1")
         .statusIsSuccess()
         .containsOutput("Cluster configuration for group 'group1' is updated")
@@ -126,7 +127,7 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void queueIdFoundInTheMap_updateBatchTimeInterval() throws Exception {
+  public void queueIdFoundInTheMap_updateBatchTimeInterval() {
     gfsh.executeAndAssertThat(command,
         "alter async-event-queue --batch-time-interval=100 --id=queue1")
         .statusIsSuccess()
@@ -140,7 +141,7 @@ public class AlterAsyncEventQueueCommandTest {
   }
 
   @Test
-  public void queueIdFoundInTheMap_updateMaxMemory() throws Exception {
+  public void queueIdFoundInTheMap_updateMaxMemory() {
     gfsh.executeAndAssertThat(command, "alter async-event-queue --max-queue-memory=100 --id=queue1")
         .statusIsSuccess()
         .containsOutput("Cluster configuration for group 'group1' is updated")

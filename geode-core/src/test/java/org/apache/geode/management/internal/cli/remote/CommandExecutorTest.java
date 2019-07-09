@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.remote;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,8 +36,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Region;
+import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.AbstractRegion;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
@@ -49,6 +50,7 @@ import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.security.NotAuthorizedException;
 
 public class CommandExecutorTest {
+
   private GfshParseResult parseResult;
   private CommandExecutor executor;
   private ResultModel result;
@@ -56,50 +58,47 @@ public class CommandExecutorTest {
   private InternalConfigurationPersistenceService ccService;
   private Region configRegion;
 
-
   @Before
-  public void before() {
+  public void setUp() {
     parseResult = mock(GfshParseResult.class);
     result = new ResultModel();
     executor = spy(CommandExecutor.class);
     testCommand = mock(SingleGfshCommand.class,
         withSettings().extraInterfaces(UpdateAllConfigurationGroupsMarker.class));
-    ccService = spy(InternalConfigurationPersistenceService.class);
+    ccService =
+        spy(new InternalConfigurationPersistenceService(JAXBService.create(CacheConfig.class)));
     configRegion = mock(AbstractRegion.class);
-
 
     doReturn(ccService).when(testCommand).getConfigurationPersistenceService();
     doCallRealMethod().when(ccService).updateCacheConfig(any(), any());
     doReturn(true).when(ccService).lockSharedConfiguration();
     doNothing().when(ccService).unlockSharedConfiguration();
     doReturn(configRegion).when(ccService).getConfigurationRegion();
-
   }
 
-
   @Test
-  public void executeWhenGivenDummyParseResult() throws Exception {
+  public void executeWhenGivenDummyParseResult() {
     Object result = executor.execute(parseResult);
     assertThat(result).isInstanceOf(ResultModel.class);
     assertThat(result.toString()).contains("Error while processing command");
   }
 
   @Test
-  public void returnsResultAsExpected() throws Exception {
+  public void returnsResultAsExpected() {
     doReturn(result).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(thisResult).isSameAs(result);
   }
 
   @Test
-  public void testNullResult() throws Exception {
+  public void testNullResult() {
     doReturn(null).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(thisResult.toString()).contains("Command returned null");
   }
 
   @Test
-  public void anyRuntimeExceptionGetsCaught() throws Exception {
+  public void anyRuntimeExceptionGetsCaught() {
     doThrow(new RuntimeException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
@@ -107,7 +106,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void notAuthorizedExceptionGetsThrown() throws Exception {
+  public void notAuthorizedExceptionGetsThrown() {
     doThrow(new NotAuthorizedException("Not Authorized")).when(executor).invokeCommand(any(),
         any());
     assertThatThrownBy(() -> executor.execute(parseResult))
@@ -115,7 +114,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void anyIllegalArgumentExceptionGetsCaught() throws Exception {
+  public void anyIllegalArgumentExceptionGetsCaught() {
     doThrow(new IllegalArgumentException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);
@@ -124,7 +123,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void anyIllegalStateExceptionGetsCaught() throws Exception {
+  public void anyIllegalStateExceptionGetsCaught() {
     doThrow(new IllegalStateException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);
@@ -133,7 +132,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void anyUserErrorExceptionGetsCaught() throws Exception {
+  public void anyUserErrorExceptionGetsCaught() {
     doThrow(new UserErrorException("my message here")).when(executor).invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
     assertThat(((ResultModel) thisResult).getStatus()).isEqualTo(Result.Status.ERROR);
@@ -141,7 +140,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void anyEntityNotFoundException_statusOK() throws Exception {
+  public void anyEntityNotFoundException_statusOK() {
     doThrow(new EntityNotFoundException("my message here", true)).when(executor)
         .invokeCommand(any(), any());
     Object thisResult = executor.execute(parseResult);
@@ -150,7 +149,7 @@ public class CommandExecutorTest {
   }
 
   @Test
-  public void anyEntityNotFoundException_statusERROR() throws Exception {
+  public void anyEntityNotFoundException_statusERROR() {
     doThrow(new EntityNotFoundException("my message here")).when(executor).invokeCommand(any(),
         any());
     Object thisResult = executor.execute(parseResult);

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -674,7 +675,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
         try {
           this.locator = InternalLocator.startLocator(getPort(), getLogFile(), null, null,
               getBindAddress(), true, getDistributedSystemProperties(), getHostnameForClients(),
-              new File(workingDirectory));
+              Paths.get(workingDirectory));
         } finally {
           ProcessLauncherContext.remove();
         }

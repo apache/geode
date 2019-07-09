@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -29,28 +30,48 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 
 public class JAXBServiceTest {
 
   private String xml;
   private CacheConfig unmarshalled;
-  private JAXBService service, service2;
+  private JAXBService service;
+  private JAXBService service2;
+
+  @Rule
+  public RestoreSystemProperties restore = new RestoreSystemProperties();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     service = new JAXBService(CacheConfig.class, ElementOne.class, ElementTwo.class);
     service.validateWithLocalCacheXSD();
 
     service2 = new JAXBService(CacheConfig.class);
     service2.validateWithLocalCacheXSD();
+  }
+
+  @Test
+  public void getPackagesToScanWithoutSystemProperty() {
+    Set<String> packages = JAXBService.getPackagesToScan();
+    assertThat(packages).containsExactly("*");
+  }
+
+  @Test
+  public void getPackagesToScanWithSystemProperty() {
+    System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
+        "org.apache.geode,io.pivotal");
+    Set<String> packages = JAXBService.getPackagesToScan();
+    assertThat(packages).containsExactly("org.apache.geode", "io.pivotal");
   }
 
   @Test
@@ -71,7 +92,7 @@ public class JAXBServiceTest {
   }
 
   @Test
-  public void invalidXmlShouldFail() throws Exception {
+  public void invalidXmlShouldFail() {
     CacheConfig cacheConfig = new CacheConfig();
     // missing version attribute
     assertThatThrownBy(() -> service.marshall(cacheConfig))
@@ -79,7 +100,7 @@ public class JAXBServiceTest {
   }
 
   @Test
-  public void testCacheOneMarshall() throws Exception {
+  public void testCacheOneMarshall() {
     CacheConfig cache = new CacheConfig();
     setBasicValues(cache);
     cache.getCustomCacheElements().add(new ElementOne("test"));
@@ -92,7 +113,7 @@ public class JAXBServiceTest {
   }
 
   @Test
-  public void testMixMarshall() throws Exception {
+  public void testMixMarshall() {
     CacheConfig cache = new CacheConfig();
     setBasicValues(cache);
     cache.getCustomCacheElements().add(new ElementOne("testOne"));
@@ -208,19 +229,20 @@ public class JAXBServiceTest {
     assertThat(cacheConfig.getRegions().get(0).getName()).isEqualTo("one");
   }
 
-  public static void setBasicValues(CacheConfig cache) {
-    cache.setCopyOnRead(true);
+  private void setBasicValues(CacheConfig cache) {
     GatewayReceiverConfig receiver = new GatewayReceiverConfig();
     receiver.setBindAddress("localhost");
     receiver.setEndPort("8080");
     receiver.setManualStart(false);
     receiver.setStartPort("6000");
-    cache.setGatewayReceiver(receiver);
-    cache.setVersion("1.0");
 
     RegionConfig region = new RegionConfig();
     region.setName("testRegion");
     region.setType(RegionType.REPLICATE);
+
+    cache.setCopyOnRead(true);
+    cache.setGatewayReceiver(receiver);
+    cache.setVersion("1.0");
     cache.getRegions().add(region);
   }
 
@@ -233,7 +255,9 @@ public class JAXBServiceTest {
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomOne")
     private String value;
 
-    public ElementOne() {}
+    public ElementOne() {
+      // nothing
+    }
 
     public String getValue() {
       return value;
@@ -253,7 +277,7 @@ public class JAXBServiceTest {
     }
 
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
   }
 
@@ -266,7 +290,9 @@ public class JAXBServiceTest {
     @XmlElement(name = "value", namespace = "http://geode.apache.org/schema/CustomTwo")
     private String value;
 
-    public ElementTwo() {}
+    public ElementTwo() {
+      // nothing
+    }
 
     public String getValue() {
       return value;
@@ -286,7 +312,7 @@ public class JAXBServiceTest {
     }
 
     public void setId(String value) {
-      this.id = value;
+      id = value;
     }
   }
 

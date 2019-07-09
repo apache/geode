@@ -14,10 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.geode.distributed.internal;
 
-import static junitparams.JUnitParamsRunner.$;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,9 +34,7 @@ import java.util.Set;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 
@@ -48,33 +44,35 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 
 @RunWith(JUnitParamsRunner.class)
 public class InternalConfigurationPersistenceServiceTest {
-  private InternalConfigurationPersistenceService service, service2;
-  private Configuration configuration;
 
-  @Rule
-  public RestoreSystemProperties restore = new RestoreSystemProperties();
+  private InternalConfigurationPersistenceService service;
+  private InternalConfigurationPersistenceService service2;
+  private Configuration configuration;
 
   @Before
   public void setUp() throws Exception {
-    service = spy(new InternalConfigurationPersistenceService(CacheConfig.class, ElementOne.class,
-        ElementTwo.class));
-    service2 = spy(new InternalConfigurationPersistenceService(CacheConfig.class));
+    service = spy(new InternalConfigurationPersistenceService(
+        JAXBService.createWithValidation(CacheConfig.class, ElementOne.class, ElementTwo.class)));
+    service2 = spy(new InternalConfigurationPersistenceService(
+        JAXBService.createWithValidation(CacheConfig.class)));
     configuration = new Configuration("cluster");
+
     doReturn(configuration).when(service).getConfiguration(any());
     doReturn(configuration).when(service2).getConfiguration(any());
     doReturn(mock(Region.class)).when(service).getConfigurationRegion();
     doReturn(mock(Region.class)).when(service2).getConfigurationRegion();
     doReturn(true).when(service).lockSharedConfiguration();
     doReturn(true).when(service2).lockSharedConfiguration();
+
     doNothing().when(service).unlockSharedConfiguration();
     doNothing().when(service2).unlockSharedConfiguration();
   }
@@ -192,20 +190,6 @@ public class InternalConfigurationPersistenceServiceTest {
   }
 
   @Test
-  public void getPackagesToScanWithoutSystemProperty() {
-    Set<String> packages = service.getPackagesToScan();
-    assertThat(packages).containsExactly("*");
-  }
-
-  @Test
-  public void getPackagesToScanWithSystemProperty() {
-    System.setProperty("geode." + SystemPropertyHelper.PACKAGES_TO_SCAN,
-        "org.apache.geode,io.pivotal");
-    Set<String> packages = service.getPackagesToScan();
-    assertThat(packages).containsExactly("org.apache.geode", "io.pivotal");
-  }
-
-  @Test
   public void updateGatewayReceiverConfig() {
     service.updateCacheConfig("cluster", cacheConfig -> {
       GatewayReceiverConfig receiver = new GatewayReceiverConfig();
@@ -310,13 +294,13 @@ public class InternalConfigurationPersistenceServiceTest {
   }
 
   protected Object[] getXmlAndExpectedElements() {
-    return $(
+    return new Object[] {
         new Object[] {getDuplicateReceiversWithDefaultPropertiesXml(), 2, 1},
         new Object[] {getDuplicateReceiversWithDifferentHostNameForSendersXml(), 2, 0},
         new Object[] {getDuplicateReceiversWithDifferentBindAddressesXml(), 2, 0},
         new Object[] {getSingleReceiverWithDefaultBindAddressXml(), 1, 1},
         new Object[] {getDuplicateReceiversWithDefaultBindAddressesXml(), 2, 1},
         new Object[] {getValidReceiversXml(), 1, 1},
-        new Object[] {getNoReceiversXml(), 0, 0});
+        new Object[] {getNoReceiversXml(), 0, 0}};
   }
 }
