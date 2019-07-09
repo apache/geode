@@ -14,6 +14,9 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -23,11 +26,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 
 public class GMSUtil {
+  private static final Logger logger = LogService.getLogger();
 
   /**
    * parse locators & check that the resulting address is compatible with the given address
@@ -49,6 +60,33 @@ public class GMSUtil {
       // ignore
     }
     return parseLocators(locatorsString, addr);
+  }
+
+  public static GMSMember readMemberID(DataInput in) throws IOException, ClassNotFoundException {
+    Object id = DataSerializer.readObject(in);
+    if (id instanceof GMSMember) {
+      return (GMSMember) id;
+    }
+    return (GMSMember) ((InternalDistributedMember) id).getNetMember();
+    // try {
+    // Method getNetMember = id.getClass().getMethod("getNetMember");
+    // return (GMSMember)getNetMember.invoke(id);
+    // } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+    // throw new IllegalStateException("Unable to deserialize a member ID", e);
+    // }
+  }
+
+  public static Set<GMSMember> readHashSetOfIDs(DataInput in)
+      throws IOException, ClassNotFoundException {
+    int size = InternalDataSerializer.readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    Set<GMSMember> result = new HashSet<>();
+    for (int i = 0; i < size; i++) {
+      result.add(readMemberID(in));
+    }
+    return result;
   }
 
   /**
@@ -131,4 +169,30 @@ public class GMSUtil {
     return sb.toString();
   }
 
+  public static List<GMSMember> readArrayOfIDs(DataInput in)
+      throws IOException, ClassNotFoundException {
+    int size = InternalDataSerializer.readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    List<GMSMember> result = new ArrayList<>(size);
+    for (int i = 0; i < size; i++) {
+      result.add(readMemberID(in));
+    }
+    return result;
+  }
+
+  private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out)
+      throws IOException {
+    DataSerializer.writeObject(new InternalDistributedMember(suspect), out);
+  }
+
+  public static void writeMemberID(GMSMember id, DataOutput out) throws IOException {
+    if (InternalDataSerializer.getVersionForDataStream(out).ordinal() < Version.GEODE_1_10_0
+        .ordinal()) {
+      writeAsInternalDistributedMember(id, out);
+    } else {
+      DataSerializer.writeObject(id, out);
+    }
+  }
 }

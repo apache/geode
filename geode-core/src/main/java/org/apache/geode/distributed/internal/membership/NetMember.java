@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.Version;
 
 /**
- * This is the SPI for the basic element of membership provided in the GemFire system.
+ * This is the SPI for the basic element of membership provided in Geode.
  *
  *
  */

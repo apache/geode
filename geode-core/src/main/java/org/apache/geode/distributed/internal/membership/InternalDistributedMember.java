@@ -63,7 +63,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   private static final boolean SHOW_NETMEMBER =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_netmembers");
 
-  protected NetMember netMbr; // the underlying member object, e.g. from JGroups
+  protected NetMember netMbr; // the underlying member object
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in

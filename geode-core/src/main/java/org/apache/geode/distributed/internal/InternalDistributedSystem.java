@@ -773,16 +773,6 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm != null);
       Assert.assertTrue(dm.getSystem() == this);
 
-      try {
-        id = dm.getMembershipPort();
-      } catch (DistributedSystemDisconnectedException e) {
-        // bug #48144 - The dm's channel threw an NPE. It now throws this exception
-        // but during startup we should instead throw a SystemConnectException
-        throw new SystemConnectException(
-            "Distributed system has disconnected during startup.",
-            e);
-      }
-
       synchronized (isConnectedMutex) {
         isConnected = true;
       }

@@ -18,8 +18,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
 public class FinalCheckPassedMessage extends GMSMessage {
@@ -52,12 +52,12 @@ public class FinalCheckPassedMessage extends GMSMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(suspect, out);
+    GMSUtil.writeMemberID(suspect, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    suspect = (GMSMember) DataSerializer.readObject(in);
+    suspect = GMSUtil.readMemberID(in);
   }
 
   public GMSMember getSuspect() {

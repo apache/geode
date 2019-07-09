@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 
 public interface NetLocator extends TcpHandler {
@@ -25,6 +24,6 @@ public interface NetLocator extends TcpHandler {
    *
    * @return true if the membership manager was accepted
    */
-  boolean setMembershipManager(MembershipManager mgr);
+  boolean setServices(Services pservices);
 
 }

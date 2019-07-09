@@ -22,6 +22,7 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
 public class SuspectMembersMessage extends GMSMessage {
@@ -62,8 +63,7 @@ public class SuspectMembersMessage extends GMSMessage {
     if (suspectRequests != null) {
       out.writeInt(suspectRequests.size());
       for (SuspectRequest sr : suspectRequests) {
-        // TODO this may need to be an InternalDistributedMember
-        DataSerializer.writeObject(sr.getSuspectMember(), out);
+        GMSUtil.writeMemberID(sr.getSuspectMember(), out);
         DataSerializer.writeString(sr.getReason(), out);
       }
     } else {
@@ -75,9 +75,8 @@ public class SuspectMembersMessage extends GMSMessage {
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
-      // TODO this may contain an InternalDistributedMember instead of a GMSMember
       SuspectRequest sr = new SuspectRequest(
-          (GMSMember) DataSerializer.readObject(in), DataSerializer.readString(in));
+          GMSUtil.readMemberID(in), DataSerializer.readString(in));
       suspectRequests.add(sr);
     }
   }

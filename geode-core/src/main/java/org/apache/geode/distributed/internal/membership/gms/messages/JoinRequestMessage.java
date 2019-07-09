@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
 public class JoinRequestMessage extends GMSMessage {
@@ -86,7 +87,7 @@ public class JoinRequestMessage extends GMSMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     // TODO - backward compatibility broken - recipient may need an InternalDistributedMember
-    DataSerializer.writeObject(memberID, out);
+    GMSUtil.writeMemberID(memberID, out);
     DataSerializer.writeObject(credentials, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
@@ -97,7 +98,7 @@ public class JoinRequestMessage extends GMSMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
+    memberID = GMSUtil.readMemberID(in);
     credentials = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
     // setMulticast(in.readBoolean());

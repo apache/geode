@@ -257,11 +257,6 @@ public class LonerDistributionManager implements DistributionManager {
   }
 
   @Override
-  public long getMembershipPort() {
-    return 0;
-  }
-
-  @Override
   public InternalDistributedSystem getSystem() {
     return this.system;
   }

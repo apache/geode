@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.logging.LogService;
 
 /**
  * The GMSMembershipView class represents a membership view. Note that this class is not
@@ -48,6 +49,7 @@ import org.apache.geode.internal.Version;
  */
 public class GMSMembershipView implements DataSerializableFixedID,
     org.apache.geode.distributed.internal.membership.NetView {
+  private static final Logger logger = LogService.getLogger();
 
   private int viewId;
   private List<GMSMember> members;
@@ -612,11 +614,11 @@ public class GMSMembershipView implements DataSerializableFixedID,
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(creator, out);
+    GMSUtil.writeMemberID(creator, out);
     out.writeInt(viewId);
     writeAsArrayList(members, out);
-    InternalDataSerializer.writeSet(shutdownMembers, out);
-    InternalDataSerializer.writeSet(crashedMembers, out);
+    writeAsSet(shutdownMembers, out);
+    writeAsSet(crashedMembers, out);
     DataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
     DataSerializer.writeHashMap(publicKeys, out);
@@ -624,13 +626,13 @@ public class GMSMembershipView implements DataSerializableFixedID,
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    creator = DataSerializer.readObject(in);
+    creator = GMSUtil.readMemberID(in);
     viewId = in.readInt();
-    members = DataSerializer.readArrayList(in);
+    members = GMSUtil.readArrayOfIDs(in);
     assert members != null;
     this.hashedMembers = new HashSet<>(members);
-    shutdownMembers = InternalDataSerializer.readHashSet(in);
-    crashedMembers = InternalDataSerializer.readHashSet(in);
+    shutdownMembers = GMSUtil.readHashSetOfIDs(in);
+    crashedMembers = GMSUtil.readHashSetOfIDs(in);
     failureDetectionPorts = DataSerializer.readIntArray(in);
     Map pubkeys = DataSerializer.readHashMap(in);
     if (pubkeys != null) {
@@ -639,7 +641,7 @@ public class GMSMembershipView implements DataSerializableFixedID,
   }
 
   /** this will deserialize as an ArrayList */
-  private void writeAsArrayList(List list, DataOutput out) throws IOException {
+  private void writeAsArrayList(List<GMSMember> list, DataOutput out) throws IOException {
     int size;
     if (list == null) {
       size = -1;
@@ -649,7 +651,22 @@ public class GMSMembershipView implements DataSerializableFixedID,
     InternalDataSerializer.writeArrayLength(size, out);
     if (size > 0) {
       for (int i = 0; i < size; i++) {
-        DataSerializer.writeObject(list.get(i), out);
+        GMSUtil.writeMemberID(list.get(i), out);
+      }
+    }
+  }
+
+  private void writeAsSet(Set<GMSMember> set, DataOutput out) throws IOException {
+    int size;
+    if (set == null) {
+      size = -1;
+    } else {
+      size = set.size();
+    }
+    InternalDataSerializer.writeArrayLength(size, out);
+    if (size > 0) {
+      for (GMSMember member : set) {
+        GMSUtil.writeMemberID(member, out);
       }
     }
   }

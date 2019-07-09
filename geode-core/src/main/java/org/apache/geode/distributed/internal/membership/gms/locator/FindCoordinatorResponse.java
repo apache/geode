@@ -131,7 +131,8 @@ public class FindCoordinatorResponse extends GMSMessage
           + ", viewId=" + (view == null ? "null" : view.getViewId()) + ", registrants="
           + (registrants == null ? "none" : registrants) + ", senderId=" + senderId
           + ", network partition detection enabled=" + this.networkPartitionDetectionEnabled
-          + ", locators preferred as coordinators=" + this.usePreferredCoordinators + ")";
+          + ", locators preferred as coordinators=" + this.usePreferredCoordinators
+          + ", view=" + view + ")";
     }
   }
 

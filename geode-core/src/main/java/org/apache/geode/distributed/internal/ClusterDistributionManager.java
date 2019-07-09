@@ -1514,11 +1514,6 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   @Override
-  public long getMembershipPort() {
-    return localAddress.getPort();
-  }
-
-  @Override
   public Set<InternalDistributedMember> putOutgoing(final DistributionMessage msg) {
     try {
       DistributionMessageObserver observer = DistributionMessageObserver.getInstance();

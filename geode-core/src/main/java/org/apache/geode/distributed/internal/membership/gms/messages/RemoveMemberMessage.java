@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
 public class RemoveMemberMessage extends GMSMessage implements HasMemberID {
@@ -74,13 +75,13 @@ public class RemoveMemberMessage extends GMSMessage implements HasMemberID {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(memberID, out);
+    GMSUtil.writeMemberID(memberID, out);
     DataSerializer.writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
+    memberID = GMSUtil.readMemberID(in);
     reason = DataSerializer.readString(in);
   }
 

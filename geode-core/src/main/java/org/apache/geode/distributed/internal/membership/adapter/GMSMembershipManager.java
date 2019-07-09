@@ -2353,10 +2353,14 @@ public class GMSMembershipManager implements MembershipManager {
 
   class ManagerImpl implements Manager {
 
+    public Services getServices() {
+      return services;
+    }
+
     @Override
     /* Service interface */
     public void init(Services services) {
-      services = services;
+      GMSMembershipManager.this.services = services;
 
       Assert.assertTrue(services != null);
 

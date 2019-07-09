@@ -565,6 +565,8 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       systemProperties.put(DistributionConfig.USE_CLUSTER_CONFIGURATION_NAME, "false");
     }
 
+    systemProperties.put("name", "vm" + VM.getCurrentVMNum());
+
     cache = new CacheFactory(systemProperties).create();
     return cache;
   }
@@ -705,6 +707,7 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
     props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
+    props.setProperty(DistributionConfig.NAME_NAME, "vm" + VM.getCurrentVMNum());
 
     InetAddress bindAddr = null;
     try {

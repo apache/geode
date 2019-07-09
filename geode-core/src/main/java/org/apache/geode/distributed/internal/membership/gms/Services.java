@@ -24,7 +24,6 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -142,7 +141,7 @@ public class Services {
     this.manager.started();
     InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
     if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setMembershipManager((MembershipManager) this.manager)) {
+      if (l.getLocatorHandler().setServices(this)) {
         this.locator = (Locator) l.getLocatorHandler();
       }
     }

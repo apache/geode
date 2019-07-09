@@ -169,13 +169,6 @@ public interface DistributionManager extends ReplySender {
   ElderState getElderState(boolean force) throws InterruptedException;
 
   /**
-   * Returns the membership port of the underlying distribution manager used for communication.
-   *
-   * @since GemFire 3.0
-   */
-  long getMembershipPort();
-
-  /**
    * Sends a message
    *
    * @return recipients who did not receive the message

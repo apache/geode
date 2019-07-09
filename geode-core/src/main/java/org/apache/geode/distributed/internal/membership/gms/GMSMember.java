@@ -355,7 +355,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
     sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
         .append(";kind=").append(vmKind).append(";processId=").append(processId).append(";name=")
-        .append(name).append(uuid)
+        .append(name).append(uuid).append(";weight=").append(memberWeight)
         .append("]");
     return sb.toString();
   }
@@ -512,17 +512,50 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   static final int NPD_ENABLED_BIT = 0x01;
   static final int PREFERRED_FOR_COORD_BIT = 0x02;
+  static final int VERSION_BIT = 0x8;
+
+  static final int LONER_VM_TYPE = 13; // from ClusterDistributionManager
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    writeEssentialData(out);
-    out.writeInt(directPort);
-    out.writeByte(memberWeight);
-    out.writeByte(vmKind);
-    out.writeInt(processId);
+    DataSerializer.writeInetAddress(getInetAddress(), out);
+    out.writeInt(getPort());
 
-    DataSerializer.writeString(name, out);
-    DataSerializer.writeStringArray(groups, out);
+    DataSerializer.writeString("", out);
+
+    int flags = 0;
+    if (isNetworkPartitionDetectionEnabled())
+      flags |= NPD_ENABLED_BIT;
+    if (preferredForCoordinator())
+      flags |= PREFERRED_FOR_COORD_BIT;
+    // always write product version but enable reading from older versions
+    // that do not have it
+    flags |= VERSION_BIT;
+
+    out.writeByte((byte) (flags & 0xff));
+
+    out.writeInt(getDirectPort());
+    out.writeInt(getProcessId());
+    int vmKind = getVmKind();
+    out.writeByte(vmKind);
+    DataSerializer.writeStringArray(getGroups(), out);
+
+    DataSerializer.writeString(getName(), out);
+    if (vmKind == LONER_VM_TYPE) {
+      DataSerializer.writeString("", out);
+    } else { // added in 6.5 for unique identifiers in P2P
+      DataSerializer.writeString(String.valueOf(getVmViewId()), out);
+    }
+    DataSerializer
+        .writeString(durableClientAttributes == null ? "" : durableClientAttributes.getId(), out);
+    DataSerializer.writeInteger(Integer.valueOf(
+        durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
+
+    Version.writeOrdinal(out, versionOrdinal, true);
+
+    if (versionOrdinal >= Version.GFE_90.ordinal()) {
+      writeAdditionalData(out);
+    }
   }
 
   public void writeEssentialData(DataOutput out) throws IOException {
@@ -547,14 +580,54 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    readEssentialData(in);
-    this.directPort = in.readInt();
-    this.memberWeight = in.readByte();
-    this.vmKind = in.readByte();
-    this.processId = in.readInt();
+    inetAddr = DataSerializer.readInetAddress(in);
+    udpPort = in.readInt();
 
-    this.name = DataSerializer.readString(in);
-    this.groups = DataSerializer.readStringArray(in);
+    DataSerializer.readString(in); // hostname
+
+    int flags = in.readUnsignedByte();
+    preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
+    this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
+
+    directPort = in.readInt();
+    processId = in.readInt();
+    vmKind = (byte) in.readUnsignedByte();
+    groups = DataSerializer.readStringArray(in);
+    vmViewId = -1;
+
+    name = DataSerializer.readString(in);
+    if (vmKind == LONER_DM_TYPE) {
+      DataSerializer.readString(in);
+    } else {
+      String str = DataSerializer.readString(in);
+      if (str != null) { // backward compatibility from earlier than 6.5
+        vmViewId = Integer.parseInt(str);
+      }
+    }
+
+    String durableId = DataSerializer.readString(in);
+    int durableTimeout = in.readInt();
+    durableClientAttributes =
+        durableId.length() > 0 ? new DurableClientAttributes(durableId, durableTimeout) : null;
+
+    versionOrdinal = readVersion(flags, in);
+
+    if (versionOrdinal >= Version.GFE_90.ordinal()) {
+      readAdditionalData(in);
+    }
+  }
+
+  private short readVersion(int flags, DataInput in) throws IOException {
+    if ((flags & VERSION_BIT) != 0) {
+      return Version.readOrdinal(in);
+    } else {
+      // prior to 7.1 member IDs did not serialize their version information
+      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
+      if (v != null) {
+        return v.ordinal();
+      }
+      return Version.CURRENT_ORDINAL;
+    }
   }
 
   public void readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
@@ -629,4 +702,6 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
       return "GMSMemberWrapper [mbr=" + mbr + "]";
     }
   }
+
+
 }

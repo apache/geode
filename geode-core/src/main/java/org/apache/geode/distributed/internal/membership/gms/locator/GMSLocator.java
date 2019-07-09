@@ -45,7 +45,6 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
@@ -117,9 +116,9 @@ public class GMSLocator implements Locator, NetLocator {
   }
 
   @Override
-  public synchronized boolean setMembershipManager(MembershipManager mgr) {
+  public synchronized boolean setServices(Services pservices) {
     if (services == null || services.isStopped()) {
-      services = ((GMSMembershipManager) mgr).getServices();
+      services = pservices;
       localAddress = services.getMessenger().getMemberID();
       Objects.requireNonNull(localAddress, "member address should have been established");
       logger.info("Peer locator is connecting to local membership services with ID {}",
@@ -388,7 +387,9 @@ public class GMSLocator implements Locator, NetLocator {
   @Override
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
-    setMembershipManager(((InternalDistributedSystem) ds).getDM().getMembershipManager());
+    setServices(
+        ((GMSMembershipManager) ((InternalDistributedSystem) ds).getDM().getMembershipManager())
+            .getServices());
   }
 
   private void recover() throws InternalGemFireException {
