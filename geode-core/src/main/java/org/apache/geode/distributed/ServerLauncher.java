@@ -813,7 +813,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           cache.setIsServer(true);
           startCacheServer(cache);
-          log.debug("Server is online");
+          log.info("Server is online");
           assignBuckets(cache);
           rebalance(cache);
         } finally {
