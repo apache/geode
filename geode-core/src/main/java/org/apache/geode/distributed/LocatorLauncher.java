@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -53,6 +52,7 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -66,6 +66,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.DistributionLocator;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
@@ -93,6 +94,8 @@ import org.apache.geode.management.internal.cli.util.JsonUtil;
  */
 @SuppressWarnings({"unused"})
 public class LocatorLauncher extends AbstractLauncher<String> {
+
+  private static final Logger log = LogService.getLogger();
 
   @Immutable
   private static final Boolean DEFAULT_LOAD_SHARED_CONFIG_FROM_DIR = Boolean.FALSE;
@@ -682,6 +685,7 @@ public class LocatorLauncher extends AbstractLauncher<String> {
 
         debug("Running Locator on (%1$s) in (%2$s) as (%3$s)...", getId(), getWorkingDirectory(),
             getMember());
+        log.debug("Locator is online");
         running.set(true);
 
         return new LocatorState(this, Status.ONLINE);
@@ -731,11 +735,10 @@ public class LocatorLauncher extends AbstractLauncher<String> {
    * @param cause the Throwable thrown during the startup or wait operation on the Locator.
    */
   private void failOnStart(final Throwable cause) {
-
     if (cause != null) {
-      logger.log(Level.INFO, "locator is exiting due to an exception", cause);
+      log.info("locator is exiting due to an exception", cause);
     } else {
-      logger.log(Level.INFO, "locator is exiting normally");
+      log.info("locator is exiting normally");
     }
 
     if (this.locator != null) {
