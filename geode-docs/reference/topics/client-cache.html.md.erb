@@ -25,14 +25,13 @@ For <%=vars.product_name%> server configuration, see [&lt;cache&gt; Element Refe
 
 API: `org.apache.geode.cache.client.ClientCacheFactory` and `PoolFactory` interfaces.
 
-<a id="cc-client-cache__table_B079C5A320194B3A98AD82DDB67DA43D"></a>
+**&lt;client-cache&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 1. Attributes of &lt;client-cache&gt;</span></caption>
 <colgroup>
-<col width="25%" />
+<col width="30%" />
 <col width="50%" />
-<col width="25%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -49,8 +48,6 @@ API: `org.apache.geode.cache.client.ClientCacheFactory` and `PoolFactory` interf
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 1. Attributes of &lt;client-cache&gt;</span>
 
 **Example:**
 
@@ -121,14 +118,13 @@ Use for client caches. Defines a client's server pool used to communicate with s
 
 **API:** `org.apache.geode.cache.client.PoolFactory`
 
-<a id="cc-pool__d93e1237"></a>
+**&lt;pool&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 2. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -270,8 +266,6 @@ recommended.
 </tbody>
 </table>
 
-: <span class="tablecap">Table 2. Attributes</span>
-
 **Example:**
 
 ``` pre
@@ -296,14 +290,12 @@ Provide a locator list or `server` list, but not both.
 
 **API:** `org.apache.geode.distributed.LocatorLauncher`
 
-<a id="cc-locator__d93e1621"></a>
+**&lt;locator&gt; Attributes**
 
 | Attribute | Description                | Default |
 |-----------|----------------------------|---------|
 | host      | Hostname of the locator    |         |
 | port      | Port number of the locator |         |
-
-: <span class="tablecap">Table 3. Attributes</span>
 
 **Example:**
 
@@ -325,14 +317,12 @@ Provide a server list or `locator` list, but not both.
 
 **API:** `org.apache.geode.distributed.ServerLauncher`
 
-<a id="cc-server__d93e1724"></a>
+**&lt;server&gt; Attributes**
 
 | Attribute | Description               | Default |
 |-----------|---------------------------|---------|
 | host      | Hostname of the server    |         |
 | port      | Port number of the server |         |
-
-: <span class="tablecap">Table 4. Attributes</span>
 
 **Example:**
 
@@ -352,14 +342,13 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 
 **API:** `org.apache.geode.cache.DiskStore`
 
-<a id="cc-disk-store__d93e1818"></a>
+**&lt;disk-store&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 5. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -425,8 +414,6 @@ Defines a pool of one or more disk stores, which can be used by regions, and cli
 </tbody>
 </table>
 
-: <span class="tablecap">Table 5. Attributes</span>
-
 **Example:**
 
 ``` pre
@@ -449,14 +436,13 @@ An element of a disk store that defines a set of `<disk-dir>` elements.
 
 Specifies a region or disk store's disk directory.
 
-<a id="cc-disk-dir__d93e2015"></a>
+**&lt;disk-dir&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 6. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -475,8 +461,6 @@ Specifies a region or disk store's disk directory.
 </tbody>
 </table>
 
-: <span class="tablecap">Table 6. Attributes</span>
-
 **Example:**
 
 ``` pre
@@ -490,16 +474,12 @@ Specifies the configuration for the Portable Data eXchange (PDX) method of seria
 
 **API:** `org.apache.geode.cache.CacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields` and `org.apache.geode.cache.ClientCacheFactory.setPdxReadSerialized`, `setPdxDiskStore`, `setPdxPersistent`, `setPdxIgnoreUnreadFields`
 
-<a id="cc-pdx__d93e2117"></a>
-
 | Attribute            | Description                                                                                                                                                                                                | Default |
 |----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
 | read-serialized      | Set it to true if you want PDX deserialization to produce a PdxInstance instead of an instance of the domain class.                                                                                        |         |
 | ignore-unread-fields | Set it to true if you do not want unread PDX fields to be preserved during deserialization. You can use this option to save memory. Set to true only in members that are only reading data from the cache. |         |
 | persistent           | Set to true if you are using persistent regions. This causes the PDX type information to be written to disk.                                                                                               |         |
 | disk-store-name      | If using persistence, this attribute allows you to configure the disk store that the PDX type data will be stored in. By default, the default disk store is used.                                          |         |
-
-: <span class="tablecap">Table 7. Attributes</span>
 
 **Example:**
 
@@ -548,14 +528,13 @@ Specifies a region attributes template that can be named (by `id`) and reference
 
 **API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
-<a id="cc-region-attributes__d93e2287"></a>
+**&lt;region-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 8. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -929,8 +908,6 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tbody>
 </table>
 
-: <span class="tablecap">Table 8. Attributes</span>
-
 ## <a id="cc-key-constraint" class="no-quick-link"></a>&lt;key-constraint&gt;
 
 Defines the type of object to be allowed for the region entry keys. This must be a fully-qualified class name. The attribute ensures that the keys for the region entries are all of the same class. If key-constraint is not used, the region’s keys can be of any class. This attribute, along with value-constraint, is useful for querying and indexing because it provides object type information to the query engine.
@@ -1000,14 +977,13 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-expiration-attributes__d93e3607"></a>
+**&lt;expiration-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 9. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1052,8 +1028,6 @@ Select one of the following expiration actions:
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 9. Attributes</span>
 
 **Example:**
 
@@ -1122,14 +1096,13 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-rit-expiration-attributes__d93e3607"></a>
+**&lt;expiration-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 10. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1174,8 +1147,6 @@ Select one of the following expiration actions:
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 10. Attributes</span>
 
 **Example:**
 
@@ -1242,14 +1213,13 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-ettl-expiration-attributes__d93e3607"></a>
+**&lt;expiration-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 11. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1294,8 +1264,6 @@ Select one of the following expiration actions:
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 11. Attributes</span>
 
 **Example:**
 
@@ -1364,14 +1332,13 @@ Within the `entry-time-to-live` or `entry-idle-time` element, this element speci
 
 **API:** See APIs for `entry-time-to-live`, `entry-idle-time`, `region-time-to-live`, `region-idle-time`
 
-<a id="cc-eit-expiration-attributes__d93e3607"></a>
+**&lt;expiration-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 12. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1416,8 +1383,6 @@ Select one of the following expiration actions:
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 12. Attributes</span>
 
 **Example:**
 
@@ -1535,14 +1500,13 @@ Specifies whether and how to control a region’s size. Size is controlled by re
 
 Using the maximum attribute, specifies maximum region capacity based on entry count.
 
-<a id="cc-lru-entry-count__d93e4939"></a>
+**&lt;lru-entry-count&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 13. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1579,22 +1543,19 @@ Using the maximum attribute, specifies maximum region capacity based on entry co
 </tbody>
 </table>
 
-: <span class="tablecap">Table 13. Attributes</span>
-
 ## <a id="cc-lru-heap-percentage" class="no-quick-link"></a>&lt;lru-heap-percentage&gt;
 
 Runs evictions when the <%=vars.product_name%> resource manager says to. The manager orders evictions when the total cache size is over the heap percentage limit specified in the manager configuration. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-lru-heap-percentage__d93e5047"></a>
+**&lt;lru-heap-percentage&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 14. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1626,22 +1587,19 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </tbody>
 </table>
 
-: <span class="tablecap">Table 14. Attributes</span>
-
 ## <a id="cc-lru-memory-size" class="no-quick-link"></a>&lt;lru-memory-size&gt;
 
 Using the maximum attribute, specifies maximum region capacity based on the amount of memory used, in megabytes. You can declare a Java class that implements the ObjectSizer interface to measure the size of objects in the Region.
 
 Specify the Java class and its initialization parameters with the `<class-name>` and `<parameter>` sub-elements. See [&lt;class-name&gt; and &lt;parameter&gt;](cache_xml.html#class-name_parameter).
 
-<a id="cc-lru-memory-size__d93e5142"></a>
+**&lt;lru-memory-size&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 15. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1677,8 +1635,6 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 15. Attributes</span>
 
 ## <a id="cc-jndi-bindings" class="no-quick-link"></a>&lt;jndi-bindings&gt;
 
@@ -1724,14 +1680,13 @@ For every datasource that is bound to the JNDI tree, there should be one `<jndi-
 
 We recommend that you set the username and password with the `user-name` and `password` jndi-binding attributes rather than using the `<config-property>` element.
 
-<a id="cc-jndi-binding__d93e5336"></a>
+**&lt;jndi-binding&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 16. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -1866,8 +1821,6 @@ Set one of the following types:
 </tbody>
 </table>
 
-: <span class="tablecap">Table 16. Attributes</span>
-
 ## <a id="cc-config-property" class="no-quick-link"></a>&lt;config-property&gt;
 
 A configuration property of the datasource. Use the sub-elements to identify the name, datatype, and value of the property.
@@ -1908,14 +1861,12 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
-<a id="cc-region__d93e5829"></a>
+**&lt;region&gt; Attributes**
 
-| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Default |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| name      | Specify the name for the region. See [Region Management](../../basic_config/data_regions/managing_data_regions.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |         |
+| Attribute | Description | Default |
+|-----------|-------------|---------|
+| name      | Specify the name for the region. See [Region Management](../../basic_config/data_regions/managing_data_regions.html) for details. |         |
 | refid     | Used to apply predefined attributes to the region being defined. If the nested "region-attributes" element has its own "refid", then it will cause the "refid" on the region to be ignored. The "refid" region attriibute can be set to the name of a RegionShortcut or a ClientRegionShortcut. For more information, see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html) and [Storing and Retrieving Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/store_retrieve_region_shortcuts.html). |         |
-
-: <span class="tablecap">Table 17. Attributes</span>
 
 **Example:**
 
@@ -1947,14 +1898,13 @@ Specifies a region attributes template that can be named (by `id`) and reference
 
 **API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
-<a id="cc-r-region-attributes__d93e2287"></a>
+**&lt;region-attributes&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 18. Attributes</span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -2328,28 +2278,24 @@ Used only with GemFire version 6.x gateway configurations. For GemFire 7.0 confi
 </tbody>
 </table>
 
-: <span class="tablecap">Table 18. Attributes</span>
-
 ## <a id="cc-index" class="no-quick-link"></a>&lt;index&gt;
 
 Describes an index to be created on a region. The index node, if any, should all come immediately after the "region-attributes" node. The "name" attribute is a required field which identifies the name of the index. See [Working with Indexes](../../developing/query_index/query_index.html) for more information on indexes.
 
 **Default:**
 
-**API:** `org.apache.geode.cache.query.QueryService.createIndex, createKeyIndex,                     createHashIndex`
+**API:** `org.apache.geode.cache.query.QueryService.createIndex, createKeyIndex, createHashIndex`
 
-<a id="cc-index__d93e5943"></a>
+**&lt;index&gt; Attributes**
 
-| Attribute   | Description                                                                                                                                                                                                                                                                           | Default |
-|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| name        | Required. Name of the index.                                                                                                                                                                                                                                                          |         |
-| from-clause | Specifies the collection(s) of objects that the index ranges over. The from-clause must only contain one and only one region path.                                                                                                                                                    |         |
-| expression  | Specifies the lookup value of the index.                                                                                                                                                                                                                                              |         |
+| Attribute   | Description | Default |
+|-------------|-------------|---------|
+| name        | Required. Name of the index. |         |
+| from-clause | Specifies the collection(s) of objects that the index ranges over. The from-clause must only contain one and only one region path. |         |
+| expression  | Specifies the lookup value of the index. |         |
 | imports     | String containing the imports used to create the index. String should be specified in the query language syntax with each import statement separated by a semicolon. The imports statement provides packages and classes used in variable typing in the indexed and FROM expressions. |         |
-| key-index   | True or false. Whether the index should be a key index. If true, the region key specified in the indexed expression is used to evaluate queries                                                                                                                                       |         |
-| type        | Possible values are "hash" or "range".                                                                                                                                                                                                                                                | range   |
-
-: <span class="tablecap">Table 19. Attributes</span>
+| key-index   | True or false. Whether the index should be a key index. If true, the region key specified in the indexed expression is used to evaluate queries |         |
+| type        | Possible values are "hash" or "range". | range   |
 
 **Example:**
 
@@ -2489,14 +2435,12 @@ Defines a region in the cache. See [&lt;region-attributes&gt;](cache_xml.html#re
 
 **API:** `org.apache.geode.cache.RegionFactory` or `org.apache.geode.cache.ClientRegionFactory`
 
-<a id="cc-ra-region__d93e5829"></a>
+**&lt;region&gt; Attributes**
 
-| Attribute | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Default |
-|-----------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| name      | Specify the name for the region. See [Region Management](../../basic_config/data_regions/managing_data_regions.html) for details.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |         |
+| Attribute | Description | Default |
+|-----------|-------------|---------|
+| name      | Specify the name for the region. See [Region Management](../../basic_config/data_regions/managing_data_regions.html) for details. |         |
 | refid     | Used to apply predefined attributes to the region being defined. If the nested "region-attributes" element has its own "refid", then it will cause the "refid" on the region to be ignored. The "refid" region attriibute can be set to the name of a RegionShortcut or a ClientRegionShortcut. For more information, see [Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/region_shortcuts.html) and [Storing and Retrieving Region Shortcuts and Custom Named Region Attributes](../../basic_config/data_regions/store_retrieve_region_shortcuts.html). |         |
-
-: <span class="tablecap">Table 20. Attributes</span>
 
 **Example:**
 
@@ -2567,14 +2511,13 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 
 **API:** `org.apache.geode.cache.control.ResourceManager`
 
-<a id="cc-resource-manager__d93e6336"></a>
+**&lt;resource-manager&gt; Attributes**
 
 <table>
-<caption><span class="tablecap">Table 21. Attributes </span></caption>
 <colgroup>
-<col width="33%" />
-<col width="33%" />
-<col width="33%" />
+<col width="30%" />
+<col width="50%" />
+<col width="20%" />
 </colgroup>
 <thead>
 <tr class="header">
@@ -2616,8 +2559,6 @@ A memory monitor that tracks cache size as a percentage of total heap or off-hea
 </tr>
 </tbody>
 </table>
-
-: <span class="tablecap">Table 21. Attributes </span>
 
 **Example:**
 
@@ -2663,13 +2604,12 @@ Specify the Java class and its initialization parameters with the `<class-name>`
 
 You can also directly specify `<instantiator>` as a sub-element of `<client-cache>`. Use the `org.apache.geode.Instantiator` API to register a `DataSerializable` implementation as the serialization framework for the cache. The following table lists the attribute that can be specified for an `<instantiator>`.
 
-<a id="cc-instantiator__d93e6596"></a>
+**&lt;instantiator&gt; Attributes**
 
 | Attribute | Description                                                                           | Default |
 |-----------|---------------------------------------------------------------------------------------|---------|
 | id        | Required. ID that the Instantiator should associate with the `DataSerializable` type. |         |
 
-: <span class="tablecap">Table 22. Attributes</span>
 
 ## <a id="cc-initializer" class="no-quick-link"></a>&lt;initializer&gt;
 
