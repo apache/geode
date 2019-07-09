@@ -55,6 +55,7 @@ import joptsimple.OptionException;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
@@ -76,6 +77,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.ConnectionFailedException;
@@ -108,6 +110,8 @@ import org.apache.geode.security.GemFireSecurityException;
  */
 @SuppressWarnings("unused")
 public class ServerLauncher extends AbstractLauncher<String> {
+
+  private static final Logger log = LogService.getLogger();
 
   @Immutable
   private static final Map<String, String> helpMap;
@@ -808,6 +812,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           cache.setIsServer(true);
           startCacheServer(cache);
+          log.debug("Server is online");
           assignBuckets(cache);
           rebalance(cache);
         } finally {

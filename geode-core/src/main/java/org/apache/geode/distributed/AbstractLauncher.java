@@ -96,7 +96,10 @@ public abstract class AbstractLauncher<T extends Comparable<T>> implements Runna
 
   protected final transient AtomicBoolean running = new AtomicBoolean(false);
 
-  // TODO: use log4j logger instead of JUL
+  /**
+   * @deprecated Please use Log4J 2 instead.
+   */
+  @Deprecated
   protected Logger logger = Logger.getLogger(getClass().getName());
 
   public AbstractLauncher() {
