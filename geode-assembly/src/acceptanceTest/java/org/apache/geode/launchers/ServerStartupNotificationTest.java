@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.launchers;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -79,11 +79,10 @@ public class ServerStartupNotificationTest {
 
     Pattern logLinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
-    await()
-        .untilAsserted(() ->
-            assertThat(Files.lines(logFile))
-                .as("Log file " + logFile + " includes line matching " + logLinePattern)
-                .anyMatch(logLinePattern.asPredicate())
-        );
+
+    await().atMost(60, SECONDS)
+        .untilAsserted(() -> assertThat(Files.lines(logFile))
+            .as("Log file " + logFile + " includes line matching " + logLinePattern)
+            .anyMatch(logLinePattern.asPredicate()));
   }
 }

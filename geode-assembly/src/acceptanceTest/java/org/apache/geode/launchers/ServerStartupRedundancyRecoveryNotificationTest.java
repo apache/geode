@@ -12,15 +12,14 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.launchers;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import org.junit.After;
@@ -31,10 +30,14 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupRedundancyRecoveryNotificationTest {
+
+  private static final String SERVER_1_NAME = "server1";
+  private static final String SERVER_2_NAME = "server2";
+  private static final String LOCATOR_NAME = "locator";
+
   @Rule
   public GfshRule gfshRule = new GfshRule();
 
@@ -43,9 +46,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
   @Rule
   public TestName testName = new TestName();
-  private static final String SERVER_1_NAME = "server1";
-  private static final String SERVER_2_NAME = "server2";
-  private static final String LOCATOR_NAME = "locator";
+
   private Path locatorFolder;
   private Path server1Folder;
   private Path server2Folder;
@@ -55,8 +56,8 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   @Before
   public void setup() throws IOException {
     locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
-//    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
-    server1Folder = Paths.get("/Users/demery/my-test-folder").toAbsolutePath();
+    server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
+    // server1Folder = Paths.get("/Users/demery/my-test-folder").toAbsolutePath();
     Files.createDirectories(server1Folder);
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
@@ -67,8 +68,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         "--name=" + LOCATOR_NAME,
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
-        "--locators=localhost[" + locatorPort + "]"
-    );
+        "--locators=localhost[" + locatorPort + "]");
 
     startServer1Command = String.join(" ",
         "start server",
@@ -89,15 +89,13 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         "create region",
         "--name=" + regionName,
         "--type=PARTITION_REDUNDANT",
-        "--redundant-copies=1"
-    );
+        "--redundant-copies=1");
 
     String putCommand = String.join(" ",
         "put",
         "--region=" + regionName,
         "--key=James",
-        "--value=Bond"
-    );
+        "--value=Bond");
 
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
         createRegionCommand, putCommand);
@@ -108,7 +106,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
   @After
   public void stopAllMembers() throws InterruptedException {
-    Thread.sleep(10000);
+    // Thread.sleep(10000);
     String stopServer1Command = "stop server --dir=" + server1Folder;
     String stopServer2Command = "stop server --dir=" + server2Folder;
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder;
@@ -120,6 +118,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
    * appears only *after* redundancy has been restored.
    *
    * TODO: To detect when redundancy is recovered, look for a log line like this:
+   *
    * <pre>
    * [info 2019/07/08 16:14:39.998 PDT <Pooled Waiting Message Processor 1> tid=0x24] Configured
    * redundancy of 2 copies has been restored to /myRegion
@@ -136,11 +135,10 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
     Pattern logLinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");
     // TODO: Check that this log line appears *after* the "recovery restored" line.
-    GeodeAwaitility.await()
-        .untilAsserted(() ->
-            assertThat(Files.lines(logFile))
-                .as("Log file " + logFile + " includes line matching " + logLinePattern)
-                .anyMatch(logLinePattern.asPredicate())
-        );
+
+    await()
+        .untilAsserted(() -> assertThat(Files.lines(logFile))
+            .as("Log file " + logFile + " includes line matching " + logLinePattern)
+            .anyMatch(logLinePattern.asPredicate()));
   }
 }
