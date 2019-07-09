@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.wan.GatewayReceiver;
@@ -80,8 +81,7 @@ public class GatewayReceiverRealizer
     }
 
     gatewayReceiverFactory.create();
-    RealizationResult result = new RealizationResult().setSuccess(true);
-    return result;
+    return new RealizationResult().setSuccess(true);
   }
 
   @Override
@@ -96,7 +96,11 @@ public class GatewayReceiverRealizer
     }
 
     GatewayReceiver receiver = cache.getGatewayReceivers().iterator().next();
+    return generateGatewayReceiverInfo(receiver);
+  }
 
+  @VisibleForTesting
+  GatewayReceiverInfo generateGatewayReceiverInfo(GatewayReceiver receiver) {
     GatewayReceiverInfo info = new GatewayReceiverInfo();
     info.setBindAddress(receiver.getBindAddress());
     info.setHostnameForSenders(receiver.getHostnameForSenders());
