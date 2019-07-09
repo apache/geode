@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.runtime.RuntimeInfo;
+import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 @Controller("gatewayManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -40,7 +40,7 @@ public class GatewayManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = GATEWAY_RECEIVERS_ENDPOINTS)
   @ResponseBody
-  public ClusterManagementResult<GatewayReceiverConfig, RuntimeInfo> listGatewayReceivers(
+  public ClusterManagementResult<GatewayReceiverConfig, GatewayReceiverInfo> listGatewayReceivers(
       @RequestParam(required = false) String group) {
     GatewayReceiverConfig filter = new GatewayReceiverConfig();
     if (StringUtils.isNotBlank(group)) {

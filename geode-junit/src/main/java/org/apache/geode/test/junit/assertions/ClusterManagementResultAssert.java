@@ -65,12 +65,16 @@ public class ClusterManagementResultAssert<T extends CacheElement & CorrespondWi
     return actual.getMemberStatuses();
   }
 
-  public ListAssert<ConfigurationResult<T, R>> hasListResult() {
-    return assertThat(actual.getResult());
+  public List<ConfigurationResult<T, R>> getResult() {
+    return actual.getResult();
+  };
+
+  public ListAssert<T> hasConfigurations() {
+    return assertThat(getActual().getConfigResult());
   }
 
-  public ConfigurationResult<T, R> getResult(int index) {
-    return getActual().getResult().get(index);
+  public ListAssert<R> hasRuntimeInfos() {
+    return assertThat(getActual().getRuntimeResult());
   }
 
   public static <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResultAssert<T, R> assertManagementResult(

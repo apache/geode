@@ -735,6 +735,7 @@ javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
+javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
 javadoc/org/apache/geode/management/runtime/RuntimeInfo.html
 javadoc/org/apache/geode/management/runtime/RuntimeRegionInfo.html

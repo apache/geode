@@ -28,9 +28,8 @@ import org.apache.geode.lang.Identifiable;
  *
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public class MemberInformation implements Identifiable<String>, RuntimeInfo {
+public class MemberInformation extends RuntimeInfo implements Identifiable<String> {
   private static final long serialVersionUID = 1L;
-  private String name;
   private String id;
   private String workingDirPath;
   private String groups;
@@ -64,14 +63,6 @@ public class MemberInformation implements Identifiable<String>, RuntimeInfo {
 
   public void setSecured(boolean secured) {
     isSecured = secured;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   public String getId() {

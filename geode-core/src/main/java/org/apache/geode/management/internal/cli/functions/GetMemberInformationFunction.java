@@ -99,7 +99,7 @@ public class GetMemberInformationFunction implements InternalFunction {
       DistributedMember member) throws IOException {
     MemberInformation memberInfo = new MemberInformation();
 
-    memberInfo.setName(member.getName());
+    memberInfo.setMemberName(member.getName());
     memberInfo.setId(member.getId());
     memberInfo.setHost(member.getHost());
     memberInfo.setProcessId(member.getProcessId());

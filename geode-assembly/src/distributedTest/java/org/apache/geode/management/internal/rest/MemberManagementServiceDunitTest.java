@@ -57,7 +57,7 @@ public class MemberManagementServiceDunitTest {
     assertThat(result.getRuntimeResult().size()).isEqualTo(2);
 
     MemberInformation memberConfig = result.getRuntimeResult().stream()
-        .filter(r -> "locator-0".equals(r.getName())).findFirst().orElse(null);
+        .filter(r -> "locator-0".equals(r.getMemberName())).findFirst().orElse(null);
     assertThat(memberConfig.isCoordinator()).isTrue();
     assertThat(memberConfig.isServer()).isFalse();
     assertThat(memberConfig.getLocatorPort()).isEqualTo(locator.getPort());

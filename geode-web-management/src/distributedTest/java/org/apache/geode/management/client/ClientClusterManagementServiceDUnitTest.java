@@ -103,7 +103,7 @@ public class ClientClusterManagementServiceDUnitTest {
         client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
-        .hasListResult()
+        .hasConfigurations()
         .isEmpty();
   }
 
@@ -127,7 +127,7 @@ public class ClientClusterManagementServiceDUnitTest {
         client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
-        .hasListResult()
+        .hasConfigurations()
         .isEmpty();
   }
 
@@ -245,8 +245,8 @@ public class ClientClusterManagementServiceDUnitTest {
         client.list(new RegionConfig());
     assertManagementResult(listResult)
         .hasStatusCode(ClusterManagementResult.StatusCode.OK)
-        .hasListResult()
-        .extracting(r -> r.getConfig().getId())
+        .hasConfigurations()
+        .extracting(RegionConfig::getId)
         .containsExactly("region1");
   }
 

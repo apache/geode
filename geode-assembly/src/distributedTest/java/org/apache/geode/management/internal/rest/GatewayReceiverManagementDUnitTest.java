@@ -26,51 +26,40 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
+import org.apache.geode.test.junit.assertions.ClusterManagementResultAssert;
+import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class GatewayReceiverManagementDUnitTest {
   @ClassRule
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
-  private static MemberVM locator, server;
-  private static ClusterManagementService cms;
+  private static MemberVM locator;
   private GatewayReceiverConfig receiver;
 
   @BeforeClass
-  public static void beforeClass() throws Exception {
-    locator = cluster.startLocatorVM(0,
-        l -> l.withSecurityManager(SimpleSecurityManager.class).withHttpService());
+  public static void beforeClass() {
+    locator = cluster.startLocatorVM(0, MemberStarterRule::withHttpService);
     int locatorPort = locator.getPort();
-    server = cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
-        .withProperty("groups", "group1")
-        .withCredential("cluster", "cluster"));
+    cluster.startServerVM(1, s -> s.withConnectionToLocator(locatorPort)
+        .withProperty("groups", "group1"));
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     receiver = new GatewayReceiverConfig();
   }
 
   @Test
-  public void withInsuffientCredential() throws Exception {
-    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort())
-        .setCredentials("test", "test").build();
-
-    assertManagementResult(cms.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.UNAUTHORIZED)
-        .containsStatusMessage("test not authorized for CLUSTER:MANAGE");
-  }
-
-  @Test
-  public void createGWR() throws Exception {
-    cms = ClusterManagementServiceBuilder.buildWithHostAddress()
+  public void createGWRAndList() {
+    ClusterManagementService cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
         .setCredentials("cluster", "cluster").build();
 
@@ -98,14 +87,32 @@ public class GatewayReceiverManagementDUnitTest {
         .containsStatusMessage("Successfully updated config for group2")
         .hasMemberStatus().hasSize(0);
 
-    // try create another GWR on another group but has a common member in another goup
+    // try create another GWR on another group but has a common member in another group
     receiver.setStartPort("5003");
     receiver.setGroup(null);
     assertManagementResult(cms.create(receiver)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
 
-    assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful()
-        .hasListResult().hasSize(2);
+    ClusterManagementResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
+        assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
+    List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> listResult =
+        listAssert.getResult();
+
+    assertThat(listResult).hasSize(2);
+
+    // verify that we have two configurations, but only group1 config has a running gwr
+    for (ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo> result : listResult) {
+      if (result.getConfig().getGroup().equals("group1")) {
+        assertThat(result.getRuntimeInfo()).hasSize(1);
+        assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);
+        assertThat(result.getRuntimeInfo().get(0).getMemberName()).isEqualTo("server-1");
+        assertThat(result.getRuntimeInfo().get(0).isRunning()).isEqualTo(true);
+      } else {
+        assertThat(result.getConfig().getGroup()).isEqualTo("group2");
+        assertThat(result.getRuntimeInfo()).hasSize(0);
+      }
+    }
   }
+
 }

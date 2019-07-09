@@ -20,5 +20,14 @@ import java.io.Serializable;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public interface RuntimeInfo extends Serializable {
+public abstract class RuntimeInfo implements Serializable {
+  private String memberName;
+
+  public void setMemberName(String memberName) {
+    this.memberName = memberName;
+  }
+
+  public String getMemberName() {
+    return memberName;
+  }
 }

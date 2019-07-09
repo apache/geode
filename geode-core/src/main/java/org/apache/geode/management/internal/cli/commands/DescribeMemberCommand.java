@@ -64,7 +64,7 @@ public class DescribeMemberCommand extends GfshCommand {
     DataResultModel memberInfo = result.addData("memberInfo");
 
     MemberInformation memberInformation = (MemberInformation) obj;
-    memberInfo.addData("Name", memberInformation.getName());
+    memberInfo.addData("Name", memberInformation.getMemberName());
     memberInfo.addData("Id", memberInformation.getId());
     memberInfo.addData("Host", memberInformation.getHost());
     memberInfo.addData("Regions", StringUtils.join(memberInformation.getHostedRegions(), '\n'));
