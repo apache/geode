@@ -15,6 +15,7 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
@@ -104,6 +105,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   private final String regionName = "clusterTestRegion";
 
+  private final boolean disableTcp;
   private boolean conserveSockets;
   private boolean useSSL;
 
@@ -126,6 +128,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   public ClusterCommunicationsDUnitTest(RunConfiguration runConfiguration) {
     useSSL = runConfiguration.useSSL;
     conserveSockets = runConfiguration.conserveSockets;
+    disableTcp = runConfiguration.disableTcp;
   }
 
   @Before
@@ -297,6 +300,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
     properties.setProperty(CONSERVE_SOCKETS, "" + conserveSockets);
+    properties.setProperty(DISABLE_TCP, ""+disableTcp);
     properties.setProperty(SOCKET_LEASE_TIME, "10000");
     properties.setProperty(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
 
@@ -317,17 +321,20 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   enum RunConfiguration {
-    SHARED_CONNECTIONS(true, false),
-    SHARED_CONNECTIONS_WITH_SSL(true, true),
-    UNSHARED_CONNECTIONS(false, false),
-    UNSHARED_CONNECTIONS_WITH_SSL(false, true);
+    SHARED_CONNECTIONS(true, false, false),
+    SHARED_CONNECTIONS_WITH_SSL(true, true, false),
+    UNSHARED_CONNECTIONS(false, false, false),
+    UNSHARED_CONNECTIONS_WITH_SSL(false, true, false),
+    UDP_CONNECTIONS(true, false, true);
 
     boolean useSSL;
     boolean conserveSockets;
+    boolean disableTcp;
 
-    RunConfiguration(boolean conserveSockets, boolean useSSL) {
+    RunConfiguration(boolean conserveSockets, boolean useSSL, boolean disableTcp) {
       this.useSSL = useSSL;
       this.conserveSockets = conserveSockets;
+      this.disableTcp = disableTcp;
     }
   }
 

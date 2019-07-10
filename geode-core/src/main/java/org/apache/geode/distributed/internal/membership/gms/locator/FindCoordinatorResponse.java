@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -152,8 +153,8 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
   // GMSMember
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(coordinator, out);
-    DataSerializer.writeObject(senderId, out);
+    GMSUtil.writeMemberID(coordinator, out);
+    GMSUtil.writeMemberID(senderId, out);
     InternalDataSerializer.writeByteArray(coordinatorPublicKey, out);
     InternalDataSerializer.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
@@ -161,13 +162,13 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
     DataSerializer.writeObject(view, out);
-    InternalDataSerializer.writeSet(registrants, out);
+    GMSUtil.writeSetOfMemberIDs(registrants, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    coordinator = DataSerializer.readObject(in);
-    senderId = DataSerializer.readObject(in);
+    coordinator = GMSUtil.readMemberID(in);
+    senderId = GMSUtil.readMemberID(in);
     coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
     rejectionMessage = InternalDataSerializer.readString(in);
     isShortForm = in.readBoolean();
@@ -176,7 +177,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
       view = DataSerializer.readObject(in);
-      registrants = InternalDataSerializer.readHashSet(in);
+      registrants = GMSUtil.readHashSetOfMemberIDs(in);
     }
   }
 

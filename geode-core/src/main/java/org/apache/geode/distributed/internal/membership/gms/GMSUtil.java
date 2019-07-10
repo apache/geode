@@ -80,7 +80,7 @@ public class GMSUtil {
     }
   }
 
-  public static Set<GMSMember> readHashSetOfIDs(DataInput in)
+  public static Set<GMSMember> readHashSetOfMemberIDs(DataInput in)
       throws IOException, ClassNotFoundException {
     int size = InternalDataSerializer.readArrayLength(in);
     if (size == -1) {
@@ -216,11 +216,45 @@ public class GMSUtil {
   }
 
   public static void writeMemberID(GMSMember id, DataOutput out) throws IOException {
+    if (id == null) {
+      DataSerializer.writeObject(id, out);
+      return;
+    }
     if (InternalDataSerializer.getVersionForDataStream(out).ordinal() < Version.GEODE_1_10_0
         .ordinal()) {
       writeAsInternalDistributedMember(id, out);
     } else {
       DataSerializer.writeObject(id, out);
+    }
+  }
+
+  public static Set<GMSMember> readSetOfMemberIDs(DataInput in)
+      throws IOException, ClassNotFoundException {
+    int size = InternalDataSerializer.readArrayLength(in);
+    if (size == -1) {
+      return null;
+    }
+    Set<GMSMember> result = new HashSet<>(size);
+    for (int i = 0; i < size; i++) {
+      result.add(readMemberID(in));
+    }
+    return result;
+
+
+  }
+
+  public static void writeSetOfMemberIDs(Set<GMSMember> set, DataOutput out) throws IOException {
+    int size;
+    if (set == null) {
+      size = -1;
+    } else {
+      size = set.size();
+    }
+    InternalDataSerializer.writeArrayLength(size, out);
+    if (size > 0) {
+      for (GMSMember member : set) {
+        GMSUtil.writeMemberID(member, out);
+      }
     }
   }
 }

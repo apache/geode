@@ -603,8 +603,8 @@ public class GMSMembershipView implements DataSerializableFixedID {
     GMSUtil.writeMemberID(creator, out);
     out.writeInt(viewId);
     writeAsArrayList(members, out);
-    writeAsSet(shutdownMembers, out);
-    writeAsSet(crashedMembers, out);
+    GMSUtil.writeSetOfMemberIDs(shutdownMembers, out);
+    GMSUtil.writeSetOfMemberIDs(crashedMembers, out);
     DataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
     DataSerializer.writeHashMap(publicKeys, out);
@@ -617,8 +617,8 @@ public class GMSMembershipView implements DataSerializableFixedID {
     members = GMSUtil.readArrayOfIDs(in);
     assert members != null;
     this.hashedMembers = new HashSet<>(members);
-    shutdownMembers = GMSUtil.readHashSetOfIDs(in);
-    crashedMembers = GMSUtil.readHashSetOfIDs(in);
+    shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in);
+    crashedMembers = GMSUtil.readHashSetOfMemberIDs(in);
     failureDetectionPorts = DataSerializer.readIntArray(in);
     Map pubkeys = DataSerializer.readHashMap(in);
     if (pubkeys != null) {
