@@ -173,118 +173,123 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
   @Override
   protected void process(ClusterDistributionManager dm) {
     String rejectionMessage = null;
-    final boolean isAdminDM =
-        dm.getId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
-            || dm.getId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
+    boolean isAdminDM = false;
+    boolean replySent = false;
+    try {
+      isAdminDM =
+          dm.getId().getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE
+              || dm.getId().getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE;
 
-    String myVersion = GemFireVersion.getGemFireVersion();
-    String theirVersion = this.version;
-    if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
-      rejectionMessage =
-          String.format(
-              "Rejected new system node %s because mcast was %s which does not match the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
+      if (dm.getTransport().isMcastEnabled() != isMcastEnabled) {
+        rejectionMessage =
+            String.format(
+                "Rejected new system node %s because mcast was %s which does not match the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
 
-              new Object[] {getSender(), isMcastEnabled ? "enabled" : "disabled"});
-    } else if (isMcastEnabled
-        && dm.getSystem().getOriginalConfig().getMcastPort() != getMcastPort()) {
-      rejectionMessage =
-          String.format(
-              "Rejected new system node %s because its mcast-port %s does not match the mcast-port %s of the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
-              new Object[] {getSender(), getMcastPort(),
-                  dm.getSystem().getOriginalConfig().getMcastPort()});
-    } else if (isMcastEnabled
-        && !checkMcastAddress(dm.getSystem().getOriginalConfig().getMcastAddress(),
-            getMcastHostAddress())) {
-      rejectionMessage =
-          String.format(
-              "Rejected new system node %s because its mcast-address %s does not match the mcast-address %s of the distributed system it is attempting to join. To fix this make sure the mcast-address gemfire property is set the same on all members of the same distributed system.",
-              new Object[] {getSender(), getMcastHostAddress(),
-                  dm.getSystem().getOriginalConfig().getMcastAddress()});
-    } else if (dm.getTransport().isTcpDisabled() != isTcpDisabled) {
-      rejectionMessage =
-          String.format(
-              "Rejected new system node %s because isTcpDisabled=%s does not match the distributed system it is attempting to join.",
-              new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
-    } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
-        && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
-        && distributedSystemId != dm.getDistributedSystemId()) {
+                new Object[] {getSender(), isMcastEnabled ? "enabled" : "disabled"});
+      } else if (isMcastEnabled
+          && dm.getSystem().getOriginalConfig().getMcastPort() != getMcastPort()) {
+        rejectionMessage =
+            String.format(
+                "Rejected new system node %s because its mcast-port %s does not match the mcast-port %s of the distributed system it is attempting to join. To fix this make sure the mcast-port gemfire property is set the same on all members of the same distributed system.",
+                new Object[] {getSender(), getMcastPort(),
+                    dm.getSystem().getOriginalConfig().getMcastPort()});
+      } else if (isMcastEnabled
+          && !checkMcastAddress(dm.getSystem().getOriginalConfig().getMcastAddress(),
+              getMcastHostAddress())) {
+        rejectionMessage =
+            String.format(
+                "Rejected new system node %s because its mcast-address %s does not match the mcast-address %s of the distributed system it is attempting to join. To fix this make sure the mcast-address gemfire property is set the same on all members of the same distributed system.",
+                new Object[] {getSender(), getMcastHostAddress(),
+                    dm.getSystem().getOriginalConfig().getMcastAddress()});
+      } else if (dm.getTransport().isTcpDisabled() != isTcpDisabled) {
+        rejectionMessage =
+            String.format(
+                "Rejected new system node %s because isTcpDisabled=%s does not match the distributed system it is attempting to join.",
+                new Object[] {getSender(), Boolean.valueOf(isTcpDisabled)});
+      } else if (dm.getDistributedSystemId() != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
+          && distributedSystemId != DistributionConfig.DEFAULT_DISTRIBUTED_SYSTEM_ID
+          && distributedSystemId != dm.getDistributedSystemId()) {
 
-      String distributedSystemListener =
-          System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
-      // this check is specific for Jayesh's use case of WAN BootStraping
-      if (distributedSystemListener != null) {
-        if (-distributedSystemId != dm.getDistributedSystemId()) {
+        String distributedSystemListener =
+            System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "DistributedSystemListener");
+        // this check is specific for Jayesh's use case of WAN BootStraping
+        if (distributedSystemListener != null) {
+          if (-distributedSystemId != dm.getDistributedSystemId()) {
+            rejectionMessage =
+                String.format(
+                    "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
+                    new Object[] {getSender(),
+                        Integer.valueOf(distributedSystemId), dm.getDistributedSystemId()});
+          }
+        } else {
           rejectionMessage =
               String.format(
                   "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
-                  new Object[] {getSender(),
-                      Integer.valueOf(distributedSystemId), dm.getDistributedSystemId()});
+                  new Object[] {getSender(), Integer.valueOf(distributedSystemId),
+                      dm.getDistributedSystemId()});
         }
-      } else {
-        rejectionMessage =
-            String.format(
-                "Rejected new system node %s because distributed-system-id=%s does not match the distributed system %s it is attempting to join.",
-                new Object[] {getSender(), Integer.valueOf(distributedSystemId),
-                    dm.getDistributedSystemId()});
       }
-    }
 
-    if (this.fromDataProblems != null) {
+      if (this.fromDataProblems != null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(this.fromDataProblems);
+        }
+      }
+
+      if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
+        if (this.interfaces == null || this.interfaces.size() == 0) {
+          String msg = "Rejected new system node %s because peer has no network interfaces";
+          rejectionMessage = String.format(msg, getSender());
+        } else {
+          dm.setEquivalentHosts(this.interfaces);
+        }
+      }
+
+      if (rejectionMessage != null) {
+        logger.warn(rejectionMessage);
+      }
+
+      if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
+        dm.setRedundancyZone(getSender(), this.redundancyZone);
+        dm.setEnforceUniqueZone(this.enforceUniqueZone);
+
+        if (this.hostedLocatorsAll != null) {
+          // boolean isSharedConfigurationEnabled = false;
+          // if (this.hostedLocatorsWithSharedConfiguration != null) {
+          // isSharedConfigurationEnabled = true;
+          // }
+          dm.addHostedLocators(getSender(), this.hostedLocatorsAll,
+              this.isSharedConfigurationEnabled);
+        }
+      }
+
+      StartupResponseMessage m =
+          new StartupResponseWithVersionMessage(dm, replyProcessorId, getSender(), rejectionMessage,
+              isAdminDM);
       if (logger.isDebugEnabled()) {
-        logger.debug(this.fromDataProblems);
+        logger.debug("Received StartupMessage from a member with version: {}, my version is:{}",
+            this.version, GemFireVersion.getGemFireVersion());
+      }
+      dm.putOutgoing(m);
+      replySent = true;
+      if (rejectionMessage != null) {
+        dm.getMembershipManager().startupMessageFailed(getSender(), rejectionMessage);
+      }
+
+      // We need to discard this member if they aren't a peer.
+      if (rejectionMessage != null) {
+        dm.handleManagerDeparture(getSender(), false, rejectionMessage);
+      }
+
+    } catch (RuntimeException e) {
+      ReplyMessage.send(getSender(), replyProcessorId, new ReplyException(e), dm);
+      replySent = true;
+    } finally {
+      if (!replySent && !dm.shutdownInProgress()) {
+        ReplyMessage.send(getSender(), replyProcessorId, new ReplyException(
+            new IllegalStateException("Unknown cause for response not being sent")), dm);
       }
     }
-
-    if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
-      if (this.interfaces == null || this.interfaces.size() == 0) {
-        String msg = "Rejected new system node %s because peer has no network interfaces";
-        rejectionMessage = String.format(msg, getSender());
-      } else {
-        dm.setEquivalentHosts(this.interfaces);
-      }
-    }
-
-    if (rejectionMessage != null) {
-      logger.warn(rejectionMessage);
-    }
-
-    if (rejectionMessage == null) { // change state only if there's no rejectionMessage yet
-      dm.setRedundancyZone(getSender(), this.redundancyZone);
-      dm.setEnforceUniqueZone(this.enforceUniqueZone);
-
-      if (this.hostedLocatorsAll != null) {
-        // boolean isSharedConfigurationEnabled = false;
-        // if (this.hostedLocatorsWithSharedConfiguration != null) {
-        // isSharedConfigurationEnabled = true;
-        // }
-        dm.addHostedLocators(getSender(), this.hostedLocatorsAll,
-            this.isSharedConfigurationEnabled);
-      }
-    }
-
-
-    StartupResponseMessage m = null;
-    // Commenting out. See Bruces note in the StartupMessageData constructor.
-    // Comparisons should use the functionality described in SerializationVersions
-    // if (GemFireVersion.compareVersions(theirVersion,"6.6.2") >= 0) {
-    m = new StartupResponseWithVersionMessage(dm, replyProcessorId, getSender(), rejectionMessage,
-        isAdminDM);
-    // } else {
-    // m = new StartupResponseMessage(dm, replyProcessorId, getSender(), rejectionMessage,
-    // isAdminDM);
-    // }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Received StartupMessage from a member with version: {}, my version is:{}",
-          theirVersion, myVersion);
-    }
-    dm.putOutgoing(m);
-    if (rejectionMessage != null) {
-      dm.getMembershipManager().startupMessageFailed(getSender(), rejectionMessage);
-    }
-
-    // bug33638: we need to discard this member if they aren't a peer.
-    if (rejectionMessage != null)
-      dm.handleManagerDeparture(getSender(), false, rejectionMessage);
   }
 
   private static boolean checkMcastAddress(InetAddress myMcastAddr, String otherMcastHostAddr) {
