@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticsFactory;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskDirSizesUnit;
 
 /**
@@ -55,8 +56,9 @@ public class DirectoryHolder {
     this(ownersName, factory, dir, space, index, DiskDirSizesUnit.MEGABYTES);
   }
 
+  @VisibleForTesting
   DirectoryHolder(String ownersName, StatisticsFactory factory, File dir, long space, int index,
-      DiskDirSizesUnit unit) throws RuntimeException {
+      DiskDirSizesUnit unit) {
     this.dir = dir;
     this.diskDirSizesUnit = unit;
     if (this.diskDirSizesUnit == DiskDirSizesUnit.BYTES) {
