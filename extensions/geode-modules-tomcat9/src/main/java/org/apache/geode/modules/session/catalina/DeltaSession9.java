@@ -19,10 +19,12 @@ import org.apache.catalina.Manager;
 
 @SuppressWarnings("serial")
 public class DeltaSession9 extends DeltaSession {
+
   /**
    * Construct a new <code>Session</code> associated with no <code>Manager</code>. The
    * <code>Manager</code> will be assigned later using {@link #setOwner(Object)}.
    */
+  @SuppressWarnings("unused")
   public DeltaSession9() {
     super();
   }
@@ -32,8 +34,7 @@ public class DeltaSession9 extends DeltaSession {
    *
    * @param manager The manager with which this Session is associated
    */
-  public DeltaSession9(Manager manager) {
+  DeltaSession9(Manager manager) {
     super(manager);
   }
-
 }

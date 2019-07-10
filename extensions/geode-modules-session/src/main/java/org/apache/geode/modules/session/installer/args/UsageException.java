@@ -32,39 +32,12 @@ public class UsageException extends Exception {
 
   /**
    * Creates a new UsageException.
-   */
-  public UsageException() {
-    super();
-  }
-
-  /**
-   * Creates a new UsageException.
    *
    * @param message description of exceptional condition
    */
   public UsageException(final String message) {
     super(message);
   }
-
-  /**
-   * Creates a new UsageException.
-   *
-   * @param message description of exceptional condition
-   * @param cause provoking exception
-   */
-  public UsageException(final String message, final Throwable cause) {
-    super(message, cause);
-  }
-
-  /**
-   * Creates a new UsageException.
-   *
-   * @param cause provoking exception
-   */
-  public UsageException(final Throwable cause) {
-    super(cause);
-  }
-
 
   /**
    * Attaches a usage message to the exception for later consumption.

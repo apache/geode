@@ -29,7 +29,8 @@ public abstract class AbstractGatewayDeltaEvent implements GatewayDeltaEvent, Da
   protected String regionName;
   protected String key;
 
-  public AbstractGatewayDeltaEvent() {}
+  @SuppressWarnings("unused")
+  protected AbstractGatewayDeltaEvent() {}
 
   public AbstractGatewayDeltaEvent(String regionName, String key) {
     this.regionName = regionName;
@@ -44,7 +45,6 @@ public abstract class AbstractGatewayDeltaEvent implements GatewayDeltaEvent, Da
     return this.key;
   }
 
-  @SuppressWarnings("unchecked")
   public Region getRegion(Cache cache) {
     return cache.getRegion(this.regionName);
   }

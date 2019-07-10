@@ -46,26 +46,26 @@ public abstract class AbstractCache {
 
   private static final DateFormat FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
-  protected static final String DEFAULT_LOG_FILE_NAME =
+  private static final String DEFAULT_LOG_FILE_NAME =
       RegionHelper.NAME + "." + FORMAT.format(new Date()) + ".log";
 
-  protected static final String DEFAULT_STATISTIC_ARCHIVE_FILE_NAME = RegionHelper.NAME + ".gfs";
+  private static final String DEFAULT_STATISTIC_ARCHIVE_FILE_NAME = RegionHelper.NAME + ".gfs";
 
-  protected static final float DEFAULT_EVICTION_HEAP_PERCENTAGE =
+  private static final float DEFAULT_EVICTION_HEAP_PERCENTAGE =
       LocalRegion.DEFAULT_HEAPLRU_EVICTION_HEAP_PERCENTAGE;
 
-  protected static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE =
+  private static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE =
       ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
-  protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractCache.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCache.class);
 
-  protected float evictionHeapPercentage = DEFAULT_EVICTION_HEAP_PERCENTAGE;
+  private float evictionHeapPercentage = DEFAULT_EVICTION_HEAP_PERCENTAGE;
 
-  protected float criticalHeapPercentage = DEFAULT_CRITICAL_HEAP_PERCENTAGE;
+  private float criticalHeapPercentage = DEFAULT_CRITICAL_HEAP_PERCENTAGE;
 
-  protected boolean rebalance = false;
+  private boolean rebalance = false;
 
-  protected final Map<String, String> gemfireProperties;
+  private final Map<String, String> gemfireProperties;
 
   private final AtomicBoolean started = new AtomicBoolean(false);
 
@@ -74,8 +74,8 @@ public abstract class AbstractCache {
    */
   protected static AbstractCache instance = null;
 
-  public AbstractCache() {
-    this.gemfireProperties = new ConcurrentHashMap<String, String>();
+  AbstractCache() {
+    this.gemfireProperties = new ConcurrentHashMap<>();
   }
 
   public void lifecycleEvent(LifecycleTypeAdapter eventType) {
@@ -108,6 +108,7 @@ public abstract class AbstractCache {
     while (!getCache().isClosed()) {
     }
 
+
     started.set(false);
   }
 
@@ -115,7 +116,7 @@ public abstract class AbstractCache {
     return this.cache;
   }
 
-  public String getLogFileName() {
+  private String getLogFileName() {
     String logFileName = getGemFireProperties().get(LOG_FILE);
     if (logFileName == null) {
       logFileName = DEFAULT_LOG_FILE_NAME;
@@ -123,7 +124,7 @@ public abstract class AbstractCache {
     return logFileName;
   }
 
-  public String getStatisticArchiveFileName() {
+  private String getStatisticArchiveFileName() {
     String statisticsArchiveFileName = getGemFireProperties().get(STATISTIC_ARCHIVE_FILE);
     if (statisticsArchiveFileName == null) {
       statisticsArchiveFileName = DEFAULT_STATISTIC_ARCHIVE_FILE_NAME;
@@ -131,7 +132,7 @@ public abstract class AbstractCache {
     return statisticsArchiveFileName;
   }
 
-  public String getCacheXmlFileName() {
+  private String getCacheXmlFileName() {
     String cacheXmlFileName = getGemFireProperties().get(CACHE_XML_FILE);
     if (cacheXmlFileName == null) {
       cacheXmlFileName = getDefaultCacheXmlFileName();
@@ -139,7 +140,7 @@ public abstract class AbstractCache {
     return cacheXmlFileName;
   }
 
-  protected File getCacheXmlFile() {
+  private File getCacheXmlFile() {
     String cacheXmlFileName = getCacheXmlFileName();
     File cacheXmlFile = new File(cacheXmlFileName);
     // If the cache xml file is not absolute, point it at the conf directory.
@@ -175,7 +176,7 @@ public abstract class AbstractCache {
     return this.rebalance;
   }
 
-  public Map<String, String> getGemFireProperties() {
+  private Map<String, String> getGemFireProperties() {
     return this.gemfireProperties;
   }
 
@@ -208,7 +209,7 @@ public abstract class AbstractCache {
     return LOGGER;
   }
 
-  protected Properties createDistributedSystemProperties() {
+  Properties createDistributedSystemProperties() {
     Properties properties = new Properties();
 
     // Add any additional gemfire properties
@@ -244,17 +245,7 @@ public abstract class AbstractCache {
     return properties;
   }
 
-  protected void closeCache() {
-    if (getLogger().isDebugEnabled()) {
-      getLogger().debug("Closing " + this.cache);
-    }
-    if (getCache() != null) {
-      getCache().close();
-    }
-    getLogger().info("Closed " + this.cache);
-  }
-
-  protected File getLogFile() {
+  private File getLogFile() {
     String logFileName = getLogFileName();
     File logFile = new File(logFileName);
     // If the log file is not absolute, point it at the logs directory.
@@ -274,7 +265,7 @@ public abstract class AbstractCache {
     return logFile;
   }
 
-  protected File getStatisticArchiveFile() {
+  private File getStatisticArchiveFile() {
     File statisticsArchiveFile = null;
     String statisticSamplingEnabled = getGemFireProperties().get(STATISTIC_SAMPLING_ENABLED);
     if (statisticSamplingEnabled != null && statisticSamplingEnabled.equals("true")) {
@@ -300,7 +291,7 @@ public abstract class AbstractCache {
     return statisticsArchiveFile;
   }
 
-  protected void initializeResourceManager() {
+  private void initializeResourceManager() {
     // Get current eviction and critical heap percentages
     ResourceManager rm = getCache().getResourceManager();
     float currentEvictionHeapPercentage = rm.getEvictionHeapPercentage();
@@ -360,10 +351,9 @@ public abstract class AbstractCache {
         }
       }
       if (getLogger().isDebugEnabled()) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Actual eviction heap percentage=").append(rm.getEvictionHeapPercentage())
-            .append("; critical heap percentage=").append(rm.getCriticalHeapPercentage());
-        getLogger().debug(builder.toString());
+        String builder = "Actual eviction heap percentage=" + rm.getEvictionHeapPercentage()
+            + "; critical heap percentage=" + rm.getCriticalHeapPercentage();
+        getLogger().debug(builder);
       }
     }
 
@@ -375,21 +365,19 @@ public abstract class AbstractCache {
 
   private void handleResourceManagerException(IllegalArgumentException e,
       float currentEvictionHeapPercentage, float currentCriticalHeapPercentage) {
-    StringBuilder builder = new StringBuilder();
-    builder.append("Caught exception attempting to set eviction heap percentage=")
-        .append(getEvictionHeapPercentage()).append(" and critical heap percentage=")
-        .append(getCriticalHeapPercentage())
-        .append(
-            ". The percentages will be set back to their previous values (eviction heap percentage=")
-        .append(currentEvictionHeapPercentage).append(" and critical heap percentage=")
-        .append(currentCriticalHeapPercentage).append(").");
-    getLogger().warn(builder.toString(), e);
+    String builder = "Caught exception attempting to set eviction heap percentage="
+        + getEvictionHeapPercentage() + " and critical heap percentage="
+        + getCriticalHeapPercentage()
+        + ". The percentages will be set back to their previous values (eviction heap percentage="
+        + currentEvictionHeapPercentage + " and critical heap percentage="
+        + currentCriticalHeapPercentage + ").";
+    getLogger().warn(builder, e);
   }
 
   @Override
   public String toString() {
-    return new StringBuilder().append(getClass().getSimpleName()).append("[").append("cache=")
-        .append(this.cache).append("]").toString();
+    return getClass().getSimpleName() + "[" + "cache="
+        + this.cache + "]";
   }
 
   protected abstract void createOrRetrieveCache();

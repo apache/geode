@@ -28,7 +28,7 @@ import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListene
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.junit.categories.SessionTest;
 
-@Category({SessionTest.class})
+@Category(SessionTest.class)
 public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
   // Set up the session manager we need
@@ -38,11 +38,11 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
   }
 
   @Override
-  public void preTearDown() throws Exception {
+  public void preTearDown() {
     server.stopContainer();
   }
 
-  public void setupServer(DeltaSessionManager manager) throws Exception {
+  private void setupServer(DeltaSessionManager manager) throws Exception {
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new EmbeddedTomcat8("/test", port, "JVM-1");
 
@@ -69,7 +69,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
    * Reset some data
    */
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     sessionManager.getTheContext().setSessionTimeout(30);
     region.clear();
   }

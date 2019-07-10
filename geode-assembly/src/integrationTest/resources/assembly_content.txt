@@ -805,7 +805,6 @@ javadoc/org/apache/geode/modules/session/catalina/package-summary.html
 javadoc/org/apache/geode/modules/session/catalina/package-tree.html
 javadoc/org/apache/geode/modules/session/filter/SessionCachingFilter.RequestWrapper.html
 javadoc/org/apache/geode/modules/session/filter/SessionCachingFilter.html
-javadoc/org/apache/geode/modules/session/filter/SessionListener.html
 javadoc/org/apache/geode/modules/session/filter/package-frame.html
 javadoc/org/apache/geode/modules/session/filter/package-summary.html
 javadoc/org/apache/geode/modules/session/filter/package-tree.html

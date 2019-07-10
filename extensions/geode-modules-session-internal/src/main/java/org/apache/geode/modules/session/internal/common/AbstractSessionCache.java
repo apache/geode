@@ -15,8 +15,6 @@
 
 package org.apache.geode.modules.session.internal.common;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.Region;
@@ -31,19 +29,19 @@ public abstract class AbstractSessionCache implements SessionCache {
    * The sessionRegion is the <code>Region</code> that actually stores and replicates the
    * <code>Session</code>s.
    */
-  protected Region<String, HttpSession> sessionRegion;
+  Region<String, HttpSession> sessionRegion;
 
   /**
    * The operatingRegion is the <code>Region</code> used to do HTTP operations. if local cache is
    * enabled, then this will be the local <code>Region</code>; otherwise, it will be the session
    * <code>Region</code>.
    */
-  protected Region<String, HttpSession> operatingRegion;
+  Region<String, HttpSession> operatingRegion;
 
-  protected Map<CacheProperty, Object> properties =
-      new TypeAwareMap<CacheProperty, Object>(CacheProperty.class);
+  protected TypeAwareMap<CacheProperty, Object> properties =
+      new TypeAwareMap<>(CacheProperty.class);
 
-  protected DeltaSessionStatistics statistics;
+  private DeltaSessionStatistics statistics;
 
   /**
    * {@inheritDoc}
@@ -61,15 +59,7 @@ public abstract class AbstractSessionCache implements SessionCache {
     return this.operatingRegion;
   }
 
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public Region<String, HttpSession> getSessionRegion() {
-    return this.sessionRegion;
-  }
-
-  protected void createStatistics() {
+  void createStatistics() {
     this.statistics = new DeltaSessionStatistics(getCache().getDistributedSystem(),
         (String) properties.get(CacheProperty.STATISTICS_NAME));
   }
@@ -80,7 +70,7 @@ public abstract class AbstractSessionCache implements SessionCache {
    *
    * @return a {@code RegionConfiguration} object
    */
-  protected RegionConfiguration createRegionConfiguration() {
+  RegionConfiguration createRegionConfiguration() {
     RegionConfiguration configuration = new RegionConfiguration();
 
     configuration.setRegionName((String) properties.get(CacheProperty.REGION_NAME));

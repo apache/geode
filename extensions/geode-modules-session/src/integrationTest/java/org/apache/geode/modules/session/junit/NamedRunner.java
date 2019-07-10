@@ -44,52 +44,23 @@ public class NamedRunner extends BlockJUnit4ClassRunner {
    * @param klass the klass
    * @throws InitializationError the initialization error
    */
-  public NamedRunner(Class<?> klass) throws InitializationError {
+  NamedRunner(Class<?> klass) throws InitializationError {
     super(klass);
   }
 
   @Override
-  protected void runChild(FrameworkMethod method, RunNotifier notifier)
-
-  {
+  protected void runChild(FrameworkMethod method, RunNotifier notifier) {
     storeTestMethodName(method.getName());
     super.runChild(method, notifier);
     removeTestMethodName();
   }
 
   /**
-   * Gets the test method name.
-   *
-   * @return the test method name
-   */
-  public static String getTestMethodName() {
-    return retrieveTestMethodName();
-  }
-
-  /**
-   * Retrieve test method name.
-   *
-   * @return the string
-   */
-  private static String retrieveTestMethodName() {
-    // We can't use a ThreadLocal variable in the case the TestPerClassLoader runner is used. Then
-    // this
-    // Method is accessed from another classloader and thus reinitialized variables.
-    String result = null;
-    String storedName = System.getProperty(getKey());
-    if (!NO_NAME.equals(storedName)) {
-      result = storedName;
-    }
-    return result;
-  }
-
-  /**
    * Removes the test method name.
    */
   private static void removeTestMethodName() {
-    // We can't use a ThreadLocal variable in the case the TestPerClassLoader runner is used. Then
-    // this
-    // Method is accessed from another classloader and thus reinitialized variables.
+    // We can't use a ThreadLocal variable in the case the TestPerClassLoader runner is used.
+    // Then this Method is accessed from another classloader and thus reinitialized variables.
     System.setProperty(getKey(), NO_NAME);
 
   }
@@ -100,10 +71,8 @@ public class NamedRunner extends BlockJUnit4ClassRunner {
    * @param name the name
    */
   private static void storeTestMethodName(String name) {
-
-    // We can't use a ThreadLocal variable in the case the TestPerClassLoader runner is used. Then
-    // this
-    // Method is accessed from another classloader and thus reinitialized variables.
+    // We can't use a ThreadLocal variable in the case the TestPerClassLoader runner is used.
+    // Then this Method is accessed from another classloader and thus reinitialized variables.
     System.setProperty(getKey(), name);
   }
 
@@ -113,8 +82,6 @@ public class NamedRunner extends BlockJUnit4ClassRunner {
    * @return the key
    */
   private static String getKey() {
-    StringBuffer buffer = new StringBuffer();
-    buffer.append(PREFIX_KEY).append(Thread.currentThread().getName());
-    return buffer.toString();
+    return PREFIX_KEY + Thread.currentThread().getName();
   }
 }

@@ -20,11 +20,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.beans.PropertyChangeEvent;
-import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.meterware.httpunit.GetMethodWebRequest;
@@ -34,28 +31,18 @@ import com.meterware.httpunit.WebResponse;
 import org.apache.catalina.core.StandardWrapper;
 import org.junit.Test;
 
-import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
 
 public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase {
-
-  protected static EmbeddedTomcat8 server;
-
-  protected static Region<String, HttpSession> region;
-
-  protected static StandardWrapper servlet;
-
-  protected static DeltaSessionManager sessionManager;
-
-  protected static int port;
-
-  protected Cache cache;
-
-  protected VM vm0;
-
+  VM vm0;
+  static int port;
+  static EmbeddedTomcat8 server;
+  static StandardWrapper servlet;
+  static Region<String, HttpSession> region;
+  static DeltaSessionManager sessionManager;
 
   /**
    * Check that the basics are working
@@ -79,14 +66,9 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
   @Test
   public void testCallback() throws Exception {
     final String helloWorld = "Hello World";
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        PrintWriter out = response.getWriter();
-        out.write(helloWorld);
-      }
+    Callback c = (request, response) -> {
+      PrintWriter out = response.getWriter();
+      out.write(helloWorld);
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -105,14 +87,9 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
    */
   @Test
   public void testIsNew() throws Exception {
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        response.getWriter().write(Boolean.toString(session.isNew()));
-      }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      response.getWriter().write(Boolean.toString(session.isNew()));
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -172,7 +149,7 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     req.setParameter("cmd", QueryCommand.SET.name());
     req.setParameter("param", key);
     req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    wc.getResponse(req);
 
     // Invalidate the session
     req.removeParameter("param");
@@ -183,7 +160,7 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     // The attribute should not be accessible now...
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -206,7 +183,7 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     req.setParameter("cmd", QueryCommand.SET.name());
     req.setParameter("param", key);
     req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    wc.getResponse(req);
 
     // Sleep a while
     Thread.sleep(65000);
@@ -214,7 +191,7 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     // The attribute should not be accessible now...
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -224,10 +201,10 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
    * deployment conditions.
    */
   @Test
-  public void testSessionExpiration2() throws Exception {
+  public void testSessionExpiration2() {
     // TestSessions only live for a minute
     sessionManager.propertyChange(new PropertyChangeEvent(server.getRootContext(), "sessionTimeout",
-        new Integer(30), new Integer(1)));
+        30, 1));
 
     // Check that the value has been set to 60 seconds
     assertEquals(60, sessionManager.getMaxInactiveInterval());
@@ -249,12 +226,12 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     req.setParameter("cmd", QueryCommand.SET.name());
     req.setParameter("param", key);
     req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    wc.getResponse(req);
 
     // Set the session timeout of this one session.
     req.setParameter("cmd", QueryCommand.SET_MAX_INACTIVE.name());
     req.setParameter("value", "1");
-    response = wc.getResponse(req);
+    wc.getResponse(req);
 
     // Wait until the session should expire
     Thread.sleep(2000);
@@ -262,7 +239,7 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     // Do a request, which should cause the session to be expired
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -353,15 +330,10 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
   @Test
   public void testMultipleAttributeUpdates() throws Exception {
     final String key = "value_testMultipleAttributeUpdates";
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        for (int i = 0; i < 1000; i++) {
-          session.setAttribute(key, Integer.toString(i));
-        }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      for (int i = 0; i < 1000; i++) {
+        session.setAttribute(key, Integer.toString(i));
       }
     };
     servlet.getServletContext().setAttribute("callback", c);
@@ -384,14 +356,10 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
    */
   @Test
   public void testCommitSessionValveInvalidSession() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        session.invalidate();
-        response.getWriter().write("done");
-      }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      session.invalidate();
+      response.getWriter().write("done");
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -411,13 +379,9 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
    */
   @Test
   public void testExtraSessionsNotCreated() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        // Do nothing with sessions
-        response.getWriter().write("done");
-      }
+    Callback c = (request, response) -> {
+      // Do nothing with sessions
+      response.getWriter().write("done");
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -439,22 +403,18 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
    */
   @Test
   public void testLastAccessedTime() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        // Hack to expose the session to our test context
-        session.getServletContext().setAttribute("session", session);
-        session.setAttribute("lastAccessTime", session.getLastAccessedTime());
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ex) {
-        }
-        session.setAttribute("somethingElse", 1);
-        request.getSession();
-        response.getWriter().write("done");
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      // Hack to expose the session to our test context
+      session.getServletContext().setAttribute("session", session);
+      session.setAttribute("lastAccessTime", session.getLastAccessedTime());
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ignored) {
       }
+      session.setAttribute("somethingElse", 1);
+      request.getSession();
+      response.getWriter().write("done");
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -464,14 +424,14 @@ public abstract class TestSessionsTomcat8Base extends JUnit4DistributedTestCase 
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
     req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
+    wc.getResponse(req);
 
     HttpSession session = (HttpSession) servlet.getServletContext().getAttribute("session");
     Long lastAccess = (Long) session.getAttribute("lastAccessTime");
 
     assertTrue(
-        "Last access time not set correctly: " + lastAccess.longValue() + " not <= "
+        "Last access time not set correctly: " + lastAccess + " not <= "
             + session.getLastAccessedTime(),
-        lastAccess.longValue() <= session.getLastAccessedTime());
+        lastAccess <= session.getLastAccessedTime());
   }
 }
