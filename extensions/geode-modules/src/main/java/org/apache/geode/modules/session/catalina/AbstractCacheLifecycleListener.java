@@ -37,29 +37,33 @@ public abstract class AbstractCacheLifecycleListener implements LifecycleListene
     cache.setProperty(name, value);
   }
 
-  /*
-   * These getters and setters are also called by Tomcat and just passed on to the cache.
-   */
+  // These getters and setters are also called by Tomcat and just passed on to the cache.
+  @SuppressWarnings("unused")
   public float getEvictionHeapPercentage() {
     return cache.getEvictionHeapPercentage();
   }
 
+  @SuppressWarnings("unused")
   public void setEvictionHeapPercentage(String evictionHeapPercentage) {
     cache.setEvictionHeapPercentage(evictionHeapPercentage);
   }
 
+  @SuppressWarnings("unused")
   public float getCriticalHeapPercentage() {
     return cache.getCriticalHeapPercentage();
   }
 
+  @SuppressWarnings("unused")
   public void setCriticalHeapPercentage(String criticalHeapPercentage) {
     cache.setCriticalHeapPercentage(criticalHeapPercentage);
   }
 
+  @SuppressWarnings("unused")
   public void setRebalance(boolean rebalance) {
     cache.setRebalance(rebalance);
   }
 
+  @SuppressWarnings("unused")
   public boolean getRebalance() {
     return cache.getRebalance();
   }

@@ -35,7 +35,7 @@ import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.junit.categories.SessionTest;
 
-@Category({SessionTest.class})
+@Category(SessionTest.class)
 public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Base {
 
   // Set up the session manager we need

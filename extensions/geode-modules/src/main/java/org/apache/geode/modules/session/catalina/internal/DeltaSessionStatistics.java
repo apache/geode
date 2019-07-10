@@ -23,7 +23,7 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class DeltaSessionStatistics {
 
-  public static final String typeName = "SessionStatistics";
+  private static final String typeName = "SessionStatistics";
 
   private static final StatisticsType type;
 
@@ -40,10 +40,10 @@ public class DeltaSessionStatistics {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType(typeName, typeName,
         new StatisticDescriptor[] {
-            f.createIntCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
-            f.createIntCounter(SESSIONS_INVALIDATED,
+            f.createLongCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
+            f.createLongCounter(SESSIONS_INVALIDATED,
                 "The number of sessions invalidated by invoking invalidate", "operations"),
-            f.createIntCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
+            f.createLongCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
                 "operations"),});
 
     // Initialize id fields
@@ -62,6 +62,7 @@ public class DeltaSessionStatistics {
     this.stats.close();
   }
 
+  @SuppressWarnings("unused")
   public int getSessionsCreated() {
     return this.stats.getInt(sessionsCreatedId);
   }
@@ -70,6 +71,7 @@ public class DeltaSessionStatistics {
     this.stats.incInt(sessionsCreatedId, 1);
   }
 
+  @SuppressWarnings("unused")
   public int getSessionsInvalidated() {
     return this.stats.getInt(sessionsInvalidatedId);
   }
@@ -78,6 +80,7 @@ public class DeltaSessionStatistics {
     this.stats.incInt(sessionsInvalidatedId, 1);
   }
 
+  @SuppressWarnings("unused")
   public int getSessionsExpired() {
     return this.stats.getInt(sessionsExpiredId);
   }

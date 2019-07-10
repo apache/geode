@@ -15,9 +15,6 @@
 
 package org.apache.geode.modules.session.internal.filter.attributes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.apache.geode.DataSerializable;
 import org.apache.geode.Instantiator;
 
@@ -27,18 +24,13 @@ import org.apache.geode.Instantiator;
  */
 public class DeltaQueuedSessionAttributes extends AbstractDeltaSessionAttributes {
 
-  private static final Logger LOG =
-      LoggerFactory.getLogger(DeltaQueuedSessionAttributes.class.getName());
-
   private Trigger trigger = Trigger.SET;
 
   private enum Trigger {
-    SET, SET_AND_GET;
+    SET, SET_AND_GET
   }
 
-  /**
-   * Register ourselves for de-serialization
-   */
+  // Register ourselves for de-serialization
   static {
     registerInstantiator();
   }

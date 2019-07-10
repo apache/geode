@@ -51,6 +51,5 @@ public enum LifecycleTypeAdapter {
 
   START,
 
-  STOP;
-
+  STOP
 }

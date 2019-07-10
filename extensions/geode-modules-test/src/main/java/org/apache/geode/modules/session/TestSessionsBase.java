@@ -27,8 +27,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.meterware.httpunit.GetMethodWebRequest;
@@ -40,6 +38,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -47,19 +46,14 @@ import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 
 public abstract class TestSessionsBase {
-
+  protected static int port;
   private static EmbeddedTomcat server;
-
-  private static Region<String, HttpSession> region;
-
   private static StandardWrapper servlet;
-
+  private static Region<String, HttpSession> region;
   protected static DeltaSessionManager sessionManager;
 
-  protected static int port;
-
   // Set up the servers we need
-  public static void setupServer(DeltaSessionManager manager) throws Exception {
+  protected static void setupServer(DeltaSessionManager manager) throws Exception {
     FileUtils.copyDirectory(Paths.get("..", "resources", "integrationTest", "tomcat").toFile(),
         new File("./tomcat"));
     port = AvailablePortHelper.getRandomAvailableTCPPort();
@@ -84,7 +78,7 @@ public abstract class TestSessionsBase {
   }
 
   @AfterClass
-  public static void teardownClass() throws Exception {
+  public static void teardownClass() {
     server.stopContainer();
   }
 
@@ -92,9 +86,29 @@ public abstract class TestSessionsBase {
    * Reset some data
    */
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     sessionManager.setMaxInactiveInterval(30);
     region.clear();
+  }
+
+  private WebResponse setCallbackAndExecuteGet(Callback callback) throws IOException, SAXException {
+    servlet.getServletContext().setAttribute("callback", callback);
+
+    WebConversation wc = new WebConversation();
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+    req.setParameter("cmd", QueryCommand.CALLBACK.name());
+    req.setParameter("param", "callback");
+
+    return wc.getResponse(req);
+  }
+
+  private WebRequest prepareRequest(String key, String value) {
+    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
+    req.setParameter("cmd", QueryCommand.SET.name());
+    req.setParameter("param", key);
+    req.setParameter("value", value);
+
+    return req;
   }
 
   /**
@@ -119,24 +133,12 @@ public abstract class TestSessionsBase {
   @Test
   public void testCallback() throws Exception {
     final String helloWorld = "Hello World";
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        PrintWriter out = response.getWriter();
-        out.write(helloWorld);
-      }
+    Callback c = (request, response) -> {
+      PrintWriter out = response.getWriter();
+      out.write(helloWorld);
     };
-    servlet.getServletContext().setAttribute("callback", c);
 
-    WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    req.setParameter("cmd", QueryCommand.CALLBACK.name());
-    req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
-
+    WebResponse response = setCallbackAndExecuteGet(c);
     assertEquals(helloWorld, response.getText());
   }
 
@@ -145,14 +147,9 @@ public abstract class TestSessionsBase {
    */
   @Test
   public void testIsNew() throws Exception {
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        response.getWriter().write(Boolean.toString(session.isNew()));
-      }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      response.getWriter().write(Boolean.toString(session.isNew()));
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -179,10 +176,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
+    WebRequest req = prepareRequest(key, value);
     WebResponse response = wc.getResponse(req);
     String sessionId = response.getNewCookieValue("JSESSIONID");
 
@@ -206,13 +200,8 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    WebRequest req = prepareRequest(key, value);
+    wc.getResponse(req);
 
     // Invalidate the session
     req.removeParameter("param");
@@ -223,7 +212,7 @@ public abstract class TestSessionsBase {
     // The attribute should not be accessible now...
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -240,13 +229,8 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    WebRequest req = prepareRequest(key, value);
+    wc.getResponse(req);
 
     // Sleep a while
     Thread.sleep(2000);
@@ -254,7 +238,7 @@ public abstract class TestSessionsBase {
     // The attribute should not be accessible now...
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -264,10 +248,10 @@ public abstract class TestSessionsBase {
    * deployment conditions.
    */
   @Test
-  public void testSessionExpiration2() throws Exception {
+  public void testSessionExpiration2() {
     // TestSessions only live for a minute
     sessionManager.propertyChange(new PropertyChangeEvent(server.getRootContext(), "sessionTimeout",
-        new Integer(30), new Integer(1)));
+        30, 1));
 
     // Check that the value has been set to 60 seconds
     assertEquals(60, sessionManager.getMaxInactiveInterval());
@@ -283,18 +267,13 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
-    WebResponse response = wc.getResponse(req);
+    WebRequest req = prepareRequest(key, value);
+    wc.getResponse(req);
 
     // Set the session timeout of this one session.
     req.setParameter("cmd", QueryCommand.SET_MAX_INACTIVE.name());
     req.setParameter("value", "1");
-    response = wc.getResponse(req);
+    wc.getResponse(req);
 
     // Wait until the session should expire
     Thread.sleep(2000);
@@ -302,7 +281,7 @@ public abstract class TestSessionsBase {
     // Do a request, which should cause the session to be expired
     req.setParameter("cmd", QueryCommand.GET.name());
     req.setParameter("param", key);
-    response = wc.getResponse(req);
+    WebResponse response = wc.getResponse(req);
 
     assertEquals("", response.getText());
   }
@@ -316,12 +295,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
+    WebRequest req = prepareRequest(key, value);
     WebResponse response = wc.getResponse(req);
     String sessionId = response.getNewCookieValue("JSESSIONID");
 
@@ -347,12 +321,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
+    WebRequest req = prepareRequest(key, value);
     WebResponse response = wc.getResponse(req);
     String sessionId = response.getNewCookieValue("JSESSIONID");
 
@@ -368,12 +337,7 @@ public abstract class TestSessionsBase {
     String value = "Foo";
 
     WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Set an attribute
-    req.setParameter("cmd", QueryCommand.SET.name());
-    req.setParameter("param", key);
-    req.setParameter("value", value);
+    WebRequest req = prepareRequest(key, value);
     WebResponse response = wc.getResponse(req);
     String sessionId = response.getNewCookieValue("JSESSIONID");
 
@@ -393,29 +357,15 @@ public abstract class TestSessionsBase {
   @Test
   public void testMultipleAttributeUpdates() throws Exception {
     final String key = "value_testMultipleAttributeUpdates";
-    Callback c = new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        for (int i = 0; i < 1000; i++) {
-          session.setAttribute(key, Integer.toString(i));
-        }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      for (int i = 0; i < 1000; i++) {
+        session.setAttribute(key, Integer.toString(i));
       }
     };
-    servlet.getServletContext().setAttribute("callback", c);
 
-    WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Execute the callback
-    req.setParameter("cmd", QueryCommand.CALLBACK.name());
-    req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
-
+    WebResponse response = setCallbackAndExecuteGet(c);
     String sessionId = response.getNewCookieValue("JSESSIONID");
-
     assertEquals("999", region.get(sessionId).getAttribute(key));
   }
 
@@ -424,25 +374,13 @@ public abstract class TestSessionsBase {
    */
   @Test
   public void testCommitSessionValveInvalidSession() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        session.invalidate();
-        response.getWriter().write("done");
-      }
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      session.invalidate();
+      response.getWriter().write("done");
     };
-    servlet.getServletContext().setAttribute("callback", c);
 
-    WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Execute the callback
-    req.setParameter("cmd", QueryCommand.CALLBACK.name());
-    req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
-
+    WebResponse response = setCallbackAndExecuteGet(c);
     assertEquals("done", response.getText());
   }
 
@@ -451,24 +389,12 @@ public abstract class TestSessionsBase {
    */
   @Test
   public void testExtraSessionsNotCreated() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        // Do nothing with sessions
-        response.getWriter().write("done");
-      }
+    Callback c = (request, response) -> {
+      // Do nothing with sessions
+      response.getWriter().write("done");
     };
-    servlet.getServletContext().setAttribute("callback", c);
 
-    WebConversation wc = new WebConversation();
-    WebRequest req = new GetMethodWebRequest(String.format("http://localhost:%d/test", port));
-
-    // Execute the callback
-    req.setParameter("cmd", QueryCommand.CALLBACK.name());
-    req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
-
+    WebResponse response = setCallbackAndExecuteGet(c);
     assertEquals("done", response.getText());
     assertEquals("The region should be empty", 0, region.size());
   }
@@ -479,22 +405,19 @@ public abstract class TestSessionsBase {
    */
   @Test
   public void testLastAccessedTime() throws Exception {
-    Callback c = new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response)
-          throws IOException {
-        HttpSession session = request.getSession();
-        // Hack to expose the session to our test context
-        session.getServletContext().setAttribute("session", session);
-        session.setAttribute("lastAccessTime", session.getLastAccessedTime());
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException ex) {
-        }
-        session.setAttribute("somethingElse", 1);
-        request.getSession();
-        response.getWriter().write("done");
+    Callback c = (request, response) -> {
+      HttpSession session = request.getSession();
+      // Hack to expose the session to our test context
+      session.getServletContext().setAttribute("session", session);
+      session.setAttribute("lastAccessTime", session.getLastAccessedTime());
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ex) {
+        // Ignore.
       }
+      session.setAttribute("somethingElse", 1);
+      request.getSession();
+      response.getWriter().write("done");
     };
     servlet.getServletContext().setAttribute("callback", c);
 
@@ -504,14 +427,14 @@ public abstract class TestSessionsBase {
     // Execute the callback
     req.setParameter("cmd", QueryCommand.CALLBACK.name());
     req.setParameter("param", "callback");
-    WebResponse response = wc.getResponse(req);
+    wc.getResponse(req);
 
     HttpSession session = (HttpSession) servlet.getServletContext().getAttribute("session");
     Long lastAccess = (Long) session.getAttribute("lastAccessTime");
 
     assertTrue(
-        "Last access time not set correctly: " + lastAccess.longValue() + " not <= "
+        "Last access time not set correctly: " + lastAccess + " not <= "
             + session.getLastAccessedTime(),
-        lastAccess.longValue() <= session.getLastAccessedTime());
+        lastAccess <= session.getLastAccessedTime());
   }
 }

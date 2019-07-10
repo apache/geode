@@ -15,20 +15,16 @@
 package org.apache.geode.modules.session;
 
 import java.io.File;
-import java.net.MalformedURLException;
 
 import javax.security.auth.message.config.AuthConfigFactory;
-import javax.servlet.ServletException;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.LifecycleListener;
-import org.apache.catalina.Valve;
 import org.apache.catalina.authenticator.jaspic.AuthConfigFactoryImpl;
 import org.apache.catalina.authenticator.jaspic.SimpleAuthConfigProvider;
-import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardWrapper;
 import org.apache.catalina.startup.Tomcat;
@@ -38,36 +34,12 @@ import org.apache.juli.logging.LogFactory;
 
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
-public class EmbeddedTomcat8 {
-
-  private String contextPath = null;
-  private Tomcat container = null;
+class EmbeddedTomcat8 {
+  private Tomcat container;
+  private Context rootContext;
   private Log logger = LogFactory.getLog(getClass());
 
-  /**
-   * The port to run the Tomcat server on.
-   */
-  private int port = 8089;
-
-  /**
-   * The classes directory for the web application being run.
-   */
-  private String classesDir = "target/classes";
-
-  private Context rootContext = null;
-
-  private Engine engine;
-
-  /**
-   * The web resources directory for the web application being run.
-   */
-  private String webappDir = "";
-
-  public EmbeddedTomcat8(String contextPath, int port, String jvmRoute)
-      throws MalformedURLException {
-    this.contextPath = contextPath;
-    this.port = port;
-
+  EmbeddedTomcat8(String contextPath, int port, String jvmRoute) {
     // create server
     container = new Tomcat();
     container.setBaseDir(System.getProperty("user.dir") + "/tomcat");
@@ -86,19 +58,18 @@ public class EmbeddedTomcat8 {
     // Otherwise we get NPE when instantiating servlets
     rootContext.setIgnoreAnnotations(true);
 
-
     AuthConfigFactory factory = new AuthConfigFactoryImpl();
     new SimpleAuthConfigProvider(null, factory);
     AuthConfigFactory.setFactory(factory);
 
     // create engine
-    engine = container.getEngine();
+    Engine engine = container.getEngine();
     engine.setName("localEngine");
     engine.setJvmRoute(jvmRoute);
 
     // create http connector
     container.setPort(port);
-    Connector httpConnector = container.getConnector();// ((InetAddress) null, port, false);
+    container.getConnector();// ((InetAddress) null, port, false);
 
     // Create the JVMRoute valve for session failover
     ValveBase valve = new JvmRouteBinderValve();
@@ -108,23 +79,18 @@ public class EmbeddedTomcat8 {
   /**
    * Starts the embedded Tomcat server.
    */
-  public void startContainer() throws LifecycleException {
+  void startContainer() throws LifecycleException {
     // start server
     container.start();
 
     // add shutdown hook to stop server
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        stopContainer();
-      }
-    });
+    Runtime.getRuntime().addShutdownHook(new Thread(this::stopContainer));
   }
 
   /**
    * Stops the embedded Tomcat server.
    */
-  public void stopContainer() {
+  void stopContainer() {
     try {
       if (container != null) {
         container.stop();
@@ -135,8 +101,7 @@ public class EmbeddedTomcat8 {
     }
   }
 
-  public StandardWrapper addServlet(String path, String name, String clazz)
-      throws ServletException {
+  StandardWrapper addServlet(String path, String name, String clazz) {
     StandardWrapper servlet = (StandardWrapper) rootContext.createWrapper();
     servlet.setName(name);
     servlet.setServletClass(clazz);
@@ -151,32 +116,11 @@ public class EmbeddedTomcat8 {
     return servlet;
   }
 
-  public Tomcat getEmbedded() {
-    return container;
-  }
-
-  public void addLifecycleListener(LifecycleListener lifecycleListener) {
+  void addLifecycleListener(LifecycleListener lifecycleListener) {
     container.getServer().addLifecycleListener(lifecycleListener);
   }
 
-  public Context getRootContext() {
+  Context getRootContext() {
     return rootContext;
   }
-
-  public String getPath() {
-    return contextPath;
-  }
-
-  public void setPath(String path) {
-    this.contextPath = path;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public void addValve(Valve valve) {
-    ((StandardEngine) engine).addValve(valve);
-  }
-
 }

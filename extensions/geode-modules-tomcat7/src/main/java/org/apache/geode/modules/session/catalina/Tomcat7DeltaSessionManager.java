@@ -61,9 +61,7 @@ public class Tomcat7DeltaSessionManager extends DeltaSessionManager {
 
     try {
       load();
-    } catch (ClassNotFoundException e) {
-      throw new LifecycleException("Exception starting manager", e);
-    } catch (IOException e) {
+    } catch (ClassNotFoundException | IOException e) {
       throw new LifecycleException("Exception starting manager", e);
     }
 

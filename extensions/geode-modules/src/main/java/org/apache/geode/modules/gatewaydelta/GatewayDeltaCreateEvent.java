@@ -31,26 +31,20 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
 
   private byte[] gatewayDelta;
 
-  public GatewayDeltaCreateEvent() {}
-
-  public GatewayDeltaCreateEvent(String regionName, String key, byte[] gatewayDelta) {
+  GatewayDeltaCreateEvent(String regionName, String key, byte[] gatewayDelta) {
     super(regionName, key);
     this.gatewayDelta = gatewayDelta;
   }
 
-  public byte[] getGatewayDelta() {
-    return this.gatewayDelta;
-  }
-
   @Override
   public void apply(Cache cache) {
+    @SuppressWarnings("unchecked")
     Region<String, CachedDeserializable> region = getRegion(cache);
     region.put(this.key,
         CachedDeserializableFactory.create(this.gatewayDelta, (InternalCache) cache), true);
+
     if (cache.getLogger().fineEnabled()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Applied ").append(this);
-      cache.getLogger().fine(builder.toString());
+      cache.getLogger().fine("Applied " + this);
     }
   }
 
@@ -67,8 +61,8 @@ public class GatewayDeltaCreateEvent extends AbstractGatewayDeltaEvent {
   }
 
   public String toString() {
-    return new StringBuilder().append("GatewayDeltaCreateEvent[").append("regionName=")
-        .append(this.regionName).append("; key=").append(this.key).append("; gatewayDelta=")
-        .append(Arrays.toString(this.gatewayDelta)).append("]").toString();
+    return "GatewayDeltaCreateEvent[" + "regionName="
+        + this.regionName + "; key=" + this.key + "; gatewayDelta="
+        + Arrays.toString(this.gatewayDelta) + "]";
   }
 }

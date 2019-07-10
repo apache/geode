@@ -35,7 +35,7 @@ public class ArgumentValues {
    * Storage location for the command line argument values.
    */
   private final Map<Argument, List<String[]>> values =
-      new LinkedHashMap<Argument, List<String[]>>();
+      new LinkedHashMap<>();
 
   /**
    * Constructor.
@@ -70,10 +70,10 @@ public class ArgumentValues {
    * @param arg argument
    * @param paramValues parameter values for the argument
    */
-  public void addResult(final Argument arg, final String[] paramValues) {
+  void addResult(final Argument arg, final String[] paramValues) {
     List<String[]> list = values.get(arg);
     if (list == null) {
-      list = new ArrayList<String[]>();
+      list = new ArrayList<>();
       list.add(paramValues);
       values.put(arg, list);
     } else {
@@ -155,7 +155,7 @@ public class ArgumentValues {
       }
 
       if (found) {
-        result = new ArrayList<String[]>();
+        result = new ArrayList<>();
         result.add(vals);
       }
     }
@@ -168,7 +168,7 @@ public class ArgumentValues {
    * @param arg argument to query
    * @return first parameter list defined for this argument
    */
-  public String[] getResult(final Argument arg) {
+  private String[] getResult(final Argument arg) {
     final List<String[]> all = getAllResults(arg);
     if (all == null) {
       return null;

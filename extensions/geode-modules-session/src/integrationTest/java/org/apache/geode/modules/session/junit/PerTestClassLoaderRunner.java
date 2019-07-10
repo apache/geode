@@ -22,7 +22,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import org.junit.After;
 import org.junit.Before;
@@ -38,12 +37,6 @@ import org.junit.runners.model.Statement;
 import org.junit.runners.model.TestClass;
 
 public class PerTestClassLoaderRunner extends NamedRunner {
-  private static final Logger LOGGER = Logger.getLogger(PerTestClassLoaderRunner.class.getName());
-
-  // The classpath is needed because the custom class loader looks there to find the classes.
-  private static String classPath;
-  private static boolean classPathDetermined = false;
-
   // Some data related to the class from the custom class loader.
   private TestClass testClassFromClassLoader;
   private Object beforeFromClassLoader;

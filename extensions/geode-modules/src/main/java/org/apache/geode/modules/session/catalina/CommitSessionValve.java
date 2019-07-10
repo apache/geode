@@ -32,7 +32,7 @@ public class CommitSessionValve extends ValveBase {
   protected static final String info =
       "org.apache.geode.modules.session.catalina.CommitSessionValve/1.0";
 
-  public CommitSessionValve() {
+  CommitSessionValve() {
     log.info("Initialized");
   }
 
@@ -40,7 +40,7 @@ public class CommitSessionValve extends ValveBase {
   public void invoke(Request request, Response response) throws IOException, ServletException {
     // Get the Manager
     Manager manager = request.getContext().getManager();
-    DeltaSessionFacade session = null;
+    DeltaSessionFacade session;
 
     // Invoke the next Valve
     try {

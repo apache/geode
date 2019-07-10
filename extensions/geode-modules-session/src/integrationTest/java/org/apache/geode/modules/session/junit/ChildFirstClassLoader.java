@@ -20,15 +20,7 @@ import java.net.URLClassLoader;
 
 public class ChildFirstClassLoader extends URLClassLoader {
 
-  public ChildFirstClassLoader() {
-    super(new URL[] {});
-  }
-
-  public ChildFirstClassLoader(URL[] urls) {
-    super(urls);
-  }
-
-  public ChildFirstClassLoader(URL[] urls, ClassLoader parent) {
+  ChildFirstClassLoader(URL[] urls, ClassLoader parent) {
     super(urls, parent);
   }
 
