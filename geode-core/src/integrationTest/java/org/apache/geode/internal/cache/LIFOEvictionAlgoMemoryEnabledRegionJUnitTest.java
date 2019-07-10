@@ -132,7 +132,7 @@ public class LIFOEvictionAlgoMemoryEnabledRegionJUnitTest {
     File[] dirs = {dir};
     dsf.setDiskDirsAndSizes(dirs, new int[] {Integer.MAX_VALUE});
     dsf.setAutoCompact(false);
-    dsf.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
 
     factory.setDiskStoreName(dsf.create(regionName).getName());
     factory.setDiskSynchronous(true);

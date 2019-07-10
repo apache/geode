@@ -227,13 +227,6 @@ public interface DiskStoreFactory {
   DiskStoreFactory setDiskDirsAndSizes(File[] diskDirs, int[] diskDirSizes);
 
   /**
-   * Sets the directory size unit to be used, megabytes by default. Only used for testing purposes.
-   *
-   * @return a reference to <code>this</code>
-   */
-  DiskStoreFactory setDiskDirSizesUnit(DiskDirSizesUnit unit);
-
-  /**
    * Sets the warning threshold for disk usage as a percentage of the total disk volume.
    *
    * @param warningPercent warning percent of disk usage

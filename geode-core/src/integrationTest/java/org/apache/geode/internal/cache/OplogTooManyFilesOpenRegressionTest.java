@@ -114,7 +114,7 @@ public class OplogTooManyFilesOpenRegressionTest {
 
     setMaxOplogSizeInBytes(diskRegionProperties, dsf);
 
-    dsf.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
     DiskStore diskStore = dsf.create(uniqueName);
 
     RegionFactory<Integer, byte[]> regionFactory = cache.createRegionFactory();

@@ -76,7 +76,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return result;
   }
 
-  @Override
   /* For testing purposes only. */
   public DiskStoreFactory setDiskDirSizesUnit(DiskDirSizesUnit unit) {
     this.attrs.setDiskDirSizesUnit(unit);

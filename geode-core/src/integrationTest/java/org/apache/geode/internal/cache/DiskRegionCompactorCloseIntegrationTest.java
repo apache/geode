@@ -150,7 +150,7 @@ public class DiskRegionCompactorCloseIntegrationTest {
       DiskStoreFactory diskStoreFactory,
       long maxOplogSizeInBytes) {
     ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    diskStoreFactory.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    ((DiskStoreFactoryImpl) diskStoreFactory).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
     diskStoreFactory.create(diskStoreName);
   }
 

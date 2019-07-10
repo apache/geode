@@ -69,7 +69,7 @@ public class LRUClearWithDiskRegionOpRegressionTest {
     diskStoreFactory.setDiskDirsAndSizes(new File[] {dir}, new int[] {Integer.MAX_VALUE});
     diskStoreFactory.setAutoCompact(false);
 
-    diskStoreFactory.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    ((DiskStoreFactoryImpl) diskStoreFactory).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
     factory.setDiskStoreName(diskStoreFactory.create(regionName).getName());
 
     factory.setScope(Scope.DISTRIBUTED_ACK);

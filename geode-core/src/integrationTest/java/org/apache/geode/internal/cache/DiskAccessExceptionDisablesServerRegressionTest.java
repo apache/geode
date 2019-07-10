@@ -110,7 +110,7 @@ public class DiskAccessExceptionDisablesServerRegressionTest {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setDiskDirsAndSizes(new File[] {temporaryDirectory}, new int[] {2000});
     ((DiskStoreFactoryImpl) dsf).setMaxOplogSizeInBytes(MAX_OPLOG_SIZE);
-    dsf.setDiskDirSizesUnit((DiskDirSizesUnit.BYTES));
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit((DiskDirSizesUnit.BYTES));
     DiskStore diskStore = dsf.create(uniqueName);
 
     RegionFactory<String, byte[]> regionFactory =

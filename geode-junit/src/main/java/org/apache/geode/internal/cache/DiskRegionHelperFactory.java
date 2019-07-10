@@ -70,7 +70,7 @@ public class DiskRegionHelperFactory {
       dsf.setQueueSize((int) diskProps.getBytesThreshold());
     }
     factory.setDiskSynchronous(diskProps.isSynchronous());
-    dsf.setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
     factory.setDiskStoreName(dsf.create(diskProps.getRegionName()).getName());
 
     if (diskProps.isPersistBackup()) {
