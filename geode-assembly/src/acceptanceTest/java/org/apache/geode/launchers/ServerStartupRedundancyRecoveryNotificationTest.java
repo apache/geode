@@ -20,8 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,12 +55,12 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   private Path server2Folder;
   private int locatorPort;
   private String startServer1Command;
+  private String regionName;
 
   @Before
-  public void setup() throws IOException {
+  public void redundantRegionThatRequiresRedundancyRecovery() throws IOException {
     locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
-    // server1Folder = Paths.get("/Users/demery/my-test-folder").toAbsolutePath();
     Files.createDirectories(server1Folder);
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
@@ -84,7 +87,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         "--locators=localhost[" + locatorPort + "]",
         "--disable-default-server");
 
-    String regionName = "myRegion";
+    regionName = "myRegion";
     String createRegionCommand = String.join(" ",
         "create region",
         "--name=" + regionName,
@@ -105,40 +108,54 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   }
 
   @After
-  public void stopAllMembers() throws InterruptedException {
-    // Thread.sleep(10000);
+  public void stopAllMembers() {
     String stopServer1Command = "stop server --dir=" + server1Folder;
     String stopServer2Command = "stop server --dir=" + server2Folder;
     String stopLocatorCommand = "stop locator --dir=" + locatorFolder;
     gfshRule.execute(stopServer1Command, stopServer2Command, stopLocatorCommand);
   }
 
-  /**
-   * TODO: When we start up server 1 for the second time, we want to assert that "server is online"
-   * appears only *after* redundancy has been restored.
-   *
-   * TODO: To detect when redundancy is recovered, look for a log line like this:
-   *
-   * <pre>
-   * [info 2019/07/08 16:14:39.998 PDT <Pooled Waiting Message Processor 1> tid=0x24] Configured
-   * redundancy of 2 copies has been restored to /myRegion
-   * </pre>
-   *
-   * TODO: Use a distinct log file for the each server 1 start, and assert only against the second
-   * log file.
-   */
   @Test
-  public void startupReportsOnlineOnlyAfterRedundancyRecoveryCompletes() {
+  public void startupReportsOnlineOnlyAfterRedundancyRestored() throws IOException {
     String connectCommand = "connect --locator=localhost[" + locatorPort + "]";
+    server1Folder =
+        temporaryFolder.newFolder(SERVER_1_NAME + "secondfolder").toPath().toAbsolutePath();
+    startServer1Command = String.join(" ",
+        "start server",
+        "--name=" + SERVER_1_NAME,
+        "--dir=" + server1Folder,
+        "--locators=localhost[" + locatorPort + "]",
+        "--disable-default-server");
+
     gfshRule.execute(connectCommand, startServer1Command);
 
-    Pattern logLinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
+    Pattern serverOnlinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
+    Pattern redundancyRestoredPattern =
+        Pattern.compile(
+            "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionName
+                + ".*");
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");
-    // TODO: Check that this log line appears *after* the "recovery restored" line.
 
-    await()
-        .untilAsserted(() -> assertThat(Files.lines(logFile))
-            .as("Log file " + logFile + " includes line matching " + logLinePattern)
-            .anyMatch(logLinePattern.asPredicate()));
+    await().atMost(Duration.ONE_MINUTE)
+        .untilAsserted(() -> {
+          final List<String> foundPatterns =
+              Files.lines(logFile).filter(
+                  redundancyRestoredPattern.asPredicate().or(serverOnlinePattern.asPredicate()))
+                  .collect(Collectors.toList());
+
+          assertThat(foundPatterns)
+              .as("Log file " + logFile + " includes one line matching each of "
+                  + redundancyRestoredPattern + " and " + serverOnlinePattern)
+              .hasSize(2);
+
+          assertThat(foundPatterns.get(0))
+              .as("First matching Log line")
+              .matches(redundancyRestoredPattern.asPredicate(),
+                  redundancyRestoredPattern.pattern());
+
+          assertThat(foundPatterns.get(1))
+              .as("Second matching Log line")
+              .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
+        });
   }
 }
