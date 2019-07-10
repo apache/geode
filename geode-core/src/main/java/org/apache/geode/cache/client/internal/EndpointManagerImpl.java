@@ -189,7 +189,7 @@ public class EndpointManagerImpl implements EndpointManager {
       }
       if (stats == null) {
         String statName = poolName + "-" + location.toString();
-        stats = new ConnectionStats(ds, statName, poolStats);
+        stats = new ConnectionStats(ds, "Client", statName, poolStats);
       }
       statMap.put(location, stats);
     }

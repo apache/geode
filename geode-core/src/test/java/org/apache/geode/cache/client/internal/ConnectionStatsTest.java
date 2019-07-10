@@ -34,7 +34,7 @@ public class ConnectionStatsTest {
   private final StatisticsFactory statisticsFactory = createStatisticsFactory(sendStats);
   private final PoolStats poolStats = mock(PoolStats.class);
   private final ConnectionStats connectionStats =
-      new ConnectionStats(statisticsFactory, "name", poolStats);
+      new ConnectionStats(statisticsFactory, "Client", "name", poolStats);
 
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
