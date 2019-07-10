@@ -57,7 +57,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
-import org.apache.geode.distributed.internal.membership.gms.messages.GMSMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HasMemberID;
 import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
@@ -182,7 +182,7 @@ public class GMSJoinLeave implements JoinLeave {
   /**
    * a list of join/leave/crashes
    */
-  private final List<GMSMessage> viewRequests = new LinkedList<>();
+  private final List<AbstractGMSMessage> viewRequests = new LinkedList<>();
 
   /**
    * the established request collection jitter. This can be overridden for testing with
@@ -724,7 +724,7 @@ public class GMSJoinLeave implements JoinLeave {
     }
   }
 
-  private void recordViewRequest(GMSMessage request) {
+  private void recordViewRequest(AbstractGMSMessage request) {
     try {
       synchronized (viewRequests) {
         if (request instanceof JoinRequestMessage) {
@@ -752,7 +752,7 @@ public class GMSJoinLeave implements JoinLeave {
     if (isCoordinator
         && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
       synchronized (viewRequests) {
-        for (GMSMessage request : viewRequests) {
+        for (AbstractGMSMessage request : viewRequests) {
           if (request instanceof JoinRequestMessage) {
 
             services.getMessenger().initClusterKey();
@@ -768,7 +768,7 @@ public class GMSJoinLeave implements JoinLeave {
   }
 
   // for testing purposes, returns a copy of the view requests for verification
-  List<GMSMessage> getViewRequests() {
+  List<AbstractGMSMessage> getViewRequests() {
     synchronized (viewRequests) {
       return new LinkedList<>(viewRequests);
     }
@@ -968,7 +968,7 @@ public class GMSJoinLeave implements JoinLeave {
 
     Set<GMSMember> pendingLeaves = getPendingRequestIDs(LEAVE_REQUEST_MESSAGE);
     Set<GMSMember> pendingRemovals = getPendingRequestIDs(REMOVE_MEMBER_REQUEST);
-    pendingRemovals.removeAll(view.getCrashedNetMembers());
+    pendingRemovals.removeAll(view.getCrashedMembers());
     viewReplyProcessor.initialize(id, new HashSet(responders));
     viewReplyProcessor.processPendingRequests(pendingLeaves, pendingRemovals);
     addPublicKeysToView(view);
@@ -1572,8 +1572,8 @@ public class GMSJoinLeave implements JoinLeave {
         // newer than the view just processed - the senders will have to
         // resend these
         synchronized (viewRequests) {
-          for (Iterator<GMSMessage> it = viewRequests.iterator(); it.hasNext();) {
-            GMSMessage m = it.next();
+          for (Iterator<AbstractGMSMessage> it = viewRequests.iterator(); it.hasNext();) {
+            AbstractGMSMessage m = it.next();
             if (m instanceof JoinRequestMessage) {
               if (currentView.contains(((JoinRequestMessage) m).getMemberID())) {
                 it.remove();
@@ -1905,7 +1905,7 @@ public class GMSJoinLeave implements JoinLeave {
   Set<GMSMember> getPendingRequestIDs(int theDSFID) {
     Set<GMSMember> result = new HashSet<>();
     synchronized (viewRequests) {
-      for (GMSMessage msg : viewRequests) {
+      for (AbstractGMSMessage msg : viewRequests) {
         if (msg.getDSFID() == theDSFID) {
           result.add(((HasMemberID) msg).getMemberID());
         }
@@ -2285,7 +2285,7 @@ public class GMSJoinLeave implements JoinLeave {
 
     @Override
     public void run() {
-      List<GMSMessage> requests = null;
+      List<AbstractGMSMessage> requests = null;
       logger.info("View Creator thread is starting");
       sendInitialView();
       long okayToCreateView = System.currentTimeMillis() + requestCollectionInterval;
@@ -2328,7 +2328,7 @@ public class GMSJoinLeave implements JoinLeave {
               } else {
                 // time to create a new membership view
                 if (requests == null) {
-                  requests = new ArrayList<GMSMessage>(viewRequests);
+                  requests = new ArrayList<AbstractGMSMessage>(viewRequests);
                 } else {
                   requests.addAll(viewRequests);
                 }
@@ -2392,9 +2392,9 @@ public class GMSJoinLeave implements JoinLeave {
         if (viewRequests.isEmpty()) {
           return false;
         }
-        for (Iterator<GMSMessage> iterator = viewRequests.iterator(); iterator
+        for (Iterator<AbstractGMSMessage> iterator = viewRequests.iterator(); iterator
             .hasNext();) {
-          GMSMessage msg = iterator.next();
+          AbstractGMSMessage msg = iterator.next();
           switch (msg.getDSFID()) {
             case JOIN_REQUEST:
               requests.add((JoinRequestMessage) msg);
@@ -2424,7 +2424,7 @@ public class GMSJoinLeave implements JoinLeave {
      * false if the view cannot be prepared successfully, true otherwise
      *
      */
-    void createAndSendView(List<GMSMessage> requests)
+    void createAndSendView(List<AbstractGMSMessage> requests)
         throws InterruptedException, ViewAbandonedException {
       List<GMSMember> joinReqs = new ArrayList<>(10);
       Map<GMSMember, Integer> joinPorts = new HashMap<>(10);
@@ -2441,7 +2441,7 @@ public class GMSJoinLeave implements JoinLeave {
       }
       Set<GMSMember> oldIDs = new HashSet<>();
 
-      for (GMSMessage msg : requests) {
+      for (AbstractGMSMessage msg : requests) {
         logger.debug("processing request {}", msg);
 
         GMSMember mbr;
@@ -2476,7 +2476,7 @@ public class GMSJoinLeave implements JoinLeave {
         }
       }
 
-      for (GMSMessage msg : requests) {
+      for (AbstractGMSMessage msg : requests) {
         switch (msg.getDSFID()) {
           case REMOVE_MEMBER_REQUEST:
             GMSMember mbr = ((RemoveMemberMessage) msg).getMemberID();
@@ -2538,7 +2538,7 @@ public class GMSJoinLeave implements JoinLeave {
 
       // if there are no membership changes then abort creation of
       // the new view
-      if (joinReqs.isEmpty() && newView.getNetMembers().equals(currentView.getNetMembers())) {
+      if (joinReqs.isEmpty() && newView.getMembers().equals(currentView.getMembers())) {
         logger.info("membership hasn't changed - aborting new view {}", newView);
         return;
       }
@@ -2634,7 +2634,7 @@ public class GMSJoinLeave implements JoinLeave {
             }
             logger.info("adding these crashed members from a conflicting view to the crash-set "
                 + "for the next view: {}\nconflicting view: {}", unresponsive, conflictingView);
-            failures.addAll((Set<GMSMember>) (Set<?>) conflictingView.getCrashedNetMembers());
+            failures.addAll((Set<GMSMember>) (Set<?>) conflictingView.getCrashedMembers());
             // this member may have been kicked out of the conflicting view
             if (failures.contains(localAddress)) {
               forceDisconnect("I am no longer a member of the distributed system");
@@ -2688,7 +2688,7 @@ public class GMSJoinLeave implements JoinLeave {
             reasons.add(
                 "Failed to acknowledge a new membership view and then failed tcp/ip connection attempt");
           }
-          sendRemoveMessages(failures, reasons, new HashSet<GMSMember>());
+          sendRemoveMessages(failures, reasons, new HashSet<>());
         }
 
         // if there is no conflicting view then we can count
@@ -2728,7 +2728,7 @@ public class GMSJoinLeave implements JoinLeave {
     private void removeHealthyMembers(final Set<GMSMember> suspects)
         throws InterruptedException {
       List<Callable<GMSMember>> checkers =
-          new ArrayList<Callable<GMSMember>>(suspects.size());
+          new ArrayList<>(suspects.size());
 
       Set<GMSMember> newRemovals = new HashSet<>();
       Set<GMSMember> newLeaves = new HashSet<>();

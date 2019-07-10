@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class JoinRequestMessage extends GMSMessage {
+public class JoinRequestMessage extends AbstractGMSMessage {
   private GMSMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;

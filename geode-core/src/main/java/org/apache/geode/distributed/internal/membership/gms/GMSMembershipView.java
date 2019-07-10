@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -47,8 +46,7 @@ import org.apache.geode.internal.logging.LogService;
  * that under advisement if you decide to modify a view with add() or remove().
  *
  */
-public class GMSMembershipView implements DataSerializableFixedID,
-    org.apache.geode.distributed.internal.membership.NetView {
+public class GMSMembershipView implements DataSerializableFixedID {
   private static final Logger logger = LogService.getLogger();
 
   private int viewId;
@@ -143,12 +141,12 @@ public class GMSMembershipView implements DataSerializableFixedID,
     Arrays.fill(this.failureDetectionPorts, -1);
   }
 
-  @Override
+
   public int getViewId() {
     return this.viewId;
   }
 
-  @Override
+
   public GMSMember getCreator() {
     return this.creator;
   }
@@ -289,7 +287,7 @@ public class GMSMembershipView implements DataSerializableFixedID,
     ids.forEach(this::remove);
   }
 
-  public boolean contains(NetMember mbr) {
+  public boolean contains(GMSMember mbr) {
     return this.hashedMembers.contains(mbr);
   }
 
@@ -388,23 +386,11 @@ public class GMSMembershipView implements DataSerializableFixedID,
   }
 
   /* NetView implementation method */
-  @Override
-  public List<NetMember> getNetMembers() {
-    return (List<NetMember>) (List<?>) Collections.unmodifiableList(this.members);
+
+  public List<GMSMember> getGMSMembers() {
+    return (List<GMSMember>) (List<?>) Collections.unmodifiableList(this.members);
   }
 
-
-  /* NetView implementation method */
-  @Override
-  public Set<NetMember> getShutdownNetMembers() {
-    return (Set<NetMember>) (Set<?>) this.shutdownMembers;
-  }
-
-  /* NetView implementation method */
-  @Override
-  public Set<NetMember> getCrashedNetMembers() {
-    return (Set<NetMember>) (Set<?>) this.crashedMembers;
-  }
 
   public List<GMSMember> getMembers() {
     return Collections.unmodifiableList(this.members);
@@ -602,7 +588,7 @@ public class GMSMembershipView implements DataSerializableFixedID,
       return true;
     }
     if (other instanceof GMSMembershipView) {
-      return this.members.equals(((GMSMembershipView) other).getNetMembers());
+      return this.members.equals(((GMSMembershipView) other).getGMSMembers());
     }
     return false;
   }
@@ -624,7 +610,7 @@ public class GMSMembershipView implements DataSerializableFixedID,
     DataSerializer.writeHashMap(publicKeys, out);
   }
 
-  @Override
+
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     creator = GMSUtil.readMemberID(in);
     viewId = in.readInt();

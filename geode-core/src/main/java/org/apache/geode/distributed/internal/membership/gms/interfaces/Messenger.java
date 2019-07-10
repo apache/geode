@@ -17,8 +17,6 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.NetMessage;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
@@ -33,19 +31,19 @@ public interface Messenger extends Service {
    * sends an asynchronous message when the membership view may not have been established. Returns
    * destinations that did not receive the message due to no longer being in the view
    */
-  Set<GMSMember> send(NetMessage m, GMSMembershipView alternateView);
+  Set<GMSMember> send(GMSMessage m, GMSMembershipView alternateView);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view
    */
-  Set<GMSMember> send(NetMessage m);
+  Set<GMSMember> send(GMSMessage m);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view. Does not guarantee delivery of the message (no retransmissions)
    */
-  Set<GMSMember> sendUnreliably(NetMessage m);
+  Set<GMSMember> sendUnreliably(GMSMessage m);
 
   /**
    * returns the endpoint ID for this member
@@ -55,7 +53,7 @@ public interface Messenger extends Service {
   /**
    * check to see if a member ID has already been used
    */
-  boolean isOldMembershipIdentifier(NetMember id);
+  boolean isOldMembershipIdentifier(GMSMember id);
 
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts

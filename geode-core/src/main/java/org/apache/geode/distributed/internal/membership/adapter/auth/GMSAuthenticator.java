@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
@@ -115,7 +116,8 @@ public class GMSAuthenticator implements Authenticator {
       // this.securityProps contains security-ldap-basedn but security-ldap-baseDomainName is
       // expected
       auth.init(this.securityProps, logWriter, securityLogWriter);
-      return auth.authenticate(credentials, new InternalDistributedMember(member));
+      return auth.authenticate(credentials,
+          new InternalDistributedMember(new GMSMemberAdapter(member)));
 
     } catch (GemFireSecurityException gse) {
       throw gse;
@@ -155,7 +157,8 @@ public class GMSAuthenticator implements Authenticator {
    */
   Properties getCredentials(GMSMember member, Properties secProps) {
     String authMethod = secProps.getProperty(SECURITY_PEER_AUTH_INIT);
-    return Handshake.getCredentials(authMethod, secProps, new InternalDistributedMember(member),
+    return Handshake.getCredentials(authMethod, secProps,
+        new InternalDistributedMember(new GMSMemberAdapter(member)),
         true,
         logWriter,
         securityLogWriter);

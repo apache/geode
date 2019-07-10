@@ -91,6 +91,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem.Reconnect
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.examples.SimpleSecurityManager;
@@ -420,7 +421,9 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
               assertTrue(
                   ((GMSMembershipManager) getMembershipManager(system))
                       .getServices().getMessenger()
-                      .isOldMembershipIdentifier(((InternalDistributedMember) dm).getNetMember()));
+                      .isOldMembershipIdentifier(
+                          ((GMSMemberAdapter) ((InternalDistributedMember) dm).getNetMember())
+                              .getGmsMember()));
               return ds.getReconnectedSystem().getDistributedMember();
             } catch (InterruptedException e) {
               System.err.println("interrupted while waiting for reconnect");

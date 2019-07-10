@@ -17,6 +17,8 @@ package org.apache.geode.distributed.internal.membership.gms;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -30,8 +32,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
@@ -67,13 +69,15 @@ public class GMSUtil {
     if (id instanceof GMSMember) {
       return (GMSMember) id;
     }
-    return (GMSMember) ((InternalDistributedMember) id).getNetMember();
-    // try {
-    // Method getNetMember = id.getClass().getMethod("getNetMember");
-    // return (GMSMember)getNetMember.invoke(id);
-    // } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-    // throw new IllegalStateException("Unable to deserialize a member ID", e);
-    // }
+    // return ((GMSMemberAdapter)((InternalDistributedMember)id).getNetMember()).getGmsMember();
+    try {
+      Method getNetMember = id.getClass().getMethod("getNetMember");
+      Object netMember = getNetMember.invoke(id);
+      Method getGmsMember = netMember.getClass().getMethod("getGmsMember");
+      return (GMSMember) getGmsMember.invoke(netMember);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      throw new IllegalStateException("Unable to deserialize a member ID", e);
+    }
   }
 
   public static Set<GMSMember> readHashSetOfIDs(DataInput in)
@@ -151,6 +155,28 @@ public class GMSUtil {
     return result;
   }
 
+  /** Parses comma-separated-roles/groups into array of groups (strings). */
+  public static String[] parseGroups(String csvRoles, String csvGroups) {
+    List<String> groups = new ArrayList<String>();
+    parseCsv(groups, csvRoles);
+    parseCsv(groups, csvGroups);
+    return groups.toArray(new String[groups.size()]);
+  }
+
+
+  private static void parseCsv(List<String> groups, String csv) {
+    if (csv == null || csv.length() == 0) {
+      return;
+    }
+    StringTokenizer st = new StringTokenizer(csv, ",");
+    while (st.hasMoreTokens()) {
+      String groupName = st.nextToken().trim();
+      if (!groups.contains(groupName)) { // only add each group once
+        groups.add(groupName);
+      }
+    }
+  }
+
   /**
    * replaces all occurrences of a given string in the properties argument with the given value
    */
@@ -184,7 +210,9 @@ public class GMSUtil {
 
   private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out)
       throws IOException {
-    DataSerializer.writeObject(new InternalDistributedMember(suspect), out);
+    InternalDataSerializer.writeDSFID(suspect, DSFIDFactory.DISTRIBUTED_MEMBER, out);
+    // DataSerializer.writeObject(new InternalDistributedMember(new GMSMemberAdapter(suspect)),
+    // out);
   }
 
   public static void writeMemberID(GMSMember id, DataOutput out) throws IOException {

@@ -25,7 +25,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class SuspectMembersMessage extends GMSMessage {
+public class SuspectMembersMessage extends AbstractGMSMessage {
   final List<SuspectRequest> suspectRequests;
 
   public SuspectMembersMessage(List<GMSMember> recipients, List<SuspectRequest> s) {

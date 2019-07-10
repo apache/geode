@@ -22,7 +22,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class HeartbeatRequestMessage extends GMSMessage {
+public class HeartbeatRequestMessage extends AbstractGMSMessage {
 
   int requestId;
   GMSMember target;

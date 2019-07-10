@@ -17,20 +17,13 @@ package org.apache.geode.distributed.internal.membership;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 
 /**
  * The MembershipView class represents a membership view. Note that this class is not synchronized,
@@ -43,45 +36,12 @@ public class MembershipView {
 
   private int viewId;
   private List<InternalDistributedMember> members;
-  // TODO this should be a List
-  private final Map<InternalDistributedMember, Object> publicKeys = new ConcurrentHashMap<>();
   private Set<InternalDistributedMember> shutdownMembers;
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
-  private Map<NetMember, InternalDistributedMember> netMemberToDistributedMember = new HashMap<>();
   private final Object membersLock = new Object();
 
-
-  public static Set<InternalDistributedMember> netMemberSetToInternalDistributedMemberSet(
-      Set<NetMember> netMembers) {
-    if (netMembers.size() == 0) {
-      return Collections.emptySet();
-    } else if (netMembers.size() == 1) {
-      return Collections.singleton(new InternalDistributedMember(netMembers.iterator().next()));
-    } else {
-      Set<InternalDistributedMember> idmMembers = new HashSet<>(netMembers.size());
-      for (NetMember member : netMembers) {
-        idmMembers.add(new InternalDistributedMember(member));
-      }
-      return idmMembers;
-    }
-  }
-
-  public static List<InternalDistributedMember> netMemberListToInternalDistributedMemberSet(
-      List<NetMember> netMembers) {
-    if (netMembers.size() == 0) {
-      return Collections.emptyList();
-    } else if (netMembers.size() == 1) {
-      return Collections.singletonList(new InternalDistributedMember(netMembers.iterator().next()));
-    } else {
-      List<InternalDistributedMember> idmMembers = new ArrayList<>(netMembers.size());
-      for (NetMember member : netMembers) {
-        idmMembers.add(new InternalDistributedMember(member));
-      }
-      return idmMembers;
-    }
-  }
 
   public MembershipView() {
     viewId = 0;
@@ -89,19 +49,7 @@ public class MembershipView {
     this.hashedMembers = new HashSet<>(members);
     shutdownMembers = Collections.emptySet();
     crashedMembers = new HashSet<>();
-    populateReverseMap();
     creator = null;
-  }
-
-  public MembershipView(InternalDistributedMember creator) {
-    viewId = 0;
-    members = new ArrayList<>(4);
-    members.add(creator);
-    hashedMembers = new HashSet<>(members);
-    shutdownMembers = new HashSet<>();
-    crashedMembers = Collections.emptySet();
-    populateReverseMap();
-    this.creator = creator;
   }
 
   public MembershipView(InternalDistributedMember creator, int viewId,
@@ -111,7 +59,6 @@ public class MembershipView {
     hashedMembers = new HashSet<>(this.members);
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
-    populateReverseMap();
     this.creator = creator;
   }
 
@@ -140,8 +87,6 @@ public class MembershipView {
     this.hashedMembers = new HashSet<>(other.members);
     this.shutdownMembers = new HashSet<>(other.shutdownMembers);
     this.crashedMembers = new HashSet<>(other.crashedMembers);
-    populateReverseMap();
-    this.publicKeys.putAll(other.publicKeys);
   }
 
   public MembershipView(InternalDistributedMember creator, int viewId,
@@ -152,35 +97,7 @@ public class MembershipView {
     this.members = mbrs;
     this.hashedMembers = new HashSet<>(mbrs);
     this.shutdownMembers = shutdowns;
-    populateReverseMap();
     this.crashedMembers = crashes;
-  }
-
-  public MembershipView(NetView view) {
-    this(view.getCreator(), view.getViewId(), view.getNetMembers(), view.getShutdownNetMembers(),
-        view.getCrashedNetMembers());
-  }
-
-  public MembershipView(NetMember netCreator, int viewId, List<?> netMembers,
-      Set<?> netShutdowns, Set<?> netCrashes) {
-    this.creator = new InternalDistributedMember(netCreator);
-    this.viewId = viewId;
-    this.members = new ArrayList<>(netMembers.size());
-    for (NetMember member : (List<NetMember>) netMembers) {
-      this.members.add(new InternalDistributedMember(member));
-    }
-    this.hashedMembers = new HashSet<>(this.members);
-    this.shutdownMembers =
-        netMemberSetToInternalDistributedMemberSet((Set<NetMember>) netShutdowns);
-    this.crashedMembers = netMemberSetToInternalDistributedMemberSet((Set<NetMember>) netCrashes);
-    populateReverseMap();
-  }
-
-
-  private void populateReverseMap() {
-    for (InternalDistributedMember member : members) {
-      netMemberToDistributedMember.put(member.getNetMember(), member);
-    }
   }
 
   public int getViewId() {
@@ -193,22 +110,6 @@ public class MembershipView {
 
   public void setCreator(InternalDistributedMember creator) {
     this.creator = creator;
-  }
-
-  public Object getPublicKey(InternalDistributedMember mbr) {
-    return publicKeys.get(mbr);
-  }
-
-  public void setPublicKey(InternalDistributedMember mbr, Object key) {
-    if (mbr != null && key != null) {
-      publicKeys.put(mbr, key);
-    }
-  }
-
-  public void setPublicKeys(MembershipView otherView) {
-    if (otherView.publicKeys != null) {
-      this.publicKeys.putAll(otherView.publicKeys);
-    }
   }
 
   public void setViewId(int viewId) {
@@ -249,10 +150,6 @@ public class MembershipView {
     this.members.add(mbr);
   }
 
-  public void addCrashedMembers(Set<InternalDistributedMember> mbr) {
-    this.crashedMembers.addAll(mbr);
-  }
-
   public boolean remove(InternalDistributedMember mbr) {
     this.hashedMembers.remove(mbr);
     return this.members.remove(mbr);
@@ -267,6 +164,23 @@ public class MembershipView {
     assert mbr instanceof InternalDistributedMember;
     return this.hashedMembers.contains(mbr);
   }
+
+  /**
+   * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
+   * is returned.
+   */
+  public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
+    if (hashedMembers.contains(id)) {
+      for (InternalDistributedMember m : this.members) {
+        if (id.equals(m)) {
+          return m;
+        }
+      }
+    }
+    return id;
+  }
+
+
 
   public int size() {
     return this.members.size();
@@ -318,171 +232,12 @@ public class MembershipView {
     return null;
   }
 
-  /***
-   * This functions returns the list of preferred coordinators. One random member from list of
-   * non-preferred member list. It make sure that random member is not in suspected Set. And local
-   * member.
-   *
-   * @param filter Suspect member set.
-   * @param localAddress the address of this member
-   * @param maxNumberDesired number of preferred coordinators to return
-   * @return list of preferred coordinators
-   */
-  public List<InternalDistributedMember> getPreferredCoordinators(
-      Set<InternalDistributedMember> filter, InternalDistributedMember localAddress,
-      int maxNumberDesired) {
-    List<InternalDistributedMember> results = new ArrayList<>();
-    List<InternalDistributedMember> notPreferredCoordinatorList = new ArrayList<>();
-
-    synchronized (membersLock) {
-      for (InternalDistributedMember addr : members) {
-        if (addr.equals(localAddress)) {
-          continue;// this is must to add
-        }
-        if (addr.getNetMember().preferredForCoordinator() && !filter.contains(addr)) {
-          results.add(addr);
-          if (results.size() >= maxNumberDesired) {
-            break;
-          }
-        } else if (!filter.contains(addr)) {
-          notPreferredCoordinatorList.add(addr);
-        }
-      }
-
-      results.add(localAddress);// to add local address
-
-      if (results.size() < maxNumberDesired && notPreferredCoordinatorList.size() > 0) {
-        Iterator<InternalDistributedMember> it = notPreferredCoordinatorList.iterator();
-        while (it.hasNext() && results.size() < maxNumberDesired) {
-          results.add(it.next());
-        }
-      }
-    }
-
-    return results;
-  }
-
   public Set<InternalDistributedMember> getShutdownMembers() {
     return this.shutdownMembers;
   }
 
   public Set<InternalDistributedMember> getCrashedMembers() {
     return this.crashedMembers;
-  }
-
-  /** check to see if the given address is next in line to be coordinator */
-  public boolean shouldBeCoordinator(InternalDistributedMember who) {
-    Iterator<InternalDistributedMember> it = this.members.iterator();
-    InternalDistributedMember firstNonPreferred = null;
-    while (it.hasNext()) {
-      InternalDistributedMember mbr = it.next();
-      if (mbr.getNetMember().preferredForCoordinator()) {
-        return mbr.equals(who);
-      } else if (firstNonPreferred == null) {
-        firstNonPreferred = mbr;
-      }
-    }
-    return (firstNonPreferred == null || firstNonPreferred.equals(who));
-  }
-
-  /**
-   * returns the weight of the members in this membership view
-   */
-  public int memberWeight() {
-    int result = 0;
-    InternalDistributedMember lead = getLeadMember();
-    for (InternalDistributedMember mbr : this.members) {
-      result += mbr.getNetMember().getMemberWeight();
-      switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
-          result += 10;
-          if (lead != null && mbr.equals(lead)) {
-            result += 5;
-          }
-          break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
-          result += 3;
-          break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
-          break;
-        default:
-          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
-      }
-    }
-    return result;
-  }
-
-  /**
-   * returns the weight of crashed members in this membership view with respect to the given
-   * previous view
-   */
-  public int getCrashedMemberWeight(MembershipView oldView) {
-    int result = 0;
-    InternalDistributedMember lead = oldView.getLeadMember();
-    for (InternalDistributedMember mbr : this.crashedMembers) {
-      if (!oldView.contains(mbr)) {
-        continue;
-      }
-      result += mbr.getNetMember().getMemberWeight();
-      switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
-          result += 10;
-          if (lead != null && mbr.equals(lead)) {
-            result += 5;
-          }
-          break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
-          result += 3;
-          break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
-          break;
-        default:
-          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
-      }
-    }
-    return result;
-  }
-
-  /**
-   * returns the members of this views crashedMembers collection that were members of the given
-   * view. Admin-only members are not counted
-   */
-  public Set<InternalDistributedMember> getActualCrashedMembers(MembershipView oldView) {
-    Set<InternalDistributedMember> result = new HashSet<>(this.crashedMembers.size());
-    result.addAll(this.crashedMembers.stream()
-        .filter(mbr -> (mbr.getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE))
-        .filter(mbr -> oldView == null || oldView.contains(mbr)).collect(Collectors.toList()));
-    return result;
-  }
-
-  /**
-   * logs the weight of failed members wrt the given previous view
-   */
-  public void logCrashedMemberWeights(MembershipView oldView, Logger log) {
-    InternalDistributedMember lead = oldView.getLeadMember();
-    for (InternalDistributedMember mbr : this.crashedMembers) {
-      if (!oldView.contains(mbr)) {
-        continue;
-      }
-      int mbrWeight = mbr.getNetMember().getMemberWeight();
-      switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
-          if (lead != null && mbr.equals(lead)) {
-            mbrWeight += 15;
-          } else {
-            mbrWeight += 10;
-          }
-          break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
-          mbrWeight += 3;
-          break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
-          break;
-        default:
-          throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
-      }
-      log.info("  " + mbr + " had a weight of " + mbrWeight);
-    }
   }
 
   public String toString() {
@@ -540,10 +295,4 @@ public class MembershipView {
     return this.members.hashCode();
   }
 
-  /**
-   * reverse lookup of InternalDistributedMember given its netMember
-   */
-  public InternalDistributedMember getMember(GMSMember netMember) {
-    return netMemberToDistributedMember.get(netMember);
-  }
 }

@@ -33,7 +33,7 @@ import org.apache.geode.internal.Version;
 // 2. a response indicating that the coordinator is now a different process
 // 3. a response containing the cluster encryption key
 
-public class JoinResponseMessage extends GMSMessage {
+public class JoinResponseMessage extends AbstractGMSMessage {
 
   private GMSMembershipView currentView;
   private String rejectionMessage;

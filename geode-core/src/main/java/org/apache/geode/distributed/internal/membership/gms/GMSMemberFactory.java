@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
@@ -59,8 +60,10 @@ public class GMSMemberFactory implements MemberServices {
   @Override
   public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
-    GMSMember result =
-        new GMSMember(attr, i, p, splitBrainEnabled, canBeCoordinator, version, 0, 0);
+    GMSMemberAdapter result =
+        new GMSMemberAdapter(new GMSMember(i, p, attr.getVmPid(), (byte) attr.getVmKind(),
+            attr.getPort(), attr.getVmViewId(), attr.getName(), attr.getGroups(),
+            attr.getDurableClientAttributes(), splitBrainEnabled, canBeCoordinator, version, 0, 0));
     return result;
   }
 
@@ -74,8 +77,7 @@ public class GMSMemberFactory implements MemberServices {
    */
   @Override
   public NetMember newNetMember(InetAddress i, int p) {
-    return new GMSMember(MemberAttributes.DEFAULT, i, p, false, true, Version.CURRENT_ORDINAL, 0,
-        0);
+    return newNetMember(i, p, false, true, MemberAttributes.DEFAULT, Version.CURRENT_ORDINAL);
   }
 
   /**

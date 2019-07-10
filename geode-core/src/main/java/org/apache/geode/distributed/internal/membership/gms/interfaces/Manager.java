@@ -16,15 +16,15 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.NetMessage;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
  * conditions. It is also the default MessageHandler
  */
-public interface Manager extends Service, MessageHandler<NetMessage> {
+public interface Manager extends Service, MessageHandler<GMSMessage> {
 
   /**
    * After all services have been started this is used to join the distributed system
@@ -66,5 +66,19 @@ public interface Manager extends Service, MessageHandler<NetMessage> {
    */
   boolean isReconnectingDS();
 
+  /**
+   * When Messenger receives a message from another node it may be in a form that
+   * Messenger can't deal with, depending on what payload was serialized. It may
+   * be a GMSMessage already or it may be a message wrapped in an adapter class
+   * that serializes a non-GMSMessage payload. (See GMSMessageAdapter, which
+   * wraps Geode DistributionMessages)
+   */
+  GMSMessage wrapMessage(Object receivedMessage);
+
+  /**
+   * When Messenger is going to transmit a message it gets the actual payload to serialize
+   * from this method
+   */
+  DataSerializableFixedID unwrapMessage(GMSMessage messageToSend);
 
 }

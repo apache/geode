@@ -24,7 +24,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class LeaveRequestMessage extends GMSMessage implements HasMemberID {
+public class LeaveRequestMessage extends AbstractGMSMessage implements HasMemberID {
   private GMSMember memberID;
   private String reason;
 

@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.internal.Version;
 
-public class HeartbeatMessage extends GMSMessage {
+public class HeartbeatMessage extends AbstractGMSMessage {
   /**
    * RequestId identifies the HeartbeatRequestMessage for which this is a response. If it is < 0
    * this is a periodic heartbeat message.

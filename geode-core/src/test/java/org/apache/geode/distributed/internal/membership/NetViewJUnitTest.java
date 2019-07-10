@@ -31,6 +31,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.net.SocketCreator;
@@ -46,8 +47,9 @@ public class NetViewJUnitTest {
     int numMembers = 10;
     members = new ArrayList<>(numMembers);
     for (int i = 0; i < numMembers; i++) {
-      members.add((GMSMember) new InternalDistributedMember(SocketCreator.getLocalHost(), 1000 + i)
-          .getNetMember());
+      members.add(
+          ((GMSMemberAdapter) new InternalDistributedMember(SocketCreator.getLocalHost(), 1000 + i)
+              .getNetMember()).getGmsMember());
     }
     // view creator is a locator
     members.get(0).setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
@@ -82,10 +84,10 @@ public class NetViewJUnitTest {
 
     assertTrue(view.getCreator().equals(members.get(0)));
     assertEquals(2, view.getViewId());
-    assertEquals(members, view.getNetMembers());
-    assertEquals(0, view.getCrashedNetMembers().size());
+    assertEquals(members, view.getMembers());
+    assertEquals(0, view.getCrashedMembers().size());
     assertEquals(members.get(1), view.getLeadMember()); // a locator can't be lead member
-    assertEquals(0, view.getShutdownNetMembers().size());
+    assertEquals(0, view.getShutdownMembers().size());
     assertEquals(1, view.getNewMembers().size());
     assertEquals(members.get(numMembers - 1), view.getNewMembers().iterator().next());
     assertEquals(members.get(0), view.getCoordinator());
@@ -120,10 +122,10 @@ public class NetViewJUnitTest {
       assertFalse(view.contains(members.get(i)));
     }
 
-    List<NetMember> remainingMembers = view.getNetMembers();
+    List<GMSMember> remainingMembers = view.getMembers();
     int num = remainingMembers.size();
     for (int i = 0; i < num; i++) {
-      NetMember mbr = remainingMembers.get(i);
+      GMSMember mbr = remainingMembers.get(i);
       assertEquals(mbr.getPort(), view.getFailureDetectionPort((GMSMember) mbr));
     }
   }
@@ -145,10 +147,10 @@ public class NetViewJUnitTest {
     }
     assertEquals(numMembers - removals.size(), view.size());
 
-    List<NetMember> remainingMembers = view.getNetMembers();
+    List<GMSMember> remainingMembers = view.getMembers();
     int num = remainingMembers.size();
     for (int i = 0; i < num; i++) {
-      NetMember mbr = remainingMembers.get(i);
+      GMSMember mbr = remainingMembers.get(i);
       assertEquals(mbr.getPort(), view.getFailureDetectionPort((GMSMember) mbr));
     }
   }
@@ -162,10 +164,10 @@ public class NetViewJUnitTest {
 
     assertTrue(newView.getCreator().equals(members.get(0)));
     assertEquals(3, newView.getViewId());
-    assertEquals(members, newView.getNetMembers());
-    assertEquals(0, newView.getCrashedNetMembers().size());
+    assertEquals(members, newView.getMembers());
+    assertEquals(0, newView.getCrashedMembers().size());
     assertEquals(members.get(1), newView.getLeadMember()); // a locator can't be lead member
-    assertEquals(0, newView.getShutdownNetMembers().size());
+    assertEquals(0, newView.getShutdownMembers().size());
     assertEquals(0, newView.getNewMembers().size());
     assertTrue(newView.equals(view));
     assertTrue(view.equals(newView));
@@ -183,8 +185,8 @@ public class NetViewJUnitTest {
     int oldSize = view.size();
     for (int i = 0; i < 100; i++) {
       GMSMember mbr =
-          (GMSMember) new InternalDistributedMember(SocketCreator.getLocalHost(), 2000 + i)
-              .getNetMember();
+          ((GMSMemberAdapter) new InternalDistributedMember(SocketCreator.getLocalHost(), 2000 + i)
+              .getNetMember()).getGmsMember();
       mbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
       mbr.setVmViewId(2);
       view.add(mbr);
@@ -205,11 +207,11 @@ public class NetViewJUnitTest {
     setFailureDetectionPorts(view);
 
     GMSMembershipView newView = new GMSMembershipView(view, 3);
-    for (NetMember member : view.getNetMembers()) {
+    for (GMSMember member : view.getMembers()) {
       view.setPublicKey((GMSMember) member, null);
     }
     newView.setPublicKeys(view);
-    for (NetMember member : view.getNetMembers()) {
+    for (GMSMember member : view.getMembers()) {
       assertNull(newView.getPublicKey((GMSMember) member));
       assertNull(view.getPublicKey((GMSMember) member));
     }
@@ -223,13 +225,20 @@ public class NetViewJUnitTest {
     // in #47342 a new view was created that contained a member that was joining but
     // was no longer reachable. The member was included in the failed-weight and not
     // in the previous view-weight, causing a spurious network partition to be declared
-    NetMember members[] =
-        new NetMember[] {new InternalDistributedMember("localhost", 1).getNetMember(),
-            new InternalDistributedMember("localhost", 2).getNetMember(),
-            new InternalDistributedMember("localhost", 3).getNetMember(),
-            new InternalDistributedMember("localhost", 4).getNetMember(),
-            new InternalDistributedMember("localhost", 5).getNetMember(),
-            new InternalDistributedMember("localhost", 6).getNetMember()};
+    GMSMember members[] =
+        new GMSMember[] {
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 1).getNetMember())
+                .getGmsMember(),
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 2).getNetMember())
+                .getGmsMember(),
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 3).getNetMember())
+                .getGmsMember(),
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 4).getNetMember())
+                .getGmsMember(),
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 5).getNetMember())
+                .getGmsMember(),
+            ((GMSMemberAdapter) new InternalDistributedMember("localhost", 6).getNetMember())
+                .getGmsMember()};
     int i = 0;
     // weight 3
     members[i].setVmKind(ClusterDistributionManager.LOCATOR_DM_TYPE);
@@ -250,7 +259,7 @@ public class NetViewJUnitTest {
     members[i].setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     members[i++].setPreferredForCoordinator(false);
 
-    List<NetMember> vmbrs = new ArrayList<>(members.length);
+    List<GMSMember> vmbrs = new ArrayList<>(members.length);
     for (i = 0; i < members.length; i++) {
       vmbrs.add(members[i]);
     }
@@ -260,19 +269,20 @@ public class NetViewJUnitTest {
     assertTrue(!leader.preferredForCoordinator());
 
     GMSMember joiningMember =
-        (GMSMember) new InternalDistributedMember("localhost", 7).getNetMember();
+        ((GMSMemberAdapter) new InternalDistributedMember("localhost", 7).getNetMember())
+            .getGmsMember();
     joiningMember.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     joiningMember.setPreferredForCoordinator(false);
 
     // have the joining member and another cache process (weight 10) in the failed members
     // collection and check to make sure that the joining member is not included in failed
     // weight calcs.
-    Set<NetMember> failedMembers = new HashSet<>(3);
+    Set<GMSMember> failedMembers = new HashSet<>(3);
     failedMembers.add(joiningMember);
     failedMembers.add(members[members.length - 1]); // cache
     failedMembers.add(members[members.length - 2]); // admin
-    List<NetMember> newMbrs =
-        new ArrayList<>(lastView.getNetMembers());
+    List<GMSMember> newMbrs =
+        new ArrayList<>(lastView.getGMSMembers());
     newMbrs.removeAll(failedMembers);
     GMSMembershipView newView =
         new GMSMembershipView((GMSMember) members[0], 5, (List<GMSMember>) (List<?>) newMbrs,

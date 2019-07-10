@@ -23,7 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.Version;
 
-public class InstallViewMessage extends GMSMessage {
+public class InstallViewMessage extends AbstractGMSMessage {
 
   enum messageType {
     INSTALL, PREPARE, SYNC

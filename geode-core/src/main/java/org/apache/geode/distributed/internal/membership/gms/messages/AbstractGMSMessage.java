@@ -14,55 +14,48 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.NetMessage;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.internal.DataSerializableFixedID;
 
-public abstract class GMSMessage implements DataSerializableFixedID, NetMessage {
+public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMSMessage {
   private List<GMSMember> recipients;
   private GMSMember sender;
+
+  @Override
+  public void registerProcessor() {
+    // no-op
+  }
 
   @Override
   public boolean isHighPriority() {
     return true;
   }
 
+  @Override
   public void setRecipient(GMSMember member) {
     recipients = Collections.singletonList(member);
   }
 
+  @Override
   public void setRecipients(List<GMSMember> recipients) {
     this.recipients = recipients;
   }
 
-  public Collection<GMSMember> getRecipients() {
+  @Override
+  public List<GMSMember> getRecipients() {
     return recipients;
   }
 
   @Override
-  public List<NetMember> getNetRecipients() {
-    return (List<NetMember>) (List<?>) recipients;
-  }
-
-  @Override
-  public void setNetSender(NetMember netSender) {
-    setSender((GMSMember) netSender);
-  }
-
-  @Override
-  public NetMember getNetSender() {
-    return sender;
-  }
-
   public void setSender(GMSMember sender) {
     this.sender = sender;
   }
 
+  @Override
   public GMSMember getSender() {
     return sender;
   }
@@ -70,4 +63,5 @@ public abstract class GMSMessage implements DataSerializableFixedID, NetMessage 
   String getShortClassName() {
     return getClass().getSimpleName();
   }
+
 }

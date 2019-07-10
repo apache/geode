@@ -26,25 +26,15 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
-import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
 
 /**
- * This is the fundamental representation of a member of a GemFire distributed system.
- *
- * Unfortunately, this class serves two distinct functions. First, it is the fundamental element of
- * membership in the GemFire distributed system. As such, it is used in enumerations and properly
- * responds to hashing and equals() comparisons.
- *
- * Second, it is used as a cheap way of representing an address. This is unfortunate, because as a
- * NetMember, it holds two separate port numbers: the "membership" descriptor as well as a direct
- * communication channel.
- *
+ * GMSMember is the membership identifier class for Group Membership Services.
  */
-public class GMSMember implements NetMember, DataSerializableFixedID {
+public class GMSMember implements DataSerializableFixedID {
   /** The DM type for regular distribution managers */
   public static final int NORMAL_DM_TYPE = 10;
 
@@ -91,13 +81,13 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     setUUID(UUID.randomUUID());
   }
 
-  @Override
+
   public MemberAttributes getAttributes() {
     return new MemberAttributes(directPort, processId, vmKind, vmViewId, name, groups,
         durableClientAttributes);
   }
 
-  @Override
+
   public void setAttributes(MemberAttributes p_attr) {
     MemberAttributes attr = p_attr;
     if (attr == null) {
@@ -135,12 +125,21 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(MemberAttributes attr, InetAddress i, int p,
+  public GMSMember(InetAddress i, int p, int processId, byte vmKind, int directPort, int vmViewId,
+      String name, String[] groups,
+      DurableClientAttributes durableClientAttributes,
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator, short version,
       long msbs, long lsbs) {
-    setAttributes(attr);
     this.inetAddr = i;
     this.udpPort = p;
+    this.processId = processId;
+    this.vmKind = vmKind;
+    this.directPort = directPort;
+    this.vmViewId = vmViewId;
+    this.name = name;
+    this.groups = groups;
+    // we need to get rid of references to DurableClientAttributes
+    this.durableClientAttributes = durableClientAttributes;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
     this.versionOrdinal = version;
@@ -181,32 +180,27 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.uuidMSBs = other.uuidMSBs;
   }
 
-  @Override
+
   public int getPort() {
     return this.udpPort;
   }
 
-  @Override
-  public boolean isMulticastAddress() {
-    return false;
-  }
 
-  @Override
   public boolean preferredForCoordinator() {
     return this.preferredForCoordinator;
   }
 
-  @Override
+
   public void setPreferredForCoordinator(boolean preferred) {
     this.preferredForCoordinator = preferred;
   }
 
-  @Override
+
   public InetAddress getInetAddress() {
     return this.inetAddr;
   }
 
-  @Override
+
   public short getVersionOrdinal() {
     return this.versionOrdinal;
   }
@@ -251,22 +245,22 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
    * @exception java.lang.ClassCastException - if the specified object's type prevents it from being
    * compared to this Object.
    */
-  @Override
-  public int compareTo(NetMember o) {
+
+  public int compareTo(GMSMember o) {
     return compareTo(o, true);
   }
 
-  public int compareTo(NetMember o, boolean compareUUIDs) {
+  public int compareTo(GMSMember o, boolean compareUUIDs) {
     if (o == this) {
       return 0;
     }
     // obligatory type check
-    if (o == null || !(o instanceof GMSMember)) {
+    if (o == null) {
       throw new ClassCastException(
-          "NetMember.compareTo(): comparison between different classes");
+          "GMSMember.compareTo(): comparison between different classes");
     }
     byte[] myAddr = inetAddr.getAddress();
-    GMSMember his = (GMSMember) o;
+    GMSMember his = o;
     byte[] hisAddr = his.inetAddr.getAddress();
     if (myAddr != hisAddr) {
       for (int idx = 0; idx < myAddr.length; idx++) {
@@ -313,9 +307,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return result;
   }
 
-  @Override
-  public int compareAdditionalData(NetMember other) {
-    GMSMember his = (GMSMember) other;
+
+  public int compareAdditionalData(GMSMember his) {
     int result = 0;
     if (this.uuidMSBs != 0 && his.uuidMSBs != 0) {
       if (this.uuidMSBs < his.uuidMSBs) {
@@ -360,7 +353,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return sb.toString();
   }
 
-  @Override
+
   public String getUniqueId() {
     StringBuilder sb = new StringBuilder(100);
     sb.append("GMSMember[addr=").append(inetAddr);
@@ -374,12 +367,12 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return udpPort;
   }
 
-  @Override
+
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
   }
 
-  @Override
+
   public byte getMemberWeight() {
     return memberWeight;
   }
@@ -388,37 +381,37 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     return inetAddr;
   }
 
-  @Override
+
   public int getProcessId() {
     return processId;
   }
 
-  @Override
+
   public byte getVmKind() {
     return vmKind;
   }
 
-  @Override
+
   public int getVmViewId() {
     return vmViewId;
   }
 
-  @Override
+
   public void setVmViewId(int id) {
     this.vmViewId = id;
   }
 
-  @Override
+
   public int getDirectPort() {
     return directPort;
   }
 
-  @Override
+
   public String getName() {
     return name;
   }
 
-  @Override
+
   public DurableClientAttributes getDurableClientAttributes() {
     return durableClientAttributes;
   }
@@ -431,7 +424,7 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.udpPort = udpPort;
   }
 
-  @Override
+
   public void setNetworkPartitionDetectionEnabled(boolean networkPartitionDetectionEnabled) {
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
   }
@@ -444,17 +437,17 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.inetAddr = inetAddr;
   }
 
-  @Override
+
   public void setProcessId(int processId) {
     this.processId = processId;
   }
 
-  @Override
+
   public void setVmKind(int vmKind) {
     this.vmKind = (byte) vmKind;
   }
 
-  @Override
+
   public void setVersion(Version v) {
     this.versionOrdinal = v.ordinal();
   }
@@ -463,32 +456,32 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     this.vmViewId = birthViewId;
   }
 
-  @Override
+
   public void setDirectPort(int directPort) {
     this.directPort = directPort;
   }
 
-  @Override
+
   public void setName(String name) {
     this.name = name;
   }
 
-  @Override
+
   public void setDurableClientAttributes(DurableClientAttributes durableClientAttributes) {
     this.durableClientAttributes = durableClientAttributes;
   }
 
-  @Override
+
   public String[] getGroups() {
     return groups;
   }
 
-  @Override
+
   public void setGroups(String[] groups) {
     this.groups = groups;
   }
 
-  @Override
+
   public void setPort(int p) {
     this.udpPort = p;
   }
@@ -647,19 +640,19 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
     }
   }
 
-  @Override
+
   public boolean hasAdditionalData() {
     return uuidMSBs != 0 || uuidLSBs != 0 || memberWeight != 0;
   }
 
-  @Override
+
   public void writeAdditionalData(DataOutput out) throws IOException {
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
     out.write(memberWeight);
   }
 
-  @Override
+
   public void readAdditionalData(DataInput in) throws ClassNotFoundException, IOException {
     try {
       this.uuidMSBs = in.readLong();
@@ -671,7 +664,8 @@ public class GMSMember implements NetMember, DataSerializableFixedID {
   }
 
   private String formatUUID() {
-    return ";uuid=" + getUUID().toStringLong();
+    UUID uuid = getUUID();
+    return ";uuid=" + (uuid == null ? "none" : getUUID().toStringLong());
   }
 
 

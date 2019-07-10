@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.Version;
 
-public class NetworkPartitionMessage extends GMSMessage {
+public class NetworkPartitionMessage extends AbstractGMSMessage {
 
   public NetworkPartitionMessage() {}
 

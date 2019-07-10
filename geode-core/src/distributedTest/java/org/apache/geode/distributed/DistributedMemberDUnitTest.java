@@ -46,6 +46,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
@@ -263,7 +264,8 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     GMSMember gmsMember = new GMSMember((GMSMember) internalDistributedMember.getNetMember());
     assertTrue(gmsMember.equals(internalDistributedMember.getNetMember()));
     gmsMember.setName(null);
-    InternalDistributedMember partialID = new InternalDistributedMember(gmsMember);
+    InternalDistributedMember partialID =
+        new InternalDistributedMember(new GMSMemberAdapter(gmsMember));
     return partialID;
   }
 

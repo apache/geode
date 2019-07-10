@@ -78,6 +78,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
@@ -131,9 +132,13 @@ public class GMSMembershipManagerJUnitTest {
 
     authenticator = mock(Authenticator.class);
     myMemberId = new InternalDistributedMember("localhost", 8887);
+    GMSMember m = ((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember();
+    UUID uuid = new UUID(12345, 12345);
+    m.setUUID(uuid);
 
     messenger = mock(Messenger.class);
-    when(messenger.getMemberID()).thenReturn((GMSMember) myMemberId.getNetMember());
+    when(messenger.getMemberID())
+        .thenReturn(((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember());
 
     stopper = mock(Stopper.class);
     when(stopper.isCancelInProgress()).thenReturn(false);
@@ -158,8 +163,8 @@ public class GMSMembershipManagerJUnitTest {
     mockMembers = new InternalDistributedMember[5];
     for (int i = 0; i < mockMembers.length; i++) {
       mockMembers[i] = new InternalDistributedMember("localhost", 8888 + i);
-      GMSMember m = (GMSMember) mockMembers[i].getNetMember();
-      UUID uuid = new UUID(r.nextLong(), r.nextLong());
+      m = ((GMSMemberAdapter) mockMembers[i].getNetMember()).getGmsMember();
+      uuid = new UUID(r.nextLong(), r.nextLong());
       m.setUUID(uuid);
     }
     members = new ArrayList<>(Arrays.asList(mockMembers));
@@ -183,9 +188,10 @@ public class GMSMembershipManagerJUnitTest {
       List<InternalDistributedMember> members) {
     List<GMSMember> gmsMembers = new ArrayList<>(members.size());
     for (InternalDistributedMember member : members) {
-      gmsMembers.add((GMSMember) member.getNetMember());
+      gmsMembers.add(((GMSMemberAdapter) member.getNetMember()).getGmsMember());
     }
-    return new GMSMembershipView((GMSMember) creator.getNetMember(), viewId, gmsMembers);
+    return new GMSMembershipView(((GMSMemberAdapter) creator.getNetMember()).getGmsMember(), viewId,
+        gmsMembers);
   }
 
   @Test
@@ -198,7 +204,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.setShutdown();
     Set<InternalDistributedMember> failures =
         manager.send(new InternalDistributedMember[] {mockMembers[0]}, m, null);
-    verify(messenger, never()).send(m);
+    verify(messenger, never()).send(isA(GMSMessage.class));
     assertEquals(1, failures.size());
     assertEquals(mockMembers[0], failures.iterator().next());
   }
@@ -212,10 +218,10 @@ public class GMSMembershipManagerJUnitTest {
     manager.getGMSManager().started();
     manager.getGMSManager().installView(createView(myMemberId, 1, members));
     Set<InternalDistributedMember> failures = manager.send(null, m, null);
-    verify(messenger, never()).send(m);
+    verify(messenger, never()).send(isA(GMSMessage.class));
     reset(messenger);
     failures = manager.send(emptyList, m, null);
-    verify(messenger, never()).send(m);
+    verify(messenger, never()).send(isA(GMSMessage.class));
   }
 
   @Test
@@ -243,8 +249,9 @@ public class GMSMembershipManagerJUnitTest {
 
     // suspect a member
     InternalDistributedMember suspectMember = mockMembers[1];
-    manager.handleOrDeferSuspect(new SuspectMember((GMSMember) mockMembers[0].getNetMember(),
-        (GMSMember) suspectMember.getNetMember(), "testing"));
+    manager.handleOrDeferSuspect(
+        new SuspectMember(((GMSMemberAdapter) mockMembers[0].getNetMember()).getGmsMember(),
+            ((GMSMemberAdapter) suspectMember.getNetMember()).getGmsMember(), "testing"));
     // suspect messages aren't queued - they're ignored before joining the system
     assertEquals(2, manager.getStartupEvents().size());
     verify(listener, never()).memberSuspect(suspectMember, mockMembers[0], "testing");
@@ -304,8 +311,9 @@ public class GMSMembershipManagerJUnitTest {
     // process a suspect now - it will be passed to the listener
     reset(listener);
     suspectMember = mockMembers[1];
-    manager.handleOrDeferSuspect(new SuspectMember((GMSMember) mockMembers[0].getNetMember(),
-        (GMSMember) suspectMember.getNetMember(), "testing"));
+    manager.handleOrDeferSuspect(
+        new SuspectMember(((GMSMemberAdapter) mockMembers[0].getNetMember()).getGmsMember(),
+            ((GMSMemberAdapter) suspectMember.getNetMember()).getGmsMember(), "testing"));
     verify(listener).memberSuspect(suspectMember, mockMembers[0], "testing");
   }
 
@@ -412,7 +420,7 @@ public class GMSMembershipManagerJUnitTest {
     // each destination w/o a UUID should have been replaced with the corresponding
     // ID from the membership view
     for (int i = 0; i < destinations.length; i++) {
-      assertTrue(viewmembers.get(i) == destinations[i]);
+      assertTrue(((GMSMemberAdapter) destinations[i].getNetMember()).getGmsMember().hasUUID());
     }
   }
 

@@ -12,23 +12,26 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.List;
 
-public interface NetMessage {
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 
+public interface GMSMessage {
+
+  void setRecipient(GMSMember member);
+
+  void setRecipients(List<GMSMember> recipients);
 
   /** is this a high priority message that should be sent out-of-band? */
   boolean isHighPriority();
 
 
   /** register any reply processor prior to transmission, if necessary */
-  default void registerProcessor() {
-    // no-op
-  }
+  void registerProcessor();
 
-  List<NetMember> getNetRecipients();
+  List<GMSMember> getRecipients();
 
   /** from DataSerializableFixedID */
   int getDSFID();
@@ -46,7 +49,8 @@ public interface NetMessage {
   }
 
   /** establishes the sender of a message on the receiving side of a communications channel */
-  void setNetSender(NetMember sender);
+  void setSender(GMSMember sender);
 
-  NetMember getNetSender();
+  GMSMember getSender();
+
 }

@@ -23,7 +23,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.Version;
 
-public class ViewAckMessage extends GMSMessage {
+public class ViewAckMessage extends AbstractGMSMessage {
 
   int viewId;
   boolean preparing;

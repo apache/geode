@@ -39,8 +39,6 @@ public interface NetMember extends Comparable<NetMember> {
 
   void setPort(int p);
 
-  boolean isMulticastAddress();
-
   short getVersionOrdinal();
 
   /**

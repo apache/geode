@@ -19,11 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
-import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
@@ -35,7 +32,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.NetMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
@@ -60,8 +56,7 @@ import org.apache.geode.internal.util.Breadcrumbs;
  * getExecutor().
  * </P>
  */
-public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable,
-    NetMessage {
+public abstract class DistributionMessage implements DataSerializableFixedID, Cloneable {
 
   /**
    * WARNING: setting this to true may break dunit tests.
@@ -266,12 +261,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
   }
 
 
-  @Override
-  public boolean isHighPriority() {
-    return this instanceof HighPriorityDistributionMessage ||
-        getProcessorType() == ClusterDistributionManager.HIGH_PRIORITY_EXECUTOR;
-  }
-
   /**
    * Returns the intended recipient(s) of this message. If the message is intended to delivered to
    * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have
@@ -285,20 +274,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     } else {
       return new InternalDistributedMember[] {ALL_RECIPIENTS};
     }
-  }
-
-  @Override
-  public List<NetMember> getNetRecipients() {
-    if (recipients == null || recipients.length == 1 && recipients[0] == ALL_RECIPIENTS) {
-      return Collections.<NetMember>singletonList(null);
-    }
-    return Arrays.asList(recipients).stream().map(InternalDistributedMember::getNetMember).collect(
-        Collectors.toList());
-  }
-
-  @Override
-  public NetMember getNetSender() {
-    return sender.getNetMember();
   }
 
   /**

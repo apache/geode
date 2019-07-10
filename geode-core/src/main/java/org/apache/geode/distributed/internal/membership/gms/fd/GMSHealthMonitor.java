@@ -55,14 +55,13 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
@@ -304,13 +303,13 @@ public class GMSHealthMonitor implements HealthMonitor {
    */
   private class Response {
 
-    private GMSMessage responseMsg;
+    private AbstractGMSMessage responseMsg;
 
-    public GMSMessage getResponseMsg() {
+    public AbstractGMSMessage getResponseMsg() {
       return responseMsg;
     }
 
-    public void setResponseMsg(GMSMessage responseMsg) {
+    public void setResponseMsg(AbstractGMSMessage responseMsg) {
       this.responseMsg = responseMsg;
     }
 
@@ -862,7 +861,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
     if (allMembers.size() > 1 && suspectedMemberIds.size() >= allMembers.size() - 1) {
       boolean nonSuspectFound = false;
-      for (NetMember member : allMembers) {
+      for (GMSMember member : allMembers) {
         if (member.equals(localAddress)) {
           continue;
         }
