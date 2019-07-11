@@ -15,12 +15,18 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,9 +34,12 @@ import org.junit.Test;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
+import org.mockito.stubbing.Answer;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
@@ -102,6 +111,67 @@ public class PRHARedundancyProviderTest {
     assertThat(internalPRInfo.getLowRedundancyBucketCount()).isEqualTo(3);
     assertThat(internalPRInfo.getConfiguredRedundantCopies()).isEqualTo(12);
     assertThat(internalPRInfo.getActualRedundantCopies()).isEqualTo(33);
+  }
+
+  @Test
+  public void reportsStartupTaskToResourceManager() {
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class), providerStartupTask);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager).addStartupStage(same(providerStartupTask));
+  }
+
+  @Test
+  public void completesStartupTaskWhenRedundancyRecovered() {
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
+    when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+
+    InternalCache cache = mock(InternalCache.class);
+    when(cache.getResourceManager()).thenReturn(resourceManager);
+    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+
+    when(partitionedRegion.getCache()).thenReturn(cache);
+    when(partitionedRegion.getGemFireCache()).thenReturn(cache);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    when(partitionedRegion.getPrStats()).thenReturn(mock(PartitionedRegionStats.class));
+
+    ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+    when(resourceManager.getExecutor()).thenReturn(executorService);
+
+    when(executorService.schedule(any(Runnable.class), anyLong(), any())).thenAnswer(myAnswer());
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class), providerStartupTask);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(providerStartupTask).complete(any());
+  }
+
+  private static Answer<?> myAnswer() {
+    return (Answer<Object>) invocation -> {
+      ((Runnable) invocation.getArgument(0)).run();
+      return null;
+    };
+  }
+
+  @Test
+  public void testPathsWhereWeShouldNotStartTheRecoveryTask() {
+    fail("not yet implemented");
   }
 
   private static class ThreadlessPersistentBucketRecoverer extends PersistentBucketRecoverer {

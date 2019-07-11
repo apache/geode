@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -152,6 +153,8 @@ public class PRHARedundancyProvider {
   private final AtomicBoolean firstInsufficientStoresLogged = new AtomicBoolean(false);
 
   private final PartitionedRegion partitionedRegion;
+  private final InternalResourceManager resourceManager;
+  private final CompletableFuture<Void> providerStartupTask;
 
   /**
    * An executor to submit tasks for redundancy recovery too. It makes sure that there will only be
@@ -172,7 +175,6 @@ public class PRHARedundancyProvider {
 
   private boolean shutdown;
 
-
   /**
    * Constructor for PRHARedundancyProvider.
    *
@@ -181,14 +183,25 @@ public class PRHARedundancyProvider {
    */
   public PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager) {
-    this(partitionedRegion, resourceManager, PersistentBucketRecoverer::new);
+    this(partitionedRegion, resourceManager, PersistentBucketRecoverer::new,
+        new CompletableFuture<>());
   }
 
   @VisibleForTesting
   PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager,
       BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer> persistentBucketRecovererFunction) {
+    this(partitionedRegion, resourceManager, persistentBucketRecovererFunction, new CompletableFuture<>());
+  }
+
+  @VisibleForTesting
+  PRHARedundancyProvider(PartitionedRegion partitionedRegion,
+      InternalResourceManager resourceManager,
+      BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer>
+          persistentBucketRecovererFunction, CompletableFuture<Void> providerStartupTask) {
     this.partitionedRegion = partitionedRegion;
+    this.resourceManager = resourceManager;
+    this.providerStartupTask = providerStartupTask;
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
         () -> InternalResourceManager.getResourceObserver().recoveryConflated(partitionedRegion),
         getThreadMonitorObj());
@@ -1484,6 +1497,7 @@ public class PRHARedundancyProvider {
 
           partitionedRegion.getPrStats().endRecovery(start);
           recoveryFuture = null;
+          providerStartupTask.complete(null);
         } catch (CancelException e) {
           logger.debug("Cache closed while recovery in progress");
         } catch (RegionDestroyedException e) {
@@ -1506,6 +1520,7 @@ public class PRHARedundancyProvider {
                   failedMemberId, delay);
             }
           }
+          resourceManager.addStartupStage(providerStartupTask);
           recoveryFuture = recoveryExecutor.schedule(task, delay, MILLISECONDS);
         } catch (RejectedExecutionException e) {
           // ok, the executor is shutting down.
