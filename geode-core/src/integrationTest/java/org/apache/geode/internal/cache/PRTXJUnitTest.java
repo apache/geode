@@ -88,7 +88,7 @@ public class PRTXJUnitTest extends TXJUnitTest {
 
     PRWithLocalOps(String regionName, RegionAttributes ra, LocalRegion parentRegion,
         GemFireCacheImpl cache, InternalRegionArguments internalRegionArgs) {
-      super(regionName, ra, parentRegion, cache, internalRegionArgs);
+      super(regionName, ra, parentRegion, cache, internalRegionArgs, cache.getStatisticsClock());
     }
 
     @Override

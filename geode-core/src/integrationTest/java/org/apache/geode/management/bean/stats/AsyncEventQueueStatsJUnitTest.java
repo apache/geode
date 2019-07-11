@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class AsyncEventQueueStatsJUnitTest extends MBeanStatsTestCase {
 
   @Override
   public void init() {
-    asyncEventQueueStats = new AsyncEventQueueStats(system, "test");
+    asyncEventQueueStats = new AsyncEventQueueStats(system, "test", enabledClock());
 
     bridge = new AsyncEventQueueMBeanBridge();
     bridge.addAsyncEventQueueStats(asyncEventQueueStats);

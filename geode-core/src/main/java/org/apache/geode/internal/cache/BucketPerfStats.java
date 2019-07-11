@@ -14,28 +14,13 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.logging.log4j.Logger;
-
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
-public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {
+public class BucketPerfStats extends RegionPerfStats {
 
-  protected static final Logger logger = LogService.getLogger();
-
-  public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
-    super(cache, managerImpl, id, clientMember, statisticsClock);
-  }
-
-  public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      boolean isjta, StatisticsClock statisticsClock) {
-    super(cache, managerImpl, id, isjta, statisticsClock);
-  }
-
-  @Override
-  public boolean isDistTx() {
-    return true;
+  BucketPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
+      String regionName, StatisticsClock statisticsClock) {
+    super(statisticsFactory, cachePerfStats, regionName, statisticsClock);
   }
 }

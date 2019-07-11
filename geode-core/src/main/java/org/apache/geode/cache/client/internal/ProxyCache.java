@@ -29,6 +29,7 @@ import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.ProxyQueryService;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.pdx.JSONFormatter;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.pdx.PdxInstanceFactory;
@@ -60,10 +61,13 @@ public class ProxyCache implements RegionService {
   private ProxyQueryService proxyQueryService;
   private boolean isClosed = false;
   private final Stopper stopper = new Stopper();
+  private final StatisticsClock statisticsClock;
 
-  public ProxyCache(Properties properties, InternalCache cache, PoolImpl pool) {
+  public ProxyCache(Properties properties, InternalCache cache, PoolImpl pool,
+      StatisticsClock statisticsClock) {
     this.userAttributes = new UserAttributes(properties, pool);
     this.cache = cache;
+    this.statisticsClock = statisticsClock;
   }
 
   @Override
@@ -127,7 +131,7 @@ public class ProxyCache implements RegionService {
         throw new IllegalStateException(
             "Region's data-policy must be EMPTY when multiuser-authentication is true");
       }
-      return new ProxyRegion(this, this.cache.getRegion(path));
+      return new ProxyRegion(this, this.cache.getRegion(path), statisticsClock);
     }
   }
 
@@ -209,7 +213,7 @@ public class ProxyCache implements RegionService {
     Set<Region<?, ?>> rootRegions = new HashSet<>();
     for (Region<?, ?> region : this.cache.rootRegions()) {
       if (!region.getAttributes().getDataPolicy().withStorage()) {
-        rootRegions.add(new ProxyRegion(this, region));
+        rootRegions.add(new ProxyRegion(this, region, statisticsClock));
       }
     }
     return Collections.unmodifiableSet(rootRegions);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.any;
@@ -35,7 +36,7 @@ public class LocalDataSetTest {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     when(pr.isEmpty()).thenReturn(false);
     when(pr.entryCount(any())).thenReturn(0);
-    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet());
+    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet(), disabledClock());
     assertTrue(lds.isEmpty());
   }
 
@@ -44,7 +45,7 @@ public class LocalDataSetTest {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     when(pr.isEmpty()).thenReturn(true);
     when(pr.entryCount(any())).thenReturn(1);
-    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet());
+    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet(), disabledClock());
     assertFalse(lds.isEmpty());
   }
 
@@ -52,7 +53,7 @@ public class LocalDataSetTest {
   public void verifyThatGetCallbackArgIsCorrectlyPassedToGetHashKey() {
     PartitionedRegion pr = mock(PartitionedRegion.class);
     when(pr.getTotalNumberOfBuckets()).thenReturn(33);
-    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet());
+    LocalDataSet lds = new LocalDataSet(pr, Collections.emptySet(), disabledClock());
     LocalDataSet spy = spy(lds);
     Object key = "key";
     Object callbackArg = "callbackArg";

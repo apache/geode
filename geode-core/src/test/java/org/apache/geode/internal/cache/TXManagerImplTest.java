@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -76,7 +77,7 @@ public class TXManagerImplTest {
   public void setUp() {
     cache = Fakes.cache();
     dm = mock(ClusterDistributionManager.class);
-    txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache);
+    txMgr = new TXManagerImpl(mock(CachePerfStats.class), cache, disabledClock());
     txid = new TXId(null, 0);
     msg = mock(DestroyMessage.class);
     txCommitMsg = mock(TXCommitMessage.class);
@@ -95,7 +96,7 @@ public class TXManagerImplTest {
     doReturn(distributedSystem).when(spyCache).getDistributedSystem();
     when(distributedSystem.getDistributionManager()).thenReturn(dm);
     when(distributedSystem.getDistributedMember()).thenReturn(member);
-    spyTxMgr = spy(new TXManagerImpl(mock(CachePerfStats.class), spyCache));
+    spyTxMgr = spy(new TXManagerImpl(mock(CachePerfStats.class), spyCache, disabledClock()));
     timer = mock(SystemTimer.class);
     doReturn(timer).when(spyCache).getCCPTimer();
   }

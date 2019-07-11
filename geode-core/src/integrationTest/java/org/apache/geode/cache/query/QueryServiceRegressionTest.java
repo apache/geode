@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -434,7 +435,7 @@ public class QueryServiceRegressionTest {
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
     Set<Integer> set = createAndPopulateSet(15);
-    LocalDataSet lds = new LocalDataSet(pr1, set);
+    LocalDataSet lds = new LocalDataSet(pr1, set, disabledClock());
 
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);
@@ -507,7 +508,7 @@ public class QueryServiceRegressionTest {
 
     createAllNumPRAndEvenNumPR(pr1, pr2, 80);
     Set<Integer> set = createAndPopulateSet(15);
-    LocalDataSet lds = new LocalDataSet(pr1, set);
+    LocalDataSet lds = new LocalDataSet(pr1, set, disabledClock());
 
     QueryObserverImpl observer = new QueryObserverImpl();
     QueryObserverHolder.setInstance(observer);

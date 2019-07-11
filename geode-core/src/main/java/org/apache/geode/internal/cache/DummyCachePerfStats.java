@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 
@@ -27,7 +29,9 @@ public class DummyCachePerfStats extends CachePerfStats {
   /**
    * Creates a new <code>DummyCachePerfStats</code>
    */
-  public DummyCachePerfStats() {}
+  public DummyCachePerfStats() {
+    super(null, disabledClock());
+  }
 
   // //////////////////// Accessing Stats //////////////////////
 

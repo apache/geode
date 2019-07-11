@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.bean.stats;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,7 +69,6 @@ public class MemberLevelStatsTest {
   @Before
   public void setUp() throws Exception {
     DistributionStats.enableClockStats = true;
-    CachePerfStats.enableClockStats = true;
 
     StatisticsManager statisticsManager = new StatisticsRegistry("TestStatisticsRegistry", 1);
     InternalDistributedSystem system = mock(InternalDistributedSystem.class);
@@ -115,7 +115,7 @@ public class MemberLevelStatsTest {
     partitionedRegionStatsArray = new PartitionedRegionStats[4];
     for (int i = 0; i < 4; i++) {
       PartitionedRegionStats stats = new PartitionedRegionStats(
-          statisticsManager, name.getMethodName() + i);
+          statisticsManager, name.getMethodName() + i, disabledClock());
       partitionedRegionStatsArray[i] = stats;
       memberMBeanBridge.addPartitionedRegionStats(stats);
     }
@@ -127,7 +127,6 @@ public class MemberLevelStatsTest {
   @After
   public void tearDown() throws Exception {
     DistributionStats.enableClockStats = true;
-    CachePerfStats.enableClockStats = false;
     statSampler.stop();
   }
 

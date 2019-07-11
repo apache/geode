@@ -50,7 +50,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalEntity;
-import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.InternalCache;
@@ -61,6 +60,7 @@ import org.apache.geode.internal.cache.execute.InternalFunction;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.GFSnapshotImporter;
 import org.apache.geode.internal.cache.snapshot.GFSnapshot.SnapshotWriter;
 import org.apache.geode.internal.cache.snapshot.SnapshotPacket.SnapshotRecord;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Provides an implementation for region snapshots.
@@ -133,8 +133,11 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
   /** the region */
   private final Region<K, V> region;
 
-  public RegionSnapshotServiceImpl(Region<K, V> region) {
+  private final StatisticsClock statisticsClock;
+
+  public RegionSnapshotServiceImpl(Region<K, V> region, StatisticsClock statisticsClock) {
     this.region = region;
+    this.statisticsClock = statisticsClock;
   }
 
   @Override
@@ -234,7 +237,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
       throws IOException, ClassNotFoundException {
     long count = 0;
     long bytes = 0;
-    long start = CachePerfStats.getStatTime();
+    long start = statisticsClock.getTime();
 
     // Would be interesting to use a PriorityQueue ordered on isDone()
     // but this is probably close enough in practice.
@@ -349,7 +352,7 @@ public class RegionSnapshotServiceImpl<K, V> implements RegionSnapshotService<K,
     }
 
     long count = 0;
-    long start = CachePerfStats.getStatTime();
+    long start = statisticsClock.getTime();
     SnapshotWriter writer =
         GFSnapshot.create(snapshot, region.getFullPath(), (InternalCache) region.getCache());
     try {

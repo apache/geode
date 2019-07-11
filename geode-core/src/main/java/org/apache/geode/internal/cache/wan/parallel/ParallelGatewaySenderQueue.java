@@ -1794,7 +1794,8 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
               .setIsUsedForParallelGatewaySenderQueue(true)
-              .setParallelGatewaySender((AbstractGatewaySender) pgSender));
+              .setParallelGatewaySender((AbstractGatewaySender) pgSender),
+          cache.getStatisticsClock());
       this.sender = (AbstractGatewaySender) pgSender;
 
     }

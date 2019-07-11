@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -114,7 +115,8 @@ public class AbstractRegionJUnitTest {
     when(regionAttributes.getDiskWriteAttributes()).thenReturn(diskWriteAttributes);
     RegionMapConstructor regionMapConstructor = mock(RegionMapConstructor.class);
     AbstractRegion region = new LocalRegion("regionName", regionAttributes, null, Fakes.cache(),
-        new InternalRegionArguments(), null, regionMapConstructor, null, null, null);
+        new InternalRegionArguments(), null, regionMapConstructor, null, null, null,
+        enabledClock());
     return region;
   }
 }

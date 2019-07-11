@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.cache.Region.SEPARATOR;
 import static org.apache.geode.internal.cache.ha.HARegionQueue.createRegionName;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Properties;
@@ -245,7 +246,7 @@ public class HAExpiryDUnitTest extends JUnit4DistributedTestCase {
     // setting expiry time for the regionqueue.
     hattr.setExpiryTime(4);
     RegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(regionQueueName, cache, hattr,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, isDurable.booleanValue());
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, isDurable.booleanValue(), enabledClock());
     assertNotNull(regionqueue);
     AttributesFactory factory = new AttributesFactory();
     factory.setScope(Scope.DISTRIBUTED_ACK);

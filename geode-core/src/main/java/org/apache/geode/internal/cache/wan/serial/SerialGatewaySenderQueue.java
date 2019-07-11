@@ -1120,7 +1120,8 @@ public class SerialGatewaySenderQueue implements RegionQueue {
       super(regionName, attrs, parentRegion, cache,
           new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
               .setSnapshotInputStream(null).setImageTarget(null)
-              .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender));
+              .setIsUsedForSerialGatewaySenderQueue(true).setSerialGatewaySender(sender),
+          cache.getStatisticsClock());
       this.sender = sender;
     }
 
