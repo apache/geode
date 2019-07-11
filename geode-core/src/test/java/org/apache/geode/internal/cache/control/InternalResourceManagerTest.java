@@ -17,12 +17,14 @@ package org.apache.geode.internal.cache.control;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -44,17 +46,19 @@ public class InternalResourceManagerTest {
   private InternalResourceManager resourceManager;
 
   private final CountDownLatch hangLatch = new CountDownLatch(1);
+  private InternalCache cache;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Before
-  public void setUp() {
-    InternalCache cache = mock(InternalCache.class);
-    DistributedSystem system = mock(DistributedSystem.class);
+  public void setup() {
+    cache = mock(InternalCache.class);
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
 
-    when(cache.getDistributedSystem()).thenReturn(system);
-    when(system.createAtomicStatistics(any(), anyString())).thenReturn(mock(Statistics.class));
+    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+    when(distributedSystem.createAtomicStatistics(any(), anyString()))
+        .thenReturn(mock(Statistics.class));
 
     resourceManager = InternalResourceManager.createResourceManager(cache);
   }
@@ -78,19 +82,44 @@ public class InternalResourceManagerTest {
         .until(() -> submittedTask.isDone());
   }
 
-  @Test
-  public void nonExecutedRunnablesShouldBeInterruptedSoFutureGetDoesNotHang()
-      throws InterruptedException, ExecutionException {
-    ScheduledExecutorService executor = resourceManager.getExecutor();
-
-    Future<Boolean> submittedTask =
+    @Test
+    public void nonExecutedRunnablesShouldBeInterruptedSoFutureGetDoesNotHang()
+    throws InterruptedException, ExecutionException {
+        ScheduledExecutorService executor = resourceManager.getExecutor();
+        
+        Future<Boolean> submittedTask =
         executor.schedule(() -> {
-          return true;
+            return true;
         }, 1, TimeUnit.DAYS);
+        
+        resourceManager.close();
+        
+        thrown.expect(CancellationException.class);
+        submittedTask.get();
+    }
+    
+  @Test
+  public void startsWithAnSuccessfullyCompletedAsyncStartupStage() {
+    InternalResourceManager resourceManager = InternalResourceManager.createResourceManager(cache);
 
-    resourceManager.close();
+    CompletionStage<Void> startupStage = resourceManager.getStartupStage();
 
-    thrown.expect(CancellationException.class);
-    submittedTask.get();
+    assertThat(startupStage).isCompleted();
+  }
+
+  @Test
+  public void remembersTheAddedStartupStage() {
+    InternalResourceManager resourceManager = InternalResourceManager.createResourceManager(cache);
+    @SuppressWarnings("unchecked")
+    CompletionStage<Void> expectedStartupStage =
+        (CompletionStage<Void>) mock(CompletionStage.class);
+
+    resourceManager.addStartupStage(expectedStartupStage);
+    CompletionStage<Void> actualStartupStage = resourceManager.getStartupStage();
+
+    // Cast to Object so that AssertJ won't convert our mock CompletionStage to a bogus
+    // CompletableFuture before comparing.
+    assertThat((Object) actualStartupStage)
+        .isSameAs(expectedStartupStage);
   }
 }

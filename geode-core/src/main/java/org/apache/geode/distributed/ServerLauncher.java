@@ -236,6 +236,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private volatile ControllableProcess process;
 
   private final ServerControllerParameters controllerParameters;
+  private final Runnable startupCompletionAction;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -316,6 +317,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     messageTimeToLive = builder.getMessageTimeToLive();
     socketBufferSize = builder.getSocketBufferSize();
     controllerParameters = new ServerControllerParameters();
+    startupCompletionAction = builder.getStartupCompletionAction() == null
+        ? () -> logStartCompleted() : builder.getStartupCompletionAction();
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
@@ -346,6 +349,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
         .withMessageTimeToLive(messageTimeToLive)
         .withHostnameForClients(hostNameForClients)
         .withDisableDefaultServer(disableDefaultServer);
+  }
+
+  private void logStartCompleted() {
+    log.info("Server is online");
   }
 
   /**
@@ -813,7 +820,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           cache.setIsServer(true);
           startCacheServer(cache);
-          log.info("Server is online");
+          startupCompletionAction.run();
           assignBuckets(cache);
           rebalance(cache);
         } finally {
@@ -1420,6 +1427,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer messageTimeToLive;
     private Integer socketBufferSize;
     private Integer maxThreads;
+    private Runnable startupCompletionAction;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2241,7 +2249,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setHostNameForClients(String hostNameForClients) {
       if (isBlank(hostNameForClients)) {
         throw new IllegalArgumentException(
-            "The hostname used by clients to connect to the Server must have an argument if the --hostname-for-clients command-line option is specified!");
+            "The hostname used by clients to connect to the Server must have an argument if the "
+                + "--hostname-for-clients command-line option is specified!");
       }
       this.hostNameForClients = hostNameForClients;
       return this;
@@ -2464,6 +2473,26 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public ServerLauncher build() {
       validate();
       return new ServerLauncher(this);
+    }
+
+    /**
+     * Sets the action to run when the server is online.
+     *
+     * @param startupCompletionAction the action to run
+     * @return this builder
+     */
+    Builder setStartupCompletedAction(Runnable startupCompletionAction) {
+      this.startupCompletionAction = startupCompletionAction;
+      return this;
+    }
+
+    /**
+     * Gets the action to run when the server is online.
+     *
+     * @return the action to run
+     */
+    Runnable getStartupCompletionAction() {
+      return startupCompletionAction;
     }
   }
 

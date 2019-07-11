@@ -27,6 +27,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -341,5 +342,18 @@ public class ServerLauncherTest {
     verify(cacheServer2, times(0)).setSocketBufferSize(anyInt());
     verify(cacheServer2, times(0)).setHostnameForClients(anyString());
     verify(cacheServer2, times(0)).start();
+  }
+
+  @Test
+  public void startCallsStartupCompletionActionWhenCompleted() {
+    AtomicBoolean myActionWasRun = new AtomicBoolean();
+    Runnable startupCompletionAction = () -> myActionWasRun.set(true);
+    ServerLauncher serverLauncher = new Builder()
+        .setStartupCompletedAction(startupCompletionAction)
+        .build();
+
+    serverLauncher.start();
+
+    assertThat(myActionWasRun).isTrue();
   }
 }
