@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,6 +76,7 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -820,7 +822,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
           cache.setIsServer(true);
           startCacheServer(cache);
-          startupCompletionAction.run();
+
           assignBuckets(cache);
           rebalance(cache);
         } finally {
@@ -1016,6 +1018,10 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       cacheServer.start();
     }
+
+    CompletionStage<Void> startupStage =
+        ((InternalResourceManager) cache.getResourceManager()).getStartupStage();
+    startupStage.thenRun(startupCompletionAction);
   }
 
   /**

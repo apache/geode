@@ -14,6 +14,7 @@
  */
 package org.apache.geode.distributed;
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -27,8 +28,12 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,6 +42,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 
 /**
  * Unit tests for {@link ServerLauncher}.
@@ -288,6 +294,13 @@ public class ServerLauncherTest {
         .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
         .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients").build();
 
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    @SuppressWarnings("unchecked")
+    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
+    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
+
     launcher.startCacheServer(cache);
 
     verify(cacheServer, times(1)).setBindAddress(null);
@@ -308,6 +321,13 @@ public class ServerLauncherTest {
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
     when(cache.addCacheServer()).thenReturn(cacheServer);
     ServerLauncher launcher = new Builder().setDisableDefaultServer(true).build();
+
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    @SuppressWarnings("unchecked")
+    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
+    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
 
     launcher.startCacheServer(cache);
 
@@ -331,6 +351,13 @@ public class ServerLauncherTest {
     when(cache.addCacheServer()).thenReturn(cacheServer1);
     ServerLauncher launcher = new Builder().build();
 
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    @SuppressWarnings("unchecked")
+    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
+    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
+
     launcher.startCacheServer(cache);
 
     verify(cacheServer2, times(0)).setBindAddress(anyString());
@@ -345,15 +372,42 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void startCallsStartupCompletionActionWhenCompleted() {
-    AtomicBoolean myActionWasRun = new AtomicBoolean();
-    Runnable startupCompletionAction = () -> myActionWasRun.set(true);
+  public void startCacheServerCallsStartupCompletionActionWhenCompleted() throws IOException {
+    final CountDownLatch numberOfStartupTasksRemaining = new CountDownLatch(1);
+    AtomicBoolean startupCompletionActionHasRun = new AtomicBoolean(false);
+    Runnable startupCompletionAction = () -> startupCompletionActionHasRun.set(true);
     ServerLauncher serverLauncher = new Builder()
         .setStartupCompletedAction(startupCompletionAction)
         .build();
 
-    serverLauncher.start();
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+    when(cache.addCacheServer()).thenReturn(cacheServer);
 
-    assertThat(myActionWasRun).isTrue();
+    Runnable startupTask = () -> {
+      try {
+        numberOfStartupTasksRemaining.await();
+      } catch (InterruptedException e) {
+        // ignore
+      }
+    };
+
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    final CompletableFuture<Void> startupTaskCompletableFuture =
+        CompletableFuture.runAsync(startupTask);
+
+    when(internalResourceManager.getStartupStage()).thenReturn(startupTaskCompletableFuture);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    serverLauncher.startCacheServer(cache);
+    assertThat(startupCompletionActionHasRun)
+        .withFailMessage("Startup complete action ran before startup tasks finished")
+        .isFalse();
+
+    numberOfStartupTasksRemaining.countDown();
+    await().atMost(Duration.FIVE_SECONDS)
+        .untilAsserted(() -> assertThat(startupCompletionActionHasRun)
+            .withFailMessage("Startup complete action did not run after startup tasks finished")
+            .isTrue());
   }
 }
