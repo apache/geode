@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,7 +35,7 @@ import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
-import org.apache.geode.test.junit.assertions.ClusterManagementResultAssert;
+import org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
 public class GatewayReceiverManagementDUnitTest {
@@ -94,8 +95,8 @@ public class GatewayReceiverManagementDUnitTest {
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
         .containsStatusMessage("Member(s) server-1 already has this element created");
 
-    ClusterManagementResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
-        assertManagementResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
+    ClusterManagementListResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
+        assertManagementListResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
     List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> listResult =
         listAssert.getResult();
 

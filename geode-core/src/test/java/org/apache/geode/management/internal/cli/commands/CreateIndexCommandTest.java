@@ -37,7 +37,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
@@ -150,7 +150,7 @@ public class CreateIndexCommandTest {
     // the existing configuration has a region named /regionA.B
     doReturn(mock(RegionConfig.class)).when(command).getRegionConfig(cms,
         "/regionA.B");
-    when(cms.list(any())).thenReturn(new ClusterManagementResult<>());
+    when(cms.list(any())).thenReturn(new ClusterManagementListResult<>());
 
     assertThat(command.getValidRegionName("regionB", cms)).isEqualTo("regionB");
     assertThat(command.getValidRegionName("/regionB", cms)).isEqualTo("/regionB");

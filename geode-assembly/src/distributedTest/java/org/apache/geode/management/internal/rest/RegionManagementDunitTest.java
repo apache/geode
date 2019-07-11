@@ -72,7 +72,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<?, ?> result = cms.create(regionConfig);
+    ClusterManagementResult result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -120,7 +120,7 @@ public class RegionManagementDunitTest {
   public void createsAPartitionedRegion() throws Exception {
     String json = "{\"name\": \"orders\", \"type\": \"PARTITION\", \"group\": \"group1\"}";
 
-    ClusterManagementResult<?, ?> result =
+    ClusterManagementResult result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(201)
             .getClusterManagementResult();
@@ -147,7 +147,7 @@ public class RegionManagementDunitTest {
     IgnoredException.addIgnoredException("Name of the region has to be specified");
     String json = "{\"type\": \"REPLICATE\"}";
 
-    ClusterManagementResult<?, ?> result =
+    ClusterManagementResult result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(400)
             .getClusterManagementResult();

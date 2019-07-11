@@ -125,7 +125,7 @@ public class ClusterManagementServiceOnServerTest implements Serializable {
           buildWithCache().setCache(ClusterStartupRule.getCache())
               .build();
       assertThat(service).isNotNull();
-      ClusterManagementResult<?, ?> clusterManagementResult =
+      ClusterManagementResult clusterManagementResult =
           service.create(regionConfig);
       assertThat(clusterManagementResult.isSuccessful()).isTrue();
     });

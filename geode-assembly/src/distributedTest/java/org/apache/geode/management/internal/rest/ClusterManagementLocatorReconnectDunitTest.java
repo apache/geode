@@ -74,7 +74,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
     ObjectMapper mapper = new ObjectMapper();
     String json = mapper.writeValueAsString(regionConfig);
 
-    ClusterManagementResult<?, ?> result =
+    ClusterManagementResult result =
         restClient.doPostAndAssert("/regions", json, "test", "test")
             .hasStatusCode(201)
             .getClusterManagementResult();

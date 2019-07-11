@@ -30,7 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -104,12 +104,12 @@ public class ListRegionManagementDunitTest {
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     filter = new RegionConfig();
   }
 
   @Test
-  public void listAll() throws Exception {
+  public void listAll() {
     // list all
     List<RegionConfig> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(5);
@@ -128,7 +128,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listClusterLevel() throws Exception {
+  public void listClusterLevel() {
     // list cluster level only
     filter.setGroup("cluster");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
@@ -138,7 +138,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void testEntryCount() throws Exception {
+  public void testEntryCount() {
     server1.invoke(() -> {
       Region<String, String> region = ClusterStartupRule.getCache().getRegion("/customers");
       region.put("k1", "v1");
@@ -153,7 +153,7 @@ public class ListRegionManagementDunitTest {
     });
 
     filter.setName("customers");
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result = client.list(filter);
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result = client.list(filter);
     List<RegionConfig> regions = result.getConfigResult();
     assertThat(regions).hasSize(1);
     RegionConfig regionConfig = regions.get(0);
@@ -165,7 +165,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listGroup1() throws Exception {
+  public void listGroup1() {
     // list group1
     filter.setGroup("group1");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
@@ -182,7 +182,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listGroup2() throws Exception {
+  public void listGroup2() {
     // list group1
     filter.setGroup("group2");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
@@ -196,7 +196,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listNonExistentGroup() throws Exception {
+  public void listNonExistentGroup() {
     // list non-existent group
     filter.setGroup("group3");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
@@ -204,7 +204,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listRegionByName() throws Exception {
+  public void listRegionByName() {
     filter.setName("customers");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
@@ -213,7 +213,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listRegionByName1() throws Exception {
+  public void listRegionByName1() {
     filter.setName("customers1");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
@@ -222,7 +222,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listRegionByName2() throws Exception {
+  public void listRegionByName2() {
     filter.setName("customers2");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(2);
@@ -236,7 +236,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listRegionByName3() throws Exception {
+  public void listRegionByName3() {
     filter.setName("customers3");
     List<RegionConfig> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
@@ -245,7 +245,7 @@ public class ListRegionManagementDunitTest {
   }
 
   @Test
-  public void listNonExistentRegion() throws Exception {
+  public void listNonExistentRegion() {
     // list non-existent region
     filter.setName("customer4");
     List<RegionConfig> regions = client.list(filter).getConfigResult();

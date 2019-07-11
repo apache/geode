@@ -77,7 +77,7 @@ public class ConfigurePDXDUnitTest {
   @Test
   public void configurePdx() {
     PdxType pdxType = new PdxType();
-    ClusterManagementResult<?, ?> result = client.create(pdxType);
+    ClusterManagementResult result = client.create(pdxType);
 
     // needed to pass StressNewTest since we haven't yet implemented delete(PdxType)
     if (result.getStatusCode() == ClusterManagementResult.StatusCode.ENTITY_EXISTS)

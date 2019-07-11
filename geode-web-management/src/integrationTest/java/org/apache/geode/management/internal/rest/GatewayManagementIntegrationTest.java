@@ -32,6 +32,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
@@ -65,7 +66,7 @@ public class GatewayManagementIntegrationTest {
 
   @Test
   public void listEmptyGatewayReceivers() {
-    ClusterManagementResult<GatewayReceiverConfig, GatewayReceiverInfo> result =
+    ClusterManagementListResult<GatewayReceiverConfig, GatewayReceiverInfo> result =
         client.list(receiver);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getResult().size()).isEqualTo(0);
@@ -88,7 +89,7 @@ public class GatewayManagementIntegrationTest {
       return cacheConfig;
     });
 
-    ClusterManagementResult<GatewayReceiverConfig, GatewayReceiverInfo> results =
+    ClusterManagementListResult<GatewayReceiverConfig, GatewayReceiverInfo> results =
         client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
     List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> receivers =

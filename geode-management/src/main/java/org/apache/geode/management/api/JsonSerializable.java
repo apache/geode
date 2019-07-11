@@ -13,20 +13,10 @@
  * the License.
  */
 
-package org.apache.geode.management.runtime;
+package org.apache.geode.management.api;
 
-import java.io.Serializable;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-import org.apache.geode.management.api.JsonSerializable;
-
-public abstract class RuntimeInfo implements Serializable, JsonSerializable {
-  private String memberName;
-
-  public void setMemberName(String memberName) {
-    this.memberName = memberName;
-  }
-
-  public String getMemberName() {
-    return memberName;
-  }
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
+public interface JsonSerializable {
 }

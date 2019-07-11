@@ -677,11 +677,13 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/CorrespondWith.html
+javadoc/org/apache/geode/management/api/JsonSerializable.html
 javadoc/org/apache/geode/management/api/RealizationResult.html
 javadoc/org/apache/geode/management/api/RestfulEndpoint.html
 javadoc/org/apache/geode/management/api/package-frame.html

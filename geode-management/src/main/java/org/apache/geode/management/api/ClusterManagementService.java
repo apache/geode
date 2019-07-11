@@ -36,7 +36,7 @@ public interface ClusterManagementService {
    *        cluster, as well as the group this config belongs to
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult<?, ?> create(T config);
+  <T extends CacheElement> ClusterManagementResult create(T config);
 
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
@@ -47,7 +47,7 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult<?, ?> delete(T config);
+  <T extends CacheElement> ClusterManagementResult delete(T config);
 
   /**
    * This method will update the element on all the applicable members in the cluster and persist
@@ -58,12 +58,12 @@ public interface ClusterManagementService {
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult<?, ?> update(T config);
+  <T extends CacheElement> ClusterManagementResult update(T config);
 
-  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
+  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config);
 
-  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
+  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
   /**

@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.runtime.MemberInformation;
@@ -38,11 +38,11 @@ import org.apache.geode.management.runtime.MemberInformation;
 public class MemberManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT + "/{id}")
-  public ResponseEntity<ClusterManagementResult<MemberConfig, MemberInformation>> getMember(
+  public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> getMember(
       @PathVariable(name = "id") String id) {
     MemberConfig config = new MemberConfig();
     config.setId(id);
-    ClusterManagementResult<MemberConfig, MemberInformation> result =
+    ClusterManagementListResult<MemberConfig, MemberInformation> result =
         clusterManagementService.list(config);
     if (result.getRuntimeResult().size() == 0) {
       throw new EntityNotFoundException(
@@ -55,13 +55,13 @@ public class MemberManagementController extends AbstractManagementController {
 
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = MEMBER_CONFIG_ENDPOINT)
-  public ResponseEntity<ClusterManagementResult<MemberConfig, MemberInformation>> listMembers(
+  public ResponseEntity<ClusterManagementListResult<MemberConfig, MemberInformation>> listMembers(
       @RequestParam(required = false) String id, @RequestParam(required = false) String group) {
     MemberConfig filter = new MemberConfig();
     if (StringUtils.isNotBlank(id)) {
       filter.setId(id);
     }
-    ClusterManagementResult<MemberConfig, MemberInformation> result =
+    ClusterManagementListResult<MemberConfig, MemberInformation> result =
         clusterManagementService.list(filter);
 
     return new ResponseEntity<>(result,

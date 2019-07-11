@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -74,7 +75,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     regionConfig = new RegionConfig();
   }
 
@@ -86,7 +87,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void getRegion() throws Exception {
+  public void getRegion() {
     regionConfig.setName("region1");
     List<RegionConfig> regions = cms.get(regionConfig).getConfigResult();
     assertThat(regions).hasSize(1);
@@ -96,27 +97,27 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void getNonExistRegion() throws Exception {
+  public void getNonExistRegion() {
     regionConfig.setName("notExist");
     assertManagementResult(cms.get(regionConfig)).failed().hasStatusCode(
         ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
   }
 
   @Test
-  public void listIndexForOneRegion() throws Exception {
+  public void listIndexForOneRegion() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(2);
   }
 
   @Test
-  public void getIndex() throws Exception {
+  public void getIndex() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.get(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.get(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
@@ -127,7 +128,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void getIndexWithoutIndexId() throws Exception {
+  public void getIndexWithoutIndexId() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
@@ -135,7 +136,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void getIndexWithoutRegionName() throws Exception {
+  public void getIndexWithoutRegionName() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName("index1");
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
@@ -143,11 +144,11 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void listIndexesWithIdFilter() throws Exception {
+  public void listIndexesWithIdFilter() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
@@ -158,7 +159,7 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void getNonExistingIndex() throws Exception {
+  public void getNonExistingIndex() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
@@ -167,11 +168,11 @@ public class ListIndexManagementDUnitTest {
   }
 
   @Test
-  public void listNonExistingIndexesWithIdFilter() throws Exception {
+  public void listNonExistingIndexesWithIdFilter() {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(0);
     assertThat(list.isSuccessful()).isTrue();

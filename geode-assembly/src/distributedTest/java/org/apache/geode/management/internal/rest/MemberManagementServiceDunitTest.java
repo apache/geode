@@ -21,6 +21,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -50,7 +51,7 @@ public class MemberManagementServiceDunitTest {
   @Test
   public void listAllMembers() {
     MemberConfig config = new MemberConfig();
-    ClusterManagementResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -68,7 +69,7 @@ public class MemberManagementServiceDunitTest {
     MemberConfig config = new MemberConfig();
     config.setId("locator-0");
 
-    ClusterManagementResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     assertThat(result.getRuntimeResult().size()).isEqualTo(1);
@@ -83,7 +84,7 @@ public class MemberManagementServiceDunitTest {
   public void listNonExistentMember() {
     MemberConfig config = new MemberConfig();
     config.setId("locator");
-    ClusterManagementResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
+    ClusterManagementListResult<MemberConfig, MemberInformation> result = cmsClient.list(config);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode())
         .isEqualTo(ClusterManagementResult.StatusCode.OK);

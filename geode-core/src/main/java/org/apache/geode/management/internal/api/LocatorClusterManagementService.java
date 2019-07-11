@@ -45,6 +45,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
@@ -101,7 +102,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult<?, ?> create(T config) {
+  public <T extends CacheElement> ClusterManagementResult create(T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
@@ -164,7 +165,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult<?, ?> delete(
+  public <T extends CacheElement> ClusterManagementResult delete(
       T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
@@ -231,18 +232,18 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult<?, ?> update(
+  public <T extends CacheElement> ClusterManagementResult update(
       T config) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> list(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T filter) {
-    ClusterManagementResult<T, R> result = new ClusterManagementResult<>();
+    ClusterManagementListResult<T, R> result = new ClusterManagementListResult<>();
 
     if (persistenceService == null) {
-      return new ClusterManagementResult<>(false,
+      return new ClusterManagementListResult<>(false,
           "Cluster configuration service needs to be enabled");
     }
 
@@ -340,9 +341,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementResult<T, R> get(
+  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
-    ClusterManagementResult<T, R> list = list(config);
+    ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
 
     if (result.size() == 0) {

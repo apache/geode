@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -38,7 +39,7 @@ public class ClusterManagementResultTest {
 
   @Before
   public void setup() {
-    result = new ClusterManagementResult<>();
+    result = new ClusterManagementResult();
   }
 
   @Test
@@ -99,11 +100,11 @@ public class ClusterManagementResultTest {
     result = new ClusterManagementResult(false, "message");
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
-    result = new ClusterManagementResult<>();
+    result = new ClusterManagementResult();
     result.setStatus(false, "message");
     assertThat(result.getStatusCode()).isEqualTo(ERROR);
 
-    result = new ClusterManagementResult<>();
+    result = new ClusterManagementResult();
     result.setStatus(true, "message");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
     result.addMemberStatus("member-1", true, "message-1");
@@ -115,16 +116,16 @@ public class ClusterManagementResultTest {
   @Test
   public void deserialize() throws Exception {
     String json = "{\"statusCode\":\"OK\"}";
-    ClusterManagementResult result =
-        GeodeJsonMapper.getMapper().readValue(json, ClusterManagementResult.class);
+    ClusterManagementListResult result =
+        GeodeJsonMapper.getMapper().readValue(json, ClusterManagementListResult.class);
     assertThat(result.getResult()).isNotNull().isEmpty();
   }
 
   @Test
   public void serializeResult() throws Exception {
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result =
-        new ClusterManagementResult<>();
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result =
+        new ClusterManagementListResult<>();
     ConfigurationResult<RegionConfig, RuntimeRegionInfo> response = new ConfigurationResult<>();
     RegionConfig region = new RegionConfig();
     region.setName("region");
@@ -139,8 +140,8 @@ public class ClusterManagementResultTest {
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result1 =
-        mapper.readValue(json, ClusterManagementResult.class);
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result1 =
+        mapper.readValue(json, ClusterManagementListResult.class);
     assertThat(result1.getConfigResult()).hasSize(1)
         .extracting(RegionConfig::getName).containsExactly("region");
     assertThat(result1.getRuntimeResult()).hasSize(1)
