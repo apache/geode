@@ -16,18 +16,14 @@ package org.apache.geode.management.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.runtime.RuntimeInfo;
+
 
 @Experimental
-public class ClusterManagementResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
+public class ClusterManagementResult {
   // this error code should include a one-to-one mapping to the http status code returned
   // by the controller
   public enum StatusCode {
@@ -122,28 +118,4 @@ public class ClusterManagementResult<T extends CacheElement & CorrespondWith<R>,
   public StatusCode getStatusCode() {
     return statusCode;
   }
-
-  // Override the mapper setting so that we always show result
-  @JsonInclude
-  @JsonProperty
-  private List<ConfigurationResult<T, R>> result = new ArrayList<>();
-
-  public List<ConfigurationResult<T, R>> getResult() {
-    return result;
-  }
-
-  @JsonIgnore
-  public List<T> getConfigResult() {
-    return result.stream().map(ConfigurationResult::getConfig).collect(Collectors.toList());
-  }
-
-  @JsonIgnore
-  public List<R> getRuntimeResult() {
-    return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
-  }
-
-  public void setResult(List<ConfigurationResult<T, R>> result) {
-    this.result = result;
-  }
-
 }

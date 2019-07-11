@@ -30,7 +30,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -153,7 +153,7 @@ public class ListRegionManagementDunitTest {
     });
 
     filter.setName("customers");
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result = client.list(filter);
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result = client.list(filter);
     List<RegionConfig> regions = result.getConfigResult();
     assertThat(regions).hasSize(1);
     RegionConfig regionConfig = regions.get(0);

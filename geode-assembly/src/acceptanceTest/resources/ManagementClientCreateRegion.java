@@ -47,14 +47,14 @@ public class ManagementClientCreateRegion {
     config.setName(regionName);
     config.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult<?, ?> result = cms.create(config);
+    ClusterManagementResult result = cms.create(config);
 
     if (!result.isSuccessful()) {
       throw new RuntimeException(
           "Failure creating region: " + result.getStatusMessage());
     }
 
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listResult =
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listResult =
         cms.list(new RegionConfig());
     if (!listResult.isSuccessful()) {
       throw new RuntimeException("failed " + listResult.getStatusMessage());

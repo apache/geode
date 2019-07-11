@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
@@ -70,7 +71,7 @@ public class RegionManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
-  public ClusterManagementResult<RegionConfig, RuntimeRegionInfo> listRegion(
+  public ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listRegion(
       @RequestParam(required = false) String id,
       @RequestParam(required = false) String group) {
     RegionConfig filter = new RegionConfig();
@@ -85,7 +86,7 @@ public class RegionManagementController extends AbstractManagementController {
 
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementResult<RegionConfig, RuntimeRegionInfo> getRegion(
+  public ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> getRegion(
       @PathVariable(name = "id") String id) {
     securityService.authorize(Resource.CLUSTER, Operation.READ, id);
     RegionConfig config = new RegionConfig();
@@ -111,11 +112,11 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementResult<RegionConfig.Index, RuntimeInfo> listIndex(
+  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> listIndex(
       @PathVariable String regionName,
       @RequestParam(required = false) String id) {
 
-    ClusterManagementResult<RegionConfig, RuntimeRegionInfo> result0 = getRegion(regionName);
+    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result0 = getRegion(regionName);
     RegionConfig regionConfig = result0.getResult().get(0).getConfig();
 
     // only send the index information back
@@ -132,8 +133,8 @@ public class RegionManagementController extends AbstractManagementController {
       responses.add(new ConfigurationResult<>(index));
     }
 
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result =
-        new ClusterManagementResult<>();
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result =
+        new ClusterManagementListResult<>();
     result.setResult(responses);
     return result;
   }
@@ -142,10 +143,10 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementResult<RegionConfig.Index, RuntimeInfo> getIndex(
+  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
     List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {

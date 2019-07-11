@@ -70,7 +70,7 @@ public class LocatorClusterManagementServiceTest {
   private InternalCache cache;
   private InternalConfigurationPersistenceService persistenceService;
   private RegionConfig regionConfig;
-  private ClusterManagementResult<?, ?> result;
+  private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
@@ -310,7 +310,7 @@ public class LocatorClusterManagementServiceTest {
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    ClusterManagementResult<?, ?> result = service.delete(regionConfig);
+    ClusterManagementResult result = service.delete(regionConfig);
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);

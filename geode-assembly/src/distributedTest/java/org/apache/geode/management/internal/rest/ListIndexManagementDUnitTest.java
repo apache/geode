@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -106,7 +107,7 @@ public class ListIndexManagementDUnitTest {
   public void listIndexForOneRegion() throws Exception {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(2);
   }
@@ -116,7 +117,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.get(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.get(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
@@ -147,7 +148,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index1");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(1);
     RegionConfig.Index runtimeIndex = result.get(0);
@@ -171,7 +172,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
-    ClusterManagementResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
+    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> list = cms.list(index);
     List<RegionConfig.Index> result = list.getConfigResult();
     assertThat(result).hasSize(0);
     assertThat(list.isSuccessful()).isTrue();
