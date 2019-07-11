@@ -876,4 +876,27 @@ public class ServerLauncherBuilderTest {
 
     assertThat(launcher.getMemberName()).isNull();
   }
+
+  @Test
+  public void getStartupCompletionActionReturnsNullByDefault() {
+    assertThat(new Builder().getStartupCompletionAction()).isNull();
+  }
+
+  @Test
+  public void setStartupCompletionActionReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setStartupCompletedAction(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setStartupCompletionActionUsesValue() {
+    Runnable myRunnable = () -> {
+    };
+    Builder builder = new Builder();
+    builder.setStartupCompletedAction(myRunnable);
+    assertThat(builder.getStartupCompletionAction())
+        .isSameAs(myRunnable);
+
+  }
 }
