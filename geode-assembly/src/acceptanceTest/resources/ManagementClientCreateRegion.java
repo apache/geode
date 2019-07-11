@@ -20,7 +20,6 @@ import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
-import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 public class ManagementClientCreateRegion {
   public static void main(String[] args) throws Exception {
@@ -54,8 +53,7 @@ public class ManagementClientCreateRegion {
           "Failure creating region: " + result.getStatusMessage());
     }
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> listResult =
-        cms.list(new RegionConfig());
+    ClusterManagementResult listResult = cms.list(new RegionConfig());
     if (!listResult.isSuccessful()) {
       throw new RuntimeException("failed " + listResult.getStatusMessage());
     }
