@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.apache.geode.cache.DiskDirSizesUnit;
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
@@ -51,6 +51,12 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   private volatile float diskUsageWarningPct;
   private volatile float diskUsageCriticalPct;
 
+  /**
+   * The default disk directory size unit. Only change it for testing purposes.
+   */
+  @MakeImmutable
+  static DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
+
   public DiskStoreAttributes() {
     // set all to defaults
     this.autoCompact = DiskStoreFactory.DEFAULT_AUTO_COMPACT;
@@ -62,7 +68,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     this.queueSize = DiskStoreFactory.DEFAULT_QUEUE_SIZE;
     this.diskDirs = DefaultDiskDirs.getDefaultDiskDirs();
     this.diskDirSizes = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES;
-    this.diskDirSizesUnit = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES_UNIT;
+    this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
     this.diskUsageWarningPct = DiskStoreFactory.DEFAULT_DISK_USAGE_WARNING_PERCENTAGE;
     this.diskUsageCriticalPct = DiskStoreFactory.DEFAULT_DISK_USAGE_CRITICAL_PERCENTAGE;
   }
@@ -114,7 +120,6 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     return result;
   }
 
-  @Override
   public DiskDirSizesUnit getDiskDirSizesUnit() {
     return this.diskDirSizesUnit;
   }
@@ -230,7 +235,6 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
     diskUsageCriticalPct = criticalPercent;
   }
 
-  @Override
   public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
     this.diskDirSizesUnit = unit;
   }

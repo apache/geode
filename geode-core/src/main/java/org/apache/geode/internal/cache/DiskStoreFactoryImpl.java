@@ -18,7 +18,6 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.apache.geode.GemFireIOException;
-import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.distributed.internal.ResourceEvent;

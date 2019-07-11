@@ -178,7 +178,6 @@ javadoc/org/apache/geode/cache/CustomExpiry.html
 javadoc/org/apache/geode/cache/DataPolicy.html
 javadoc/org/apache/geode/cache/Declarable.html
 javadoc/org/apache/geode/cache/DiskAccessException.html
-javadoc/org/apache/geode/cache/DiskDirSizesUnit.html
 javadoc/org/apache/geode/cache/DiskStore.html
 javadoc/org/apache/geode/cache/DiskStoreFactory.html
 javadoc/org/apache/geode/cache/DiskWriteAttributes.html

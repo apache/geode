@@ -79,7 +79,6 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.DiskDirSizesUnit;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.RegionDestroyedException;
@@ -154,7 +153,7 @@ public class DiskStoreImpl implements DiskStore {
 
   static final int MINIMUM_DIR_SIZE = 1024;
 
-  private DiskDirSizesUnit diskDirSizesUnit = DiskStoreFactory.DEFAULT_DISK_DIR_SIZES_UNIT;
+  private DiskDirSizesUnit diskDirSizesUnit;
 
   /**
    * The static field delays the joining of the close/clear/destroy & forceFlush operation, with the
@@ -3462,12 +3461,10 @@ public class DiskStoreImpl implements DiskStore {
     this.criticalPercent = criticalPercent;
   }
 
-  @Override
   public DiskDirSizesUnit getDiskDirSizesUnit() {
     return this.diskDirSizesUnit;
   }
 
-  @Override
   public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
     this.diskDirSizesUnit = unit;
   }

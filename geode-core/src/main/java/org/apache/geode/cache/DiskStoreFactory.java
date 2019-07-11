@@ -101,12 +101,6 @@ public interface DiskStoreFactory {
   int DEFAULT_DISK_DIR_SIZE = Integer.MAX_VALUE; // unlimited for bug 41863
 
   /**
-   * The default disk directory size unit. Only change it for testing purposes.
-   */
-  @MakeImmutable
-  DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
-
-  /**
    * The default disk directory sizes.
    * <p>
    * Current value: {@link #DEFAULT_DISK_DIR_SIZE} which is two petabytes each.

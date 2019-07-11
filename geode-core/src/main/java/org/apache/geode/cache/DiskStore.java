@@ -17,7 +17,6 @@ package org.apache.geode.cache;
 import java.io.File;
 import java.util.UUID;
 
-
 /**
  * Provides disk storage for one or more regions. The regions in the same disk store will share the
  * same disk persistence attributes. A region without a disk store name belongs to the default disk
@@ -207,16 +206,4 @@ public interface DiskStore {
    * @param criticalPercent the critical percent
    */
   void setDiskUsageCriticalPercentage(float criticalPercent);
-
-  /**
-   * Returns the size unit to be used for the directories creation. Megabytes by default.
-   *
-   * @return the unit
-   */
-  DiskDirSizesUnit getDiskDirSizesUnit();
-
-  /**
-   * Sets the size unit to be used for the directories creation.
-   */
-  void setDiskDirSizesUnit(DiskDirSizesUnit unit);
 }

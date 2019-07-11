@@ -19,7 +19,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.DiskDirSizesUnit;
 
 /**
  * A holder for a disk Directory. Used for maintaining the available space and updating disk
