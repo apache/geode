@@ -15,7 +15,6 @@
 package org.apache.geode.modules.util;
 
 import java.io.Serializable;
-import java.util.Properties;
 
 import javax.servlet.http.HttpSession;
 
@@ -48,9 +47,6 @@ public class SessionCustomExpiry
   @Override
   public void close() {}
 
-  @Override
-  public void init(Properties props) {}
-
   public boolean equals(Object obj) {
     // This method is only implemented so that RegionCreator.validateRegion works properly.
     // The EntryIdleTimeout comparison fails because two of these instances are not equal.
@@ -58,13 +54,8 @@ public class SessionCustomExpiry
       return true;
     }
 
-    if (obj == null || !(obj instanceof SessionCustomExpiry)) {
-      return false;
-    }
-
-    return true;
+    return (obj instanceof SessionCustomExpiry);
   }
-
 
   @Override
   public int hashCode() {

@@ -20,10 +20,10 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.modules.session.catalina.Tomcat6DeltaSessionManager;
 import org.apache.geode.test.junit.categories.SessionTest;
 
-@Category({SessionTest.class})
+@Category(SessionTest.class)
+// TODO: Remove the entire class once Tomcat6DeltaSessionManager is removed from the product.
 public class Tomcat6SessionsJUnitTest extends TestSessionsBase {
 
-  // Set up the session manager we need
   @BeforeClass
   public static void setupClass() throws Exception {
     setupServer(new Tomcat6DeltaSessionManager());

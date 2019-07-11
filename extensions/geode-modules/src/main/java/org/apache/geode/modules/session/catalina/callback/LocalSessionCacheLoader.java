@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import java.util.Properties;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.CacheLoader;
@@ -39,7 +37,4 @@ public class LocalSessionCacheLoader implements CacheLoader<String, HttpSession>
 
   @Override
   public void close() {}
-
-  @Override
-  public void init(Properties p) {}
 }

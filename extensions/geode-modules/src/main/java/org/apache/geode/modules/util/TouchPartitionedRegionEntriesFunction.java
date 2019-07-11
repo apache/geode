@@ -16,10 +16,8 @@ package org.apache.geode.modules.util;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.geode.DataSerializable;
@@ -38,9 +36,7 @@ import org.apache.geode.security.ResourcePermission;
  */
 public class TouchPartitionedRegionEntriesFunction
     implements Function, Declarable, DataSerializable {
-
   private static final long serialVersionUID = -3700389655056961153L;
-
   public static final String ID = "touch-partitioned-region-entries";
 
   @Override
@@ -54,10 +50,9 @@ public class TouchPartitionedRegionEntriesFunction
     Region primaryDataSet = PartitionRegionHelper.getLocalDataForContext(rfc);
 
     if (cache.getLogger().fineEnabled()) {
-      StringBuilder builder = new StringBuilder();
-      builder.append("Function ").append(ID).append(" received request to touch ")
-          .append(primaryDataSet.getFullPath()).append("->").append(keys);
-      cache.getLogger().fine(builder.toString());
+      String builder = "Function " + ID + " received request to touch "
+          + primaryDataSet.getFullPath() + "->" + keys;
+      cache.getLogger().fine(builder);
     }
 
     // Retrieve each value to update the lastAccessedTime.
@@ -97,15 +92,8 @@ public class TouchPartitionedRegionEntriesFunction
   }
 
   @Override
-  public void init(Properties properties) {}
+  public void toData(DataOutput out) {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
-  }
+  public void fromData(DataInput in) {}
 }

@@ -19,11 +19,11 @@ import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 
 import javax.security.auth.message.config.AuthConfigFactory;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
 import org.apache.geode.test.junit.categories.SessionTest;
@@ -31,18 +31,8 @@ import org.apache.geode.test.junit.categories.SessionTest;
 @Category(SessionTest.class)
 public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
 
-  // Set up the session manager we need
-  @Override
-  public void postSetUp() throws Exception {
-    setupServer(new Tomcat8DeltaSessionManager());
-  }
-
-  @Override
-  public void preTearDown() {
-    server.stopContainer();
-  }
-
-  private void setupServer(DeltaSessionManager manager) throws Exception {
+  @Before
+  public void setUp() throws Exception {
     port = AvailablePortHelper.getRandomAvailableTCPPort();
     server = new EmbeddedTomcat8("/test", port, "JVM-1");
 
@@ -50,7 +40,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
     p2pListener.setProperty(MCAST_PORT, "0");
     p2pListener.setProperty(LOG_LEVEL, "config");
     server.addLifecycleListener(p2pListener);
-    sessionManager = manager;
+    sessionManager = new Tomcat8DeltaSessionManager();
     sessionManager.setEnableCommitValve(true);
     server.getRootContext().setManager(sessionManager);
     AuthConfigFactory.setFactory(null);
@@ -58,19 +48,15 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
     servlet = server.addServlet("/test/*", "default", CommandServlet.class.getName());
     server.startContainer();
 
-    /*
-     * Can only retrieve the region once the container has started up (and the cache has started
-     * too).
-     */
+    // Can only retrieve the region once the container has started up (& the cache has started too).
     region = sessionManager.getSessionCache().getSessionRegion();
-  }
 
-  /**
-   * Reset some data
-   */
-  @Before
-  public void setup() {
     sessionManager.getTheContext().setSessionTimeout(30);
     region.clear();
+  }
+
+  @After
+  public void tearDown() {
+    server.stopContainer();
   }
 }
