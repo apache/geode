@@ -149,12 +149,12 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
               .hasSize(2);
 
           assertThat(foundPatterns.get(0))
-              .as("First matching Log line")
+              .as("First matching Log line of " + foundPatterns)
               .matches(redundancyRestoredPattern.asPredicate(),
                   redundancyRestoredPattern.pattern());
 
           assertThat(foundPatterns.get(1))
-              .as("Second matching Log line")
+              .as("Second matching Log line of " + foundPatterns)
               .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
         });
   }
