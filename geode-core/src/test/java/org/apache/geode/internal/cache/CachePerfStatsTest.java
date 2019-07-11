@@ -56,7 +56,6 @@ import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -89,13 +88,7 @@ public class CachePerfStatsTest {
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))
         .thenReturn(statistics);
 
-    CachePerfStats.enableClockStats = true;
-    cachePerfStats = new CachePerfStats(statisticsFactory, () -> CLOCK_TIME);
-  }
-
-  @After
-  public void tearDown() {
-    CachePerfStats.enableClockStats = false;
+    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, () -> CLOCK_TIME);
   }
 
   @Test

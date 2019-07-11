@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -77,6 +79,7 @@ import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Abstract implementation of both Serial and Parallel GatewaySender. It handles common
@@ -229,10 +232,16 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
 
   final Object lockForConcurrentDispatcher = new Object();
 
-  protected AbstractGatewaySender() {}
+  private final StatisticsClock statisticsClock;
 
-  public AbstractGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
+  protected AbstractGatewaySender() {
+    statisticsClock = disabledClock();
+  }
+
+  public AbstractGatewaySender(InternalCache cache, StatisticsClock statisticsClock,
+      GatewaySenderAttributes attrs) {
     this.cache = cache;
+    this.statisticsClock = statisticsClock;
     this.id = attrs.getId();
     this.socketBufferSize = attrs.getSocketBufferSize();
     this.socketReadTimeout = attrs.getSocketReadTimeout();
@@ -268,7 +277,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       this.stopper = new Stopper(cache.getCancelCriterion());
       this.senderAdvisor = GatewaySenderAdvisor.createGatewaySenderAdvisor(this);
       if (!this.isForInternalUse()) {
-        this.statistics = new GatewaySenderStats(cache.getDistributedSystem(), id);
+        this.statistics = new GatewaySenderStats(cache.getDistributedSystem(),
+            "gatewaySenderStats-", id, statisticsClock);
       }
       initializeEventIdIndex();
     }
@@ -283,6 +293,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public GatewaySenderStats getStatistics() {
     return statistics;
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 
   public void initProxy() {
@@ -1257,7 +1272,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         @Override
         public CachePerfStats getCachePerfStats() {
           return new CachePerfStats(cache.getDistributedSystem(),
-              "RegionStats-" + META_DATA_REGION_NAME);
+              "RegionStats-" + META_DATA_REGION_NAME, sender.statisticsClock);
         }
       };
 

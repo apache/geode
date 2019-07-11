@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -111,7 +112,7 @@ public class HARQAddOperationJUnitTest {
     factory.setDataPolicy(DataPolicy.REPLICATE);
     factory.setScope(Scope.DISTRIBUTED_ACK);
     HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     return regionqueue;
   }
 
@@ -121,7 +122,7 @@ public class HARQAddOperationJUnitTest {
   protected HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, attrs,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     return regionqueue;
   }
 
@@ -891,7 +892,7 @@ public class HARQAddOperationJUnitTest {
       HARegionQueueAttributes attrs = new HARegionQueueAttributes();
       attrs.setExpiryTime(10);
       final HARegionQueue regionqueue =
-          new HARegionQueue.TestOnlyHARegionQueue("testing", cache, attrs) {
+          new TestOnlyHARegionQueue("testing", cache, attrs, disabledClock()) {
             @Override
             CacheListener createCacheListenerForHARegion() {
               return new CacheListenerAdapter() {

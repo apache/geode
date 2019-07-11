@@ -21,11 +21,10 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.internal.cache.CachePerfStats;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 public class GatewaySenderStats {
-
 
   public static final String typeName = "GatewaySenderStatistics";
 
@@ -293,6 +292,8 @@ public class GatewaySenderStats {
   /** The <code>Statistics</code> instance to which most behavior is delegated */
   private final Statistics stats;
 
+  private final StatisticsClock statisticsClock;
+
   /////////////////////// Constructors ///////////////////////
 
   /**
@@ -302,8 +303,9 @@ public class GatewaySenderStats {
    * @param gatewaySenderId The id of the <code>GatewaySender</code> used to generate the name of
    *        the <code>Statistics</code>
    */
-  public GatewaySenderStats(StatisticsFactory f, String gatewaySenderId) {
-    this.stats = f.createAtomicStatistics(type, "gatewaySenderStats-" + gatewaySenderId);
+  public GatewaySenderStats(StatisticsFactory f, String textIdPrefix, String gatewaySenderId,
+      StatisticsClock statisticsClock) {
+    this(f, textIdPrefix + gatewaySenderId, type, statisticsClock);
   }
 
   /**
@@ -314,8 +316,15 @@ public class GatewaySenderStats {
    *        <code>Statistics</code>
    * @param statType The StatisticsTYpe
    */
-  public GatewaySenderStats(StatisticsFactory f, String asyncQueueId, StatisticsType statType) {
-    this.stats = f.createAtomicStatistics(statType, "asyncEventQueueStats-" + asyncQueueId);
+  public GatewaySenderStats(StatisticsFactory f, String textIdPrefix, String asyncQueueId,
+      StatisticsType statType, StatisticsClock statisticsClock) {
+    this(f, textIdPrefix + asyncQueueId, statType, statisticsClock);
+  }
+
+  private GatewaySenderStats(StatisticsFactory f, String textId, StatisticsType statType,
+      StatisticsClock statisticsClock) {
+    stats = f.createAtomicStatistics(statType, textId);
+    this.statisticsClock = statisticsClock;
   }
 
   ///////////////////// Instance Methods /////////////////////
@@ -866,11 +875,11 @@ public class GatewaySenderStats {
 
   public long startLoadBalance() {
     stats.incInt(loadBalancesInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return statisticsClock.getTime();
   }
 
   public void endLoadBalance(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
+    long delta = statisticsClock.getTime() - start;
     stats.incInt(loadBalancesInProgressId, -1);
     stats.incInt(loadBalancesCompletedId, 1);
     stats.incLong(loadBalanceTimeId, delta);

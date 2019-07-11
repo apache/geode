@@ -130,7 +130,6 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
 
   /**
    * In this test do a create & then update on same key , the client should receive 2 calabcks.
-   *
    */
 
   @Test
@@ -146,7 +145,6 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do create , then update & update. The client should receive 2 callbacks , one for
    * create & one for the last update.
-   *
    */
   @Test
   public void testConflationUpdate() throws Exception {
@@ -169,7 +167,6 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do create , then update, update, invalidate. The client should receive 3
    * callbacks, one for create one for the last update and one for the invalidate.
-   *
    */
   @Test
   public void testConflationCreateUpdateInvalidate() throws Exception {
@@ -187,7 +184,6 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
   /**
    * In this test do a create , update , update & destroy. The client should receive 3 callbacks (
    * craete , conflated update & destroy).
-   *
    */
   @Test
   public void testConflationCreateUpdateDestroy() throws Exception {
@@ -348,86 +344,83 @@ public class HAConflationDUnitTest extends JUnit4CacheTestCase {
     return new Integer(server.getPort());
   }
 
-}
+  private static class HAClientCountEventListener implements CacheListener, Declarable {
 
-
-class HAClientCountEventListener implements CacheListener, Declarable {
-
-  @Override
-  public void afterCreate(EntryEvent event) {
-    String key = (String) event.getKey();
-    if (key.equals(HAConflationDUnitTest.LAST_KEY)) {
-      synchronized (HAConflationDUnitTest.LOCK) {
-        HAConflationDUnitTest.lastKeyArrived = true;
-        HAConflationDUnitTest.LOCK.notifyAll();
+    @Override
+    public void afterCreate(EntryEvent event) {
+      String key = (String) event.getKey();
+      if (key.equals(LAST_KEY)) {
+        synchronized (LOCK) {
+          lastKeyArrived = true;
+          LOCK.notifyAll();
+        }
+      } else {
+        actualNoEvents++;
       }
-    } else {
-      HAConflationDUnitTest.actualNoEvents++;
+
     }
 
-  }
+    @Override
+    public void afterUpdate(EntryEvent event) {
 
-  @Override
-  public void afterUpdate(EntryEvent event) {
+      actualNoEvents++;
 
-    HAConflationDUnitTest.actualNoEvents++;
+    }
 
-  }
+    @Override
+    public void afterInvalidate(EntryEvent event) {
 
-  @Override
-  public void afterInvalidate(EntryEvent event) {
+      actualNoEvents++;
 
-    HAConflationDUnitTest.actualNoEvents++;
+    }
 
-  }
+    @Override
+    public void afterDestroy(EntryEvent event) {
+      actualNoEvents++;
 
-  @Override
-  public void afterDestroy(EntryEvent event) {
-    HAConflationDUnitTest.actualNoEvents++;
+    }
 
-  }
+    @Override
+    public void afterRegionInvalidate(RegionEvent event) {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void afterRegionInvalidate(RegionEvent event) {
-    // TODO Auto-generated method stub
+    }
 
-  }
+    @Override
+    public void afterRegionDestroy(RegionEvent event) {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void afterRegionDestroy(RegionEvent event) {
-    // TODO Auto-generated method stub
+    }
 
-  }
+    @Override
+    public void afterRegionClear(RegionEvent event) {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void afterRegionClear(RegionEvent event) {
-    // TODO Auto-generated method stub
+    }
 
-  }
+    @Override
+    public void afterRegionCreate(RegionEvent event) {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void afterRegionCreate(RegionEvent event) {
-    // TODO Auto-generated method stub
+    }
 
-  }
+    @Override
+    public void afterRegionLive(RegionEvent event) {
+      // TODO NOT Auto-generated method stub, added by vrao
 
-  @Override
-  public void afterRegionLive(RegionEvent event) {
-    // TODO NOT Auto-generated method stub, added by vrao
-
-  }
+    }
 
 
+    @Override
+    public void close() {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void close() {
-    // TODO Auto-generated method stub
+    }
 
-  }
+    @Override
+    public void init(Properties props) {
+      // TODO Auto-generated method stub
 
-  @Override
-  public void init(Properties props) {
-    // TODO Auto-generated method stub
-
+    }
   }
 }

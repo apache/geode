@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,8 +72,8 @@ public class RegionPerfStatsTest {
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(statistics);
 
     regionPerfStats =
-        new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats,
-            region, meterRegistry);
+        new RegionPerfStats(statisticsFactory, TEXT_ID, disabledClock(), cachePerfStats, region,
+            meterRegistry);
   }
 
   @After
@@ -90,8 +91,8 @@ public class RegionPerfStatsTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
-    new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats,
-        region, meterRegistry);
+    new RegionPerfStats(statisticsFactory, TEXT_ID, disabledClock(), cachePerfStats, region,
+        meterRegistry);
 
     verify(statisticsFactory).createAtomicStatistics(any(), eq(TEXT_ID));
   }

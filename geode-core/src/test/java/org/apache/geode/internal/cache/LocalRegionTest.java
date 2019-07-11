@@ -15,6 +15,7 @@
 
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -84,9 +85,10 @@ public class LocalRegionTest {
       return mock(RegionPerfStats.class);
     };
 
-    assertThatCode(() -> new LocalRegion("region", regionAttributes, null, cache,
-        internalRegionArguments, internalDataView, regionMapConstructor,
-        serverRegionProxyConstructor, entryEventFactory, poolFinder, regionPerfStatsFactory))
-            .doesNotThrowAnyException();
+    assertThatCode(
+        () -> new LocalRegion("region", regionAttributes, null, cache, internalRegionArguments,
+            internalDataView, regionMapConstructor, serverRegionProxyConstructor, entryEventFactory,
+            poolFinder, regionPerfStatsFactory, disabledClock()))
+                .doesNotThrowAnyException();
   }
 }

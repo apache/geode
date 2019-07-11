@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -127,7 +128,7 @@ public class PartitionMessageTest {
 
   @Test
   public void noNewTxProcessingAfterTXManagerImplClosed() throws Exception {
-    txMgr = new TXManagerImpl(null, cache);
+    txMgr = new TXManagerImpl(null, cache, disabledClock());
     when(msg.getPartitionedRegion()).thenReturn(pr);
     when(msg.getStartPartitionMessageProcessingTime(pr)).thenReturn(startTime);
     when(msg.getTXManagerImpl(cache)).thenReturn(txMgr);

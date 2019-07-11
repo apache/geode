@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.CacheCli
 import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHealthMonitorProvider;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Builds an instance of {@link Acceptor}.
@@ -51,6 +52,7 @@ public class AcceptorBuilder implements AcceptorFactory {
   private ServerConnectionFactory serverConnectionFactory;
   private long timeLimitMillis;
   private SecurityService securityService;
+  private StatisticsClock statisticsClock;
 
   private boolean isGatewayReceiver;
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
@@ -79,6 +81,7 @@ public class AcceptorBuilder implements AcceptorFactory {
     serverConnectionFactory = server.getServerConnectionFactory();
     timeLimitMillis = server.getTimeLimitMillis();
     securityService = server.getSecurityService();
+    statisticsClock = server.getStatisticsClock();
 
     socketCreatorSupplier = server.getSocketCreatorSupplier();
     cacheClientNotifierProvider = server.getCacheClientNotifierProvider();
@@ -285,6 +288,16 @@ public class AcceptorBuilder implements AcceptorFactory {
     return this;
   }
 
+  /**
+   * Sets {@code statisticsClock}. Must be invoked after or instead of
+   * {@link #forServer(InternalCacheServer)}.
+   */
+  @VisibleForTesting
+  AcceptorBuilder setStatisticsClock(StatisticsClock statisticsClock) {
+    this.statisticsClock = statisticsClock;
+    return this;
+  }
+
   @Override
   public Acceptor create(OverflowAttributes overflowAttributes) throws IOException {
     return new AcceptorImpl(port, bindAddress, notifyBySubscription, socketBufferSize,
@@ -292,7 +305,7 @@ public class AcceptorBuilder implements AcceptorFactory {
         messageTimeToLive, connectionListener, overflowAttributes, tcpNoDelay,
         serverConnectionFactory, timeLimitMillis, securityService, socketCreatorSupplier,
         cacheClientNotifierProvider, clientHealthMonitorProvider, isGatewayReceiver,
-        gatewayTransportFilters);
+        gatewayTransportFilters, statisticsClock);
   }
 
   @VisibleForTesting
@@ -393,5 +406,10 @@ public class AcceptorBuilder implements AcceptorFactory {
   @VisibleForTesting
   ClientHealthMonitorProvider getClientHealthMonitorProvider() {
     return clientHealthMonitorProvider;
+  }
+
+  @VisibleForTesting
+  StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 }

@@ -18,19 +18,20 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public abstract class DistTXStateProxyImpl extends TXStateProxyImpl {
 
   protected static final Logger logger = LogService.getLogger();
 
   public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      InternalDistributedMember clientMember) {
-    super(cache, managerImpl, id, clientMember);
+      InternalDistributedMember clientMember, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, clientMember, statisticsClock);
   }
 
   public DistTXStateProxyImpl(InternalCache cache, TXManagerImpl managerImpl, TXId id,
-      boolean isjta) {
-    super(cache, managerImpl, id, isjta);
+      boolean isjta, StatisticsClock statisticsClock) {
+    super(cache, managerImpl, id, isjta, statisticsClock);
   }
 
   @Override

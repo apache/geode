@@ -275,35 +275,32 @@ public class HADuplicateDUnitTest extends JUnit4DistributedTestCase {
       cache.getDistributedSystem().disconnect();
     }
   }
-}
 
-// TODO: move these classes to be inner static classes
-
-
-// Listener class for the validation purpose
-class HAValidateDuplicateListener extends CacheListenerAdapter {
-  @Override
-  public void afterCreate(EntryEvent event) {
-    System.out.println("After Create");
-    HADuplicateDUnitTest.storeEvents.put(event.getKey(), event.getNewValue());
-  }
-
-  @Override
-  public void afterUpdate(EntryEvent event) {
-    Object value = HADuplicateDUnitTest.storeEvents.get(event.getKey());
-    if (value == null)
-      HADuplicateDUnitTest.isEventDuplicate = false;
-    synchronized (HADuplicateDUnitTest.dummyObj) {
-      try {
-        HADuplicateDUnitTest.put_counter++;
-        if (HADuplicateDUnitTest.put_counter == HADuplicateDUnitTest.NO_OF_PUTS) {
-          HADuplicateDUnitTest.waitFlag = false;
-          HADuplicateDUnitTest.dummyObj.notifyAll();
-        }
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
+  // Listener class for the validation purpose
+  private static class HAValidateDuplicateListener extends CacheListenerAdapter {
+    @Override
+    public void afterCreate(EntryEvent event) {
+      System.out.println("After Create");
+      storeEvents.put(event.getKey(), event.getNewValue());
     }
 
+    @Override
+    public void afterUpdate(EntryEvent event) {
+      Object value = storeEvents.get(event.getKey());
+      if (value == null)
+        isEventDuplicate = false;
+      synchronized (dummyObj) {
+        try {
+          put_counter++;
+          if (put_counter == NO_OF_PUTS) {
+            waitFlag = false;
+            dummyObj.notifyAll();
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+
+    }
   }
 }

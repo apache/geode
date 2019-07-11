@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
@@ -54,7 +55,8 @@ public class DistributedRegionSearchLoadJUnitTest {
 
   protected DistributedRegion createAndDefineRegion(boolean isConcurrencyChecksEnabled,
       RegionAttributes ra, InternalRegionArguments ira, GemFireCacheImpl cache) {
-    DistributedRegion region = new DistributedRegion("testRegion", ra, null, cache, ira);
+    DistributedRegion region =
+        new DistributedRegion("testRegion", ra, null, cache, ira, disabledClock());
     if (isConcurrencyChecksEnabled) {
       region.enableConcurrencyChecks();
     }

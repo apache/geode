@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
@@ -51,7 +52,8 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
   protected HARegionQueue createHARegionQueue(String name)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue =
-        HARegionQueue.getHARegionQueueInstance(name, cache, HARegionQueue.BLOCKING_HA_QUEUE, false);
+        HARegionQueue.getHARegionQueueInstance(name, cache, HARegionQueue.BLOCKING_HA_QUEUE, false,
+            disabledClock());
     return regionqueue;
   }
 
@@ -64,7 +66,7 @@ public class BlockingHARQAddOperationJUnitTest extends HARQAddOperationJUnitTest
   protected HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     HARegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache, attrs,
-        HARegionQueue.BLOCKING_HA_QUEUE, false);
+        HARegionQueue.BLOCKING_HA_QUEUE, false, disabledClock());
     return regionqueue;
   }
 

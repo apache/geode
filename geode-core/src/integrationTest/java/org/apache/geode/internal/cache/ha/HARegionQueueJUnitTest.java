@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.ha;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.lang.SystemPropertyHelper.HA_REGION_QUEUE_EXPIRY_TIME_PROPERTY;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -188,7 +189,7 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testBlockQueue() throws Exception {
     HARegionQueue regionQueue = HARegionQueue.getHARegionQueueInstance(testName.getMethodName(),
-        cache, HARegionQueue.BLOCKING_HA_QUEUE, false);
+        cache, HARegionQueue.BLOCKING_HA_QUEUE, false, disabledClock());
     Thread[] threads = new Thread[10];
     int threadsLength = threads.length;
     CyclicBarrier barrier = new CyclicBarrier(threadsLength + 1);
@@ -1075,7 +1076,8 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testBlockingQueueForConcurrentPeekAndTake() throws Exception {
     TestBlockingHARegionQueue regionQueue =
-        new TestBlockingHARegionQueue("testBlockQueueForConcurrentPeekAndTake", cache);
+        new TestBlockingHARegionQueue("testBlockQueueForConcurrentPeekAndTake", cache,
+            disabledClock());
     Thread[] threads = new Thread[3];
 
     for (int i = 0; i < 3; i++) {
@@ -1136,7 +1138,8 @@ public class HARegionQueueJUnitTest {
   @Test
   public void testBlockingQueueForTakeWhenPeekInProgress() throws Exception {
     TestBlockingHARegionQueue regionQueue =
-        new TestBlockingHARegionQueue("testBlockQueueForTakeWhenPeekInProgress", cache);
+        new TestBlockingHARegionQueue("testBlockQueueForTakeWhenPeekInProgress", cache,
+            disabledClock());
     Thread[] threads = new Thread[3];
 
     for (int i = 0; i < 3; i++) {
@@ -1209,7 +1212,8 @@ public class HARegionQueueJUnitTest {
     haa.setExpiryTime(3);
 
     RegionQueue regionqueue =
-        new HARegionQueue.TestOnlyHARegionQueue(testName.getMethodName(), cache, haa) {
+        new TestOnlyHARegionQueue(testName.getMethodName(), cache, haa,
+            disabledClock()) {
           @Override
           CacheListener createCacheListenerForHARegion() {
 
@@ -1333,10 +1337,10 @@ public class HARegionQueueJUnitTest {
 
     if (createBlockingQueue) {
       return HARegionQueue.getHARegionQueueInstance(testName.getMethodName(), cache, haa,
-          HARegionQueue.BLOCKING_HA_QUEUE, false);
+          HARegionQueue.BLOCKING_HA_QUEUE, false, disabledClock());
     } else {
       return HARegionQueue.getHARegionQueueInstance(testName.getMethodName(), cache, haa,
-          HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+          HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     }
   }
 
@@ -1852,7 +1856,7 @@ public class HARegionQueueJUnitTest {
    */
   private HARegionQueue createHARegionQueue(String name)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType(), false);
+    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType(), false, disabledClock());
   }
 
   /**
@@ -1860,7 +1864,7 @@ public class HARegionQueueJUnitTest {
    */
   private HARegionQueue createHARegionQueue(String name, int queueType)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType, false);
+    return HARegionQueue.getHARegionQueueInstance(name, cache, queueType, false, disabledClock());
   }
 
   /**
@@ -1868,7 +1872,8 @@ public class HARegionQueueJUnitTest {
    */
   HARegionQueue createHARegionQueue(String name, HARegionQueueAttributes attrs)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    return HARegionQueue.getHARegionQueueInstance(name, cache, attrs, queueType(), false);
+    return HARegionQueue.getHARegionQueueInstance(name, cache, attrs, queueType(), false,
+        disabledClock());
   }
 
   /**
@@ -1892,11 +1897,11 @@ public class HARegionQueueJUnitTest {
   /**
    * Extends HARegionQueue for testing purposes. used by testSafeConflationRemoval
    */
-  static class HARQTestClass extends HARegionQueue.TestOnlyHARegionQueue {
+  static class HARQTestClass extends TestOnlyHARegionQueue {
 
     HARQTestClass(String regionName, InternalCache cache)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      super(regionName, cache);
+      super(regionName, cache, disabledClock());
     }
 
     @Override

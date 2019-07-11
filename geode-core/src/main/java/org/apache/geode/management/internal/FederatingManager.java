@@ -31,6 +31,7 @@ import javax.management.ObjectName;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.DataPolicy;
@@ -50,6 +51,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.ManagementException;
 
 /**
@@ -84,9 +86,9 @@ public class FederatingManager extends Manager {
   private final AtomicReference<Exception> latestException = new AtomicReference<>(null);
 
   FederatingManager(MBeanJMXAdapter jmxAdapter, ManagementResourceRepo repo,
-      InternalDistributedSystem system, SystemManagementService service,
-      InternalCache cache) {
-    super(repo, system, cache);
+      InternalDistributedSystem system, SystemManagementService service, InternalCache cache,
+      StatisticsFactory statisticsFactory, StatisticsClock statisticsClock) {
+    super(repo, system, cache, statisticsFactory, statisticsClock);
     this.service = service;
     proxyFactory = new MBeanProxyFactory(jmxAdapter, service);
     messenger = new MemberMessenger(jmxAdapter, system);
@@ -214,7 +216,7 @@ public class FederatingManager extends Manager {
       notificationRegion.localDestroyRegion();
     }
 
-    if (!cache.getDistributedSystem().getDistributedMember().equals(member)) {
+    if (!system.getDistributedMember().equals(member)) {
       service.memberDeparted((InternalDistributedMember) member, crashed);
     }
   }
@@ -242,7 +244,7 @@ public class FederatingManager extends Manager {
 
     List<Callable<DistributedMember>> giiTaskList = new ArrayList<>();
 
-    for (DistributedMember member : cache.getDistributionManager()
+    for (DistributedMember member : system.getDistributionManager()
         .getOtherDistributionManagerIds()) {
       giiTaskList.add(new GIITask(member));
     }
@@ -357,7 +359,6 @@ public class FederatingManager extends Manager {
         String monitoringRegionName = ManagementConstants.MONITORING_REGION + "_" + appender;
         String notificationRegionName = ManagementConstants.NOTIFICATION_REGION + "_" + appender;
 
-
         if (cache.getInternalRegion(monitoringRegionName) != null
             && cache.getInternalRegion(notificationRegionName) != null) {
           return member;
@@ -375,7 +376,7 @@ public class FederatingManager extends Manager {
             // Create anonymous stats holder for Management Regions
             HasCachePerfStats monitoringRegionStats =
                 () -> new CachePerfStats(cache.getDistributedSystem(),
-                    "RegionStats-managementRegionStats");
+                    "RegionStats-managementRegionStats", statisticsClock);
 
             internalRegionArguments.setCachePerfStatsHolder(monitoringRegionStats);
 

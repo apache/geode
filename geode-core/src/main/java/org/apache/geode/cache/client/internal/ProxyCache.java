@@ -127,7 +127,7 @@ public class ProxyCache implements RegionService {
         throw new IllegalStateException(
             "Region's data-policy must be EMPTY when multiuser-authentication is true");
       }
-      return new ProxyRegion(this, this.cache.getRegion(path));
+      return new ProxyRegion(this, this.cache.getRegion(path), cache.getStatisticsClock());
     }
   }
 
@@ -209,7 +209,7 @@ public class ProxyCache implements RegionService {
     Set<Region<?, ?>> rootRegions = new HashSet<>();
     for (Region<?, ?> region : this.cache.rootRegions()) {
       if (!region.getAttributes().getDataPolicy().withStorage()) {
-        rootRegions.add(new ProxyRegion(this, region));
+        rootRegions.add(new ProxyRegion(this, region, cache.getStatisticsClock()));
       }
     }
     return Collections.unmodifiableSet(rootRegions);
