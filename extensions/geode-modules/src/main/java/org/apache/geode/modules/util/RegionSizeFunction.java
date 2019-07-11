@@ -16,10 +16,8 @@ package org.apache.geode.modules.util;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Declarable;
@@ -29,14 +27,13 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.security.ResourcePermission;
 
 public class RegionSizeFunction implements Function, Declarable, DataSerializable {
-
   private static final long serialVersionUID = -2791590491585777990L;
-
   public static final String ID = "region-size-function";
 
   public RegionSizeFunction() {}
 
   @Override
+  @SuppressWarnings("unchecked")
   public void execute(FunctionContext context) {
     RegionFunctionContext rfc = (RegionFunctionContext) context;
     context.getResultSender().lastResult(rfc.getDataSet().size());
@@ -69,15 +66,8 @@ public class RegionSizeFunction implements Function, Declarable, DataSerializabl
   }
 
   @Override
-  public void init(Properties arg0) {}
+  public void toData(DataOutput out) {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-
-  }
-
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
-  }
+  public void fromData(DataInput in) {}
 }

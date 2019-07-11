@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -30,7 +31,7 @@ import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.test.junit.categories.SessionTest;
 
-@Category({SessionTest.class})
+@Category(SessionTest.class)
 public class InstallerJUnitTest {
 
   @Rule
@@ -51,8 +52,10 @@ public class InstallerJUnitTest {
       new Installer(args).processWebXml(input, output);
     }
 
-    String expected = IOUtils.toString(getClass().getResource(name + ".expected"))
-        .replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "").replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
+    String expected =
+        IOUtils.toString(getClass().getResource(name + ".expected"), Charset.defaultCharset())
+            .replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")
+            .replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
     String actual = output.toString().replaceAll(IOUtils.LINE_SEPARATOR_WINDOWS, "")
         .replaceAll(IOUtils.LINE_SEPARATOR_UNIX, "");
     assertThat(actual).isEqualToIgnoringWhitespace(expected);

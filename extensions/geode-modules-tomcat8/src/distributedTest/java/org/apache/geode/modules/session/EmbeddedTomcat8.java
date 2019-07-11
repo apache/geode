@@ -39,7 +39,7 @@ class EmbeddedTomcat8 {
   private Context rootContext;
   private Log logger = LogFactory.getLog(getClass());
 
-  EmbeddedTomcat8(String contextPath, int port, String jvmRoute) {
+  EmbeddedTomcat8(@SuppressWarnings("unused") String contextPath, int port, String jvmRoute) {
     // create server
     container = new Tomcat();
     container.setBaseDir(System.getProperty("user.dir") + "/tomcat");
@@ -108,7 +108,7 @@ class EmbeddedTomcat8 {
     servlet.setLoadOnStartup(1);
 
     rootContext.addChild(servlet);
-    rootContext.addServletMapping(path, name);
+    rootContext.addServletMappingDecoded(path, name);
 
     servlet.setParent(rootContext);
     // servlet.load();

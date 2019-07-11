@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import java.util.Properties;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.CacheWriterException;
@@ -56,7 +54,4 @@ public class LocalSessionCacheWriter extends CacheWriterAdapter<String, HttpSess
 
   @Override
   public void close() {}
-
-  @Override
-  public void init(Properties p) {}
 }
