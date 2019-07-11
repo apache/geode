@@ -20,7 +20,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.NanoTimer;
 
-class RegionPerfStats extends CachePerfStats {
+class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   private final CachePerfStats cachePerfStats;
 
@@ -97,18 +97,12 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.incQueuedEvents(inc);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   */
   @Override
   public long startLoad() {
     stats.incInt(loadsInProgressId, 1);
     return cachePerfStats.startLoad();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endLoad(long start) {
     // note that load times are used in health checks and
@@ -124,9 +118,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endLoad(start);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   */
   @Override
   public long startNetload() {
     stats.incInt(netloadsInProgressId, 1);
@@ -134,9 +125,6 @@ class RegionPerfStats extends CachePerfStats {
     return getTime();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endNetload(long start) {
     if (enableClockStats) {
@@ -147,18 +135,12 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endNetload(start);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   */
   @Override
   public long startNetsearch() {
     stats.incInt(netsearchesInProgressId, 1);
     return cachePerfStats.startNetsearch();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endNetsearch(long start) {
     // note that netsearch is used in health checks and timings should
@@ -172,9 +154,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endNetsearch(start);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   */
   @Override
   public long startCacheWriterCall() {
     stats.incInt(cacheWriterCallsInProgressId, 1);
@@ -182,9 +161,6 @@ class RegionPerfStats extends CachePerfStats {
     return getTime();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endCacheWriterCall(long start) {
     if (enableClockStats) {
@@ -195,10 +171,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endCacheWriterCall(start);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   * @since GemFire 3.5
-   */
   @Override
   public long startCacheListenerCall() {
     stats.incInt(cacheListenerCallsInProgressId, 1);
@@ -206,10 +178,6 @@ class RegionPerfStats extends CachePerfStats {
     return getTime();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   * @since GemFire 3.5
-   */
   @Override
   public void endCacheListenerCall(long start) {
     if (enableClockStats) {
@@ -220,9 +188,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endCacheListenerCall(start);
   }
 
-  /**
-   * @return the timestamp that marks the start of the operation
-   */
   @Override
   public long startGetInitialImage() {
     stats.incInt(getInitialImagesInProgressId, 1);
@@ -230,9 +195,6 @@ class RegionPerfStats extends CachePerfStats {
     return getTime();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endGetInitialImage(long start) {
     if (enableClockStats) {
@@ -243,9 +205,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endGetInitialImage(start);
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endNoGIIDone(long start) {
     if (enableClockStats) {
@@ -332,9 +291,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.incConflatedEventsCount();
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   */
   @Override
   public void endGet(long start, boolean miss) {
     if (enableClockStats) {
@@ -348,10 +304,6 @@ class RegionPerfStats extends CachePerfStats {
     cachePerfStats.endGet(start, miss);
   }
 
-  /**
-   * @param start the timestamp taken when the operation started
-   * @param isUpdate true if the put was an update (origin remote)
-   */
   @Override
   public long endPut(long start, boolean isUpdate) {
     long totalNanos = 0;
@@ -450,13 +402,13 @@ class RegionPerfStats extends CachePerfStats {
   }
 
   @Override
-  protected void incEventQueueThrottleTime(long nanos) {
+  public void incEventQueueThrottleTime(long nanos) {
     stats.incLong(eventQueueThrottleTimeId, nanos);
     cachePerfStats.incEventQueueThrottleTime(nanos);
   }
 
   @Override
-  protected void incEventThreads(int items) {
+  public void incEventThreads(int items) {
     stats.incInt(eventThreadsId, items);
     cachePerfStats.incEventThreads(items);
   }

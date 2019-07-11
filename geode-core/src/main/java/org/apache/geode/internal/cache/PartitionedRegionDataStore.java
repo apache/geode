@@ -203,7 +203,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
     // this.bucketStats = new CachePerfStats(pr.getSystem(), "partition-" + pr.getName());
     this.bucketStats =
-        new RegionPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
+        new BucketPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
             pr.getCachePerfStats(), "partition-" + pr.getName());
     this.keysOfInterest = new ConcurrentHashMap();
   }
