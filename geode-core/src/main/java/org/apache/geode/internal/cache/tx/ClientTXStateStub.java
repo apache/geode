@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.tx;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -149,9 +150,12 @@ public class ClientTXStateStub extends TXStateStub {
         }
         if (txOp.getOperation() == ServerRegionOperation.PUT_ALL
             || txOp.getOperation() == ServerRegionOperation.REMOVE_ALL) {
-          rlr.addEntryKeys(txOp.getKeys());
+          Iterator<Object> it = txOp.getKeys().iterator();
+          while (it.hasNext()) {
+            rlr.addEntryKey(it.next(), true);
+          }
         } else {
-          rlr.addEntryKey(txOp.getKey());
+          rlr.addEntryKey(txOp.getKey(), ServerRegionOperation.lockKeyForTx(txOp.getOperation()));
         }
       }
     }
