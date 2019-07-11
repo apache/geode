@@ -20,6 +20,8 @@ public class GatewayReceiverInfo extends RuntimeInfo {
   private int port;
   private String hostnameForSenders;
   private String bindAddress;
+  private int senderCount;
+  private String[] connectedSenders = new String[0];
 
   public boolean isRunning() {
     return running;
@@ -51,5 +53,21 @@ public class GatewayReceiverInfo extends RuntimeInfo {
 
   public void setBindAddress(String bindAddress) {
     this.bindAddress = bindAddress;
+  }
+
+  public int getSenderCount() {
+    return senderCount;
+  }
+
+  public void setSenderCount(int senderCount) {
+    this.senderCount = senderCount;
+  }
+
+  public String[] getConnectedSenders() {
+    return connectedSenders;
+  }
+
+  public void setConnectedSenders(String[] connectedSenders) {
+    this.connectedSenders = connectedSenders;
   }
 }

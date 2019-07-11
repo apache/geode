@@ -18,22 +18,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
+import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.test.junit.categories.JMXTest;
 
 @Category(JMXTest.class)
 public class GatewayReceiverMBeanBridgeTest {
+  private GatewayReceiver gatewayReceiver;
+  private Acceptor acceptor;
+  private GatewayReceiverMBeanBridge bridge;
+
+  @Before
+  public void before() throws Exception {
+    gatewayReceiver = mock(GatewayReceiver.class);
+    InternalCacheServer server = mock(InternalCacheServer.class);
+    when(gatewayReceiver.getServer()).thenReturn(server);
+    acceptor = mock(Acceptor.class);
+    when(server.getAcceptor()).thenReturn(acceptor);
+    bridge = new GatewayReceiverMBeanBridge(gatewayReceiver);
+  }
 
   @Test
   public void getStartPortDelegatesToGatewayReceiver() {
-    GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     int startPort = 42;
     when(gatewayReceiver.getStartPort()).thenReturn(startPort);
-    GatewayReceiverMBeanBridge bridge = new GatewayReceiverMBeanBridge(gatewayReceiver);
-
     int value = bridge.getStartPort();
 
     assertThat(value).isEqualTo(startPort);
@@ -41,13 +57,25 @@ public class GatewayReceiverMBeanBridgeTest {
 
   @Test
   public void getEndPortDelegatesToGatewayReceiver() {
-    GatewayReceiver gatewayReceiver = mock(GatewayReceiver.class);
     int endPort = 84;
     when(gatewayReceiver.getEndPort()).thenReturn(endPort);
-    GatewayReceiverMBeanBridge bridge = new GatewayReceiverMBeanBridge(gatewayReceiver);
-
     int value = bridge.getEndPort();
 
     assertThat(value).isEqualTo(endPort);
+  }
+
+  @Test
+  public void getConnectedGatewaySenders() {
+    when(acceptor.getAllServerConnections()).thenReturn(null);
+    assertThat(bridge.getConnectedGatewaySenders()).isNotNull().hasSize(0);
+
+    when(acceptor.getAllServerConnections()).thenReturn(Collections.emptySet());
+    assertThat(bridge.getConnectedGatewaySenders()).isNotNull().hasSize(0);
+
+    ServerConnection connection = mock(ServerConnection.class);
+    when(connection.getMembershipID()).thenReturn("testId");
+    when(acceptor.getAllServerConnections()).thenReturn(Collections.singleton(connection));
+    assertThat(bridge.getConnectedGatewaySenders()).containsExactly("testId");
+
   }
 }
