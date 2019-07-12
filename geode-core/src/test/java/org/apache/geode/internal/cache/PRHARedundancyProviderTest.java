@@ -43,8 +43,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
 import org.apache.geode.internal.cache.partitioned.LoadProbe;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
 import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
 public class PRHARedundancyProviderTest {
 
@@ -123,7 +125,8 @@ public class PRHARedundancyProviderTest {
     when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
 
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
-        (a, b) -> mock(PersistentBucketRecoverer.class), providerStartupTask);
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRabalanceOp, providerStartupTask);
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
@@ -136,10 +139,8 @@ public class PRHARedundancyProviderTest {
     when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
     InternalCache cache = mock(InternalCache.class);
-    when(cache.getResourceManager()).thenReturn(resourceManager);
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
 
-    when(partitionedRegion.getCache()).thenReturn(cache);
     when(partitionedRegion.getGemFireCache()).thenReturn(cache);
     when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
     when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
@@ -149,20 +150,28 @@ public class PRHARedundancyProviderTest {
     ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
     when(resourceManager.getExecutor()).thenReturn(executorService);
 
-    when(executorService.schedule(any(Runnable.class), anyLong(), any())).thenAnswer(myAnswer());
+    when(executorService.schedule(any(Runnable.class), anyLong(), any()))
+        .thenAnswer(runTheRunnable());
 
     @SuppressWarnings("unchecked")
     CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
 
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
-        (a, b) -> mock(PersistentBucketRecoverer.class), providerStartupTask);
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRabalanceOp, providerStartupTask);
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
     verify(providerStartupTask).complete(any());
   }
 
-  private static Answer<?> myAnswer() {
+  private static PartitionedRegionRebalanceOp createRabalanceOp(PartitionedRegion region,
+      boolean simulate,
+      RebalanceDirector director, boolean replaceOfflineData, boolean isRebalance) {
+    return mock(PartitionedRegionRebalanceOp.class);
+  }
+
+  private static Answer<?> runTheRunnable() {
     return (Answer<Object>) invocation -> {
       ((Runnable) invocation.getArgument(0)).run();
       return null;
@@ -171,6 +180,11 @@ public class PRHARedundancyProviderTest {
 
   @Test
   public void testPathsWhereWeShouldNotStartTheRecoveryTask() {
+    fail("not yet implemented");
+  }
+
+  @Test
+  public void testPathsWhereTheRecoveryTaskThrows() {
     fail("not yet implemented");
   }
 
