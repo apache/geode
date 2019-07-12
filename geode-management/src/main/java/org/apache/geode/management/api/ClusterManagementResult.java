@@ -47,6 +47,10 @@ public class ClusterManagementResult {
     // configuration.
     // the operation is still deemed unsuccessful.
     FAIL_TO_PERSIST,
+    // async operation launched successfully
+    ACCEPTED,
+    // async operation has not yet completed
+    IN_PROGRESS,
     // operation is successful, configuration is realized and persisted
     OK
   }

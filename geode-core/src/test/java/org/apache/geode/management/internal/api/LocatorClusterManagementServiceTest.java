@@ -63,6 +63,8 @@ import org.apache.geode.management.internal.configuration.validators.Configurati
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.operation.AsyncExecutorManager;
+import org.apache.geode.management.internal.operation.AsyncOperationExecutor;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -73,6 +75,8 @@ public class LocatorClusterManagementServiceTest {
   private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
+  private AsyncExecutorManager executorManager = new AsyncExecutorManager();
+  private Map<Class, AsyncOperationExecutor> executors = new HashMap<>();
   private ConfigurationValidator<RegionConfig> regionValidator;
   private CacheElementValidator cacheElementValidator;
   private ConfigurationManager<RegionConfig> regionManager;
@@ -102,7 +106,7 @@ public class LocatorClusterManagementServiceTest {
     doNothing().when(persistenceService).unlockSharedConfiguration();
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
-            memberValidator, cacheElementValidator));
+            memberValidator, cacheElementValidator, executorManager));
     regionConfig = new RegionConfig();
     regionConfig.setName("region1");
   }

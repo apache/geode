@@ -21,11 +21,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.AsyncOperation;
+import org.apache.geode.management.api.ClientAsyncOperationResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
+import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -102,6 +107,19 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementListResult.class)
         .getBody();
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op) {
+    ClusterManagementOperationResult<V> result =
+        restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
+            ClusterManagementOperationResult.class).getBody();
+    ClientAsyncOperationResult<V> operationResult =
+        new ClientAsyncOperationResult<>(restTemplate, result.getUri());
+    result.setOperationResult(operationResult);
+    return result;
   }
 
   private String getEndpoint(CacheElement config) {

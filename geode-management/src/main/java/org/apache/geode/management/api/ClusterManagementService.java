@@ -66,6 +66,9 @@ public interface ClusterManagementService {
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
+  <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op);
+
   /**
    * Test to see if this instance of ClusterManagementService retrieved from the client side is
    * properly connected to the locator or not

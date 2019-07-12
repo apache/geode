@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -45,13 +47,18 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.api.CompletedAsyncOperationResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
+import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
@@ -65,6 +72,7 @@ import org.apache.geode.management.internal.configuration.validators.GatewayRece
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.operation.AsyncExecutorManager;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
@@ -72,12 +80,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private ConfigurationPersistenceService persistenceService;
   private Map<Class, ConfigurationManager> managers;
   private Map<Class, ConfigurationValidator> validators;
+  private AsyncExecutorManager executorManager;
   private MemberValidator memberValidator;
   private CacheElementValidator commonValidator;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(persistenceService, new HashMap<>(), new HashMap<>(), null, null);
+    this(persistenceService, new HashMap<>(), new HashMap<>(), null, null, null);
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager());
     managers.put(PdxType.class, new PdxManager());
@@ -88,17 +97,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiverConfig.class, new GatewayReceiverConfigValidator());
     memberValidator = new MemberValidator(cache, persistenceService);
+
+    // initialize the list of operations
+    executorManager = new AsyncExecutorManager();
   }
 
   @VisibleForTesting
   public LocatorClusterManagementService(ConfigurationPersistenceService persistenceService,
-      Map<Class, ConfigurationManager> managers, Map<Class, ConfigurationValidator> validators,
-      MemberValidator memberValidator, CacheElementValidator commonValidator) {
+      Map<Class, ConfigurationManager> managers,
+      Map<Class, ConfigurationValidator> validators,
+      MemberValidator memberValidator,
+      CacheElementValidator commonValidator,
+      AsyncExecutorManager executorManager) {
     this.persistenceService = persistenceService;
     this.managers = managers;
     this.validators = validators;
     this.memberValidator = memberValidator;
     this.commonValidator = commonValidator;
+    this.executorManager = executorManager;
   }
 
   @Override
@@ -356,6 +372,38 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Expect only one matching " + config.getClass().getSimpleName());
     }
     return list;
+  }
+
+  @Override
+  public <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op) {
+    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
+    result.setOperationResult(executorManager.submit(op));
+    result.setUri(op.getUri());
+    result.setStatus(ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
+    return result;
+  }
+
+  /**
+   * this is intended for use by the rest controller. for Java usage, please use the Future returned
+   * by getOperationResult on the result of startOperation.
+   */
+  public <V extends JsonSerializable> ClusterManagementOperationResult<V> checkStatus(String opId) {
+    final Future<V> status = executorManager.getStatus(opId);
+    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
+    if (!status.isDone()) {
+      result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
+    } else {
+      CompletedAsyncOperationResult<V> operationResult = new CompletedAsyncOperationResult<>();
+      try {
+        operationResult.setResult(status.get());
+        result.setOperationResult(operationResult);
+        result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
+      } catch (InterruptedException | ExecutionException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return result;
   }
 
   @Override
