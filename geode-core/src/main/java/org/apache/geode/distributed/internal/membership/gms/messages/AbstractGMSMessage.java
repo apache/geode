@@ -17,11 +17,14 @@ package org.apache.geode.distributed.internal.membership.gms.messages;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.internal.DataSerializableFixedID;
 
 public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMSMessage {
+  @Immutable
+  public static final GMSMember ALL_RECIPIENTS = null;
   private List<GMSMember> recipients;
   private GMSMember sender;
 
@@ -47,7 +50,23 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
 
   @Override
   public List<GMSMember> getRecipients() {
-    return recipients;
+    if (getMulticast()) {
+      return Collections.singletonList(ALL_RECIPIENTS);
+    } else if (this.recipients != null) {
+      return this.recipients;
+    } else {
+      return Collections.singletonList(ALL_RECIPIENTS);
+    }
+  }
+
+  @Override
+  public boolean forAll() {
+    if (getMulticast()) {
+      return true;
+    }
+    List<GMSMember> recipients = getRecipients();
+    return recipients == ALL_RECIPIENTS ||
+        (recipients.size() == 1 && recipients.get(0) == ALL_RECIPIENTS);
   }
 
   @Override

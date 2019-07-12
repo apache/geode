@@ -103,14 +103,21 @@ public class Services {
     this.auth = authenticator;
   }
 
-  protected void init() {
+  /**
+   * Initialize services - do this before invoking start()
+   */
+  public void init() {
     this.messenger.init(this);
     this.manager.init(this);
     this.joinLeave.init(this);
     this.healthMon.init(this);
   }
 
-  protected void start() {
+  /**
+   * Start services - this will start everything up and join the cluster.
+   * Invoke init() before this method.
+   */
+  public void start() {
     boolean started = false;
     try {
       logger.info("Starting membership services");

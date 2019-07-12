@@ -29,10 +29,6 @@ import org.apache.geode.internal.Version;
  */
 public interface NetMember extends Comparable<NetMember> {
 
-  void setAttributes(MemberAttributes args);
-
-  MemberAttributes getAttributes();
-
   InetAddress getInetAddress();
 
   int getPort();
@@ -113,4 +109,6 @@ public interface NetMember extends Comparable<NetMember> {
    * life of this member.
    */
   String getUniqueId();
+
+  void setDurableTimeout(int newValue);
 }

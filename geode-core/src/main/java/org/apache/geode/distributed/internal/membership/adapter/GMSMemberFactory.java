@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.adapter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,6 +20,7 @@ import java.nio.file.Path;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
@@ -29,8 +30,9 @@ import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
@@ -60,10 +62,17 @@ public class GMSMemberFactory implements MemberServices {
   @Override
   public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
+    DurableClientAttributes durableClientAttributes = attr.getDurableClientAttributes();
+    String durableId = null;
+    int durableTimeout = 0;
+    if (durableClientAttributes != null) {
+      durableId = durableClientAttributes.getId();
+      durableTimeout = durableClientAttributes.getTimeout();
+    }
     GMSMemberAdapter result =
         new GMSMemberAdapter(new GMSMember(i, p, attr.getVmPid(), (byte) attr.getVmKind(),
             attr.getPort(), attr.getVmViewId(), attr.getName(), attr.getGroups(),
-            attr.getDurableClientAttributes(), splitBrainEnabled, canBeCoordinator, version, 0, 0));
+            durableId, durableTimeout, splitBrainEnabled, canBeCoordinator, version, 0, 0));
     return result;
   }
 

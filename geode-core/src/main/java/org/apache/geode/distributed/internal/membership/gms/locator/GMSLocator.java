@@ -45,13 +45,13 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
+import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -388,7 +388,7 @@ public class GMSLocator implements Locator, NetLocator {
   public void restarting(DistributedSystem ds, GemFireCache cache,
       InternalConfigurationPersistenceService sharedConfig) {
     setServices(
-        ((GMSMembershipManager) ((InternalDistributedSystem) ds).getDM().getMembershipManager())
+        ((Manager) ((InternalDistributedSystem) ds).getDM().getMembershipManager())
             .getServices());
   }
 

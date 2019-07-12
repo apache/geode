@@ -35,7 +35,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.cache.GemFireCache;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -52,8 +51,6 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.SizeableRunnable;
-import org.apache.geode.distributed.internal.direct.DirectChannel;
-import org.apache.geode.distributed.internal.direct.DirectChannelListener;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -88,7 +85,7 @@ import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership..")
+@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..")
 public class MembershipDependenciesJUnitTest {
 
   /*
@@ -108,12 +105,12 @@ public class MembershipDependenciesJUnitTest {
   @ArchTest
   public static final ArchRule membershipDoesntDependOnCore = classes()
       .that()
-      .resideInAPackage("org.apache.geode.distributed.internal.membership..")
-      .and()
-      .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
+      .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+      // .and()
+      // .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
       .should()
       .onlyDependOnClassesThat(
-          resideInAPackage("org.apache.geode.distributed.internal.membership..")
+          resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
               .or(not(resideInAPackage("org.apache.geode.."))));
 
   /*
@@ -125,20 +122,21 @@ public class MembershipDependenciesJUnitTest {
   @ArchTest
   public static final ArchRule membershipDoesntDependOnCoreProvisional = classes()
       .that()
-      .resideInAPackage("org.apache.geode.distributed.internal.membership..")
-      .and()
-      .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
-      .and()
+      .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
+      // .and()
+      // .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
+      // .and()
 
       // TODO: InternalDistributedMember needs to move out of the package
-      .areNotAssignableFrom(InternalDistributedMember.class)
+      // .areNotAssignableFrom(InternalDistributedMember.class)
 
 
       .should()
       .onlyDependOnClassesThat(
-          resideInAPackage("org.apache.geode.distributed.internal.membership..")
+          resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
 
               .or(not(resideInAPackage("org.apache.geode..")))
+              .or(resideInAPackage("org.apache.geode.test.."))
 
               // TODO: Create a new stats interface for membership
               .or(assignableTo(DMStats.class))
@@ -191,16 +189,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO: Break dependency on SizeableRunnable
               .or(assignableTo(SizeableRunnable.class))
-
-              // TODO: Break dependency on DirectChannelListener (and its getDM method!)
-              .or(assignableTo(DirectChannelListener.class))
-
-              // TODO: This and TCP conduit be moved inside membership.
-              // Do we even need this class since it is just forwarding to TCPConduit?
-              .or(type(DirectChannel.class))
-
-              // TODO: Break dependency on geode DurableClientAttributes
-              .or(type(DurableClientAttributes.class))
 
               // TODO
               .or(assignableTo(CancelCriterion.class))

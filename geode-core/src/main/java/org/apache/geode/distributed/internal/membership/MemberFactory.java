@@ -21,7 +21,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;

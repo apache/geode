@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.DataSerializableFixedID;
 
 /**
@@ -80,5 +81,10 @@ public interface Manager extends Service, MessageHandler<GMSMessage> {
    * from this method
    */
   DataSerializableFixedID unwrapMessage(GMSMessage messageToSend);
+
+  /**
+   * Return the Services object owning this Manager service
+   */
+  Services getServices();
 
 }

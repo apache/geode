@@ -34,7 +34,9 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   public JoinRequestMessage(GMSMember coord, GMSMember id,
       Object credentials, int fdPort, int requestId) {
     super();
-    setRecipient(coord);
+    if (coord != null) {
+      setRecipient(coord);
+    }
     this.memberID = id;
     this.credentials = credentials;
     this.failureDetectionPort = fdPort;
@@ -86,7 +88,6 @@ public class JoinRequestMessage extends AbstractGMSMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    // TODO - backward compatibility broken - recipient may need an InternalDistributedMember
     GMSUtil.writeMemberID(memberID, out);
     DataSerializer.writeObject(credentials, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);

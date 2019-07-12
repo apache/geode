@@ -36,9 +36,7 @@ public interface GMSMessage {
   /** from DataSerializableFixedID */
   int getDSFID();
 
-  default boolean forAll() {
-    return false;
-  }
+  boolean forAll();
 
   default boolean getMulticast() {
     return false;

@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.Version;
@@ -33,23 +32,19 @@ import org.apache.geode.internal.Version;
 public class GMSMemberAdapter implements NetMember {
 
   private final GMSMember gmsMember;
+  private DurableClientAttributes durableClientAttributes;
 
   public GMSMemberAdapter(GMSMember gmsMember) {
     this.gmsMember = gmsMember;
+    String durableId = gmsMember.getDurableId();
+    if (durableId != null) {
+      this.durableClientAttributes =
+          new DurableClientAttributes(durableId, gmsMember.getDurableTimeout());
+    }
   }
 
   public GMSMember getGmsMember() {
     return gmsMember;
-  }
-
-  @Override
-  public void setAttributes(MemberAttributes args) {
-    gmsMember.setAttributes(args);
-  }
-
-  @Override
-  public MemberAttributes getAttributes() {
-    return gmsMember.getAttributes();
   }
 
   @Override
@@ -154,12 +149,22 @@ public class GMSMemberAdapter implements NetMember {
 
   @Override
   public DurableClientAttributes getDurableClientAttributes() {
-    return gmsMember.getDurableClientAttributes();
+    return this.durableClientAttributes;
+  }
+
+  @Override
+  public void setDurableTimeout(int newValue) {
+    if (durableClientAttributes != null) {
+      durableClientAttributes.updateTimeout(newValue);
+      gmsMember.setDurableTimeout(newValue);
+    }
   }
 
   @Override
   public void setDurableClientAttributes(DurableClientAttributes attributes) {
-    gmsMember.setDurableClientAttributes(attributes);
+    durableClientAttributes = attributes;
+    gmsMember.setDurableId(attributes.getId());
+    gmsMember.setDurableTimeout(attributes.getTimeout());
   }
 
   @Override

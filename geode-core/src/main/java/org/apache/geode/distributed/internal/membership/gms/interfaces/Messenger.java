@@ -17,9 +17,9 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 
 public interface Messenger extends Service {
   /**
@@ -58,7 +58,7 @@ public interface Messenger extends Service {
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts
    */
-  QuorumChecker getQuorumChecker();
+  GMSQuorumChecker getQuorumChecker();
 
   /**
    * test whether multicast is not only turned on but is working

@@ -80,6 +80,7 @@ import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.SystemTimer;
@@ -1649,13 +1650,13 @@ public class GMSMembershipManager implements MembershipManager {
     if (!(services.isShutdownDueToForcedDisconnect())) {
       return null;
     }
-    if (this.quorumChecker != null) {
-      return this.quorumChecker;
+    if (quorumChecker != null) {
+      return quorumChecker;
     }
 
-    QuorumChecker impl = services.getMessenger().getQuorumChecker();
-    this.quorumChecker = impl;
-    return impl;
+    GMSQuorumChecker impl = services.getMessenger().getQuorumChecker();
+    quorumChecker = new GMSQuorumCheckerAdapter(impl);
+    return quorumChecker;
   }
 
   @Override
@@ -2407,6 +2408,7 @@ public class GMSMembershipManager implements MembershipManager {
 
   class ManagerImpl implements Manager {
 
+    @Override
     public Services getServices() {
       return services;
     }
@@ -2699,5 +2701,6 @@ public class GMSMembershipManager implements MembershipManager {
       }
       return (DataSerializableFixedID) messageToSend;
     }
+
   }
 }

@@ -24,8 +24,6 @@ import org.jgroups.util.UUID;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.distributed.DurableClientAttributes;
-import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -35,16 +33,16 @@ import org.apache.geode.internal.net.SocketCreator;
  * GMSMember is the membership identifier class for Group Membership Services.
  */
 public class GMSMember implements DataSerializableFixedID {
-  /** The DM type for regular distribution managers */
+  /** The type for regular members */
   public static final int NORMAL_DM_TYPE = 10;
 
-  /** The DM type for locator distribution managers */
+  /** The DM type for locator members */
   public static final int LOCATOR_DM_TYPE = 11;
 
-  /** The DM type for Console (admin-only) distribution managers */
+  /** The DM type for deprecated admin-only members */
   public static final int ADMIN_ONLY_DM_TYPE = 12;
 
-  /** The DM type for stand-alone members */
+  /** The DM type for stand-alone members (usually clients) */
   public static final int LONER_DM_TYPE = 13;
 
   private int udpPort = 0;
@@ -57,12 +55,12 @@ public class GMSMember implements DataSerializableFixedID {
   private int vmViewId = -1;
   private int directPort;
   private String name;
-  private DurableClientAttributes durableClientAttributes;
   private String[] groups;
   private short versionOrdinal = Version.CURRENT_ORDINAL;
   private long uuidLSBs;
   private long uuidMSBs;
-
+  private String durableId;
+  private int durableTimeout;
 
 
   // Used only by Externalization
@@ -81,26 +79,6 @@ public class GMSMember implements DataSerializableFixedID {
     setUUID(UUID.randomUUID());
   }
 
-
-  public MemberAttributes getAttributes() {
-    return new MemberAttributes(directPort, processId, vmKind, vmViewId, name, groups,
-        durableClientAttributes);
-  }
-
-
-  public void setAttributes(MemberAttributes p_attr) {
-    MemberAttributes attr = p_attr;
-    if (attr == null) {
-      attr = MemberAttributes.INVALID;
-    }
-    processId = attr.getVmPid();
-    vmKind = (byte) attr.getVmKind();
-    directPort = attr.getPort();
-    vmViewId = attr.getVmViewId();
-    name = attr.getName();
-    groups = attr.getGroups();
-    durableClientAttributes = attr.getDurableClientAttributes();
-  }
 
   /**
    * Create a CacheMember referring to the current host (as defined by the given string).
@@ -127,7 +105,7 @@ public class GMSMember implements DataSerializableFixedID {
    */
   public GMSMember(InetAddress i, int p, int processId, byte vmKind, int directPort, int vmViewId,
       String name, String[] groups,
-      DurableClientAttributes durableClientAttributes,
+      String durableId, int durableTimeout,
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator, short version,
       long msbs, long lsbs) {
     this.inetAddr = i;
@@ -138,8 +116,8 @@ public class GMSMember implements DataSerializableFixedID {
     this.vmViewId = vmViewId;
     this.name = name;
     this.groups = groups;
-    // we need to get rid of references to DurableClientAttributes
-    this.durableClientAttributes = durableClientAttributes;
+    this.durableId = durableId;
+    this.durableTimeout = durableTimeout;
     this.networkPartitionDetectionEnabled = networkPartitionDetectionEnabled;
     this.preferredForCoordinator = preferredForCoordinator;
     this.versionOrdinal = version;
@@ -173,7 +151,8 @@ public class GMSMember implements DataSerializableFixedID {
     this.vmViewId = other.vmViewId;
     this.directPort = other.directPort;
     this.name = other.name;
-    this.durableClientAttributes = other.durableClientAttributes;
+    this.durableId = other.durableId;
+    this.durableTimeout = other.durableTimeout;
     this.groups = other.groups;
     this.versionOrdinal = other.versionOrdinal;
     this.uuidLSBs = other.uuidLSBs;
@@ -195,6 +174,14 @@ public class GMSMember implements DataSerializableFixedID {
     this.preferredForCoordinator = preferred;
   }
 
+
+  public String getDurableId() {
+    return durableId;
+  }
+
+  public int getDurableTimeout() {
+    return durableTimeout;
+  }
 
   public InetAddress getInetAddress() {
     return this.inetAddr;
@@ -412,10 +399,6 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
-  public DurableClientAttributes getDurableClientAttributes() {
-    return durableClientAttributes;
-  }
-
   public String[] getRoles() {
     return groups;
   }
@@ -464,11 +447,6 @@ public class GMSMember implements DataSerializableFixedID {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-
-  public void setDurableClientAttributes(DurableClientAttributes durableClientAttributes) {
-    this.durableClientAttributes = durableClientAttributes;
   }
 
 
@@ -540,9 +518,8 @@ public class GMSMember implements DataSerializableFixedID {
       DataSerializer.writeString(String.valueOf(getVmViewId()), out);
     }
     DataSerializer
-        .writeString(durableClientAttributes == null ? "" : durableClientAttributes.getId(), out);
-    DataSerializer.writeInteger(Integer.valueOf(
-        durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
+        .writeString(durableId == null ? "" : durableId, out);
+    DataSerializer.writeInteger(durableId == null ? 300 : durableTimeout, out);
 
     Version.writeOrdinal(out, versionOrdinal, true);
 
@@ -598,10 +575,8 @@ public class GMSMember implements DataSerializableFixedID {
       }
     }
 
-    String durableId = DataSerializer.readString(in);
-    int durableTimeout = in.readInt();
-    durableClientAttributes =
-        durableId.length() > 0 ? new DurableClientAttributes(durableId, durableTimeout) : null;
+    durableId = DataSerializer.readString(in);
+    durableTimeout = in.readInt();
 
     versionOrdinal = readVersion(flags, in);
 
@@ -666,6 +641,14 @@ public class GMSMember implements DataSerializableFixedID {
   private String formatUUID() {
     UUID uuid = getUUID();
     return ";uuid=" + (uuid == null ? "none" : getUUID().toStringLong());
+  }
+
+  public void setDurableTimeout(int newValue) {
+    durableTimeout = newValue;
+  }
+
+  public void setDurableId(String id) {
+    durableId = id;
   }
 
 

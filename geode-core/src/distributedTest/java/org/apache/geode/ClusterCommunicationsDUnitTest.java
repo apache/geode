@@ -300,7 +300,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
     properties.setProperty(CONSERVE_SOCKETS, "" + conserveSockets);
-    properties.setProperty(DISABLE_TCP, ""+disableTcp);
+    properties.setProperty(DISABLE_TCP, "" + disableTcp);
     properties.setProperty(SOCKET_LEASE_TIME, "10000");
     properties.setProperty(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
 

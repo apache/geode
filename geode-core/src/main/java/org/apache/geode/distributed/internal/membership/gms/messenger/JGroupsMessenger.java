@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.apache.geode.distributed.internal.membership.gms.GMSUtil.replaceStrings;
+import static org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage.ALL_RECIPIENTS;
 import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
 import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
 import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
@@ -72,12 +73,10 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -537,24 +536,17 @@ public class JGroupsMessenger implements Messenger {
         || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
-    DurableClientAttributes dca = null;
-    if (config.getDurableClientId() != null) {
-      dca = new DurableClientAttributes(config.getDurableClientId(),
-          config.getDurableClientTimeout());
-    }
-    localAddress = new GMSMember(jgAddress.getInetAddress(), jgAddress.getPort(),
+    GMSMember gmsMember = new GMSMember(jgAddress.getInetAddress(), jgAddress.getPort(),
         OSProcess.getId(), (byte) services.getConfig().getTransport().getVmKind(),
         -1 /* directport */, -1 /* viewID */, config.getName(),
-        GMSUtil.parseGroups(config.getRoles(), config.getGroups()), dca,
-        config.getEnableNetworkPartitionDetection(), isLocator, Version.CURRENT_ORDINAL, 0, 0);
-
-    // add the JGroups logical address to the GMSMember
-    UUID uuid = this.jgAddress;
-    GMSMember gmsMember = (GMSMember) localAddress;
-    gmsMember.setUUID(uuid);
+        GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
+        config.getDurableClientTimeout(),
+        config.getEnableNetworkPartitionDetection(), isLocator, Version.CURRENT_ORDINAL,
+        jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs());
     gmsMember.setMemberWeight((byte) (services.getConfig().getMemberWeight() & 0xff));
     gmsMember.setNetworkPartitionDetectionEnabled(
         services.getConfig().getDistributionConfig().getEnableNetworkPartitionDetection());
+    localAddress = gmsMember;
     logger.info("Established local address {}", localAddress);
     services.setLocalAddress(localAddress);
   }
@@ -680,10 +672,6 @@ public class JGroupsMessenger implements Messenger {
 
     filterOutgoingMessage(msg);
 
-    // JGroupsMessenger does not support direct-replies, so register
-    // the message's processor if necessary
-    msg.registerProcessor();
-
     List<GMSMember> destinations = msg.getRecipients();
     boolean allDestinations = msg.forAll();
 
@@ -747,7 +735,7 @@ public class JGroupsMessenger implements Messenger {
       int len = destinations.size();
       List<GMSMember> calculatedMembers; // explicit list of members
       int calculatedLen; // == calculatedMembers.len
-      if (len == 1 && destinations.get(0) == null) { // send to all
+      if (len == 1 && destinations.get(0) == ALL_RECIPIENTS) { // send to all
         // Grab a copy of the current membership
         GMSMembershipView v = services.getJoinLeave().getView();
 
@@ -1227,7 +1215,7 @@ public class JGroupsMessenger implements Messenger {
   }
 
   @Override
-  public QuorumChecker getQuorumChecker() {
+  public GMSQuorumChecker getQuorumChecker() {
     GMSMembershipView view = this.view;
     if (view == null) {
       view = services.getJoinLeave().getView();
