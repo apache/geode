@@ -51,7 +51,7 @@ import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * The core of auto serialization which is used in both aspect and reflection-based
@@ -657,13 +657,13 @@ public class AutoSerializableManager {
   // unsafe will be null if the Unsafe class is not available or SAFE was requested.
   // We attempt to use Unsafe by default for best performance.
   @Immutable
-  private static final UnsafeWrapper unsafe;
+  private static final Unsafe unsafe;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     // only use Unsafe if SAFE was not explicitly requested
     if (!Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.SAFE")) {
       try {
-        tmp = new UnsafeWrapper();
+        tmp = new Unsafe();
         // only throw an exception if UNSAFE was explicitly requested
       } catch (RuntimeException ex) {
         if (Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "AutoSerializer.UNSAFE")) {

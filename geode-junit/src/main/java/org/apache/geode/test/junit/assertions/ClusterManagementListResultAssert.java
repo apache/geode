@@ -49,7 +49,7 @@ public class ClusterManagementListResultAssert<T extends CacheElement & Correspo
 
   public ClusterManagementListResultAssert<T, R> hasStatusCode(
       ClusterManagementResult.StatusCode... codes) {
-    assertThat(actual.getStatusCode()).isIn(codes);
+    assertThat(actual.getStatusCode()).isIn((Object[]) codes);
     return this;
   }
 

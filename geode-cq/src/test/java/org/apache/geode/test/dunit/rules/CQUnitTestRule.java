@@ -62,7 +62,7 @@ public class CQUnitTestRule extends ExternalResource {
     DefaultQueryService queryService = mock(DefaultQueryService.class);
     DefaultQuery query = mock(DefaultQuery.class);
 
-    Set<String> regionsInQuery = new HashSet();
+    Set<String> regionsInQuery = new HashSet<>();
     regionsInQuery.add(regionName);
 
     when(connection.getCachedRegionHelper()).thenReturn(crHelper);

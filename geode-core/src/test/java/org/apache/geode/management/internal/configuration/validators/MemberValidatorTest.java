@@ -89,7 +89,7 @@ public class MemberValidatorTest {
 
   @Test
   public void findMembers() throws Exception {
-    assertThat(validator.findServers(null))
+    assertThat(validator.findServers())
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
     assertThat(validator.findServers(new String[] {}))

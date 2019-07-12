@@ -25,10 +25,15 @@ public class CacheProviderImpl implements CacheProvider {
 
   @Override
   public InternalCacheForClientAccess getCache() {
-    InternalCache result = GemFireCacheImpl.getExisting();
+    final InternalCache result = getInternalCache();
     if (result == null) {
       return null;
     }
     return new InternalCacheForClientAccess(result);
+  }
+
+  @SuppressWarnings("deprecation")
+  private InternalCache getInternalCache() {
+    return GemFireCacheImpl.getExisting();
   }
 }

@@ -50,8 +50,11 @@ public interface CorrespondWith<R extends RuntimeInfo> {
     if (type == null) {
       return null;
     }
-    return (Class<R>) type.getActualTypeArguments()[0];
-  };
+
+    @SuppressWarnings("unchecked")
+    final Class<R> actualTypeArgument = (Class<R>) type.getActualTypeArguments()[0];
+    return actualTypeArgument;
+  }
 
   /**
    * for internal use only
@@ -60,12 +63,12 @@ public interface CorrespondWith<R extends RuntimeInfo> {
     return !RuntimeInfo.class.equals(getRuntimeClass());
   }
 
-  @XmlTransient
-  @JsonIgnore
   /**
    * this is to indicate when we need to go gather runtime information for this configuration,
    * should we go to all members in the group, or just any member in the group
    */
+  @XmlTransient
+  @JsonIgnore
   default boolean isGlobalRuntime() {
     return false;
   }
