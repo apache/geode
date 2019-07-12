@@ -229,6 +229,6 @@ public class GatewaySenderMBean extends NotificationBroadcasterSupport
 
   @Override
   public int getEventsExceedingAlertThreshold() {
-    return 0;
+    return bridge.getEventsExceedingAlertThreshold();
   }
 }
