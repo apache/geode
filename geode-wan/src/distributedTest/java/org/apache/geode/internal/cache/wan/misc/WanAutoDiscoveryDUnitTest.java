@@ -336,20 +336,23 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
   @Test
   public void test_RingTopology() {
-
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite(4);
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPortsForDUnitSite(8);
 
     final Set<String> site1LocatorsPort = new HashSet<String>();
     site1LocatorsPort.add("localhost[" + ports[0] + "]");
+    site1LocatorsPort.add("localhost[" + ports[1] + "]");
 
     final Set<String> site2LocatorsPort = new HashSet<String>();
-    site2LocatorsPort.add("localhost[" + ports[1] + "]");
+    site2LocatorsPort.add("localhost[" + ports[2] + "]");
+    site2LocatorsPort.add("localhost[" + ports[3] + "]");
 
     final Set<String> site3LocatorsPort = new HashSet<String>();
-    site3LocatorsPort.add("localhost[" + ports[2] + "]");
+    site3LocatorsPort.add("localhost[" + ports[4] + "]");
+    site3LocatorsPort.add("localhost[" + ports[5] + "]");
 
     final Set<String> site4LocatorsPort = new HashSet<String>();
-    site4LocatorsPort.add("localhost[" + ports[3] + "]");
+    site4LocatorsPort.add("localhost[" + ports[6] + "]");
+    site4LocatorsPort.add("localhost[" + ports[7] + "]");
 
     Map<Integer, Set<String>> dsVsPort = new HashMap<Integer, Set<String>>();
     dsVsPort.put(1, site1LocatorsPort);
@@ -362,15 +365,23 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
 
     async[0] = vm0.invokeAsync(
         () -> WANTestBase.createLocator(1, ports[0], site1LocatorsPort, site2LocatorsPort));
-
     async[1] = vm1.invokeAsync(
-        () -> WANTestBase.createLocator(2, ports[1], site2LocatorsPort, site3LocatorsPort));
+        () -> WANTestBase.createLocator(1, ports[1], site1LocatorsPort, site2LocatorsPort));
 
     async[2] = vm2.invokeAsync(
-        () -> WANTestBase.createLocator(3, ports[2], site3LocatorsPort, site4LocatorsPort));
-
+        () -> WANTestBase.createLocator(2, ports[2], site2LocatorsPort, site3LocatorsPort));
     async[3] = vm3.invokeAsync(
-        () -> WANTestBase.createLocator(4, ports[3], site4LocatorsPort, site1LocatorsPort));
+        () -> WANTestBase.createLocator(2, ports[3], site2LocatorsPort, site3LocatorsPort));
+
+    async[4] = vm4.invokeAsync(
+        () -> WANTestBase.createLocator(3, ports[4], site3LocatorsPort, site4LocatorsPort));
+    async[5] = vm5.invokeAsync(
+        () -> WANTestBase.createLocator(3, ports[5], site3LocatorsPort, site4LocatorsPort));
+
+    async[6] = vm6.invokeAsync(
+        () -> WANTestBase.createLocator(4, ports[6], site4LocatorsPort, site1LocatorsPort));
+    async[7] = vm7.invokeAsync(
+        () -> WANTestBase.createLocator(4, ports[7], site4LocatorsPort, site1LocatorsPort));
 
     // pause(5000);
     try {
@@ -378,6 +389,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
       async[1].join();
       async[2].join();
       async[3].join();
+      async[4].join();
+      async[5].join();
+      async[6].join();
+      async[7].join();
     } catch (InterruptedException e) {
       e.printStackTrace();
       fail("Could not join async operations");
@@ -387,6 +402,10 @@ public class WanAutoDiscoveryDUnitTest extends WANTestBase {
     vm1.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
     vm2.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
     vm3.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
+    vm4.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
+    vm5.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
+    vm6.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
+    vm7.invoke(() -> WANTestBase.checkAllSiteMetaDataFor3Sites(dsVsPort));
   }
 
   @Ignore

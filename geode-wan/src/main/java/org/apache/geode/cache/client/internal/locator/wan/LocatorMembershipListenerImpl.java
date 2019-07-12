@@ -51,6 +51,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
   private int port;
 
+
+  public LocatorMembershipListenerImpl(TcpClient tcpClient) {
+    this.tcpClient = tcpClient;
+  }
+
   public LocatorMembershipListenerImpl() {
     this.tcpClient = new TcpClient();
   }
@@ -102,6 +107,12 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
           for (DistributionLocatorId removeLocId : locatorsToRemove) {
             if (entry.getValue().contains(removeLocId)) {
               entry.getValue().remove(removeLocId);
+              logger.info(String.format(
+                  "[JUAN]: LocatorMembershipListenerImpl.locatorJoined(%s, %s, %s) -> Removed locator %s",
+                  distributedSystemId,
+                  locator,
+                  sourceLocator,
+                  removeLocId));
             }
           }
           for (DistributionLocatorId value : entry.getValue()) {
@@ -140,14 +151,47 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   public Object handleRequest(Object request) {
     Object response = null;
     if (request instanceof RemoteLocatorJoinRequest) {
+      logger.info(String.format(
+          "[JUAN]: Handling %s from %s [dsId=%s]... Current allLocatorsInfo: %s, current allServerLocatorsInfo: %s.",
+          request.getClass().getSimpleName(),
+          request.toString(),
+          ((RemoteLocatorJoinRequest) request).getDistributedSystemId(),
+          this.getAllLocatorsInfo(),
+          this.getAllServerLocatorsInfo()));
+
       response = updateAllLocatorInfo((RemoteLocatorJoinRequest) request);
+
+      logger.info(String.format(
+          "[JUAN]: Handling %s from %s [dsId=%s]... Done!. allLocatorsInfo: %s, allServerLocatorsInfo: %s.",
+          request.getClass().getSimpleName(),
+          request.toString(),
+          ((RemoteLocatorJoinRequest) request).getDistributedSystemId(),
+          this.getAllLocatorsInfo(),
+          this.getAllServerLocatorsInfo()));
+
     } else if (request instanceof LocatorJoinMessage) {
+      logger.info(String.format(
+          "[JUAN]: Handling %s from %s... Current allLocatorsInfo: %s, current allServerLocatorsInfo: %s.",
+          request.getClass().getSimpleName(),
+          request.toString(),
+          this.getAllLocatorsInfo(),
+          this.getAllServerLocatorsInfo()));
+
       response = informAboutRemoteLocators((LocatorJoinMessage) request);
+
+      logger.info(String.format(
+          "[JUAN]: Handling %s from %s... Done!. allLocatorsInfo: %s, allServerLocatorsInfo: %s.",
+          request.getClass().getSimpleName(),
+          request.toString(),
+          this.getAllLocatorsInfo(),
+          this.getAllServerLocatorsInfo()));
+
     } else if (request instanceof RemoteLocatorPingRequest) {
       response = getPingResponse((RemoteLocatorPingRequest) request);
     } else if (request instanceof RemoteLocatorRequest) {
       response = getRemoteLocators((RemoteLocatorRequest) request);
     }
+
     return response;
   }
 
