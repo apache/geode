@@ -968,25 +968,6 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
     final GatewaySenderStats statistics = this.sender.getStatistics();
     int queueSize = eventQueueSize();
 
-    // Log an alert for each event if necessary
-    if (this.sender.getAlertThreshold() > 0) {
-      Iterator it = events.iterator();
-      long currentTime = System.currentTimeMillis();
-      while (it.hasNext()) {
-        Object o = it.next();
-        if (o != null && o instanceof GatewaySenderEventImpl) {
-          GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
-          if (ge.getCreationTime() + this.sender.getAlertThreshold() < currentTime) {
-            logger.warn(
-                "{} event for region={} key={} value={} was in the queue for {} milliseconds",
-                new Object[] {ge.getOperation(), ge.getRegionPath(), ge.getKey(),
-                    ge.getValueAsString(true), currentTime - ge.getCreationTime()});
-            statistics.incEventsExceedingAlertThreshold();
-          }
-        }
-      }
-    }
-
     if (this.eventQueueSizeWarning && queueSize <= AbstractGatewaySender.QUEUE_SIZE_THRESHOLD) {
       logger.info("The event queue size has dropped below {} events.",
           AbstractGatewaySender.QUEUE_SIZE_THRESHOLD);
@@ -1050,6 +1031,27 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
         logger.debug("Removing events from the queue {}", events.size());
       }
       eventQueueRemove(events.size());
+
+      final GatewaySenderStats statistics = this.sender.getStatistics();
+
+      // Log an alert for each event if necessary
+      if (this.sender.getAlertThreshold() > 0) {
+        Iterator it = events.iterator();
+        long currentTime = System.currentTimeMillis();
+        while (it.hasNext()) {
+          Object o = it.next();
+          if (o != null && o instanceof GatewaySenderEventImpl) {
+            GatewaySenderEventImpl ge = (GatewaySenderEventImpl) o;
+            if (ge.getCreationTime() + this.sender.getAlertThreshold() < currentTime) {
+              logger.warn(
+                  "{} event for region={} key={} value={} was in the queue for {} milliseconds",
+                  new Object[] {ge.getOperation(), ge.getRegionPath(), ge.getKey(),
+                      ge.getValueAsString(true), currentTime - ge.getCreationTime()});
+              statistics.incEventsExceedingAlertThreshold();
+            }
+          }
+        }
+      }
     }
   }
 
