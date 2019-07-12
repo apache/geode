@@ -1526,8 +1526,8 @@ public class PRHARedundancyProvider {
                   failedMemberId, delay);
             }
           }
-          resourceManager.addStartupStage(providerStartupTask);
           recoveryFuture = recoveryExecutor.schedule(task, delay, MILLISECONDS);
+          resourceManager.addStartupStage(providerStartupTask);
         } catch (RejectedExecutionException e) {
           // ok, the executor is shutting down.
         }

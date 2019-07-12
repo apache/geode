@@ -15,7 +15,6 @@
 package org.apache.geode.internal.cache;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.same;
@@ -27,6 +26,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.junit.Before;
@@ -135,6 +135,79 @@ public class PRHARedundancyProviderTest {
   }
 
   @Test
+  public void doNotNotReportStartupTaskIfRecoveryDelayIsNegative() {
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
+    when(partitionAttributes.getStartupRecoveryDelay()).thenReturn(-1L);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, null);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager, never()).addStartupStage(any());
+  }
+
+  @Test
+  public void doNotNotReportStartupTaskIfPartitionIsNotDataStore() {
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
+    when(partitionedRegion.isDataStore()).thenReturn(false);
+    when(resourceManager.getExecutor()).thenReturn(mock(ScheduledExecutorService.class));
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, null);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager, never()).addStartupStage(any());
+  }
+
+  @Test
+  public void doNotNotReportStartupTaskIfExecutorRejectsRebalanceTask() {
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+    when(executor.schedule(any(Runnable.class), anyLong(), any()))
+        .thenThrow(new RejectedExecutionException());
+    when(resourceManager.getExecutor()).thenReturn(executor);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, null);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager, never()).addStartupStage(any());
+  }
+
+  @Test
+  public void doNotNotReportStartupTaskIfIsHasShutDown() {
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    PartitionAttributes partitionAttributes = mock(PartitionAttributes.class);
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(partitionAttributes);
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
+    when(resourceManager.getExecutor()).thenReturn(executor);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createRebalanceOp, null);
+
+    prHaRedundancyProvider.shutdown();
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(resourceManager, never()).addStartupStage(any());
+  }
+
+  @Test
   public void completesStartupTaskWhenRedundancyRecovered() {
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
@@ -164,18 +237,6 @@ public class PRHARedundancyProviderTest {
     prHaRedundancyProvider.startRedundancyRecovery();
 
     verify(providerStartupTask).complete(any());
-  }
-
-  private static Answer<?> runTheRunnable() {
-    return (Answer<Object>) invocation -> {
-      ((Runnable) invocation.getArgument(0)).run();
-      return null;
-    };
-  }
-
-  @Test
-  public void testPathsWhereWeShouldNotStartTheRecoveryTask() {
-    fail("not yet implemented");
   }
 
   @Test
@@ -225,11 +286,6 @@ public class PRHARedundancyProviderTest {
     return rebalanceOp;
   }
 
-  @Test
-  public void testPathsWhereTheRecoveryTaskThrows() {
-    fail("not yet implemented");
-  }
-
   private static class ThreadlessPersistentBucketRecoverer extends PersistentBucketRecoverer {
 
     public ThreadlessPersistentBucketRecoverer(
@@ -241,5 +297,13 @@ public class PRHARedundancyProviderTest {
     public void startLoggingThread() {
       // do nothing
     }
+
+  }
+
+  private static Answer<?> runTheRunnable() {
+    return (Answer<Object>) invocation -> {
+      ((Runnable) invocation.getArgument(0)).run();
+      return null;
+    };
   }
 }
