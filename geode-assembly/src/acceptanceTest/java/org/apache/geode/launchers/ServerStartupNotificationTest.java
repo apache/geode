@@ -14,7 +14,6 @@
  */
 package org.apache.geode.launchers;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,15 +45,6 @@ public class ServerStartupNotificationTest {
   private File serverFolder;
   private String serverName;
 
-  /**
-   * Test ideas
-   * - redundancy recovery
-   * - persistent value recovery
-   * - ServerLauncher.start() finished
-   * - Log statement that indicates server is online
-   * - Meter that reflects server online state
-   */
-
   @Before
   public void setup() {
     serverFolder = temporaryFolder.getRoot();
@@ -80,9 +70,8 @@ public class ServerStartupNotificationTest {
     Pattern logLinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
-    await().atMost(60, SECONDS)
-        .untilAsserted(() -> assertThat(Files.lines(logFile))
-            .as("Log file " + logFile + " includes line matching " + logLinePattern)
-            .anyMatch(logLinePattern.asPredicate()));
+    await().untilAsserted(() -> assertThat(Files.lines(logFile))
+        .as("Log file " + logFile + " includes line matching " + logLinePattern)
+        .anyMatch(logLinePattern.asPredicate()));
   }
 }

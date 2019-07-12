@@ -33,7 +33,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.awaitility.Duration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -400,14 +399,15 @@ public class ServerLauncherTest {
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
     serverLauncher.startCacheServer(cache);
+
     assertThat(startupCompletionActionHasRun)
         .withFailMessage("Startup complete action ran before startup tasks finished")
         .isFalse();
 
     numberOfStartupTasksRemaining.countDown();
-    await().atMost(Duration.FIVE_SECONDS)
-        .untilAsserted(() -> assertThat(startupCompletionActionHasRun)
-            .withFailMessage("Startup complete action did not run after startup tasks finished")
-            .isTrue());
+
+    await().untilAsserted(() -> assertThat(startupCompletionActionHasRun)
+        .withFailMessage("Startup complete action did not run after startup tasks finished")
+        .isTrue());
   }
 }

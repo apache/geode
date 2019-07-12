@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -136,26 +135,25 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
                 + ".*");
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");
 
-    await().atMost(Duration.ONE_MINUTE)
-        .untilAsserted(() -> {
-          final List<String> foundPatterns =
-              Files.lines(logFile).filter(
-                  redundancyRestoredPattern.asPredicate().or(serverOnlinePattern.asPredicate()))
-                  .collect(Collectors.toList());
+    await().untilAsserted(() -> {
+      final List<String> foundPatterns =
+          Files.lines(logFile).filter(
+              redundancyRestoredPattern.asPredicate().or(serverOnlinePattern.asPredicate()))
+              .collect(Collectors.toList());
 
-          assertThat(foundPatterns)
-              .as("Log file " + logFile + " includes one line matching each of "
-                  + redundancyRestoredPattern + " and " + serverOnlinePattern)
-              .hasSize(2);
+      assertThat(foundPatterns)
+          .as("Log file " + logFile + " includes one line matching each of "
+              + redundancyRestoredPattern + " and " + serverOnlinePattern)
+          .hasSize(2);
 
-          assertThat(foundPatterns.get(0))
-              .as("First matching Log line of " + foundPatterns)
-              .matches(redundancyRestoredPattern.asPredicate(),
-                  redundancyRestoredPattern.pattern());
+      assertThat(foundPatterns.get(0))
+          .as("First matching Log line of " + foundPatterns)
+          .matches(redundancyRestoredPattern.asPredicate(),
+              redundancyRestoredPattern.pattern());
 
-          assertThat(foundPatterns.get(1))
-              .as("Second matching Log line of " + foundPatterns)
-              .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
-        });
+      assertThat(foundPatterns.get(1))
+          .as("Second matching Log line of " + foundPatterns)
+          .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
+    });
   }
 }

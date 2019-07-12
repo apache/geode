@@ -320,7 +320,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     socketBufferSize = builder.getSocketBufferSize();
     controllerParameters = new ServerControllerParameters();
     startupCompletionAction = builder.getStartupCompletionAction() == null
-        ? () -> logStartCompleted() : builder.getStartupCompletionAction();
+        ? this::logStartCompleted : builder.getStartupCompletionAction();
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
