@@ -122,6 +122,7 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     properties.setProperty(LOCATORS, "");
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
     systemProperties.setProperty(ClusterManagementService.FEATURE_FLAG, "true");
+    systemProperties.setProperty("-Xloggc", System.getProperty("user.dir"));
   }
 
   @Override
