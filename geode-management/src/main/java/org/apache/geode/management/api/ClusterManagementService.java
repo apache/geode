@@ -66,7 +66,7 @@ public interface ClusterManagementService {
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
-  <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  <A extends AsyncOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op);
 
   /**

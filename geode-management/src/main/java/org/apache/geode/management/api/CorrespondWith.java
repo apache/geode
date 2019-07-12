@@ -33,7 +33,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * implement CorrespondWith<RuntimeInfo>
  */
 @Experimental
-public interface CorrespondWith<R extends RuntimeInfo> extends ReturnType<R> {
+public interface CorrespondWith<R extends RuntimeInfo> {
   @XmlTransient
   @JsonIgnore
   default Class<R> getRuntimeClass() {

@@ -24,8 +24,6 @@ public class RebalanceOperationExecutor
   @Override
   public RebalanceInfo exec(RebalanceOperation operation) throws Exception {
     Thread.sleep(100);
-    RebalanceInfo result = new RebalanceInfo();
-    result.setRebalanceResult("fake success");
-    return result;
+    return new RebalanceInfo("fake success");
   }
 }

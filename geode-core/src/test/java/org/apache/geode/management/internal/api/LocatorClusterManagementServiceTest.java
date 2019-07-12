@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -51,7 +52,11 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.api.AsyncOperation;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.CompletedAsyncOperationResult;
+import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -64,7 +69,6 @@ import org.apache.geode.management.internal.configuration.validators.MemberValid
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.AsyncExecutorManager;
-import org.apache.geode.management.internal.operation.AsyncOperationExecutor;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -75,8 +79,7 @@ public class LocatorClusterManagementServiceTest {
   private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
-  private AsyncExecutorManager executorManager = new AsyncExecutorManager();
-  private Map<Class, AsyncOperationExecutor> executors = new HashMap<>();
+  private AsyncExecutorManager executorManager;
   private ConfigurationValidator<RegionConfig> regionValidator;
   private CacheElementValidator cacheElementValidator;
   private ConfigurationManager<RegionConfig> regionManager;
@@ -104,6 +107,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new CacheConfig()).when(persistenceService).getCacheConfig(any(), anyBoolean());
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
+    executorManager = mock(AsyncExecutorManager.class);
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
             memberValidator, cacheElementValidator, executorManager));
@@ -319,5 +323,39 @@ public class LocatorClusterManagementServiceTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
     assertThat(result.getStatusMessage()).contains("Successfully removed config for [cluster]");
+  }
+
+  @Test
+  public void startOperation() {
+    final String URI = "test/uri";
+    AsyncOperation<?> operation = mock(AsyncOperation.class);
+    when(operation.getUri()).thenReturn(URI);
+    ClusterManagementOperationResult<?> result =
+        service.startOperation(operation);
+    assertThat(result.getUri()).isEqualTo(URI);
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
+    assertThat(result.getStatusMessage()).isEqualTo("async operation started");
+  }
+
+  @Test
+  public void checkStatusForNotFound() {
+    assertThatThrownBy(() -> service.checkStatus("123"))
+        .isInstanceOf(EntityNotFoundException.class);
+  }
+
+  @Test
+  public void checkStatus() {
+    Future future = mock(Future.class);
+    when(executorManager.getStatus(any())).thenReturn(future);
+    when(future.isDone()).thenReturn(false);
+    ClusterManagementOperationResult<JsonSerializable> result = service.checkStatus("456");
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
+    assertThat(result.getOperationResult()).isNull();
+
+    when(future.isDone()).thenReturn(true);
+    result = service.checkStatus("456");
+    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+    assertThat(result.getOperationResult()).isNotNull()
+        .isInstanceOf(CompletedAsyncOperationResult.class);
   }
 }

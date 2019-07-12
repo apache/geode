@@ -12,11 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.operation;
 
-package org.apache.geode.management.api;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.apache.geode.annotations.Experimental;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
 
-@Experimental
-public interface ReturnType<R> {
+import org.apache.geode.util.internal.GeodeJsonMapper;
+
+public class RebalanceOperationTest {
+  private ObjectMapper mapper;
+
+  @Before
+  public void setUp() {
+    mapper = GeodeJsonMapper.getMapper();
+  }
+
+  @Test
+  public void serialize() throws Exception {
+    RebalanceOperation operation = new RebalanceOperation();
+    operation.setId("test1");
+    String json = mapper.writeValueAsString(operation);
+    RebalanceOperation value = mapper.readValue(json, RebalanceOperation.class);
+    assertThat(value.getId()).isEqualTo("test1");
+  }
 }

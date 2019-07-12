@@ -12,25 +12,25 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.api;
 
-package org.apache.geode.management.runtime;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
-import org.apache.geode.management.api.JsonSerializable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
-public class RebalanceInfo implements JsonSerializable {
-  private String rebalanceResult;
+import org.junit.Test;
 
-  public RebalanceInfo() {}
+public class ClientAsyncOperationResultTest {
 
-  public RebalanceInfo(String rebalanceResult) {
-    this.rebalanceResult = rebalanceResult;
-  }
-
-  public String getRebalanceResult() {
-    return rebalanceResult;
-  }
-
-  public void setRebalanceResult(String rebalanceResult) {
-    this.rebalanceResult = rebalanceResult;
+  @Test
+  public void get() {
+    ClientAsyncOperationResult<?> operationResult =
+        spy(new ClientAsyncOperationResult<>(null, null));
+    doReturn(false).when(operationResult).isDone();
+    assertThatThrownBy(() -> operationResult.get(500, TimeUnit.MILLISECONDS)).isInstanceOf(
+        TimeoutException.class);
   }
 }

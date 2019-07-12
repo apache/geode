@@ -34,14 +34,14 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
   }
 
   @SuppressWarnings("unchecked")
-  private ClusterManagementOperationResult<V> getStatus() {
+  /**
+   * this should be the only method to make the request to the locator to check the status of the
+   * operation
+   */
+  private ClusterManagementOperationResult<V> requestStatus() {
     return restTemplate
         .getForEntity(uri, ClusterManagementOperationResult.class)
         .getBody();
-  }
-
-  private static boolean isDone(ClusterManagementOperationResult<?> result) {
-    return result.getOperationResult().isDone();
   }
 
   @Override
@@ -56,16 +56,16 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
 
   @Override
   public boolean isDone() {
-    return isDone(getStatus());
+    ClusterManagementOperationResult<V> result = requestStatus();
+    return result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
   }
 
   @Override
   public V get() throws InterruptedException, ExecutionException {
-    ClusterManagementOperationResult<V> result = getStatus();
-    while (!isDone(result)) {
+    while (!isDone()) {
       Thread.sleep(100);
-      result = getStatus();
     }
+    ClusterManagementOperationResult<V> result = requestStatus();
     return result.getOperationResult().get();
   }
 
@@ -74,14 +74,15 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
       throws InterruptedException, ExecutionException, TimeoutException {
     long timeoutMillis = unit.toMillis(timeout);
     long startTime = System.currentTimeMillis();
-    ClusterManagementOperationResult<V> result = getStatus();
-    while (!isDone(result)) {
+    while (!isDone()) {
       long elapsedTime = System.currentTimeMillis() - startTime;
       if (elapsedTime > timeoutMillis)
         throw new TimeoutException();
       Thread.sleep(100);
-      result = getStatus();
     }
+
+
+    ClusterManagementOperationResult<V> result = requestStatus();
     return result.getOperationResult().get();
   }
 }

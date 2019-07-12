@@ -19,8 +19,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.AsyncOperationResult;
 import org.apache.geode.management.api.JsonSerializable;
@@ -28,7 +26,6 @@ import org.apache.geode.management.api.JsonSerializable;
 @Experimental
 public class LocatorAsyncOperationResult<V extends JsonSerializable>
     extends AsyncOperationResult<V> {
-  @JsonIgnore
   private Future<V> delegate;
 
   public LocatorAsyncOperationResult(Future<V> delegate) {

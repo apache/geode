@@ -30,7 +30,6 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -111,15 +110,23 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends AsyncOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     ClusterManagementOperationResult<V> result =
         restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
             ClusterManagementOperationResult.class).getBody();
     ClientAsyncOperationResult<V> operationResult =
-        new ClientAsyncOperationResult<>(restTemplate, result.getUri());
+        new ClientAsyncOperationResult<>(restTemplate,
+            stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri()));
     result.setOperationResult(operationResult);
     return result;
+  }
+
+  private static String stripPrefix(String prefix, String s) {
+    if (s.startsWith(prefix)) {
+      return s.substring(prefix.length());
+    }
+    return s;
   }
 
   private String getEndpoint(CacheElement config) {

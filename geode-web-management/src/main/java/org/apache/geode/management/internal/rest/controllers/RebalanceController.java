@@ -18,16 +18,15 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE_ENDPOINT;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.operation.RebalanceOperation;
@@ -38,28 +37,25 @@ import org.apache.geode.management.runtime.RebalanceInfo;
 public class RebalanceController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT + "/{id}")
-  public ResponseEntity<ClusterManagementOperationResult<RebalanceInfo>> checkRebalanceStatus(
-      @PathVariable(name = "id") String id) {
+  @ResponseBody
+  public ClusterManagementOperationResult<RebalanceInfo> checkRebalanceStatus(
+      @PathVariable String id) {
     ClusterManagementOperationResult<RebalanceInfo> result =
         clusterManagementService.checkStatus(id);
 
-    return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    return result;
   }
 
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
-  @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT)
+  @RequestMapping(method = RequestMethod.POST, value = REBALANCE_ENDPOINT)
   public ResponseEntity<ClusterManagementOperationResult<RebalanceInfo>> startRebalance(
-      @RequestParam(required = false) List<String> includeRegions,
-      @RequestParam(required = false) List<String> excludeRegions) {
-    RebalanceOperation rebalance = new RebalanceOperation();
-    rebalance.setIncludeRegions(includeRegions);
-    rebalance.setExcludeRegions(excludeRegions);
+      @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceInfo> result =
-        clusterManagementService.startOperation(rebalance);
+        clusterManagementService.startOperation(operation);
+    result.setOperationResult(null);
 
     return new ResponseEntity<>(result,
-        result.isSuccessful() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        result.isSuccessful() ? HttpStatus.ACCEPTED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
 }

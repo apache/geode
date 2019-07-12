@@ -58,7 +58,6 @@ import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
@@ -375,7 +374,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends AsyncOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
     result.setOperationResult(executorManager.submit(op));
@@ -390,6 +389,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   public <V extends JsonSerializable> ClusterManagementOperationResult<V> checkStatus(String opId) {
     final Future<V> status = executorManager.getStatus(opId);
+    if (status == null) {
+      throw new EntityNotFoundException("Operation id = " + opId + " not found");
+    }
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
     if (!status.isDone()) {
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");

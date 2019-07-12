@@ -19,5 +19,6 @@ import java.util.concurrent.Future;
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public abstract class AsyncOperationResult<V extends JsonSerializable> implements Future<V> {
+public abstract class AsyncOperationResult<V extends JsonSerializable>
+    implements Future<V>, JsonSerializable {
 }

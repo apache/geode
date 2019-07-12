@@ -116,7 +116,8 @@ public class ClusterManagementResult {
 
   @JsonIgnore
   public boolean isSuccessful() {
-    return statusCode == StatusCode.OK;
+    return statusCode == StatusCode.OK || statusCode == StatusCode.ACCEPTED
+        || statusCode == StatusCode.IN_PROGRESS;
   }
 
   public StatusCode getStatusCode() {

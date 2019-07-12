@@ -36,13 +36,11 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
-import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
-import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 
@@ -56,7 +54,7 @@ public class ClientClusterManagementServiceDUnitTest {
   private WebApplicationContext webApplicationContext;
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule(1);
+  public ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   private ClusterManagementService client;
   private LocatorWebContext webContext;
@@ -251,12 +249,6 @@ public class ClientClusterManagementServiceDUnitTest {
         .hasConfigurations()
         .extracting(RegionConfig::getId)
         .containsExactly("region1");
-  }
-
-  @Test
-  public void doOperation() {
-    RebalanceOperation rebalance = new RebalanceOperation();
-    ClusterManagementOperationResult<?> result = client.startOperation(rebalance);
   }
 
   @Test

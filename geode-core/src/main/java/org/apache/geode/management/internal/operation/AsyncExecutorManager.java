@@ -21,13 +21,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.AsyncOperationResult;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
@@ -37,28 +37,31 @@ public class AsyncExecutorManager {
   private Map<String, Future> history;
 
   public AsyncExecutorManager() {
-    executorService = Executors.newFixedThreadPool(10);
-    history = new HashMap<>();
+    this(10, 10);
+  }
+
+  public AsyncExecutorManager(int threadPoolSize, int historySize) {
+    executorService = Executors.newFixedThreadPool(threadPoolSize);
+    history = new LRUMap(historySize);
 
     // initialize the list of operation executors
     executors = new HashMap<>();
     executors.put(RebalanceOperation.class, new RebalanceOperationExecutor());
   }
 
-  public <A extends AsyncOperation & ReturnType<V>, V extends JsonSerializable> AsyncOperationResult<V> submit(
+  public <A extends AsyncOperation<V>, V extends JsonSerializable> AsyncOperationResult<V> submit(
       A op) {
     if (!Strings.isBlank(op.getId()))
       throw new IllegalArgumentException(
           String.format("Operation type %s should not supply its own id",
               op.getClass().getSimpleName()));
     op.setId(UUID.randomUUID().toString());
-    tidyHistory();
     AsyncOperationExecutor<A, V> executor = getExecutor(op);
     if (executor == null) {
       throw new IllegalArgumentException(String.format("Operation type %s is not supported",
           op.getClass().getSimpleName()));
     }
-    validate(op);
+
     Future<V> future = executorService.submit(executor.createCallable(op));
 
     // save the Future so we can check on it later
@@ -67,15 +70,6 @@ public class AsyncExecutorManager {
     return new LocatorAsyncOperationResult<V>(future);
   }
 
-  private <T extends AsyncOperation> void validate(T op) {
-    // TODO: look up a suitable validator for this op type and call it
-  }
-
-  private void tidyHistory() {
-    // TODO: decide if we're keeping a max number, a max age, or only most recent
-    // TODO: decide if that policy applies only to completed or also in-progress jobs
-    // TODO: decide if that policy applies per job type
-  }
 
   @SuppressWarnings("unchecked")
   private <T extends AsyncOperation, R> AsyncOperationExecutor<T, R> getExecutor(

@@ -16,7 +16,13 @@ package org.apache.geode.management.api;
 
 import org.apache.geode.lang.Identifiable;
 
-public abstract class AsyncOperation implements Identifiable<String>, RestfulEndpoint {
+/**
+ *
+ * @param <V> the result type of the operation
+ */
+
+public abstract class AsyncOperation<V extends JsonSerializable>
+    implements Identifiable<String>, RestfulEndpoint {
   String id;
 
   @Override

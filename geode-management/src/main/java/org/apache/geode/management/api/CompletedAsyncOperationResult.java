@@ -18,11 +18,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
 public class CompletedAsyncOperationResult<V extends JsonSerializable>
     extends AsyncOperationResult<V> {
+  @JsonProperty
   private V result = null;
 
   public void setResult(V result) {
@@ -35,11 +39,13 @@ public class CompletedAsyncOperationResult<V extends JsonSerializable>
   }
 
   @Override
+  @JsonIgnore
   public boolean isCancelled() {
     return false;
   }
 
   @Override
+  @JsonIgnore
   public boolean isDone() {
     return true;
   }

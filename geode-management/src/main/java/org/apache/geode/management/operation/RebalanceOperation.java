@@ -17,11 +17,14 @@ package org.apache.geode.management.operation;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import org.apache.geode.management.api.AsyncOperation;
-import org.apache.geode.management.api.ReturnType;
 import org.apache.geode.management.runtime.RebalanceInfo;
 
-public class RebalanceOperation extends AsyncOperation implements ReturnType<RebalanceInfo> {
+@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
+public class RebalanceOperation extends AsyncOperation<RebalanceInfo> {
   public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
   private List<String> includeRegions = new ArrayList<>();
   private List<String> excludeRegions = new ArrayList<>();
@@ -43,6 +46,7 @@ public class RebalanceOperation extends AsyncOperation implements ReturnType<Reb
   }
 
   @Override
+  @JsonIgnore
   public String getEndpoint() {
     return REBALANCE_ENDPOINT;
   }
