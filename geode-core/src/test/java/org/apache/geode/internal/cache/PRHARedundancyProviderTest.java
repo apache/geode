@@ -176,7 +176,7 @@ public class PRHARedundancyProviderTest {
     when(partitionedRegion.isDataStore()).thenReturn(true);
     ScheduledExecutorService executor = mock(ScheduledExecutorService.class);
     when(executor.schedule(any(Runnable.class), anyLong(), any()))
-        .thenThrow(new RejectedExecutionException());
+        .thenThrow(new RejectedExecutionException("Rejected for the test"));
     when(resourceManager.getExecutor()).thenReturn(executor);
 
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
@@ -288,7 +288,7 @@ public class PRHARedundancyProviderTest {
 
   private static class ThreadlessPersistentBucketRecoverer extends PersistentBucketRecoverer {
 
-    public ThreadlessPersistentBucketRecoverer(
+    ThreadlessPersistentBucketRecoverer(
         PRHARedundancyProvider prhaRedundancyProvider, int proxyBuckets) {
       super(prhaRedundancyProvider, proxyBuckets);
     }

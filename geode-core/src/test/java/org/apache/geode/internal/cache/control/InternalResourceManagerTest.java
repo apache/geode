@@ -99,7 +99,7 @@ public class InternalResourceManagerTest {
     }
     
   @Test
-  public void startsWithAnSuccessfullyCompletedAsyncStartupStage() {
+  public void startsWithASuccessfullyCompletedAsyncStartupStage() {
     InternalResourceManager resourceManager = InternalResourceManager.createResourceManager(cache);
 
     CompletionStage<Void> startupStage = resourceManager.getStartupStage();
