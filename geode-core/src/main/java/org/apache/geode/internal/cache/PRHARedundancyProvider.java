@@ -83,6 +83,7 @@ import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionRegionInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOpFactory;
 import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RecoveryRunnable;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -154,6 +155,7 @@ public class PRHARedundancyProvider {
 
   private final PartitionedRegion partitionedRegion;
   private final InternalResourceManager resourceManager;
+  private final PartitionedRegionRebalanceOpFactory rebalanceOpFactory;
   private final CompletableFuture<Void> providerStartupTask;
 
   /**
@@ -184,6 +186,7 @@ public class PRHARedundancyProvider {
   public PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager) {
     this(partitionedRegion, resourceManager, PersistentBucketRecoverer::new,
+        PartitionedRegionRebalanceOp::new,
         new CompletableFuture<>());
   }
 
@@ -191,16 +194,19 @@ public class PRHARedundancyProvider {
   PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager,
       BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer> persistentBucketRecovererFunction) {
-    this(partitionedRegion, resourceManager, persistentBucketRecovererFunction, new CompletableFuture<>());
+    this(partitionedRegion, resourceManager, persistentBucketRecovererFunction,
+        PartitionedRegionRebalanceOp::new, new CompletableFuture<>());
   }
 
   @VisibleForTesting
   PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager,
-      BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer>
-          persistentBucketRecovererFunction, CompletableFuture<Void> providerStartupTask) {
+      BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer> persistentBucketRecovererFunction,
+      PartitionedRegionRebalanceOpFactory rebalanceOpFactory,
+      CompletableFuture<Void> providerStartupTask) {
     this.partitionedRegion = partitionedRegion;
     this.resourceManager = resourceManager;
+    this.rebalanceOpFactory = rebalanceOpFactory;
     this.providerStartupTask = providerStartupTask;
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
         () -> InternalResourceManager.getResourceObserver().recoveryConflated(partitionedRegion),
@@ -1484,7 +1490,7 @@ public class PRHARedundancyProvider {
             director = new CompositeDirector(true, true, false, movePrimaries);
           }
 
-          PartitionedRegionRebalanceOp rebalance = new PartitionedRegionRebalanceOp(
+          PartitionedRegionRebalanceOp rebalance = rebalanceOpFactory.create(
               partitionedRegion, false, director, replaceOfflineData, false);
 
           long start = partitionedRegion.getPrStats().startRecovery();
