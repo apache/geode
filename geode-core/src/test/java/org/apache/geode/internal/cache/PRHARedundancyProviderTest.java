@@ -20,6 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -126,7 +127,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
         (a, b) -> mock(PersistentBucketRecoverer.class),
-        PRHARedundancyProviderTest::createRabalanceOp, providerStartupTask);
+        PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
@@ -158,17 +159,11 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
         (a, b) -> mock(PersistentBucketRecoverer.class),
-        PRHARedundancyProviderTest::createRabalanceOp, providerStartupTask);
+        PRHARedundancyProviderTest::createRebalanceOp, providerStartupTask);
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
     verify(providerStartupTask).complete(any());
-  }
-
-  private static PartitionedRegionRebalanceOp createRabalanceOp(PartitionedRegion region,
-      boolean simulate,
-      RebalanceDirector director, boolean replaceOfflineData, boolean isRebalance) {
-    return mock(PartitionedRegionRebalanceOp.class);
   }
 
   private static Answer<?> runTheRunnable() {
@@ -181,6 +176,53 @@ public class PRHARedundancyProviderTest {
   @Test
   public void testPathsWhereWeShouldNotStartTheRecoveryTask() {
     fail("not yet implemented");
+  }
+
+  @Test
+  public void doesNotMarkStartTaskCompleteIfRebalanceThrows() {
+    DistributedSystem distributedSystem = mock(DistributedSystem.class);
+    when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
+
+    InternalCache cache = mock(InternalCache.class);
+    when(cache.getDistributedSystem()).thenReturn(distributedSystem);
+
+    when(partitionedRegion.getGemFireCache()).thenReturn(cache);
+    when(partitionedRegion.getRegionAdvisor()).thenReturn(mock(RegionAdvisor.class));
+    when(partitionedRegion.getPartitionAttributes()).thenReturn(mock(PartitionAttributes.class));
+    when(partitionedRegion.isDataStore()).thenReturn(true);
+    when(partitionedRegion.getPrStats()).thenReturn(mock(PartitionedRegionStats.class));
+
+    ScheduledExecutorService executorService = mock(ScheduledExecutorService.class);
+    when(resourceManager.getExecutor()).thenReturn(executorService);
+
+    when(executorService.schedule(any(Runnable.class), anyLong(), any()))
+        .thenAnswer(runTheRunnable());
+
+    @SuppressWarnings("unchecked")
+    CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
+
+    prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
+        (a, b) -> mock(PersistentBucketRecoverer.class),
+        PRHARedundancyProviderTest::createThrowingRebalanceOp, providerStartupTask);
+
+    prHaRedundancyProvider.startRedundancyRecovery();
+
+    verify(providerStartupTask, never()).complete(any());
+  }
+
+  private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
+      boolean simulate, RebalanceDirector director, boolean replaceOfflineData,
+      boolean isRebalance) {
+    return mock(PartitionedRegionRebalanceOp.class);
+  }
+
+  private static PartitionedRegionRebalanceOp createThrowingRebalanceOp(PartitionedRegion region,
+      boolean simulate, RebalanceDirector director, boolean replaceOfflineData,
+      boolean isRebalance) {
+    PartitionedRegionRebalanceOp rebalanceOp = mock(PartitionedRegionRebalanceOp.class);
+    when(rebalanceOp.execute())
+        .thenThrow(new RuntimeException("Exception deliberately thrown by the test"));
+    return rebalanceOp;
   }
 
   @Test
