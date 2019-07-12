@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,7 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   private int locatorPort;
   private String startServer1Command;
   private String regionName;
+  private String regionNameTwo;
 
   @Before
   public void redundantRegionThatRequiresRedundancyRecovery() throws IOException {
@@ -93,14 +95,27 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         "--type=PARTITION_REDUNDANT",
         "--redundant-copies=1");
 
+    regionNameTwo = "mySecondRegion";
+    String createRegionTwoCommand = String.join(" ",
+        "create region",
+        "--name=" + regionNameTwo,
+        "--type=PARTITION_REDUNDANT",
+        "--redundant-copies=1");
+
     String putCommand = String.join(" ",
         "put",
         "--region=" + regionName,
         "--key=James",
         "--value=Bond");
 
+    String putCommandInRegionTwo = String.join(" ",
+        "put",
+        "--region=" + regionNameTwo,
+        "--key=Derrick",
+        "--value=Flint");
+
     gfshRule.execute(startLocatorCommand, startServer1Command, startServer2Command,
-        createRegionCommand, putCommand);
+        createRegionCommand, createRegionTwoCommand, putCommand, putCommandInRegionTwo);
 
     String stopServer1Command = "stop server --dir=" + server1Folder;
     gfshRule.execute(stopServer1Command);
@@ -133,26 +148,39 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         Pattern.compile(
             "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionName
                 + ".*");
+    Pattern redundancyRestoredSecondRegionPattern =
+        Pattern.compile(
+            "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionNameTwo
+                + ".*");
+
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");
 
     await().untilAsserted(() -> {
+      final Predicate<String> isRelevantLine = redundancyRestoredPattern.asPredicate()
+          .or(redundancyRestoredSecondRegionPattern.asPredicate())
+          .or(serverOnlinePattern.asPredicate());
+
       final List<String> foundPatterns =
-          Files.lines(logFile).filter(
-              redundancyRestoredPattern.asPredicate().or(serverOnlinePattern.asPredicate()))
+          Files.lines(logFile).filter(isRelevantLine)
               .collect(Collectors.toList());
 
       assertThat(foundPatterns)
           .as("Log file " + logFile + " includes one line matching each of "
-              + redundancyRestoredPattern + " and " + serverOnlinePattern)
-          .hasSize(2);
+              + redundancyRestoredPattern + ", " + redundancyRestoredSecondRegionPattern + ", and "
+              + serverOnlinePattern)
+          .hasSize(3);
 
-      assertThat(foundPatterns.get(0))
-          .as("First matching Log line of " + foundPatterns)
-          .matches(redundancyRestoredPattern.asPredicate(),
-              redundancyRestoredPattern.pattern());
+      assertThat(foundPatterns)
+          .as("lines in the log file")
+          .withFailMessage("%n Expect line matching %s %n but was %s",
+              redundancyRestoredPattern.pattern(), foundPatterns)
+          .anyMatch(redundancyRestoredPattern.asPredicate())
+          .withFailMessage("%n Expect line matching %s %n but was %s",
+              redundancyRestoredSecondRegionPattern.pattern(), foundPatterns)
+          .anyMatch(redundancyRestoredSecondRegionPattern.asPredicate());
 
-      assertThat(foundPatterns.get(1))
-          .as("Second matching Log line of " + foundPatterns)
+      assertThat(foundPatterns.get(2))
+          .as("Third matching Log line of " + foundPatterns)
           .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
     });
   }
