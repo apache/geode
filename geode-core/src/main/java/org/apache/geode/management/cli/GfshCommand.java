@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.shiro.subject.Subject;
 import org.springframework.shell.core.CommandMarker;
 
@@ -34,6 +36,8 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -45,6 +49,7 @@ import org.apache.geode.security.ResourcePermission;
 
 @Experimental
 public abstract class GfshCommand implements CommandMarker {
+  private static final Logger logger = LogService.getLogger();
   public static final String EXPERIMENTAL = "(Experimental) ";
   private InternalCache cache;
 
@@ -249,5 +254,33 @@ public abstract class GfshCommand implements CommandMarker {
 
     return false;
 
+  }
+
+  public boolean diskStoreBeanAndMemberBeanDiskStoreExists(DistributedSystemMXBean dsMXBean,
+      String memberName,
+      String diskStore) {
+    return diskStoreBeanExists(dsMXBean, memberName, diskStore) &&
+        memberBeanDiskStoreExists(dsMXBean, memberName, diskStore);
+  }
+
+  private boolean diskStoreBeanExists(DistributedSystemMXBean dsMXBean, String memberName,
+      String diskStore) {
+    try {
+      dsMXBean.fetchDiskStoreObjectName(memberName, diskStore);
+      return true;
+    } catch (Exception e) {
+      if (!e.getMessage().toLowerCase().contains("not found")) {
+        logger.warn("Unable to retrieve Disk Store ObjectName for member: {}, diskstore: {} - {}",
+            memberName, diskStore, e.getMessage());
+      }
+    }
+    return false;
+  }
+
+  private boolean memberBeanDiskStoreExists(DistributedSystemMXBean dsMXBean, String memberName,
+      String diskStore) {
+    return (Stream.of(dsMXBean.listMemberDiskstore().get(memberName))
+        .filter(dsName -> dsName.equals(diskStore))
+        .findFirst().orElse(null) != null);
   }
 }
