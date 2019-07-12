@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.Arrays;
 
 import org.apache.geode.GemFireIOException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.distributed.internal.ResourceEvent;
@@ -75,7 +76,7 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return result;
   }
 
-  /* For testing purposes only. */
+  @VisibleForTesting
   public DiskStoreFactory setDiskDirSizesUnit(DiskDirSizesUnit unit) {
     this.attrs.setDiskDirSizesUnit(unit);
     return this;
@@ -227,8 +228,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
     return this;
   }
 
-
-
   /**
    * Checks if directories exist, if they don't then create those directories
    */
@@ -243,7 +242,6 @@ public class DiskStoreFactoryImpl implements DiskStoreFactory {
       }
     }
   }
-
 
   /**
    * Verify all directory sizes are positive

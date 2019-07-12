@@ -121,6 +121,9 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   public DiskDirSizesUnit getDiskDirSizesUnit() {
+    if (this.diskDirSizesUnit == null) {
+      this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
+    }
     return this.diskDirSizesUnit;
   }
 

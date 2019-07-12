@@ -45,7 +45,7 @@ public class DirectoryHolder {
   private final DiskDirectoryStats dirStats;
 
   /** For testing purposes we can set the disk directory size in bytes **/
-  DiskDirSizesUnit diskDirSizesUnit;
+  private final DiskDirSizesUnit diskDirSizesUnit;
 
   DirectoryHolder(StatisticsFactory factory, File dir, long space, int index) {
     this(dir.getPath(), factory, dir, space, index);
