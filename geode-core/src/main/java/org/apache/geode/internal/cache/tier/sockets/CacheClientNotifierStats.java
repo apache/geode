@@ -74,31 +74,32 @@ public class CacheClientNotifierStats {
 
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
-    _type = f.createType(statName, statName, new StatisticDescriptor[] {f.createIntCounter(EVENTS,
+    _type = f.createType(statName, statName, new StatisticDescriptor[] {f.createLongCounter(EVENTS,
         "Number of events processed by the cache client notifier.", "operations"),
 
         f.createLongCounter(EVENT_PROCESSING_TIME,
             "Total time spent by the cache client notifier processing events.", "nanoseconds"),
 
-        f.createIntCounter(CLIENT_REGISTRATIONS,
+        f.createLongCounter(CLIENT_REGISTRATIONS,
             "Number of clients that have registered for updates.", "operations"),
 
         f.createLongCounter(CLIENT_REGISTRATION_TIME,
             "Total time spent doing client registrations.", "nanoseconds"),
 
-        f.createIntGauge("clientHealthMonitorRegister", "Number of client Register.", "registered"),
+        f.createLongGauge("clientHealthMonitorRegister", "Number of client Register.",
+            "registered"),
 
-        f.createIntGauge("clientHealthMonitorUnRegister", "Number of client UnRegister.",
+        f.createLongGauge("clientHealthMonitorUnRegister", "Number of client UnRegister.",
             "unregistered"),
 
-        f.createIntCounter(DURABLE_RECONNECTION_COUNT,
+        f.createLongCounter(DURABLE_RECONNECTION_COUNT,
             "Number of times the same durable client connects to the server", "operations"),
 
-        f.createIntCounter(QUEUE_DROPPED_COUNT,
+        f.createLongCounter(QUEUE_DROPPED_COUNT,
             "Number of times client queue for a particular durable client is dropped",
             "operations"),
 
-        f.createIntCounter(EVENTS_ENQUEUED_WHILE_CLIENT_AWAY_COUNT,
+        f.createLongCounter(EVENTS_ENQUEUED_WHILE_CLIENT_AWAY_COUNT,
             "Number of events enqueued in queue for a durable client ", "operations"),
 
         f.createLongCounter(CQ_PROCESSING_TIME,

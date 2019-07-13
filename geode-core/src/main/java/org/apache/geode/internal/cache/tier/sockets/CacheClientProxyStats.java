@@ -94,36 +94,37 @@ public class CacheClientProxyStats implements MessageStats {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
     _type = f.createType(statName, statName, new StatisticDescriptor[] {
-        f.createIntCounter(MESSAGES_RECEIVED, "Number of client messages received.", "operations"),
+        f.createLongCounter(MESSAGES_RECEIVED, "Number of client messages received.", "operations"),
 
-        f.createIntCounter(MESSAGES_QUEUED, "Number of client messages added to the message queue.",
+        f.createLongCounter(MESSAGES_QUEUED,
+            "Number of client messages added to the message queue.",
             "operations"),
 
-        f.createIntCounter(MESSAGES_FAILED_QUEUED,
+        f.createLongCounter(MESSAGES_FAILED_QUEUED,
             "Number of client messages attempted but failed to be added to the message queue.",
             "operations"),
 
-        f.createIntCounter(MESSAGES_NOT_QUEUED_ORIGINATOR,
+        f.createLongCounter(MESSAGES_NOT_QUEUED_ORIGINATOR,
             "Number of client messages received but not added to the message queue because the receiving proxy represents the client originating the message.",
             "operations"),
 
-        f.createIntCounter(MESSAGES_NOT_QUEUED_NOT_INTERESTED,
+        f.createLongCounter(MESSAGES_NOT_QUEUED_NOT_INTERESTED,
             "Number of client messages received but not added to the message queue because the client represented by the receiving proxy was not interested in the message's key.",
             "operations"),
 
-        f.createIntGauge(MESSAGE_QUEUE_SIZE, "Size of the message queue.", "operations"),
+        f.createLongGauge(MESSAGE_QUEUE_SIZE, "Size of the message queue.", "operations"),
 
-        f.createIntCounter(MESSAGES_PROCESSED,
+        f.createLongCounter(MESSAGES_PROCESSED,
             "Number of client messages removed from the message queue and sent.", "operations"),
 
         f.createLongCounter(MESSAGE_PROCESSING_TIME,
             "Total time spent sending messages to clients.", "nanoseconds"),
 
-        f.createIntCounter(DELTA_MESSAGES_SENT,
+        f.createLongCounter(DELTA_MESSAGES_SENT,
             "Number of client messages containing only delta bytes dispatched to the client.",
             "operations"),
 
-        f.createIntCounter(DELTA_FULL_MESSAGES_SENT,
+        f.createLongCounter(DELTA_FULL_MESSAGES_SENT,
             "Number of client messages dispatched in reponse to failed delta at client.",
             "operations"),
 

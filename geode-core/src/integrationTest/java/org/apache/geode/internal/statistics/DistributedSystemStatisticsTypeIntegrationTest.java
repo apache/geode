@@ -55,7 +55,7 @@ public class DistributedSystemStatisticsTypeIntegrationTest {
     props.setProperty(NAME, getUniqueName());
     this.system = DistributedSystem.connect(props);
 
-    StatisticDescriptor[] stats = {factory().createIntGauge("test", "TEST", "ms")};
+    StatisticDescriptor[] stats = {factory().createLongGauge("test", "TEST", "ms")};
 
     this.type = factory().createType(getUniqueName(), "TEST", stats);
   }

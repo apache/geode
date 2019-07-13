@@ -126,34 +126,34 @@ public class FunctionStats {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
     _type = f.createType(statName, statDescription,
-        new StatisticDescriptor[] {f.createIntCounter(FUNCTION_EXECUTIONS_COMPLETED,
+        new StatisticDescriptor[] {f.createLongCounter(FUNCTION_EXECUTIONS_COMPLETED,
             "Total number of completed function.execute() calls for given function", "operations"),
 
             f.createLongCounter(FUNCTION_EXECUTIONS_COMPLETED_PROCESSING_TIME,
                 "Total time consumed for all completed invocations of the given function",
                 "nanoseconds"),
 
-            f.createIntGauge(FUNCTION_EXECUTIONS_RUNNING,
+            f.createLongGauge(FUNCTION_EXECUTIONS_RUNNING,
                 "number of currently running invocations of the given function", "operations"),
 
-            f.createIntCounter(RESULTS_SENT_TO_RESULTCOLLECTOR,
+            f.createLongCounter(RESULTS_SENT_TO_RESULTCOLLECTOR,
                 "Total number of results sent to the ResultCollector", "operations"),
 
-            f.createIntCounter(RESULTS_RECEIVED,
+            f.createLongCounter(RESULTS_RECEIVED,
                 "Total number of results received and passed to the ResultCollector", "operations"),
 
-            f.createIntCounter(FUNCTION_EXECUTION_CALLS,
+            f.createLongCounter(FUNCTION_EXECUTION_CALLS,
                 "Total number of FunctionService.execute() calls for given function", "operations"),
 
             f.createLongCounter(FUNCTION_EXECUTIONS_HASRESULT_COMPLETED_PROCESSING_TIME,
                 "Total time consumed for all completed given function.execute() calls where hasResult() returns true.",
                 "nanoseconds"),
 
-            f.createIntGauge(FUNCTION_EXECUTIONS_HASRESULT_RUNNING,
+            f.createLongGauge(FUNCTION_EXECUTIONS_HASRESULT_RUNNING,
                 "A gauge indicating the number of currently active execute() calls for functions where hasResult() returns true.",
                 "operations"),
 
-            f.createIntCounter(FUNCTION_EXECUTION_EXCEPTIONS,
+            f.createLongCounter(FUNCTION_EXECUTION_EXCEPTIONS,
                 "Total number of Exceptions Occurred while executing function", "operations"),
         });
 

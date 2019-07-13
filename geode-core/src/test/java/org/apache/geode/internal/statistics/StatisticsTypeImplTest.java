@@ -29,7 +29,7 @@ public class StatisticsTypeImplTest {
   private StatisticDescriptor[] stats = new StatisticDescriptor[] {
       statsFactory.createDoubleGauge("doubleCount", "double counter", "doubles"),
       statsFactory.createLongCounter("longCount", "long counter", "longs"),
-      statsFactory.createIntCounter("intCount", "int counter", "ints"),
+      statsFactory.createLongCounter("intCount", "int counter", "ints"),
       statsFactory.createLongCounter("longCount2", "long counter", "longs"),
   };
 

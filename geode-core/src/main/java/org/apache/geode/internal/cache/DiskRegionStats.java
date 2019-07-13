@@ -92,10 +92,10 @@ public class DiskRegionStats {
         f.createLongGauge("entriesOnlyOnDisk", numOverflowOnDiskDesc, "entries"),
         f.createLongGauge("bytesOnlyOnDisk", numOverflowBytesOnDiskDesc, "bytes"),
         f.createLongGauge("entriesInVM", numEntriesInVMDesc, "entries"),
-        f.createIntGauge("writesInProgress", "current number of oplog writes that are in progress",
+        f.createLongGauge("writesInProgress", "current number of oplog writes that are in progress",
             "writes"),
-        f.createIntGauge("localInitializations", localInitializationsDesc, "initializations"),
-        f.createIntGauge("remoteInitializations", remoteInitializationsDesc, "initializations"),});
+        f.createLongGauge("localInitializations", localInitializationsDesc, "initializations"),
+        f.createLongGauge("remoteInitializations", remoteInitializationsDesc, "initializations"),});
 
     // Initialize id fields
     writesId = type.nameToId("writes");

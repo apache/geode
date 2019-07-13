@@ -258,7 +258,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     if (isCounter) {
       switch (storage) {
         case INT_STORAGE:
-          return statFactory.createIntCounter(statName, description, unit, largerBetter);
+          return statFactory.createLongCounter(statName, description, unit, largerBetter);
         case LONG_STORAGE:
           return statFactory.createLongCounter(statName, description, unit, largerBetter);
         case DOUBLE_STORAGE:
@@ -270,7 +270,7 @@ public class StatisticsTypeXml implements EntityResolver, ErrorHandler {
     } else {
       switch (storage) {
         case INT_STORAGE:
-          return statFactory.createIntGauge(statName, description, unit, largerBetter);
+          return statFactory.createLongGauge(statName, description, unit, largerBetter);
         case LONG_STORAGE:
           return statFactory.createLongGauge(statName, description, unit, largerBetter);
         case DOUBLE_STORAGE:

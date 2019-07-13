@@ -37,8 +37,8 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   //////////////////// Instance Fields ////////////////////
 
-  /** An unitialized offset */
-  private int INVALID_OFFSET = -1;
+  /** An uninitialized offset */
+  private final int INVALID_OFFSET = -1;
 
   /** The name of the statistic */
   private final String name;
@@ -80,7 +80,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new IllegalArgumentException(
             String.format("Unknown type code: %s",
-                Integer.valueOf(code)));
+                code));
     }
   }
 
@@ -98,13 +98,8 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new IllegalArgumentException(
             String.format("Unknown type code: %s",
-                Integer.valueOf(code)));
+                (int) code));
     }
-  }
-
-  public static StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean isLargerBetter) {
-    return createLongCounter(name, description, units, isLargerBetter);
   }
 
   public static StatisticDescriptor createLongCounter(String name, String description, String units,
@@ -115,11 +110,6 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
   public static StatisticDescriptor createDoubleCounter(String name, String description,
       String units, boolean isLargerBetter) {
     return new StatisticDescriptorImpl(name, DOUBLE, description, units, true, isLargerBetter);
-  }
-
-  public static StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean isLargerBetter) {
-    return createLongGauge(name, description, units, isLargerBetter);
   }
 
   public static StatisticDescriptor createLongGauge(String name, String description, String units,
@@ -224,7 +214,7 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       default:
         throw new RuntimeException(
             String.format("unexpected stat descriptor type code: %s",
-                Byte.valueOf(this.typeCode)));
+                this.typeCode));
     }
   }
 
@@ -260,14 +250,13 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
 
   public int checkLong() {
     if (this.typeCode != LONG) {
-      StringBuffer sb = new StringBuffer();
-      sb.append("The statistic " + getName() + " with id ");
-      sb.append(getId());
-      sb.append(" is of type ");
-      sb.append(StatisticDescriptorImpl.getTypeCodeName(getTypeCode()));
 
-      sb.append(" and it was expected to be a long");
-      throw new IllegalArgumentException(sb.toString());
+      String sb = ("The statistic " + getName() + " with id ")
+          + getId()
+          + " is of type "
+          + StatisticDescriptorImpl.getTypeCodeName(getTypeCode())
+          + " and it was expected to be a long";
+      throw new IllegalArgumentException(sb);
     }
     return this.id;
   }
@@ -277,8 +266,8 @@ public class StatisticDescriptorImpl implements StatisticDescriptor {
       throw new IllegalArgumentException(
           String.format(
               "The statistic %s with id %s is of type %s and it was expected to be a double.",
-              new Object[] {getName(), Integer.valueOf(getId()),
-                  StatisticDescriptorImpl.getTypeCodeName(getTypeCode())}));
+              getName(), getId(),
+              StatisticDescriptorImpl.getTypeCodeName(getTypeCode())));
     }
     return this.id;
   }

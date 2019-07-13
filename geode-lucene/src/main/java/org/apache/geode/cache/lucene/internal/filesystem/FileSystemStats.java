@@ -45,13 +45,13 @@ public class FileSystemStats {
         new StatisticDescriptor[] {
             f.createLongCounter("readBytes", "Number of bytes written", "bytes"),
             f.createLongCounter("writtenBytes", "Number of bytes read", "bytes"),
-            f.createIntCounter("fileCreates", "Number of files created", "files"),
-            f.createIntCounter("temporaryFileCreates", "Number of temporary files created",
+            f.createLongCounter("fileCreates", "Number of files created", "files"),
+            f.createLongCounter("temporaryFileCreates", "Number of temporary files created",
                 "files"),
-            f.createIntCounter("fileDeletes", "Number of files deleted", "files"),
-            f.createIntCounter("fileRenames", "Number of files renamed", "files"),
-            f.createIntGauge("files", "Number of files on this member", "files"),
-            f.createIntGauge("chunks", "Number of file chunks on this member", "chunks"),
+            f.createLongCounter("fileDeletes", "Number of files deleted", "files"),
+            f.createLongCounter("fileRenames", "Number of files renamed", "files"),
+            f.createLongGauge("files", "Number of files on this member", "files"),
+            f.createLongGauge("chunks", "Number of file chunks on this member", "chunks"),
             f.createLongGauge("bytes", "Number of bytes on this member", "bytes"),});
 
     readBytesId = statsType.nameToId("readBytes");

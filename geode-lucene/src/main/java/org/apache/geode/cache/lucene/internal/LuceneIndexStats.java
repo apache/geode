@@ -55,35 +55,35 @@ public class LuceneIndexStats {
   static {
     final StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     statsType = f.createType(statsTypeName, statsTypeDescription, new StatisticDescriptor[] {
-        f.createIntCounter("queryExecutions", "Number of lucene queries executed on this member",
+        f.createLongCounter("queryExecutions", "Number of lucene queries executed on this member",
             "operations"),
         f.createLongCounter("queryExecutionTime", "Amount of time spent executing lucene queries",
             "nanoseconds"),
-        f.createIntGauge("queryExecutionsInProgress",
+        f.createLongGauge("queryExecutionsInProgress",
             "Number of query executions currently in progress", "operations"),
         f.createLongCounter("queryExecutionTotalHits",
             "Total number of documents returned by query executions", "entries"),
-        f.createIntCounter("repositoryQueryExecutions",
+        f.createLongCounter("repositoryQueryExecutions",
             "Number of lucene repository queries executed on this member", "operations"),
         f.createLongCounter("repositoryQueryExecutionTime",
             "Amount of time spent executing lucene repository queries", "nanoseconds"),
-        f.createIntGauge("repositoryQueryExecutionsInProgress",
+        f.createLongGauge("repositoryQueryExecutionsInProgress",
             "Number of repository query executions currently in progress", "operations"),
         f.createLongCounter("repositoryQueryExecutionTotalHits",
             "Total number of documents returned by repository query executions", "entries"),
-        f.createIntCounter("updates",
+        f.createLongCounter("updates",
             "Number of lucene index documents added/removed on this member", "operations"),
         f.createLongCounter("updateTime",
             "Amount of time spent adding or removing documents from the index", "nanoseconds"),
-        f.createIntGauge("updatesInProgress", "Number of index updates in progress", "operations"),
-        f.createIntCounter("failedEntries", "Number of entries failed to index", "entries"),
-        f.createIntCounter("commits", "Number of lucene index commits on this member",
+        f.createLongGauge("updatesInProgress", "Number of index updates in progress", "operations"),
+        f.createLongCounter("failedEntries", "Number of entries failed to index", "entries"),
+        f.createLongCounter("commits", "Number of lucene index commits on this member",
             "operations"),
         f.createLongCounter("commitTime", "Amount of time spent in lucene index commits",
             "nanoseconds"),
-        f.createIntGauge("commitsInProgress", "Number of lucene index commits in progress",
+        f.createLongGauge("commitsInProgress", "Number of lucene index commits in progress",
             "operations"),
-        f.createIntGauge("documents", "Number of documents in the index", "documents"),});
+        f.createLongGauge("documents", "Number of documents in the index", "documents"),});
 
     queryExecutionsId = statsType.nameToId("queryExecutions");
     queryExecutionTimeId = statsType.nameToId("queryExecutionTime");

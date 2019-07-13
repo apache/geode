@@ -54,7 +54,7 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   private StatisticsTypeFactoryImpl() {}
 
   // instance fields
-  private final HashMap statTypes = new HashMap();
+  private final HashMap<String, StatisticsType> statTypes = new HashMap<>();
 
   // instance methods
   /**
@@ -87,17 +87,12 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
 
   @Override
   public StatisticsType findType(String name) {
-    return (StatisticsType) this.statTypes.get(name);
+    return this.statTypes.get(name);
   }
 
   @Override
   public StatisticsType[] createTypesFromXml(Reader reader) throws IOException {
     return StatisticsTypeImpl.fromXml(reader, this);
-  }
-
-  @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return createLongCounter(name, description, units);
   }
 
   @Override
@@ -111,11 +106,6 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   }
 
   @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return createLongGauge(name, description, units);
-  }
-
-  @Override
   public StatisticDescriptor createLongGauge(String name, String description, String units) {
     return StatisticDescriptorImpl.createLongGauge(name, description, units, false);
   }
@@ -123,12 +113,6 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   @Override
   public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
     return StatisticDescriptorImpl.createDoubleGauge(name, description, units, false);
-  }
-
-  @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
@@ -141,12 +125,6 @@ public class StatisticsTypeFactoryImpl implements StatisticsTypeFactory {
   public StatisticDescriptor createDoubleCounter(String name, String description, String units,
       boolean largerBetter) {
     return StatisticDescriptorImpl.createDoubleCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override

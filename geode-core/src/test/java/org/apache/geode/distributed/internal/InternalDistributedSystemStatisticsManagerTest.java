@@ -144,7 +144,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
-        .createIntCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS);
+        .createLongCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS);
 
     assertThat(result)
         .isSameAs(descriptorReturnedByManager);
@@ -186,7 +186,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
-        .createIntGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS);
+        .createLongGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS);
 
     assertThat(result)
         .isSameAs(descriptorReturnedByManager);
@@ -227,7 +227,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
-        .createIntCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false);
+        .createLongCounter(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false);
 
     assertThat(result)
         .isSameAs(descriptorReturnedByManager);
@@ -269,7 +269,7 @@ public class InternalDistributedSystemStatisticsManagerTest {
             .thenReturn(descriptorReturnedByManager);
 
     StatisticDescriptor result = internalDistributedSystem
-        .createIntGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false);
+        .createLongGauge(STATISTIC_NAME, STATISTIC_DESCRIPTION, STATISTIC_UNITS, false);
 
     assertThat(result)
         .isSameAs(descriptorReturnedByManager);

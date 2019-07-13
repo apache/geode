@@ -87,7 +87,7 @@ public class SampleCollectorTest {
     this.sampleCollector.addSampleHandler(handler);
 
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
+        manager.createLongCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
     Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1_text", 1);
 
@@ -143,13 +143,13 @@ public class SampleCollectorTest {
   @Test
   public void testAddHandlerAfterSamples() {
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
+        manager.createLongCounter("ST1_1_name", "ST1_1_desc", "ST1_1_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
     Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1_text", 1);
     Statistics st1_2 = manager.createAtomicStatistics(ST1, "st1_2_text", 1);
 
     StatisticDescriptor[] statsST2 = new StatisticDescriptor[] {
-        manager.createIntCounter("ST2_1_name", "ST2_1_desc", "ST2_1_units")};
+        manager.createLongCounter("ST2_1_name", "ST2_1_desc", "ST2_1_units")};
     StatisticsType ST2 = manager.createType("ST2_name", "ST2_desc", statsST2);
     Statistics st2_1 = manager.createAtomicStatistics(ST2, "st2_1_text", 1);
 

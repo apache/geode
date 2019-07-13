@@ -579,10 +579,10 @@ public class StatisticsDistributedTest extends JUnit4CacheTestCase {
     private static StatisticDescriptor[] createDescriptors(final StatisticsFactory f) {
       boolean largerIsBetter = true;
       return new StatisticDescriptor[] {
-          f.createIntCounter(PUTS, "Number of puts completed.", "operations", largerIsBetter),
+          f.createLongCounter(PUTS, "Number of puts completed.", "operations", largerIsBetter),
           f.createLongCounter(PUT_TIME, "Total time spent doing puts.", "nanoseconds",
               !largerIsBetter),
-          f.createIntCounter(UPDATE_EVENTS, "Number of update events.", "events", largerIsBetter)};
+          f.createLongCounter(UPDATE_EVENTS, "Number of update events.", "events", largerIsBetter)};
     }
 
     private final Statistics statistics;

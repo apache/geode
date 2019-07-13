@@ -39,55 +39,55 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incReliableQueuedOps(int inc) {
-    stats.incInt(reliableQueuedOpsId, inc);
+    stats.incLong(reliableQueuedOpsId, (long) inc);
     cachePerfStats.incReliableQueuedOps(inc);
   }
 
   @Override
   public void incReliableQueueSize(int inc) {
-    stats.incInt(reliableQueueSizeId, inc);
+    stats.incLong(reliableQueueSizeId, (long) inc);
     cachePerfStats.incReliableQueueSize(inc);
   }
 
   @Override
   public void incReliableQueueMax(int inc) {
-    stats.incInt(reliableQueueMaxId, inc);
+    stats.incLong(reliableQueueMaxId, (long) inc);
     cachePerfStats.incReliableQueueMax(inc);
   }
 
   @Override
   public void incReliableRegions(int inc) {
-    stats.incInt(reliableRegionsId, inc);
+    stats.incLong(reliableRegionsId, (long) inc);
     cachePerfStats.incReliableRegions(inc);
   }
 
   @Override
   public void incReliableRegionsMissing(int inc) {
-    stats.incInt(reliableRegionsMissingId, inc);
+    stats.incLong(reliableRegionsMissingId, (long) inc);
     cachePerfStats.incReliableRegionsMissing(inc);
   }
 
   @Override
   public void incReliableRegionsQueuing(int inc) {
-    stats.incInt(reliableRegionsQueuingId, inc);
+    stats.incLong(reliableRegionsQueuingId, (long) inc);
     cachePerfStats.incReliableRegionsQueuing(inc);
   }
 
   @Override
   public void incReliableRegionsMissingFullAccess(int inc) {
-    stats.incInt(reliableRegionsMissingFullAccessId, inc);
+    stats.incLong(reliableRegionsMissingFullAccessId, (long) inc);
     cachePerfStats.incReliableRegionsMissingFullAccess(inc);
   }
 
   @Override
   public void incReliableRegionsMissingLimitedAccess(int inc) {
-    stats.incInt(reliableRegionsMissingLimitedAccessId, inc);
+    stats.incLong(reliableRegionsMissingLimitedAccessId, (long) inc);
     cachePerfStats.incReliableRegionsMissingLimitedAccess(inc);
   }
 
   @Override
   public void incReliableRegionsMissingNoAccess(int inc) {
-    stats.incInt(reliableRegionsMissingNoAccessId, inc);
+    stats.incLong(reliableRegionsMissingNoAccessId, (long) inc);
     cachePerfStats.incReliableRegionsMissingNoAccess(inc);
   }
 
@@ -102,7 +102,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startLoad() {
-    stats.incInt(loadsInProgressId, 1);
+    stats.incLong(loadsInProgressId, (long) 1);
     return cachePerfStats.startLoad();
   }
 
@@ -117,8 +117,8 @@ class RegionPerfStats extends CachePerfStats {
     // don't use getStatTime so always enabled
     long ts = getTime();
     stats.incLong(loadTimeId, ts - start);
-    stats.incInt(loadsInProgressId, -1);
-    stats.incInt(loadsCompletedId, 1);
+    stats.incLong(loadsInProgressId, (long) -1);
+    stats.incLong(loadsCompletedId, (long) 1);
 
     // need to think about timings
     cachePerfStats.endLoad(start);
@@ -129,7 +129,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startNetload() {
-    stats.incInt(netloadsInProgressId, 1);
+    stats.incLong(netloadsInProgressId, (long) 1);
     cachePerfStats.startNetload();
     return getTime();
   }
@@ -142,8 +142,8 @@ class RegionPerfStats extends CachePerfStats {
     if (enableClockStats) {
       stats.incLong(netloadTimeId, getTime() - start);
     }
-    stats.incInt(netloadsInProgressId, -1);
-    stats.incInt(netloadsCompletedId, 1);
+    stats.incLong(netloadsInProgressId, (long) -1);
+    stats.incLong(netloadsCompletedId, (long) 1);
     cachePerfStats.endNetload(start);
   }
 
@@ -152,7 +152,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startNetsearch() {
-    stats.incInt(netsearchesInProgressId, 1);
+    stats.incLong(netsearchesInProgressId, (long) 1);
     return cachePerfStats.startNetsearch();
   }
 
@@ -167,8 +167,8 @@ class RegionPerfStats extends CachePerfStats {
     // don't use getStatTime so always enabled
     long ts = getTime();
     stats.incLong(netsearchTimeId, ts - start);
-    stats.incInt(netsearchesInProgressId, -1);
-    stats.incInt(netsearchesCompletedId, 1);
+    stats.incLong(netsearchesInProgressId, (long) -1);
+    stats.incLong(netsearchesCompletedId, (long) 1);
     cachePerfStats.endNetsearch(start);
   }
 
@@ -177,7 +177,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startCacheWriterCall() {
-    stats.incInt(cacheWriterCallsInProgressId, 1);
+    stats.incLong(cacheWriterCallsInProgressId, (long) 1);
     cachePerfStats.startCacheWriterCall();
     return getTime();
   }
@@ -190,8 +190,8 @@ class RegionPerfStats extends CachePerfStats {
     if (enableClockStats) {
       stats.incLong(cacheWriterCallTimeId, getTime() - start);
     }
-    stats.incInt(cacheWriterCallsInProgressId, -1);
-    stats.incInt(cacheWriterCallsCompletedId, 1);
+    stats.incLong(cacheWriterCallsInProgressId, (long) -1);
+    stats.incLong(cacheWriterCallsCompletedId, (long) 1);
     cachePerfStats.endCacheWriterCall(start);
   }
 
@@ -201,7 +201,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startCacheListenerCall() {
-    stats.incInt(cacheListenerCallsInProgressId, 1);
+    stats.incLong(cacheListenerCallsInProgressId, (long) 1);
     cachePerfStats.startCacheListenerCall();
     return getTime();
   }
@@ -215,8 +215,8 @@ class RegionPerfStats extends CachePerfStats {
     if (enableClockStats) {
       stats.incLong(cacheListenerCallTimeId, getTime() - start);
     }
-    stats.incInt(cacheListenerCallsInProgressId, -1);
-    stats.incInt(cacheListenerCallsCompletedId, 1);
+    stats.incLong(cacheListenerCallsInProgressId, (long) -1);
+    stats.incLong(cacheListenerCallsCompletedId, (long) 1);
     cachePerfStats.endCacheListenerCall(start);
   }
 
@@ -225,7 +225,7 @@ class RegionPerfStats extends CachePerfStats {
    */
   @Override
   public long startGetInitialImage() {
-    stats.incInt(getInitialImagesInProgressId, 1);
+    stats.incLong(getInitialImagesInProgressId, (long) 1);
     cachePerfStats.startGetInitialImage();
     return getTime();
   }
@@ -238,8 +238,8 @@ class RegionPerfStats extends CachePerfStats {
     if (enableClockStats) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
-    stats.incInt(getInitialImagesInProgressId, -1);
-    stats.incInt(getInitialImagesCompletedId, 1);
+    stats.incLong(getInitialImagesInProgressId, (long) -1);
+    stats.incLong(getInitialImagesCompletedId, (long) 1);
     cachePerfStats.endGetInitialImage(start);
   }
 
@@ -251,19 +251,19 @@ class RegionPerfStats extends CachePerfStats {
     if (enableClockStats) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
-    stats.incInt(getInitialImagesInProgressId, -1);
+    stats.incLong(getInitialImagesInProgressId, (long) -1);
     cachePerfStats.endNoGIIDone(start);
   }
 
   @Override
   public void incGetInitialImageKeysReceived() {
-    stats.incInt(getInitialImageKeysReceivedId, 1);
+    stats.incLong(getInitialImageKeysReceivedId, (long) 1);
     cachePerfStats.incGetInitialImageKeysReceived();
   }
 
   @Override
   public long startIndexUpdate() {
-    stats.incInt(indexUpdateInProgressId, 1);
+    stats.incLong(indexUpdateInProgressId, (long) 1);
     cachePerfStats.startIndexUpdate();
     return getTime();
   }
@@ -272,21 +272,21 @@ class RegionPerfStats extends CachePerfStats {
   public void endIndexUpdate(long start) {
     long ts = getTime();
     stats.incLong(indexUpdateTimeId, ts - start);
-    stats.incInt(indexUpdateInProgressId, -1);
-    stats.incInt(indexUpdateCompletedId, 1);
+    stats.incLong(indexUpdateInProgressId, (long) -1);
+    stats.incLong(indexUpdateCompletedId, (long) 1);
     cachePerfStats.endIndexUpdate(start);
   }
 
   @Override
   public void incRegions(int inc) {
-    stats.incInt(regionsId, inc);
+    stats.incLong(regionsId, (long) inc);
     cachePerfStats.incRegions(inc);
 
   }
 
   @Override
   public void incPartitionedRegions(int inc) {
-    stats.incInt(partitionedRegionsId, inc);
+    stats.incLong(partitionedRegionsId, (long) inc);
     cachePerfStats.incPartitionedRegions(inc);
   }
 
@@ -310,19 +310,19 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incTombstoneCount(int amount) {
-    stats.incInt(tombstoneCountId, amount);
+    stats.incLong(tombstoneCountId, (long) amount);
     cachePerfStats.incTombstoneCount(amount);
   }
 
   @Override
   public void incTombstoneGCCount() {
-    stats.incInt(tombstoneGCCountId, 1);
+    stats.incLong(tombstoneGCCountId, (long) 1);
     cachePerfStats.incTombstoneGCCount();
   }
 
   @Override
   public void incClearTimeouts() {
-    stats.incInt(clearTimeoutsId, 1);
+    stats.incLong(clearTimeoutsId, (long) 1);
     cachePerfStats.incClearTimeouts();
   }
 
@@ -356,13 +356,13 @@ class RegionPerfStats extends CachePerfStats {
   public long endPut(long start, boolean isUpdate) {
     long totalNanos = 0;
     if (isUpdate) {
-      stats.incLong(updatesId, 1L);
+      stats.incLong(updatesId, (long) 1);
       if (enableClockStats) {
         totalNanos = getTime() - start;
         stats.incLong(updateTimeId, totalNanos);
       }
     } else {
-      stats.incLong(putsId, 1L);
+      stats.incLong(putsId, (long) 1);
       if (enableClockStats) {
         totalNanos = getTime() - start;
         stats.incLong(putTimeId, totalNanos);
@@ -374,7 +374,7 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void endPutAll(long start) {
-    stats.incInt(putAllsId, 1);
+    stats.incLong(putAllsId, (long) 1);
     if (enableClockStats) {
       stats.incLong(putAllTimeId, getTime() - start);
     }
@@ -383,7 +383,7 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void endQueryExecution(long executionTime) {
-    stats.incInt(queryExecutionsId, 1);
+    stats.incLong(queryExecutionsId, (long) 1);
     if (enableClockStats) {
       stats.incLong(queryExecutionTimeId, executionTime);
     }
@@ -400,7 +400,7 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incQueryResultsHashCollisions() {
-    stats.incInt(queryResultsHashCollisionsId, 1);
+    stats.incLong(queryResultsHashCollisionsId, (long) 1);
     cachePerfStats.incQueryResultsHashCollisions();
   }
 
@@ -412,8 +412,8 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void txSuccess(long opTime, long txLifeTime, int txChanges) {
-    stats.incInt(txCommitsId, 1);
-    stats.incInt(txCommitChangesId, txChanges);
+    stats.incLong(txCommitsId, (long) 1);
+    stats.incLong(txCommitChangesId, (long) txChanges);
     stats.incLong(txCommitTimeId, opTime);
     stats.incLong(txSuccessLifeTimeId, txLifeTime);
     cachePerfStats.txSuccess(opTime, txLifeTime, txChanges);
@@ -421,8 +421,8 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void txFailure(long opTime, long txLifeTime, int txChanges) {
-    stats.incInt(txFailuresId, 1);
-    stats.incInt(txFailureChangesId, txChanges);
+    stats.incLong(txFailuresId, (long) 1);
+    stats.incLong(txFailureChangesId, (long) txChanges);
     stats.incLong(txFailureTimeId, opTime);
     stats.incLong(txFailedLifeTimeId, txLifeTime);
     cachePerfStats.txFailure(opTime, txLifeTime, txChanges);
@@ -430,8 +430,8 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void txRollback(long opTime, long txLifeTime, int txChanges) {
-    stats.incInt(txRollbacksId, 1);
-    stats.incInt(txRollbackChangesId, txChanges);
+    stats.incLong(txRollbacksId, (long) 1);
+    stats.incLong(txRollbackChangesId, (long) txChanges);
     stats.incLong(txRollbackTimeId, opTime);
     stats.incLong(txRollbackLifeTimeId, txLifeTime);
     cachePerfStats.txRollback(opTime, txLifeTime, txChanges);
@@ -439,13 +439,13 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incEventQueueSize(int items) {
-    stats.incInt(eventQueueSizeId, items);
+    stats.incLong(eventQueueSizeId, (long) items);
     cachePerfStats.incEventQueueSize(items);
   }
 
   @Override
   public void incEventQueueThrottleCount(int items) {
-    stats.incInt(eventQueueThrottleCountId, items);
+    stats.incLong(eventQueueThrottleCountId, (long) items);
     cachePerfStats.incEventQueueThrottleCount(items);
   }
 
@@ -457,7 +457,7 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   protected void incEventThreads(int items) {
-    stats.incInt(eventThreadsId, items);
+    stats.incLong(eventThreadsId, (long) items);
     cachePerfStats.incEventThreads(items);
   }
 
@@ -469,43 +469,43 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incRetries() {
-    stats.incInt(retriesId, 1);
+    stats.incLong(retriesId, (long) 1);
     cachePerfStats.incRetries();
   }
 
   @Override
   public void incDiskTasksWaiting() {
-    stats.incInt(diskTasksWaitingId, 1);
+    stats.incLong(diskTasksWaitingId, (long) 1);
     cachePerfStats.incDiskTasksWaiting();
   }
 
   @Override
   public void decDiskTasksWaiting() {
-    stats.incInt(diskTasksWaitingId, -1);
+    stats.incLong(diskTasksWaitingId, (long) -1);
     cachePerfStats.decDiskTasksWaiting();
   }
 
   @Override
   public void decDiskTasksWaiting(int count) {
-    stats.incInt(diskTasksWaitingId, -count);
+    stats.incLong(diskTasksWaitingId, (long) -count);
     cachePerfStats.decDiskTasksWaiting(count);
   }
 
   @Override
   public void incEvictorJobsStarted() {
-    stats.incInt(evictorJobsStartedId, 1);
+    stats.incLong(evictorJobsStartedId, (long) 1);
     cachePerfStats.incEvictorJobsStarted();
   }
 
   @Override
   public void incEvictorJobsCompleted() {
-    stats.incInt(evictorJobsCompletedId, 1);
+    stats.incLong(evictorJobsCompletedId, (long) 1);
     cachePerfStats.incEvictorJobsCompleted();
   }
 
   @Override
   public void incEvictorQueueSize(int delta) {
-    stats.incInt(evictorQueueSizeId, delta);
+    stats.incLong(evictorQueueSizeId, (long) delta);
     cachePerfStats.incEvictorQueueSize(delta);
   }
 

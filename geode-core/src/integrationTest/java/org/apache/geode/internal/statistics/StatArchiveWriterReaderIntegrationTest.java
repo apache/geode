@@ -192,7 +192,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     sampleCollector.addSampleHandler(writer);
 
     final StatisticDescriptor[] statsST1 =
-        new StatisticDescriptor[] {manager.createIntCounter("int_counter_1", "d1", "u1")};
+        new StatisticDescriptor[] {manager.createLongCounter("int_counter_1", "d1", "u1")};
 
     final StatisticsType ST1 = manager.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1", 1);
@@ -273,7 +273,7 @@ public class StatArchiveWriterReaderIntegrationTest {
     sampleCollector.addSampleHandler(writer);
 
     final StatisticDescriptor[] statsST1 =
-        new StatisticDescriptor[] {manager.createIntGauge("int_gauge_1", "d1", "u1")};
+        new StatisticDescriptor[] {manager.createLongGauge("int_gauge_1", "d1", "u1")};
 
     final StatisticsType ST1 = manager.createType("ST1", "ST1", statsST1);
     final Statistics st1_1 = manager.createAtomicStatistics(ST1, "st1_1", 1);
@@ -619,10 +619,10 @@ public class StatArchiveWriterReaderIntegrationTest {
             manager.createDoubleCounter("double_counter_2", "d2", "u2", true),
             manager.createDoubleGauge("double_gauge_3", "d3", "u3"),
             manager.createDoubleGauge("double_gauge_4", "d4", "u4", false),
-            manager.createIntCounter("int_counter_5", "d5", "u5"),
-            manager.createIntCounter("int_counter_6", "d6", "u6", true),
-            manager.createIntGauge("int_gauge_7", "d7", "u7"),
-            manager.createIntGauge("int_gauge_8", "d8", "u8", false),
+            manager.createLongCounter("int_counter_5", "d5", "u5"),
+            manager.createLongCounter("int_counter_6", "d6", "u6", true),
+            manager.createLongGauge("int_gauge_7", "d7", "u7"),
+            manager.createLongGauge("int_gauge_8", "d8", "u8", false),
             manager.createLongCounter("long_counter_9", "d9", "u9"),
             manager.createLongCounter("long_counter_10", "d10", "u10", true),
             manager.createLongGauge("long_gauge_11", "d11", "u11"),
@@ -739,8 +739,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     // 8) create ST2 and ST3 and st2_1 and st3_1 and st3_2
 
     final StatisticDescriptor[] statsST2 =
-        new StatisticDescriptor[] {manager.createIntGauge("int_gauge_7", "d7", "u7"),
-            manager.createIntGauge("int_gauge_8", "d8", "u8", false),
+        new StatisticDescriptor[] {manager.createLongGauge("int_gauge_7", "d7", "u7"),
+            manager.createLongGauge("int_gauge_8", "d8", "u8", false),
             manager.createLongCounter("long_counter_9", "d9", "u9"),
             manager.createLongCounter("long_counter_10", "d10", "u10", true),
             manager.createLongGauge("long_gauge_11", "d11", "u11"),
@@ -753,8 +753,8 @@ public class StatArchiveWriterReaderIntegrationTest {
             manager.createDoubleCounter("double_counter_2", "d2", "u2", true),
             manager.createDoubleGauge("double_gauge_3", "d3", "u3"),
             manager.createDoubleGauge("double_gauge_4", "d4", "u4", false),
-            manager.createIntCounter("int_counter_5", "d5", "u5"),
-            manager.createIntCounter("int_counter_6", "d6", "u6", true),};
+            manager.createLongCounter("int_counter_5", "d5", "u5"),
+            manager.createLongCounter("int_counter_6", "d6", "u6", true),};
     final StatisticsType ST3 = manager.createType("ST3", "ST3", statsST3);
     final Statistics st3_1 = manager.createAtomicStatistics(ST3, "st3_1", 1);
     final Statistics st3_2 = manager.createAtomicStatistics(ST3, "st3_2", 2);
@@ -1028,10 +1028,10 @@ public class StatArchiveWriterReaderIntegrationTest {
             manager.createDoubleCounter("double_counter_2", "d2", "u2", true),
             manager.createDoubleGauge("double_gauge_3", "d3", "u3"),
             manager.createDoubleGauge("double_gauge_4", "d4", "u4", false),
-            manager.createIntCounter("int_counter_5", "d5", "u5"),
-            manager.createIntCounter("int_counter_6", "d6", "u6", true),
-            manager.createIntGauge("int_gauge_7", "d7", "u7"),
-            manager.createIntGauge("int_gauge_8", "d8", "u8", false),
+            manager.createLongCounter("int_counter_5", "d5", "u5"),
+            manager.createLongCounter("int_counter_6", "d6", "u6", true),
+            manager.createLongGauge("int_gauge_7", "d7", "u7"),
+            manager.createLongGauge("int_gauge_8", "d8", "u8", false),
             manager.createLongCounter("long_counter_9", "d9", "u9"),
             manager.createLongCounter("long_counter_10", "d10", "u10", true),
             manager.createLongGauge("long_gauge_11", "d11", "u11"),
@@ -1146,8 +1146,8 @@ public class StatArchiveWriterReaderIntegrationTest {
     // 8) create ST2 and ST3 and st2_1 and st3_1 and st3_2
 
     final StatisticDescriptor[] statsST2 =
-        new StatisticDescriptor[] {manager.createIntGauge("int_gauge_7", "d7", "u7"),
-            manager.createIntGauge("int_gauge_8", "d8", "u8", false),
+        new StatisticDescriptor[] {manager.createLongGauge("int_gauge_7", "d7", "u7"),
+            manager.createLongGauge("int_gauge_8", "d8", "u8", false),
             manager.createLongCounter("long_counter_9", "d9", "u9"),
             manager.createLongCounter("long_counter_10", "d10", "u10", true),
             manager.createLongGauge("long_gauge_11", "d11", "u11"),
@@ -1160,8 +1160,8 @@ public class StatArchiveWriterReaderIntegrationTest {
             manager.createDoubleCounter("double_counter_2", "d2", "u2", true),
             manager.createDoubleGauge("double_gauge_3", "d3", "u3"),
             manager.createDoubleGauge("double_gauge_4", "d4", "u4", false),
-            manager.createIntCounter("int_counter_5", "d5", "u5"),
-            manager.createIntCounter("int_counter_6", "d6", "u6", true),};
+            manager.createLongCounter("int_counter_5", "d5", "u5"),
+            manager.createLongCounter("int_counter_6", "d6", "u6", true),};
     final StatisticsType ST3 = manager.createType("ST3", "ST3", statsST3);
     final Statistics st3_1 = manager.createAtomicStatistics(ST3, "st3_1", 1);
     final Statistics st3_2 = manager.createAtomicStatistics(ST3, "st3_2", 2);

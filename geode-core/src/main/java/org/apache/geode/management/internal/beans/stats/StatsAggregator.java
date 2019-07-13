@@ -98,7 +98,7 @@ public class StatsAggregator {
               if (oldVal == null) {
                 oldVal = new Integer(0);
               }
-              incInt(attribute, (Integer) newVal, (Integer) oldVal);
+              incLong(attribute, (Long) newVal, (Long) oldVal);
             } else if (classzz == Float.TYPE) {
               if (oldVal == null) {
                 oldVal = new Float(0F);

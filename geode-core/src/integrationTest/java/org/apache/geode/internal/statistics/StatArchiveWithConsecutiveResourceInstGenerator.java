@@ -202,7 +202,7 @@ public class StatArchiveWithConsecutiveResourceInstGenerator {
 
   private StatisticsType createStatisticsType(final String name, final String description) {
     StatisticDescriptor[] descriptors = new StatisticDescriptor[] {
-        manager.createIntCounter("stat", "description of stat", "units"),};
+        manager.createLongCounter("stat", "description of stat", "units"),};
     return manager.createType(name, description, descriptors);
   }
 

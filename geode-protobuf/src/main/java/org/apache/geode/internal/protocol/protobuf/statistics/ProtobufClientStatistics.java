@@ -40,11 +40,11 @@ public class ProtobufClientStatistics implements ClientStatistics {
       statisticsFactory = InternalDistributedSystem.getAnyInstance();
     }
     StatisticDescriptor[] serverStatDescriptors = new StatisticDescriptor[] {
-        statisticsFactory.createIntGauge("currentClientConnections",
+        statisticsFactory.createLongGauge("currentClientConnections",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),
-        statisticsFactory.createIntCounter("clientConnectionStarts",
+        statisticsFactory.createLongCounter("clientConnectionStarts",
             "Number of sockets accepted and used for client to server messaging.", "sockets"),
-        statisticsFactory.createIntCounter("clientConnectionTerminations",
+        statisticsFactory.createLongCounter("clientConnectionTerminations",
             "Number of sockets that were used for client to server messaging.", "sockets"),
         statisticsFactory.createLongCounter("authenticationFailures", "Authentication failures",
             "attemptss"),

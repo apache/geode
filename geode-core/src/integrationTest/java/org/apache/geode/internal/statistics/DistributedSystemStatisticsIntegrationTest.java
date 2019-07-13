@@ -241,7 +241,7 @@ public class DistributedSystemStatisticsIntegrationTest {
     String[] descriptions = new String[] {"ONE", "TWO", "THREE"};
     StatisticDescriptor[] descriptors = new StatisticDescriptor[count];
     for (int i = 0; i < count; i++) {
-      descriptors[i] = factory().createIntGauge(this.statNames[i], descriptions[i], "x");
+      descriptors[i] = factory().createLongGauge(this.statNames[i], descriptions[i], "x");
     }
 
     StatisticsType type = factory().createType(getUniqueName(), "", descriptors);

@@ -70,7 +70,7 @@ public class FileSizeLimitIntegrationTest {
 
     this.factory = new LocalStatisticsFactory(null);
     this.statisticDescriptors = new StatisticDescriptor[] {
-        this.factory.createIntCounter("stat1", "description of stat1", "units", true)};
+        this.factory.createLongCounter("stat1", "description of stat1", "units", true)};
     this.statisticsType =
         factory.createType("statisticsType1", "statisticsType1", this.statisticDescriptors);
     this.statistics = factory.createAtomicStatistics(this.statisticsType, "statistics1", 1);

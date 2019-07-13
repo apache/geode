@@ -35,7 +35,7 @@ public class VMStats implements VMStatsContract {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     vmType = f.createType("VMStats", "Stats available on any java virtual machine.",
         new StatisticDescriptor[] {
-            f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
+            f.createLongGauge("cpus", "Number of cpus available to the java VM on its machine.",
                 "cpus", true),
             f.createLongGauge("freeMemory",
                 "An approximation of the total amount of memory currently available for future allocated objects, measured in bytes.",

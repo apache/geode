@@ -133,7 +133,7 @@ public class HARegionQueueStats {
         f.createLongCounter(EVENTS_REMOVED_BY_QRM, "Number of events removed by QRM message.",
             "operations"),
 
-        f.createIntCounter(THREAD_IDENTIFIERS, "Number of ThreadIdenfier objects for the queue.",
+        f.createLongCounter(THREAD_IDENTIFIERS, "Number of ThreadIdenfier objects for the queue.",
             "units"),
 
         f.createLongCounter(EVENTS_DISPATCHED, "Number of events that have been dispatched.",

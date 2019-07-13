@@ -107,11 +107,6 @@ public class DummyStatisticsFactory implements StatisticsFactory {
   }
 
   @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return createLongCounter(name, description, units);
-  }
-
-  @Override
   public StatisticDescriptor createLongCounter(String name, String description, String units) {
     return tf.createLongCounter(name, description, units);
   }
@@ -119,11 +114,6 @@ public class DummyStatisticsFactory implements StatisticsFactory {
   @Override
   public StatisticDescriptor createDoubleCounter(String name, String description, String units) {
     return tf.createDoubleCounter(name, description, units);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return createLongGauge(name, description, units);
   }
 
   @Override
@@ -137,12 +127,6 @@ public class DummyStatisticsFactory implements StatisticsFactory {
   }
 
   @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongCounter(name, description, units, largerBetter);
-  }
-
-  @Override
   public StatisticDescriptor createLongCounter(String name, String description, String units,
       boolean largerBetter) {
     return tf.createLongCounter(name, description, units, largerBetter);
@@ -152,12 +136,6 @@ public class DummyStatisticsFactory implements StatisticsFactory {
   public StatisticDescriptor createDoubleCounter(String name, String description, String units,
       boolean largerBetter) {
     return tf.createDoubleCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override

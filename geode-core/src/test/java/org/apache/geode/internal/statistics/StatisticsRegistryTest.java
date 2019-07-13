@@ -152,11 +152,11 @@ public class StatisticsRegistryTest {
   @Test
   public void delegatesCreateIntCounterToTypeFactory() {
     StatisticDescriptor descriptorCreatedByFactory = mock(StatisticDescriptor.class);
-    when(typeFactory.createIntCounter(any(), any(), any()))
+    when(typeFactory.createLongCounter(any(), any(), any()))
         .thenReturn(descriptorCreatedByFactory);
 
     StatisticDescriptor result =
-        registry.createIntCounter(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS);
+        registry.createLongCounter(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS);
 
     assertThat(result)
         .isEqualTo(descriptorCreatedByFactory);
@@ -191,11 +191,11 @@ public class StatisticsRegistryTest {
   @Test
   public void delegatesCreateIntGaugeToTypeFactory() {
     StatisticDescriptor descriptorCreatedByFactory = mock(StatisticDescriptor.class);
-    when(typeFactory.createIntGauge(any(), any(), any()))
+    when(typeFactory.createLongGauge(any(), any(), any()))
         .thenReturn(descriptorCreatedByFactory);
 
     StatisticDescriptor result =
-        registry.createIntGauge(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS);
+        registry.createLongGauge(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS);
 
     assertThat(result)
         .isEqualTo(descriptorCreatedByFactory);
@@ -230,11 +230,11 @@ public class StatisticsRegistryTest {
   @Test
   public void delegatesCreateLargerBetterIntCounterToTypeFactory() {
     StatisticDescriptor descriptorCreatedByFactory = mock(StatisticDescriptor.class);
-    when(typeFactory.createIntCounter(any(), any(), any(), anyBoolean()))
+    when(typeFactory.createLongCounter(any(), any(), any(), anyBoolean()))
         .thenReturn(descriptorCreatedByFactory);
 
     StatisticDescriptor result =
-        registry.createIntCounter(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS, true);
+        registry.createLongCounter(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS, true);
 
     assertThat(result)
         .isEqualTo(descriptorCreatedByFactory);
@@ -271,11 +271,11 @@ public class StatisticsRegistryTest {
   @Test
   public void delegatesCreateLargerBetterIntGaugeToTypeFactory() {
     StatisticDescriptor descriptorCreatedByFactory = mock(StatisticDescriptor.class);
-    when(typeFactory.createIntGauge(any(), any(), any(), anyBoolean()))
+    when(typeFactory.createLongGauge(any(), any(), any(), anyBoolean()))
         .thenReturn(descriptorCreatedByFactory);
 
     StatisticDescriptor result =
-        registry.createIntGauge(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS, false);
+        registry.createLongGauge(DESCRIPTOR_NAME, DESCRIPTOR_DESCRIPTION, DESCRIPTOR_UNITS, false);
 
     assertThat(result)
         .isEqualTo(descriptorCreatedByFactory);

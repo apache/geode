@@ -62,12 +62,12 @@ public class IndexStats {
             f.createLongCounter("numUses", numUsesDesc, "operations"),
             f.createLongCounter("updateTime", updateTimeDesc, "nanoseconds"),
             f.createLongCounter("useTime", "Total time spent using this index", "nanoseconds"),
-            f.createIntGauge("updatesInProgress", "Current number of updates in progress.",
+            f.createLongGauge("updatesInProgress", "Current number of updates in progress.",
                 "updates"),
-            f.createIntGauge("usesInProgress", "Current number of uses in progress.", "uses"),
-            f.createIntGauge("readLockCount", "Current number of read locks taken.", "uses"),
+            f.createLongGauge("usesInProgress", "Current number of uses in progress.", "uses"),
+            f.createLongGauge("readLockCount", "Current number of read locks taken.", "uses"),
             f.createLongGauge("numMapIndexKeys", "Number of keys in this Map index", "keys"),
-            f.createIntGauge("numBucketIndexes",
+            f.createLongGauge("numBucketIndexes",
                 "Number of bucket indexes in the partitioned region", "indexes"),});
 
     // Initialize id fields

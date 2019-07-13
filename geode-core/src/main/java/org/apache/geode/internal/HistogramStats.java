@@ -46,7 +46,7 @@ public class HistogramStats {
     for (int bucketNumber = 0; bucketNumber < this.bp.length; bucketNumber++) {
       String desc =
           (bucketNumber < this.bp.length - 1 ? "ForLTE" : "ForGT") + this.bp[bucketNumber];
-      fieldDescriptors[k] = factory.createIntCounter("BucketCount" + desc,
+      fieldDescriptors[k] = factory.createLongCounter("BucketCount" + desc,
           "Number of data points in Bucket " + bucketNumber, "count", !largerIsBetter);
       k++;
       fieldDescriptors[k] = factory.createLongCounter("BucketTotal" + desc,

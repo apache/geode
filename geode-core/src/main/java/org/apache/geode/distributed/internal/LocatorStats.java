@@ -74,13 +74,13 @@ public class LocatorStats {
         "The number of location requests currently being processed by the thread pool.";
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType(statName, statDescription, new StatisticDescriptor[] {
-        f.createIntGauge(KNOWN_LOCATORS, "Number of locators known to this locator", LOCATORS),
+        f.createLongGauge(KNOWN_LOCATORS, "Number of locators known to this locator", LOCATORS),
         f.createLongCounter(REQUESTS_TO_LOCATOR,
             "Number of requests this locator has received from clients", "requests"),
         f.createLongCounter(RESPONSES_FROM_LOCATOR,
             "Number of responses this locator has sent to clients", "responses"),
-        f.createIntGauge(ENDPOINTS_KNOWN, "Number of servers this locator knows about", "servers"),
-        f.createIntGauge(REQUESTS_IN_PROGRESS, serverThreadsDesc, "requests"),
+        f.createLongGauge(ENDPOINTS_KNOWN, "Number of servers this locator knows about", "servers"),
+        f.createLongGauge(REQUESTS_IN_PROGRESS, serverThreadsDesc, "requests"),
         f.createLongCounter(REQUEST_TIME, "Time spent processing server location requests",
             "nanoseconds"),
         f.createLongCounter(RESPONSE_TIME, "Time spent sending location responses to clients",

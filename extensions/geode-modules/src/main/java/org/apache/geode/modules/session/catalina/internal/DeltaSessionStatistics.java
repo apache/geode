@@ -40,10 +40,10 @@ public class DeltaSessionStatistics {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     type = f.createType(typeName, typeName,
         new StatisticDescriptor[] {
-            f.createIntCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
-            f.createIntCounter(SESSIONS_INVALIDATED,
+            f.createLongCounter(SESSIONS_CREATED, "The number of sessions created", "operations"),
+            f.createLongCounter(SESSIONS_INVALIDATED,
                 "The number of sessions invalidated by invoking invalidate", "operations"),
-            f.createIntCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
+            f.createLongCounter(SESSIONS_EXPIRED, "The number of sessions invalidated by timeout",
                 "operations"),});
 
     // Initialize id fields

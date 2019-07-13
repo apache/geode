@@ -1855,7 +1855,7 @@ public class CacheClientUpdater extends LoggingThread implements ClientUpdater, 
           new StatisticDescriptor[] {
               f.createLongCounter("receivedBytes",
                   "Total number of bytes received from the server.", "bytes"),
-              f.createIntGauge("messagesBeingReceived",
+              f.createLongGauge("messagesBeingReceived",
                   "Current number of message being received off the network or being processed after reception.",
                   "messages"),
               f.createLongGauge("messageBytesBeingReceived",

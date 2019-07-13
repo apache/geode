@@ -177,7 +177,7 @@ public class ValueMonitorIntegrationTest {
     StatisticDescriptor[] statsST1 = new StatisticDescriptor[] {
         manager.createDoubleCounter("double_counter_1", "double_counter_1_desc",
             "double_counter_1_units"),
-        manager.createIntCounter("int_counter_2", "int_counter_2_desc", "int_counter_2_units"),
+        manager.createLongCounter("int_counter_2", "int_counter_2_desc", "int_counter_2_units"),
         manager.createLongCounter("long_counter_3", "long_counter_3_desc", "long_counter_3_units")};
     StatisticsType ST1 = manager.createType("ST1_name", "ST1_desc", statsST1);
 

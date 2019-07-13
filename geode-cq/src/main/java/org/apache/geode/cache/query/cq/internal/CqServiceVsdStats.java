@@ -123,9 +123,9 @@ public class CqServiceVsdStats {
                 "nanoseconds"),
             f.createLongCounter(CQ_QUERY_EXECUTIONS_COMPLETED, "Number of CQ Query Executions.",
                 "operations"),
-            f.createIntGauge(CQ_QUERY_EXECUTION_IN_PROGRESS, "CQ Query Execution In Progress.",
+            f.createLongGauge(CQ_QUERY_EXECUTION_IN_PROGRESS, "CQ Query Execution In Progress.",
                 "operations"),
-            f.createIntGauge(UNIQUE_CQ_QUERY, "Number of Unique CQ Querys.", "Queries"),
+            f.createLongGauge(UNIQUE_CQ_QUERY, "Number of Unique CQ Querys.", "Queries"),
 
         });
 

@@ -17,7 +17,6 @@ package org.apache.geode.internal.statistics;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -35,6 +34,7 @@ import org.apache.geode.internal.process.ProcessUtils;
  *
  * @since GemFire 7.0
  */
+@SuppressWarnings("ALL")
 public abstract class AbstractStatisticsFactory implements StatisticsFactory, StatisticsManager {
   private final String name;
   private final CopyOnWriteArrayList<Statistics> statsList;
@@ -48,7 +48,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
     this.name = name;
     this.startTime = startTime;
 
-    this.statsList = new CopyOnWriteArrayList<Statistics>();
+    this.statsList = new CopyOnWriteArrayList<>();
     this.statsListUniqueIdLock = new Object();
     this.tf = StatisticsTypeFactoryImpl.singleton();
   }
@@ -104,7 +104,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public Statistics[] getStatistics() {
     List<Statistics> statsList = this.statsList;
-    return (Statistics[]) statsList.toArray(new Statistics[statsList.size()]);
+    return statsList.toArray(new Statistics[statsList.size()]);
   }
 
   // StatisticsFactory methods
@@ -142,51 +142,43 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
 
   @Override
   public Statistics[] findStatisticsByType(StatisticsType type) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (Statistics s : statsList) {
       if (type == s.getType()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics[] findStatisticsByTextId(String textId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (Statistics s : statsList) {
       if (s.getTextId().equals(textId)) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics[] findStatisticsByNumericId(long numericId) {
-    List<Statistics> hits = new ArrayList<Statistics>();
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    List<Statistics> hits = new ArrayList<>();
+    for (Statistics s : statsList) {
       if (numericId == s.getNumericId()) {
         hits.add(s);
       }
     }
     Statistics[] result = new Statistics[hits.size()];
-    return (Statistics[]) hits.toArray(result);
+    return hits.toArray(result);
   }
 
   @Override
   public Statistics findStatisticsByUniqueId(long uniqueId) {
-    Iterator<Statistics> it = statsList.iterator();
-    while (it.hasNext()) {
-      Statistics s = (Statistics) it.next();
+    for (Statistics s : statsList) {
       if (uniqueId == s.getUniqueId()) {
         return s;
       }
@@ -249,11 +241,6 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units) {
-    return createLongCounter(name, description, units);
-  }
-
-  @Override
   public StatisticDescriptor createLongCounter(String name, String description, String units) {
     return tf.createLongCounter(name, description, units);
   }
@@ -264,11 +251,6 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   }
 
   @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units) {
-    return createLongGauge(name, description, units);
-  }
-
-  @Override
   public StatisticDescriptor createLongGauge(String name, String description, String units) {
     return tf.createLongGauge(name, description, units);
   }
@@ -276,12 +258,7 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   @Override
   public StatisticDescriptor createDoubleGauge(String name, String description, String units) {
     return tf.createDoubleGauge(name, description, units);
-  }
 
-  @Override
-  public StatisticDescriptor createIntCounter(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongCounter(name, description, units, largerBetter);
   }
 
   @Override
@@ -294,12 +271,6 @@ public abstract class AbstractStatisticsFactory implements StatisticsFactory, St
   public StatisticDescriptor createDoubleCounter(String name, String description, String units,
       boolean largerBetter) {
     return tf.createDoubleCounter(name, description, units, largerBetter);
-  }
-
-  @Override
-  public StatisticDescriptor createIntGauge(String name, String description, String units,
-      boolean largerBetter) {
-    return createLongGauge(name, description, units, largerBetter);
   }
 
   @Override

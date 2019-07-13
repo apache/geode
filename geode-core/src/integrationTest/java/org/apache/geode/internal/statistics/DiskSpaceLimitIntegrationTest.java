@@ -93,7 +93,7 @@ public class DiskSpaceLimitIntegrationTest {
 
     LocalStatisticsFactory factory = new LocalStatisticsFactory(null);
     StatisticDescriptor[] statisticDescriptors = new StatisticDescriptor[] {
-        factory.createIntCounter("stat1", "description of stat1", "units", true)};
+        factory.createLongCounter("stat1", "description of stat1", "units", true)};
     StatisticsType statisticsType =
         factory.createType("statisticsType1", "statisticsType1", statisticDescriptors);
     factory.createAtomicStatistics(statisticsType, "statistics1", 1);

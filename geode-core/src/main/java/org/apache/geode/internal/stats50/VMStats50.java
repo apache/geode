@@ -215,17 +215,17 @@ public class VMStats50 implements VMStatsContract {
     }
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
     List<StatisticDescriptor> sds = new ArrayList<StatisticDescriptor>();
-    sds.add(f.createIntGauge("pendingFinalization",
+    sds.add(f.createLongGauge("pendingFinalization",
         "Number of objects that are pending finalization in the java VM.", "objects"));
-    sds.add(f.createIntGauge("daemonThreads", "Current number of live daemon threads in this VM.",
+    sds.add(f.createLongGauge("daemonThreads", "Current number of live daemon threads in this VM.",
         "threads"));
-    sds.add(f.createIntGauge("threads",
+    sds.add(f.createLongGauge("threads",
         "Current number of live threads (both daemon and non-daemon) in this VM.", "threads"));
     sds.add(
-        f.createIntGauge("peakThreads", "High water mark of live threads in this VM.", "threads"));
+        f.createLongGauge("peakThreads", "High water mark of live threads in this VM.", "threads"));
     sds.add(f.createLongCounter("threadStarts",
         "Total number of times a thread has been started since this vm started.", "threads"));
-    sds.add(f.createIntGauge("cpus", "Number of cpus available to the java VM on its machine.",
+    sds.add(f.createLongGauge("cpus", "Number of cpus available to the java VM on its machine.",
         "cpus", true));
     sds.add(f.createLongCounter("loadedClasses", "Total number of classes loaded since vm started.",
         "classes"));
@@ -350,8 +350,8 @@ public class VMStats50 implements VMStatsContract {
                   "milliseconds"),
               f.createLongGauge("lockOwner",
                   "The thread id that owns the lock that this thread is blocking on.", "threadId"),
-              f.createIntGauge("inNative", "1 if the thread is in native code.", "boolean"),
-              f.createIntGauge("suspended", "1 if this thread is suspended", "boolean"),
+              f.createLongGauge("inNative", "1 if the thread is in native code.", "boolean"),
+              f.createLongGauge("suspended", "1 if this thread is suspended", "boolean"),
               f.createLongCounter("waited",
                   "Total number of times this thread waited for notification.", "operations"),
               f.createLongCounter("waitedTime",

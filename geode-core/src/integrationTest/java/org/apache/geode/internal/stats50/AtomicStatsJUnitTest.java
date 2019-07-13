@@ -56,7 +56,7 @@ public class AtomicStatsJUnitTest {
     StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
 
     StatisticsType type = f.createType(statName, statDescription, new StatisticDescriptor[] {
-        f.createIntGauge("stat", statDesc, "bottles of beer on the wall"),});
+        f.createLongGauge("stat", statDesc, "bottles of beer on the wall"),});
 
     final int statId = type.nameToId("stat");
 

@@ -102,15 +102,15 @@ public class OffHeapStorage implements OffHeapMemoryStats {
 
     statsType = f.createType(statsTypeName, statsTypeDescription,
         new StatisticDescriptor[] {f.createLongGauge(usedMemory, usedMemoryDesc, "bytes"),
-            f.createIntCounter(defragmentations, defragmentationDesc, "operations"),
-            f.createIntGauge(defragmentationsInProgress, defragmentationsInProgressDesc,
+            f.createLongCounter(defragmentations, defragmentationDesc, "operations"),
+            f.createLongGauge(defragmentationsInProgress, defragmentationsInProgressDesc,
                 "operations"),
             f.createLongCounter(defragmentationTime, defragmentationTimeDesc, "nanoseconds", false),
-            f.createIntGauge(fragmentation, fragmentationDesc, "percentage"),
+            f.createLongGauge(fragmentation, fragmentationDesc, "percentage"),
             f.createLongGauge(fragments, fragmentsDesc, "fragments"),
             f.createLongGauge(freeMemory, freeMemoryDesc, "bytes"),
-            f.createIntGauge(largestFragment, largestFragmentDesc, "bytes"),
-            f.createIntGauge(objects, objectsDesc, "objects"),
+            f.createLongGauge(largestFragment, largestFragmentDesc, "bytes"),
+            f.createLongGauge(objects, objectsDesc, "objects"),
             f.createLongCounter(reads, readsDesc, "operations"),
             f.createLongGauge(maxMemory, maxMemoryDesc, "bytes"),});
 

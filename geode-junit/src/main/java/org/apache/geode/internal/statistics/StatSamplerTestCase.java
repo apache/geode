@@ -81,7 +81,7 @@ public abstract class StatSamplerTestCase {
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < millis; done =
-          (statSamplerStats.getInt(statName) >= expectedStatValue)) {
+          ((int) statSamplerStats.getLong(statName) >= expectedStatValue)) {
         Thread.sleep(sleep);
       }
     } catch (InterruptedException e) {
@@ -100,7 +100,7 @@ public abstract class StatSamplerTestCase {
     boolean done = false;
     try {
       for (StopWatch time = new StopWatch(true); !done && time.elapsedTimeMillis() < millis; done =
-          (statSamplerStats.getInt(statName) != expectedStatValue)) {
+          ((int) statSamplerStats.getLong(statName) != expectedStatValue)) {
         Thread.sleep(sleep);
       }
     } catch (InterruptedException e) {

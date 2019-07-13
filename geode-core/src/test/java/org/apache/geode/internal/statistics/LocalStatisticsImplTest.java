@@ -32,7 +32,7 @@ public class LocalStatisticsImplTest {
     StatisticsManager mockStatisticsManager = mock(StatisticsManager.class);
     StatisticsTypeFactory statsFactory = StatisticsTypeFactoryImpl.singleton();
     StatisticDescriptor[] stats = {
-        statsFactory.createIntCounter("intCount", "int counter", "ints"),
+        statsFactory.createLongCounter("intCount", "int counter", "ints"),
         statsFactory.createLongCounter("longCount", "long counter", "longs")
     };
     StatisticsType statisticsType = new StatisticsTypeImpl("abc", "mock stats", stats);
@@ -59,7 +59,7 @@ public class LocalStatisticsImplTest {
     StatisticsManager mockStatisticsManager = mock(StatisticsManager.class);
     StatisticsTypeFactory statsFactory = StatisticsTypeFactoryImpl.singleton();
     StatisticDescriptor[] stats = {
-        statsFactory.createIntCounter("intCount", "int counter", "ints"),
+        statsFactory.createLongCounter("intCount", "int counter", "ints"),
         statsFactory.createLongCounter("longCount", "long counter", "longs"),
         statsFactory.createDoubleCounter("doubleCount", "double counter", "doubles")
     };
