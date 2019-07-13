@@ -109,6 +109,8 @@ public class GatewayReceiverManagementDUnitTest {
         assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);
         assertThat(result.getRuntimeInfo().get(0).getMemberName()).isEqualTo("server-1");
         assertThat(result.getRuntimeInfo().get(0).isRunning()).isEqualTo(true);
+        assertThat(result.getRuntimeInfo().get(0).getSenderCount()).isEqualTo(0);
+        assertThat(result.getRuntimeInfo().get(0).getConnectedSenders()).hasSize(0);
       } else {
         assertThat(result.getConfig().getGroup()).isEqualTo("group2");
         assertThat(result.getRuntimeInfo()).hasSize(0);

@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.beans;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -157,18 +156,13 @@ public class GatewayReceiverMBeanBridge extends ServerBridge {
     removeServer();
   }
 
-  String[] getConnectedGatewaySenders() {
+  public String[] getConnectedGatewaySenders() {
     Acceptor acceptor = getReceiverServer().getAcceptor();
     Set<ServerConnection> serverConnections = acceptor.getAllServerConnections();
-    if (serverConnections != null && !serverConnections.isEmpty()) {
-      Set<String> uniqueIds = new HashSet<>();
-      for (ServerConnection conn : serverConnections) {
-        uniqueIds.add(conn.getMembershipID());
-      }
-      String[] allConnectedClientStr = new String[uniqueIds.size()];
-      return uniqueIds.toArray(allConnectedClientStr);
+    if (serverConnections == null || serverConnections.isEmpty()) {
+      return new String[0];
     }
-    return new String[0];
+    return serverConnections.stream().map(ServerConnection::getMembershipID).toArray(String[]::new);
   }
 
   long getAverageBatchProcessingTime() {

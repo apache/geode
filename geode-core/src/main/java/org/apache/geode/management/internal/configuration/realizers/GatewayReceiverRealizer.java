@@ -28,6 +28,7 @@ import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.cache.wan.GatewayReceiverFactory;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.internal.beans.GatewayReceiverMBeanBridge;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 public class GatewayReceiverRealizer
@@ -101,11 +102,14 @@ public class GatewayReceiverRealizer
 
   @VisibleForTesting
   GatewayReceiverInfo generateGatewayReceiverInfo(GatewayReceiver receiver) {
+    GatewayReceiverMBeanBridge bridge = new GatewayReceiverMBeanBridge(receiver);
     GatewayReceiverInfo info = new GatewayReceiverInfo();
     info.setBindAddress(receiver.getBindAddress());
     info.setHostnameForSenders(receiver.getHostnameForSenders());
     info.setPort(receiver.getPort());
     info.setRunning(receiver.isRunning());
+    info.setSenderCount(bridge.getClientConnectionCount());
+    info.setConnectedSenders(bridge.getConnectedGatewaySenders());
     return info;
   }
 

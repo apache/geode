@@ -27,6 +27,9 @@ import org.junit.Test;
 
 import org.apache.geode.cache.wan.GatewayReceiver;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalCacheServer;
+import org.apache.geode.internal.cache.tier.Acceptor;
+import org.apache.geode.internal.cache.tier.sockets.ServerConnection;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 public class GatewayReceiverRealizerTest {
@@ -44,6 +47,15 @@ public class GatewayReceiverRealizerTest {
     when(gatewayReceiver.getHostnameForSenders()).thenReturn("localhost");
     when(gatewayReceiver.getPort()).thenReturn(321);
     when(gatewayReceiver.isRunning()).thenReturn(true);
+    InternalCacheServer server = mock(InternalCacheServer.class);
+    when(gatewayReceiver.getServer()).thenReturn(server);
+    Acceptor acceptor = mock(Acceptor.class);
+    when(server.getAcceptor()).thenReturn(acceptor);
+    when(acceptor.getClientServerConnectionCount()).thenReturn(3);
+
+    ServerConnection connection = mock(ServerConnection.class);
+    when(connection.getMembershipID()).thenReturn("testId");
+    when(acceptor.getAllServerConnections()).thenReturn(Collections.singleton(connection));
 
     GatewayReceiverInfo actual =
         gatewayReceiverRealizer.generateGatewayReceiverInfo(gatewayReceiver);
@@ -51,6 +63,8 @@ public class GatewayReceiverRealizerTest {
     assertThat(actual.getHostnameForSenders()).isEqualTo("localhost");
     assertThat(actual.getPort()).isEqualTo(321);
     assertThat(actual.isRunning()).isEqualTo(true);
+    assertThat(actual.getSenderCount()).isEqualTo(3);
+    assertThat(actual.getConnectedSenders()).containsExactly("testId");
   }
 
   @Test
