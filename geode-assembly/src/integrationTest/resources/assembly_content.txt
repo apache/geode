@@ -679,13 +679,11 @@ javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/AsyncOperation.html
 javadoc/org/apache/geode/management/api/AsyncOperationResult.html
-javadoc/org/apache/geode/management/api/ClientAsyncOperationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
-javadoc/org/apache/geode/management/api/CompletedAsyncOperationResult.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/CorrespondWith.html
 javadoc/org/apache/geode/management/api/JsonSerializable.html
