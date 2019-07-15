@@ -45,6 +45,6 @@ public class ClusterManagementOperationResultTest {
     System.out.println(json);
     ClusterManagementOperationResult<RebalanceInfo> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
-    assertThat(value.getOperationResult().get().getRebalanceResult()).isEqualTo("test3");
+    assertThat(value.getFutureResult().get().getRebalanceResult()).isEqualTo("test3");
   }
 }

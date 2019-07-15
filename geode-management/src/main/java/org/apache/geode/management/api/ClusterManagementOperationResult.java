@@ -33,7 +33,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
 
   private AsyncOperationResult<V> operationResult;
 
-  public AsyncOperationResult<V> getOperationResult() {
+  public AsyncOperationResult<V> getFutureResult() {
     return operationResult;
   }
 

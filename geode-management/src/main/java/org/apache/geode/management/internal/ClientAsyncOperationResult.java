@@ -80,7 +80,7 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
     while (!isDone()) {
       Thread.sleep(POLL_INTERVAL);
     }
-    return completedResult.getOperationResult().get();
+    return completedResult.getFutureResult().get();
   }
 
   @Override
@@ -95,6 +95,6 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
       }
       Thread.sleep(POLL_INTERVAL);
     }
-    return completedResult.getOperationResult().get();
+    return completedResult.getFutureResult().get();
   }
 }

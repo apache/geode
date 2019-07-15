@@ -86,10 +86,10 @@ public class RebalanceIntegrationTest {
   public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceInfo> result = client.startOperation(rebalance);
-    AsyncOperationResult<RebalanceInfo> operationResult = result.getOperationResult();
+    AsyncOperationResult<RebalanceInfo> operationResult = result.getFutureResult();
     AsyncOperationResult<RebalanceInfo> spy = spy(operationResult);
     result.setOperationResult(spy);
-    RebalanceInfo rebalanceInfo = result.getOperationResult().get();
+    RebalanceInfo rebalanceInfo = result.getFutureResult().get();
     assertThat(rebalanceInfo.getRebalanceResult()).contains("fake success");
     verify(spy, atLeast(1)).isDone();
   }

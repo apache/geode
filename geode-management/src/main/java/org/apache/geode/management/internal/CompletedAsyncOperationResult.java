@@ -25,7 +25,7 @@ import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class CompletedAsyncOperationResult<V extends JsonSerializable>
-    extends AsyncOperationResult<V> {
+    extends AsyncOperationResult<V> implements JsonSerializable {
   @JsonProperty
   private V result = null;
 

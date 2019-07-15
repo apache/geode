@@ -350,12 +350,12 @@ public class LocatorClusterManagementServiceTest {
     when(future.isDone()).thenReturn(false);
     ClusterManagementOperationResult<JsonSerializable> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
-    assertThat(result.getOperationResult()).isNull();
+    assertThat(result.getFutureResult()).isNull();
 
     when(future.isDone()).thenReturn(true);
     result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getOperationResult()).isNotNull()
+    assertThat(result.getFutureResult()).isNotNull()
         .isInstanceOf(CompletedAsyncOperationResult.class);
   }
 }

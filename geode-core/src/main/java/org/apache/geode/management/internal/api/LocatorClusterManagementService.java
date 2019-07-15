@@ -385,7 +385,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   /**
    * this is intended for use by the rest controller. for Java usage, please use the Future returned
-   * by getOperationResult on the result of startOperation.
+   * by getFutureResult on the result of startOperation.
    */
   public <V extends JsonSerializable> ClusterManagementOperationResult<V> checkStatus(String opId) {
     final Future<V> status = executorManager.getStatus(opId);
