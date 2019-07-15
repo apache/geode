@@ -1760,10 +1760,10 @@ public class WANTestBase extends DistributedTestCase {
 
   public static void createSenderAlertThresholdWithoutDiskStore(String dsName, int remoteDsId,
       Integer maxMemory,
-      Integer batchSize, boolean isConflation, boolean isManualStart) {
+      Integer batchSize, boolean isConflation, boolean isManualStart, int alertthreshold) {
 
     GatewaySenderFactory gateway = cache.createGatewaySenderFactory();
-    gateway.setAlertThreshold(1);
+    gateway.setAlertThreshold(alertthreshold);
     gateway.setParallel(true);
     gateway.setMaximumQueueMemory(maxMemory);
     gateway.setBatchSize(batchSize);
