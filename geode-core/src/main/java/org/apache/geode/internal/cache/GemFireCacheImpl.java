@@ -233,6 +233,8 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.sequencelog.SequenceLoggerImpl;
 import org.apache.geode.internal.shared.StringPrintWriter;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.FutureResult;
@@ -843,8 +845,10 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       cqService = CqServiceProvider.create(this);
 
       // Create the CacheStatistics
-      CachePerfStats.enableClockStats = system.getConfig().getEnableTimeStatistics();
-      cachePerfStats = new CachePerfStats(internalDistributedSystem.getStatisticsManager());
+      StatisticsClock statisticsClock = StatisticsClockFactory.clock(
+          system.getConfig().getEnableTimeStatistics());
+      cachePerfStats = new CachePerfStats(
+          internalDistributedSystem.getStatisticsManager(), statisticsClock);
 
       transactionManager = new TXManagerImpl(cachePerfStats, this);
       dm.addMembershipListener(transactionManager);

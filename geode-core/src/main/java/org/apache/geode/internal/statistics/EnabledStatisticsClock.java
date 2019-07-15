@@ -14,25 +14,17 @@
  */
 package org.apache.geode.internal.statistics;
 
-@FunctionalInterface
-public interface StatisticsClock {
+import org.apache.geode.internal.NanoTimer;
 
-  /**
-   * Returns the current value of the running Java Virtual Machine's high-resolution time source,
-   * in nanoseconds.
-   *
-   * <p>
-   * See {@code java.lang.System#nanoTime()}.
-   */
-  long getTime();
+public class EnabledStatisticsClock implements StatisticsClock {
 
-  /**
-   * Returns true if this clock is enabled. If disabled then {@code getTime()} will return zero.
-   *
-   * <p>
-   * Default returns {@code true}.
-   */
-  default boolean isEnabled() {
+  @Override
+  public long getTime() {
+    return NanoTimer.getTime();
+  }
+
+  @Override
+  public boolean isEnabled() {
     return true;
   }
 }

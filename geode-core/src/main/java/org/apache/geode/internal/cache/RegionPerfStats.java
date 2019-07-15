@@ -14,11 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.function.LongSupplier;
-
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.NanoTimer;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 class RegionPerfStats extends CachePerfStats implements RegionStats {
 
@@ -32,7 +31,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @VisibleForTesting
   RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
-      String regionName, LongSupplier clock) {
+      String regionName, StatisticsClock clock) {
     super(statisticsFactory, "RegionStats-" + regionName, clock);
     this.cachePerfStats = cachePerfStats;
   }

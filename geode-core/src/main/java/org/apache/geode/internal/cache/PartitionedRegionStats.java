@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.cache;
 
 import java.util.Collections;
@@ -26,6 +25,8 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
+import org.apache.geode.internal.statistics.StatisticsClock;
+import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -534,6 +535,8 @@ public class PartitionedRegionStats {
 
   private final Statistics stats;
 
+  private final StatisticsClock clock;
+
   /**
    * Utility map for temporarily holding stat start times.
    * <p>
@@ -554,13 +557,19 @@ public class PartitionedRegionStats {
   }
 
   public PartitionedRegionStats(StatisticsFactory factory, String name) {
-    this.stats = factory.createAtomicStatistics(type, name /* fixes bug 42343 */);
+    this(factory, name, StatisticsClockFactory.clock());
+  }
+
+  private PartitionedRegionStats(StatisticsFactory factory, String name, StatisticsClock clock) {
+    stats = factory.createAtomicStatistics(type, name);
 
     if (CachePerfStats.enableClockStats) {
-      this.startTimeMap = new ConcurrentHashMap();
+      startTimeMap = new ConcurrentHashMap();
     } else {
-      this.startTimeMap = Collections.EMPTY_MAP;
+      startTimeMap = Collections.emptyMap();
     }
+
+    this.clock = clock;
   }
 
   public void close() {
