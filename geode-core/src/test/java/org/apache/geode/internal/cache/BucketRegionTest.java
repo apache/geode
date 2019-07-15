@@ -25,6 +25,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -37,7 +43,13 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.cache.partitioned.LockObject;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
+import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
+import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
+import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 import org.apache.geode.test.fake.Fakes;
 
 public class BucketRegionTest {
@@ -49,6 +61,7 @@ public class BucketRegionTest {
   private EntryEventImpl event;
   private BucketAdvisor bucketAdvisor;
   private Operation operation;
+  private CacheClientProxy proxy;
 
   private final String regionName = "name";
   private final Object[] keys = new Object[] {1};
@@ -70,6 +83,7 @@ public class BucketRegionTest {
     Scope scope = mock(Scope.class);
     bucketAdvisor = mock(BucketAdvisor.class, RETURNS_DEEP_STUBS);
     operation = mock(Operation.class);
+    proxy = mock(CacheClientProxy.class);
 
     when(regionAttributes.getEvictionAttributes()).thenReturn(evictionAttributes);
     when(regionAttributes.getRegionTimeToLive()).thenReturn(expirationAttributes);
@@ -298,4 +312,71 @@ public class BucketRegionTest {
     verify(bucketRegion, never()).removeAndNotifyKeys(keys);
   }
 
+  @Test
+  public void testDoNotNotifyClientsOfTombstoneGCNoCacheClientNotifier() {
+
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterRoutingInfo.FilterInfo routing = new FilterRoutingInfo.FilterInfo();
+
+    bucketRegion.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+    verify(bucketRegion, never()).getFilterProfile();
+  }
+
+
+  @Test
+  public void testDoNotNotifyClientsOfTombstoneGCNoProxy() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterRoutingInfo.FilterInfo routing = null;
+    doReturn(mock(SystemTimer.class)).when(cache).getCCPTimer();
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    bucketRegion.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+    verify(bucketRegion, never()).getFilterProfile();
+
+    doReturn(Collections.emptyList()).when(cache).getCacheServers();
+    ccn.shutdown(111);
+  }
+
+  @Test
+  public void testNotifyClientsOfTombstoneGC() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+
+    Map regionGCVersions = new HashMap();
+    Set keysRemoved = new HashSet();
+    EventID eventID = new EventID();
+    FilterRoutingInfo.FilterInfo routing = null;
+    doReturn(mock(SystemTimer.class)).when(cache).getCCPTimer();
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(cache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    doReturn(mock(ClientProxyMembershipID.class)).when(proxy).getProxyID();
+    ccn.addClientProxyToMap(proxy);
+    doReturn(null).when(bucketRegion).getFilterProfile();
+
+    bucketRegion.notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved, eventID, routing);
+
+    doReturn(Collections.emptyList()).when(cache).getCacheServers();
+    doReturn(Long.valueOf(111)).when(proxy).getAcceptorId();
+
+    ccn.shutdown(111);
+  }
 }

@@ -15,6 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
@@ -174,5 +176,66 @@ public class CacheClientNotifierTest {
         .constructClientMessage(internalCacheEvent);
 
     return internalCacheEvent;
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesFalseNoCCN() {
+    assertFalse(CacheClientNotifier.singletonHasClientProxies());
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesFalseNoProxy() {
+    InternalCache internalCache = Fakes.cache();
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(internalCache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    assertFalse(CacheClientNotifier.singletonHasClientProxies());
+    ccn.shutdown(111);
+
+  }
+
+  @Test
+  public void testSingletonHasClientProxiesTrue() {
+    InternalCache internalCache = Fakes.cache();
+    CacheClientProxy proxy = mock(CacheClientProxy.class);
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(internalCache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
+    ccn.addClientProxy(proxy);
+
+    // check ClientProxy Map is not empty
+    assertTrue(CacheClientNotifier.singletonHasClientProxies());
+
+    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
+    ccn.shutdown(111);
+  }
+
+  @Test
+  public void testSingletonHasInitClientProxiesTrue() {
+    InternalCache internalCache = Fakes.cache();
+    CacheClientProxy proxy = mock(CacheClientProxy.class);
+
+    CacheClientNotifier ccn =
+        CacheClientNotifier.getInstance(internalCache, mock(CacheServerStats.class), 10,
+            10, mock(ConnectionListener.class), null, true);
+
+    when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
+    ccn.addClientInitProxy(proxy);
+
+    // check InitClientProxy Map is not empty
+    assertTrue(CacheClientNotifier.singletonHasClientProxies());
+
+    ccn.addClientProxy(proxy);
+
+    // check ClientProxy Map is not empty
+    assertTrue(CacheClientNotifier.singletonHasClientProxies());
+
+    when(proxy.getAcceptorId()).thenReturn(Long.valueOf(111));
+    ccn.shutdown(111);
   }
 }

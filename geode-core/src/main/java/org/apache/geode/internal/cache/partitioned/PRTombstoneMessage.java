@@ -103,7 +103,7 @@ public class PRTombstoneMessage extends PartitionMessageWithDirectReply
     }
     FilterProfile fp = r.getFilterProfile();
     if (this.keys != null && this.keys.size() > 0) { // sanity check
-      if (fp != null && CacheClientNotifier.getInstance() != null && this.eventID != null) {
+      if (fp != null && CacheClientNotifier.singletonHasClientProxies() && this.eventID != null) {
         RegionEventImpl regionEvent = new RegionEventImpl(r, Operation.REGION_DESTROY, null, true,
             r.getGemFireCache().getMyId());
         regionEvent.setLocalFilterInfo(fp.getLocalFilterRouting(regionEvent));
