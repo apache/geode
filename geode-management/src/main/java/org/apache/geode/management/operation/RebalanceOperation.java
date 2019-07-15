@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.runtime.RebalanceInfo;
 
-@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class RebalanceOperation extends AsyncOperation<RebalanceInfo> {
   public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
   private List<String> includeRegions = new ArrayList<>();

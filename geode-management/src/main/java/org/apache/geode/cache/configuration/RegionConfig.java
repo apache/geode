@@ -32,7 +32,6 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
@@ -160,7 +159,6 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
-@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class RegionConfig extends CacheElement implements RestfulEndpoint,
     CorrespondWith<RuntimeRegionInfo> {
 
@@ -542,7 +540,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
    *
    */
   @XmlAccessorType(XmlAccessType.FIELD)
-  @JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
   public static class Index extends CacheElement
       implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
     @XmlAttribute(name = "name", required = true)

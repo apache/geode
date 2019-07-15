@@ -25,7 +25,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.CorrespondWith;
@@ -78,7 +77,6 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @XmlType(name = "pdx-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"pdxSerializer"})
 @Experimental
-@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
 public class PdxType extends CacheElement implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
   @XmlElement(name = "pdx-serializer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType pdxSerializer;

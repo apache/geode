@@ -33,7 +33,7 @@ import org.apache.geode.management.operation.RebalanceOperation;
 @Experimental
 public class AsyncExecutorManager {
   private ExecutorService executorService;
-  private Map<Class, AsyncOperationExecutor> executors;
+  private Map<Class<? extends AsyncOperation>, AsyncOperationExecutor> executors;
   private Map<String, Future> history;
 
   public AsyncExecutorManager() {
@@ -67,13 +67,13 @@ public class AsyncExecutorManager {
     // save the Future so we can check on it later
     history.put(op.getId(), future);
 
-    return new LocatorAsyncOperationResult<V>(future);
+    return new LocatorAsyncOperationResult<>(future);
   }
 
 
   @SuppressWarnings("unchecked")
-  private <T extends AsyncOperation, R> AsyncOperationExecutor<T, R> getExecutor(
-      T op) {
+  private <A extends AsyncOperation<V>, V extends JsonSerializable> AsyncOperationExecutor<A, V> getExecutor(
+      A op) {
     return executors.get(op.getClass());
   }
 
