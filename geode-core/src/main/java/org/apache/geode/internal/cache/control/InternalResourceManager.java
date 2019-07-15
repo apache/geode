@@ -338,7 +338,7 @@ public class InternalResourceManager implements ResourceManager {
     }
     executor.shutdown();
     final int secToWait = Integer
-        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 120).intValue();
+        .getInteger(DistributionConfig.GEMFIRE_PREFIX + "prrecovery-close-timeout", 5).intValue();
     try {
       executor.awaitTermination(secToWait, TimeUnit.SECONDS);
     } catch (InterruptedException x) {
@@ -346,8 +346,9 @@ public class InternalResourceManager implements ResourceManager {
       logger.debug("Failed in interrupting the Resource Manager Thread due to interrupt");
     }
     if (!executor.isTerminated()) {
-      logger.warn("Failed to stop resource manager threads in {} seconds",
+      logger.warn("Failed to stop resource manager threads in {} seconds, forcing shutdown",
           secToWait);
+      executor.shutdownNow();
     }
   }
 
