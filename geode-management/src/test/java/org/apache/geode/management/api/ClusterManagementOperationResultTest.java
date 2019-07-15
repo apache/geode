@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.internal.CompletedAsyncOperationResult;
 import org.apache.geode.management.runtime.RebalanceInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 

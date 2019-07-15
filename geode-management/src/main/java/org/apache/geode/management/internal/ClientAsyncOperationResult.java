@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +21,10 @@ import java.util.concurrent.TimeoutException;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.AsyncOperationResult;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class ClientAsyncOperationResult<V extends JsonSerializable>
@@ -37,11 +41,11 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
     this.uri = uri;
   }
 
-  @SuppressWarnings("unchecked")
   /**
    * this should be the only method to make the request to the locator to check the status of the
    * operation
    */
+  @SuppressWarnings("unchecked")
   private ClusterManagementOperationResult<V> requestStatus() {
     return restTemplate
         .getForEntity(uri, ClusterManagementOperationResult.class)

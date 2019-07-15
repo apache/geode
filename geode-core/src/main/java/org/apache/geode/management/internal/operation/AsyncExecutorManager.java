@@ -33,7 +33,7 @@ import org.apache.geode.management.operation.RebalanceOperation;
 @Experimental
 public class AsyncExecutorManager {
   private ExecutorService executorService;
-  private Map<Class<? extends AsyncOperation>, AsyncOperationExecutor> executors;
+  private Map<Class<? extends AsyncOperation>, OperationPerformer> performers;
   private Map<String, Future> history;
 
   public AsyncExecutorManager() {
@@ -44,9 +44,9 @@ public class AsyncExecutorManager {
     executorService = Executors.newFixedThreadPool(threadPoolSize);
     history = new LRUMap(historySize);
 
-    // initialize the list of operation executors
-    executors = new HashMap<>();
-    executors.put(RebalanceOperation.class, new RebalanceOperationExecutor());
+    // initialize the list of operation performers
+    performers = new HashMap<>();
+    performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
   public <A extends AsyncOperation<V>, V extends JsonSerializable> AsyncOperationResult<V> submit(
@@ -56,13 +56,13 @@ public class AsyncExecutorManager {
           String.format("Operation type %s should not supply its own id",
               op.getClass().getSimpleName()));
     op.setId(UUID.randomUUID().toString());
-    AsyncOperationExecutor<A, V> executor = getExecutor(op);
-    if (executor == null) {
+    OperationPerformer<A, V> performer = getPerformer(op);
+    if (performer == null) {
       throw new IllegalArgumentException(String.format("Operation type %s is not supported",
           op.getClass().getSimpleName()));
     }
 
-    Future<V> future = executorService.submit(executor.createCallable(op));
+    Future<V> future = executorService.submit(performer.createCallable(op));
 
     // save the Future so we can check on it later
     history.put(op.getId(), future);
@@ -70,11 +70,10 @@ public class AsyncExecutorManager {
     return new LocatorAsyncOperationResult<>(future);
   }
 
-
   @SuppressWarnings("unchecked")
-  private <A extends AsyncOperation<V>, V extends JsonSerializable> AsyncOperationExecutor<A, V> getExecutor(
+  private <A extends AsyncOperation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
       A op) {
-    return executors.get(op.getClass());
+    return performers.get(op.getClass());
   }
 
   /**

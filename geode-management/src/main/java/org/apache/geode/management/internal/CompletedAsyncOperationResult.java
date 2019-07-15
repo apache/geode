@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
+package org.apache.geode.management.internal;
 
 import java.util.concurrent.TimeUnit;
 
@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.AsyncOperationResult;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class CompletedAsyncOperationResult<V extends JsonSerializable>

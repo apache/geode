@@ -14,16 +14,17 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.util.concurrent.Callable;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceInfo;
+import org.apache.geode.management.api.AsyncOperation;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-public class RebalanceOperationExecutor
-    implements AsyncOperationExecutor<RebalanceOperation, RebalanceInfo> {
-  @Override
-  public RebalanceInfo exec(RebalanceOperation operation) throws Exception {
-    Thread.sleep(100);
-    return new RebalanceInfo("fake success");
+public interface OperationPerformer<A extends AsyncOperation<V>, V extends JsonSerializable> {
+  default Callable<V> createCallable(A operation) {
+    return () -> perform(operation);
   }
+
+  V perform(A operation) throws Exception;
 }

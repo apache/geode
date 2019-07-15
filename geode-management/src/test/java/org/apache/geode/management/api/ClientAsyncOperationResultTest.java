@@ -23,6 +23,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
+import org.apache.geode.management.internal.ClientAsyncOperationResult;
+
 public class ClientAsyncOperationResultTest {
 
   @Test

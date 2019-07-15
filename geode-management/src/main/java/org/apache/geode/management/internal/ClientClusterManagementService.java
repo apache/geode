@@ -22,7 +22,6 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.AsyncOperation;
-import org.apache.geode.management.api.ClientAsyncOperationResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
