@@ -14,9 +14,7 @@
  */
 package org.apache.geode.management.api;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,13 +49,12 @@ public class CompletedAsyncOperationResult<V extends JsonSerializable>
   }
 
   @Override
-  public V get() throws InterruptedException, ExecutionException {
+  public V get() {
     return result;
   }
 
   @Override
-  public V get(long timeout, TimeUnit unit)
-      throws InterruptedException, ExecutionException, TimeoutException {
+  public V get(long timeout, TimeUnit unit) {
     return result;
   }
 }

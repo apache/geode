@@ -25,8 +25,12 @@ import org.apache.geode.annotations.Experimental;
 @Experimental
 public class ClientAsyncOperationResult<V extends JsonSerializable>
     extends AsyncOperationResult<V> {
+  static final int POLL_INTERVAL = 100; // millis between http status checks
   private RestTemplate restTemplate;
   private String uri;
+
+  // cache the first "done" response to avoid further http calls
+  private ClusterManagementOperationResult<V> completedResult = null;
 
   public ClientAsyncOperationResult(RestTemplate restTemplate, String uri) {
     this.restTemplate = restTemplate;
@@ -56,17 +60,23 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
 
   @Override
   public boolean isDone() {
+    if (completedResult != null) {
+      return true;
+    }
     ClusterManagementOperationResult<V> result = requestStatus();
-    return result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
+    boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
+    if (done) {
+      completedResult = result;
+    }
+    return done;
   }
 
   @Override
   public V get() throws InterruptedException, ExecutionException {
     while (!isDone()) {
-      Thread.sleep(100);
+      Thread.sleep(POLL_INTERVAL);
     }
-    ClusterManagementOperationResult<V> result = requestStatus();
-    return result.getOperationResult().get();
+    return completedResult.getOperationResult().get();
   }
 
   @Override
@@ -76,13 +86,11 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
     long startTime = System.currentTimeMillis();
     while (!isDone()) {
       long elapsedTime = System.currentTimeMillis() - startTime;
-      if (elapsedTime > timeoutMillis)
+      if (elapsedTime > timeoutMillis) {
         throw new TimeoutException();
-      Thread.sleep(100);
+      }
+      Thread.sleep(POLL_INTERVAL);
     }
-
-
-    ClusterManagementOperationResult<V> result = requestStatus();
-    return result.getOperationResult().get();
+    return completedResult.getOperationResult().get();
   }
 }
