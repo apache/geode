@@ -131,7 +131,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
-    verify(resourceManager).addStartupStage(same(providerStartupTask));
+    verify(resourceManager).addStartupTask(same(providerStartupTask));
   }
 
   @Test
@@ -148,7 +148,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
-    verify(resourceManager, never()).addStartupStage(any());
+    verify(resourceManager, never()).addStartupTask(any());
   }
 
   @Test
@@ -165,7 +165,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
-    verify(resourceManager, never()).addStartupStage(any());
+    verify(resourceManager, never()).addStartupTask(any());
   }
 
   @Test
@@ -185,7 +185,7 @@ public class PRHARedundancyProviderTest {
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
-    verify(resourceManager, never()).addStartupStage(any());
+    verify(resourceManager, never()).addStartupTask(any());
   }
 
   @Test
@@ -204,7 +204,7 @@ public class PRHARedundancyProviderTest {
     prHaRedundancyProvider.shutdown();
     prHaRedundancyProvider.startRedundancyRecovery();
 
-    verify(resourceManager, never()).addStartupStage(any());
+    verify(resourceManager, never()).addStartupTask(any());
   }
 
   @Test
