@@ -42,7 +42,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -1019,9 +1018,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
       cacheServer.start();
     }
 
-    CompletionStage<Void> startupStage =
-        ((InternalResourceManager) cache.getResourceManager()).getStartupStage();
-    startupStage.thenRun(startupCompletionAction);
+    ((InternalResourceManager) cache.getResourceManager())
+        .startupCompleteAction(startupCompletionAction);
   }
 
   /**

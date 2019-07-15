@@ -14,24 +14,18 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -168,13 +162,13 @@ public class ServerLauncherTest {
     launcher.running.set(true);
     launcher.stop();
 
-    verify(cache, times(1)).isReconnecting();
-    verify(cache, times(1)).getReconnectedCache();
-    verify(cache, times(1)).isReconnecting();
-    verify(cache, times(1)).getReconnectedCache();
-    verify(reconnectedCache, times(1)).getDistributedSystem();
-    verify(system, times(1)).stopReconnecting();
-    verify(reconnectedCache, times(1)).close();
+    verify(cache).isReconnecting();
+    verify(cache).getReconnectedCache();
+    verify(cache).isReconnecting();
+    verify(cache).getReconnectedCache();
+    verify(reconnectedCache).getDistributedSystem();
+    verify(system).stopReconnecting();
+    verify(reconnectedCache).close();
   }
 
   @Test
@@ -296,21 +290,17 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    @SuppressWarnings("unchecked")
-    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
-    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
-
     launcher.startCacheServer(cache);
 
-    verify(cacheServer, times(1)).setBindAddress(null);
-    verify(cacheServer, times(1)).setPort(eq(11235));
-    verify(cacheServer, times(1)).setMaxThreads(10);
-    verify(cacheServer, times(1)).setMaxConnections(100);
-    verify(cacheServer, times(1)).setMaximumMessageCount(5);
-    verify(cacheServer, times(1)).setMessageTimeToLive(10000);
-    verify(cacheServer, times(1)).setSocketBufferSize(2048);
-    verify(cacheServer, times(1)).setHostnameForClients("hostName4Clients");
-    verify(cacheServer, times(1)).start();
+    verify(cacheServer).setBindAddress(null);
+    verify(cacheServer).setPort(eq(11235));
+    verify(cacheServer).setMaxThreads(10);
+    verify(cacheServer).setMaxConnections(100);
+    verify(cacheServer).setMaximumMessageCount(5);
+    verify(cacheServer).setMessageTimeToLive(10000);
+    verify(cacheServer).setSocketBufferSize(2048);
+    verify(cacheServer).setHostnameForClients("hostName4Clients");
+    verify(cacheServer).start();
   }
 
   @Test
@@ -324,21 +314,9 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    @SuppressWarnings("unchecked")
-    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
-    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
-
     launcher.startCacheServer(cache);
 
-    verify(cacheServer, times(0)).setBindAddress(anyString());
-    verify(cacheServer, times(0)).setPort(anyInt());
-    verify(cacheServer, times(0)).setMaxThreads(anyInt());
-    verify(cacheServer, times(0)).setMaxConnections(anyInt());
-    verify(cacheServer, times(0)).setMaximumMessageCount(anyInt());
-    verify(cacheServer, times(0)).setMessageTimeToLive(anyInt());
-    verify(cacheServer, times(0)).setSocketBufferSize(anyInt());
-    verify(cacheServer, times(0)).setHostnameForClients(anyString());
-    verify(cacheServer, times(0)).start();
+    verifyZeroInteractions(cacheServer);
   }
 
   @Test
@@ -353,61 +331,27 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    @SuppressWarnings("unchecked")
-    final CompletionStage<Void> completionStage = mock(CompletionStage.class);
-    when(internalResourceManager.getStartupStage()).thenReturn(completionStage);
-
     launcher.startCacheServer(cache);
 
-    verify(cacheServer2, times(0)).setBindAddress(anyString());
-    verify(cacheServer2, times(0)).setPort(anyInt());
-    verify(cacheServer2, times(0)).setMaxThreads(anyInt());
-    verify(cacheServer2, times(0)).setMaxConnections(anyInt());
-    verify(cacheServer2, times(0)).setMaximumMessageCount(anyInt());
-    verify(cacheServer2, times(0)).setMessageTimeToLive(anyInt());
-    verify(cacheServer2, times(0)).setSocketBufferSize(anyInt());
-    verify(cacheServer2, times(0)).setHostnameForClients(anyString());
-    verify(cacheServer2, times(0)).start();
+    verifyZeroInteractions(cacheServer2);
   }
 
   @Test
-  public void startCacheServerCallsStartupCompletionActionWhenCompleted() throws IOException {
-    final CountDownLatch numberOfStartupTasksRemaining = new CountDownLatch(1);
-    AtomicBoolean startupCompletionActionHasRun = new AtomicBoolean(false);
-    Runnable startupCompletionAction = () -> startupCompletionActionHasRun.set(true);
+  public void startCacheServerPassesStartupCompletionActionToResourceManager() throws IOException {
+    Runnable startupCompletionAction = mock(Runnable.class);
     ServerLauncher serverLauncher = new Builder()
         .setStartupCompletedAction(startupCompletionAction)
         .build();
 
     Cache cache = mock(Cache.class);
     CacheServer cacheServer = mock(CacheServer.class);
-    when(cache.addCacheServer()).thenReturn(cacheServer);
-
-    Runnable startupTask = () -> {
-      try {
-        numberOfStartupTasksRemaining.await();
-      } catch (InterruptedException e) {
-        // ignore
-      }
-    };
-
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-    final CompletableFuture<Void> startupTaskCompletableFuture =
-        CompletableFuture.runAsync(startupTask);
 
-    when(internalResourceManager.getStartupStage()).thenReturn(startupTaskCompletableFuture);
+    when(cache.addCacheServer()).thenReturn(cacheServer);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
     serverLauncher.startCacheServer(cache);
 
-    assertThat(startupCompletionActionHasRun)
-        .withFailMessage("Startup complete action ran before startup tasks finished")
-        .isFalse();
-
-    numberOfStartupTasksRemaining.countDown();
-
-    await().untilAsserted(() -> assertThat(startupCompletionActionHasRun)
-        .withFailMessage("Startup complete action did not run after startup tasks finished")
-        .isTrue());
+    verify(internalResourceManager).startupCompleteAction(startupCompletionAction);
   }
 }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.control;
 
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -64,7 +65,7 @@ public class InternalResourceManager implements ResourceManager {
   final int MAX_RESOURCE_MANAGER_EXE_THREADS =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
 
-  private CompletionStage<Void> startupTask = CompletableFuture.completedFuture(null);
+  private final Collection<CompletableFuture<Void>> startupTasks = new HashSet<>();
 
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);
@@ -612,11 +613,11 @@ public class InternalResourceManager implements ResourceManager {
     }
   }
 
-  public void addStartupStage(CompletionStage<Void> startupTask) {
-    this.startupTask = startupTask;
+  public void addStartupTask(CompletableFuture<Void> startupTask) {
+    startupTasks.add(startupTask);
   }
 
-  public CompletionStage<Void> getStartupStage() {
-    return startupTask;
+  public void startupCompleteAction(Runnable runnable) {
+    CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0])).thenRun(runnable);
   }
 }

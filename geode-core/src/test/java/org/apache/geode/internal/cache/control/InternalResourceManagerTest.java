@@ -25,10 +25,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -43,17 +45,16 @@ import org.apache.geode.internal.cache.InternalCache;
 
 public class InternalResourceManagerTest {
 
-  private InternalResourceManager resourceManager;
-
   private final CountDownLatch hangLatch = new CountDownLatch(1);
-  private InternalCache cache;
+  private InternalResourceManager resourceManager;
+  private CountDownLatch numberOfStartupTasksRemaining;
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setup() {
-    cache = mock(InternalCache.class);
+    InternalCache cache = mock(InternalCache.class);
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
 
     when(cache.getDistributedSystem()).thenReturn(distributedSystem);
@@ -61,6 +62,7 @@ public class InternalResourceManagerTest {
         .thenReturn(mock(Statistics.class));
 
     resourceManager = InternalResourceManager.createResourceManager(cache);
+    numberOfStartupTasksRemaining = new CountDownLatch(1);
   }
 
   @After
@@ -99,27 +101,69 @@ public class InternalResourceManagerTest {
     }
     
   @Test
-  public void startsWithASuccessfullyCompletedAsyncStartupStage() {
-    InternalResourceManager resourceManager = InternalResourceManager.createResourceManager(cache);
+  public void runsIfZeroStartupTask() {
+    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
+    Runnable completionAction = () -> completionActionHasRun.set(true);
 
-    CompletionStage<Void> startupStage = resourceManager.getStartupStage();
+    resourceManager.startupCompleteAction(completionAction);
 
-    assertThat(startupStage).isCompleted();
+    assertThat(completionActionHasRun)
+        .withFailMessage("Startup complete action did not run after startup tasks finished")
+        .isTrue();
   }
 
   @Test
-  public void remembersTheAddedStartupStage() {
-    InternalResourceManager resourceManager = InternalResourceManager.createResourceManager(cache);
-    @SuppressWarnings("unchecked")
-    CompletionStage<Void> expectedStartupStage =
-        (CompletionStage<Void>) mock(CompletionStage.class);
+  public void runsAfterOneStartupTaskComplete() {
+    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
+    Runnable completionAction = () -> completionActionHasRun.set(true);
 
-    resourceManager.addStartupStage(expectedStartupStage);
-    CompletionStage<Void> actualStartupStage = resourceManager.getStartupStage();
+    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
 
-    // Cast to Object so that AssertJ won't convert our mock CompletionStage to a bogus
-    // CompletableFuture before comparing.
-    assertThat((Object) actualStartupStage)
-        .isSameAs(expectedStartupStage);
+    resourceManager.startupCompleteAction(completionAction);
+
+    assertThat(completionActionHasRun)
+        .withFailMessage("Startup complete action ran before startup tasks finished")
+        .isFalse();
+
+    completeAnyWaitingTasks();
+
+    await().untilAsserted(() -> assertThat(completionActionHasRun)
+        .withFailMessage("Startup complete action did not run after startup tasks finished")
+        .isTrue());
+  }
+
+  @Test
+  public void runsAfterManyStartupTaskCompletes() {
+    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
+    Runnable completionAction = () -> completionActionHasRun.set(true);
+
+    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
+    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
+
+    resourceManager.startupCompleteAction(completionAction);
+
+    assertThat(completionActionHasRun)
+        .withFailMessage("Startup complete action ran before startup tasks finished")
+        .isFalse();
+
+    completeAnyWaitingTasks();
+
+    await().untilAsserted(() -> assertThat(completionActionHasRun)
+        .withFailMessage("Startup complete action did not run after startup tasks finished")
+        .isTrue());
+  }
+
+  private void completeAnyWaitingTasks() {
+    numberOfStartupTasksRemaining.countDown();
+  }
+
+  private Runnable waitingTask() {
+    return () -> {
+      try {
+        numberOfStartupTasksRemaining.await();
+      } catch (InterruptedException e) {
+        // ignore
+      }
+    };
   }
 }

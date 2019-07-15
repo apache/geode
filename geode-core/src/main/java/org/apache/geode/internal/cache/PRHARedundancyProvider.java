@@ -1450,7 +1450,6 @@ public class PRHARedundancyProvider {
    * Schedule a task to perform redundancy recovery for a new node or for the node departed.
    */
   private void scheduleRedundancyRecovery(Object failedMemberId) {
-    // note: isStartup is true even when not starting
     boolean isStartup = failedMemberId == null;
     long delay;
     boolean movePrimaries;
@@ -1527,7 +1526,7 @@ public class PRHARedundancyProvider {
             }
           }
           recoveryFuture = recoveryExecutor.schedule(task, delay, MILLISECONDS);
-          resourceManager.addStartupStage(providerStartupTask);
+          resourceManager.addStartupTask(providerStartupTask);
         } catch (RejectedExecutionException e) {
           // ok, the executor is shutting down.
         }
