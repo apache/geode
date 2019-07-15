@@ -18,7 +18,8 @@ import org.apache.geode.StatisticsFactory;
 
 public class BucketPerfStats extends RegionPerfStats {
 
-  BucketPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats, String regionName) {
+  BucketPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
+      String regionName) {
     super(statisticsFactory, cachePerfStats, regionName);
   }
 }

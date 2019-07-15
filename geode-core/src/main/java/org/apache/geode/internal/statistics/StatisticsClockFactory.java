@@ -72,6 +72,7 @@ public class StatisticsClockFactory {
       public long getTime() {
         return time.getAsLong();
       }
+
       @Override
       public boolean isEnabled() {
         return isEnabled.getAsBoolean();
