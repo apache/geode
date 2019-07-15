@@ -125,7 +125,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                 logger.debug(
                     "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
                     new Object[] {locator.getHostName(), locator.getPort(), value.getHostName(),
-                        value.getPort()});
+                        value.getPort(), e});
               }
             }
             try {
@@ -136,7 +136,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                 logger.debug(
                     "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
                     new Object[] {value.getHostName(), value.getPort(), locator.getHostName(),
-                        locator.getPort()});
+                        locator.getPort(), e});
               }
             }
           }
