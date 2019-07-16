@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +47,6 @@ import org.junit.Test;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.net.SocketCreator;
 
 public class LocatorMembershipListenerTest {
   private String localhost;
@@ -84,12 +82,12 @@ public class LocatorMembershipListenerTest {
   }
 
   @Before
-  public void setUp() throws UnknownHostException {
+  public void setUp() {
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     when(distributionConfig.getStartLocator()).thenReturn(DistributionConfig.DEFAULT_START_LOCATOR);
 
+    localhost = "127.0.0.1";
     tcpClient = spy(mock(TcpClient.class));
-    localhost = SocketCreator.getLocalHost().getHostName();
     locatorMembershipListener = spy(new LocatorMembershipListenerImpl(tcpClient));
     locatorMembershipListener.setConfig(distributionConfig);
   }
