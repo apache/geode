@@ -461,7 +461,18 @@ public class BucketPersistenceAdvisor extends PersistenceAdvisorImpl {
       }
       atomicCreation = false;
     }
-    super.setOnline(false, true, newId);
+    try {
+      superSetOnline(false, true, newId);
+    } catch (ReplyException replyException) {
+      synchronized (lock) {
+        atomicCreation = true;
+      }
+      throw replyException;
+    }
+  }
+
+  void superSetOnline(boolean didGII, boolean atomicCreation, PersistentMemberID newId) {
+    super.setOnline(didGII, atomicCreation, newId);
   }
 
   public boolean isAtomicCreation() {

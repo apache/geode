@@ -14,20 +14,33 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
 import org.apache.geode.distributed.DistributedLockService;
+import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.PartitionedRegion.BucketLock;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.cache.persistence.PersistentMemberManager;
 import org.apache.geode.internal.cache.persistence.PersistentMemberView;
 
 public class BucketPersistenceAdvisorTest {
+
+  private final PersistentMemberID persistentID = mock(PersistentMemberID.class);
+  private final PersistentMemberView mockStorage = mock(PersistentMemberView.class);
+  private final BucketPersistenceAdvisor bucketPersistenceAdvisor = new BucketPersistenceAdvisor(
+      mock(CacheDistributionAdvisor.class), mock(DistributedLockService.class), mockStorage,
+      "/region", mock(DiskRegionStats.class), mock(PersistentMemberManager.class),
+      mock(BucketLock.class), mock(ProxyBucketRegion.class));
 
   @Test
   public void shouldBeMockable() throws Exception {
@@ -38,16 +51,32 @@ public class BucketPersistenceAdvisorTest {
 
   @Test
   public void atomicCreationShouldNotBeSetForPersistentRegion() throws Exception {
-    PersistentMemberID mockPersistentID = mock(PersistentMemberID.class);
-    PersistentMemberView mockStorage = mock(PersistentMemberView.class);
-    when(mockStorage.getMyPersistentID()).thenReturn(mockPersistentID);
+    when(mockStorage.getMyPersistentID()).thenReturn(persistentID);
 
-    BucketPersistenceAdvisor bpa = new BucketPersistenceAdvisor(
-        mock(CacheDistributionAdvisor.class), mock(DistributedLockService.class), mockStorage,
-        "/region", mock(DiskRegionStats.class), mock(PersistentMemberManager.class),
-        mock(BucketLock.class), mock(ProxyBucketRegion.class));
-    bpa.setAtomicCreation(true);
-    assertFalse(bpa.isAtomicCreation());
+    bucketPersistenceAdvisor.setAtomicCreation(true);
+    assertFalse(bucketPersistenceAdvisor.isAtomicCreation());
+  }
+
+  @Test
+  public void atomicCreationShouldNotBeSetAfterEndBucketCreation() {
+    BucketPersistenceAdvisor spy = spy(bucketPersistenceAdvisor);
+    spy.setAtomicCreation(true);
+    doNothing().when(spy).superSetOnline(false, true, persistentID);
+
+    spy.endBucketCreation(persistentID);
+
+    assertFalse(spy.isAtomicCreation());
+  }
+
+  @Test
+  public void atomicCreationShouldBeResetAfterEndBucketCreation() {
+    BucketPersistenceAdvisor spy = spy(bucketPersistenceAdvisor);
+    spy.setAtomicCreation(true);
+    doThrow(new ReplyException()).when(spy).superSetOnline(false, true, persistentID);
+
+    Throwable thrown = catchThrowable(() -> spy.endBucketCreation(persistentID));
+    assertThat(thrown).isInstanceOf(ReplyException.class);
+    assertTrue(spy.isAtomicCreation());
   }
 
 }
