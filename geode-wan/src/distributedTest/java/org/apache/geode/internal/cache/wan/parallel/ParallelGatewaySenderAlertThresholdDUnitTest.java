@@ -118,13 +118,13 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     ManagementService service = ManagementService.getManagementService(cache);
     GatewaySenderMXBean bean = service.getLocalGatewaySenderMXBean("ln");
     assertNotNull(bean);
-    await().untilAsserted(() -> assertEquals(true, bean.isConnected()));
+    await().untilAsserted(() -> assertTrue(bean.isConnected()));
     return bean.getEventsExceedingAlertThreshold();
   }
 
 
   @Test
-  public void testParallelSenderQueueEventsNoAlertThreshold() {
+  public void testParallelSenderQueueNoEventsExceedingHighAlertThreshold() {
     Integer lnPort = vm0.invoke(() -> WANTestBase.createFirstLocatorWithDSId(1));
     Integer nyPort = vm1.invoke(() -> WANTestBase.createFirstRemoteLocator(2, lnPort));
 
@@ -172,8 +172,8 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     ArrayList<Integer> v7List =
         (ArrayList<Integer>) vm7.invoke(() -> WANTestBase.getSenderStats("ln", -1));
 
-    assertTrue("GatewaySenders Stats should contain number of EventsExceedingAlertThreshold = 0",
-        (v4List.get(12) + v5List.get(12) + v6List.get(12) + v7List.get(12)) == 0);
+    assertEquals("GatewaySenders Stats should contain number of EventsExceedingAlertThreshold = 0",
+        (v4List.get(12) + v5List.get(12) + v6List.get(12) + v7List.get(12)), 0);
 
     int v4alert = vm4.invoke(
         ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
@@ -184,8 +184,8 @@ public class ParallelGatewaySenderAlertThresholdDUnitTest extends WANTestBase {
     int v7alert = vm7.invoke(
         ParallelGatewaySenderAlertThresholdDUnitTest::checkSenderMBeanAlertThreshold);
 
-    assertTrue("GatewaySenders MBean should contain number of EventsExceedingAlertThreshold = 0",
-        (v4alert + v5alert + v6alert + v7alert) == 0);
+    assertEquals("GatewaySenders MBean should contain number of EventsExceedingAlertThreshold = 0",
+        (v4alert + v5alert + v6alert + v7alert), 0);
 
   }
 
