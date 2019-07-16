@@ -253,8 +253,9 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
           @Override
           public Object call() throws CacheException {
             PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-            LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-            assertEquals(0, pr1.getLocalSize());
+            LogWriterUtils.getLogWriter()
+                .info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+            assertEquals(0, pr1.getLocalSizeForTest());
             return null;
           }
         };
@@ -334,8 +335,9 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
         Region rr1 = basicGetCache().getRegion("rregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr1.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter()
+            .info(" calling pr1.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
         LogWriterUtils.getLogWriter().info(" calling rr1.size " + rr1.size());
         assertEquals(3, rr1.size());
         return null;
@@ -409,8 +411,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
 
         Region rr1 = basicGetCache().getRegion("rregion1");
         LogWriterUtils.getLogWriter().info(" calling rr.getLocalSize " + rr1.size());
@@ -469,8 +471,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
         CacheTransactionManager ctx = basicGetCache().getCacheTransactionManager();
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
         return null;
       }
     };
@@ -566,8 +568,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, rr1.size());
 
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
         return null;
       }
     };
@@ -630,8 +632,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
         assertEquals(3, rr1.size());
 
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
         return null;
       }
     };
@@ -685,8 +687,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(2, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(2, pr1.getLocalSizeForTest());
         return null;
       }
     };
@@ -807,8 +809,8 @@ public class DistTXDebugDUnitTest extends JUnit4CacheTestCase {
       @Override
       public Object call() throws CacheException {
         PartitionedRegion pr1 = (PartitionedRegion) basicGetCache().getRegion("pregion1");
-        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSize());
-        assertEquals(0, pr1.getLocalSize());
+        LogWriterUtils.getLogWriter().info(" calling pr.getLocalSize " + pr1.getLocalSizeForTest());
+        assertEquals(0, pr1.getLocalSizeForTest());
         return null;
       }
     };

@@ -16,6 +16,9 @@ package org.apache.geode.internal.cache;
 
 import java.util.function.LongSupplier;
 
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.NanoTimer;
@@ -23,18 +26,40 @@ import org.apache.geode.internal.NanoTimer;
 class RegionPerfStats extends CachePerfStats {
 
   private final CachePerfStats cachePerfStats;
+  private final MeterRegistry meterRegistry;
+  private final Gauge entriesGauge;
 
-  RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
-      String regionName) {
-    this(statisticsFactory, cachePerfStats, regionName,
-        enableClockStats ? NanoTimer::getTime : () -> 0);
+  RegionPerfStats(StatisticsFactory statisticsFactory, String textId, CachePerfStats cachePerfStats,
+      InternalRegion region,
+      MeterRegistry meterRegistry) {
+    this(statisticsFactory, textId, createClock(), cachePerfStats, region,
+        meterRegistry);
   }
 
   @VisibleForTesting
-  RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
-      String regionName, LongSupplier clock) {
-    super(statisticsFactory, "RegionStats-" + regionName, clock);
+  RegionPerfStats(StatisticsFactory statisticsFactory, String textId, LongSupplier clock,
+      CachePerfStats cachePerfStats,
+      InternalRegion region, MeterRegistry meterRegistry) {
+    super(statisticsFactory, textId, clock);
     this.cachePerfStats = cachePerfStats;
+    this.meterRegistry = meterRegistry;
+    entriesGauge = Gauge.builder("member.region.entries", region::getLocalSize)
+        .description("Current number of entries in the region.")
+        .tag("region.name", region.getName())
+        .tag("data.policy", region.getDataPolicy().toString())
+        .baseUnit("entries")
+        .register(meterRegistry);
+    stats.setLongSupplier(entryCountId, region::getLocalSize);
+  }
+
+  private static LongSupplier createClock() {
+    return enableClockStats ? NanoTimer::getTime : () -> 0;
+  }
+
+  @Override
+  protected void close() {
+    meterRegistry.remove(entriesGauge);
+    super.close();
   }
 
   @Override
@@ -463,7 +488,6 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incEntryCount(int delta) {
-    stats.incLong(entryCountId, delta);
     cachePerfStats.incEntryCount(delta);
   }
 
