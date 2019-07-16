@@ -272,19 +272,19 @@ toData,16
 
 org/apache/geode/distributed/internal/membership/InternalDistributedMember,6
 fromData,38
-fromDataPre_GFE_7_1_0_0,281
-fromDataPre_GFE_9_0_0_0,281
+fromDataPre_GFE_7_1_0_0,277
+fromDataPre_GFE_9_0_0_0,277
 toData,34
-toDataPre_GFE_7_1_0_0,271
-toDataPre_GFE_9_0_0_0,266
+toDataPre_GFE_7_1_0_0,276
+toDataPre_GFE_9_0_0_0,271
 
 org/apache/geode/distributed/internal/membership/adapter/LocalViewMessage,2
 fromData,8
 toData,8
 
 org/apache/geode/distributed/internal/membership/gms/GMSMember,2
-fromData,193
-toData,211
+fromData,196
+toData,213
 
 org/apache/geode/distributed/internal/membership/gms/GMSMembershipView,2
 fromData,106

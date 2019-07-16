@@ -2575,50 +2575,50 @@ public class GMSMembershipManager implements MembershipManager {
     }
 
 
-  @Override
-  public void forceDisconnect(final String reason) {
-    if (GMSMembershipManager.this.shutdownInProgress || isJoining()) {
-      return; // probably a race condition
-    }
-
-    setShutdown();
-
-    final Exception shutdownCause = new ForcedDisconnectException(reason);
-
-    // cache the exception so it can be appended to ShutdownExceptions
-    services.setShutdownCause(shutdownCause);
-    services.getCancelCriterion().cancel(reason);
-
-    AlertAppender.getInstance().stopSession();
-
-    if (!inhibitForceDisconnectLogging) {
-      logger.fatal(
-          String.format("Membership service failure: %s", reason),
-          shutdownCause);
-    }
-
-    if (this.isReconnectingDS()) {
-      logger.info("Reconnecting system failed to connect");
-      uncleanShutdown(reason,
-          new ForcedDisconnectException("reconnecting system failed to connect"));
-      return;
-    }
-
-    listener.saveConfig();
-
-    Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
-      // stop server locators immediately since they may not have correct
-      // information. This has caused client failures in bridge/wan
-      // network-down testing
-      InternalLocator loc = (InternalLocator) Locator.getLocator();
-      if (loc != null) {
-        loc.stop(true, !services.getConfig().getDistributionConfig().getDisableAutoReconnect(),
-            false);
+    @Override
+    public void forceDisconnect(final String reason) {
+      if (GMSMembershipManager.this.shutdownInProgress || isJoining()) {
+        return; // probably a race condition
       }
-      uncleanShutdown(reason, shutdownCause);
-    });
-    reconnectThread.start();
-  }
+
+      setShutdown();
+
+      final Exception shutdownCause = new ForcedDisconnectException(reason);
+
+      // cache the exception so it can be appended to ShutdownExceptions
+      services.setShutdownCause(shutdownCause);
+      services.getCancelCriterion().cancel(reason);
+
+      AlertAppender.getInstance().stopSession();
+
+      if (!inhibitForceDisconnectLogging) {
+        logger.fatal(
+            String.format("Membership service failure: %s", reason),
+            shutdownCause);
+      }
+
+      if (this.isReconnectingDS()) {
+        logger.info("Reconnecting system failed to connect");
+        uncleanShutdown(reason,
+            new ForcedDisconnectException("reconnecting system failed to connect"));
+        return;
+      }
+
+      listener.saveConfig();
+
+      Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
+        // stop server locators immediately since they may not have correct
+        // information. This has caused client failures in bridge/wan
+        // network-down testing
+        InternalLocator loc = (InternalLocator) Locator.getLocator();
+        if (loc != null) {
+          loc.stop(true, !services.getConfig().getDistributionConfig().getDisableAutoReconnect(),
+              false);
+        }
+        uncleanShutdown(reason, shutdownCause);
+      });
+      reconnectThread.start();
+    }
 
 
     /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
