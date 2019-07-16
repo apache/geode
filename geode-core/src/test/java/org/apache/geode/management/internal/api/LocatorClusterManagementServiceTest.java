@@ -38,7 +38,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 
 import com.google.common.collect.Sets;
 import org.junit.Before;
@@ -345,7 +345,7 @@ public class LocatorClusterManagementServiceTest {
 
   @Test
   public void checkStatus() {
-    Future future = mock(Future.class);
+    CompletableFuture future = mock(CompletableFuture.class);
     when(executorManager.getStatus(any())).thenReturn(future);
     when(future.isDone()).thenReturn(false);
     ClusterManagementOperationStatusResult<JsonSerializable> result = service.checkStatus("456");

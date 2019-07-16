@@ -48,7 +48,12 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
       ClusterManagementOperationStatusResult<V> result = requestStatus();
       boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
       if (done) {
-        complete(result.getResult());
+        if (result.getStatusCode() == ClusterManagementResult.StatusCode.OK) {
+          complete(result.getResult());
+        } else {
+          completeExceptionally(
+              new RuntimeException(result.getStatusCode() + ": " + result.getStatusMessage()));
+        }
       }
     }, 0, POLL_INTERVAL, TimeUnit.MILLISECONDS);
   }
