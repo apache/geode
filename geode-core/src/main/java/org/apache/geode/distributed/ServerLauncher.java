@@ -353,7 +353,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   private void logStartCompleted() {
-    log.info("Server is online");
+    log.info("Server {} is online", memberName);
   }
 
   /**
@@ -1019,7 +1019,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     ((InternalResourceManager) cache.getResourceManager())
-        .startupCompleteAction(startupCompletionAction);
+        .runWhenStartupTasksComplete(startupCompletionAction);
   }
 
   /**

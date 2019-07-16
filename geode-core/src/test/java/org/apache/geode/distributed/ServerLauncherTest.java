@@ -352,6 +352,6 @@ public class ServerLauncherTest {
 
     serverLauncher.startCacheServer(cache);
 
-    verify(internalResourceManager).startupCompleteAction(startupCompletionAction);
+    verify(internalResourceManager).runWhenStartupTasksComplete(startupCompletionAction);
   }
 }
