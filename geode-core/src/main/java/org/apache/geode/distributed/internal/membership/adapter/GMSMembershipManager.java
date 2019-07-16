@@ -1054,11 +1054,11 @@ public class GMSMembershipManager implements MembershipManager {
    */
   public void replacePartialIdentifierInMessage(DistributionMessage msg) {
     InternalDistributedMember sender = msg.getSender();
-    GMSMember jlsender =
-        this.services.getJoinLeave()
-            .getMemberID(((GMSMemberAdapter) sender.getNetMember()).getGmsMember());
-    if (jlsender != null) {
-      sender.setNetMember(new GMSMemberAdapter(jlsender));
+    GMSMember oldID = ((GMSMemberAdapter) sender.getNetMember()).getGmsMember();
+    GMSMember newID = this.services.getJoinLeave().getMemberID(oldID);
+    if (newID != null && newID != oldID) {
+      sender.setNetMember(new GMSMemberAdapter(newID));
+      sender.setIsPartial(false);
     } else {
       // the DM's view also has surprise members, so let's check it as well
       sender = this.dcReceiver.getDM().getCanonicalId(sender);
@@ -2459,6 +2459,13 @@ public class GMSMembershipManager implements MembershipManager {
     @Override
     public void started() {
       startCleanupTimer();
+      // see if a locator was started and put it in GMS Services
+      InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
+      if (l != null && l.getLocatorHandler() != null) {
+        if (l.getLocatorHandler().setServices(services)) {
+          services.setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
+        }
+      }
     }
 
     /* Service interface */

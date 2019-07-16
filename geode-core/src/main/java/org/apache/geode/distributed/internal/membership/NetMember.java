@@ -111,4 +111,8 @@ public interface NetMember extends Comparable<NetMember> {
   String getUniqueId();
 
   void setDurableTimeout(int newValue);
+
+  void setHostName(String hostName);
+
+  String getHostName();
 }

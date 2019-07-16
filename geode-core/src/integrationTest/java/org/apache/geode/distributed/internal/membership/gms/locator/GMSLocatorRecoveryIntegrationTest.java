@@ -50,8 +50,8 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
@@ -175,7 +175,8 @@ public class GMSLocatorRecoveryIntegrationTest {
     gmsLocator.init(null);
 
     assertThat(gmsLocator.getMembers())
-        .contains((GMSMember) membershipManager.getLocalMember().getNetMember());
+        .contains(
+            ((GMSMemberAdapter) membershipManager.getLocalMember().getNetMember()).getGmsMember());
   }
 
   @Test

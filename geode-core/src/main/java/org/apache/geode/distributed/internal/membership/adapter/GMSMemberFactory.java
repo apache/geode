@@ -34,7 +34,6 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -53,14 +52,15 @@ public class GMSMemberFactory implements MemberServices {
    *
    * @param i the name of the host for the specified NetMember, the current host (hopefully) if
    *        there are any problems.
+   * @param p the membership port
    * @param splitBrainEnabled whether the member has this feature enabled
    * @param canBeCoordinator whether the member can be membership coordinator
-   * @param p the membership port
    * @param attr the MemberAttributes
    * @return the new NetMember
    */
   @Override
-  public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
+  public NetMember newNetMember(InetAddress i, String hostName, int p,
+      boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
     DurableClientAttributes durableClientAttributes = attr.getDurableClientAttributes();
     String durableId = null;
@@ -86,7 +86,8 @@ public class GMSMemberFactory implements MemberServices {
    */
   @Override
   public NetMember newNetMember(InetAddress i, int p) {
-    return newNetMember(i, p, false, true, MemberAttributes.DEFAULT, Version.CURRENT_ORDINAL);
+    return newNetMember(i, i.getHostName(), p, false, true, MemberAttributes.DEFAULT,
+        Version.CURRENT_ORDINAL);
   }
 
   /**
@@ -138,7 +139,7 @@ public class GMSMemberFactory implements MemberServices {
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory) {
 
-    return new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
+    return new GMSLocatorAdapter(bindAddress, locatorString, usePreferredCoordinators,
         networkPartitionDetectionEnabled, stats, securityUDPDHAlgo, workingDirectory);
   }
 

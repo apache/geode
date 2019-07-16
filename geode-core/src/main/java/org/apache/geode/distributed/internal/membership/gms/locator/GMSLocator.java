@@ -39,19 +39,12 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
@@ -59,7 +52,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
 
-public class GMSLocator implements Locator, NetLocator {
+public class GMSLocator implements Locator {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
 
@@ -115,7 +108,6 @@ public class GMSLocator implements Locator, NetLocator {
     this.workingDirectory = workingDirectory;
   }
 
-  @Override
   public synchronized boolean setServices(Services pservices) {
     if (services == null || services.isStopped()) {
       services = pservices;
@@ -163,7 +155,6 @@ public class GMSLocator implements Locator, NetLocator {
     return viewFile;
   }
 
-  @Override
   public void init(TcpServer server) throws InternalGemFireException {
     if (viewFile == null) {
       viewFile = workingDirectory.resolve("locator" + server.getPort() + "view.dat").toFile();
@@ -194,7 +185,6 @@ public class GMSLocator implements Locator, NetLocator {
     this.isCoordinator = isCoordinator;
   }
 
-  @Override
   public Object processRequest(Object request) {
     if (logger.isDebugEnabled()) {
       logger.debug("Peer locator processing {}", request);
@@ -354,12 +344,10 @@ public class GMSLocator implements Locator, NetLocator {
     }
   }
 
-  @Override
   public void endRequest(Object request, long startTime) {
     locatorStats.endLocatorRequest(startTime);
   }
 
-  @Override
   public void endResponse(Object request, long startTime) {
     locatorStats.endLocatorResponse(startTime);
   }
@@ -368,7 +356,6 @@ public class GMSLocator implements Locator, NetLocator {
     return publicKeys.get(new GMSMember.GMSMemberWrapper(member));
   }
 
-  @Override
   public void shutDown() {
     // nothing to do for GMSLocator
     publicKeys.clear();
@@ -382,14 +369,6 @@ public class GMSLocator implements Locator, NetLocator {
     synchronized (registrants) {
       return new ArrayList<>(registrants);
     }
-  }
-
-  @Override
-  public void restarting(DistributedSystem ds, GemFireCache cache,
-      InternalConfigurationPersistenceService sharedConfig) {
-    setServices(
-        ((Manager) ((InternalDistributedSystem) ds).getDM().getMembershipManager())
-            .getServices());
   }
 
   private void recover() throws InternalGemFireException {
@@ -454,7 +433,7 @@ public class GMSLocator implements Locator, NetLocator {
       // Remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
       for (GMSMember member : members) {
-        if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+        if (member.getVmKind() == GMSMember.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

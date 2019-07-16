@@ -66,7 +66,7 @@ public class GMSUtil {
 
   public static GMSMember readMemberID(DataInput in) throws IOException, ClassNotFoundException {
     Object id = DataSerializer.readObject(in);
-    if (id instanceof GMSMember) {
+    if (id == null || id instanceof GMSMember) {
       return (GMSMember) id;
     }
     // return ((GMSMemberAdapter)((InternalDistributedMember)id).getNetMember()).getGmsMember();

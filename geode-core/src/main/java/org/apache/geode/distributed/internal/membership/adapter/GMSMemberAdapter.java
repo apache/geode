@@ -161,10 +161,22 @@ public class GMSMemberAdapter implements NetMember {
   }
 
   @Override
+  public void setHostName(String hostName) {
+    gmsMember.setHostName(hostName);
+  }
+
+  @Override
+  public String getHostName() {
+    return gmsMember.getHostName();
+  }
+
+  @Override
   public void setDurableClientAttributes(DurableClientAttributes attributes) {
     durableClientAttributes = attributes;
-    gmsMember.setDurableId(attributes.getId());
-    gmsMember.setDurableTimeout(attributes.getTimeout());
+    if (attributes != null) {
+      gmsMember.setDurableId(attributes.getId());
+      gmsMember.setDurableTimeout(attributes.getTimeout());
+    }
   }
 
   @Override

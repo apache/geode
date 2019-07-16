@@ -36,6 +36,7 @@ public interface MemberServices {
    *
    * @param i the name of the host for the specified NetMember, the current host (hopefully) if
    *        there are any problems.
+   * @param hostName the associated host name
    * @param port the membership port
    * @param splitBrainEnabled whether the member has this feature enabled
    * @param canBeCoordinator whether the member can be membership coordinator
@@ -43,7 +44,8 @@ public interface MemberServices {
    * @param version TODO
    * @return the new NetMember
    */
-  NetMember newNetMember(InetAddress i, int port, boolean splitBrainEnabled,
+  NetMember newNetMember(InetAddress i, String hostName, int port,
+      boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes payload, short version);
 
   /**

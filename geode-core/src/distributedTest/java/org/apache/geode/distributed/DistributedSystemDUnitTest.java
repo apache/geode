@@ -120,7 +120,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     // construct a member ID that will represent a departed member
     InternalDistributedMember member =
-        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null, null);
+        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null,
+            null);
 
     // schedule a message in order to create a queue for the fake member
     ClusterDistributionManager distributionManager =

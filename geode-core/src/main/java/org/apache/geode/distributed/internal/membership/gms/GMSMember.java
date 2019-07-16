@@ -45,6 +45,8 @@ public class GMSMember implements DataSerializableFixedID {
   /** The DM type for stand-alone members (usually clients) */
   public static final int LONER_DM_TYPE = 13;
 
+  private String hostName;
+
   private int udpPort = 0;
   private boolean preferredForCoordinator;
   private boolean networkPartitionDetectionEnabled;
@@ -68,6 +70,7 @@ public class GMSMember implements DataSerializableFixedID {
 
   @VisibleForTesting
   public GMSMember(String localhost, int udpPort, Version version) {
+    this.hostName = localhost;
     this.inetAddr = SocketCreator.toInetAddress(localhost);
     this.udpPort = udpPort;
     this.versionOrdinal = version.ordinal();
@@ -109,6 +112,7 @@ public class GMSMember implements DataSerializableFixedID {
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator, short version,
       long msbs, long lsbs) {
     this.inetAddr = i;
+    this.hostName = inetAddr.getHostName();
     this.udpPort = p;
     this.processId = processId;
     this.vmKind = vmKind;
@@ -127,6 +131,7 @@ public class GMSMember implements DataSerializableFixedID {
 
   public GMSMember(InetAddress i, int p, short version, long msbs, long lsbs, int viewId) {
     this.inetAddr = i;
+    this.hostName = i.getHostName();
     this.udpPort = p;
     this.versionOrdinal = version;
     this.uuidMSBs = msbs;
@@ -141,6 +146,7 @@ public class GMSMember implements DataSerializableFixedID {
    * @param other the member to create a copy of
    */
   public GMSMember(GMSMember other) {
+    this.hostName = other.hostName;
     this.udpPort = other.udpPort;
     this.preferredForCoordinator = other.preferredForCoordinator;
     this.networkPartitionDetectionEnabled = other.networkPartitionDetectionEnabled;
@@ -492,7 +498,7 @@ public class GMSMember implements DataSerializableFixedID {
     DataSerializer.writeInetAddress(getInetAddress(), out);
     out.writeInt(getPort());
 
-    DataSerializer.writeString("", out);
+    DataSerializer.writeString(hostName, out);
 
     int flags = 0;
     if (isNetworkPartitionDetectionEnabled())
@@ -553,7 +559,7 @@ public class GMSMember implements DataSerializableFixedID {
     inetAddr = DataSerializer.readInetAddress(in);
     udpPort = in.readInt();
 
-    DataSerializer.readString(in); // hostname
+    this.hostName = DataSerializer.readString(in);
 
     int flags = in.readUnsignedByte();
     preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
@@ -598,6 +604,14 @@ public class GMSMember implements DataSerializableFixedID {
     }
   }
 
+  public String getHostName() {
+    return hostName;
+  }
+
+  public void setHostName(String hostName) {
+    this.hostName = hostName;
+  }
+
   public void readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
 
@@ -606,6 +620,11 @@ public class GMSMember implements DataSerializableFixedID {
     this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
 
     this.inetAddr = DataSerializer.readInetAddress(in);
+    if (this.inetAddr != null) {
+      this.hostName =
+          SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr)
+              : inetAddr.getHostAddress();
+    }
     this.udpPort = in.readInt();
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();

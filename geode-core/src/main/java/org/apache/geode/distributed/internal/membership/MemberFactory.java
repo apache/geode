@@ -48,9 +48,12 @@ public class MemberFactory {
    * @param payload the payload for this member
    * @return the new NetMember
    */
-  public static NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
-      boolean canBeCoordinator, short version, MemberAttributes payload) {
-    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload, version);
+  public static NetMember newNetMember(InetAddress i, String hostName, int p,
+      boolean splitBrainEnabled,
+      boolean canBeCoordinator, short version,
+      MemberAttributes payload) {
+    return services.newNetMember(i, hostName, p, splitBrainEnabled, canBeCoordinator, payload,
+        version);
   }
 
   /**

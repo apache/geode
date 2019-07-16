@@ -23,7 +23,6 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
@@ -146,12 +145,6 @@ public class Services {
     this.joinLeave.started();
     this.healthMon.started();
     this.manager.started();
-    InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-    if (l != null && l.getLocatorHandler() != null) {
-      if (l.getLocatorHandler().setServices(this)) {
-        this.locator = (Locator) l.getLocatorHandler();
-      }
-    }
     logger.debug("All membership services have been started");
     try {
       this.manager.joinDistributedSystem();
