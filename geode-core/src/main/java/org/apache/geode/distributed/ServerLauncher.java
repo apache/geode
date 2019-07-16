@@ -318,8 +318,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     messageTimeToLive = builder.getMessageTimeToLive();
     socketBufferSize = builder.getSocketBufferSize();
     controllerParameters = new ServerControllerParameters();
-    startupCompletionAction = builder.getStartupCompletionAction() == null
-        ? this::logStartCompleted : builder.getStartupCompletionAction();
+    startupCompletionAction = builder.getStartupCompletionAction();
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
@@ -352,8 +351,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
         .withDisableDefaultServer(disableDefaultServer);
   }
 
-  private void logStartCompleted() {
-    log.info("Server {} is online", memberName);
+  private void logStartCompleted(long startTime) {
+    long startupDuration = System.currentTimeMillis() - startTime;
+    log.info("Server {} startup completed in {} ms", memberName, startupDuration);
   }
 
   /**
@@ -780,6 +780,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #run()
    */
   public ServerState start() {
+    long startTime = System.currentTimeMillis();
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
@@ -820,7 +821,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
 
           cache.setIsServer(true);
-          startCacheServer(cache);
+          startCacheServer(cache, startTime);
 
           assignBuckets(cache);
           rebalance(cache);
@@ -978,9 +979,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Thread on the specified bind address and port.
    *
    * @param cache the Cache to which the server will be added.
+   * @param startTime the system clock time at which the start method was called
    * @throws IOException if the Cache server fails to start due to IO error.
    */
-  void startCacheServer(final Cache cache) throws IOException {
+  @VisibleForTesting
+  void startCacheServer(final Cache cache, long startTime) throws IOException {
     if (isDefaultServerEnabled(cache)) {
       final String serverBindAddress =
           getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress();
@@ -1018,8 +1021,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       cacheServer.start();
     }
 
+    Runnable afterStartup = startupCompletionAction == null
+        ? () -> logStartCompleted(startTime) : startupCompletionAction;
+
     ((InternalResourceManager) cache.getResourceManager())
-        .runWhenStartupTasksComplete(startupCompletionAction);
+        .runWhenStartupTasksComplete(afterStartup);
   }
 
   /**

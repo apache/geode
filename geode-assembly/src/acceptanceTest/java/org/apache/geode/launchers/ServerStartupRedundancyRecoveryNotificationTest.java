@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.awaitility.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -138,14 +139,13 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
         "start server",
         "--name=" + SERVER_1_NAME,
         "--dir=" + server1Folder,
-        "--locators=localhost[" + locatorPort + "]",
-        "--disable-default-server");
+        "--locators=localhost[" + locatorPort + "]");
 
     gfshRule.execute(connectCommand, startServer1Command);
 
     // TODO: 'Server [name]-IP:PORT startup completed in X ms'
     Pattern serverOnlinePattern =
-        Pattern.compile("^\\[info .*].*Server " + SERVER_1_NAME + " is online.*");
+        Pattern.compile("^\\[info .*].*Server " + SERVER_1_NAME + " startup completed in \\d+ ms");
     Pattern redundancyRestoredPattern =
         Pattern.compile(
             "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionName

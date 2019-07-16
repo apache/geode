@@ -82,9 +82,9 @@ public class ServerLauncherTest {
     when(launcher.isWaiting(eq(cache))).thenReturn(true);
     when(launcher.isHelping()).thenReturn(true);
 
-    launcher.startCacheServer(cache);
+    launcher.startCacheServer(cache, 0L);
 
-    verify(launcher, times(1)).startCacheServer(cache);
+    verify(launcher, times(1)).startCacheServer(cache, 0L);
 
     assertThat(launcher.getCache()).isSameAs(cache);
     assertThat(launcher.getCacheConfig()).isSameAs(cacheConfig);
@@ -290,7 +290,7 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    launcher.startCacheServer(cache);
+    launcher.startCacheServer(cache, 0L);
 
     verify(cacheServer).setBindAddress(null);
     verify(cacheServer).setPort(eq(11235));
@@ -314,7 +314,7 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    launcher.startCacheServer(cache);
+    launcher.startCacheServer(cache, 0L);
 
     verifyZeroInteractions(cacheServer);
   }
@@ -331,7 +331,7 @@ public class ServerLauncherTest {
     final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    launcher.startCacheServer(cache);
+    launcher.startCacheServer(cache, 0L);
 
     verifyZeroInteractions(cacheServer2);
   }
@@ -350,7 +350,7 @@ public class ServerLauncherTest {
     when(cache.addCacheServer()).thenReturn(cacheServer);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    serverLauncher.startCacheServer(cache);
+    serverLauncher.startCacheServer(cache, 0L);
 
     verify(internalResourceManager).runWhenStartupTasksComplete(startupCompletionAction);
   }
