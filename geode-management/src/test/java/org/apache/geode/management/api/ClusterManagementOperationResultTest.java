@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.CompletedAsyncOperationResult;
+import org.apache.geode.management.internal.ClientAsyncOperationResult;
 import org.apache.geode.management.runtime.RebalanceInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -37,14 +37,14 @@ public class ClusterManagementOperationResultTest {
     ClusterManagementOperationResult<RebalanceInfo> result =
         new ClusterManagementOperationResult<>();
     result.setStatus(true, "success");
-    CompletedAsyncOperationResult<RebalanceInfo> operationResult =
-        new CompletedAsyncOperationResult<>();
-    operationResult.setResult(new RebalanceInfo("test3"));
+    RebalanceInfo info = new RebalanceInfo("test3");
+    AsyncOperationResult<RebalanceInfo> operationResult =
+        new ClientAsyncOperationResult<>(null, null);
     result.setOperationResult(operationResult);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult<RebalanceInfo> value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
-    assertThat(value.getFutureResult().get().getRebalanceResult()).isEqualTo("test3");
+    assertThat(value.getFutureResult()).isNull();
   }
 }

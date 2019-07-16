@@ -22,7 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.AsyncOperationResult;
-import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
 
@@ -34,7 +34,7 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
   private String uri;
 
   // cache the first "done" response to avoid further http calls
-  private ClusterManagementOperationResult<V> completedResult = null;
+  private ClusterManagementOperationStatusResult<V> completedResult = null;
 
   public ClientAsyncOperationResult(RestTemplate restTemplate, String uri) {
     this.restTemplate = restTemplate;
@@ -46,9 +46,9 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
    * operation
    */
   @SuppressWarnings("unchecked")
-  private ClusterManagementOperationResult<V> requestStatus() {
+  private ClusterManagementOperationStatusResult<V> requestStatus() {
     return restTemplate
-        .getForEntity(uri, ClusterManagementOperationResult.class)
+        .getForEntity(uri, ClusterManagementOperationStatusResult.class)
         .getBody();
   }
 
@@ -67,7 +67,7 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
     if (completedResult != null) {
       return true;
     }
-    ClusterManagementOperationResult<V> result = requestStatus();
+    ClusterManagementOperationStatusResult<V> result = requestStatus();
     boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
     if (done) {
       completedResult = result;
@@ -80,7 +80,7 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
     while (!isDone()) {
       Thread.sleep(POLL_INTERVAL);
     }
-    return completedResult.getFutureResult().get();
+    return completedResult.getResult();
   }
 
   @Override
@@ -95,6 +95,6 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
       }
       Thread.sleep(POLL_INTERVAL);
     }
-    return completedResult.getFutureResult().get();
+    return completedResult.getResult();
   }
 }

@@ -54,12 +54,12 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.CompletedAsyncOperationResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
@@ -348,14 +348,12 @@ public class LocatorClusterManagementServiceTest {
     Future future = mock(Future.class);
     when(executorManager.getStatus(any())).thenReturn(future);
     when(future.isDone()).thenReturn(false);
-    ClusterManagementOperationResult<JsonSerializable> result = service.checkStatus("456");
+    ClusterManagementOperationStatusResult<JsonSerializable> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
-    assertThat(result.getFutureResult()).isNull();
+    assertThat(result.getResult()).isNull();
 
     when(future.isDone()).thenReturn(true);
     result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
-    assertThat(result.getFutureResult()).isNotNull()
-        .isInstanceOf(CompletedAsyncOperationResult.class);
   }
 }

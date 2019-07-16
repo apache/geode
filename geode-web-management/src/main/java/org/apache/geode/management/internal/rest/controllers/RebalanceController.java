@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceInfo;
 
@@ -38,12 +39,9 @@ public class RebalanceController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementOperationResult<RebalanceInfo> checkRebalanceStatus(
+  public ClusterManagementOperationStatusResult<RebalanceInfo> checkRebalanceStatus(
       @PathVariable String id) {
-    ClusterManagementOperationResult<RebalanceInfo> result =
-        clusterManagementService.checkStatus(id);
-
-    return result;
+    return clusterManagementService.checkStatus(id);
   }
 
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
@@ -52,10 +50,8 @@ public class RebalanceController extends AbstractManagementController {
       @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceInfo> result =
         clusterManagementService.startOperation(operation);
-    result.setOperationResult(null);
 
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.ACCEPTED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
-
 }

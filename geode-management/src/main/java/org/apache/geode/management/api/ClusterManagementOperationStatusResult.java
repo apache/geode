@@ -16,32 +16,28 @@ package org.apache.geode.management.api;
 
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.apache.geode.annotations.Experimental;
 
 @Experimental
-public class ClusterManagementOperationResult<V extends JsonSerializable>
+public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
     extends ClusterManagementResult {
-  public ClusterManagementOperationResult() {}
+  public ClusterManagementOperationStatusResult() {}
 
-  public ClusterManagementOperationResult(boolean success, String message) {
+  public ClusterManagementOperationStatusResult(boolean success, String message) {
     super(success, message);
   }
 
-  public ClusterManagementOperationResult(StatusCode statusCode, String message) {
+  public ClusterManagementOperationStatusResult(StatusCode statusCode, String message) {
     super(statusCode, message);
   }
 
-  @JsonIgnore
-  private AsyncOperationResult<V> operationResult;
+  private V operationResult;
 
-  @JsonIgnore
-  public AsyncOperationResult<V> getFutureResult() {
+  public V getResult() {
     return operationResult;
   }
 
-  public void setOperationResult(AsyncOperationResult<V> operationResult) {
+  public void setResult(V operationResult) {
     this.operationResult = operationResult;
   }
 }

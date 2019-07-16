@@ -50,6 +50,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
@@ -59,7 +60,6 @@ import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.CompletedAsyncOperationResult;
 import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
@@ -387,19 +387,19 @@ public class LocatorClusterManagementService implements ClusterManagementService
    * this is intended for use by the rest controller. for Java usage, please use the Future returned
    * by getFutureResult on the result of startOperation.
    */
-  public <V extends JsonSerializable> ClusterManagementOperationResult<V> checkStatus(String opId) {
+  public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
+      String opId) {
     final Future<V> status = executorManager.getStatus(opId);
     if (status == null) {
       throw new EntityNotFoundException("Operation id = " + opId + " not found");
     }
-    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
+    ClusterManagementOperationStatusResult<V> result =
+        new ClusterManagementOperationStatusResult<>();
     if (!status.isDone()) {
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
     } else {
-      CompletedAsyncOperationResult<V> operationResult = new CompletedAsyncOperationResult<>();
       try {
-        operationResult.setResult(status.get());
-        result.setOperationResult(operationResult);
+        result.setResult(status.get());
         result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
       } catch (InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);
