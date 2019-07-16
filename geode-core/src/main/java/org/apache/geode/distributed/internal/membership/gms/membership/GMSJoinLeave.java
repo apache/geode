@@ -1725,7 +1725,7 @@ public class GMSJoinLeave implements JoinLeave {
       boolean preferred = false;
       if (services.getLocator() != null || Locator.hasLocator()
           || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty()
-          || localAddress.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
+          || localAddress.getVmKind() == GMSMember.LOCATOR_DM_TYPE) {
         logger
             .info("This member is hosting a locator will be preferred as a membership coordinator");
         preferred = true;

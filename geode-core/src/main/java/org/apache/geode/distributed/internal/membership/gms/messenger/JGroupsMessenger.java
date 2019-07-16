@@ -73,7 +73,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -532,7 +531,7 @@ public class JGroupsMessenger implements Messenger {
 
     DistributionConfig config = services.getConfig().getDistributionConfig();
     boolean isLocator = (services.getConfig().getTransport()
-        .getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE)
+        .getVmKind() == GMSMember.LOCATOR_DM_TYPE)
         || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
@@ -1283,7 +1282,7 @@ public class JGroupsMessenger implements Messenger {
         // multicast to them, avoiding deserialization cost and classpath
         // problems
         if ((services.getConfig().getTransport()
-            .getVmKind() == ClusterDistributionManager.ADMIN_ONLY_DM_TYPE)
+            .getVmKind() == GMSMember.ADMIN_ONLY_DM_TYPE)
             && (msg instanceof DistributedCacheOperation.CacheOperationMessage)) {
           return;
         }

@@ -47,7 +47,6 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
@@ -155,9 +154,10 @@ public class GMSLocator implements Locator {
     return viewFile;
   }
 
-  public void init(TcpServer server) throws InternalGemFireException {
+  public void init(String persistentFileIdentifier) throws InternalGemFireException {
     if (viewFile == null) {
-      viewFile = workingDirectory.resolve("locator" + server.getPort() + "view.dat").toFile();
+      viewFile =
+          workingDirectory.resolve("locator" + persistentFileIdentifier + "view.dat").toFile();
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",

@@ -34,7 +34,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -297,7 +296,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
 
   public GMSMember getLeadMember() {
     for (GMSMember mbr : this.members) {
-      if (mbr.getVmKind() == ClusterDistributionManager.NORMAL_DM_TYPE) {
+      if (mbr.getVmKind() == GMSMember.NORMAL_DM_TYPE) {
         return mbr;
       }
     }
@@ -428,16 +427,16 @@ public class GMSMembershipView implements DataSerializableFixedID {
     for (GMSMember mbr : this.members) {
       result += mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
+        case GMSMember.NORMAL_DM_TYPE:
           result += 10;
           if (lead != null && mbr.equals(lead)) {
             result += 5;
           }
           break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
+        case GMSMember.LOCATOR_DM_TYPE:
           result += 3;
           break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
+        case GMSMember.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
@@ -459,16 +458,16 @@ public class GMSMembershipView implements DataSerializableFixedID {
       }
       result += mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
+        case GMSMember.NORMAL_DM_TYPE:
           result += 10;
           if (lead != null && mbr.equals(lead)) {
             result += 5;
           }
           break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
+        case GMSMember.LOCATOR_DM_TYPE:
           result += 3;
           break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
+        case GMSMember.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());
@@ -484,7 +483,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
   public Set<GMSMember> getActualCrashedMembers(GMSMembershipView oldView) {
     Set<GMSMember> result = new HashSet<>(this.crashedMembers.size());
     result.addAll(this.crashedMembers.stream()
-        .filter(mbr -> (mbr.getVmKind() != ClusterDistributionManager.ADMIN_ONLY_DM_TYPE))
+        .filter(mbr -> (mbr.getVmKind() != GMSMember.ADMIN_ONLY_DM_TYPE))
         .filter(mbr -> oldView == null || oldView.contains(mbr)).collect(Collectors.toList()));
     return result;
   }
@@ -500,17 +499,17 @@ public class GMSMembershipView implements DataSerializableFixedID {
       }
       int mbrWeight = mbr.getMemberWeight();
       switch (mbr.getVmKind()) {
-        case ClusterDistributionManager.NORMAL_DM_TYPE:
+        case GMSMember.NORMAL_DM_TYPE:
           if (lead != null && mbr.equals(lead)) {
             mbrWeight += 15;
           } else {
             mbrWeight += 10;
           }
           break;
-        case ClusterDistributionManager.LOCATOR_DM_TYPE:
+        case GMSMember.LOCATOR_DM_TYPE:
           mbrWeight += 3;
           break;
-        case ClusterDistributionManager.ADMIN_ONLY_DM_TYPE:
+        case GMSMember.ADMIN_ONLY_DM_TYPE:
           break;
         default:
           throw new IllegalStateException("Unknown member type: " + mbr.getVmKind());

@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
@@ -84,7 +84,7 @@ public class GMSLocatorAdapter implements TcpHandler, NetLocator {
 
   @Override
   public void init(TcpServer tcpServer) {
-
+    gmsLocator.init("" + tcpServer.getPort());
   }
 
   @Override

@@ -29,9 +29,9 @@ import org.apache.geode.distributed.internal.membership.DistributedMembershipLis
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.Version;

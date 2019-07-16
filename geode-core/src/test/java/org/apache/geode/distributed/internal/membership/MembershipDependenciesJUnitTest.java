@@ -32,51 +32,30 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
-import org.apache.geode.cache.GemFireCache;
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.Role;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.FlowControlParams;
-import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
-import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
-import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
-import org.apache.geode.distributed.internal.tcpserver.TcpServer;
-import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
-import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -123,13 +102,6 @@ public class MembershipDependenciesJUnitTest {
   public static final ArchRule membershipDoesntDependOnCoreProvisional = classes()
       .that()
       .resideInAPackage("org.apache.geode.distributed.internal.membership.gms..")
-      // .and()
-      // .resideOutsideOfPackage("org.apache.geode.distributed.internal.membership.adapter..")
-      // .and()
-
-      // TODO: InternalDistributedMember needs to move out of the package
-      // .areNotAssignableFrom(InternalDistributedMember.class)
-
 
       .should()
       .onlyDependOnClassesThat(
@@ -158,11 +130,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(HeapDataOutputStream.class))
               .or(type(VersionedDataInputStream.class))
 
-              // TODO: Figure out what to do with messaging
-              // Membership messages don't need to extend DistributionMessage
-              .or(assignableTo(DistributionMessage.class))
-              .or(assignableTo(DirectReplyMessage.class))
-
               // TODO: Membership needs its own config object
               .or(type(DistributionConfig.class))
               .or(type(DistributionConfigImpl.class))
@@ -174,21 +141,9 @@ public class MembershipDependenciesJUnitTest {
               .or(type(LogService.class))
               .or(assignableTo(LoggingThread.class))
               .or(type(LoggingExecutors.class))
-              .or(type(LogMarker.class))
-              .or(type(AlertAppender.class))
 
               // TODO
               .or(type(SystemFailure.class))
-
-              // TODO: Break dependency on Role
-              .or(assignableTo(Role.class))
-
-              // TODO: Break dependency on SystemTimerTask
-              .or(assignableTo(SystemTimer.SystemTimerTask.class))
-              .or(type(SystemTimer.class))
-
-              // TODO: Break dependency on SizeableRunnable
-              .or(assignableTo(SizeableRunnable.class))
 
               // TODO
               .or(assignableTo(CancelCriterion.class))
@@ -200,33 +155,13 @@ public class MembershipDependenciesJUnitTest {
               .or(type(SocketCreator.class))
               .or(type(SocketCreatorFactory.class))
 
-              // TODO:
-              .or(type(Assert.class))
-
               // TODO: break dependencies on locator-related classes
               .or(type(Locator.class))
-              .or(type(TcpHandler.class))
               .or(type(TcpClient.class))
-              .or(type(TcpServer.class))
-              .or(type(ServerLocation.class))
-              .or(type(InternalLocator.class))
               .or(type(DistributionLocatorId.class))
-              .or(type(InternalConfigurationPersistenceService.class))
-
-              // TODO: Mt. Olympus (G*D objects live here)
-              .or(type(DistributionManager.class))
-              .or(type(InternalDistributedSystem.class))
-              .or(type(DistributedSystem.class))
-              .or(type(GemFireCache.class))
-              .or(type(GemFireCacheImpl.class))
-              .or(type(InternalCache.class))
-              .or(type(ClusterDistributionManager.class))
 
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
-
-              // TODO:
-              .or(type(DistributedMember.class))
 
               // TODO:
               .or(type(JavaWorkarounds.class))

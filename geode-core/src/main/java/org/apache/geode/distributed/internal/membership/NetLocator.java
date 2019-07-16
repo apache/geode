@@ -12,8 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership;
 
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.tcpserver.TcpHandler;
 
 public interface NetLocator extends TcpHandler {
