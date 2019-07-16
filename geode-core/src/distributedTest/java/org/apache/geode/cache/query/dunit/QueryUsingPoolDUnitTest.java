@@ -960,11 +960,7 @@ public class QueryUsingPoolDUnitTest extends JUnit4CacheTestCase {
     vm2.invoke("closeClient", () -> closeClient());
 
     // Validate maintained compiled queries.
-    vm0.invoke("validate compiled query", () -> {
-      long compiledQueryCount =
-          CacheClientNotifier.getInstance().getStats().getCompiledQueryCount();
-      assertEquals(0, compiledQueryCount);
-    });
+    vm0.invoke("validate Compiled query", () -> validateCompiledQuery(0));
 
     // Stop server
     vm0.invoke("Stop CacheServer", () -> stopBridgeServer(getCache()));
