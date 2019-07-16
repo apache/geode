@@ -17,8 +17,7 @@ package org.apache.geode.management.internal.operation;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
 import org.apache.commons.collections.map.LRUMap;
@@ -26,22 +25,19 @@ import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.AsyncOperation;
-import org.apache.geode.management.api.AsyncOperationResult;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
 public class AsyncExecutorManager {
-  private ExecutorService executorService;
   private Map<Class<? extends AsyncOperation>, OperationPerformer> performers;
-  private Map<String, Future> history;
+  private Map<String, CompletableFuture> history;
 
   public AsyncExecutorManager() {
-    this(10, 10);
+    this(10);
   }
 
-  public AsyncExecutorManager(int threadPoolSize, int historySize) {
-    executorService = Executors.newFixedThreadPool(threadPoolSize);
+  public AsyncExecutorManager(int historySize) {
     history = new LRUMap(historySize);
 
     // initialize the list of operation performers
@@ -49,7 +45,7 @@ public class AsyncExecutorManager {
     performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
-  public <A extends AsyncOperation<V>, V extends JsonSerializable> AsyncOperationResult<V> submit(
+  public <A extends AsyncOperation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
       A op) {
     if (!Strings.isBlank(op.getId()))
       throw new IllegalArgumentException(
@@ -62,12 +58,12 @@ public class AsyncExecutorManager {
           op.getClass().getSimpleName()));
     }
 
-    Future<V> future = executorService.submit(performer.createCallable(op));
+    CompletableFuture<V> future = CompletableFuture.supplyAsync(() -> performer.perform(op));
 
     // save the Future so we can check on it later
     history.put(op.getId(), future);
 
-    return new LocatorAsyncOperationResult<>(future);
+    return future;
   }
 
   @SuppressWarnings("unchecked")

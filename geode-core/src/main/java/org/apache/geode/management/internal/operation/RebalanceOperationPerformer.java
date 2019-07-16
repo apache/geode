@@ -22,8 +22,11 @@ import org.apache.geode.management.runtime.RebalanceInfo;
 public class RebalanceOperationPerformer
     implements OperationPerformer<RebalanceOperation, RebalanceInfo> {
   @Override
-  public RebalanceInfo perform(RebalanceOperation operation) throws Exception {
-    Thread.sleep(100);
+  public RebalanceInfo perform(RebalanceOperation operation) {
+    try {
+      Thread.sleep(100);
+    } catch (InterruptedException ignore) {
+    }
     return new RebalanceInfo("fake success");
   }
 }

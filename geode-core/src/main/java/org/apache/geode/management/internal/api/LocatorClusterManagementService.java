@@ -377,7 +377,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <A extends AsyncOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
-    result.setOperationResult(executorManager.submit(op));
+    result.setFutureResult(executorManager.submit(op));
     result.setUri(op.getUri());
     result.setStatus(ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
     return result;

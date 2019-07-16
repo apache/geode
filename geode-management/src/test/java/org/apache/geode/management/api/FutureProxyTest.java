@@ -23,14 +23,14 @@ import java.util.concurrent.TimeoutException;
 
 import org.junit.Test;
 
-import org.apache.geode.management.internal.ClientAsyncOperationResult;
+import org.apache.geode.management.internal.FutureProxy;
 
-public class ClientAsyncOperationResultTest {
+public class FutureProxyTest {
 
   @Test
   public void get() {
-    ClientAsyncOperationResult<?> operationResult =
-        spy(new ClientAsyncOperationResult<>(null, null));
+    FutureProxy<?> operationResult =
+        spy(new FutureProxy<>(null, null));
     doReturn(false).when(operationResult).isDone();
     assertThatThrownBy(() -> operationResult.get(500, TimeUnit.MILLISECONDS)).isInstanceOf(
         TimeoutException.class);

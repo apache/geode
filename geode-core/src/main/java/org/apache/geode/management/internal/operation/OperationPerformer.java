@@ -14,17 +14,11 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.util.concurrent.Callable;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public interface OperationPerformer<A extends AsyncOperation<V>, V extends JsonSerializable> {
-  default Callable<V> createCallable(A operation) {
-    return () -> perform(operation);
-  }
-
-  V perform(A operation) throws Exception;
+  V perform(A operation);
 }

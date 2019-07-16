@@ -14,31 +14,50 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.AsyncOperationResult;
 import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-public class ClientAsyncOperationResult<V extends JsonSerializable>
-    extends AsyncOperationResult<V> {
+public class FutureProxy<V extends JsonSerializable> implements Future<V> {
   static final int POLL_INTERVAL = 100; // millis between http status checks
+  static final ExecutorService pool = Executors.newFixedThreadPool(10);
   private RestTemplate restTemplate;
   private String uri;
+  private volatile boolean cancelled = false;
 
   // cache the first "done" response to avoid further http calls
   private ClusterManagementOperationStatusResult<V> completedResult = null;
 
-  public ClientAsyncOperationResult(RestTemplate restTemplate, String uri) {
+  public FutureProxy(RestTemplate restTemplate, String uri) {
     this.restTemplate = restTemplate;
     this.uri = uri;
+  }
+
+  /**
+   * converts this Future into a CompletableFuture
+   */
+  public CompletableFuture<V> toCompletableFuture() {
+    CompletableFuture<V> future = new CompletableFutureAdapter<>();
+    pool.execute(() -> {
+      try {
+        future.complete(get());
+      } catch (Throwable t) {
+        future.completeExceptionally(t);
+      }
+    });
+    return future;
   }
 
   /**
@@ -54,12 +73,16 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
 
   @Override
   public boolean cancel(boolean mayInterruptIfRunning) {
-    return false;
+    completedResult = new ClusterManagementOperationStatusResult<V>(
+        ClusterManagementResult.StatusCode.ERROR,
+        "Future.cancel() invoked.  this does not affect the operation; only stops waiting on it.");
+    cancelled = true;
+    return true;
   }
 
   @Override
   public boolean isCancelled() {
-    return false;
+    return cancelled;
   }
 
   @Override
@@ -96,5 +119,14 @@ public class ClientAsyncOperationResult<V extends JsonSerializable>
       Thread.sleep(POLL_INTERVAL);
     }
     return completedResult.getResult();
+  }
+
+  class CompletableFutureAdapter<V extends JsonSerializable> extends CompletableFuture<V> {
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+      super.cancel(mayInterruptIfRunning);
+      FutureProxy.this.cancelled = true;
+      return true;
+    }
   }
 }

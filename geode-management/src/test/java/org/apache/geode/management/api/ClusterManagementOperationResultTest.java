@@ -16,11 +16,12 @@ package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.internal.ClientAsyncOperationResult;
 import org.apache.geode.management.runtime.RebalanceInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -38,9 +39,9 @@ public class ClusterManagementOperationResultTest {
         new ClusterManagementOperationResult<>();
     result.setStatus(true, "success");
     RebalanceInfo info = new RebalanceInfo("test3");
-    AsyncOperationResult<RebalanceInfo> operationResult =
-        new ClientAsyncOperationResult<>(null, null);
-    result.setOperationResult(operationResult);
+    CompletableFuture<RebalanceInfo> operationResult =
+        new CompletableFuture<>();
+    result.setFutureResult(operationResult);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult<RebalanceInfo> value =

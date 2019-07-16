@@ -28,7 +28,7 @@ public class AsyncExecutorManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new AsyncExecutorManager(1, 1);
+    executorManager = new AsyncExecutorManager(1);
   }
 
   @Test

@@ -678,7 +678,6 @@ javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/AsyncOperation.html
-javadoc/org/apache/geode/management/api/AsyncOperationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationStatusResult.html

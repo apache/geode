@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.api;
 
-
+import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -34,14 +34,14 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   @JsonIgnore
-  private AsyncOperationResult<V> operationResult;
+  private CompletableFuture<V> operationResult;
 
   @JsonIgnore
-  public AsyncOperationResult<V> getFutureResult() {
+  public CompletableFuture<V> getFutureResult() {
     return operationResult;
   }
 
-  public void setOperationResult(AsyncOperationResult<V> operationResult) {
+  public void setFutureResult(CompletableFuture<V> operationResult) {
     this.operationResult = operationResult;
   }
 }

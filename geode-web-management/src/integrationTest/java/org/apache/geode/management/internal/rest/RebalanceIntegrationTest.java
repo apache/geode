@@ -16,9 +16,6 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,7 +31,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.management.api.AsyncOperationResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -86,11 +82,7 @@ public class RebalanceIntegrationTest {
   public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceInfo> result = client.startOperation(rebalance);
-    AsyncOperationResult<RebalanceInfo> operationResult = result.getFutureResult();
-    AsyncOperationResult<RebalanceInfo> spy = spy(operationResult);
-    result.setOperationResult(spy);
     RebalanceInfo rebalanceInfo = result.getFutureResult().get();
     assertThat(rebalanceInfo.getRebalanceResult()).contains("fake success");
-    verify(spy, atLeast(1)).isDone();
   }
 }
