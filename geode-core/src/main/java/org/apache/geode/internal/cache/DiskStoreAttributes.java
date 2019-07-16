@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -52,10 +53,10 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   private volatile float diskUsageCriticalPct;
 
   /**
-   * The default disk directory size unit. Only change it for testing purposes.
+   * The default disk directory size unit.
    */
   @MakeImmutable
-  static DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
+  static final DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
 
   public DiskStoreAttributes() {
     // set all to defaults
@@ -121,9 +122,6 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   }
 
   public DiskDirSizesUnit getDiskDirSizesUnit() {
-    if (this.diskDirSizesUnit == null) {
-      this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
-    }
     return this.diskDirSizesUnit;
   }
 
@@ -240,5 +238,13 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
 
   public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
     this.diskDirSizesUnit = unit;
+  }
+
+  private void readObject(final java.io.ObjectInputStream in)
+      throws IOException, ClassNotFoundException {
+    in.defaultReadObject();
+    if (this.diskDirSizesUnit == null) {
+      this.diskDirSizesUnit = DEFAULT_DISK_DIR_SIZES_UNIT;
+    }
   }
 }
