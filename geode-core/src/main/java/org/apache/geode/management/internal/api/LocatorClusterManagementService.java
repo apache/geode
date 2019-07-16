@@ -24,8 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
@@ -389,7 +389,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final Future<V> status = executorManager.getStatus(opId);
+    final CompletableFuture<V> status = executorManager.getStatus(opId);
     if (status == null) {
       throw new EntityNotFoundException("Operation id = " + opId + " not found");
     }

@@ -38,7 +38,6 @@ public class ClusterManagementOperationResultTest {
     ClusterManagementOperationResult<RebalanceInfo> result =
         new ClusterManagementOperationResult<>();
     result.setStatus(true, "success");
-    RebalanceInfo info = new RebalanceInfo("test3");
     CompletableFuture<RebalanceInfo> operationResult =
         new CompletableFuture<>();
     result.setFutureResult(operationResult);

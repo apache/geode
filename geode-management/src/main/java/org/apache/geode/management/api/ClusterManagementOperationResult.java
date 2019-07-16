@@ -40,7 +40,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   @JsonIgnore
   public CompletableFuture<V> getFutureResult() {
     if (operationResult instanceof CompletableFutureProxy)
-      ((CompletableFutureProxy)operationResult).startPolling();
+      ((CompletableFutureProxy) operationResult).startPolling();
     return operationResult;
   }
 

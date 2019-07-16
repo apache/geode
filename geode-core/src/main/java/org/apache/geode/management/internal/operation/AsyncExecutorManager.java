@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.logging.log4j.util.Strings;
@@ -76,7 +75,7 @@ public class AsyncExecutorManager {
    * looks up the future for an async operation by id
    */
   @SuppressWarnings("unchecked")
-  public <V extends JsonSerializable> Future<V> getStatus(String opId) {
+  public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
     return history.get(opId);
   }
 }

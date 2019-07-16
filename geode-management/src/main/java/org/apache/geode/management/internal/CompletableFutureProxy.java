@@ -15,9 +15,10 @@
 package org.apache.geode.management.internal;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.web.client.RestTemplate;
 
@@ -29,23 +30,27 @@ import org.apache.geode.management.api.JsonSerializable;
 @Experimental
 public class CompletableFutureProxy<V extends JsonSerializable> extends CompletableFuture<V> {
   static final int POLL_INTERVAL = 100; // millis between http status checks
-  static final ExecutorService pool = Executors.newFixedThreadPool(10);
+  static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
   private RestTemplate restTemplate;
   private String uri;
+  private ScheduledFuture<?> scheduledFuture;
 
   public CompletableFutureProxy(RestTemplate restTemplate, String uri) {
     this.restTemplate = restTemplate;
     this.uri = uri;
   }
 
-  public void startPolling(){
-    pool.execute(() -> {
-      try {
-        complete(getImpl());
-      } catch (Throwable t) {
-        completeExceptionally(t);
+  public void startPolling() {
+    scheduledFuture = pool.scheduleWithFixedDelay(() -> {
+      if (isDone()) {
+        scheduledFuture.cancel(true);
       }
-    });
+      ClusterManagementOperationStatusResult<V> result = requestStatus();
+      boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
+      if (done) {
+        complete(result.getResult());
+      }
+    }, 0, POLL_INTERVAL, TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -57,18 +62,5 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
     return restTemplate
         .getForEntity(uri, ClusterManagementOperationStatusResult.class)
         .getBody();
-  }
-
-  private V getImpl() throws InterruptedException, ExecutionException {
-    while (true) {
-      if (isDone())
-        return null;
-      ClusterManagementOperationStatusResult<V>  result = requestStatus();
-      boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
-      if (!done)
-        Thread.sleep(POLL_INTERVAL);
-      else
-        return result.getResult();
-    }
   }
 }
