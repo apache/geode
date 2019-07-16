@@ -44,8 +44,6 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   static final String WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME = "locatorsDistributorThread";
   static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS =
       Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS", 3);
-  private static final int WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL =
-      Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_INTERVAL", 5000);
 
   private int port;
   private TcpClient tcpClient;
@@ -111,8 +109,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     }
 
     // Launch Locators Distributor thread.
-    Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(tcpClient, localLocatorId,
-        localCopy, distributedSystemId, locator);
+    Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(config.getMemberTimeout(),
+        tcpClient, localLocatorId, localCopy, distributedSystemId, locator);
     Thread distributeLocatorsThread =
         new Thread(distributeLocatorsRunnable, WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME);
     distributeLocatorsThread.setDaemon(true);
@@ -201,17 +199,19 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   }
 
   private static class DistributeLocatorsRunnable implements Runnable {
+    private final int memberTimeout;
     private final TcpClient tcpClient;
     private final DistributionLocatorId localLocatorId;
     private final Map<Integer, Set<DistributionLocatorId>> remoteLocators;
     private final int distributedSystemId;
     private final DistributionLocatorId locator;
 
-    DistributeLocatorsRunnable(TcpClient tcpClient,
+    DistributeLocatorsRunnable(int memberTimeout, TcpClient tcpClient,
         DistributionLocatorId localLocatorId,
         Map<Integer, Set<DistributionLocatorId>> remoteLocators,
         int distributedSystemId,
         DistributionLocatorId locator) {
+      this.memberTimeout = memberTimeout;
       this.tcpClient = tcpClient;
       this.localLocatorId = localLocatorId;
       this.distributedSystemId = distributedSystemId;
@@ -222,7 +222,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     private void sendMessage(InetSocketAddress ipAddr, LocatorJoinMessage locatorJoinMessage,
         Map<InetSocketAddress, Set<LocatorJoinMessage>> failedMessages) {
       try {
-        tcpClient.requestToServer(ipAddr, locatorJoinMessage, 1000, false);
+        tcpClient.requestToServer(ipAddr, locatorJoinMessage, memberTimeout, false);
       } catch (Exception exception) {
         if (logger.isDebugEnabled()) {
           logger.debug(
@@ -242,7 +242,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     private boolean retryMessage(InetSocketAddress ipAddr, LocatorJoinMessage locatorJoinMessage,
         int retryAttempt) {
       try {
-        tcpClient.requestToServer(ipAddr, locatorJoinMessage, 1000, false);
+        tcpClient.requestToServer(ipAddr, locatorJoinMessage, memberTimeout, false);
 
         return true;
       } catch (Exception exception) {
@@ -297,13 +297,6 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
       // Retry failed messages and remove those that succeed.
       if (!failedMessages.isEmpty()) {
-        // Sleep before trying again.
-        try {
-          Thread.sleep(WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL);
-        } catch (InterruptedException e) {
-          Thread.currentThread().interrupt();
-        }
-
         for (int retryAttempt =
             1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; retryAttempt++) {
           for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry : failedMessages

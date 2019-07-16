@@ -85,6 +85,8 @@ public class LocatorMembershipListenerTest {
   public void setUp() {
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     when(distributionConfig.getStartLocator()).thenReturn(DistributionConfig.DEFAULT_START_LOCATOR);
+    when(distributionConfig.getMemberTimeout())
+        .thenReturn(DistributionConfig.DEFAULT_MEMBER_TIMEOUT);
 
     localhost = "127.0.0.1";
     tcpClient = spy(mock(TcpClient.class));
@@ -204,35 +206,41 @@ public class LocatorMembershipListenerTest {
     joinLocatorsDistributorThread();
 
     verify(tcpClient).requestToServer(distributionLocator3Site1.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(1, distributionLocator3Site1, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(1, distributionLocator3Site1, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator1Site2.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(2, distributionLocator1Site2, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(2, distributionLocator1Site2, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator2Site2.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(2, distributionLocator2Site2, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(2, distributionLocator2Site2, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator1Site3.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator2Site3.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(3, distributionLocator2Site3, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(3, distributionLocator2Site3, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator3Site3.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(3, distributionLocator3Site3, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(3, distributionLocator3Site3, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
   }
 
   @Test
@@ -252,32 +260,37 @@ public class LocatorMembershipListenerTest {
 
     // Fail on first 2 attempts and succeed on third attempt.
     when(tcpClient.requestToServer(distributionLocator3Site1.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false))
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false))
             .thenThrow(new EOFException("Mock Exception"))
             .thenThrow(new EOFException("Mock Exception")).thenReturn(null);
     when(tcpClient.requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""), 1000,
-        false)).thenThrow(new EOFException("Mock Exception"));
+        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false))
+            .thenThrow(new EOFException("Mock Exception"));
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, distributionLocator1Site1);
     joinLocatorsDistributorThread();
 
     verify(tcpClient, times(3)).requestToServer(distributionLocator3Site1.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(1, distributionLocator3Site1, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(1, distributionLocator3Site1, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator1Site2.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(joiningLocator.getHost(),
-        new LocatorJoinMessage(2, distributionLocator1Site2, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(2, distributionLocator1Site2, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient).requestToServer(distributionLocator1Site3.getHost(),
-        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""), 1000, false);
+        new LocatorJoinMessage(1, joiningLocator, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
     verify(tcpClient, times(WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
         joiningLocator.getHost(),
-        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""), 1000,
-        false);
+        new LocatorJoinMessage(3, distributionLocator1Site3, distributionLocator1Site1, ""),
+        DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
   }
 
   private static class HandlerCallable implements Callable<Object> {
