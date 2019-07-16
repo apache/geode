@@ -14,8 +14,12 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import java.util.ArrayList;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,27 +40,25 @@ import org.apache.geode.internal.logging.LogService;
  *
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
-
-  private ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
-      new ConcurrentHashMap<Integer, Set<DistributionLocatorId>>();
-
-  private ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
-      new ConcurrentHashMap<Integer, Set<String>>();
-
   private static final Logger logger = LogService.getLogger();
-
-  private DistributionConfig config;
-
-  private TcpClient tcpClient;
+  static final String WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME = "locatorsDistributorThread";
+  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS =
+      Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS", 3);
+  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL =
+      Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_INTERVAL", 5000);
 
   private int port;
+  private TcpClient tcpClient;
+  private DistributionConfig config;
+  private ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo = new ConcurrentHashMap<>();
+  private ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
+      new ConcurrentHashMap<>();
 
-
-  public LocatorMembershipListenerImpl(TcpClient tcpClient) {
+  LocatorMembershipListenerImpl(TcpClient tcpClient) {
     this.tcpClient = tcpClient;
   }
 
-  public LocatorMembershipListenerImpl() {
+  LocatorMembershipListenerImpl() {
     this.tcpClient = new TcpClient();
   }
 
@@ -74,118 +76,57 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
    * When the new locator is added to remote locator metadata, inform all other locators in remote
    * locator metadata about the new locator so that they can update their remote locator metadata.
    *
+   * @param distributedSystemId DistributedSystemId of the joining locator.
+   * @param locator DistributionLocatorId of the joining locator.
+   * @param sourceLocator DistributionLocatorId of the locator that notified us about the new
+   *        locator.
    */
-
   @Override
   public void locatorJoined(final int distributedSystemId, final DistributionLocatorId locator,
       final DistributionLocatorId sourceLocator) {
-    Thread distributeLocator = new Thread(new Runnable() {
-      @Override
-      public void run() {
-        ConcurrentMap<Integer, Set<DistributionLocatorId>> remoteLocators = getAllLocatorsInfo();
-        ArrayList<DistributionLocatorId> locatorsToRemove = new ArrayList<DistributionLocatorId>();
+    // DistributionLocatorId for local locator.
+    DistributionLocatorId localLocatorId;
+    String localLocator = config.getStartLocator();
+    if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
+      localLocatorId = new DistributionLocatorId(port, config.getBindAddress());
+    } else {
+      localLocatorId = new DistributionLocatorId(localLocator);
+    }
 
-        String localLocator = config.getStartLocator();
-        DistributionLocatorId localLocatorId = null;
-        if (localLocator.equals(DistributionConfig.DEFAULT_START_LOCATOR)) {
-          localLocatorId = new DistributionLocatorId(port, config.getBindAddress());
-        } else {
-          localLocatorId = new DistributionLocatorId(localLocator);
-        }
-        locatorsToRemove.add(localLocatorId);
-        locatorsToRemove.add(locator);
-        locatorsToRemove.add(sourceLocator);
+    // Copy of the current list of known locators.
+    ConcurrentMap<Integer, Set<DistributionLocatorId>> remoteLocators = getAllLocatorsInfo();
+    Map<Integer, Set<DistributionLocatorId>> localCopy = new HashMap<>();
+    for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
+      Set<DistributionLocatorId> value = new CopyOnWriteHashSet<>(entry.getValue());
+      localCopy.put(entry.getKey(), value);
+    }
 
-        Map<Integer, Set<DistributionLocatorId>> localCopy =
-            new HashMap<Integer, Set<DistributionLocatorId>>();
-        for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
-          Set<DistributionLocatorId> value =
-              new CopyOnWriteHashSet<DistributionLocatorId>(entry.getValue());
-          localCopy.put(entry.getKey(), value);
-        }
-        for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : localCopy.entrySet()) {
-          for (DistributionLocatorId removeLocId : locatorsToRemove) {
-            if (entry.getValue().contains(removeLocId)) {
-              entry.getValue().remove(removeLocId);
-              logger.info(String.format(
-                  "[JUAN]: LocatorMembershipListenerImpl.locatorJoined(%s, %s, %s) -> Removed locator %s",
-                  distributedSystemId,
-                  locator,
-                  sourceLocator,
-                  removeLocId));
-            }
-          }
-          for (DistributionLocatorId value : entry.getValue()) {
-            try {
-              tcpClient.requestToServer(value.getHost(),
-                  new LocatorJoinMessage(distributedSystemId, locator, localLocatorId, ""), 1000,
-                  false);
-            } catch (Exception e) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
-                    new Object[] {locator.getHostName(), locator.getPort(), value.getHostName(),
-                        value.getPort(), e});
-              }
-            }
-            try {
-              tcpClient.requestToServer(locator.getHost(),
-                  new LocatorJoinMessage(entry.getKey(), value, localLocatorId, ""), 1000, false);
-            } catch (Exception e) {
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
-                    new Object[] {value.getHostName(), value.getPort(), locator.getHostName(),
-                        locator.getPort(), e});
-              }
-            }
-          }
-        }
+    // Remove those locators that don't need to be notified (joining, local and source).
+    List<DistributionLocatorId> locatorsToRemove =
+        Arrays.asList(locator, localLocatorId, sourceLocator);
+    for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : localCopy.entrySet()) {
+      for (DistributionLocatorId removeLocId : locatorsToRemove) {
+        entry.getValue().remove(removeLocId);
       }
-    });
-    distributeLocator.setDaemon(true);
-    distributeLocator.start();
+    }
+
+    // Launch Locators Distributor thread.
+    Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(tcpClient, localLocatorId,
+        localCopy, distributedSystemId, locator);
+    Thread distributeLocatorsThread =
+        new Thread(distributeLocatorsRunnable, WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME);
+    distributeLocatorsThread.setDaemon(true);
+    distributeLocatorsThread.start();
   }
 
   @Override
   public Object handleRequest(Object request) {
     Object response = null;
+
     if (request instanceof RemoteLocatorJoinRequest) {
-      logger.info(String.format(
-          "[JUAN]: Handling %s from %s [dsId=%s]... Current allLocatorsInfo: %s, current allServerLocatorsInfo: %s.",
-          request.getClass().getSimpleName(),
-          request.toString(),
-          ((RemoteLocatorJoinRequest) request).getDistributedSystemId(),
-          this.getAllLocatorsInfo(),
-          this.getAllServerLocatorsInfo()));
-
       response = updateAllLocatorInfo((RemoteLocatorJoinRequest) request);
-
-      logger.info(String.format(
-          "[JUAN]: Handling %s from %s [dsId=%s]... Done!. allLocatorsInfo: %s, allServerLocatorsInfo: %s.",
-          request.getClass().getSimpleName(),
-          request.toString(),
-          ((RemoteLocatorJoinRequest) request).getDistributedSystemId(),
-          this.getAllLocatorsInfo(),
-          this.getAllServerLocatorsInfo()));
-
     } else if (request instanceof LocatorJoinMessage) {
-      logger.info(String.format(
-          "[JUAN]: Handling %s from %s... Current allLocatorsInfo: %s, current allServerLocatorsInfo: %s.",
-          request.getClass().getSimpleName(),
-          request.toString(),
-          this.getAllLocatorsInfo(),
-          this.getAllServerLocatorsInfo()));
-
       response = informAboutRemoteLocators((LocatorJoinMessage) request);
-
-      logger.info(String.format(
-          "[JUAN]: Handling %s from %s... Done!. allLocatorsInfo: %s, allServerLocatorsInfo: %s.",
-          request.getClass().getSimpleName(),
-          request.toString(),
-          this.getAllLocatorsInfo(),
-          this.getAllServerLocatorsInfo()));
-
     } else if (request instanceof RemoteLocatorPingRequest) {
       response = getPingResponse((RemoteLocatorPingRequest) request);
     } else if (request instanceof RemoteLocatorRequest) {
@@ -210,6 +151,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     return new RemoteLocatorJoinResponse(this.getAllLocatorsInfo());
   }
 
+  @SuppressWarnings("unused")
   private Object getPingResponse(RemoteLocatorPingRequest request) {
     return new RemoteLocatorPingResponse();
   }
@@ -256,5 +198,127 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   public void clearLocatorInfo() {
     allLocatorsInfo.clear();
     allServerLocatorsInfo.clear();
+  }
+
+  private static class DistributeLocatorsRunnable implements Runnable {
+    private final TcpClient tcpClient;
+    private final DistributionLocatorId localLocatorId;
+    private final Map<Integer, Set<DistributionLocatorId>> remoteLocators;
+    private final int distributedSystemId;
+    private final DistributionLocatorId locator;
+
+    DistributeLocatorsRunnable(TcpClient tcpClient,
+        DistributionLocatorId localLocatorId,
+        Map<Integer, Set<DistributionLocatorId>> remoteLocators,
+        int distributedSystemId,
+        DistributionLocatorId locator) {
+      this.tcpClient = tcpClient;
+      this.localLocatorId = localLocatorId;
+      this.distributedSystemId = distributedSystemId;
+      this.locator = locator;
+      this.remoteLocators = remoteLocators;
+    }
+
+    private void sendMessage(InetSocketAddress ipAddr, LocatorJoinMessage locatorJoinMessage,
+        Map<InetSocketAddress, Set<LocatorJoinMessage>> failedMessages) {
+      try {
+        tcpClient.requestToServer(ipAddr, locatorJoinMessage, 1000, false);
+      } catch (Exception exception) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Locator Membership listener could not exchange locator information {}:{} with {}:{}",
+              new Object[] {locator.getHostName(), locator.getPort(), ipAddr.getHostName(),
+                  ipAddr.getPort(), exception});
+        }
+
+        if (!failedMessages.containsKey(ipAddr)) {
+          failedMessages.put(ipAddr, new HashSet<>());
+        }
+
+        failedMessages.get(ipAddr).add(locatorJoinMessage);
+      }
+    }
+
+    private boolean retryMessage(InetSocketAddress ipAddr, LocatorJoinMessage locatorJoinMessage,
+        int retryAttempt) {
+      try {
+        tcpClient.requestToServer(ipAddr, locatorJoinMessage, 1000, false);
+
+        return true;
+      } catch (Exception exception) {
+        if (retryAttempt == WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS) {
+          logger.warn(
+              "Locator Membership listener failed to exchange locator information {}:{} with {}:{} after {} retry attempts",
+              new Object[] {locator.getHostName(), locator.getPort(), ipAddr.getHostName(),
+                  ipAddr.getPort(), retryAttempt, exception});
+        } else {
+          if (logger.isDebugEnabled()) {
+            logger.debug(
+                "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts",
+                new Object[] {locator.getHostName(), locator.getPort(), ipAddr.getHostName(),
+                    ipAddr.getPort(), retryAttempt, exception});
+          }
+        }
+
+        return false;
+      }
+    }
+
+    @Override
+    public void run() {
+      Map<InetSocketAddress, Set<LocatorJoinMessage>> failedMessages = new HashMap<>();
+      for (Map.Entry<Integer, Set<DistributionLocatorId>> entry : remoteLocators.entrySet()) {
+        for (DistributionLocatorId value : entry.getValue()) {
+          try {
+            LocatorJoinMessage locatorJoinMessage =
+                new LocatorJoinMessage(distributedSystemId, locator, localLocatorId, "");
+            sendMessage(value.getHost(), locatorJoinMessage, failedMessages);
+          } catch (UnknownHostException unknownHostException) {
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "Locator Membership listener could not determine IP address of {}",
+                  new Object[] {value, unknownHostException});
+            }
+          }
+
+          try {
+            LocatorJoinMessage locatorJoinMessage =
+                new LocatorJoinMessage(entry.getKey(), value, localLocatorId, "");
+            sendMessage(locator.getHost(), locatorJoinMessage, failedMessages);
+          } catch (UnknownHostException unknownHostException) {
+            if (logger.isDebugEnabled()) {
+              logger.debug(
+                  "Locator Membership listener could not determine IP address of {}",
+                  new Object[] {locator, unknownHostException});
+            }
+          }
+        }
+      }
+
+      // Retry failed messages and remove those that succeed.
+      if (!failedMessages.isEmpty()) {
+        // Sleep before trying again.
+        try {
+          Thread.sleep(WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+
+        for (int retryAttempt =
+            1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; retryAttempt++) {
+          for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry : failedMessages
+              .entrySet()) {
+            InetSocketAddress targetLocatorAddress = entry.getKey();
+            Set<LocatorJoinMessage> joinMessages = entry.getValue();
+
+            for (LocatorJoinMessage locatorJoinMessage : joinMessages) {
+              if (retryMessage(targetLocatorAddress, locatorJoinMessage, retryAttempt)) {
+                joinMessages.remove(locatorJoinMessage);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
