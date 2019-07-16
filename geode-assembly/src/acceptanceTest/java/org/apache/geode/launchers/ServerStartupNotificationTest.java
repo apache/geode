@@ -67,11 +67,11 @@ public class ServerStartupNotificationTest {
 
     gfshRule.execute(startServerCommand);
 
-    Pattern logLinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
+    Pattern expectedLogLine = Pattern.compile("^\\[info .*].*Server " + serverName + " startup completed in \\d+ ms");
     await().untilAsserted(() -> assertThat(Files.lines(logFile))
-        .as("Log file " + logFile + " includes line matching " + logLinePattern)
-        .anyMatch(logLinePattern.asPredicate()));
+        .as("Log file " + logFile + " includes line matching " + expectedLogLine)
+        .anyMatch(expectedLogLine.asPredicate()));
   }
 }
