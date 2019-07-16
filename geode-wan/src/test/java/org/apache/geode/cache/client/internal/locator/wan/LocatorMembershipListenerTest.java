@@ -25,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -47,22 +48,23 @@ import org.junit.Test;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.net.SocketCreator;
 
 public class LocatorMembershipListenerTest {
+  private String localhost;
   private TcpClient tcpClient;
   private LocatorMembershipListenerImpl locatorMembershipListener;
-
 
   private List<LocatorJoinMessage> buildPermutationsForClusterId(int dsId, int locatorsAmount) {
     int basePort = dsId * 10000;
     List<LocatorJoinMessage> joinMessages = new ArrayList<>();
 
     for (int i = 1; i <= locatorsAmount; i++) {
-      DistributionLocatorId sourceLocatorId = new DistributionLocatorId(basePort + i, "127.0.0.1");
+      DistributionLocatorId sourceLocatorId = new DistributionLocatorId(basePort + i, localhost);
 
       for (int j = 1; j <= locatorsAmount; j++) {
         DistributionLocatorId distributionLocatorId =
-            new DistributionLocatorId(basePort + j, "127.0.0.1");
+            new DistributionLocatorId(basePort + j, localhost);
         LocatorJoinMessage locatorJoinMessage =
             new LocatorJoinMessage(dsId, distributionLocatorId, sourceLocatorId, "");
         joinMessages.add(locatorJoinMessage);
@@ -82,11 +84,12 @@ public class LocatorMembershipListenerTest {
   }
 
   @Before
-  public void setUp() {
+  public void setUp() throws UnknownHostException {
     DistributionConfig distributionConfig = mock(DistributionConfig.class);
     when(distributionConfig.getStartLocator()).thenReturn(DistributionConfig.DEFAULT_START_LOCATOR);
 
     tcpClient = spy(mock(TcpClient.class));
+    localhost = SocketCreator.getLocalHost().getHostName();
     locatorMembershipListener = spy(new LocatorMembershipListenerImpl(tcpClient));
     locatorMembershipListener.setConfig(distributionConfig);
   }
@@ -105,7 +108,7 @@ public class LocatorMembershipListenerTest {
   public void handleRemoteLocatorRequestShouldReturnListOfKnownRemoteLocatorsForTheRequestedDsIdWithoutUpdatingInternalStructures() {
     RemoteLocatorRequest remoteLocatorRequest = new RemoteLocatorRequest(1, "");
     Set<String> cluster1Locators =
-        new HashSet<>(Arrays.asList("127.0.0.1[10101]", "127.0.0.1[10102]"));
+        new HashSet<>(Arrays.asList(localhost + "[10101]", localhost + "[10102]"));
     when(locatorMembershipListener.getRemoteLocatorInfo(1)).thenReturn(cluster1Locators);
 
     Object response = locatorMembershipListener.handleRequest(remoteLocatorRequest);
@@ -117,13 +120,13 @@ public class LocatorMembershipListenerTest {
 
   @Test
   public void handleRemoteLocatorJoinRequestShouldReturnAllKnownLocatorsAndUpdateInternalStructures() {
-    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, "127.0.0.1");
+    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, localhost);
     RemoteLocatorJoinRequest remoteLocator1JoinRequestSite1 =
         new RemoteLocatorJoinRequest(1, distributionLocator1Site1, "");
-    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, "127.0.0.1");
+    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, localhost);
     RemoteLocatorJoinRequest remoteLocator1JoinRequestSite2 =
         new RemoteLocatorJoinRequest(2, distributionLocator1Site2, "");
-    DistributionLocatorId distributionLocator2Site2 = new DistributionLocatorId(20202, "127.0.0.1");
+    DistributionLocatorId distributionLocator2Site2 = new DistributionLocatorId(20202, localhost);
     RemoteLocatorJoinRequest remoteLocator2JoinRequestSite2 =
         new RemoteLocatorJoinRequest(2, distributionLocator2Site2, "");
 
@@ -183,14 +186,14 @@ public class LocatorMembershipListenerTest {
   public void locatorJoinedShouldNotifyEveryKnownLocatorAboutTheNewLocator()
       throws IOException, ClassNotFoundException, InterruptedException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
-    DistributionLocatorId joiningLocator = new DistributionLocatorId(10102, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, "127.0.0.1");
-    DistributionLocatorId distributionLocator3Site1 = new DistributionLocatorId(10103, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, "127.0.0.1");
-    DistributionLocatorId distributionLocator2Site2 = new DistributionLocatorId(20202, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site3 = new DistributionLocatorId(30301, "127.0.0.1");
-    DistributionLocatorId distributionLocator2Site3 = new DistributionLocatorId(30302, "127.0.0.1");
-    DistributionLocatorId distributionLocator3Site3 = new DistributionLocatorId(30303, "127.0.0.1");
+    DistributionLocatorId joiningLocator = new DistributionLocatorId(10102, localhost);
+    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, localhost);
+    DistributionLocatorId distributionLocator3Site1 = new DistributionLocatorId(10103, localhost);
+    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, localhost);
+    DistributionLocatorId distributionLocator2Site2 = new DistributionLocatorId(20202, localhost);
+    DistributionLocatorId distributionLocator1Site3 = new DistributionLocatorId(30301, localhost);
+    DistributionLocatorId distributionLocator2Site3 = new DistributionLocatorId(30302, localhost);
+    DistributionLocatorId distributionLocator3Site3 = new DistributionLocatorId(30303, localhost);
     allLocatorsInfo.put(1,
         new HashSet<>(Arrays.asList(distributionLocator1Site1, distributionLocator3Site1)));
     allLocatorsInfo.put(2,
@@ -238,11 +241,11 @@ public class LocatorMembershipListenerTest {
   public void locatorJoinedShouldNotifyEveryKnownLocatorAboutTheNewLocatorAndRetryOnFailures()
       throws IOException, ClassNotFoundException, InterruptedException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
-    DistributionLocatorId joiningLocator = new DistributionLocatorId(10102, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, "127.0.0.1");
-    DistributionLocatorId distributionLocator3Site1 = new DistributionLocatorId(10103, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, "127.0.0.1");
-    DistributionLocatorId distributionLocator1Site3 = new DistributionLocatorId(30301, "127.0.0.1");
+    DistributionLocatorId joiningLocator = new DistributionLocatorId(10102, localhost);
+    DistributionLocatorId distributionLocator1Site1 = new DistributionLocatorId(10101, localhost);
+    DistributionLocatorId distributionLocator3Site1 = new DistributionLocatorId(10103, localhost);
+    DistributionLocatorId distributionLocator1Site2 = new DistributionLocatorId(20201, localhost);
+    DistributionLocatorId distributionLocator1Site3 = new DistributionLocatorId(30301, localhost);
     allLocatorsInfo.put(1,
         new HashSet<>(Arrays.asList(distributionLocator1Site1, distributionLocator3Site1)));
     allLocatorsInfo.put(2, new HashSet<>(Collections.singletonList(distributionLocator1Site2)));

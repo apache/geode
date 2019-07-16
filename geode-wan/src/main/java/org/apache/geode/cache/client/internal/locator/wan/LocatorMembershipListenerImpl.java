@@ -44,7 +44,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   static final String WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME = "locatorsDistributorThread";
   static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS =
       Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS", 3);
-  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL =
+  private static final int WAN_LOCATOR_DISTRIBUTION_RETRY_INTERVAL =
       Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_INTERVAL", 5000);
 
   private int port;
@@ -304,10 +304,10 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
           Thread.currentThread().interrupt();
         }
 
-        for (int retryAttempt = 1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
-             retryAttempt++) {
-          for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry :
-              failedMessages.entrySet()) {
+        for (int retryAttempt =
+            1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; retryAttempt++) {
+          for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry : failedMessages
+              .entrySet()) {
             InetSocketAddress targetLocatorAddress = entry.getKey();
             Set<LocatorJoinMessage> joinMessages = entry.getValue();
 
