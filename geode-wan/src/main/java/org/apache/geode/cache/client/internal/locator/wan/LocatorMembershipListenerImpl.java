@@ -304,10 +304,10 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
           Thread.currentThread().interrupt();
         }
 
-        for (int retryAttempt =
-            1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; retryAttempt++) {
-          for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry : failedMessages
-              .entrySet()) {
+        for (int retryAttempt = 1; retryAttempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
+             retryAttempt++) {
+          for (Map.Entry<InetSocketAddress, Set<LocatorJoinMessage>> entry :
+              failedMessages.entrySet()) {
             InetSocketAddress targetLocatorAddress = entry.getKey();
             Set<LocatorJoinMessage> joinMessages = entry.getValue();
 
