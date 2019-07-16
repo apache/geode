@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.internal.CompletableFutureProxy;
 
 @Experimental
 public class ClusterManagementOperationResult<V extends JsonSerializable>
@@ -38,6 +39,8 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
 
   @JsonIgnore
   public CompletableFuture<V> getFutureResult() {
+    if (operationResult instanceof CompletableFutureProxy)
+      ((CompletableFutureProxy)operationResult).startPolling();
     return operationResult;
   }
 

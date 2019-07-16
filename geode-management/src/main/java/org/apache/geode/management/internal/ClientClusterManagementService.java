@@ -114,10 +114,10 @@ public class ClientClusterManagementService implements ClusterManagementService 
     ClusterManagementOperationResult<V> result =
         restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
             ClusterManagementOperationResult.class).getBody();
-    FutureProxy<V> operationResult =
-        new FutureProxy<>(restTemplate,
+    CompletableFutureProxy<V> operationResult =
+        new CompletableFutureProxy<>(restTemplate,
             stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri()));
-    result.setFutureResult(operationResult.toCompletableFuture());
+    result.setFutureResult(operationResult);
     return result;
   }
 
