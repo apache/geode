@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.configuration;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -69,6 +69,11 @@ public class ClassName<T> implements Serializable {
     } catch (IOException e) {
       throw new IllegalArgumentException("Invalid JSON: " + jsonInitProperties, e);
     }
+  }
+
+  public ClassName(String className, Properties properties) {
+    this.className = className;
+    this.initProperties = properties;
   }
 
   public String getClassName() {

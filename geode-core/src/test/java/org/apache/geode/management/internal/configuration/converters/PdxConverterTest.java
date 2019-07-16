@@ -13,32 +13,36 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.internal.configuration.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.Test;
 
-import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.configuration.Pdx;
 
-public class PdxTypeTest {
+public class PdxConverterTest {
+  private PdxConverter converter = new PdxConverter();
 
   @Test
-  public void setGroup() throws Exception {
-    Pdx type = new Pdx();
-    assertThatThrownBy(() -> type.setGroup("test"))
-        .isInstanceOf(IllegalArgumentException.class);
+  public void fromConfig() throws Exception {
+    Pdx pdx = new Pdx();
+    pdx.setReadSerialized(true);
+    pdx.setPersistent(true);
+    PdxType pdxType = converter.fromConfigObject(pdx);
+    assertThat(pdxType.isPersistent()).isTrue();
+    assertThat(pdxType.isReadSerialized()).isTrue();
   }
 
   @Test
-  public void getUri() {
-    Pdx config = new Pdx();
-    assertThat(config.getEndpoint())
-        .isEqualTo("/configurations/pdx");
-    assertThat(config.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/configurations/pdx");
+  public void fromXmlObject() throws Exception {
+    PdxType pdxType = new PdxType();
+    pdxType.setDiskStoreName("test");
+    pdxType.setIgnoreUnreadFields(false);
+    Pdx pdxConfig = converter.fromXmlObject(pdxType);
+    assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
+    assertThat(pdxConfig.getIgnoreUnreadFields()).isEqualTo(false);
+    assertThat(pdxConfig.getPersistent()).isNull();
   }
-
 }

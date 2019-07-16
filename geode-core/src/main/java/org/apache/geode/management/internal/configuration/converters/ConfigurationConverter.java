@@ -13,32 +13,37 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.internal.configuration.converters;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+public abstract class ConfigurationConverter<T, V> {
 
-import org.junit.Test;
-
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.configuration.Pdx;
-
-public class PdxTypeTest {
-
-  @Test
-  public void setGroup() throws Exception {
-    Pdx type = new Pdx();
-    assertThatThrownBy(() -> type.setGroup("test"))
-        .isInstanceOf(IllegalArgumentException.class);
+  public final T fromXmlObject(V xmlObject) {
+    if (xmlObject == null) {
+      return null;
+    }
+    return fromNonNullXmlObject(xmlObject);
   }
 
-  @Test
-  public void getUri() {
-    Pdx config = new Pdx();
-    assertThat(config.getEndpoint())
-        .isEqualTo("/configurations/pdx");
-    assertThat(config.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/configurations/pdx");
+  /**
+   *
+   * @param xmlObject is guaranteed not to be null
+   * @return the resulting configuration object
+   */
+  protected abstract T fromNonNullXmlObject(V xmlObject);
+
+  public final V fromConfigObject(T configObject) {
+    if (configObject == null) {
+      return null;
+    }
+
+    return fromNonNullConfigObject(configObject);
   }
+
+  /**
+   *
+   * @param configObject is guaranteed not to be null
+   * @return the resulting xml domain object
+   */
+  protected abstract V fromNonNullConfigObject(T configObject);
 
 }

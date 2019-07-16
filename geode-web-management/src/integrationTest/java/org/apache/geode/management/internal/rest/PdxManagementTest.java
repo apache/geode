@@ -32,12 +32,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
-    loader = SecuredLocatorContextLoader.class)
+    loader = PlainLocatorContextLoader.class)
 @WebAppConfiguration
 public class PdxManagementTest {
   @Autowired
@@ -55,7 +55,7 @@ public class PdxManagementTest {
 
   @Test
   public void success() throws Exception {
-    PdxType pdx = new PdxType();
+    Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     context.perform(post("/v2/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
@@ -66,15 +66,5 @@ public class PdxManagementTest {
             jsonPath("$.statusMessage", containsString("Successfully updated config for cluster")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.uri", is("/management/v2/configurations/pdx")));
-  }
-
-  @Test
-  public void unauthorized() throws Exception {
-    PdxType pdx = new PdxType();
-    pdx.setReadSerialized(true);
-    context.perform(post("/v2/configurations/pdx")
-        .with(httpBasic("clusterRead", "clusterRead"))
-        .content(mapper.writeValueAsString(pdx)))
-        .andExpect(status().isForbidden());
   }
 }

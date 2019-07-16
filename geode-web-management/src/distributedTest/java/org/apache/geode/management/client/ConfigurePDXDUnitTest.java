@@ -29,11 +29,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -76,7 +76,7 @@ public class ConfigurePDXDUnitTest {
 
   @Test
   public void configurePdx() {
-    PdxType pdxType = new PdxType();
+    Pdx pdxType = new Pdx();
     ClusterManagementResult result = client.create(pdxType);
 
     // needed to pass StressNewTest since we haven't yet implemented delete(PdxType)
