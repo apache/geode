@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.Logger;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -36,7 +35,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.DiskStoreAttributes;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
-import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
@@ -51,7 +49,6 @@ import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateDiskStoreCommand extends SingleGfshCommand {
-  private static final Logger logger = LogService.getLogger();
   private static final int MBEAN_CREATION_WAIT_TIME = 10000;
 
   @CliCommand(value = CliStrings.CREATE_DISK_STORE, help = CliStrings.CREATE_DISK_STORE__HELP)
@@ -155,21 +152,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
 
     return poll(MBEAN_CREATION_WAIT_TIME, TimeUnit.MILLISECONDS,
         () -> membersToCreateDiskStoreOn.stream()
-            .allMatch(m -> diskStoreBeanExists(dsMXBean, m.getName(), diskStore)));
-  }
-
-  private boolean diskStoreBeanExists(DistributedSystemMXBean dsMXBean, String memberName,
-      String diskStore) {
-    try {
-      dsMXBean.fetchDiskStoreObjectName(memberName, diskStore);
-      return true;
-    } catch (Exception e) {
-      if (!e.getMessage().toLowerCase().contains("not found")) {
-        logger.warn("Unable to retrieve Disk Store ObjectName for member: {}, diskstore: {} - {}",
-            memberName, diskStore, e.getMessage());
-      }
-    }
-    return false;
+            .allMatch(member -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean,
+                member.getName(), diskStore)));
   }
 
   @VisibleForTesting
@@ -218,7 +202,7 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
   }
 
   @SuppressWarnings("unchecked")
-  List<DiskStoreDetails> getDiskStoreListing(Set<DistributedMember> members) {
+  private List<DiskStoreDetails> getDiskStoreListing(Set<DistributedMember> members) {
     final Execution membersFunctionExecutor = getMembersFunctionExecutor(members);
     if (membersFunctionExecutor instanceof AbstractExecution) {
       ((AbstractExecution) membersFunctionExecutor).setIgnoreDepartedMembers(true);
