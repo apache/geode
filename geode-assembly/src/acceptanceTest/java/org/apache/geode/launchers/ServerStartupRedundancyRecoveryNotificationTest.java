@@ -143,7 +143,9 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
     gfshRule.execute(connectCommand, startServer1Command);
 
-    Pattern serverOnlinePattern = Pattern.compile("^\\[info .*].*Server is online.*");
+    // TODO: 'Server [name]-IP:PORT startup completed in X ms'
+    Pattern serverOnlinePattern =
+        Pattern.compile("^\\[info .*].*Server " + SERVER_1_NAME + " is online.*");
     Pattern redundancyRestoredPattern =
         Pattern.compile(
             "^\\[info .*].*Configured redundancy of 2 copies has been restored to /" + regionName
@@ -155,33 +157,35 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
     Path logFile = server1Folder.resolve(SERVER_1_NAME + ".log");
 
-    await().untilAsserted(() -> {
-      final Predicate<String> isRelevantLine = redundancyRestoredPattern.asPredicate()
-          .or(redundancyRestoredSecondRegionPattern.asPredicate())
-          .or(serverOnlinePattern.asPredicate());
+    await()
+        .untilAsserted(() -> {
+          final Predicate<String> isRelevantLine = redundancyRestoredPattern.asPredicate()
+              .or(redundancyRestoredSecondRegionPattern.asPredicate())
+              .or(serverOnlinePattern.asPredicate());
 
-      final List<String> foundPatterns =
-          Files.lines(logFile).filter(isRelevantLine)
-              .collect(Collectors.toList());
+          final List<String> foundPatterns =
+              Files.lines(logFile).filter(isRelevantLine)
+                  .collect(Collectors.toList());
 
-      assertThat(foundPatterns)
-          .as("Log file " + logFile + " includes one line matching each of "
-              + redundancyRestoredPattern + ", " + redundancyRestoredSecondRegionPattern + ", and "
-              + serverOnlinePattern)
-          .hasSize(3);
+          assertThat(foundPatterns)
+              .as("Log file " + logFile + " includes one line matching each of "
+                  + redundancyRestoredPattern + ", " + redundancyRestoredSecondRegionPattern
+                  + ", and "
+                  + serverOnlinePattern)
+              .hasSize(3);
 
-      assertThat(foundPatterns)
-          .as("lines in the log file")
-          .withFailMessage("%n Expect line matching %s %n but was %s",
-              redundancyRestoredPattern.pattern(), foundPatterns)
-          .anyMatch(redundancyRestoredPattern.asPredicate())
-          .withFailMessage("%n Expect line matching %s %n but was %s",
-              redundancyRestoredSecondRegionPattern.pattern(), foundPatterns)
-          .anyMatch(redundancyRestoredSecondRegionPattern.asPredicate());
+          assertThat(foundPatterns)
+              .as("lines in the log file")
+              .withFailMessage("%n Expect line matching %s %n but was %s",
+                  redundancyRestoredPattern.pattern(), foundPatterns)
+              .anyMatch(redundancyRestoredPattern.asPredicate())
+              .withFailMessage("%n Expect line matching %s %n but was %s",
+                  redundancyRestoredSecondRegionPattern.pattern(), foundPatterns)
+              .anyMatch(redundancyRestoredSecondRegionPattern.asPredicate());
 
-      assertThat(foundPatterns.get(2))
-          .as("Third matching Log line of " + foundPatterns)
-          .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
-    });
+          assertThat(foundPatterns.get(2))
+              .as("Third matching Log line of " + foundPatterns)
+              .matches(serverOnlinePattern.asPredicate(), serverOnlinePattern.pattern());
+        });
   }
 }

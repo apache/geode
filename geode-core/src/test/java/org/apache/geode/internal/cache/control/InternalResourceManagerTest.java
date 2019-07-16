@@ -105,7 +105,7 @@ public class InternalResourceManagerTest {
     AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
     Runnable completionAction = () -> completionActionHasRun.set(true);
 
-    resourceManager.startupCompleteAction(completionAction);
+    resourceManager.runWhenStartupTasksComplete(completionAction);
 
     assertThat(completionActionHasRun)
         .withFailMessage("Startup complete action did not run after startup tasks finished")
@@ -119,7 +119,7 @@ public class InternalResourceManagerTest {
 
     resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
 
-    resourceManager.startupCompleteAction(completionAction);
+    resourceManager.runWhenStartupTasksComplete(completionAction);
 
     assertThat(completionActionHasRun)
         .withFailMessage("Startup complete action ran before startup tasks finished")
@@ -140,7 +140,7 @@ public class InternalResourceManagerTest {
     resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
     resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
 
-    resourceManager.startupCompleteAction(completionAction);
+    resourceManager.runWhenStartupTasksComplete(completionAction);
 
     assertThat(completionActionHasRun)
         .withFailMessage("Startup complete action ran before startup tasks finished")
