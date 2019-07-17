@@ -180,7 +180,7 @@ resources:
   source:
     bucket: ((version-bucket))
     driver: gcs
-    initial_version: 1.10.0
+    initial_version: {{ metadata.initial_version }}
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/version
 - name: geode-passing-version
@@ -188,7 +188,7 @@ resources:
   source:
     bucket: ((version-bucket))
     driver: gcs
-    initial_version: 1.10.0
+    initial_version: {{ metadata.initial_version }}
     json_key: ((!concourse-gcp-key))
     key: ((pipeline-prefix))((geode-build-branch))/passing-version
 {% if repository.sanitized_fork == "apache" or repository.branch == "develop" -%}
