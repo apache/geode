@@ -135,7 +135,8 @@ public class InternalResourceManagerTest {
 
     resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
 
-    resourceManager.runWhenStartupTasksComplete(() -> {});
+    resourceManager.runWhenStartupTasksComplete(() -> {
+    });
 
     resourceManager.runWhenStartupTasksComplete(completionAction);
 
