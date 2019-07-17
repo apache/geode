@@ -166,6 +166,7 @@ jobs:
       trigger: true
     - get: alpine-tools-docker-image
   - task: build-image
+    timeout: 1h
     image: alpine-tools-docker-image
     config:
       inputs:
@@ -193,6 +194,8 @@ jobs:
       passed:
       - build-alpine-tools-docker-image
   - task: build-image
+    timeout: 1h
+    attempts: 5
     image: alpine-tools-docker-image
     config:
       inputs:
