@@ -22,8 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -163,9 +163,16 @@ public class CompactDiskStoreCommand extends GfshCommand {
   private boolean diskStoreExists(String diskStoreName) {
     ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
+    Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
 
-    return Stream.of(dsMXBean.listMembers())
-        .anyMatch(memberName -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, memberName,
-            diskStoreName));
+    Set<Map.Entry<String, String[]>> entrySet = diskstore.entrySet();
+
+    for (Map.Entry<String, String[]> entry : entrySet) {
+      String[] value = entry.getValue();
+      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
+        return true;
+      }
+    }
+    return false;
   }
 }
