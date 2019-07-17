@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import joptsimple.internal.Strings;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.shell.core.annotation.CliCommand;
@@ -316,7 +314,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
           !colocatedRegionBean.getRegionType().equals("PERSISTENT_PARTITION")) {
         return ResultModel.createError(CliStrings.format(
             CliStrings.CREATE_REGION__MSG__COLOCATEDWITH_REGION_0_IS_NOT_PARTITIONEDREGION,
-            (Object) prColocatedWith));
+            prColocatedWith));
       }
     }
 
@@ -565,12 +563,12 @@ public class CreateRegionCommand extends SingleGfshCommand {
     }
 
     String[] regionsOnPath = regionPathData.getRegionsOnParentPath();
-    RegionConfig rootConfig = config.getRegions().stream()
-        .filter(r -> r.getName().equals(regionsOnPath[0]))
+
+    RegionConfig currentConfig = config.getRegions().stream()
+        .filter(r1 -> r1.getName().equals(regionsOnPath[0]))
         .findFirst()
         .get();
 
-    RegionConfig currentConfig = rootConfig;
     for (int i = 1; i < regionsOnPath.length; i++) {
       final String curRegionName = regionsOnPath[i];
       currentConfig = currentConfig.getRegions()
@@ -667,24 +665,15 @@ public class CreateRegionCommand extends SingleGfshCommand {
     DistributedSystemMXBean dsMBean = managementService.getDistributedSystemMXBean();
 
     String[] allRegionPaths = dsMBean.listAllRegionPaths();
-    return Arrays.stream(allRegionPaths).anyMatch(regionPath::equals);
+    return Arrays.asList(allRegionPaths).contains(regionPath);
   }
 
   private boolean diskStoreExists(String diskStoreName) {
     ManagementService managementService = getManagementService();
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
-    Map<String, String[]> diskstore = dsMXBean.listMemberDiskstore();
 
-    Set<Map.Entry<String, String[]>> entrySet = diskstore.entrySet();
-
-    for (Map.Entry<String, String[]> entry : entrySet) {
-      String[] value = entry.getValue();
-      if (diskStoreName != null && ArrayUtils.contains(value, diskStoreName)) {
-        return true;
-      }
-    }
-
-    return false;
+    return Arrays.stream(dsMXBean.listMembers()).anyMatch(
+        member -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member, diskStoreName));
   }
 
   DistributedSystemMXBean getDSMBean() {

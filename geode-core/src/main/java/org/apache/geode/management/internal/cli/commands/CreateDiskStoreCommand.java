@@ -155,21 +155,8 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
 
     return poll(MBEAN_CREATION_WAIT_TIME, TimeUnit.MILLISECONDS,
         () -> membersToCreateDiskStoreOn.stream()
-            .allMatch(m -> diskStoreBeanExists(dsMXBean, m.getName(), diskStore)));
-  }
-
-  private boolean diskStoreBeanExists(DistributedSystemMXBean dsMXBean, String memberName,
-      String diskStore) {
-    try {
-      dsMXBean.fetchDiskStoreObjectName(memberName, diskStore);
-      return true;
-    } catch (Exception e) {
-      if (!e.getMessage().toLowerCase().contains("not found")) {
-        logger.warn("Unable to retrieve Disk Store ObjectName for member: {}, diskstore: {} - {}",
-            memberName, diskStore, e.getMessage());
-      }
-    }
-    return false;
+            .allMatch(
+                m -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, m.getName(), diskStore)));
   }
 
   @VisibleForTesting
