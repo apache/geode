@@ -607,9 +607,7 @@ public class CacheClientNotifier {
     return false;
   }
 
-  private boolean hasClientProxies() {
-    return !this._initClientProxies.isEmpty() || !this._clientProxies.isEmpty();
-  }
+  private boolean hasClientProxies() { return !this._initClientProxies.isEmpty() || !this._clientProxies.isEmpty(); }
 
   /**
    * notify interested clients of the given cache event using the given update message. The event
