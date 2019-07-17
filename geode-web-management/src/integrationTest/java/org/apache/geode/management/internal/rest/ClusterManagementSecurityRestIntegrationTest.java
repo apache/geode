@@ -43,7 +43,6 @@ import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
-import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @RunWith(SpringRunner.class)
@@ -94,10 +93,6 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
     testContexts.add(new TestContext(post("/v2/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
-
-    testContexts.add(new TestContext(post("/v2/operations/rebalance"), "DATA:MANAGE")
-        .setContent(mapper.writeValueAsString(new RebalanceOperation())));
-    testContexts.add(new TestContext(get("/v2/operations/rebalance/123"), "DATA:MANAGE"));
   }
 
   @Before
