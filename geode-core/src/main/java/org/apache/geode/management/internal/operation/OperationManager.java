@@ -44,6 +44,14 @@ public class OperationManager implements AutoCloseable {
     performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
+  /**
+   * for use by modules/extensions to install custom cluster management operations
+   */
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void registerOperation(
+      Class<A> operationClass, OperationPerformer<A, V> operationPerformer) {
+    performers.put(operationClass, operationPerformer);
+  }
+
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
       A op) {
     if (!Strings.isBlank(op.getId())) {
