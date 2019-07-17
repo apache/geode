@@ -18,6 +18,8 @@
 repository:
   project: geode
 
+metadata:
+  initial_version: 1.10.0
 build_test:
   name: "Build"
   CPUS: "8"
