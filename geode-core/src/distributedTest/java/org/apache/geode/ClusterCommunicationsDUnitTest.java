@@ -43,6 +43,7 @@ import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +57,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
@@ -71,6 +73,7 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DirectReplyProcessor;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MessageWithReply;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
@@ -95,6 +98,9 @@ import org.apache.geode.test.version.VersionManager;
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class ClusterCommunicationsDUnitTest implements Serializable {
+
+  @Rule
+  public TemporaryFolder locatorFolder = new TemporaryFolder();
 
   private static final int NUM_SERVERS = 2;
   private static final int SMALL_BUFFER_SIZE = 8000;
@@ -276,10 +282,11 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     return memberVM.invoke("create locator", () -> {
       // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
+      Path workingDirectory = locatorFolder.getRoot().toPath();
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
+      Properties dsProperties = getDistributedSystemProperties();
       try {
-        return Locator.startLocatorAndDS(0, new File(""), getDistributedSystemProperties())
-            .getPort();
+        return InternalLocator.startLocator(dsProperties, workingDirectory).getPort();
       } finally {
         System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
       }
