@@ -142,7 +142,6 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
 
     gfshRule.execute(connectCommand, startServer1Command);
 
-    // TODO: 'Server [name]-IP:PORT startup completed in X ms'
     Pattern serverOnlinePattern =
         Pattern.compile("^\\[info .*].*Server " + SERVER_1_NAME + " startup completed in \\d+ ms");
     Pattern redundancyRestoredPattern =

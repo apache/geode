@@ -153,6 +153,22 @@ public class InternalResourceManagerTest {
         .isTrue());
   }
 
+  @Test
+  public void runClearsAddedStartupTasks() {
+    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
+    Runnable completionAction = () -> completionActionHasRun.set(true);
+
+    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
+
+    resourceManager.runWhenStartupTasksComplete(() -> {});
+
+    resourceManager.runWhenStartupTasksComplete(completionAction);
+
+    assertThat(completionActionHasRun)
+        .withFailMessage("Did not clear added startup tasks")
+        .isTrue();
+  }
+
   private void completeAnyWaitingTasks() {
     numberOfStartupTasksRemaining.countDown();
   }

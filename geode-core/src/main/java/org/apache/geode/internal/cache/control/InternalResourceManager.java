@@ -619,5 +619,6 @@ public class InternalResourceManager implements ResourceManager {
 
   public void runWhenStartupTasksComplete(Runnable runnable) {
     CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0])).thenRun(runnable);
+    startupTasks.clear();
   }
 }
