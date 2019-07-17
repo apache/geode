@@ -18,6 +18,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,18 +46,24 @@ public class OperationManagerTest {
   }
 
   @Test
-  public void submitAndComplete() {
+  public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
-    executorManager.submit(operation).complete(null);
+    CompletableFuture<TestResult> future1 = executorManager.submit(operation);
     String id = operation.getId();
     assertThat(id).isNotBlank();
 
     assertThat(executorManager.getStatus(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    executorManager.submit(operation2).complete(null);
+    CompletableFuture<TestResult> future2 = executorManager.submit(operation2);
     String id2 = operation2.getId();
     assertThat(id2).isNotBlank();
+
+    operation.latch.countDown();
+    future1.get();
+
+    operation2.latch.countDown();
+    future2.get();
 
     assertThat(executorManager.getStatus(id)).isNull(); // queue size 1 so should have been bumped
     assertThat(executorManager.getStatus(id2)).isNotNull();
@@ -76,6 +85,9 @@ public class OperationManagerTest {
 
     assertThat(executorManager.getStatus(id)).isNotNull(); // all in progress, none should be bumped
     assertThat(executorManager.getStatus(id2)).isNotNull();
+
+    operation.latch.countDown();
+    operation2.latch.countDown();
   }
 
   @Test
@@ -87,6 +99,8 @@ public class OperationManagerTest {
   }
 
   static class TestOperation extends ClusterManagementOperation<TestResult> {
+    CountDownLatch latch = new CountDownLatch(1);
+
     @Override
     public String getEndpoint() {
       return "/operations/test";
@@ -100,6 +114,11 @@ public class OperationManagerTest {
   private class TestOperationPerformer implements OperationPerformer<TestOperation, TestResult> {
     @Override
     public TestResult perform(TestOperation operation) {
+      try {
+        operation.latch.await();
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
       return null;
     }
   }

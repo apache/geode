@@ -70,9 +70,7 @@ public class OperationManager implements AutoCloseable {
         CompletableFuture.supplyAsync(() -> performer.perform(op), executor);
 
     // save the Future so we can check on it later
-    historyManager.save(op, future);
-
-    return future;
+    return historyManager.save(op, future);
   }
 
   @SuppressWarnings("unchecked")

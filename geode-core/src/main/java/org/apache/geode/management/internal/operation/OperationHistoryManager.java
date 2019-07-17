@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.collections.map.LRUMap;
 
@@ -27,7 +28,7 @@ import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class OperationHistoryManager {
-  private final Map<String, CompletableFuture> inProgressHistory;
+  private final ConcurrentMap<String, CompletableFuture> inProgressHistory;
   private final Map<String, CompletableFuture> completedHistory;
 
   public OperationHistoryManager() {
@@ -52,16 +53,21 @@ public class OperationHistoryManager {
     return ret;
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void save(
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> CompletableFuture<V> save(
       A operation,
       CompletableFuture<V> future) {
     final String opId = operation.getId();
 
     inProgressHistory.put(opId, future);
 
-    future.whenComplete((result, exception) -> {
+    CompletableFuture<V> newFuture = future.whenComplete((result, exception) -> {
       completedHistory.put(opId, future);
       inProgressHistory.remove(opId);
     });
+
+    // we want to replace only if still in in-progress.
+    inProgressHistory.replace(opId, future, newFuture);
+
+    return newFuture;
   }
 }

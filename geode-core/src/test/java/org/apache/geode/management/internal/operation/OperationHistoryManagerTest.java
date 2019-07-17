@@ -41,8 +41,8 @@ public class OperationHistoryManagerTest {
   @Test
   public void getInProgStatus() {
     CompletableFuture future = new CompletableFuture();
-    history.save(op("1"), future);
-    assertThat(history.getStatus("1")).isSameAs(future);
+    CompletableFuture future2 = history.save(op("1"), future);
+    assertThat(history.getStatus("1")).isSameAs(future2);
   }
 
   @Test
