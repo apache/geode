@@ -12,25 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.api;
-
-import org.apache.geode.lang.Identifiable;
+package org.apache.geode.management.internal;
 
 /**
- *
- * @param <V> the result type of the operation
+ * lazy-initialization interface
  */
-
-public abstract class AsyncOperation<V extends JsonSerializable>
-    implements Identifiable<String>, RestfulEndpoint {
-  String id;
-
-  @Override
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+public interface Dormant {
+  void wakeUp();
 }

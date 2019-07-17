@@ -12,21 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.operation;
+package org.apache.geode.management.internal;
+
+
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceResult;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-public class RebalanceOperationPerformer
-    implements OperationPerformer<RebalanceOperation, RebalanceResult> {
-  @Override
-  public RebalanceResult perform(RebalanceOperation operation) {
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException ignore) {
-    }
-    return new RebalanceResult("fake success");
+public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
+    extends ClusterManagementResult {
+  public ClusterManagementOperationStatusResult() {}
+
+  public ClusterManagementOperationStatusResult(boolean success, String message) {
+    super(success, message);
+  }
+
+  public ClusterManagementOperationStatusResult(StatusCode statusCode, String message) {
+    super(statusCode, message);
+  }
+
+  private V operationResult;
+
+  public V getResult() {
+    return operationResult;
+  }
+
+  public void setResult(V operationResult) {
+    this.operationResult = operationResult;
   }
 }

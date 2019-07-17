@@ -14,19 +14,37 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+
+import org.apache.commons.collections.map.LRUMap;
+
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceResult;
+import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.api.Operation;
 
 @Experimental
-public class RebalanceOperationPerformer
-    implements OperationPerformer<RebalanceOperation, RebalanceResult> {
-  @Override
-  public RebalanceResult perform(RebalanceOperation operation) {
-    try {
-      Thread.sleep(100);
-    } catch (InterruptedException ignore) {
-    }
-    return new RebalanceResult("fake success");
+public class OperationHistoryManager {
+  private final Map<String, CompletableFuture> history;
+
+  public OperationHistoryManager() {
+    this(10);
+  }
+
+  public OperationHistoryManager(int historySize) {
+    history = new LRUMap(historySize);
+  }
+
+  /**
+   * looks up the future for an async operation by id
+   */
+  @SuppressWarnings("unchecked")
+  public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
+    return history.get(opId);
+  }
+
+  public <A extends Operation<V>, V extends JsonSerializable> void save(A operation,
+      CompletableFuture<V> future) {
+    history.put(operation.getId(), future);
   }
 }

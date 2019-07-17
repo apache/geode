@@ -14,30 +14,23 @@
  */
 package org.apache.geode.management.api;
 
+import org.apache.geode.lang.Identifiable;
 
+/**
+ *
+ * @param <V> the result type of the operation
+ */
 
-import org.apache.geode.annotations.Experimental;
+public abstract class Operation<V extends JsonSerializable>
+    implements Identifiable<String>, RestfulEndpoint {
+  String id;
 
-@Experimental
-public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
-    extends ClusterManagementResult {
-  public ClusterManagementOperationStatusResult() {}
-
-  public ClusterManagementOperationStatusResult(boolean success, String message) {
-    super(success, message);
+  @Override
+  public String getId() {
+    return id;
   }
 
-  public ClusterManagementOperationStatusResult(StatusCode statusCode, String message) {
-    super(statusCode, message);
-  }
-
-  private V operationResult;
-
-  public V getResult() {
-    return operationResult;
-  }
-
-  public void setResult(V operationResult) {
-    this.operationResult = operationResult;
+  public void setId(String id) {
+    this.id = id;
   }
 }

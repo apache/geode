@@ -19,32 +19,24 @@ import java.util.concurrent.CompletableFuture;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.CompletableFutureProxy;
+import org.apache.geode.management.internal.Dormant;
 
 @Experimental
 public class ClusterManagementOperationResult<V extends JsonSerializable>
     extends ClusterManagementResult {
   public ClusterManagementOperationResult() {}
 
-  public ClusterManagementOperationResult(boolean success, String message) {
-    super(success, message);
-  }
-
-  public ClusterManagementOperationResult(StatusCode statusCode, String message) {
-    super(statusCode, message);
-  }
-
   @JsonIgnore
   private CompletableFuture<V> operationResult;
 
   @JsonIgnore
-  public CompletableFuture<V> getFutureResult() {
-    if (operationResult instanceof CompletableFutureProxy)
-      ((CompletableFutureProxy) operationResult).startPolling();
+  public CompletableFuture<V> getResult() {
+    if (operationResult instanceof Dormant)
+      ((Dormant) operationResult).wakeUp();
     return operationResult;
   }
 
-  public void setFutureResult(CompletableFuture<V> operationResult) {
+  public void setResult(CompletableFuture<V> operationResult) {
     this.operationResult = operationResult;
   }
 }

@@ -15,7 +15,6 @@
 package org.apache.geode.management.internal;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -23,39 +22,71 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-public class CompletableFutureProxy<V extends JsonSerializable> extends CompletableFuture<V> {
+public class CompletableFutureProxy<V extends JsonSerializable> extends CompletableFuture<V>
+    implements Dormant {
   static final int POLL_INTERVAL = 100; // millis between http status checks
-  static final ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
-  private RestTemplate restTemplate;
-  private String uri;
+
+  private static final int TOLERABLE_FAILURES = 3;
+  private int consecutiveCheckFailures = 0;
+
+  private final ScheduledExecutorService pool;
+  private final RestTemplate restTemplate;
+  private final String uri;
   private ScheduledFuture<?> scheduledFuture;
 
-  public CompletableFutureProxy(RestTemplate restTemplate, String uri) {
+  public CompletableFutureProxy(RestTemplate restTemplate, String uri,
+      ScheduledExecutorService pool) {
     this.restTemplate = restTemplate;
     this.uri = uri;
+    this.pool = pool;
   }
 
-  public void startPolling() {
+  @Override
+  public void wakeUp() {
+    startPolling();
+  }
+
+  private void startPolling() {
+    if (scheduledFuture != null) {
+      return;
+    }
     scheduledFuture = pool.scheduleWithFixedDelay(() -> {
+      // bail out if the future has already been completed (successfully by us, or by user cancel,
+      // or by exception)
       if (isDone()) {
         scheduledFuture.cancel(true);
+        return;
       }
-      ClusterManagementOperationStatusResult<V> result = requestStatus();
-      boolean done = result.getStatusCode() != ClusterManagementResult.StatusCode.IN_PROGRESS;
-      if (done) {
-        if (result.getStatusCode() == ClusterManagementResult.StatusCode.OK) {
-          complete(result.getResult());
-        } else {
-          completeExceptionally(
-              new RuntimeException(result.getStatusCode() + ": " + result.getStatusMessage()));
+
+      // get the current status via REST call
+      ClusterManagementOperationStatusResult<V> result;
+      try {
+        result = requestStatus();
+        consecutiveCheckFailures = 0;
+      } catch (Exception e) {
+        // don't panic if a few checks fail, might just be network issue
+        if (++consecutiveCheckFailures > TOLERABLE_FAILURES) {
+          completeExceptionally(new RuntimeException("Lost connectivity to locator " + e));
         }
+        return;
       }
+
+      completeAccordingToStatus(result);
     }, 0, POLL_INTERVAL, TimeUnit.MILLISECONDS);
+  }
+
+  private void completeAccordingToStatus(ClusterManagementOperationStatusResult<V> result) {
+    ClusterManagementResult.StatusCode statusCode = result.getStatusCode();
+    if (statusCode == ClusterManagementResult.StatusCode.OK) {
+      complete(result.getResult());
+    } else if (statusCode != ClusterManagementResult.StatusCode.IN_PROGRESS) {
+      completeExceptionally(
+          new RuntimeException(statusCode + ": " + result.getStatusMessage()));
+    }
   }
 
   /**

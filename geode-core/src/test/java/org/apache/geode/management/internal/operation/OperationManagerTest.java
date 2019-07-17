@@ -23,12 +23,12 @@ import org.junit.Test;
 
 import org.apache.geode.management.operation.RebalanceOperation;
 
-public class AsyncExecutorManagerTest {
-  AsyncExecutorManager executorManager;
+public class OperationManagerTest {
+  OperationManager executorManager;
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new AsyncExecutorManager(1);
+    executorManager = new OperationManager(new OperationHistoryManager(1));
   }
 
   @Test

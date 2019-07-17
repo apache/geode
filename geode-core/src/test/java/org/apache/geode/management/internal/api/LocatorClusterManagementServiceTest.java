@@ -52,14 +52,14 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.management.api.AsyncOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
-import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
+import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
@@ -68,7 +68,7 @@ import org.apache.geode.management.internal.configuration.validators.Configurati
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
-import org.apache.geode.management.internal.operation.AsyncExecutorManager;
+import org.apache.geode.management.internal.operation.OperationManager;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -79,7 +79,7 @@ public class LocatorClusterManagementServiceTest {
   private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
-  private AsyncExecutorManager executorManager;
+  private OperationManager executorManager;
   private ConfigurationValidator<RegionConfig> regionValidator;
   private CacheElementValidator cacheElementValidator;
   private ConfigurationManager<RegionConfig> regionManager;
@@ -107,7 +107,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new CacheConfig()).when(persistenceService).getCacheConfig(any(), anyBoolean());
     doReturn(true).when(persistenceService).lockSharedConfiguration();
     doNothing().when(persistenceService).unlockSharedConfiguration();
-    executorManager = mock(AsyncExecutorManager.class);
+    executorManager = mock(OperationManager.class);
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
             memberValidator, cacheElementValidator, executorManager));
@@ -328,7 +328,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void startOperation() {
     final String URI = "test/uri";
-    AsyncOperation<?> operation = mock(AsyncOperation.class);
+    Operation<?> operation = mock(Operation.class);
     when(operation.getUri()).thenReturn(URI);
     ClusterManagementOperationResult<?> result =
         service.startOperation(operation);

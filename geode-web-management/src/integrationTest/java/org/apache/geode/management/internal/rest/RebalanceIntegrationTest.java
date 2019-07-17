@@ -35,7 +35,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceInfo;
+import org.apache.geode.management.runtime.RebalanceResult;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -81,8 +81,8 @@ public class RebalanceIntegrationTest {
   @Test
   public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
-    ClusterManagementOperationResult<RebalanceInfo> result = client.startOperation(rebalance);
-    RebalanceInfo rebalanceInfo = result.getFutureResult().get();
-    assertThat(rebalanceInfo.getRebalanceResult()).contains("fake success");
+    ClusterManagementOperationResult<RebalanceResult> result = client.startOperation(rebalance);
+    RebalanceResult rebalanceResult = result.getResult().get();
+    assertThat(rebalanceResult.getRebalanceResult()).contains("fake success");
   }
 }

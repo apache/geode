@@ -18,38 +18,39 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
-import org.apache.commons.collections.map.LRUMap;
 import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.AsyncOperation;
+import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
-public class AsyncExecutorManager {
-  private Map<Class<? extends AsyncOperation>, OperationPerformer> performers;
-  private Map<String, CompletableFuture> history;
+public class OperationManager implements AutoCloseable {
+  private final Map<Class<? extends Operation>, OperationPerformer> performers;
+  private final OperationHistoryManager historyManager;
+  private final Executor executor;
 
-  public AsyncExecutorManager() {
-    this(10);
-  }
-
-  public AsyncExecutorManager(int historySize) {
-    history = new LRUMap(historySize);
+  public OperationManager(OperationHistoryManager historyManager) {
+    this.historyManager = historyManager;
+    this.executor = LoggingExecutors.newThreadOnEachExecute("CMSOpPerformer");
 
     // initialize the list of operation performers
     performers = new HashMap<>();
     performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
-  public <A extends AsyncOperation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
+  public <A extends Operation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
       A op) {
-    if (!Strings.isBlank(op.getId()))
+    if (!Strings.isBlank(op.getId())) {
       throw new IllegalArgumentException(
           String.format("Operation type %s should not supply its own id",
               op.getClass().getSimpleName()));
+    }
     op.setId(UUID.randomUUID().toString());
     OperationPerformer<A, V> performer = getPerformer(op);
     if (performer == null) {
@@ -57,16 +58,17 @@ public class AsyncExecutorManager {
           op.getClass().getSimpleName()));
     }
 
-    CompletableFuture<V> future = CompletableFuture.supplyAsync(() -> performer.perform(op));
+    CompletableFuture<V> future =
+        CompletableFuture.supplyAsync(() -> performer.perform(op), executor);
 
     // save the Future so we can check on it later
-    history.put(op.getId(), future);
+    historyManager.save(op, future);
 
     return future;
   }
 
   @SuppressWarnings("unchecked")
-  private <A extends AsyncOperation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
+  private <A extends Operation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
       A op) {
     return performers.get(op.getClass());
   }
@@ -76,6 +78,13 @@ public class AsyncExecutorManager {
    */
   @SuppressWarnings("unchecked")
   public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
-    return history.get(opId);
+    return historyManager.getStatus(opId);
+  }
+
+  @Override
+  public void close() {
+    if (executor instanceof ExecutorService) {
+      ((ExecutorService) executor).shutdownNow();
+    }
   }
 }

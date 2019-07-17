@@ -680,7 +680,6 @@ javadoc/org/apache/geode/management/ServerLoadData.html
 javadoc/org/apache/geode/management/api/AsyncOperation.html
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
-javadoc/org/apache/geode/management/api/ClusterManagementOperationStatusResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html

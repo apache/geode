@@ -29,9 +29,9 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.management.api.ClusterManagementOperationResult;
-import org.apache.geode.management.api.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.operation.RebalanceOperation;
-import org.apache.geode.management.runtime.RebalanceInfo;
+import org.apache.geode.management.runtime.RebalanceResult;
 
 @Controller("rebalance")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -39,16 +39,16 @@ public class RebalanceController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementOperationStatusResult<RebalanceInfo> checkRebalanceStatus(
+  public ClusterManagementOperationStatusResult<RebalanceResult> checkRebalanceStatus(
       @PathVariable String id) {
     return clusterManagementService.checkStatus(id);
   }
 
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = REBALANCE_ENDPOINT)
-  public ResponseEntity<ClusterManagementOperationResult<RebalanceInfo>> startRebalance(
+  public ResponseEntity<ClusterManagementOperationResult<RebalanceResult>> startRebalance(
       @RequestBody RebalanceOperation operation) {
-    ClusterManagementOperationResult<RebalanceInfo> result =
+    ClusterManagementOperationResult<RebalanceResult> result =
         clusterManagementService.startOperation(operation);
 
     return new ResponseEntity<>(result,

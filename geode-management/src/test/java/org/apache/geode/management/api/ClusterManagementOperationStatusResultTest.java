@@ -20,7 +20,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.runtime.RebalanceInfo;
+import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationStatusResultTest {
@@ -33,12 +34,12 @@ public class ClusterManagementOperationStatusResultTest {
 
   @Test
   public void serialize() throws Exception {
-    ClusterManagementOperationStatusResult<RebalanceInfo> result =
+    ClusterManagementOperationStatusResult<RebalanceResult> result =
         new ClusterManagementOperationStatusResult<>();
-    result.setResult(new RebalanceInfo("test2"));
+    result.setResult(new RebalanceResult("test2"));
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementOperationStatusResult<RebalanceInfo> value =
+    ClusterManagementOperationStatusResult<RebalanceResult> value =
         mapper.readValue(json, ClusterManagementOperationStatusResult.class);
     assertThat(value.getResult().getRebalanceResult()).isEqualTo("test2");
   }

@@ -24,7 +24,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * servers.
  */
 @Experimental
-public interface ClusterManagementService {
+public interface ClusterManagementService extends AutoCloseable {
 
   String FEATURE_FLAG = "gemfire.enable-experimental-cluster-management-service";
 
@@ -66,7 +66,7 @@ public interface ClusterManagementService {
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
-  <A extends AsyncOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  <A extends Operation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op);
 
   /**
@@ -77,4 +77,9 @@ public interface ClusterManagementService {
    */
   boolean isConnected();
 
+  /**
+   * release any resources controlled by this service
+   */
+  @Override
+  void close();
 }

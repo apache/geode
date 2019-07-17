@@ -17,12 +17,12 @@ package org.apache.geode.management.runtime;
 
 import org.apache.geode.management.api.JsonSerializable;
 
-public class RebalanceInfo implements JsonSerializable {
+public class RebalanceResult implements JsonSerializable {
   private String rebalanceResult;
 
-  public RebalanceInfo() {}
+  public RebalanceResult() {}
 
-  public RebalanceInfo(String rebalanceResult) {
+  public RebalanceResult(String rebalanceResult) {
     this.rebalanceResult = rebalanceResult;
   }
 
