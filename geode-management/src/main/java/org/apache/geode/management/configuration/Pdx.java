@@ -23,15 +23,18 @@ import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
+/**
+ * Configuration Objects for Pdx in the cache
+ */
 public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";
 
-  protected Boolean readSerialized;
-  protected ClassName pdxSerializer;
-  protected Boolean ignoreUnreadFields;
-  protected Boolean persistent;
-  protected String diskStoreName;
+  private boolean readSerialized;
+  private ClassName pdxSerializer;
+  private boolean ignoreUnreadFields;
+  private boolean persistent;
+  private String diskStoreName;
 
   @Override
   @JsonIgnore
@@ -55,7 +58,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     }
   }
 
-  public Boolean getReadSerialized() {
+  public boolean isReadSerialized() {
     return readSerialized;
   }
 
@@ -71,7 +74,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     this.pdxSerializer = pdxSerializer;
   }
 
-  public Boolean getIgnoreUnreadFields() {
+  public boolean isIgnoreUnreadFields() {
     return ignoreUnreadFields;
   }
 
@@ -79,7 +82,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     this.ignoreUnreadFields = ignoreUnreadFields;
   }
 
-  public Boolean getPersistent() {
+  public boolean isPersistent() {
     return persistent;
   }
 

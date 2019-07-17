@@ -23,10 +23,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.ExpirationAction;
@@ -56,8 +52,8 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean statisticsEnabled;
   private ExpirationAttrs entryExpirationIdleTime;
   private ExpirationAttrs entryExpirationTTL;
-  private ClassName<CustomExpiry> entryIdleTimeCustomExpiry;
-  private ClassName<CustomExpiry> entryTTLCustomExpiry;
+  private ClassName entryIdleTimeCustomExpiry;
+  private ClassName entryTTLCustomExpiry;
   private ExpirationAttrs regionExpirationIdleTime;
   private ExpirationAttrs regionExpirationTTL;
   private EvictionAttrs evictionAttributes;
@@ -65,9 +61,9 @@ public class RegionFunctionArgs implements Serializable {
   private Boolean diskSynchronous;
   private Boolean enableAsyncConflation;
   private Boolean enableSubscriptionConflation;
-  private Set<ClassName<CacheListener>> cacheListeners = Collections.emptySet();
-  private ClassName<CacheLoader> cacheLoader;
-  private ClassName<CacheWriter> cacheWriter;
+  private Set<ClassName> cacheListeners = Collections.emptySet();
+  private ClassName cacheLoader;
+  private ClassName cacheWriter;
   private Set<String> asyncEventQueueIds = Collections.emptySet();
   private Set<String> gatewaySenderIds = Collections.emptySet();
   private Boolean concurrencyChecksEnabled;
@@ -168,17 +164,17 @@ public class RegionFunctionArgs implements Serializable {
     this.enableSubscriptionConflation = enableSubscriptionConflation;
   }
 
-  public void setCacheListeners(ClassName<CacheListener>[] cacheListeners) {
+  public void setCacheListeners(ClassName[] cacheListeners) {
     if (cacheListeners != null) {
       this.cacheListeners = Arrays.stream(cacheListeners).collect(Collectors.toSet());
     }
   }
 
-  public void setCacheLoader(ClassName<CacheLoader> cacheLoader) {
+  public void setCacheLoader(ClassName cacheLoader) {
     this.cacheLoader = cacheLoader;
   }
 
-  public void setCacheWriter(ClassName<CacheWriter> cacheWriter) {
+  public void setCacheWriter(ClassName cacheWriter) {
     this.cacheWriter = cacheWriter;
   }
 
@@ -364,7 +360,7 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the cacheListeners
    */
-  public Set<ClassName<CacheListener>> getCacheListeners() {
+  public Set<ClassName> getCacheListeners() {
     if (this.cacheListeners == null) {
       return null;
     }
@@ -374,14 +370,14 @@ public class RegionFunctionArgs implements Serializable {
   /**
    * @return the cacheLoader
    */
-  public ClassName<CacheLoader> getCacheLoader() {
+  public ClassName getCacheLoader() {
     return this.cacheLoader;
   }
 
   /**
    * @return the cacheWriter
    */
-  public ClassName<CacheWriter> getCacheWriter() {
+  public ClassName getCacheWriter() {
     return this.cacheWriter;
   }
 
@@ -478,19 +474,19 @@ public class RegionFunctionArgs implements Serializable {
     return (RegionAttributes<K, V>) this.regionAttributes;
   }
 
-  public ClassName<CustomExpiry> getEntryIdleTimeCustomExpiry() {
+  public ClassName getEntryIdleTimeCustomExpiry() {
     return entryIdleTimeCustomExpiry;
   }
 
-  public void setEntryIdleTimeCustomExpiry(ClassName<CustomExpiry> entryIdleTimeCustomExpiry) {
+  public void setEntryIdleTimeCustomExpiry(ClassName entryIdleTimeCustomExpiry) {
     this.entryIdleTimeCustomExpiry = entryIdleTimeCustomExpiry;
   }
 
-  public ClassName<CustomExpiry> getEntryTTLCustomExpiry() {
+  public ClassName getEntryTTLCustomExpiry() {
     return entryTTLCustomExpiry;
   }
 
-  public void setEntryTTLCustomExpiry(ClassName<CustomExpiry> entryTTLCustomExpiry) {
+  public void setEntryTTLCustomExpiry(ClassName entryTTLCustomExpiry) {
     this.entryTTLCustomExpiry = entryTTLCustomExpiry;
   }
 

@@ -28,10 +28,6 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.Region;
@@ -109,11 +105,11 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__CACHELISTENER,
           // split the input only with "," outside of json string
           optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) ClassName<CacheListener>[] cacheListener,
+          help = CliStrings.CREATE_REGION__CACHELISTENER__HELP) ClassName[] cacheListener,
       @CliOption(key = CliStrings.CREATE_REGION__CACHELOADER,
-          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) ClassName<CacheLoader> cacheLoader,
+          help = CliStrings.CREATE_REGION__CACHELOADER__HELP) ClassName cacheLoader,
       @CliOption(key = CliStrings.CREATE_REGION__CACHEWRITER,
-          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) ClassName<CacheWriter> cacheWriter,
+          help = CliStrings.CREATE_REGION__CACHEWRITER__HELP) ClassName cacheWriter,
       @CliOption(key = CliStrings.CREATE_REGION__COLOCATEDWITH,
           optionContext = ConverterHint.REGION_PATH,
           help = CliStrings.CREATE_REGION__COLOCATEDWITH__HELP) String prColocatedWith,
@@ -149,9 +145,9 @@ public class CreateRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION,
           help = CliStrings.CREATE_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
       @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY,
-          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName entryIdleTimeCustomExpiry,
       @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY,
-          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName entryTTLCustomExpiry,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ACTION,
           help = CliStrings.CREATE_REGION__EVICTION_ACTION__HELP) String evictionAction,
       @CliOption(key = CliStrings.CREATE_REGION__EVICTION_ENTRY_COUNT,

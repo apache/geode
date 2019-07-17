@@ -57,7 +57,7 @@ public abstract class DeclarableTypeInstantiator {
     return null;
   }
 
-  public static <V> V newInstance(ClassName<?> type, Cache cache) {
+  public static <V> V newInstance(ClassName type, Cache cache) {
     try {
       Class<V> loadedClass = (Class<V>) ClassPathLoader.getLatest().forName(type.getClassName());
       V object = loadedClass.newInstance();

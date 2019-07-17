@@ -23,10 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
-import org.apache.geode.cache.CustomExpiry;
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
@@ -70,9 +66,9 @@ public class AlterRegionCommand extends SingleGfshCommand {
           specifiedDefaultValue = "INVALIDATE",
           help = CliStrings.ALTER_REGION__ENTRYEXPIRATIONTTLACTION__HELP) ExpirationAction entryExpirationTTLAction,
       @CliOption(key = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY, specifiedDefaultValue = "",
-          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryIdleTimeCustomExpiry,
+          help = CliStrings.ENTRY_IDLE_TIME_CUSTOM_EXPIRY_HELP) ClassName entryIdleTimeCustomExpiry,
       @CliOption(key = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY, specifiedDefaultValue = "",
-          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName<CustomExpiry> entryTTLCustomExpiry,
+          help = CliStrings.ENTRY_TTL_CUSTOM_EXPIRY_HELP) ClassName entryTTLCustomExpiry,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME,
           help = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIME__HELP) Integer regionExpirationIdleTime,
       @CliOption(key = CliStrings.ALTER_REGION__REGIONEXPIRATIONIDLETIMEACTION,
@@ -86,11 +82,11 @@ public class AlterRegionCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.ALTER_REGION__CACHELISTENER, specifiedDefaultValue = "",
           // split the input only with comma outside of json string
           optionContext = "splittingRegex=,(?![^{]*\\})",
-          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) ClassName<CacheListener>[] cacheListeners,
+          help = CliStrings.ALTER_REGION__CACHELISTENER__HELP) ClassName[] cacheListeners,
       @CliOption(key = CliStrings.ALTER_REGION__CACHELOADER, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHELOADER__HELP) ClassName<CacheLoader> cacheLoader,
+          help = CliStrings.ALTER_REGION__CACHELOADER__HELP) ClassName cacheLoader,
       @CliOption(key = CliStrings.ALTER_REGION__CACHEWRITER, specifiedDefaultValue = "",
-          help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) ClassName<CacheWriter> cacheWriter,
+          help = CliStrings.ALTER_REGION__CACHEWRITER__HELP) ClassName cacheWriter,
       @CliOption(key = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID, specifiedDefaultValue = "",
           help = CliStrings.ALTER_REGION__ASYNCEVENTQUEUEID__HELP) String[] asyncEventQueueIds,
       @CliOption(key = CliStrings.ALTER_REGION__GATEWAYSENDERID, specifiedDefaultValue = "",

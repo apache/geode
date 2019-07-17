@@ -18,9 +18,6 @@ package org.apache.geode.management.internal.cli.functions;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.geode.cache.CacheListener;
-import org.apache.geode.cache.CacheLoader;
-import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.management.configuration.ClassName;
 
@@ -36,11 +33,11 @@ public class RegionAttributesWrapper<K, V> implements Serializable {
 
   private RegionAttributes<K, V> regionAttributes;
 
-  private List<ClassName<CacheListener>> cacheListenerClasses;
+  private List<ClassName> cacheListenerClasses;
 
-  private ClassName<CacheLoader> cacheLoaderClass;
+  private ClassName cacheLoaderClass;
 
-  private ClassName<CacheWriter> cacheWriterClass;
+  private ClassName cacheWriterClass;
 
   private String compressorClass;
 
@@ -58,27 +55,27 @@ public class RegionAttributesWrapper<K, V> implements Serializable {
     this.regionAttributes = regionAttributes;
   }
 
-  public List<ClassName<CacheListener>> getCacheListenerClasses() {
+  public List<ClassName> getCacheListenerClasses() {
     return cacheListenerClasses;
   }
 
-  public void setCacheListenerClasses(List<ClassName<CacheListener>> cacheListenerClasses) {
+  public void setCacheListenerClasses(List<ClassName> cacheListenerClasses) {
     this.cacheListenerClasses = cacheListenerClasses;
   }
 
-  public ClassName<CacheLoader> getCacheLoaderClass() {
+  public ClassName getCacheLoaderClass() {
     return cacheLoaderClass;
   }
 
-  public void setCacheLoaderClass(ClassName<CacheLoader> cacheLoaderClass) {
+  public void setCacheLoaderClass(ClassName cacheLoaderClass) {
     this.cacheLoaderClass = cacheLoaderClass;
   }
 
-  public ClassName<CacheWriter> getCacheWriterClass() {
+  public ClassName getCacheWriterClass() {
     return cacheWriterClass;
   }
 
-  public void setCacheWriterClass(ClassName<CacheWriter> cacheWriterClass) {
+  public void setCacheWriterClass(ClassName cacheWriterClass) {
     this.cacheWriterClass = cacheWriterClass;
   }
 

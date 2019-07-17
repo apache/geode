@@ -42,7 +42,7 @@ public class PdxConverterTest {
     pdxType.setIgnoreUnreadFields(false);
     Pdx pdxConfig = converter.fromXmlObject(pdxType);
     assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
-    assertThat(pdxConfig.getIgnoreUnreadFields()).isEqualTo(false);
-    assertThat(pdxConfig.getPersistent()).isNull();
+    assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(false);
+    assertThat(pdxConfig.isPersistent()).isNull();
   }
 }

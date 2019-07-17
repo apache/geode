@@ -35,10 +35,10 @@ public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
   @Override
   protected PdxType fromNonNullConfigObject(Pdx configObject) {
     PdxType xmlType = new PdxType();
-    xmlType.setReadSerialized(configObject.getReadSerialized());
+    xmlType.setReadSerialized(configObject.isReadSerialized());
     xmlType.setDiskStoreName(configObject.getDiskStoreName());
-    xmlType.setIgnoreUnreadFields(configObject.getIgnoreUnreadFields());
-    xmlType.setPersistent(configObject.getPersistent());
+    xmlType.setIgnoreUnreadFields(configObject.isIgnoreUnreadFields());
+    xmlType.setPersistent(configObject.isPersistent());
     xmlType.setPdxSerializer(converter.fromConfigObject(configObject.getPdxSerializer()));
     return xmlType;
   }

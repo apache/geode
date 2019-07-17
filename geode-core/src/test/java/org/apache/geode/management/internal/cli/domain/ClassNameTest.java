@@ -102,7 +102,7 @@ public class ClassNameTest {
 
   @Test
   public void getInstance() {
-    ClassName<String> klass = new ClassName("java.lang.String");
+    ClassName klass = new ClassName("java.lang.String");
     String s = DeclarableTypeInstantiator.newInstance(klass, null);
     assertThat(s.toString()).isEqualTo("");
   }
@@ -110,7 +110,7 @@ public class ClassNameTest {
   @Test
   public void getInstanceWithProps() {
     String json = "{\"k\":\"v\"}";
-    ClassName<MyCacheWriter> cacheWriter = new ClassName<>(MyCacheWriter.class.getName(), json);
+    ClassName cacheWriter = new ClassName(MyCacheWriter.class.getName(), json);
     MyCacheWriter obj = DeclarableTypeInstantiator.newInstance(cacheWriter, null);
     assertThat(obj.getProperties()).containsEntry("k", "v").containsOnlyKeys("k");
   }
