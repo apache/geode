@@ -21,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
-import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationStatusResultTest {
@@ -34,13 +33,31 @@ public class ClusterManagementOperationStatusResultTest {
 
   @Test
   public void serialize() throws Exception {
-    ClusterManagementOperationStatusResult<RebalanceResult> result =
+    ClusterManagementOperationStatusResult<TestResult> result =
         new ClusterManagementOperationStatusResult<>();
-    result.setResult(new RebalanceResult("test2"));
+    result.setResult(new TestResult("test2"));
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementOperationStatusResult<RebalanceResult> value =
+    ClusterManagementOperationStatusResult<TestResult> value =
         mapper.readValue(json, ClusterManagementOperationStatusResult.class);
-    assertThat(value.getResult().getRebalanceResult()).isEqualTo("test2");
+    assertThat(value.getResult().getTestResult()).isEqualTo("test2");
+  }
+
+  static class TestResult implements JsonSerializable {
+    private String testResult;
+
+    public TestResult() {}
+
+    public TestResult(String testResult) {
+      this.testResult = testResult;
+    }
+
+    public String getTestResult() {
+      return testResult;
+    }
+
+    public void setTestResult(String testResult) {
+      this.testResult = testResult;
+    }
   }
 }

@@ -21,7 +21,8 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.api.JsonSerializable;
 
 public class OperationManagerTest {
   OperationManager executorManager;
@@ -29,27 +30,28 @@ public class OperationManagerTest {
   @Before
   public void setUp() throws Exception {
     executorManager = new OperationManager(new OperationHistoryManager(1));
+    executorManager.registerOperation(TestOperation.class, new TestOperationPerformer());
   }
 
   @Test
   public void submitWithRogueId() {
-    RebalanceOperation operation = new RebalanceOperation();
+    TestOperation operation = new TestOperation();
     operation.setId("bad");
     assertThatThrownBy(() -> executorManager.submit(operation))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Operation type RebalanceOperation should not supply its own id");
+        .hasMessageContaining("Operation type TestOperation should not supply its own id");
   }
 
   @Test
   public void submitAndComplete() {
-    RebalanceOperation operation = new RebalanceOperation();
+    TestOperation operation = new TestOperation();
     executorManager.submit(operation).complete(null);
     String id = operation.getId();
     assertThat(id).isNotBlank();
 
     assertThat(executorManager.getStatus(id)).isNotNull();
 
-    RebalanceOperation operation2 = new RebalanceOperation();
+    TestOperation operation2 = new TestOperation();
     executorManager.submit(operation2).complete(null);
     String id2 = operation2.getId();
     assertThat(id2).isNotBlank();
@@ -60,14 +62,14 @@ public class OperationManagerTest {
 
   @Test
   public void submit() {
-    RebalanceOperation operation = new RebalanceOperation();
+    TestOperation operation = new TestOperation();
     executorManager.submit(operation);
     String id = operation.getId();
     assertThat(id).isNotBlank();
 
     assertThat(executorManager.getStatus(id)).isNotNull();
 
-    RebalanceOperation operation2 = new RebalanceOperation();
+    TestOperation operation2 = new TestOperation();
     executorManager.submit(operation2);
     String id2 = operation2.getId();
     assertThat(id2).isNotBlank();
@@ -78,9 +80,27 @@ public class OperationManagerTest {
 
   @Test
   public void submitRogueOperation() {
-    RebalanceOperation operation = mock(RebalanceOperation.class);
+    TestOperation operation = mock(TestOperation.class);
     assertThatThrownBy(() -> executorManager.submit(operation))
         .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Operation type")
         .hasMessageContaining(" not supported");
+  }
+
+  static class TestOperation extends ClusterManagementOperation<TestResult> {
+    @Override
+    public String getEndpoint() {
+      return "/operations/test";
+    }
+  }
+
+  static class TestResult implements JsonSerializable {
+    String testResult;
+  }
+
+  private class TestOperationPerformer implements OperationPerformer<TestOperation, TestResult> {
+    @Override
+    public TestResult perform(TestOperation operation) {
+      return null;
+    }
   }
 }
