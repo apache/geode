@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.apache.geode.management.api.ClusterManagementOperation;
 
 public class OperationHistoryManagerTest {
-  OperationHistoryManager history;
+  private OperationHistoryManager history;
 
   @Before
   public void setUp() throws Exception {
