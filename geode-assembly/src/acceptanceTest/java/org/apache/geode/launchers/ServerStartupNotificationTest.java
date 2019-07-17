@@ -69,7 +69,8 @@ public class ServerStartupNotificationTest {
 
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
-    Pattern expectedLogLine = Pattern.compile("^\\[info .*].*Server " + serverName + " startup completed in \\d+ ms");
+    Pattern expectedLogLine =
+        Pattern.compile("^\\[info .*].*Server " + serverName + " startup completed in \\d+ ms");
     await().untilAsserted(() -> assertThat(Files.lines(logFile))
         .as("Log file " + logFile + " includes line matching " + expectedLogLine)
         .anyMatch(expectedLogLine.asPredicate()));
