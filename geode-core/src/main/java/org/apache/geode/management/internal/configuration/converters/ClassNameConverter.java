@@ -15,11 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.geode.cache.configuration.DeclarableType;
-import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.management.configuration.ClassName;
 
 /**
@@ -30,14 +28,9 @@ public class ClassNameConverter extends ConfigurationConverter<ClassName, Declar
   @Override
   protected ClassName fromNonNullXmlObject(DeclarableType xmlObject) {
     Properties properties = new Properties();
-    List<ParameterType> parameters = xmlObject.getParameters();
-    for (ParameterType parameter : parameters) {
-      // ClassName only supports string type values
-      if (parameter.getString() != null) {
-        properties.setProperty(parameter.getName(), parameter.getString());
-      }
-    }
-
+    xmlObject.getParameters().stream()
+        .filter(pt -> pt.getString() != null)
+        .forEach(p -> properties.setProperty(p.getName(), p.getString()));
     return new ClassName(xmlObject.getClassName(), properties);
   }
 

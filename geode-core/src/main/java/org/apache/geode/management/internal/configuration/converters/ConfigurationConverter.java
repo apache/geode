@@ -15,6 +15,13 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+/**
+ * the implementer of each pair of configuration object and xml domain object is
+ * reponsible in converting between the two
+ *
+ * @param <T> the class of the configuration object
+ * @param <V> the class of the xml domain object
+ */
 public abstract class ConfigurationConverter<T, V> {
 
   public final T fromXmlObject(V xmlObject) {

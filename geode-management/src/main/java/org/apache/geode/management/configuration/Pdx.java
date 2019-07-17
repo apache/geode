@@ -62,7 +62,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     return readSerialized;
   }
 
-  public void setReadSerialized(Boolean readSerialized) {
+  public void setReadSerialized(boolean readSerialized) {
     this.readSerialized = readSerialized;
   }
 
@@ -78,7 +78,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     return ignoreUnreadFields;
   }
 
-  public void setIgnoreUnreadFields(Boolean ignoreUnreadFields) {
+  public void setIgnoreUnreadFields(boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
   }
 
@@ -86,7 +86,7 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     return persistent;
   }
 
-  public void setPersistent(Boolean persistent) {
+  public void setPersistent(boolean persistent) {
     this.persistent = persistent;
   }
 

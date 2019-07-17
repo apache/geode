@@ -19,15 +19,21 @@ import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.configuration.Pdx;
 
 public class PdxConverter extends ConfigurationConverter<Pdx, PdxType> {
-  private ClassNameConverter converter = new ClassNameConverter();
+  private final ClassNameConverter converter = new ClassNameConverter();
 
   @Override
   protected Pdx fromNonNullXmlObject(PdxType xmlObject) {
     Pdx pdx = new Pdx();
-    pdx.setReadSerialized(xmlObject.isReadSerialized());
+    if (xmlObject.isReadSerialized() != null) {
+      pdx.setReadSerialized(xmlObject.isReadSerialized());
+    }
     pdx.setDiskStoreName(xmlObject.getDiskStoreName());
-    pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
-    pdx.setPersistent(xmlObject.isPersistent());
+    if (xmlObject.isIgnoreUnreadFields() != null) {
+      pdx.setIgnoreUnreadFields(xmlObject.isIgnoreUnreadFields());
+    }
+    if (xmlObject.isPersistent() != null) {
+      pdx.setPersistent(xmlObject.isPersistent());
+    }
     pdx.setPdxSerializer(converter.fromXmlObject(xmlObject.getPdxSerializer()));
     return pdx;
   }

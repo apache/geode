@@ -43,6 +43,6 @@ public class PdxConverterTest {
     Pdx pdxConfig = converter.fromXmlObject(pdxType);
     assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
     assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(false);
-    assertThat(pdxConfig.isPersistent()).isNull();
+    assertThat(pdxConfig.isPersistent()).isFalse();
   }
 }
