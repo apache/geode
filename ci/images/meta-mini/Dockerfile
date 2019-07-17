@@ -21,6 +21,7 @@ RUN apk --no-cache add \
       bash \
       curl \
       jq \
+      python2 \
       python3 \
   && pip3 install --upgrade pip \
   && pip3 install Jinja2 pyYAML
