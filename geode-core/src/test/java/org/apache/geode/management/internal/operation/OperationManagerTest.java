@@ -33,7 +33,7 @@ public class OperationManagerTest {
   @Before
   public void setUp() throws Exception {
     executorManager = new OperationManager(new OperationHistoryManager(1));
-    executorManager.registerOperation(TestOperation.class, new TestOperationPerformer());
+    executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
   @Test
@@ -111,15 +111,12 @@ public class OperationManagerTest {
     String testResult;
   }
 
-  private class TestOperationPerformer implements OperationPerformer<TestOperation, TestResult> {
-    @Override
-    public TestResult perform(TestOperation operation) {
-      try {
-        operation.latch.await();
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-      }
-      return null;
+  static TestResult perform(TestOperation operation) {
+    try {
+      operation.latch.await();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
+    return null;
   }
 }

@@ -20,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -30,7 +31,7 @@ import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
-  private final Map<Class<? extends ClusterManagementOperation>, OperationPerformer> performers;
+  private final Map<Class<? extends ClusterManagementOperation>, Function> performers;
   private final OperationHistoryManager historyManager;
   private final Executor executor;
 
@@ -46,7 +47,7 @@ public class OperationManager implements AutoCloseable {
    * for use by modules/extensions to install custom cluster management operations
    */
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void registerOperation(
-      Class<A> operationClass, OperationPerformer<A, V> operationPerformer) {
+      Class<A> operationClass, Function<A, V> operationPerformer) {
     performers.put(operationClass, operationPerformer);
   }
 
@@ -58,21 +59,21 @@ public class OperationManager implements AutoCloseable {
               op.getClass().getSimpleName()));
     }
     op.setId(UUID.randomUUID().toString());
-    OperationPerformer<A, V> performer = getPerformer(op);
+    Function<A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("Operation type %s is not supported",
           op.getClass().getSimpleName()));
     }
 
     CompletableFuture<V> future =
-        CompletableFuture.supplyAsync(() -> performer.perform(op), executor);
+        CompletableFuture.supplyAsync(() -> performer.apply(op), executor);
 
     // save the Future so we can check on it later
     return historyManager.save(op, future);
   }
 
   @SuppressWarnings("unchecked")
-  private <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
+  private <A extends ClusterManagementOperation<V>, V extends JsonSerializable> Function<A, V> getPerformer(
       A op) {
     return performers.get(op.getClass());
   }
