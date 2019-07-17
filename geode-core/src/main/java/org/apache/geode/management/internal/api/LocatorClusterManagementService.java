@@ -20,11 +20,11 @@ package org.apache.geode.management.internal.api;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -86,7 +86,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
-    this(persistenceService, new HashMap<>(), new HashMap<>(),
+    this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CacheElementValidator(),
         new OperationManager(new OperationHistoryManager()));
     // initialize the list of managers

@@ -50,7 +50,7 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
     startPolling();
   }
 
-  private void startPolling() {
+  private synchronized void startPolling() {
     if (scheduledFuture != null) {
       return;
     }
@@ -83,7 +83,9 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
     ClusterManagementResult.StatusCode statusCode = result.getStatusCode();
     if (statusCode == ClusterManagementResult.StatusCode.OK) {
       complete(result.getResult());
-    } else if (statusCode != ClusterManagementResult.StatusCode.IN_PROGRESS) {
+    } else if (statusCode == ClusterManagementResult.StatusCode.IN_PROGRESS) {
+      // do nothing
+    } else {
       completeExceptionally(
           new RuntimeException(statusCode + ": " + result.getStatusMessage()));
     }

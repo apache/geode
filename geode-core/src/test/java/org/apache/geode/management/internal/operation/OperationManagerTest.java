@@ -41,6 +41,24 @@ public class OperationManagerTest {
   }
 
   @Test
+  public void submitAndComplete() {
+    RebalanceOperation operation = new RebalanceOperation();
+    executorManager.submit(operation).complete(null);
+    String id = operation.getId();
+    assertThat(id).isNotBlank();
+
+    assertThat(executorManager.getStatus(id)).isNotNull();
+
+    RebalanceOperation operation2 = new RebalanceOperation();
+    executorManager.submit(operation2).complete(null);
+    String id2 = operation2.getId();
+    assertThat(id2).isNotBlank();
+
+    assertThat(executorManager.getStatus(id)).isNull(); // queue size 1 so should have been bumped
+    assertThat(executorManager.getStatus(id2)).isNotNull();
+  }
+
+  @Test
   public void submit() {
     RebalanceOperation operation = new RebalanceOperation();
     executorManager.submit(operation);
@@ -54,7 +72,7 @@ public class OperationManagerTest {
     String id2 = operation2.getId();
     assertThat(id2).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNull(); // queue size 1 so should have been bumped
+    assertThat(executorManager.getStatus(id)).isNotNull(); // all in progress, none should be bumped
     assertThat(executorManager.getStatus(id2)).isNotNull();
   }
 

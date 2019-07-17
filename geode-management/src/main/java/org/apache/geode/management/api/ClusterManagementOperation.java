@@ -23,7 +23,7 @@ import org.apache.geode.lang.Identifiable;
 
 public abstract class ClusterManagementOperation<V extends JsonSerializable>
     implements Identifiable<String>, RestfulEndpoint {
-  String id;
+  private String id;
 
   @Override
   public String getId() {

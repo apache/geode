@@ -14,8 +14,10 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.map.LRUMap;
 
@@ -25,14 +27,17 @@ import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
 public class OperationHistoryManager {
-  private final Map<String, CompletableFuture> history;
+  private final Map<String, CompletableFuture> inProgressHistory;
+  private final Map<String, CompletableFuture> completedHistory;
 
   public OperationHistoryManager() {
-    this(10);
+    this(100);
   }
 
+  @SuppressWarnings("unchecked")
   public OperationHistoryManager(int historySize) {
-    history = new LRUMap(historySize);
+    inProgressHistory = new ConcurrentHashMap<>();
+    completedHistory = Collections.synchronizedMap(new LRUMap(historySize));
   }
 
   /**
@@ -40,12 +45,23 @@ public class OperationHistoryManager {
    */
   @SuppressWarnings("unchecked")
   public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
-    return history.get(opId);
+    CompletableFuture<V> ret = inProgressHistory.get(opId);
+    if (ret == null) {
+      ret = completedHistory.get(opId);
+    }
+    return ret;
   }
 
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void save(
       A operation,
       CompletableFuture<V> future) {
-    history.put(operation.getId(), future);
+    final String opId = operation.getId();
+
+    inProgressHistory.put(opId, future);
+
+    future.whenComplete((result, exception) -> {
+      completedHistory.put(opId, future);
+      inProgressHistory.remove(opId);
+    });
   }
 }

@@ -14,10 +14,10 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
@@ -40,7 +40,7 @@ public class OperationManager implements AutoCloseable {
     this.executor = LoggingExecutors.newThreadOnEachExecute("CMSOpPerformer");
 
     // initialize the list of operation performers
-    performers = new HashMap<>();
+    performers = new ConcurrentHashMap<>();
     performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
