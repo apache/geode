@@ -52,10 +52,10 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -328,7 +328,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void startOperation() {
     final String URI = "test/uri";
-    Operation<?> operation = mock(Operation.class);
+    ClusterManagementOperation<?> operation = mock(ClusterManagementOperation.class);
     when(operation.getUri()).thenReturn(URI);
     ClusterManagementOperationResult<?> result =
         service.startOperation(operation);

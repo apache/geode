@@ -48,13 +48,13 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.MemberConfig;
@@ -372,7 +372,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends Operation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
     result.setResult(executorManager.submit(op));

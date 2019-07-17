@@ -20,8 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import org.apache.commons.collections.map.LRUMap;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 
 @Experimental
 public class OperationHistoryManager {
@@ -43,7 +43,8 @@ public class OperationHistoryManager {
     return history.get(opId);
   }
 
-  public <A extends Operation<V>, V extends JsonSerializable> void save(A operation,
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void save(
+      A operation,
       CompletableFuture<V> future) {
     history.put(operation.getId(), future);
   }

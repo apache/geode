@@ -25,13 +25,13 @@ import org.apache.logging.log4j.util.Strings;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
-  private final Map<Class<? extends Operation>, OperationPerformer> performers;
+  private final Map<Class<? extends ClusterManagementOperation>, OperationPerformer> performers;
   private final OperationHistoryManager historyManager;
   private final Executor executor;
 
@@ -44,7 +44,7 @@ public class OperationManager implements AutoCloseable {
     performers.put(RebalanceOperation.class, new RebalanceOperationPerformer());
   }
 
-  public <A extends Operation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
       A op) {
     if (!Strings.isBlank(op.getId())) {
       throw new IllegalArgumentException(
@@ -68,7 +68,7 @@ public class OperationManager implements AutoCloseable {
   }
 
   @SuppressWarnings("unchecked")
-  private <A extends Operation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
+  private <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationPerformer<A, V> getPerformer(
       A op) {
     return performers.get(op.getClass());
   }

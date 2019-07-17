@@ -25,12 +25,12 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -114,7 +114,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends Operation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     final ClusterManagementOperationResult<V> result;
 

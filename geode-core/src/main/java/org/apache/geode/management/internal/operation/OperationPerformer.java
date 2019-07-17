@@ -15,10 +15,10 @@
 package org.apache.geode.management.internal.operation;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.api.Operation;
 
 @Experimental
-public interface OperationPerformer<A extends Operation<V>, V extends JsonSerializable> {
+public interface OperationPerformer<A extends ClusterManagementOperation<V>, V extends JsonSerializable> {
   V perform(A operation);
 }

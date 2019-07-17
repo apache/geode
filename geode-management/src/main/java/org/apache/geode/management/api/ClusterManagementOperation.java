@@ -21,7 +21,7 @@ import org.apache.geode.lang.Identifiable;
  * @param <V> the result type of the operation
  */
 
-public abstract class Operation<V extends JsonSerializable>
+public abstract class ClusterManagementOperation<V extends JsonSerializable>
     implements Identifiable<String>, RestfulEndpoint {
   String id;
 

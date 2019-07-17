@@ -66,7 +66,7 @@ public interface ClusterManagementService extends AutoCloseable {
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
-  <A extends Operation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op);
 
   /**
