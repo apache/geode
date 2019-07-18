@@ -18,6 +18,7 @@ package org.apache.geode.management.api;
 import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
@@ -68,6 +69,7 @@ public interface RestfulEndpoint extends Identifiable<String> {
   }
 
   @XmlTransient
+  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   default String getUri() {
     if (getIdentityEndPoint() == null) {
       return null;

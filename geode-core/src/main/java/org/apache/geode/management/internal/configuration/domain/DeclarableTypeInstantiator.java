@@ -23,7 +23,7 @@ import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.ObjectType;
 import org.apache.geode.cache.configuration.ParameterType;
 import org.apache.geode.internal.ClassPathLoader;
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.configuration.ClassName;
 
 public abstract class DeclarableTypeInstantiator {
 
@@ -57,7 +57,7 @@ public abstract class DeclarableTypeInstantiator {
     return null;
   }
 
-  public static <V> V newInstance(ClassName<?> type, Cache cache) {
+  public static <V> V newInstance(ClassName type, Cache cache) {
     try {
       Class<V> loadedClass = (Class<V>) ClassPathLoader.getLatest().forName(type.getClassName());
       V object = loadedClass.newInstance();

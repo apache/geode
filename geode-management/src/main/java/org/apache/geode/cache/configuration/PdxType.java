@@ -24,13 +24,7 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.runtime.RuntimeInfo;
 
 
 /**
@@ -78,8 +72,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @XmlType(name = "pdx-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"pdxSerializer"})
 @Experimental
-@JsonIgnoreProperties(value = {"uri"}, allowGetters = true)
-public class PdxType extends CacheElement implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
+public class PdxType {
   @XmlElement(name = "pdx-serializer", namespace = "http://geode.apache.org/schema/cache")
   protected DeclarableType pdxSerializer;
   @XmlAttribute(name = "read-serialized")
@@ -199,30 +192,5 @@ public class PdxType extends CacheElement implements RestfulEndpoint, Correspond
    */
   public void setDiskStoreName(String value) {
     this.diskStoreName = value;
-  }
-
-  public static final String PDX_ID = "PDX";
-  public static final String PDX_ENDPOINT = "/configurations/pdx";
-
-  @Override
-  @JsonIgnore
-  public String getId() {
-    return PDX_ID;
-  }
-
-  @Override
-  public String getEndpoint() {
-    return PDX_ENDPOINT;
-  }
-
-  @Override
-  public String getIdentityEndPoint() {
-    return PDX_ENDPOINT;
-  }
-
-  public void setGroup(String group) {
-    if (group != null && !CLUSTER.equals(group)) {
-      throw new IllegalArgumentException("Pdx can only be configured in cluster level.");
-    }
   }
 }

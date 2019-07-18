@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.management.internal.cli.domain;
+package org.apache.geode.management.configuration;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -27,11 +27,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 /**
- * This is mostly used for Gfsh command options that need to specify a className for instantiation.
- *
- * See ClassNameConverter.
+ * This is used by gfsh and ClusterManagementService client to represent a class that can be
+ * instantiated on the server using DeclarableTypeInstantiator. It defines a class name and
+ * a set of initialization properties.
  */
-public class ClassName<T> implements Serializable {
+public class ClassName implements Serializable {
   private static final long serialVersionUID = 1L;
 
   private String className = "";
@@ -53,8 +53,8 @@ public class ClassName<T> implements Serializable {
 
   /**
    * @param className this class needs to have an empty param constructor
-   * @param jsonInitProperties this class needs to implement Declarable in order for these
-   *        properties to be applied at initialization time
+   * @param jsonInitProperties a json representation of the initialization properties if this class
+   *        is to be initialized as Declarable type
    */
   public ClassName(String className, String jsonInitProperties) {
     if (StringUtils.isBlank(className)) {
@@ -69,6 +69,11 @@ public class ClassName<T> implements Serializable {
     } catch (IOException e) {
       throw new IllegalArgumentException("Invalid JSON: " + jsonInitProperties, e);
     }
+  }
+
+  public ClassName(String className, Properties properties) {
+    this.className = className;
+    this.initProperties = properties;
   }
 
   public String getClassName() {

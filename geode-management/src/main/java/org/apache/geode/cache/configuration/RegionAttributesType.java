@@ -38,7 +38,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.cli.domain.ClassName;
+import org.apache.geode.management.configuration.ClassName;
 
 
 /**

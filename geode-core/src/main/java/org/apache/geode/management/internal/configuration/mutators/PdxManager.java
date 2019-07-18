@@ -19,31 +19,34 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.PdxType;
+import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.management.internal.configuration.converters.PdxConverter;
 
-public class PdxManager implements ConfigurationManager<PdxType> {
+public class PdxManager implements ConfigurationManager<Pdx> {
+  private final PdxConverter pdxConverter = new PdxConverter();
+
   @Override
-  public void add(PdxType config, CacheConfig existing) {
-    existing.setPdx(config);
+  public void add(Pdx config, CacheConfig existing) {
+    existing.setPdx(pdxConverter.fromConfigObject((config)));
   }
 
   @Override
-  public void update(PdxType config, CacheConfig existing) {
-    existing.setPdx(config);
+  public void update(Pdx config, CacheConfig existing) {
+    existing.setPdx(pdxConverter.fromConfigObject(config));
   }
 
   @Override
-  public void delete(PdxType config, CacheConfig existing) {
+  public void delete(Pdx config, CacheConfig existing) {
     existing.setPdx(null);
   }
 
   @Override
-  public List<PdxType> list(PdxType filterConfig, CacheConfig existing) {
-    return Collections.singletonList(existing.getPdx());
+  public List<Pdx> list(Pdx filterConfig, CacheConfig existing) {
+    return Collections.singletonList(pdxConverter.fromXmlObject(existing.getPdx()));
   }
 
   @Override
-  public PdxType get(String id, CacheConfig existing) {
-    return existing.getPdx();
+  public Pdx get(String id, CacheConfig existing) {
+    return pdxConverter.fromXmlObject(existing.getPdx());
   }
 }

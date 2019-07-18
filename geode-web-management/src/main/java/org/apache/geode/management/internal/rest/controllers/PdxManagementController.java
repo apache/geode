@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.PdxType.PDX_ENDPOINT;
+import static org.apache.geode.management.configuration.Pdx.PDX_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import io.swagger.annotations.ApiOperation;
@@ -29,8 +29,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.Pdx;
 
 @Controller("pdxManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
@@ -44,7 +44,7 @@ public class PdxManagementController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = PDX_ENDPOINT)
   public ResponseEntity<ClusterManagementResult> configurePdx(
-      @RequestBody PdxType pdxType) {
+      @RequestBody Pdx pdxType) {
     ClusterManagementResult result = clusterManagementService.create(pdxType);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
