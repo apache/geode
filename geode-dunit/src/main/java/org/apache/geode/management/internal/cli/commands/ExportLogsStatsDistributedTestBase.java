@@ -35,6 +35,7 @@ import java.util.zip.ZipFile;
 import com.google.common.collect.Sets;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.distributed.ConfigurationProperties;
@@ -42,6 +43,7 @@ import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class ExportLogsStatsDistributedTestBase {
 
@@ -50,6 +52,9 @@ public class ExportLogsStatsDistributedTestBase {
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
+
+  @Rule
+  public SerializableTemporaryFolder tempFolderRule = new SerializableTemporaryFolder();
 
   protected static Set<String> expectedZipEntries = new HashSet<>();
   protected static MemberVM locator;
@@ -79,47 +84,51 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportLogsAndStats() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs").statusIsSuccess();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
+    connector.executeAndAssertThat("export logs --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
-    Set<String> actualZipEnries = getZipEntries(zipPath);
+    Set<String> actualZipEntries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet(
         "locator-0" + File.separator + "locator-0.log",
         "server-1" + File.separator + "server-1.log",
         "server-1" + File.separator + "statistics.gfs");
-    assertThat(actualZipEnries).containsAll(expectedFiles);
+    assertThat(actualZipEntries).containsAll(expectedFiles);
     // remove pulse.log if present
-    actualZipEnries =
-        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
-    assertThat(actualZipEnries).hasSize(3);
+    actualZipEntries =
+        actualZipEntries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEntries).hasSize(3);
   }
 
   @Test
   public void testExportLogsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs --logs-only").statusIsSuccess();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
+    connector.executeAndAssertThat("export logs --logs-only --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
-    Set<String> actualZipEnries = getZipEntries(zipPath);
+    Set<String> actualZipEntries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet(
         "locator-0" + File.separator + "locator-0.log",
         "server-1" + File.separator + "server-1.log");
-    assertThat(actualZipEnries).containsAll(expectedFiles);
+    assertThat(actualZipEntries).containsAll(expectedFiles);
     // remove pulse.log if present
-    actualZipEnries =
-        actualZipEnries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
-    assertThat(actualZipEnries).hasSize(2);
+    actualZipEntries =
+        actualZipEntries.stream().filter(x -> !x.endsWith("pulse.log")).collect(toSet());
+    assertThat(actualZipEntries).hasSize(2);
   }
 
   @Test
   public void testExportStatsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs --stats-only").statusIsSuccess();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
+    connector.executeAndAssertThat("export logs --stats-only --dir=" + tempFolder)
+        .statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
-    Set<String> actualZipEnries = getZipEntries(zipPath);
+    Set<String> actualZipEntries = getZipEntries(zipPath);
 
     Set<String> expectedFiles = Sets.newHashSet("server-1" + File.separator + "statistics.gfs");
-    assertThat(actualZipEnries).isEqualTo(expectedFiles);
+    assertThat(actualZipEntries).isEqualTo(expectedFiles);
   }
 
   @Test
