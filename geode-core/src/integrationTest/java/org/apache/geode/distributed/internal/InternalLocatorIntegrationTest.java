@@ -17,6 +17,7 @@ package org.apache.geode.distributed.internal;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -129,6 +130,21 @@ public class InternalLocatorIntegrationTest {
         distributedSystemProperties, hostnameForClients, workingDirectory);
 
     internalLocator.stop();
+
+    assertThat(InternalLocator.hasLocator()).isFalse();
+  }
+
+  @Test
+  public void startLocatorFail() throws Exception {
+    Properties properties = new Properties();
+    // use this property to induce a NPE when calling
+    // InternalLocator.startConfigurationPersistenceService
+    // so this would demonstrate that we would throw the exception when we encounter an error when
+    // calling InternalLocator.startConfigurationPersistenceService
+    properties.put("load-cluster-configuration-from-dir", "true");
+    assertThatThrownBy(() -> InternalLocator.startLocator(port, logFile, logWriter,
+        securityLogWriter, bindAddress, true,
+        properties, hostnameForClients, workingDirectory)).isInstanceOf(RuntimeException.class);
 
     assertThat(InternalLocator.hasLocator()).isFalse();
   }
