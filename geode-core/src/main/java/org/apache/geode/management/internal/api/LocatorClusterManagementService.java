@@ -72,6 +72,7 @@ import org.apache.geode.management.internal.configuration.validators.MemberValid
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
+import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -374,16 +375,34 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
-    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>();
-    result.setResult(executorManager.submit(op));
-    result.setUri(op.getUri());
-    result.setStatus(ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
-    return result;
+    CompletableFuture<V> future = executorManager.submit(op).getFuture();
+
+    ClusterManagementResult result = new ClusterManagementResult(
+        ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
+    return new ClusterManagementOperationResult<>(result, future);
   }
 
   /**
-   * this is intended for use by the rest controller. for Java usage, please use the Future returned
-   * by startOperation().getResult().
+   * this is intended for use by the REST controller. for Java usage, please use
+   * {@link #startOperation(ClusterManagementOperation)}
+   */
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op, String uri) {
+    OperationInstance<A, V> operationInstance = executorManager.submit(op);
+
+    ClusterManagementResult result = new ClusterManagementResult(
+        ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
+
+    String opId = operationInstance.getId();
+    String instUri = uri + "/" + opId;
+    result.setUri(instUri);
+
+    return new ClusterManagementOperationResult<>(result, operationInstance.getFuture());
+  }
+
+  /**
+   * this is intended for use by the REST controller. for Java usage, please use
+   * {@link ClusterManagementOperationResult#getResult()}
    */
   public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
@@ -399,7 +418,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
       try {
         result.setResult(status.get());
         result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
-      } catch (InterruptedException | ExecutionException e) {
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(e);
+      } catch (ExecutionException e) {
         throw new RuntimeException(e);
       }
     }

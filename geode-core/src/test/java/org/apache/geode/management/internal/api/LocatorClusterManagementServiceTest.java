@@ -68,6 +68,7 @@ import org.apache.geode.management.internal.configuration.validators.Configurati
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
+import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 
 public class LocatorClusterManagementServiceTest {
@@ -328,11 +329,10 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void startOperation() {
     final String URI = "test/uri";
-    ClusterManagementOperation<?> operation = mock(ClusterManagementOperation.class);
-    when(operation.getUri()).thenReturn(URI);
-    ClusterManagementOperationResult<?> result =
-        service.startOperation(operation);
-    assertThat(result.getUri()).isEqualTo(URI);
+    ClusterManagementOperation<JsonSerializable> operation = mock(ClusterManagementOperation.class);
+    when(executorManager.submit(any())).thenReturn(new OperationInstance<>(null, "42", operation));
+    ClusterManagementOperationResult<?> result = service.startOperation(operation, URI);
+    assertThat(result.getUri()).isEqualTo(URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).isEqualTo("async operation started");
   }

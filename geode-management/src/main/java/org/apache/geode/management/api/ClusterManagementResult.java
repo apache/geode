@@ -73,6 +73,13 @@ public class ClusterManagementResult {
     this.statusMessage = message;
   }
 
+  public ClusterManagementResult(ClusterManagementResult copyFrom) {
+    this.memberStatuses = copyFrom.memberStatuses;
+    this.statusCode = copyFrom.statusCode;
+    this.statusMessage = copyFrom.statusMessage;
+    this.uri = copyFrom.uri;
+  }
+
   public void addMemberStatus(String member, boolean success, String message) {
     addMemberStatus(new RealizationResult().setMemberName(member)
         .setSuccess(success).setMessage(message));

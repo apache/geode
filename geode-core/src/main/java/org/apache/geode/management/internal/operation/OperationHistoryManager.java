@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.collections.map.LRUMap;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 
@@ -53,10 +54,10 @@ public class OperationHistoryManager {
     return ret;
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> CompletableFuture<V> save(
-      A operation,
-      CompletableFuture<V> future) {
-    final String opId = operation.getId();
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> save(
+      OperationInstance<A, V> operationInstance) {
+    String opId = operationInstance.getId();
+    CompletableFuture<V> future = operationInstance.getFuture();
 
     inProgressHistory.put(opId, future);
 
@@ -68,6 +69,32 @@ public class OperationHistoryManager {
     // we want to replace only if still in in-progress.
     inProgressHistory.replace(opId, future, newFuture);
 
-    return newFuture;
+    return new OperationInstance<>(newFuture, opId, operationInstance.getOperation());
+  }
+
+  public static final class OperationInstance<A extends ClusterManagementOperation<V>, V extends JsonSerializable>
+      implements Identifiable<String> {
+    private final CompletableFuture<V> future;
+    private final String opId;
+    private final A operation;
+
+    public OperationInstance(CompletableFuture<V> future, String opId, A operation) {
+      this.future = future;
+      this.opId = opId;
+      this.operation = operation;
+    }
+
+    @Override
+    public String getId() {
+      return opId;
+    }
+
+    public CompletableFuture<V> getFuture() {
+      return future;
+    }
+
+    public A getOperation() {
+      return operation;
+    }
   }
 }

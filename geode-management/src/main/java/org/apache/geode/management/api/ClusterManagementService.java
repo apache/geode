@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.api;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -66,6 +68,15 @@ public interface ClusterManagementService extends AutoCloseable {
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
+  /**
+   * This method will launch a cluster management operation asynchronously.
+   *
+   * @param op the operation type plus any parameters.
+   * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
+   * @param <V> the return type of the operation
+   * @return a {@link ClusterManagementOperationResult} holding a {@link CompletableFuture} (if the
+   *         operation was launched successfully) or an error code otherwise.
+   */
   <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op);
 

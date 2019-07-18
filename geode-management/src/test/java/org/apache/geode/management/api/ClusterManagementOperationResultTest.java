@@ -34,17 +34,17 @@ public class ClusterManagementOperationResultTest {
 
   @Test
   public void serialize() throws Exception {
-    ClusterManagementOperationResult<TestResult> result =
-        new ClusterManagementOperationResult<>();
-    result.setStatus(true, "success");
     CompletableFuture<TestResult> operationResult =
         new CompletableFuture<>();
-    result.setResult(operationResult);
+    ClusterManagementResult result1 = new ClusterManagementResult();
+    result1.setStatus(true, "success!!");
+    ClusterManagementOperationResult<TestResult> result =
+        new ClusterManagementOperationResult<>(result1, operationResult);
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementOperationResult<TestResult> value =
-        mapper.readValue(json, ClusterManagementOperationResult.class);
-    assertThat(value.getResult()).isNull();
+    ClusterManagementResult value =
+        mapper.readValue(json, ClusterManagementResult.class);
+    assertThat(value.getStatusMessage()).isEqualTo("success!!");
   }
 
   static class TestResult implements JsonSerializable {

@@ -14,23 +14,24 @@
  */
 package org.apache.geode.management.api;
 
-import org.apache.geode.lang.Identifiable;
 
 /**
+ * Geode modules, extensions, or user code can define cluster management operations to use with
+ * {@link ClusterManagementService#startOperation(ClusterManagementOperation)} by subclassing this
+ * abstract base class and adding any necessary parameters. For example, a CompactDiskStore
+ * operation might need a parameter for the name of the disk store to compact.
+ *
+ * The implementation of the operation is not to be included here; instead it must be registered
+ * using OperationManager.registerOperation on the locator.
  *
  * @param <V> the result type of the operation
  */
-
-public abstract class ClusterManagementOperation<V extends JsonSerializable>
-    implements Identifiable<String>, RestfulEndpoint {
-  private String id;
-
-  @Override
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+@SuppressWarnings("unused")
+public interface ClusterManagementOperation<V extends JsonSerializable> {
+  /**
+   * must match the REST controller's RequestMapping
+   *
+   * @return the portion after /management/v2, e.g. /operations/name
+   */
+  String getEndpoint();
 }

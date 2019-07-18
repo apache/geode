@@ -15,8 +15,6 @@
 package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -24,6 +22,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
@@ -40,33 +40,33 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void getInProgStatus() {
-    CompletableFuture future = new CompletableFuture();
-    CompletableFuture future2 = history.save(op("1"), future);
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFuture();
     assertThat(history.getStatus("1")).isSameAs(future2);
   }
 
   @Test
   public void getCompletedBeforeStatus() {
-    CompletableFuture future = new CompletableFuture();
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
     future.complete(null);
-    history.save(op("1"), future);
+    history.save(op("1", future));
     assertThat(history.getStatus("1")).isSameAs(future);
   }
 
 
   @Test
   public void getCompletedAfterStatus() {
-    CompletableFuture future = new CompletableFuture();
-    history.save(op("1"), future);
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    history.save(op("1", future));
     future.complete(null);
     assertThat(history.getStatus("1")).isSameAs(future);
   }
 
   @Test
   public void getLotsOfInProgStatus() {
-    history.save(op("1"), new CompletableFuture());
-    history.save(op("2"), new CompletableFuture());
-    history.save(op("3"), new CompletableFuture());
+    history.save(op("1", new CompletableFuture<>()));
+    history.save(op("2", new CompletableFuture<>()));
+    history.save(op("3", new CompletableFuture<>()));
     assertThat(history.getStatus("1")).isNotNull();
     assertThat(history.getStatus("2")).isNotNull();
     assertThat(history.getStatus("3")).isNotNull();
@@ -74,14 +74,14 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void getLotsOfCompleted() {
-    CompletableFuture future1 = new CompletableFuture();
+    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
     future1.complete(null);
-    history.save(op("1"), future1);
-    CompletableFuture future2 = new CompletableFuture();
-    history.save(op("2"), future2);
+    history.save(op("1", future1));
+    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
+    history.save(op("2", future2));
     future2.complete(null);
-    CompletableFuture future3 = new CompletableFuture();
-    history.save(op("3"), future3);
+    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
+    history.save(op("3", future3));
     future3.complete(null);
     assertThat(history.getStatus("1")).isNull();
     assertThat(history.getStatus("2")).isNotNull();
@@ -90,22 +90,22 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void getSomeCompleted() {
-    CompletableFuture future1 = new CompletableFuture();
+    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
     future1.complete(null);
-    history.save(op("1"), future1);
-    CompletableFuture future2 = new CompletableFuture();
-    history.save(op("2"), future2);
+    history.save(op("1", future1));
+    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
+    history.save(op("2", future2));
     future2.complete(null);
-    CompletableFuture future3 = new CompletableFuture();
-    history.save(op("3"), future3);
+    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
+    history.save(op("3", future3));
     assertThat(history.getStatus("1")).isNotNull();
     assertThat(history.getStatus("2")).isNotNull();
     assertThat(history.getStatus("3")).isNotNull();
   }
 
-  private static ClusterManagementOperation op(String id) {
-    ClusterManagementOperation op = mock(ClusterManagementOperation.class);
-    when(op.getId()).thenReturn(id);
-    return op;
+  private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
+      String id, CompletableFuture<V> future) {
+    A op = null;
+    return new OperationInstance<>(future, id, op);
   }
 }

@@ -21,22 +21,37 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.internal.Dormant;
 
+/**
+ * This is normally returned by
+ * {@link ClusterManagementService#startOperation(ClusterManagementOperation)} to convey status of
+ * launching the async operation, and if successful, the {@link CompletableFuture} to access the
+ * status
+ * and result of the async operation.
+ *
+ * @param <V> the type of the operation's result
+ */
 @Experimental
 public class ClusterManagementOperationResult<V extends JsonSerializable>
     extends ClusterManagementResult {
-  public ClusterManagementOperationResult() {}
-
   @JsonIgnore
-  private CompletableFuture<V> operationResult;
+  private final CompletableFuture<V> operationResult;
 
+  /**
+   * normally called by {@link ClusterManagementService#startOperation(ClusterManagementOperation)}
+   */
+  public ClusterManagementOperationResult(ClusterManagementResult result,
+      CompletableFuture<V> operationResult) {
+    super(result);
+    this.operationResult = operationResult;
+  }
+
+  /**
+   * @return the future result of the async operation
+   */
   @JsonIgnore
   public CompletableFuture<V> getResult() {
     if (operationResult instanceof Dormant)
       ((Dormant) operationResult).wakeUp();
     return operationResult;
-  }
-
-  public void setResult(CompletableFuture<V> operationResult) {
-    this.operationResult = operationResult;
   }
 }

@@ -22,12 +22,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
-import org.apache.logging.log4j.util.Strings;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
@@ -51,14 +50,10 @@ public class OperationManager implements AutoCloseable {
     performers.put(operationClass, operationPerformer);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> CompletableFuture<V> submit(
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> submit(
       A op) {
-    if (!Strings.isBlank(op.getId())) {
-      throw new IllegalArgumentException(
-          String.format("Operation type %s should not supply its own id",
-              op.getClass().getSimpleName()));
-    }
-    op.setId(UUID.randomUUID().toString());
+    String opId = UUID.randomUUID().toString();
+
     Function<A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("Operation type %s is not supported",
@@ -68,8 +63,10 @@ public class OperationManager implements AutoCloseable {
     CompletableFuture<V> future =
         CompletableFuture.supplyAsync(() -> performer.apply(op), executor);
 
+    OperationInstance<A, V> inst = new OperationInstance<>(future, opId, op);
+
     // save the Future so we can check on it later
-    return historyManager.save(op, future);
+    return historyManager.save(inst);
   }
 
   @SuppressWarnings("unchecked")

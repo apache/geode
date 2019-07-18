@@ -116,11 +116,11 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
-    final ClusterManagementOperationResult<V> result;
+    final ClusterManagementResult result;
 
     // make the REST call to start the operation
     result = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
-        ClusterManagementOperationResult.class).getBody();
+        ClusterManagementResult.class).getBody();
 
     // our restTemplate requires the url to be modified to start from "/v2"
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
@@ -128,9 +128,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
     // complete the future by polling the check-status REST endpoint
     CompletableFutureProxy<V> operationResult =
         new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool);
-    result.setResult(operationResult);
 
-    return result;
+    return new ClusterManagementOperationResult<>(result, operationResult);
   }
 
   private static String stripPrefix(String prefix, String s) {
