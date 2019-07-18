@@ -14,31 +14,29 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
-import org.apache.geode.cache.query.Aggregator;
-import org.apache.geode.cache.query.QueryService;
+import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Computes the count of the non distinct rows for replicated & PR based queries.
- */
-public class Count implements Aggregator {
-  private int count = 0;
+import org.junit.Before;
+import org.junit.Test;
 
-  int getCount() {
-    return count;
+public class AvgDistinctTest extends DistinctAggregatorTest {
+
+  @Before
+  public void setUp() {
+    distinctAggregator = new AvgDistinct();
   }
 
-  @Override
-  public void init() {}
+  @Test
+  public void terminateShouldCorrectlyComputeAverageUponDistinctAccumulatedValues() {
+    distinctAggregator.accumulate(5);
+    distinctAggregator.accumulate(5);
+    distinctAggregator.accumulate(10);
+    distinctAggregator.accumulate(10);
+    distinctAggregator.accumulate(15);
+    distinctAggregator.accumulate(15);
 
-  @Override
-  public void accumulate(Object value) {
-    if (value != null && value != QueryService.UNDEFINED) {
-      ++this.count;
-    }
-  }
-
-  @Override
-  public Object terminate() {
-    return count;
+    Object result = distinctAggregator.terminate();
+    assertThat(result).isInstanceOf(Number.class);
+    assertThat(((Number) result).floatValue()).isEqualTo(10);
   }
 }

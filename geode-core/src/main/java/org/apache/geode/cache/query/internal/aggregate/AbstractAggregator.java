@@ -17,14 +17,13 @@ package org.apache.geode.cache.query.internal.aggregate;
 import org.apache.geode.cache.query.Aggregator;
 
 /**
- * Abstract Aggregator class providing support for downcasting the result
- *
- *
+ * Abstract Aggregator class providing support for down casting the result.
  */
 public abstract class AbstractAggregator implements Aggregator {
 
   public static Number downCast(double value) {
     Number retVal;
+
     if (value % 1 == 0) {
       long longValue = (long) value;
       if (longValue <= Integer.MAX_VALUE && longValue >= Integer.MIN_VALUE) {
@@ -39,6 +38,7 @@ public abstract class AbstractAggregator implements Aggregator {
         retVal = Double.valueOf(value);
       }
     }
+
     return retVal;
   }
 }

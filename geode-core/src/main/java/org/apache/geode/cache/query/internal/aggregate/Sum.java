@@ -18,12 +18,16 @@ import org.apache.geode.cache.query.QueryService;
 
 /**
  * Computes the sum for replicated & PR based queries.
- *
- *
  */
 public class Sum extends AbstractAggregator {
-
   private double result = 0;
+
+  double getResult() {
+    return result;
+  }
+
+  @Override
+  public void init() {}
 
   @Override
   public void accumulate(Object value) {
@@ -31,11 +35,6 @@ public class Sum extends AbstractAggregator {
       Number number = (Number) value;
       result += number.doubleValue();
     }
-  }
-
-  @Override
-  public void init() {
-
   }
 
   @Override

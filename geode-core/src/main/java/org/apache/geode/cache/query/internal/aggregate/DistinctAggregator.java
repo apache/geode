@@ -22,15 +22,20 @@ import org.apache.geode.cache.query.QueryService;
 /**
  * The class used to hold the distinct values. This will get instantiated on the bucket node as part
  * of distinct queries for sum, count, average.
- *
- *
  */
 public class DistinctAggregator extends AbstractAggregator {
   protected final Set<Object> distinct;
 
-  public DistinctAggregator() {
-    this.distinct = new HashSet<Object>();
+  Set<Object> getDistinct() {
+    return distinct;
   }
+
+  public DistinctAggregator() {
+    this.distinct = new HashSet<>();
+  }
+
+  @Override
+  public void init() {}
 
   @Override
   public void accumulate(Object value) {
@@ -40,14 +45,7 @@ public class DistinctAggregator extends AbstractAggregator {
   }
 
   @Override
-  public void init() {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
   public Object terminate() {
     return this.distinct;
   }
-
 }
