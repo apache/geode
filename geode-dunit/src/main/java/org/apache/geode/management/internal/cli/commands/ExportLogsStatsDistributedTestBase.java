@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,15 +29,15 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import com.google.common.collect.Sets;
-import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
@@ -53,6 +52,9 @@ public class ExportLogsStatsDistributedTestBase {
 
   @ClassRule
   public static GfshCommandRule connector = new GfshCommandRule();
+
+  @Rule
+  public TemporaryFolder tempFolderRule = new TemporaryFolder();
 
   protected static Set<String> expectedZipEntries = new HashSet<>();
   protected static MemberVM locator;
@@ -79,17 +81,11 @@ public class ExportLogsStatsDistributedTestBase {
     }
   }
 
-  @After
-  public void cleanZipFiles() throws Exception {
-    File zipPath = new File(Paths.get("").toAbsolutePath().normalize().toString());
-    Stream.of(zipPath.listFiles())
-        .filter(f -> f.getName().endsWith(".zip")).forEach(file -> file.delete());
-  }
-
   @Test
   public void testExportLogsAndStats() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs").statusIsSuccess();
+    String tempFolder = tempFolderRule.toString();
+    connector.executeAndAssertThat("export logs --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
@@ -107,7 +103,8 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportLogsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs --logs-only").statusIsSuccess();
+    String tempFolder = tempFolderRule.toString();
+    connector.executeAndAssertThat("export logs --logs-only --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
@@ -124,7 +121,9 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportStatsOnly() throws Exception {
     connectIfNeeded();
-    connector.executeAndAssertThat("export logs --stats-only").statusIsSuccess();
+    String tempFolder = tempFolderRule.toString();
+    connector.executeAndAssertThat("export logs --stats-only --dir=" + tempFolder)
+        .statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
 
