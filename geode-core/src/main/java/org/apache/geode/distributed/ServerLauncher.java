@@ -1025,7 +1025,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         ? () -> logStartCompleted(startTime) : startupCompletionAction;
 
     ((InternalResourceManager) cache.getResourceManager())
-        .runWhenStartupTasksComplete(afterStartup);
+        .runWhenStartupTasksComplete(afterStartup, null);
   }
 
   /**

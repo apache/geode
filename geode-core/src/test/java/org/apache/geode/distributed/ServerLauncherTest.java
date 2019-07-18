@@ -16,6 +16,7 @@ package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -352,6 +353,8 @@ public class ServerLauncherTest {
 
     serverLauncher.startCacheServer(cache, 0L);
 
-    verify(internalResourceManager).runWhenStartupTasksComplete(startupCompletionAction);
+    // TODO: Aaron: Remove isNull()
+    verify(internalResourceManager).runWhenStartupTasksComplete(startupCompletionAction,
+        isNull());
   }
 }
