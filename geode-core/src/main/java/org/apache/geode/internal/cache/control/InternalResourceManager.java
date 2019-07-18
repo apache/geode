@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -617,8 +618,14 @@ public class InternalResourceManager implements ResourceManager {
     startupTasks.add(startupTask);
   }
 
-  public void runWhenStartupTasksComplete(Runnable runnable) {
-    CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0])).thenRun(runnable);
+  public void runWhenStartupTasksComplete(Runnable runnable, Consumer<Throwable> exceptionAction) {
+    CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0]))
+        .thenRun(runnable)
+        .exceptionally((throwable) -> {
+          exceptionAction.accept(throwable);
+          return null;
+        });
+
     startupTasks.clear();
   }
 }
