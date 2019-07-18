@@ -93,7 +93,7 @@ public class LocatorMembershipListenerTest {
   private void joinLocatorsDistributorThread() throws InterruptedException {
     Set<Thread> threads = Thread.getAllStackTraces().keySet();
     Optional<Thread> distributorThread = threads.stream()
-        .filter(t -> WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME.equals(t.getName()))
+        .filter(t -> t.getName().startsWith(WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME))
         .findFirst();
 
     if (distributorThread.isPresent()) {

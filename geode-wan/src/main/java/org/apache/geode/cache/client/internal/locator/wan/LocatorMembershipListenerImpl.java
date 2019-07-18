@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ThreadFactory;
 
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +31,7 @@ import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.logging.LoggingThreadFactory;
 
 /**
  * An implementation of
@@ -113,9 +115,9 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     // Launch Locators Distributor thread.
     Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(config.getMemberTimeout(),
         tcpClient, localLocatorId, localCopy, locator, distributedSystemId);
-    Thread distributeLocatorsThread =
-        new Thread(distributeLocatorsRunnable, WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME);
-    distributeLocatorsThread.setDaemon(true);
+    ThreadFactory threadFactory =
+        new LoggingThreadFactory(WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+    Thread distributeLocatorsThread = threadFactory.newThread(distributeLocatorsRunnable);
     distributeLocatorsThread.start();
   }
 
