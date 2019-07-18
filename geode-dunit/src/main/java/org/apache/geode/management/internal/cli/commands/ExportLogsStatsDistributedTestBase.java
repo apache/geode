@@ -84,7 +84,7 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportLogsAndStats() throws Exception {
     connectIfNeeded();
-    String tempFolder = tempFolderRule.toString();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
     connector.executeAndAssertThat("export logs --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
@@ -103,7 +103,7 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportLogsOnly() throws Exception {
     connectIfNeeded();
-    String tempFolder = tempFolderRule.toString();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
     connector.executeAndAssertThat("export logs --logs-only --dir=" + tempFolder).statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
     Set<String> actualZipEntries = getZipEntries(zipPath);
@@ -121,7 +121,7 @@ public class ExportLogsStatsDistributedTestBase {
   @Test
   public void testExportStatsOnly() throws Exception {
     connectIfNeeded();
-    String tempFolder = tempFolderRule.toString();
+    String tempFolder = tempFolderRule.getRoot().getAbsolutePath();
     connector.executeAndAssertThat("export logs --stats-only --dir=" + tempFolder)
         .statusIsSuccess();
     String zipPath = getZipPathFromCommandResult(connector.getGfshOutput());
