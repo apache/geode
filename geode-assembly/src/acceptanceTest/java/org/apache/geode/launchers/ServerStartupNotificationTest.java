@@ -18,17 +18,10 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.TimeUnit;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,6 +29,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
+import org.apache.geode.distributed.ServerLauncherCacheProvider;
+import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
 public class ServerStartupNotificationTest {
@@ -48,6 +43,10 @@ public class ServerStartupNotificationTest {
 
   @Rule
   public TestName testName = new TestName();
+
+  @Rule
+  public ServiceJarRule serviceJarRule = new ServiceJarRule("ServerLauncherCacheProvider.jar",
+      ServerLauncherCacheProvider.class.getName(), CacheProviderWithFailingStartupTask.class);
 
   private File serverFolder;
   private String serverName;
@@ -84,15 +83,12 @@ public class ServerStartupNotificationTest {
   }
 
   @Test
-  public void startupWithFailingAsyncTask() throws IOException {
-    Path cacheProviderJarPath = newJarForCacheProvider(CacheProviderWithFailingStartupTask.class,
-            "ServerLauncherCacheProvider.jar");
-
+  public void startupWithFailingAsyncTask() {
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + serverFolder.getAbsolutePath(),
-        "--classpath=" + cacheProviderJarPath.toAbsolutePath(),
+        "--classpath=" + serviceJarRule.absolutePath(),
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
@@ -100,41 +96,10 @@ public class ServerStartupNotificationTest {
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
     Pattern expectedLogLine =
-        Pattern.compile("^\\[error .*].*Server " + serverName + " startup completed in \\d+ ms with error: ");
+        Pattern.compile(
+            "^\\[error .*].*Server " + serverName + " startup completed in \\d+ ms with error: ");
     await().untilAsserted(() -> assertThat(Files.lines(logFile))
         .as("Log file " + logFile + " includes line matching " + expectedLogLine)
         .anyMatch(expectedLogLine.asPredicate()));
-  }
-
-  private Path newJarForCacheProvider(Class clazz, String jarName)
-      throws IOException {
-    File jar = temporaryFolder.newFile(jarName);
-
-    String className = clazz.getName();
-    String classAsPath = className.replace('.', '/') + ".class";
-    InputStream stream = clazz.getClassLoader().getResourceAsStream(classAsPath);
-    byte[] bytes = IOUtils.toByteArray(stream);
-    try (FileOutputStream out = new FileOutputStream(jar)) {
-      JarOutputStream jarOutputStream = new JarOutputStream(out);
-
-      // Add the class file to the JAR file
-      JarEntry classEntry = new JarEntry(classAsPath);
-      classEntry.setTime(System.currentTimeMillis());
-      jarOutputStream.putNextEntry(classEntry);
-      jarOutputStream.write(bytes);
-      jarOutputStream.closeEntry();
-
-      String metaInfPath = "META-INF/services/org.apache.geode.distributed.ServerLauncherCacheProvider";
-
-      JarEntry metaInfEntry = new JarEntry(metaInfPath);
-      metaInfEntry.setTime(System.currentTimeMillis());
-      jarOutputStream.putNextEntry(metaInfEntry);
-      jarOutputStream.write(className.getBytes());
-      jarOutputStream.closeEntry();
-
-      jarOutputStream.close();
-    }
-
-    return jar.toPath();
   }
 }
