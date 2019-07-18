@@ -14,8 +14,8 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME;
-import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
+import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATORS_DISTRIBUTOR_THREAD_NAME;
+import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -93,7 +93,7 @@ public class LocatorMembershipListenerTest {
   private void joinLocatorsDistributorThread() throws InterruptedException {
     Set<Thread> threads = Thread.getAllStackTraces().keySet();
     Optional<Thread> distributorThread = threads.stream()
-        .filter(t -> t.getName().startsWith(WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME))
+        .filter(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME))
         .findFirst();
 
     if (distributorThread.isPresent()) {
@@ -275,7 +275,7 @@ public class LocatorMembershipListenerTest {
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
     joinLocatorsDistributorThread();
 
-    verify(tcpClient, times(WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
+    verify(tcpClient, times(LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
         locator3Site1.getHost(),
         new LocatorJoinMessage(1, joiningLocator, locator1Site1, ""),
         DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
@@ -350,7 +350,7 @@ public class LocatorMembershipListenerTest {
     verify(tcpClient).requestToServer(locator1Site3.getHost(),
         new LocatorJoinMessage(1, joiningLocator, locator1Site1, ""),
         DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
-    verify(tcpClient, times(WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
+    verify(tcpClient, times(LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
         joiningLocator.getHost(),
         new LocatorJoinMessage(3, locator1Site3, locator1Site1, ""),
         DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);

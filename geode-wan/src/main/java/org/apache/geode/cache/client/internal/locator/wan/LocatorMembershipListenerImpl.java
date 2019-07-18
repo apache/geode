@@ -30,7 +30,6 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadFactory;
 
@@ -42,9 +41,8 @@ import org.apache.geode.internal.logging.LoggingThreadFactory;
  */
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
   private static final Logger logger = LogService.getLogger();
-  static final String WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
-  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = SystemPropertyHelper
-      .getProductIntegerProperty("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS").orElse(3);
+  static final int LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = 3;
+  static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
   private static final String LISTENER_FAILURE_MESSAGE =
       "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts";
   private static final String LISTENER_FINAL_FAILURE_MESSAGE =
@@ -117,7 +115,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(config.getMemberTimeout(),
         tcpClient, localLocatorId, localCopy, locator, distributedSystemId);
     ThreadFactory threadFactory =
-        new LoggingThreadFactory(WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+        new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
     Thread distributeLocatorsThread = threadFactory.newThread(distributeLocatorsRunnable);
     distributeLocatorsThread.start();
   }
@@ -258,7 +256,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
         return true;
       } catch (Exception exception) {
-        if (retryAttempt == WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS) {
+        if (retryAttempt == LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS) {
           logger.warn(LISTENER_FINAL_FAILURE_MESSAGE,
               new Object[] {advertisedLocator.getHostName(), advertisedLocator.getPort(),
                   targetLocator.getHostName(), targetLocator.getPort(), retryAttempt, exception});
@@ -293,7 +291,7 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
 
       // Retry failed messages and remove those that succeed.
       if (!failedMessages.isEmpty()) {
-        for (int attempt = 1; attempt <= WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; attempt++) {
+        for (int attempt = 1; attempt <= LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS; attempt++) {
 
           for (Map.Entry<DistributionLocatorId, Set<LocatorJoinMessage>> entry : failedMessages
               .entrySet()) {
