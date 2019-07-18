@@ -16,7 +16,8 @@ package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -27,6 +28,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -341,7 +343,7 @@ public class ServerLauncherTest {
   public void startCacheServerPassesStartupCompletionActionToResourceManager() throws IOException {
     Runnable startupCompletionAction = mock(Runnable.class);
     ServerLauncher serverLauncher = new Builder()
-        .setStartupCompletedAction(startupCompletionAction)
+        .setStartupCompletionAction(startupCompletionAction)
         .build();
 
     Cache cache = mock(Cache.class);
@@ -353,8 +355,28 @@ public class ServerLauncherTest {
 
     serverLauncher.startCacheServer(cache, 0L);
 
-    // TODO: Aaron: Remove isNull()
-    verify(internalResourceManager).runWhenStartupTasksComplete(startupCompletionAction,
-        isNull());
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(same(startupCompletionAction), any());
+  }
+
+  @Test
+  public void startCacheServerPassesStartupExceptionActionToResourceManager() throws IOException {
+    @SuppressWarnings("unchecked")
+    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
+    ServerLauncher serverLauncher = new Builder()
+        .setStartupExceptionAction(startupExceptionAction)
+        .build();
+
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+
+    when(cache.addCacheServer()).thenReturn(cacheServer);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    serverLauncher.startCacheServer(cache, 0L);
+
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(any(), same(startupExceptionAction));
   }
 }
