@@ -68,7 +68,6 @@ org/apache/geode/internal/shared/TCPSocketOptions
 org/apache/geode/internal/statistics/platform/LinuxProcFsStatistics$CPU
 org/apache/geode/internal/tcp/VersionedByteBufferInputStream
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
-org/apache/geode/management/api/ClusterManagementOperation
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category
 org/apache/geode/management/internal/cli/exceptions/UserErrorException
 org/apache/geode/management/internal/cli/json/AbstractJSONFormatter$PreventReserializationModule
