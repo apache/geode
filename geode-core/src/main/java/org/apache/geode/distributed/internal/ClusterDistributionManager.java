@@ -2551,6 +2551,10 @@ public class ClusterDistributionManager implements DistributionManager {
     if (logger.isDebugEnabled()) {
       logger.debug("Received message '{}' from <{}>", message, message.getSender());
     }
+    if (message instanceof StartupMessage) {
+      logger
+          .info("DAN DEBUG: ClusterDistributionManager.handleIncomingDMsg " + message.getSender());
+    }
     scheduleIncomingMessage(message);
   }
 
@@ -2859,6 +2863,10 @@ public class ClusterDistributionManager implements DistributionManager {
    * Schedule a given message appropriately, depending upon its executor kind.
    */
   private void scheduleIncomingMessage(DistributionMessage message) {
+    if (message instanceof StartupMessage) {
+      logger.info("DAN DEBUG: ClusterDistributionManager.scheduleIncomingMessage START "
+          + message.getSender());
+    }
     /*
      * Potential race condition between starting up and getting other distribution manager ids -- DM
      * will only be initialized upto the point at which it called startThreads

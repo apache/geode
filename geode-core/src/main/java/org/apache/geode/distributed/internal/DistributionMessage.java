@@ -339,6 +339,9 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Scheduled action to take when on this message when we are ready to process it.
    */
   protected void scheduleAction(final ClusterDistributionManager dm) {
+    if (this instanceof StartupMessage) {
+      logger.info("DAN DEBUG: StartupMessage.scheduleAction START " + getSender());
+    }
     if (logger.isTraceEnabled(LogMarker.DM_VERBOSE)) {
       logger.trace(LogMarker.DM_VERBOSE, "Processing '{}'", this);
     }
@@ -366,11 +369,15 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
       if (observer != null) {
         observer.beforeProcessMessage(dm, this);
       }
+      if (this instanceof StartupMessage) {
+        logger.info("DAN DEBUG: StartupMessage.scheduleAction CALLING PROCESS " + getSender());
+      }
       process(dm);
       if (observer != null) {
         observer.afterProcessMessage(dm, this);
       }
     } catch (CancelException e) {
+      logger.info("DAN DEBUG: StartupMessage.process CANCEL " + getSender());
       if (logger.isDebugEnabled()) {
         logger.debug("Cancelled caught processing {}: {}", this, e.getMessage(), e);
       }
@@ -404,6 +411,9 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    * Schedule this message's process() method in a thread determined by getExecutor()
    */
   protected void schedule(final ClusterDistributionManager dm) {
+    if (DistributionMessage.this instanceof StartupMessage) {
+      logger.info("DAN DEBUG: StartupMessage.schedule START " + getSender());
+    }
     boolean inlineProcess = INLINE_PROCESS
         && getProcessorType() == ClusterDistributionManager.SERIAL_EXECUTOR && !isPreciousThread();
 
@@ -421,6 +431,10 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     if (inlineProcess) {
       dm.getStats().incNumSerialThreads(1);
       try {
+        if (DistributionMessage.this instanceof StartupMessage) {
+          logger.info(
+              "DAN DEBUG: StartupMessage.schedule CALLING scheduleAction inline " + getSender());
+        }
         scheduleAction(dm);
       } finally {
         dm.getStats().incNumSerialThreads(-1);
@@ -430,6 +444,10 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
         getExecutor(dm).execute(new SizeableRunnable(this.getBytesRead()) {
           @Override
           public void run() {
+            if (DistributionMessage.this instanceof StartupMessage) {
+              logger.info("DAN DEBUG: StartupMessage.schedule CALLING scheduleAction in executor "
+                  + getSender());
+            }
             scheduleAction(dm);
           }
 

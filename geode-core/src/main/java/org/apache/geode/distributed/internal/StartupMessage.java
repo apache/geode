@@ -172,6 +172,8 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
    */
   @Override
   protected void process(ClusterDistributionManager dm) {
+
+    logger.info("DAN DEBUG: StartupMessage.process START " + getSender());
     String rejectionMessage = null;
     boolean isAdminDM = false;
     boolean replySent = false;
@@ -270,6 +272,7 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
         logger.debug("Received StartupMessage from a member with version: {}, my version is:{}",
             this.version, GemFireVersion.getGemFireVersion());
       }
+      logger.info("DAN DEBUG: StartupMessage.process SENDING REPONSE " + getSender());
       dm.putOutgoing(m);
       replySent = true;
       if (rejectionMessage != null) {
@@ -282,9 +285,11 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
       }
 
     } catch (RuntimeException e) {
+      logger.info("DAN DEBUG: StartupMessage.process EXCEPTION " + getSender());
       ReplyMessage.send(getSender(), replyProcessorId, new ReplyException(e), dm);
       replySent = true;
     } finally {
+      logger.info("DAN DEBUG: StartupMessage.process FINALLY " + getSender());
       if (!replySent && !dm.shutdownInProgress()) {
         ReplyMessage.send(getSender(), replyProcessorId, new ReplyException(
             new IllegalStateException("Unknown cause for response not being sent")), dm);
