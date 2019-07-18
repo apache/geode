@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.function.Consumer;
 
 import joptsimple.OptionException;
 import org.junit.Before;
@@ -886,7 +887,7 @@ public class ServerLauncherBuilderTest {
   public void setStartupCompletionActionReturnsBuilderInstance() {
     Builder builder = new Builder();
 
-    assertThat(builder.setStartupCompletedAction(null)).isSameAs(builder);
+    assertThat(builder.setStartupCompletionAction(null)).isSameAs(builder);
   }
 
   @Test
@@ -894,9 +895,32 @@ public class ServerLauncherBuilderTest {
     Runnable myRunnable = () -> {
     };
     Builder builder = new Builder();
-    builder.setStartupCompletedAction(myRunnable);
+    builder.setStartupCompletionAction(myRunnable);
     assertThat(builder.getStartupCompletionAction())
         .isSameAs(myRunnable);
+
+  }
+
+  @Test
+  public void getStartupExceptionActionReturnsNullByDefault() {
+    assertThat(new Builder().getStartupExceptionAction()).isNull();
+  }
+
+  @Test
+  public void setStartupExceptionActionReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setStartupExceptionAction(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setStartupExceptionActionUsesValue() {
+    Consumer<Throwable> myThrowable = (throwable) -> {
+    };
+    Builder builder = new Builder();
+    builder.setStartupExceptionAction(myThrowable);
+    assertThat(builder.getStartupExceptionAction())
+        .isSameAs(myThrowable);
 
   }
 }

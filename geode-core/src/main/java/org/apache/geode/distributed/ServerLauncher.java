@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -238,6 +239,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   private final ServerControllerParameters controllerParameters;
   private final Runnable startupCompletionAction;
+  private final Consumer<Throwable> startupExceptionAction;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -319,6 +321,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     socketBufferSize = builder.getSocketBufferSize();
     controllerParameters = new ServerControllerParameters();
     startupCompletionAction = builder.getStartupCompletionAction();
+    startupExceptionAction = builder.getStartupExceptionAction();
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
@@ -349,11 +352,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
         .withMessageTimeToLive(messageTimeToLive)
         .withHostnameForClients(hostNameForClients)
         .withDisableDefaultServer(disableDefaultServer);
-  }
-
-  private void logStartCompleted(long startTime) {
-    long startupDuration = System.currentTimeMillis() - startTime;
-    log.info("Server {} startup completed in {} ms", memberName, startupDuration);
   }
 
   /**
@@ -1024,8 +1022,22 @@ public class ServerLauncher extends AbstractLauncher<String> {
     Runnable afterStartup = startupCompletionAction == null
         ? () -> logStartCompleted(startTime) : startupCompletionAction;
 
+    Consumer<Throwable> exceptionAction = startupExceptionAction == null
+        ? (throwable) -> logStartCompletedWithError(startTime, throwable) : startupExceptionAction;
+
     ((InternalResourceManager) cache.getResourceManager())
-        .runWhenStartupTasksComplete(afterStartup, null);
+        .runWhenStartupTasksComplete(afterStartup, exceptionAction);
+  }
+
+  private void logStartCompleted(long startTime) {
+    long startupDuration = System.currentTimeMillis() - startTime;
+    log.info("Server {} startup completed in {} ms", memberName, startupDuration);
+  }
+
+  private void logStartCompletedWithError(long startTime, Throwable throwable) {
+    long startupDuration = System.currentTimeMillis() - startTime;
+    log.error("Server {} startup completed in {} ms with error: ", memberName, startupDuration,
+        throwable);
   }
 
   /**
@@ -1438,6 +1450,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer socketBufferSize;
     private Integer maxThreads;
     private Runnable startupCompletionAction;
+    private Consumer<Throwable> startupExceptionAction;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2491,7 +2504,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @param startupCompletionAction the action to run
      * @return this builder
      */
-    Builder setStartupCompletedAction(Runnable startupCompletionAction) {
+    Builder setStartupCompletionAction(Runnable startupCompletionAction) {
       this.startupCompletionAction = startupCompletionAction;
       return this;
     }
@@ -2503,6 +2516,26 @@ public class ServerLauncher extends AbstractLauncher<String> {
      */
     Runnable getStartupCompletionAction() {
       return startupCompletionAction;
+    }
+
+    /**
+     * Sets the action to run when server startup completes with errors.
+     *
+     * @param startupExceptionAction the action to run
+     * @return this builder
+     */
+    Builder setStartupExceptionAction(Consumer<Throwable> startupExceptionAction) {
+      this.startupExceptionAction = startupExceptionAction;
+      return this;
+    }
+
+    /**
+     * Gets the action to run when server startup completed with errors.
+     *
+     * @return the action to run
+     */
+    Consumer<Throwable> getStartupExceptionAction() {
+      return this.startupExceptionAction;
     }
   }
 
