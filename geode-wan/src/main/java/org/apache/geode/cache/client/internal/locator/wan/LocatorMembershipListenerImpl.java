@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.internal.lang.SystemPropertyHelper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThreadFactory;
 
@@ -42,8 +43,8 @@ import org.apache.geode.internal.logging.LoggingThreadFactory;
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
   private static final Logger logger = LogService.getLogger();
   static final String WAN_LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
-  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS =
-      Integer.getInteger("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS", 3);
+  static final int WAN_LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = SystemPropertyHelper
+      .getProductIntegerProperty("WANLocator.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS").orElse(3);
   private static final String LISTENER_FAILURE_MESSAGE =
       "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts";
   private static final String LISTENER_FINAL_FAILURE_MESSAGE =
