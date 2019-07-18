@@ -164,6 +164,7 @@ public class CompactDiskStoreCommand extends GfshCommand {
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
     return Arrays.stream(dsMXBean.listMembers()).anyMatch(
-        member -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member, diskStoreName));
+        member -> DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member,
+            diskStoreName));
   }
 }

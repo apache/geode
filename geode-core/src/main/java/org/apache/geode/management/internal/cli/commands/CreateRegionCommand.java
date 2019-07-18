@@ -540,7 +540,7 @@ public class CreateRegionCommand extends SingleGfshCommand {
     private final RegionConfig regionConfig;
     private final String fullRegionPath;
 
-    public CreateRegionResult(RegionConfig regionConfig, String fullRegionPath) {
+    CreateRegionResult(RegionConfig regionConfig, String fullRegionPath) {
       this.regionConfig = regionConfig;
       this.fullRegionPath = fullRegionPath;
     }
@@ -673,7 +673,8 @@ public class CreateRegionCommand extends SingleGfshCommand {
     DistributedSystemMXBean dsMXBean = managementService.getDistributedSystemMXBean();
 
     return Arrays.stream(dsMXBean.listMembers()).anyMatch(
-        member -> diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member, diskStoreName));
+        member -> DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(dsMXBean, member,
+            diskStoreName));
   }
 
   DistributedSystemMXBean getDSMBean() {
