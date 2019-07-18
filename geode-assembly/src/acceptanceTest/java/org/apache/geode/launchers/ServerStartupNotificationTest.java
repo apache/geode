@@ -18,10 +18,17 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.TimeUnit;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -74,5 +81,60 @@ public class ServerStartupNotificationTest {
     await().untilAsserted(() -> assertThat(Files.lines(logFile))
         .as("Log file " + logFile + " includes line matching " + expectedLogLine)
         .anyMatch(expectedLogLine.asPredicate()));
+  }
+
+  @Test
+  public void startupWithFailingAsyncTask() throws IOException {
+    Path cacheProviderJarPath = newJarForCacheProvider(CacheProviderWithFailingStartupTask.class,
+            "ServerLauncherCacheProvider.jar");
+
+    String startServerCommand = String.join(" ",
+        "start server",
+        "--name=" + serverName,
+        "--dir=" + serverFolder.getAbsolutePath(),
+        "--classpath=" + cacheProviderJarPath.toAbsolutePath(),
+        "--disable-default-server");
+
+    gfshRule.execute(startServerCommand);
+
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
+
+    Pattern expectedLogLine =
+        Pattern.compile("^\\[error .*].*Server " + serverName + " startup completed in \\d+ ms with error: ");
+    await().untilAsserted(() -> assertThat(Files.lines(logFile))
+        .as("Log file " + logFile + " includes line matching " + expectedLogLine)
+        .anyMatch(expectedLogLine.asPredicate()));
+  }
+
+  private Path newJarForCacheProvider(Class clazz, String jarName)
+      throws IOException {
+    File jar = temporaryFolder.newFile(jarName);
+
+    String className = clazz.getName();
+    String classAsPath = className.replace('.', '/') + ".class";
+    InputStream stream = clazz.getClassLoader().getResourceAsStream(classAsPath);
+    byte[] bytes = IOUtils.toByteArray(stream);
+    try (FileOutputStream out = new FileOutputStream(jar)) {
+      JarOutputStream jarOutputStream = new JarOutputStream(out);
+
+      // Add the class file to the JAR file
+      JarEntry classEntry = new JarEntry(classAsPath);
+      classEntry.setTime(System.currentTimeMillis());
+      jarOutputStream.putNextEntry(classEntry);
+      jarOutputStream.write(bytes);
+      jarOutputStream.closeEntry();
+
+      String metaInfPath = "META-INF/services/org.apache.geode.distributed.ServerLauncherCacheProvider";
+
+      JarEntry metaInfEntry = new JarEntry(metaInfPath);
+      metaInfEntry.setTime(System.currentTimeMillis());
+      jarOutputStream.putNextEntry(metaInfEntry);
+      jarOutputStream.write(className.getBytes());
+      jarOutputStream.closeEntry();
+
+      jarOutputStream.close();
+    }
+
+    return jar.toPath();
   }
 }
