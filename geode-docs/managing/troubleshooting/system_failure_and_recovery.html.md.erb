@@ -300,13 +300,16 @@ The default behavior for restoring values depends on whether the region was conf
 - If the region **was** configured for LRU-based eviction, the values are not loaded. Each value
   will be retrieved only when requested. The assumption here is that the values resident in the
   region plus any evicted values might exceed the space allocated for the region, possibly resulting
-  in an `OutOfMemoryException` during recovery.
+  in an `OutOfMemoryException` during recovery. **Note:** Recovered values do not contain usage 
+  history&mdash;LRU history is reset at recovery time.
 
-Three Java system parameters allow the developer to control the default recovery behavior for persistent regions:
+This default behavior works well under most circumstances. For special cases, three Java system
+properties allow the developer to modify the recovery behavior for persistent regions:
 
 - `gemfire.disk.recoverValues`
 
-  Default = `true`, recover values. If `false`, recover only keys, do not recover values.
+  Default = `true`, recover values for non-LRU regions. Enables the possibility of recovering values for LRU regions (with the setting of an additional property).
+  If `false`, recover only keys, do not recover values. The `false` setting disallows value recovery for LRU regions as well as non-LRU regions.
 
   *How used:* When `true`, recovery of the values "warms up" the cache so data retrievals will find
   their values in the cache, without causing time consuming disk accesses. When `false`, shortens
@@ -319,9 +322,10 @@ Three Java system parameters allow the developer to control the default recovery
   If `true`, recover all of the LRU region's values.
   **Note:** `gemfire.disk.recoverValues` must also be `true` for this property to take effect.
 
-  *How used:* When `false`, shortens recovery time by ignoring LRU values. When `true`, restores
-  more data values to the cache. Recovery of the LRU values increases heap memory usage and
-  could cause an out-of-memory error, preventing the system from restarting.
+  *How used:* When `false`, shortens recovery time for an LRU-configured region by not loading
+  values. When `true`, restores data values to the cache. As stated above, LRU history is not
+  recoverable, and recovering values for a region configured with LRU-based eviction incurs some
+  risk of exceeding allocated memory.
 
 - `gemfire.disk.recoverValuesSync`
 
