@@ -19,16 +19,11 @@ import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
 
 import io.micrometer.core.instrument.Counter;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,6 +35,7 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -52,6 +48,10 @@ public class GatewayReceiverMetricsTest {
 
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public ServiceJarRule serviceJarRule = new ServiceJarRule("metrics-publishing-service.jar",
+      MetricsPublishingService.class.getName(), SimpleMetricsPublishingService.class);
 
   private static final String SENDER_LOCATOR_NAME = "sender-locator";
   private static final String RECEIVER_LOCATOR_NAME = "receiver-locator";
@@ -119,17 +119,13 @@ public class GatewayReceiverMetricsTest {
         "--server-port=" + senderServerPort,
         "--J=-Dgemfire.distributed-system-id=" + senderSystemId);
 
-    String metricsPublishingServiceJarPath =
-        newJarForMetricsPublishingServiceClass(SimpleMetricsPublishingService.class,
-            "metrics-publishing-service.jar");
-
     String startReceiverServerCommand = String.join(GFSH_COMMAND_SEPARATOR,
         "start server",
         "--name=" + RECEIVER_SERVER_NAME,
         "--dir=" + receiverServerFolder,
         "--locators=localhost[" + receiverLocatorPort + "]",
         "--server-port=" + receiverServerPort,
-        "--classpath=" + metricsPublishingServiceJarPath,
+        "--classpath=" + serviceJarRule.absolutePath(),
         "--J=-Dgemfire.distributed-system-id=" + receiverSystemId);
 
     gfshRule.execute(startSenderLocatorCommand, startReceiverLocatorCommand,
@@ -232,38 +228,6 @@ public class GatewayReceiverMetricsTest {
   private String newJarForFunctionClass(Class clazz, String jarName) throws IOException {
     File jar = temporaryFolder.newFile(jarName);
     new ClassBuilder().writeJarFromClass(clazz, jar);
-    return jar.getAbsolutePath();
-  }
-
-  private String newJarForMetricsPublishingServiceClass(Class clazz, String jarName)
-      throws IOException {
-    File jar = temporaryFolder.newFile(jarName);
-
-    String className = clazz.getName();
-    String classAsPath = className.replace('.', '/') + ".class";
-    InputStream stream = clazz.getClassLoader().getResourceAsStream(classAsPath);
-    byte[] bytes = IOUtils.toByteArray(stream);
-    try (FileOutputStream out = new FileOutputStream(jar)) {
-      JarOutputStream jarOutputStream = new JarOutputStream(out);
-
-      // Add the class file to the JAR file
-      JarEntry classEntry = new JarEntry(classAsPath);
-      classEntry.setTime(System.currentTimeMillis());
-      jarOutputStream.putNextEntry(classEntry);
-      jarOutputStream.write(bytes);
-      jarOutputStream.closeEntry();
-
-      String metaInfPath = "META-INF/services/org.apache.geode.metrics.MetricsPublishingService";
-
-      JarEntry metaInfEntry = new JarEntry(metaInfPath);
-      metaInfEntry.setTime(System.currentTimeMillis());
-      jarOutputStream.putNextEntry(metaInfEntry);
-      jarOutputStream.write(className.getBytes());
-      jarOutputStream.closeEntry();
-
-      jarOutputStream.close();
-    }
-
     return jar.getAbsolutePath();
   }
 
