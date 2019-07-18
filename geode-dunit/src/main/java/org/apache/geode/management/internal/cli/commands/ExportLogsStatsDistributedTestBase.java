@@ -37,13 +37,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
+import org.apache.geode.test.junit.rules.serializable.SerializableTemporaryFolder;
 
 public class ExportLogsStatsDistributedTestBase {
 
@@ -54,7 +54,7 @@ public class ExportLogsStatsDistributedTestBase {
   public static GfshCommandRule connector = new GfshCommandRule();
 
   @Rule
-  public TemporaryFolder tempFolderRule = new TemporaryFolder();
+  public SerializableTemporaryFolder tempFolderRule = new SerializableTemporaryFolder();
 
   protected static Set<String> expectedZipEntries = new HashSet<>();
   protected static MemberVM locator;
