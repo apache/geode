@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.apache.geode.annotations.internal.MakeImmutable;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.internal.cache.persistence.DefaultDiskDirs;
@@ -54,6 +55,7 @@ public class DiskStoreAttributes implements Serializable, DiskStore {
   /**
    * The default disk directory size unit.
    */
+  @MakeImmutable
   static final DiskDirSizesUnit DEFAULT_DISK_DIR_SIZES_UNIT = DiskDirSizesUnit.MEGABYTES;
 
   public DiskStoreAttributes() {
