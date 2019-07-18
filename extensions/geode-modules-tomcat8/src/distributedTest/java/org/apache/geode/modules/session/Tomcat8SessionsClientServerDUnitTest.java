@@ -16,7 +16,6 @@ package org.apache.geode.modules.session;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Properties;
 
@@ -25,14 +24,13 @@ import javax.security.auth.message.config.AuthConfigFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
+import org.springframework.util.SocketUtils;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.cache.server.CacheServer;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.ClientServerCacheLifecycleListener;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.Tomcat8DeltaSessionManager;
@@ -58,7 +56,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
       return server.getPort();
     });
 
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    port = SocketUtils.findAvailableTcpPort();
     server = new EmbeddedTomcat8("/test", port, "JVM-1");
 
     ClientCacheFactory cacheFactory = new ClientCacheFactory();
@@ -86,14 +84,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
 
   @After
   public void tearDown() {
-    vm0.invoke(() -> {
-      InternalDistributedSystem internalDistributedSystem =
-          InternalDistributedSystem.getAnyInstance();
-      assertThat(internalDistributedSystem).isNotNull();
-      Cache cache = internalDistributedSystem.getCache();
-      assertThat(cache).isNotNull();
-      (cache.getCacheServers()).forEach(CacheServer::stop);
-    });
+    vm0.invoke(() -> CacheFactory.getAnyInstance().getCacheServers().forEach(CacheServer::stop));
 
     clientCache.close();
     server.stopContainer();

@@ -123,7 +123,7 @@ public class GemfireSessionManager implements SessionManager {
           put(CacheProperty.STATISTICS_NAME, "gemfire_statistics");
           put(CacheProperty.SESSION_DELTA_POLICY, "delta_queued");
           put(CacheProperty.REPLICATION_TRIGGER, "set");
-          /**
+          /*
            * For REGION_ATTRIBUTES_ID and ENABLE_LOCAL_CACHE the default is different for
            * ClientServerCache and PeerToPeerCache so those values are set in the relevant
            * constructors when these properties are passed in to them.
@@ -211,9 +211,7 @@ public class GemfireSessionManager implements SessionManager {
     String id = generateId();
     GemfireHttpSession session = new GemfireHttpSession(id, context);
 
-    /**
-     * Set up the attribute container depending on how things are configured
-     */
+    // Set up the attribute container depending on how things are configured
     Object sessionPolicy = properties.get(CacheProperty.SESSION_DELTA_POLICY);
     AbstractSessionAttributes attributes;
     if ("delta_queued".equals(sessionPolicy) || "queued".equals(sessionPolicy)) {
@@ -256,16 +254,14 @@ public class GemfireSessionManager implements SessionManager {
           sessionCache.getOperatingRegion().destroy(id);
           mbean.decActiveSessions();
         }
-      } catch (EntryNotFoundException nex) {
+      } catch (EntryNotFoundException ignored) {
       }
     } else {
       if (sessionCache.isClientServer()) {
         LOG.debug("Destroying session {}", id);
         try {
           sessionCache.getOperatingRegion().localDestroy(id);
-        } catch (EntryNotFoundException nex) {
-          // Ignored
-        } catch (CacheClosedException ccex) {
+        } catch (EntryNotFoundException | CacheClosedException nex) {
           // Ignored
         }
       }
@@ -281,7 +277,7 @@ public class GemfireSessionManager implements SessionManager {
     mbean.incRegionUpdates();
   }
 
-  public ClassLoader getReferenceClassLoader() {
+  ClassLoader getReferenceClassLoader() {
     return referenceClassLoader;
   }
 
@@ -316,9 +312,7 @@ public class GemfireSessionManager implements SessionManager {
     }
 
     if (!distributedCache.isStarted()) {
-      /**
-       * Process all the init params and see if any apply to the distributed system.
-       */
+      // Process all the init params and see if any apply to the distributed system.
       for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements();) {
         String param = e.nextElement();
         if (!param.startsWith(GEMFIRE_PROPERTY)) {
@@ -347,9 +341,7 @@ public class GemfireSessionManager implements SessionManager {
               + "ClientServerCacheLifecycleListener in the " + "server.xml file.");
     }
 
-    /**
-     * Process all the init params and see if any apply to the distributedCache
-     */
+    // Process all the init params and see if any apply to the distributedCache
     ResourceManager rm = cache.getResourceManager();
     for (Enumeration<String> e = config.getInitParameterNames(); e.hasMoreElements();) {
       String param = e.nextElement();
@@ -392,7 +384,7 @@ public class GemfireSessionManager implements SessionManager {
 
     try {
       InitialContext ctx = new InitialContext();
-      MBeanServer mbs = MBeanServer.class.cast(ctx.lookup("java:comp/env/jmx/runtime"));
+      MBeanServer mbs = (MBeanServer) ctx.lookup("java:comp/env/jmx/runtime");
       ObjectName oname = new ObjectName(Constants.SESSION_STATISTICS_MBEAN_NAME);
 
       mbs.registerMBean(mbean, oname);

@@ -57,6 +57,11 @@ public abstract class AbstractCache {
   private static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE =
       ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
+  // TODO: DistributionConfig is internal, change these fields when the attributes are public.
+  private static final String GEMFIRE_PREFIX = DistributionConfig.GEMFIRE_PREFIX;
+  private static final String DEFAULT_CACHE_XML_FILE =
+      DistributionConfig.DEFAULT_CACHE_XML_FILE.getName();
+
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractCache.class);
 
   private float evictionHeapPercentage = DEFAULT_EVICTION_HEAP_PERCENTAGE;
@@ -188,6 +193,7 @@ public abstract class AbstractCache {
 
     // Determine the validity of the input property
     boolean validProperty = false;
+    // TODO: AbstractDistributionConfig is internal and _getAttNames is designed for testing.
     for (String gemfireProperty : AbstractDistributionConfig._getAttNames()) {
       if (name.equals(gemfireProperty)) {
         validProperty = true;
@@ -224,7 +230,7 @@ public abstract class AbstractCache {
     // to the GemFire default. This is for the case where only the jars have been
     // installed and no default cache.xml exists in the conf directory.
     if (getCacheXmlFileName().equals(getDefaultCacheXmlFileName()) && !cacheXmlFile.exists()) {
-      absoluteCacheXmlFileName = DistributionConfig.DEFAULT_CACHE_XML_FILE.getName();
+      absoluteCacheXmlFileName = DEFAULT_CACHE_XML_FILE;
     }
     properties.put(CACHE_XML_FILE, absoluteCacheXmlFileName);
 
@@ -259,7 +265,7 @@ public abstract class AbstractCache {
             "servers" + separator + weblogicName + separator + "logs" + separator + logFileName);
       } else {
         logFile =
-            new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "logdir"), logFileName);
+            new File(System.getProperty(GEMFIRE_PREFIX + "logdir"), logFileName);
       }
     }
     return logFile;
@@ -283,7 +289,7 @@ public abstract class AbstractCache {
               + separator + statisticsArchiveFileName);
         } else {
           statisticsArchiveFile =
-              new File(System.getProperty(DistributionConfig.GEMFIRE_PREFIX + "statisticsdir"),
+              new File(System.getProperty(GEMFIRE_PREFIX + "statisticsdir"),
                   statisticsArchiveFileName);
         }
       }

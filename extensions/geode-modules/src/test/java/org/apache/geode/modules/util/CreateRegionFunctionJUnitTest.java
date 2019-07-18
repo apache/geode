@@ -26,8 +26,8 @@ import org.junit.Test;
 import org.apache.geode.cache.CacheListener;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.EvictionAction;
+import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.RegionAttributes;
-import org.apache.geode.internal.cache.EvictionAttributesImpl;
 
 // TODO: Remove the deprecated method invocations once RegionAttributesCreation is also updated.
 public class CreateRegionFunctionJUnitTest {
@@ -37,9 +37,8 @@ public class CreateRegionFunctionJUnitTest {
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
-    when(mockRegionAttributes.getEvictionAttributes()).thenReturn(new EvictionAttributesImpl()
-        .setAction(EvictionAction.OVERFLOW_TO_DISK));
-
+    when(mockRegionAttributes.getEvictionAttributes()).thenReturn(EvictionAttributes
+        .createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
     when(mockRegionAttributes.getDiskDirs()).thenReturn(diskDirs);
 
     return mockRegionAttributes;
@@ -50,8 +49,8 @@ public class CreateRegionFunctionJUnitTest {
     when(mockRegionAttributes.getDiskStoreName()).thenReturn(null);
     when(mockRegionAttributes.getDataPolicy()).thenReturn(DataPolicy.NORMAL);
     when(mockRegionAttributes.getCacheListeners()).thenReturn(new CacheListener[] {});
-    when(mockRegionAttributes.getEvictionAttributes()).thenReturn(new EvictionAttributesImpl()
-        .setAction(EvictionAction.OVERFLOW_TO_DISK));
+    when(mockRegionAttributes.getEvictionAttributes()).thenReturn(EvictionAttributes
+        .createLRUEntryAttributes(10, EvictionAction.OVERFLOW_TO_DISK));
 
     when(mockRegionAttributes.getDiskDirSizes()).thenReturn(diskDirSize);
 

@@ -26,13 +26,12 @@ import org.apache.geode.cache.SerializedCacheValue;
 import org.apache.geode.cache.SubscriptionAttributes;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.internal.cache.EntryEventImpl;
-import org.apache.geode.internal.cache.LocalRegion;
 
 public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<String, GatewayDelta>
     implements Declarable {
 
   private final Cache cache;
-  private LocalRegion gatewayDeltaRegion;
+  private Region<String, GatewayDeltaEvent> gatewayDeltaRegion;
 
   @SuppressWarnings("unused")
   public GatewayDeltaForwarderCacheListener() {
@@ -133,15 +132,16 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
     }
   }
 
-  private LocalRegion getGatewayDeltaRegion() {
+  private Region<String, GatewayDeltaEvent> getGatewayDeltaRegion() {
     if (this.gatewayDeltaRegion == null) {
       this.gatewayDeltaRegion = createOrRetrieveGatewayDeltaRegion();
     }
     return this.gatewayDeltaRegion;
   }
 
-  private LocalRegion createOrRetrieveGatewayDeltaRegion() {
-    Region region = this.cache.getRegion(GatewayDelta.GATEWAY_DELTA_REGION_NAME);
+  private Region<String, GatewayDeltaEvent> createOrRetrieveGatewayDeltaRegion() {
+    Region<String, GatewayDeltaEvent> region =
+        this.cache.getRegion(GatewayDelta.GATEWAY_DELTA_REGION_NAME);
 
     if (region == null) {
       region = this.cache.<String, GatewayDeltaEvent>createRegionFactory().setScope(Scope.LOCAL)
@@ -159,7 +159,7 @@ public class GatewayDeltaForwarderCacheListener extends CacheListenerAdapter<Str
       this.cache.getLogger().fine(builder);
     }
 
-    return (LocalRegion) region;
+    return region;
   }
 
   @Override
