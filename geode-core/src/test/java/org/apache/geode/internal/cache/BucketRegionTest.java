@@ -379,4 +379,192 @@ public class BucketRegionTest {
 
     ccn.shutdown(111);
   }
+
+  @Test
+  public void invokeTXCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(false).when(event).isGenerateCallbacks();
+
+    bucketRegion.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event, false);
+
+    verify(partitionedRegion, never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event,
+        false);
+  }
+
+  @Test
+  public void invokeTXCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(false).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+
+    bucketRegion.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event, false);
+
+    verify(partitionedRegion, never()).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event,
+        false);
+  }
+
+  @Test
+  public void invokeTXCallbacksIsInvoked() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(true).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+    doReturn(event).when(bucketRegion).createEventForPR(event);
+
+    bucketRegion.invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event, true);
+
+    verify(partitionedRegion).invokeTXCallbacks(EnumListenerEvent.AFTER_UPDATE, event,
+        true);
+  }
+
+  @Test
+  public void invokeDestroyCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(false).when(event).isGenerateCallbacks();
+
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, false, false);
+
+    verify(partitionedRegion, never()).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY,
+        event, false, false);
+  }
+
+  @Test
+  public void invokeDestroyCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(false).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, false, false);
+
+    verify(partitionedRegion, never()).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY,
+        event, false, false);
+  }
+
+  @Test
+  public void invokeDestroyCallbacksIsInvoked() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(true).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+    doReturn(event).when(bucketRegion).createEventForPR(event);
+
+    bucketRegion.invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event, true, false);
+
+    verify(partitionedRegion).invokeDestroyCallbacks(EnumListenerEvent.AFTER_DESTROY, event,
+        true, false);
+  }
+
+  @Test
+  public void invokeInvalidateCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(false).when(event).isGenerateCallbacks();
+
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, false);
+
+    verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
+        event, false);
+  }
+
+  @Test
+  public void invokeInvalidateCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(false).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, false);
+
+    verify(partitionedRegion, never()).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE,
+        event, false);
+  }
+
+  @Test
+  public void invokeInvalidateCallbacksIsInvoked() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(true).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+    doReturn(event).when(bucketRegion).createEventForPR(event);
+
+    bucketRegion.invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event, true);
+
+    verify(partitionedRegion).invokeInvalidateCallbacks(EnumListenerEvent.AFTER_INVALIDATE, event,
+        true);
+  }
+
+  @Test
+  public void invokePutCallbacksDoesNotInvokeCallbacksIfEventIsNotGenerateCallbacks() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(false).when(event).isGenerateCallbacks();
+
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, false, false);
+
+    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+        false, false);
+  }
+
+  @Test
+  public void invokePutCallbacksDoesNotInvokeCallbacksIfPartitionedRegionIsNotInitialized() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(false).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, false, false);
+
+    verify(partitionedRegion, never()).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+        false, false);
+  }
+
+  @Test
+  public void invokePutCallbacksIsInvoked() {
+    BucketRegion bucketRegion =
+        spy(new BucketRegion(regionName, regionAttributes, partitionedRegion,
+            cache, internalRegionArgs));
+    doReturn(false).when(bucketRegion).isInitialized();
+    doReturn(true).when(event).isGenerateCallbacks();
+    doReturn(true).when(partitionedRegion).isInitialized();
+    doReturn(true).when(partitionedRegion).shouldDispatchListenerEvent();
+    doReturn(event).when(bucketRegion).createEventForPR(event);
+
+    bucketRegion.invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event, true, false);
+
+    verify(partitionedRegion).invokePutCallbacks(EnumListenerEvent.AFTER_CREATE, event,
+        true, false);
+  }
 }
