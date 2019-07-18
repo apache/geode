@@ -48,10 +48,11 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
       "Locator Membership listener permanently failed to exchange locator information {}:{} with {}:{} after {} retry attempts";
 
   private int port;
-  private TcpClient tcpClient;
   private DistributionConfig config;
-  private ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo = new ConcurrentHashMap<>();
-  private ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
+  private final TcpClient tcpClient;
+  private final ConcurrentMap<Integer, Set<String>> allServerLocatorsInfo =
+      new ConcurrentHashMap<>();
+  private final ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo =
       new ConcurrentHashMap<>();
 
   LocatorMembershipListenerImpl() {
