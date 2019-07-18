@@ -19,17 +19,22 @@ import static org.apache.logging.log4j.core.config.ConfigurationFactory.CONFIGUR
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.Configuration;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.internal.cli.CliUtil;
 
 class DiskStoreCommandsUtils {
+  private static final Logger logger = LogService.getLogger();
 
   static void configureLogging(final List<String> commandList) {
     String configFilePropertyValue = System.getProperty(CONFIGURATION_FILE_PROPERTY);
@@ -63,5 +68,38 @@ class DiskStoreCommandsUtils {
 
   static Set<DistributedMember> getNormalMembers(final InternalCache cache) {
     return CliUtil.getAllNormalMembers(cache);
+  }
+
+
+  static boolean diskStoreBeanAndMemberBeanDiskStoreExists(DistributedSystemMXBean dsMXBean,
+      String memberName,
+      String diskStore) {
+    return diskStoreBeanExists(dsMXBean, memberName, diskStore) &&
+        memberBeanDiskStoreExists(dsMXBean, memberName, diskStore);
+  }
+
+  private static boolean diskStoreBeanExists(DistributedSystemMXBean dsMXBean, String memberName,
+      String diskStore) {
+    try {
+      dsMXBean.fetchDiskStoreObjectName(memberName, diskStore);
+      return true;
+    } catch (Exception e) {
+      if (!e.getMessage().toLowerCase().contains("not found")) {
+        logger.warn("Unable to retrieve Disk Store ObjectName for member: {}, diskstore: {}  {}",
+            memberName, diskStore, e.getMessage());
+      }
+    }
+    return false;
+  }
+
+  private static boolean memberBeanDiskStoreExists(DistributedSystemMXBean dsMXBean,
+      String memberName,
+      String diskStore) {
+    return Stream.of(dsMXBean)
+        .filter(Objects::nonNull)
+        .map(DistributedSystemMXBean::listMemberDiskstore)
+        .filter(Objects::nonNull)
+        .flatMap(mds -> Stream.of(mds.get(memberName)))
+        .anyMatch(dsName -> dsName.equals(diskStore));
   }
 }
