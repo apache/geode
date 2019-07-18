@@ -38,10 +38,10 @@ import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.util.SocketUtils;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.modules.session.catalina.DeltaSessionManager;
 import org.apache.geode.modules.session.catalina.PeerToPeerCacheLifecycleListener;
 
@@ -56,7 +56,7 @@ public abstract class TestSessionsBase {
   protected static void setupServer(DeltaSessionManager manager) throws Exception {
     FileUtils.copyDirectory(Paths.get("..", "resources", "integrationTest", "tomcat").toFile(),
         new File("./tomcat"));
-    port = AvailablePortHelper.getRandomAvailableTCPPort();
+    port = SocketUtils.findAvailableTcpPort();
     server = new EmbeddedTomcat("/test", port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();

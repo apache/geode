@@ -63,29 +63,29 @@ public class DeltaSessionStatistics {
   }
 
   @SuppressWarnings("unused")
-  public int getSessionsCreated() {
-    return this.stats.getInt(sessionsCreatedId);
+  public long getSessionsCreated() {
+    return this.stats.getLong(sessionsCreatedId);
   }
 
   public void incSessionsCreated() {
-    this.stats.incInt(sessionsCreatedId, 1);
+    this.stats.incLong(sessionsCreatedId, 1);
   }
 
   @SuppressWarnings("unused")
-  public int getSessionsInvalidated() {
-    return this.stats.getInt(sessionsInvalidatedId);
+  public long getSessionsInvalidated() {
+    return this.stats.getLong(sessionsInvalidatedId);
   }
 
   public void incSessionsInvalidated() {
-    this.stats.incInt(sessionsInvalidatedId, 1);
+    this.stats.incLong(sessionsInvalidatedId, 1);
   }
 
   @SuppressWarnings("unused")
-  public int getSessionsExpired() {
-    return this.stats.getInt(sessionsExpiredId);
+  public long getSessionsExpired() {
+    return this.stats.getLong(sessionsExpiredId);
   }
 
   public void incSessionsExpired() {
-    this.stats.incInt(sessionsExpiredId, 1);
+    this.stats.incLong(sessionsExpiredId, 1);
   }
 }

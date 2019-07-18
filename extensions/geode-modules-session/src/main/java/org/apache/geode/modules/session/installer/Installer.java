@@ -37,7 +37,6 @@ import org.apache.geode.internal.ExitCode;
 import org.apache.geode.modules.session.installer.args.Argument;
 import org.apache.geode.modules.session.installer.args.ArgumentProcessor;
 import org.apache.geode.modules.session.installer.args.ArgumentValues;
-import org.apache.geode.modules.session.installer.args.UnknownArgumentHandler;
 import org.apache.geode.modules.session.installer.args.UsageException;
 
 public class Installer {
@@ -73,12 +72,12 @@ public class Installer {
     new Installer(args).process();
   }
 
-  public static void log(String message) {
+  private static void log(String message) {
     System.err.println(message);
   }
 
 
-  public Installer(String[] args) throws Exception {
+  public Installer(String[] args) {
     final ArgumentProcessor processor = new ArgumentProcessor("Installer");
 
     argValues = null;
@@ -89,12 +88,9 @@ public class Installer {
       processor.addArgument(ARG_CACHE_TYPE);
       processor.addArgument(ARG_WEB_XML_FILE);
 
-      processor.setUnknownArgumentHandler(new UnknownArgumentHandler() {
-        @Override
-        public void handleUnknownArgument(final String form, final String[] params) {
-          log("Unknown argument being ignored: " + form + " (" + params.length + " params)");
-          log("Use '-h' argument to display usage");
-        }
+      processor.setUnknownArgumentHandler((form, params) -> {
+        log("Unknown argument being ignored: " + form + " (" + params.length + " params)");
+        log("Use '-h' argument to display usage");
       });
       argValues = processor.process(args);
 
@@ -124,7 +120,7 @@ public class Installer {
    *
    * @throws Exception if any errors occur.
    */
-  public void process() throws Exception {
+  private void process() throws Exception {
     String argInputFile = argValues.getFirstResult(ARG_WEB_XML_FILE);
 
     ByteArrayOutputStream output = new ByteArrayOutputStream();
