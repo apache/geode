@@ -247,7 +247,7 @@ public class VMStats50 implements VMStatsContract {
       sds.add(f.createLongGauge("fdsOpen", "Current number of open file descriptors", "fds"));
     }
     vmType = f.createType("VMStats", "Stats available on a 1.5 java virtual machine.",
-        sds.toArray(new StatisticDescriptor[sds.size()]));
+        sds.toArray(new StatisticDescriptor[0]));
     pendingFinalizationCountId = vmType.nameToId("pendingFinalization");
     loadedClassesId = vmType.nameToId("loadedClasses");
     unloadedClassesId = vmType.nameToId("unloadedClasses");

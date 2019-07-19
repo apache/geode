@@ -738,7 +738,7 @@ public class InitialImageOperation {
           // member(s) These will either be DistributedMember IDs or DiskStore IDs
           RequestSyncMessage msg = new RequestSyncMessage();
           msg.regionPath = this.region.getFullPath();
-          msg.lostVersionSources = needsSync.toArray(new VersionSource[needsSync.size()]);
+          msg.lostVersionSources = needsSync.toArray(new VersionSource[0]);
           Set recipients = this.region.getCacheDistributionAdvisor().adviseReplicates();
           for (Iterator it = recipients.iterator(); it.hasNext();) {
             InternalDistributedMember mbr = (InternalDistributedMember) it.next();

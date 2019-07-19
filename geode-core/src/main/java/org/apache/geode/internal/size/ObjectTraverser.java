@@ -126,8 +126,8 @@ public class ObjectTraverser {
       clazz = clazz.getSuperclass();
     }
 
-    return new FieldSet(staticFields.toArray(new Field[staticFields.size()]),
-        nonPrimativeFields.toArray(new Field[nonPrimativeFields.size()]));
+    return new FieldSet(staticFields.toArray(new Field[0]),
+        nonPrimativeFields.toArray(new Field[0]));
   }
 
   public interface Visitor {

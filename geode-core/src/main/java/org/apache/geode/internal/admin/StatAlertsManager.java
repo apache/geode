@@ -250,7 +250,7 @@ public class StatAlertsManager {
         }
       } // while
     } // synchronized
-    return (StatAlert[]) alerts.toArray(new StatAlert[alerts.size()]);
+    return (StatAlert[]) alerts.toArray(new StatAlert[0]);
   }
 
   /**
@@ -312,7 +312,7 @@ public class StatAlertsManager {
       }
     } // for
 
-    return (StatAlertDefinition[]) result.toArray(new StatAlertDefinition[result.size()]);
+    return (StatAlertDefinition[]) result.toArray(new StatAlertDefinition[0]);
   }
 
   /**

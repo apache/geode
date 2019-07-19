@@ -211,7 +211,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       // No group is specified, so delete in every single group if it exists.
       if (groups == null) {
         Set<String> groupSet = configRegion.keySet();
-        groups = groupSet.toArray(new String[groupSet.size()]);
+        groups = groupSet.toArray(new String[0]);
       }
       for (String group : groups) {
         Configuration configuration = configRegion.get(group);

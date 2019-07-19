@@ -120,7 +120,7 @@ public class ReflectionBasedAutoSerializer implements PdxSerializer, Declarable 
     if (l == null) {
       l = Collections.emptyList();
     }
-    return l.toArray(new String[l.size()]);
+    return l.toArray(new String[0]);
   }
 
   /**

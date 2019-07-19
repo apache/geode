@@ -670,7 +670,7 @@ public class TXManagerImpl implements CacheTransactionManager, MembershipListene
       // After this, newly added TXStateProxy would not operate on the TXState.
       this.closed = true;
 
-      proxies = this.hostedTXStates.values().toArray(new TXStateProxy[this.hostedTXStates.size()]);
+      proxies = this.hostedTXStates.values().toArray(new TXStateProxy[0]);
     }
 
     for (TXStateProxy proxy : proxies) {

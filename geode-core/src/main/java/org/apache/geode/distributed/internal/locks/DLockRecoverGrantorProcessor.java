@@ -419,7 +419,7 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
             replyCode = DLockRecoverGrantorReplyMessage.GRANTOR_DISPUTE;
           } else {
             heldLocks =
-                (DLockRemoteToken[]) heldLockSet.toArray(new DLockRemoteToken[heldLockSet.size()]);
+                (DLockRemoteToken[]) heldLockSet.toArray(new DLockRemoteToken[0]);
           }
         }
       } catch (RuntimeException e) {

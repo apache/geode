@@ -184,7 +184,7 @@ public class SystemAdmin {
     }
     cmdVec.add(hostnameForClientsOption);
 
-    String[] cmd = (String[]) cmdVec.toArray(new String[cmdVec.size()]);
+    String[] cmd = (String[]) cmdVec.toArray(new String[0]);
 
     // start with a fresh log each time
     if (!logFile.delete() && logFile.exists()) {
@@ -1150,7 +1150,7 @@ public class SystemAdmin {
       StatArchiveReader reader = null;
       boolean interrupted = false;
       try {
-        reader = new StatArchiveReader((File[]) archiveNames.toArray(new File[archiveNames.size()]),
+        reader = new StatArchiveReader((File[]) archiveNames.toArray(new File[0]),
             specs, !monitor);
         // Runtime.getRuntime().gc(); System.out.println("DEBUG: heap size=" +
         // (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()));

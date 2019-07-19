@@ -147,6 +147,6 @@ public class StartJConsoleCommand extends OfflineGfshCommand {
       }
     }
 
-    return commandLine.toArray(new String[commandLine.size()]);
+    return commandLine.toArray(new String[0]);
   }
 }
