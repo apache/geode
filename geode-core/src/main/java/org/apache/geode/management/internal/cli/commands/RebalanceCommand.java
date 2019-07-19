@@ -146,7 +146,7 @@ public class RebalanceCommand extends GfshCommand {
 
   private void toCompositeResultData(ResultModel result,
       List<String> rstlist, int index, boolean simulate, InternalCache cache) {
-    int resultItemCount = 9;
+    final int resultItemCount = 9;
 
     if (rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
       return;
@@ -276,52 +276,27 @@ public class RebalanceCommand extends GfshCommand {
               }
               functionArgs[2] = excludeRegionSet;
 
-              if (simulate) {
-                List resultList;
-                try {
-                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
-                      .getResult();
-                } catch (Exception ex) {
-                  LogWrapper.getInstance(cache)
-                      .info(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
-                          member.getId(), ex.getMessage()), ex);
-                  errors.addLine(CliStrings.format(
-                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                      member.getId()) + ": " + ex.getMessage());
-                  continue;
-                }
-
-                if (checkResultList(errors, resultList, member)) {
-                  continue;
-                }
-                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-
-                toCompositeResultData(result, rstList, index, true, cache);
-              } else {
-                List resultList;
-                try {
-                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
-                      .getResult();
-                } catch (Exception ex) {
-                  LogWrapper.getInstance(cache)
-                      .info(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
-                          member.getId(), ex.getMessage()), ex);
-                  errors.addLine(CliStrings.format(
-                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                      member.getId()) + ": " + ex.getMessage());
-                  continue;
-                }
-
-                if (checkResultList(errors, resultList, member)) {
-                  continue;
-                }
-                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-
-                toCompositeResultData(result, rstList, index, false, cache);
+              List resultList;
+              try {
+                resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
+                    .getResult();
+              } catch (Exception ex) {
+                LogWrapper.getInstance(cache)
+                    .info(CliStrings.format(
+                        CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
+                        member.getId(), ex.getMessage()), ex);
+                errors.addLine(CliStrings.format(
+                    CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
+                    member.getId()) + ": " + ex.getMessage());
+                continue;
               }
 
+              if (checkResultList(errors, resultList, member)) {
+                continue;
+              }
+              List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
+
+              toCompositeResultData(result, rstList, index, simulate, cache);
             } else {
 
               ResourceManager manager = cache.getResourceManager();
