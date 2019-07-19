@@ -264,7 +264,7 @@ public class FunctionRetryTestBase implements Serializable {
         break;
       case SERVERS_REGION_SERVICE:
         execution = FunctionService
-            .onServers(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
+            .onServer(clusterStartupRule.getClientCache().getRegion(regionName).getRegionService())
             .setArguments(200);
         break;
       default:

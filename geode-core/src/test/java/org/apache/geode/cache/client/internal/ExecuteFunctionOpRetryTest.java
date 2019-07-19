@@ -103,7 +103,7 @@ public class ExecuteFunctionOpRetryTest {
       "HA, STRING, 3, 4",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void executeReTriesOnServerConnectivityException(
+  public void executeWithServerConnectivityException(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
@@ -129,13 +129,80 @@ public class ExecuteFunctionOpRetryTest {
       "HA, STRING, 3, 5",
   })
   @TestCaseName("[{index}] {method}: {params}")
-  public void executeReTriesOnInternalFunctionInvocationTargetException(
+  public void executeWithInternalFunctionInvocationTargetExceptionCallsReexecute(
       final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final int retryAttempts,
       final int expectTries) {
 
     runExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+        FailureMode.THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION);
+  }
+
+  @Test
+  @Parameters({
+      "HA, OBJECT_REFERENCE, -1, 1",
+      "HA, OBJECT_REFERENCE, 0, 1",
+      "HA, OBJECT_REFERENCE, 3, 1",
+      "HA, STRING, -1, 1",
+      "HA, STRING, 0, 1",
+      "HA, STRING, 3, 1",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void reExecuteDoesNotRetryOnServerOperationException(
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectTries) {
+
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+        FailureMode.THROW_SERVER_OPERATION_EXCEPTION);
+  }
+
+  @Test
+  @Parameters({
+      "HA, OBJECT_REFERENCE, -1, 2",
+      "HA, OBJECT_REFERENCE, 0, 1",
+      "HA, OBJECT_REFERENCE, 3, 4",
+      "HA, STRING, -1, 2",
+      "HA, STRING, 0, 1",
+      "HA, STRING, 3, 4",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void reExecuteWithServerConnectivityException(
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectTries) {
+
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
+        FailureMode.THROW_SERVER_CONNECTIVITY_EXCEPTION);
+  }
+
+  @Test
+  @Parameters({
+      /*
+       * For these HA cases the counts may seem odd (one or two larger than you might expect)
+       * But that's because execute() treats a try that throws
+       * InternalFunctionInvocationTargetException as no try at all. Since our mock throws
+       * that exception first (and then throws ServerConnectivityException) the pool mock
+       * sees one extra call to its execute method.
+       */
+      "HA, OBJECT_REFERENCE, -1, 3",
+      "HA, OBJECT_REFERENCE, 0, 2",
+      "HA, OBJECT_REFERENCE, 3, 5",
+      "HA, STRING, -1, 3",
+      "HA, STRING, 0, 2",
+      "HA, STRING, 3, 5",
+  })
+  @TestCaseName("[{index}] {method}: {params}")
+  public void reExecuteWithInternalFunctionInvocationTargetExceptionCallsReExecute(
+      final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts,
+      final int expectTries) {
+
+    runReExecuteTest(haStatus, functionIdentifierType, retryAttempts, expectTries,
         FailureMode.THROW_INTERNAL_FUNCTION_INVOCATION_TARGET_EXCEPTION);
   }
 
@@ -155,6 +222,24 @@ public class ExecuteFunctionOpRetryTest {
         ArgumentMatchers.anyInt());
   }
 
+  private void runReExecuteTest(final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      final int retryAttempts, final int expectTries,
+      final FailureMode failureMode) {
+
+    createMocks(haStatus, failureMode, retryAttempts);
+
+    reExecuteFunction(haStatus, functionIdentifierType, retryAttempts,
+        testSupport.getExecutablePool(),
+        testSupport.getFunction(),
+        serverFunctionExecutor, testSupport.getResultCollector(), args, groups);
+
+    verify(testSupport.getExecutablePool(), times(expectTries)).execute(
+        ArgumentMatchers.<AbstractOp>any(),
+        ArgumentMatchers.anyInt());
+  }
+
+
   private void executeFunction(final HAStatus haStatus,
       final FunctionIdentifierType functionIdentifierType,
       final PoolImpl executablePool,
@@ -168,52 +253,53 @@ public class ExecuteFunctionOpRetryTest {
     switch (functionIdentifierType) {
       case STRING:
         ignoreServerConnectivityException(
-            () -> ExecuteFunctionOp.execute(executablePool,
-                ALL_SERVERS_SETTING, resultCollector,
-                testSupport.toBoolean(haStatus),
-                userAttributes, groups,
-                new ExecuteFunctionOp.ExecuteFunctionOpImpl(FUNCTION_NAME, args, memberMappedArg,
-                    FUNCTION_HAS_RESULT,
-                    resultCollector, IS_FN_SERIALIZATION_REQUIRED, testSupport.toBoolean(haStatus),
-                    OPTIMIZE_FOR_WRITE_SETTING, (byte) 0, groups, ALL_SERVERS_SETTING,
-                    serverFunctionExecutor.isIgnoreDepartedMembers(),
-                    DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(FUNCTION_NAME, args,
-                    memberMappedArg, FUNCTION_HAS_RESULT,
-                    resultCollector, IS_FN_SERIALIZATION_REQUIRED, testSupport.toBoolean(haStatus),
-                    OPTIMIZE_FOR_WRITE_SETTING, (byte) 0,
-                    null/* onGroups does not use single-hop for now */, false, false,
-                    DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(FUNCTION_NAME, args,
-                    serverFunctionExecutor.getMemberMappedArgument(),
-                    FUNCTION_HAS_RESULT, resultCollector, IS_FN_SERIALIZATION_REQUIRED,
-                    testSupport.toBoolean(haStatus), OPTIMIZE_FOR_WRITE_SETTING, (byte) 1,
-                    groups, ALL_SERVERS_SETTING, serverFunctionExecutor.isIgnoreDepartedMembers(),
-                    DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
+            () -> ExecuteFunctionOp.execute(executablePool, FUNCTION_NAME, serverFunctionExecutor,
+                args, memberMappedArg, ALL_SERVERS_SETTING, FUNCTION_HAS_RESULT, resultCollector,
+                IS_FN_SERIALIZATION_REQUIRED, testSupport.toBoolean(haStatus),
+                OPTIMIZE_FOR_WRITE_SETTING, userAttributes, groups,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
 
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
-            () -> ExecuteFunctionOp.execute(executablePool,
-                ALL_SERVERS_SETTING, resultCollector,
-                function.isHA(), userAttributes, groups,
-                new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, args, memberMappedArg,
-                    resultCollector,
-                    IS_FN_SERIALIZATION_REQUIRED, (byte) 0, groups, ALL_SERVERS_SETTING,
-                    serverFunctionExecutor
-                        .isIgnoreDepartedMembers(),
-                    DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(function, args, memberMappedArg,
-                    resultCollector, IS_FN_SERIALIZATION_REQUIRED, (byte) 0,
-                    null/* onGroups does not use single-hop for now */,
-                    false, false, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                () -> new ExecuteFunctionOp.ExecuteFunctionOpImpl(function,
-                    serverFunctionExecutor.getArguments(),
-                    serverFunctionExecutor.getMemberMappedArgument(),
-                    resultCollector,
-                    IS_FN_SERIALIZATION_REQUIRED, (byte) 1, groups, ALL_SERVERS_SETTING,
-                    serverFunctionExecutor.isIgnoreDepartedMembers(),
-                    DEFAULT_CLIENT_FUNCTION_TIMEOUT)));
+            () -> ExecuteFunctionOp.execute(executablePool, function, serverFunctionExecutor, args,
+                memberMappedArg, ALL_SERVERS_SETTING, FUNCTION_HAS_RESULT, resultCollector,
+                IS_FN_SERIALIZATION_REQUIRED, userAttributes, groups,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+        break;
+      default:
+        throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
+    }
+
+  }
+
+  private void reExecuteFunction(final HAStatus haStatus,
+      final FunctionIdentifierType functionIdentifierType,
+      int retryAttempts,
+      final PoolImpl executablePool,
+      final Function<Integer> function,
+      final ServerFunctionExecutor serverFunctionExecutor,
+      final ResultCollector<Integer, Collection<Integer>> resultCollector,
+      final Object args,
+      final String[] groups) {
+
+    switch (functionIdentifierType) {
+      case STRING:
+        ignoreServerConnectivityException(
+            () -> ExecuteFunctionOp.reexecute(executablePool, FUNCTION_NAME, serverFunctionExecutor,
+                resultCollector, FUNCTION_HAS_RESULT,
+                IS_FN_SERIALIZATION_REQUIRED, retryAttempts, args, testSupport.toBoolean(haStatus),
+                OPTIMIZE_FOR_WRITE_SETTING, groups, ALL_SERVERS_SETTING,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
+
+        break;
+
+      case OBJECT_REFERENCE:
+        ignoreServerConnectivityException(
+            () -> ExecuteFunctionOp.reexecute(executablePool, function, serverFunctionExecutor,
+                resultCollector, FUNCTION_HAS_RESULT,
+                IS_FN_SERIALIZATION_REQUIRED, retryAttempts, groups, ALL_SERVERS_SETTING,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);

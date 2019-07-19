@@ -16,13 +16,11 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.geode.cache.client.Pool;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.cache.client.internal.ExecuteFunctionNoAckOp;
 import org.apache.geode.cache.client.internal.ExecuteFunctionOp;
-import org.apache.geode.cache.client.internal.ExecuteFunctionOp.ExecuteFunctionOpImpl;
 import org.apache.geode.cache.client.internal.GetFunctionAttributeOp;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.client.internal.ProxyCache;
@@ -145,30 +143,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-
-      final ExecuteFunctionOpImpl executeFunctionOp =
-          new ExecuteFunctionOpImpl(function, args, memberMappedArg,
-              rc, isFnSerializationReqd, (byte) 0, groups, allServers, isIgnoreDepartedMembers(),
-              getTimeoutMs());
-
-      final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(function, args, memberMappedArg,
-              rc, isFnSerializationReqd, (byte) 0,
-              null/* onGroups does not use single-hop for now */,
-              false, false, getTimeoutMs());
-
-      final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(function, this.getArguments(),
-              this.getMemberMappedArgument(), rc,
-              isFnSerializationReqd, (byte) 1, groups, allServers,
-              this.isIgnoreDepartedMembers(), getTimeoutMs());
-
-      ExecuteFunctionOp.execute(pool, allServers,
-          rc, function.isHA(), UserAttributes.userAttributes.get(), groups,
-          executeFunctionOp,
-          executeFunctionOpSupplier,
-          reExecuteFunctionOpSupplier);
-
+      ExecuteFunctionOp.execute(pool, function, this, args, memberMappedArg, allServers,
+          hasResult, rc, isFnSerializationReqd, UserAttributes.userAttributes.get(), groups,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;
@@ -190,31 +167,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-
-      final ExecuteFunctionOpImpl executeFunctionOp =
-          new ExecuteFunctionOpImpl(functionId, args, memberMappedArg, hasResult,
-              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0, groups, allServers,
-              this.isIgnoreDepartedMembers(), getTimeoutMs());
-
-      final Supplier<ExecuteFunctionOpImpl> executeFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(functionId, args, memberMappedArg,
-              hasResult,
-              rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 0,
-              null/* onGroups does not use single-hop for now */, false, false, getTimeoutMs());
-
-      final Supplier<ExecuteFunctionOpImpl> reExecuteFunctionOpSupplier =
-          () -> new ExecuteFunctionOpImpl(functionId, args,
-              this.getMemberMappedArgument(),
-              hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite, (byte) 1,
-              groups, allServers, this.isIgnoreDepartedMembers(), getTimeoutMs());
-
-      ExecuteFunctionOp.execute(pool, allServers,
-          rc, isHA,
-          UserAttributes.userAttributes.get(), groups,
-          executeFunctionOp,
-          executeFunctionOpSupplier,
-          reExecuteFunctionOpSupplier);
-
+      ExecuteFunctionOp.execute(pool, functionId, this, args, memberMappedArg, allServers,
+          hasResult, rc, isFnSerializationReqd, isHA, optimizeForWrite,
+          UserAttributes.userAttributes.get(), groups, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       rc.endResults();
       return rc;

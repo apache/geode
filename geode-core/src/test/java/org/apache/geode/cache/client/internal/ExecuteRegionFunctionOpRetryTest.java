@@ -24,7 +24,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.HashSet;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -344,23 +344,16 @@ public class ExecuteRegionFunctionOpRetryTest {
     switch (functionIdentifierType) {
       case STRING:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.execute(executablePool,
-                resultCollector, retryAttempts,
+            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, FUNCTION_NAME,
+                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts,
                 testSupport.toBoolean(haStatus),
-                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, FUNCTION_NAME,
-                    executor, resultCollector, FUNCTION_HAS_RESULT, testSupport.toBoolean(haStatus),
-                    OPTIMIZE_FOR_WRITE_SETTING,
-                    true, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                false, Collections.EMPTY_SET));
+                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.execute(executablePool,
-                resultCollector, retryAttempts,
-                function.isHA(),
-                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, function,
-                    executor, resultCollector, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                false, Collections.EMPTY_SET));
+            () -> ExecuteRegionFunctionOp.execute(executablePool, REGION_NAME, function,
+                executor, resultCollector, FUNCTION_HAS_RESULT, retryAttempts,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
@@ -382,23 +375,16 @@ public class ExecuteRegionFunctionOpRetryTest {
     switch (functionIdentifierType) {
       case STRING:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.execute(executablePool,
-                resultCollector,
+            () -> ExecuteRegionFunctionOp.reexecute(executablePool, REGION_NAME, FUNCTION_NAME,
+                executor, resultCollector, FUNCTION_HAS_RESULT, new HashSet<>(),
                 retryAttempts, testSupport.toBoolean(haStatus),
-                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, FUNCTION_NAME,
-                    executor, resultCollector, FUNCTION_HAS_RESULT, testSupport.toBoolean(haStatus),
-                    OPTIMIZE_FOR_WRITE_SETTING, true, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                true, Collections.EMPTY_SET));
+                OPTIMIZE_FOR_WRITE_SETTING, DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       case OBJECT_REFERENCE:
         ignoreServerConnectivityException(
-            () -> ExecuteRegionFunctionOp.execute(executablePool,
-                resultCollector,
-                retryAttempts,
-                function.isHA(),
-                new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(REGION_NAME, function,
-                    executor, resultCollector, DEFAULT_CLIENT_FUNCTION_TIMEOUT),
-                true, Collections.EMPTY_SET));
+            () -> ExecuteRegionFunctionOp.reexecute(executablePool, REGION_NAME, function,
+                executor, resultCollector, FUNCTION_HAS_RESULT, new HashSet<>(), retryAttempts,
+                DEFAULT_CLIENT_FUNCTION_TIMEOUT));
         break;
       default:
         throw new AssertionError("unknown FunctionIdentifierType type: " + functionIdentifierType);
