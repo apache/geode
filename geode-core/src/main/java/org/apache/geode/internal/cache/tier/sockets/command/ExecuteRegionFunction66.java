@@ -314,11 +314,9 @@ public class ExecuteRegionFunction66 extends BaseCommand {
   String generateNullArgumentMessage(String regionName, Object function) {
     String message = null;
     if (regionName == null) {
-      message =
-          String.format("The input region for the execute function request is null");
+      message = "The input region for the execute function request is null";
     } else if (function == null) {
-      message =
-          String.format("The input function for the execute function request is null");
+      message = "The input function for the execute function request is null";
     }
 
     return message;

@@ -154,9 +154,8 @@ public class GeodeClusterManagementServiceBuilder implements
       String username = securityProps.getProperty(AuthInitialize.SECURITY_USERNAME);
       String password = securityProps.getProperty(AuthInitialize.SECURITY_PASSWORD);
       if (StringUtils.isBlank(username)) {
-        String message = String.format("You will need to set the buildWithHostAddress username and "
-            + "password or specify security-username and security-password in the properties when "
-            + "starting this geode server/client.");
+        String message =
+            "You will need to set the buildWithHostAddress username and password or specify security-username and security-password in the properties when starting this geode server/client.";
         throw new IllegalStateException(message);
       }
       javaBuilder.setCredentials(username, password);
