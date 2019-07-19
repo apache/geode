@@ -89,7 +89,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       ConfigurationPersistenceService persistenceService) {
     this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
         new MemberValidator(cache, persistenceService), new CacheElementValidator(),
-        new OperationManager(new OperationHistoryManager()));
+        new OperationManager(cache, new OperationHistoryManager()));
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager());
     managers.put(Pdx.class, new PdxManager());
@@ -375,10 +375,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
-    CompletableFuture<V> future = executorManager.submit(op).getFuture();
+    OperationInstance<A, V> operationInstance = executorManager.submit(op);
+    CompletableFuture<V> future = operationInstance.getFuture();
 
     ClusterManagementResult result = new ClusterManagementResult(
         ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
+    result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION + op.getEndpoint() + "/"
+        + operationInstance.getId());
+
     return new ClusterManagementOperationResult<>(result, future);
   }
 

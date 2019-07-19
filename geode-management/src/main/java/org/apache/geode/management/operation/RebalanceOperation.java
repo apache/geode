@@ -26,6 +26,24 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
   private List<String> includeRegions = new ArrayList<>();
   private List<String> excludeRegions = new ArrayList<>();
+  private boolean simulate;
+
+  public RebalanceOperation() {}
+
+  public RebalanceOperation(List<String> includeRegions,
+      List<String> excludeRegions, boolean simulate) {
+    this.includeRegions = includeRegions;
+    this.excludeRegions = excludeRegions;
+    this.simulate = simulate;
+  }
+
+  public boolean isSimulate() {
+    return simulate;
+  }
+
+  public void setSimulate(boolean simulate) {
+    this.simulate = simulate;
+  }
 
   public List<String> getIncludeRegions() {
     return includeRegions;

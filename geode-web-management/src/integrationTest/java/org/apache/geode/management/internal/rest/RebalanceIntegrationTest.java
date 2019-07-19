@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -79,10 +79,9 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void doOperation() throws Exception {
+  public void doOperation() {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceResult> result = client.startOperation(rebalance);
-    RebalanceResult rebalanceResult = result.getResult().get();
-    assertThat(rebalanceResult.getRebalanceResult()).contains("fake success");
+    assertThatThrownBy(result.getResult()::get).hasMessage("java.lang.RuntimeException: ERROR: java.util.concurrent.ExecutionException: java.lang.RuntimeException: rebalance returned info: Distributed system has no regions that can be rebalanced");
   }
 }

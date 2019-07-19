@@ -15,22 +15,32 @@
 
 package org.apache.geode.management.runtime;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.geode.management.api.JsonSerializable;
 
 public class RebalanceResult implements JsonSerializable {
-  private String rebalanceResult;
+  private List<Map<String, String>> perRegionResults = new ArrayList<>();
+  private Map<String, String> rebalanceSummary = new LinkedHashMap<>();
 
   public RebalanceResult() {}
 
-  public RebalanceResult(String rebalanceResult) {
-    this.rebalanceResult = rebalanceResult;
+  public List<Map<String, String>> getPerRegionResults() {
+    return perRegionResults;
   }
 
-  public String getRebalanceResult() {
-    return rebalanceResult;
+  public Map<String, String> getRebalanceSummary() {
+    return rebalanceSummary;
   }
 
-  public void setRebalanceResult(String rebalanceResult) {
-    this.rebalanceResult = rebalanceResult;
+  public void setPerRegionResults(List<Map<String, String>> perRegionResults) {
+    this.perRegionResults = perRegionResults;
+  }
+
+  public void setRebalanceSummary(Map<String, String> rebalanceSummary) {
+    this.rebalanceSummary = rebalanceSummary;
   }
 }

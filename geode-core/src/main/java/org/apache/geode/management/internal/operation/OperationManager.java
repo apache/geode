@@ -20,9 +20,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
@@ -31,11 +33,13 @@ import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
-  private final Map<Class<? extends ClusterManagementOperation>, Function> performers;
+  private final Map<Class<? extends ClusterManagementOperation>, BiFunction> performers;
   private final OperationHistoryManager historyManager;
   private final Executor executor;
+  private final InternalCache cache;
 
-  public OperationManager(OperationHistoryManager historyManager) {
+  public OperationManager(InternalCache cache, OperationHistoryManager historyManager) {
+    this.cache = cache;
     this.historyManager = historyManager;
     this.executor = LoggingExecutors.newThreadOnEachExecute("CMSOpPerformer");
 
@@ -48,7 +52,7 @@ public class OperationManager implements AutoCloseable {
    * for use by modules/extensions to install custom cluster management operations
    */
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void registerOperation(
-      Class<A> operationClass, Function<A, V> operationPerformer) {
+      Class<A> operationClass, BiFunction<Cache, A, V> operationPerformer) {
     performers.put(operationClass, operationPerformer);
   }
 
@@ -56,14 +60,14 @@ public class OperationManager implements AutoCloseable {
       A op) {
     String opId = UUID.randomUUID().toString();
 
-    Function<A, V> performer = getPerformer(op);
+    BiFunction<Cache, A, V> performer = getPerformer(op);
     if (performer == null) {
       throw new IllegalArgumentException(String.format("Operation type %s is not supported",
           op.getClass().getSimpleName()));
     }
 
     CompletableFuture<V> future =
-        CompletableFuture.supplyAsync(() -> performer.apply(op), executor);
+        CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor);
 
     OperationInstance<A, V> inst = new OperationInstance<>(future, opId, op);
 
@@ -72,7 +76,7 @@ public class OperationManager implements AutoCloseable {
   }
 
   @SuppressWarnings("unchecked")
-  private <A extends ClusterManagementOperation<V>, V extends JsonSerializable> Function<A, V> getPerformer(
+  private <C extends Cache, A extends ClusterManagementOperation<V>, V extends JsonSerializable> BiFunction<C, A, V> getPerformer(
       A op) {
     return performers.get(op.getClass());
   }

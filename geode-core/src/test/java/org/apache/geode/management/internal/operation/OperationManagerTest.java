@@ -24,6 +24,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
@@ -33,7 +34,7 @@ public class OperationManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new OperationManager(new OperationHistoryManager(1));
+    executorManager = new OperationManager(null, new OperationHistoryManager(1));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
@@ -103,7 +104,7 @@ public class OperationManagerTest {
     String testResult;
   }
 
-  static TestResult perform(TestOperation operation) {
+  static TestResult perform(Cache cache, TestOperation operation) {
     try {
       operation.latch.await();
     } catch (InterruptedException e) {
