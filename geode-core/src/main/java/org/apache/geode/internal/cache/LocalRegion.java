@@ -8168,8 +8168,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
    * Does not throw RegionDestroyedException even if destroyed
    */
   List debugGetSubregionNames() {
-    List names = new ArrayList();
-    names.addAll(subregions.keySet());
+    List names = new ArrayList(subregions.keySet());
     return names;
   }
 

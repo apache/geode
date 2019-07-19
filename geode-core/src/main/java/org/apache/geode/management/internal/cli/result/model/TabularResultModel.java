@@ -75,8 +75,7 @@ public class TabularResultModel extends AbstractResultModel {
   @JsonIgnore
   public List<String> getHeaders() {
     // this should maintain the original insertion order
-    List<String> headers = new ArrayList<>();
-    headers.addAll(table.keySet());
+    List<String> headers = new ArrayList<>(table.keySet());
     return headers;
   }
 

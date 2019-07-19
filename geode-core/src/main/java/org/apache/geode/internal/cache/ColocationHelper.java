@@ -118,7 +118,6 @@ public class ColocationHelper {
    */
   public static boolean checkMembersColocation(PartitionedRegion partitionedRegion,
       InternalDistributedMember member) {
-    List<PartitionRegionConfig> colocatedRegions = new ArrayList<PartitionRegionConfig>();
     List<PartitionRegionConfig> tempcolocatedRegions = new ArrayList<PartitionRegionConfig>();
     Region prRoot = PartitionedRegionHelper.getPRRoot(partitionedRegion.getCache());
     PartitionRegionConfig regionConfig =
@@ -128,7 +127,8 @@ public class ColocationHelper {
       return false;
     }
     tempcolocatedRegions.add(regionConfig);
-    colocatedRegions.addAll(tempcolocatedRegions);
+    List<PartitionRegionConfig> colocatedRegions =
+        new ArrayList<PartitionRegionConfig>(tempcolocatedRegions);
     PartitionRegionConfig prConf = null;
     do {
       PartitionRegionConfig tempToBeColocatedWith = tempcolocatedRegions.remove(0);
@@ -293,8 +293,8 @@ public class ColocationHelper {
     Map<String, PartitionedRegion> colocatedRegions = new HashMap<String, PartitionedRegion>();
     List<PartitionedRegion> colocatedByRegion = partitionedRegion.getColocatedByList();
     if (colocatedByRegion.size() != 0) {
-      List<PartitionedRegion> tempcolocatedRegions = new ArrayList<PartitionedRegion>();
-      tempcolocatedRegions.addAll(colocatedByRegion);
+      List<PartitionedRegion> tempcolocatedRegions =
+          new ArrayList<PartitionedRegion>(colocatedByRegion);
       do {
         PartitionedRegion pRegion = tempcolocatedRegions.remove(0);
         pRegion.waitOnBucketMetadataInitialization();

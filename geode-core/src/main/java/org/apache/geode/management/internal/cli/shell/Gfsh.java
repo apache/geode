@@ -999,8 +999,7 @@ public class Gfsh extends JLineShell {
   }
 
   public Map<String, String> getEnv() {
-    Map<String, String> map = new TreeMap<>();
-    map.putAll(env);
+    Map<String, String> map = new TreeMap<>(env);
     return map;
   }
 

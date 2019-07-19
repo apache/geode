@@ -150,8 +150,7 @@ public class FunctionExecutionNodePruner {
     ArrayList<InternalDistributedMember> nodesOfEqualSize =
         new ArrayList<InternalDistributedMember>();
     for (Map.Entry<InternalDistributedMember, HashSet<Integer>> entry : entrySet) {
-      HashSet<Integer> buckets = new HashSet<Integer>();
-      buckets.addAll(entry.getValue());
+      HashSet<Integer> buckets = new HashSet<Integer>(entry.getValue());
       buckets.removeAll(currentBucketSet);
 
       if (max < buckets.size()) {

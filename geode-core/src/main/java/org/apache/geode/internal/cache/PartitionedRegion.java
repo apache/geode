@@ -6636,8 +6636,7 @@ public class PartitionedRegion extends LocalRegion
     Map<Integer, SizeEntry> bucketSizes = null;
     if (buckets != null) {
       if (this.dataStore != null) {
-        List<Integer> list = new ArrayList<Integer>();
-        list.addAll(buckets);
+        List<Integer> list = new ArrayList<Integer>(buckets);
         bucketSizes = this.dataStore.getSizeLocallyForBuckets(list);
       }
     } else {
@@ -9384,11 +9383,10 @@ public class PartitionedRegion extends LocalRegion
             HeapEvictor.BUCKET_SORTING_INTERVAL);
       }
     }
-    List<BucketRegion> bucketList = new ArrayList<>();
     if (!bucketSortedOnce.get()) {
       while (bucketSortedOnce.get() == false);
     }
-    bucketList.addAll(this.sortedBuckets);
+    List<BucketRegion> bucketList = new ArrayList<>(this.sortedBuckets);
     return bucketList;
   }
 
@@ -10038,8 +10036,7 @@ public class PartitionedRegion extends LocalRegion
     // and primary nodes have been decided.
     // This is required in case of persistent PR and sender.
     Set<Integer> allBuckets = userPR.getDataStore().getAllLocalBucketIds();
-    Set<Integer> allBucketsClone = new HashSet<Integer>();
-    allBucketsClone.addAll(allBuckets);
+    Set<Integer> allBucketsClone = new HashSet<Integer>(allBuckets);
     while (allBucketsClone.size() != 0) {
       logger.debug(
           "Need to wait until partitionedRegionQueue <<{}>> is loaded with all the buckets",

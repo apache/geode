@@ -348,7 +348,6 @@ public class ClientMetadataService {
       logger.debug("ClientMetadataService: The server to buckets map is : {}", serverToBucketsMap);
     }
 
-    HashSet<Integer> currentBucketSet = new HashSet<Integer>();
     ServerLocation randomFirstServer = null;
     if (serverToBucketsMap.isEmpty()) {
       return null;
@@ -363,7 +362,7 @@ public class ClientMetadataService {
           "ClientMetadataService: Adding the server : {} which is random and buckets {} to prunedMap",
           randomFirstServer, bucketSet);
     }
-    currentBucketSet.addAll(bucketSet);
+    HashSet<Integer> currentBucketSet = new HashSet<Integer>(bucketSet);
     prunedServerToBucketsMap.put(randomFirstServer, bucketSet);
     serverToBucketsMap.remove(randomFirstServer);
 
@@ -405,8 +404,7 @@ public class ClientMetadataService {
     int max = -1;
     ArrayList<ServerLocation> nodesOfEqualSize = new ArrayList<ServerLocation>();
     for (Map.Entry<ServerLocation, HashSet<Integer>> entry : entrySet) {
-      HashSet<Integer> buckets = new HashSet<Integer>();
-      buckets.addAll(entry.getValue());
+      HashSet<Integer> buckets = new HashSet<Integer>(entry.getValue());
       buckets.removeAll(currentBucketSet);
 
       if (max < buckets.size()) {

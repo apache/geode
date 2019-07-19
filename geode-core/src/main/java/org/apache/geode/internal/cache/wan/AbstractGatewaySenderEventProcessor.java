@@ -510,9 +510,8 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           beforeExecute();
           try {
             // this list is access by ack reader thread so create new every time. #50220
-            filteredList = new ArrayList<GatewaySenderEventImpl>();
 
-            filteredList.addAll(events);
+            filteredList = new ArrayList<GatewaySenderEventImpl>(events);
 
             // If the exception has been set and its cause is an IllegalStateExcetption,
             // remove all events whose serialized value is no longer available
