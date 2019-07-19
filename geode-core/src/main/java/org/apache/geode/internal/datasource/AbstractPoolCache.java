@@ -404,9 +404,9 @@ public abstract class AbstractPoolCache implements ConnectionPoolCache, Serializ
     // Asif : Create a temp list which copies the connections in
     // the expired list & releases the lock on expired list
     // immediately . Then it is safe to clear the expiredConnList
-    List temp = new ArrayList();
+    List temp;
     synchronized (this.expiredConns) {
-      temp.addAll(this.expiredConns);
+      temp = new ArrayList(this.expiredConns);
       this.expiredConns.clear();
     }
     // Asif: destroy the connections contained in the temp list

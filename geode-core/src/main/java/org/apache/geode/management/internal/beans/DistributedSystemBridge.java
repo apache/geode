@@ -1012,8 +1012,7 @@ public class DistributedSystemBridge {
   }
 
   public ObjectName[] listDistributedRegionObjectNames() {
-    List<ObjectName> list = new ArrayList<>();
-    list.addAll(distrRegionMap.keySet());
+    List<ObjectName> list = new ArrayList<>(distrRegionMap.keySet());
     ObjectName[] objNames = new ObjectName[list.size()];
     return list.toArray(objNames);
   }

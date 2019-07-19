@@ -1684,8 +1684,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               }
             }
 
-            final HashMap<String, Map<Integer, List>> temp =
-                new HashMap<String, Map<Integer, List>>();
+            final HashMap<String, Map<Integer, List>> temp;
             buckToDispatchLock.lock();
             try {
               boolean wasEmpty = regionToDispatchedKeysMap.isEmpty();
@@ -1695,7 +1694,7 @@ public class ParallelGatewaySenderQueue implements RegionQueue {
               if (wasEmpty)
                 continue;
               // TODO: This should be optimized.
-              temp.putAll(regionToDispatchedKeysMap);
+              temp = new HashMap<String, Map<Integer, List>>(regionToDispatchedKeysMap);
               regionToDispatchedKeysMap.clear();
             } finally {
               buckToDispatchLock.unlock();

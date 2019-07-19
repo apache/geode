@@ -109,8 +109,7 @@ public class DestroyRegionCommand extends GfshCommand {
       return;
     }
 
-    Set<String> groupNames = new HashSet<String>();
-    groupNames.addAll(ccService.getGroups());
+    Set<String> groupNames = new HashSet<String>(ccService.getGroups());
     groupNames.add("cluster");
     for (String groupName : groupNames) {
       CacheConfig cacheConfig = ccService.getCacheConfig(groupName);
