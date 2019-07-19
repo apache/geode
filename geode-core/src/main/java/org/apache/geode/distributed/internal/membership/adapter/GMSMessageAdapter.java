@@ -108,6 +108,16 @@ public class GMSMessageAdapter implements GMSMessage {
   }
 
   @Override
+  public void resetTimestamp() {
+    geodeMessage.resetTimestamp();
+  }
+
+  @Override
+  public void setBytesRead(int amount) {
+    geodeMessage.setBytesRead(amount);
+  }
+
+  @Override
   public String toString() {
     return geodeMessage.toString();
   }

@@ -31,7 +31,6 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.deadlock.MessageDependencyMonitor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
@@ -319,10 +318,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    */
   public void setSender(InternalDistributedMember _sender) {
     this.sender = _sender;
-  }
-
-  public void setNetSender(NetMember netSender) {
-    this.sender = new InternalDistributedMember(netSender);
   }
 
   /**

@@ -1004,12 +1004,6 @@ public class GMSMembershipManager implements MembershipManager {
     InternalDistributedMember m = msg.getSender();
     boolean shunned = false;
 
-    // UDP messages received from surprise members will have partial IDs.
-    // Attempt to replace these with full IDs from the MembershipManager's view.
-    if (msg.getSender().isPartial()) {
-      replacePartialIdentifierInMessage(msg);
-    }
-
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
     // structure.
     if (isShunnedOrNew(m)) {
@@ -2666,7 +2660,15 @@ public class GMSMembershipManager implements MembershipManager {
 
     @Override
     public void processMessage(GMSMessage msg) {
-      handleOrDeferMessage((DistributionMessage) ((GMSMessageAdapter) msg).getGeodeMessage());
+      DistributionMessage distributionMessage =
+          (DistributionMessage) ((GMSMessageAdapter) msg).getGeodeMessage();
+      // UDP messages received from surprise members will have partial IDs.
+      // Attempt to replace these with full IDs from the MembershipManager's view.
+      if (distributionMessage.getSender().isPartial()) {
+        replacePartialIdentifierInMessage(distributionMessage);
+      }
+
+      handleOrDeferMessage(distributionMessage);
     }
 
     @Override

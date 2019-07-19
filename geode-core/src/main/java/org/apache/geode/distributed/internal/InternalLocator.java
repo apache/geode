@@ -327,16 +327,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
   }
 
   /**
-   * Start a locator that logs to stdout and does a wild-card bind. Use getPort() to retrieve
-   * the port that the locator is using. This is primarily useful for tests.
-   */
-  public static InternalLocator startLocator(Properties dsProperties, Path workingDirectory)
-      throws IOException {
-    return startLocator(0, new File(""), null, null, null, true, dsProperties,
-        null, workingDirectory);
-  }
-
-  /**
    * Creates a distribution locator that runs in this VM on the given port and bind address in the
    * specified working directory.
    *

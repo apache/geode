@@ -83,4 +83,13 @@ public abstract class AbstractGMSMessage implements DataSerializableFixedID, GMS
     return getClass().getSimpleName();
   }
 
+  @Override
+  public void resetTimestamp() {
+    // no-op
+  }
+
+  @Override
+  public void setBytesRead(int amount) {
+    // no-op
+  }
 }

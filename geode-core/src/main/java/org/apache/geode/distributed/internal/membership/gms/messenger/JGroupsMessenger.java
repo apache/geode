@@ -966,10 +966,7 @@ public class JGroupsMessenger implements Messenger {
       msg.setFlag(Flag.SKIP_BARRIER);
     }
 
-    // if (gfmsg instanceof DistributedCacheOperation.CacheOperationMessage) {
-    // we don't want to see our own cache operation messages
     msg.setTransientFlag(Message.TransientFlag.DONT_LOOPBACK);
-    // }
   }
 
 
@@ -1287,9 +1284,8 @@ public class JGroupsMessenger implements Messenger {
           return;
         }
 
-        // TODO values used to update statistics
-        // msg.resetTimestamp();
-        // msg.setBytesRead(jgmsg.getLength());
+        msg.resetTimestamp();
+        msg.setBytesRead(jgmsg.getLength());
 
         try {
 

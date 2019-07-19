@@ -51,4 +51,7 @@ public interface GMSMessage {
 
   GMSMember getSender();
 
+  void resetTimestamp();
+
+  void setBytesRead(int amount);
 }
