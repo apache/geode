@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.api;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -24,7 +26,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * servers.
  */
 @Experimental
-public interface ClusterManagementService {
+public interface ClusterManagementService extends AutoCloseable {
 
   String FEATURE_FLAG = "gemfire.enable-experimental-cluster-management-service";
 
@@ -67,6 +69,18 @@ public interface ClusterManagementService {
       T config);
 
   /**
+   * This method will launch a cluster management operation asynchronously.
+   *
+   * @param op the operation type plus any parameters.
+   * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
+   * @param <V> the return type of the operation
+   * @return a {@link ClusterManagementOperationResult} holding a {@link CompletableFuture} (if the
+   *         operation was launched successfully) or an error code otherwise.
+   */
+  <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op);
+
+  /**
    * Test to see if this instance of ClusterManagementService retrieved from the client side is
    * properly connected to the locator or not
    *
@@ -74,4 +88,9 @@ public interface ClusterManagementService {
    */
   boolean isConnected();
 
+  /**
+   * release any resources controlled by this service
+   */
+  @Override
+  void close();
 }

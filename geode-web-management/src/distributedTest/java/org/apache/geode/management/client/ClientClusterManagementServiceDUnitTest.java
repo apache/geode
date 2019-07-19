@@ -54,7 +54,7 @@ public class ClientClusterManagementServiceDUnitTest {
   private WebApplicationContext webApplicationContext;
 
   @Rule
-  public ClusterStartupRule cluster = new ClusterStartupRule(1);
+  public ClusterStartupRule cluster = new ClusterStartupRule(3);
 
   private ClusterManagementService client;
   private LocatorWebContext webContext;

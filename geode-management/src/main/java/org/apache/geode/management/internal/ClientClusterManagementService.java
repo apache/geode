@@ -16,15 +16,21 @@
 package org.apache.geode.management.internal;
 
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
+import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -49,9 +55,11 @@ public class ClientClusterManagementService implements ClusterManagementService 
   // the context (including /v2), it needs to be set up this way so that spring test runner's
   // injected RequestFactory can work
   private final RestTemplate restTemplate;
+  private final ScheduledExecutorService longRunningStatusPollingThreadPool;
 
   ClientClusterManagementService(RestTemplate restTemplate) {
     this.restTemplate = restTemplate;
+    this.longRunningStatusPollingThreadPool = Executors.newScheduledThreadPool(1);
   }
 
   @Override
@@ -104,6 +112,33 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody();
   }
 
+  @Override
+  @SuppressWarnings("unchecked")
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+      A op) {
+    final ClusterManagementResult result;
+
+    // make the REST call to start the operation
+    result = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
+        ClusterManagementResult.class).getBody();
+
+    // our restTemplate requires the url to be modified to start from "/v2"
+    String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
+
+    // complete the future by polling the check-status REST endpoint
+    CompletableFutureProxy<V> operationResult =
+        new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool);
+
+    return new ClusterManagementOperationResult<>(result, operationResult);
+  }
+
+  private static String stripPrefix(String prefix, String s) {
+    if (s.startsWith(prefix)) {
+      return s.substring(prefix.length());
+    }
+    return s;
+  }
+
   private String getEndpoint(CacheElement config) {
     checkIsRestful(config);
     String endpoint = ((RestfulEndpoint) config).getEndpoint();
@@ -137,4 +172,8 @@ public class ClientClusterManagementService implements ClusterManagementService 
         .getBody().equals("pong");
   }
 
+  @Override
+  public void close() {
+    longRunningStatusPollingThreadPool.shutdownNow();
+  }
 }

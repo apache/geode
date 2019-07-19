@@ -47,6 +47,10 @@ public class ClusterManagementResult {
     // configuration.
     // the operation is still deemed unsuccessful.
     FAIL_TO_PERSIST,
+    // async operation launched successfully
+    ACCEPTED,
+    // async operation has not yet completed
+    IN_PROGRESS,
     // operation is successful, configuration is realized and persisted
     OK
   }
@@ -67,6 +71,13 @@ public class ClusterManagementResult {
   public ClusterManagementResult(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
     this.statusMessage = message;
+  }
+
+  public ClusterManagementResult(ClusterManagementResult copyFrom) {
+    this.memberStatuses = copyFrom.memberStatuses;
+    this.statusCode = copyFrom.statusCode;
+    this.statusMessage = copyFrom.statusMessage;
+    this.uri = copyFrom.uri;
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
@@ -112,7 +123,8 @@ public class ClusterManagementResult {
 
   @JsonIgnore
   public boolean isSuccessful() {
-    return statusCode == StatusCode.OK;
+    return statusCode == StatusCode.OK || statusCode == StatusCode.ACCEPTED
+        || statusCode == StatusCode.IN_PROGRESS;
   }
 
   public StatusCode getStatusCode() {

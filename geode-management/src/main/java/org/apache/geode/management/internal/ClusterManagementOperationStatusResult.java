@@ -12,35 +12,34 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.management.internal;
 
-package org.apache.geode.management.configuration;
 
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.runtime.MemberInformation;
+import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-public class MemberConfig extends CacheElement implements RestfulEndpoint,
-    CorrespondWith<MemberInformation> {
+public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
+    extends ClusterManagementResult {
+  public ClusterManagementOperationStatusResult() {}
 
-  public static final String MEMBER_CONFIG_ENDPOINT = "/members";
-
-  private String id;
-
-  public void setId(String id) {
-    this.id = id;
+  public ClusterManagementOperationStatusResult(boolean success, String message) {
+    super(success, message);
   }
 
-  @Override
-  public String getId() {
-    return id;
+  public ClusterManagementOperationStatusResult(StatusCode statusCode, String message) {
+    super(statusCode, message);
   }
 
-  @Override
-  public String getEndpoint() {
-    return MEMBER_CONFIG_ENDPOINT;
+  private V operationResult;
+
+  public V getResult() {
+    return operationResult;
+  }
+
+  public void setResult(V operationResult) {
+    this.operationResult = operationResult;
   }
 }
