@@ -29,17 +29,23 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 import org.mockito.stubbing.Answer;
 
 import org.apache.geode.CancelCriterion;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.partitioned.InternalPRInfo;
@@ -49,6 +55,7 @@ import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
+@RunWith(JUnitParamsRunner.class)
 public class PRHARedundancyProviderTest {
 
   private InternalCache cache;
@@ -240,7 +247,9 @@ public class PRHARedundancyProviderTest {
   }
 
   @Test
-  public void doesNotMarkStartTaskCompleteIfRebalanceThrows() {
+  @Parameters({"RUNTIME", "CANCEL", "REGION_DESTROYED"})
+  @TestCaseName("{method}[{index}]: {params}")
+  public void startTaskCompletesExceptionallyIfExceptionIsThrown(ExceptionToThrow exceptionToThrow) {
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 
@@ -262,13 +271,16 @@ public class PRHARedundancyProviderTest {
     @SuppressWarnings("unchecked")
     CompletableFuture<Void> providerStartupTask = mock(CompletableFuture.class);
 
+    Exception exception = exceptionToThrow.getException();
+
     prHaRedundancyProvider = new PRHARedundancyProvider(partitionedRegion, resourceManager,
         (a, b) -> mock(PersistentBucketRecoverer.class),
-        PRHARedundancyProviderTest::createThrowingRebalanceOp, providerStartupTask);
+        (a, b, c, d, e) -> createThrowingRebalanceOp(exception), providerStartupTask);
 
     prHaRedundancyProvider.startRedundancyRecovery();
 
     verify(providerStartupTask, never()).complete(any());
+    verify(providerStartupTask).completeExceptionally(exception);
   }
 
   private static PartitionedRegionRebalanceOp createRebalanceOp(PartitionedRegion region,
@@ -277,13 +289,26 @@ public class PRHARedundancyProviderTest {
     return mock(PartitionedRegionRebalanceOp.class);
   }
 
-  private static PartitionedRegionRebalanceOp createThrowingRebalanceOp(PartitionedRegion region,
-      boolean simulate, RebalanceDirector director, boolean replaceOfflineData,
-      boolean isRebalance) {
+  private static PartitionedRegionRebalanceOp createThrowingRebalanceOp(Exception exception) {
     PartitionedRegionRebalanceOp rebalanceOp = mock(PartitionedRegionRebalanceOp.class);
-    when(rebalanceOp.execute())
-        .thenThrow(new RuntimeException("Exception deliberately thrown by the test"));
+    when(rebalanceOp.execute()).thenThrow(exception);
     return rebalanceOp;
+  }
+
+  private enum ExceptionToThrow {
+    RUNTIME(new RuntimeException("Runtime error")),
+    CANCEL(new CacheClosedException("Cache closed")),
+    REGION_DESTROYED(new RegionDestroyedException("Region destroyed", "/Region"));
+
+    private final Exception exception;
+
+    ExceptionToThrow(Exception e) {
+      exception = e;
+    }
+
+    Exception getException() {
+      return exception;
+    }
   }
 
   private static class ThreadlessPersistentBucketRecoverer extends PersistentBucketRecoverer {
