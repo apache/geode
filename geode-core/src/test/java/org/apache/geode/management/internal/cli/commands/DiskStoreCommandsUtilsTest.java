@@ -91,4 +91,34 @@ public class DiskStoreCommandsUtilsTest {
         DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(distributedSystemMXBean,
             memberName, diskStoreName)).isFalse();
   }
+
+  @Test
+  public void diskStoreBeanExistsMemberDiskStoreContainsNullArray() throws Exception {
+    Map<String, String[]> memberDiskStore = new HashMap<>();
+    memberDiskStore.put(memberName, null);
+    ObjectName objectName = new ObjectName("");
+
+    DistributedSystemMXBean distributedSystemMXBean = Mockito.mock(DistributedSystemMXBean.class);
+    doReturn(memberDiskStore).when(distributedSystemMXBean).listMemberDiskstore();
+    doReturn(objectName).when(distributedSystemMXBean).fetchDiskStoreObjectName(any(), any());
+
+    assertThat(
+        DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(distributedSystemMXBean,
+            memberName, diskStoreName)).isFalse();
+  }
+
+  @Test
+  public void diskStoreBeanExistsMemberDiskStoreNamesHasNullValues() throws Exception {
+    Map<String, String[]> memberDiskStore = new HashMap<>();
+    memberDiskStore.put(memberName, new String[]{null, null});
+    ObjectName objectName = new ObjectName("");
+
+    DistributedSystemMXBean distributedSystemMXBean = Mockito.mock(DistributedSystemMXBean.class);
+    doReturn(memberDiskStore).when(distributedSystemMXBean).listMemberDiskstore();
+    doReturn(objectName).when(distributedSystemMXBean).fetchDiskStoreObjectName(any(), any());
+
+    assertThat(
+        DiskStoreCommandsUtils.diskStoreBeanAndMemberBeanDiskStoreExists(distributedSystemMXBean,
+            memberName, diskStoreName)).isFalse();
+  }
 }

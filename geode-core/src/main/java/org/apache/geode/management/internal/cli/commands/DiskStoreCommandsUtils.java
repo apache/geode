@@ -99,7 +99,10 @@ class DiskStoreCommandsUtils {
         .filter(Objects::nonNull)
         .map(DistributedSystemMXBean::listMemberDiskstore)
         .filter(Objects::nonNull)
-        .flatMap(mds -> Stream.of(mds.get(memberName)))
+        .map(mds -> mds.get(memberName))
+        .filter(Objects::nonNull)
+        .flatMap(Stream::of)
+        .filter(Objects::nonNull)
         .anyMatch(dsName -> dsName.equals(diskStore));
   }
 }
