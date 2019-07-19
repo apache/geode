@@ -30,6 +30,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.cache.execute.FunctionInvocationTargetException;
@@ -37,7 +38,6 @@ import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
@@ -62,18 +62,14 @@ public class ExecuteRegionFunctionSingleHopOp {
   private ExecuteRegionFunctionSingleHopOp() {}
 
 
-  public static void execute(ExecutablePool pool, Region region,
-      ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
-      Map<ServerLocation, ? extends HashSet> serverToFilterMap,
-      int mRetryAttempts,
-      boolean isHA,
-      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction,
-      final Supplier<AbstractOp> executeRegionFunctionOpSupplier) {
-
-    Set<String> failedNodes = new HashSet<>();
-
-    ClientMetadataService cms = ((InternalCache) region.getCache()).getClientMetadataService();
+  public static void execute(final ExecutablePool pool, final Region region,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector,
+      final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
+      final int mRetryAttempts,
+      final boolean isHA,
+      final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> regionFunctionSingleHopOpFunction,
+      final Supplier<ExecuteRegionFunctionOpImpl> executeRegionFunctionOpSupplier) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
     if (isDebugEnabled) {
@@ -81,10 +77,10 @@ public class ExecuteRegionFunctionSingleHopOp {
           serverToFilterMap);
     }
 
-    List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
+    final List<SingleHopOperationCallable> callableTasks = constructAndGetExecuteFunctionTasks(
         serverRegionExecutor, serverToFilterMap, (PoolImpl) pool,
-        cms, regionFunctionSingleHopOpFunction);
-
+        regionFunctionSingleHopOpFunction);
+    final Set<String> failedNodes = new HashSet<>();
     final int retryAttempts =
         SingleHopClientExecutor.submitAllHA(callableTasks, (LocalRegion) region, isHA,
             resultCollector, failedNodes, mRetryAttempts, ((PoolImpl) pool));
@@ -98,14 +94,8 @@ public class ExecuteRegionFunctionSingleHopOp {
     if (retryAttempts > 0) {
       resultCollector.clearResults();
 
-      final ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl executeRegionFunctionOp =
-          (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-              .get();
-
-      ExecuteRegionFunctionOp.execute(pool,
-          resultCollector, retryAttempts - 1,
-          isHA,
-          executeRegionFunctionOp, true, failedNodes);
+      ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts - 1, isHA,
+          executeRegionFunctionOpSupplier.get(), true, failedNodes);
     }
 
     resultCollector.endResults();
@@ -113,23 +103,19 @@ public class ExecuteRegionFunctionSingleHopOp {
 
 
   private static List<SingleHopOperationCallable> constructAndGetExecuteFunctionTasks(
-      ServerRegionFunctionExecutor serverRegionExecutor,
-      final Map<ServerLocation, ? extends HashSet> serverToFilterMap,
-      final PoolImpl pool,
-      ClientMetadataService cms,
-      final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> opFactory) {
-    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
-    ArrayList<ServerLocation> servers = new ArrayList<>(serverToFilterMap.keySet());
-
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final Map<ServerLocation, ? extends HashSet> serverToFilterMap, final PoolImpl pool,
+      final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> opFactory) {
+    final Set<ServerLocation> servers = serverToFilterMap.keySet();
     if (logger.isDebugEnabled()) {
       logger.debug("Constructing tasks for the servers {}", servers);
     }
+
+    final List<SingleHopOperationCallable> tasks = new ArrayList<>();
     for (ServerLocation server : servers) {
       ServerRegionFunctionExecutor executor = (ServerRegionFunctionExecutor) serverRegionExecutor
           .withFilter(serverToFilterMap.get(server));
-
       AbstractOp op = opFactory.apply(executor);
-
       SingleHopOperationCallable task =
           new SingleHopOperationCallable(new ServerLocation(server.getHostName(), server.getPort()),
               pool, op, UserAttributes.userAttributes.get());

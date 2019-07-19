@@ -197,8 +197,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      srp.executeFunction(function, this, collector, hasResult,
-          getTimeoutMs());
+      srp.executeFunction(function, this, collector, hasResult, getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -219,8 +218,8 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       validateExecution(null, null);
       long start = stats.startTime();
       stats.startFunctionExecution(true);
-      srp.executeFunction(functionId, this, collector, hasResult, isHA,
-          optimizeForWrite, getTimeoutMs());
+      srp.executeFunction(functionId, this, collector, hasResult, isHA, optimizeForWrite,
+          getTimeoutMs());
       stats.endFunctionExecution(start, true);
       return collector;
     } catch (FunctionException functionException) {
@@ -240,7 +239,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       validateExecution(function, null);
       long start = stats.startTime();
       stats.startFunctionExecution(false);
-      srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult, false);
+      srp.executeFunctionNoAck(region.getFullPath(), function, this, hasResult);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(false);
@@ -260,7 +259,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       long start = stats.startTime();
       stats.startFunctionExecution(false);
       srp.executeFunctionNoAck(region.getFullPath(), functionId, this, hasResult, isHA,
-          optimizeForWrite, false);
+          optimizeForWrite);
       stats.endFunctionExecution(start, false);
     } catch (FunctionException functionException) {
       stats.endFunctionExecutionWithException(false);
@@ -353,7 +352,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       byte[] functionAttributes = getFunctionAttributes(functionName);
 
       if (functionAttributes == null) {
-        // GEODE-5618: Set authentication properties before executing the internal function.
+        // Set authentication properties before executing the internal function.
         try {
           if (proxyCache != null) {
             if (proxyCache.isClosed()) {

@@ -15,8 +15,12 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static java.util.Collections.emptySet;
+import static org.apache.commons.collections.MapUtils.isEmpty;
+import static org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.execute;
+import static org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.execute;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +37,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Region.Entry;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.internal.ContainsKeyOp.MODE;
+import org.apache.geode.cache.client.internal.ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl;
+import org.apache.geode.cache.client.internal.ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.internal.ServerLocation;
@@ -58,7 +64,6 @@ import org.apache.geode.internal.logging.LogService;
  *
  * @since GemFire 5.7
  */
-@SuppressWarnings("deprecation")
 public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAccess {
   private static final Logger logger = LogService.getLogger();
 
@@ -658,180 +663,106 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
     return region;
   }
 
-  public void executeFunction(Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
-      byte hasResult, final int timeoutMs) {
-
+  public void executeFunction(final Function function,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector, final byte hasResult, final int timeoutMs) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 1, function,
         serverRegionExecutor, resultCollector, hasResult);
 
-    int retryAttempts = pool.getRetryAttempts();
-    boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
+    final Supplier<ExecuteRegionFunctionOpImpl> executeRegionFunctionOpSupplier =
+        () -> new ExecuteRegionFunctionOpImpl(regionName, function, serverRegionExecutor,
+            resultCollector, timeoutMs);
+    final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> unfilteredSingleHopOpFunction =
+        executor -> new ExecuteRegionFunctionSingleHopOpImpl(region.getFullPath(), function,
+            executor, resultCollector, hasResult, emptySet(), true, timeoutMs);
+    final boolean executeBucketSetFlag = serverRegionExecutor.getExecuteOnBucketSetFlag();
+    final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> filteredSingleHopOpFunction =
+        executor -> new ExecuteRegionFunctionSingleHopOpImpl(region.getFullPath(), function,
+            executor, resultCollector, hasResult, emptySet(), executeBucketSetFlag, timeoutMs);
 
-    final Supplier<AbstractOp> executeRegionFunctionOpSupplier =
-        () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
-            function, serverRegionExecutor, resultCollector, timeoutMs);
-
-    if (pool.getPRSingleHopEnabled() && !inTransaction) {
-      ClientMetadataService cms = region.getCache().getClientMetadataService();
-      if (cms.isMetadataStable()) {
-
-        if (serverRegionExecutor.getFilter().isEmpty()) {
-          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
-              cms.groupByServerToAllBuckets(region, function.optimizeForWrite());
-
-          if (serverToBuckets == null || serverToBuckets.isEmpty()) {
-
-            ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
-                (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                    .get(),
-                false, Collections.EMPTY_SET);
-
-            cms.scheduleGetPRMetaData(region, false);
-
-          } else {
-
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
-                executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    region.getFullPath(), function, executor, resultCollector,
-                    hasResult, Collections.EMPTY_SET, true, timeoutMs);
-
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region, serverRegionExecutor,
-                resultCollector, serverToBuckets, retryAttempts, function.isHA(),
-                regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
-          }
-        } else {
-          boolean isBucketFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, HashSet> serverToFilterMap =
-              cms.getServerToFilterMap(serverRegionExecutor.getFilter(), region,
-                  function.optimizeForWrite(), isBucketFilter);
-
-          if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
-
-            ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
-                (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                    .get(),
-                false, Collections.EMPTY_SET);
-
-            cms.scheduleGetPRMetaData(region, false);
-
-          } else {
-
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
-                executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    region.getFullPath(), function, executor, resultCollector,
-                    hasResult, Collections.EMPTY_SET, isBucketFilter, timeoutMs);
-
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
-                function.isHA(), regionFunctionSingleHopOpFunction,
-                executeRegionFunctionOpSupplier);
-          }
-        }
-      } else {
-        cms.scheduleGetPRMetaData(region, false);
-        ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
-            (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                .get(),
-            false, Collections.EMPTY_SET);
-      }
-    } else {
-      ExecuteRegionFunctionOp.execute(pool,
-          resultCollector, retryAttempts, function.isHA(),
-          (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-              .get(),
-          false, Collections.EMPTY_SET);
-    }
+    executeFunction(serverRegionExecutor, resultCollector, function.isHA(),
+        function.optimizeForWrite(), executeRegionFunctionOpSupplier,
+        unfilteredSingleHopOpFunction, filteredSingleHopOpFunction, executeBucketSetFlag);
   }
 
-
-  public void executeFunction(String functionId,
-      ServerRegionFunctionExecutor serverRegionExecutor,
-      ResultCollector resultCollector,
-      byte hasResult, boolean isHA, boolean optimizeForWrite,
-      final int timeoutMs) {
-
+  public void executeFunction(final String functionId,
+      final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector, final byte hasResult, final boolean isHA,
+      final boolean optimizeForWrite, final int timeoutMs) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 2, functionId,
         serverRegionExecutor, resultCollector, hasResult, isHA, optimizeForWrite);
 
-    int retryAttempts = pool.getRetryAttempts();
+    final Supplier<ExecuteRegionFunctionOpImpl> executeRegionFunctionOpSupplier =
+        () -> new ExecuteRegionFunctionOpImpl(regionName, functionId, serverRegionExecutor,
+            resultCollector, hasResult, isHA, optimizeForWrite, true, timeoutMs);
+    final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> unfilteredSingleHopOpFunction =
+        executor -> new ExecuteRegionFunctionSingleHopOpImpl(region.getFullPath(),
+            functionId, executor, resultCollector, hasResult, emptySet(), true, isHA,
+            optimizeForWrite, timeoutMs);
+    final boolean executeBucketSetFlag = serverRegionExecutor.getExecuteOnBucketSetFlag();
+    final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> filteredSingleHopOpFunction =
+        executor -> new ExecuteRegionFunctionSingleHopOpImpl(region.getFullPath(), functionId,
+            executor, resultCollector, hasResult, emptySet(),
+            executeBucketSetFlag, isHA, optimizeForWrite, timeoutMs);
 
-    final Supplier<AbstractOp> executeRegionFunctionOpSupplier =
-        () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
-            functionId, serverRegionExecutor, resultCollector, hasResult, isHA,
-            optimizeForWrite, true, timeoutMs);
+    executeFunction(serverRegionExecutor, resultCollector, isHA, optimizeForWrite,
+        executeRegionFunctionOpSupplier, unfilteredSingleHopOpFunction, filteredSingleHopOpFunction,
+        executeBucketSetFlag);
+  }
 
-    if (pool.getPRSingleHopEnabled()) {
-      ClientMetadataService cms = region.getCache().getClientMetadataService();
+  private void executeFunction(final ServerRegionFunctionExecutor serverRegionExecutor,
+      final ResultCollector resultCollector, final boolean isHA, final boolean optimizeForWrite,
+      final Supplier<ExecuteRegionFunctionOpImpl> executeRegionFunctionOpSupplier,
+      final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> unfilteredSingleHopOpFunction,
+      final java.util.function.Function<ServerRegionFunctionExecutor, ExecuteRegionFunctionSingleHopOpImpl> filteredSingleHopOpFunction,
+      final boolean executeBucketSetFlag) {
+    final int retryAttempts = pool.getRetryAttempts();
+    if (pool.getPRSingleHopEnabled() && !isInTransaction()) {
+      final ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
-
         if (serverRegionExecutor.getFilter().isEmpty()) {
-          HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
+          final HashMap<ServerLocation, HashSet<Integer>> serverToBuckets =
               cms.groupByServerToAllBuckets(region, optimizeForWrite);
-
-          if (serverToBuckets == null || serverToBuckets.isEmpty()) {
-            ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, isHA,
-                (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                    .get(),
-                false, Collections.EMPTY_SET);
-
+          if (isEmpty(serverToBuckets)) {
+            execute(pool, resultCollector, retryAttempts, isHA,
+                executeRegionFunctionOpSupplier.get(), false, emptySet());
             cms.scheduleGetPRMetaData(region, false);
           } else {
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
-                executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    region.getFullPath(), functionId, executor1, resultCollector, hasResult,
-                    Collections.EMPTY_SET, true, isHA, optimizeForWrite, timeoutMs);
-
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts, isHA,
-                regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
+            execute(pool, region, serverRegionExecutor, resultCollector, serverToBuckets,
+                retryAttempts, isHA,
+                unfilteredSingleHopOpFunction, executeRegionFunctionOpSupplier);
           }
 
         } else {
-          boolean isBucketsAsFilter = serverRegionExecutor.getExecuteOnBucketSetFlag();
-          Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(
-              serverRegionExecutor.getFilter(), region, optimizeForWrite, isBucketsAsFilter);
-
-          if (serverToFilterMap == null || serverToFilterMap.isEmpty()) {
-            ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, isHA,
-                (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                    .get(),
-                false, Collections.EMPTY_SET);
-
+          final Map<ServerLocation, HashSet> serverToFilterMap = cms.getServerToFilterMap(
+              serverRegionExecutor.getFilter(), region, optimizeForWrite, executeBucketSetFlag);
+          if (isEmpty(serverToFilterMap)) {
+            execute(pool, resultCollector, retryAttempts, isHA,
+                executeRegionFunctionOpSupplier.get(), false, emptySet());
             cms.scheduleGetPRMetaData(region, false);
           } else {
-
-            final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
-                executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
-                    region.getFullPath(), functionId, executor, resultCollector, hasResult,
-                    Collections.EMPTY_SET, false, isHA, optimizeForWrite, timeoutMs);
-
-            ExecuteRegionFunctionSingleHopOp.execute(pool, region,
-                serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
-                isHA, regionFunctionSingleHopOpFunction, executeRegionFunctionOpSupplier);
+            execute(pool, region, serverRegionExecutor, resultCollector, serverToFilterMap,
+                retryAttempts, isHA,
+                filteredSingleHopOpFunction, executeRegionFunctionOpSupplier);
           }
         }
       } else {
         cms.scheduleGetPRMetaData(region, false);
-        ExecuteRegionFunctionOp.execute(pool,
-            resultCollector, retryAttempts, isHA,
-            (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-                .get(),
-            false, Collections.EMPTY_SET);
+        execute(pool, resultCollector, retryAttempts, isHA,
+            executeRegionFunctionOpSupplier.get(), false, emptySet());
       }
     } else {
-      ExecuteRegionFunctionOp.execute(pool,
-          resultCollector, retryAttempts, isHA,
-          (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
-              .get(),
-          false, Collections.EMPTY_SET);
+      execute(pool, resultCollector, retryAttempts, isHA,
+          executeRegionFunctionOpSupplier.get(), false, emptySet());
     }
   }
 
+  private boolean isInTransaction() {
+    return TXManagerImpl.getCurrentTXState() != null;
+  }
 
   public void executeFunctionNoAck(String rgnName, Function function,
-      ServerRegionFunctionExecutor serverRegionExecutor, byte hasResult, boolean replaying) {
+      ServerRegionFunctionExecutor serverRegionExecutor, byte hasResult) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 3, function,
         serverRegionExecutor, hasResult);
     ExecuteRegionFunctionNoAckOp.execute(pool, rgnName, function, serverRegionExecutor,
@@ -840,7 +771,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
 
   public void executeFunctionNoAck(String rgnName, String functionId,
       ServerRegionFunctionExecutor serverRegionExecutor, byte hasResult, boolean isHA,
-      boolean optimizeForWrite, boolean replaying) {
+      boolean optimizeForWrite) {
     recordTXOperation(ServerRegionOperation.EXECUTE_FUNCTION, null, 4, functionId,
         serverRegionExecutor, hasResult);
     ExecuteRegionFunctionNoAckOp.execute(pool, rgnName, functionId, serverRegionExecutor,
