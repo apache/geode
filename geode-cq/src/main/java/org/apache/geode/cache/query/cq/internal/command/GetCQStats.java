@@ -92,7 +92,6 @@ public class GetCQStats extends BaseCQCommand {
 
     long oldStart = start;
     start = DistributionStats.getStatTime();
-    stats.incProcessGetCqStatsTime(start - oldStart);
   }
 
 }

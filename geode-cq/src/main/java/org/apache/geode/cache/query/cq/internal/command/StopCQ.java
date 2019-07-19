@@ -126,7 +126,6 @@ public class StopCQ extends BaseCQCommand {
 
     long oldStart = start;
     start = DistributionStats.getStatTime();
-    stats.incProcessStopCqTime(start - oldStart);
   }
 
 }

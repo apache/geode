@@ -185,15 +185,13 @@ public class MessageJUnitTest {
         try {
           client = serverSocket.accept();
           Thread.sleep(12000);
-        } catch (InterruptedException e) {
-
-        } catch (IOException e) {
+        } catch (InterruptedException | IOException ignored) {
 
         } finally {
           if (client != null && !client.isClosed()) {
             try {
               client.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
           }
         }

@@ -138,7 +138,6 @@ public class ExecuteCQ extends BaseCQCommand {
 
       // Update the CQ statistics.
       cqQuery.getVsdStats().setCqInitialResultsTime(DistributionStats.getStatTime() - start);
-      stats.incProcessExecuteCqWithIRTime(DistributionStats.getStatTime() - start);
       // logger.fine("Time spent in execute with initial results :" +
       // DistributionStats.getStatTime() + ", " + oldstart);
     } finally { // To handle any exception.
@@ -159,7 +158,6 @@ public class ExecuteCQ extends BaseCQCommand {
           clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();
-      stats.incProcessCreateCqTime(start2 - start);
     }
     serverConnection.setAsTrue(RESPONDED);
   }

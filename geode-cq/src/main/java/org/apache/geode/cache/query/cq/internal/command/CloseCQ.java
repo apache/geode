@@ -123,7 +123,6 @@ public class CloseCQ extends BaseCQCommand {
 
     long oldStart = start;
     start = DistributionStats.getStatTime();
-    stats.incProcessCloseCqTime(start - oldStart);
   }
 
 }

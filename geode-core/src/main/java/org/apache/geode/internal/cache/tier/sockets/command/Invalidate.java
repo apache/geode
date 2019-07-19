@@ -64,7 +64,6 @@ public class Invalidate extends BaseCommand {
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
-      stats.incReadInvalidateRequestTime(start - oldStart);
     }
     // Retrieve the data from the message parts
     regionNamePart = clientMessage.getPart(0);
@@ -194,7 +193,6 @@ public class Invalidate extends BaseCommand {
     {
       long oldStart = start;
       start = DistributionStats.getStatTime();
-      stats.incProcessInvalidateTime(start - oldStart);
     }
     if (region instanceof PartitionedRegion) {
       PartitionedRegion pr = (PartitionedRegion) region;
@@ -213,7 +211,6 @@ public class Invalidate extends BaseCommand {
       logger.debug("{}: Sent invalidate response for region {} key {}", serverConnection.getName(),
           regionName, key);
     }
-    stats.incWriteInvalidateResponseTime(DistributionStats.getStatTime() - start);
   }
 
   protected void writeReply(Message origMsg, ServerConnection servConn, VersionTag tag)

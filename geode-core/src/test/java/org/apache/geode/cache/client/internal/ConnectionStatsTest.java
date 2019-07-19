@@ -58,7 +58,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -67,7 +67,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -85,7 +85,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPutSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -94,7 +94,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPutSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -112,7 +112,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endDestroySend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -121,7 +121,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endDestroySend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -139,7 +139,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endDestroyRegionSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -148,7 +148,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endDestroyRegionSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -166,7 +166,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endClearSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -175,7 +175,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endClearSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -193,7 +193,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endContainsKeySend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -202,7 +202,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endContainsKeySend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -220,7 +220,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endKeySetSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -229,7 +229,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endKeySetSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -247,7 +247,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterInterestSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -256,7 +256,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterInterestSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -274,7 +274,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endUnregisterInterestSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -283,7 +283,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endUnregisterInterestSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -301,7 +301,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endQuerySend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -310,7 +310,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endQuerySend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -328,7 +328,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCreateCQSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -337,7 +337,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCreateCQSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -355,7 +355,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endStopCQSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -364,7 +364,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endStopCQSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -382,7 +382,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCloseCQSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -391,7 +391,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCloseCQSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -409,7 +409,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetDurableCQsSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -418,7 +418,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetDurableCQsSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -436,7 +436,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGatewayBatchSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -445,7 +445,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGatewayBatchSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -463,7 +463,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endReadyForEventsSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -472,7 +472,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endReadyForEventsSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -490,7 +490,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endMakePrimarySend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -499,7 +499,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endMakePrimarySend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -517,7 +517,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCloseConSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -526,7 +526,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCloseConSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -544,7 +544,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPrimaryAckSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -553,7 +553,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPrimaryAckSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -571,7 +571,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPingSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -580,7 +580,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPingSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -598,7 +598,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterInstantiatorsSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -607,7 +607,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterInstantiatorsSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -625,7 +625,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterDataSerializersSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -634,7 +634,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRegisterDataSerializersSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -652,7 +652,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPutAllSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -661,7 +661,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endPutAllSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -679,7 +679,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRemoveAllSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -688,7 +688,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRemoveAllSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -706,7 +706,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetAllSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -715,7 +715,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetAllSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -733,7 +733,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endExecuteFunctionSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -742,7 +742,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endExecuteFunctionSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -760,7 +760,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetClientPRMetadataSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -769,7 +769,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetClientPRMetadataSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -788,7 +788,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetClientPartitionAttributesSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -797,7 +797,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetClientPartitionAttributesSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -815,7 +815,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetPDXTypeByIdSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -824,7 +824,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetPDXTypeByIdSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -842,7 +842,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetPDXIdForTypeSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -851,7 +851,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetPDXIdForTypeSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -869,7 +869,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endAddPdxTypeSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -878,7 +878,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endAddPdxTypeSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -896,7 +896,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endSizeSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -905,7 +905,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endSizeSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -923,7 +923,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endInvalidateSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -932,7 +932,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endInvalidateSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -950,7 +950,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCommitSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -959,7 +959,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endCommitSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -977,7 +977,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetEntrySend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -986,7 +986,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endGetEntrySend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1004,7 +1004,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRollbackSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1013,7 +1013,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endRollbackSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1031,7 +1031,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endTxFailoverSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1040,7 +1040,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endTxFailoverSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1058,7 +1058,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endTxSynchronizationSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
   @Test
@@ -1067,7 +1067,7 @@ public class ConnectionStatsTest {
 
     connectionStats.endTxSynchronizationSend(1, true);
 
-    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(statId, 1);
   }
 
 }

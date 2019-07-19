@@ -34,7 +34,6 @@ import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
-import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Message;
 import org.apache.geode.internal.cache.tier.sockets.Part;
@@ -69,7 +68,7 @@ public class ExecuteCQ61 extends BaseCQCommand {
     Acceptor acceptor = serverConnection.getAcceptor();
     CachedRegionHelper crHelper = serverConnection.getCachedRegionHelper();
     ClientProxyMembershipID id = serverConnection.getProxyID();
-    CacheServerStats stats = serverConnection.getCacheServerStats();
+    serverConnection.getCacheServerStats();
 
     serverConnection.setAsTrue(REQUIRES_RESPONSE);
     serverConnection.setAsTrue(REQUIRES_CHUNKED_RESPONSE);
@@ -105,12 +104,12 @@ public class ExecuteCQ61 extends BaseCQCommand {
       }
     }
 
-    DefaultQueryService qService = null;
-    CqServiceImpl cqServiceForExec = null;
-    Query query = null;
-    Set cqRegionNames = null;
+    DefaultQueryService qService;
+    CqServiceImpl cqServiceForExec;
+    Query query;
+    Set<String> cqRegionNames;
     ExecuteCQOperationContext executeCQContext = null;
-    ServerCQImpl cqQuery = null;
+    ServerCQImpl cqQuery;
 
     try {
       qService = (DefaultQueryService) crHelper.getCache().getLocalQueryService();
@@ -186,9 +185,6 @@ public class ExecuteCQ61 extends BaseCQCommand {
 
         // Update the CQ statistics.
         cqQuery.getVsdStats().setCqInitialResultsTime(DistributionStats.getStatTime() - start);
-        stats.incProcessExecuteCqWithIRTime(DistributionStats.getStatTime() - start);
-        // logger.fine("Time spent in execute with initial results :" +
-        // DistributionStats.getStatTime() + ", " + oldstart);
       } finally { // To handle any exception.
         // If failure to execute the query, close the CQ.
         if (!successQuery) {
@@ -213,7 +209,6 @@ public class ExecuteCQ61 extends BaseCQCommand {
           clientMessage.getTransactionId(), null, serverConnection);
 
       long start2 = DistributionStats.getStatTime();
-      stats.incProcessCreateCqTime(start2 - start);
     }
     serverConnection.setAsTrue(RESPONDED);
   }

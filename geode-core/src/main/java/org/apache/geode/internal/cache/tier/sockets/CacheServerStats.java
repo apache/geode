@@ -31,195 +31,171 @@ public class CacheServerStats implements MessageStats {
   protected Statistics stats;
 
   // Get request / response statistics
-  int getRequestsId;
+  private int getRequestsId;
 
-  int readGetRequestTimeId;
+  private int readGetRequestTimeId;
 
-  int processGetTimeId;
+  private int processGetTimeId;
 
-  int getResponsesId;
+  private int getResponsesId;
 
-  int writeGetResponseTimeId;
+  private int writeGetResponseTimeId;
 
   // PutAll request / response statistics
-  int putAllRequestsId;
-  int readPutAllRequestTimeId;
-  int processPutAllTimeId;
-  int putAllResponsesId;
-  int writePutAllResponseTimeId;
+  private int putAllRequestsId;
+  private int readPutAllRequestTimeId;
+  private int processPutAllTimeId;
+  private int putAllResponsesId;
+  private int writePutAllResponseTimeId;
 
   // RemoveAll request / response statistics
-  int removeAllRequestsId;
-  int readRemoveAllRequestTimeId;
-  int processRemoveAllTimeId;
-  int removeAllResponsesId;
-  int writeRemoveAllResponseTimeId;
+  private int removeAllRequestsId;
+  private int readRemoveAllRequestTimeId;
+  private int processRemoveAllTimeId;
+  private int removeAllResponsesId;
+  private int writeRemoveAllResponseTimeId;
 
   // GetAll request / response statistics
-  int getAllRequestsId;
-  int readGetAllRequestTimeId;
-  int processGetAllTimeId;
-  int getAllResponsesId;
-  int writeGetAllResponseTimeId;
+  private int getAllRequestsId;
+  private int readGetAllRequestTimeId;
+  private int processGetAllTimeId;
+  private int getAllResponsesId;
+  private int writeGetAllResponseTimeId;
 
   // Put request / response statistics
-  int putRequestsId;
+  private int putRequestsId;
 
-  int readPutRequestTimeId;
+  private int readPutRequestTimeId;
 
-  int processPutTimeId;
+  private int processPutTimeId;
 
-  int putResponsesId;
+  private int putResponsesId;
 
-  int writePutResponseTimeId;
+  private int writePutResponseTimeId;
 
   // Destroy request / response statistics
-  int destroyRequestsId;
-  int readDestroyRequestTimeId;
-  int processDestroyTimeId;
-  int destroyResponsesId;
-  int writeDestroyResponseTimeId;
-
-  // Invalidate request / response statistics
-  // int invalidateRequestsId;
-  // int readInvalidateRequestTimeId;
-  // int processInvalidateTimeId;
-  // int invalidateResponsesId;
-  // int writeInvalidateResponseTimeId;
-
-  // size request / response statistics
-  // int sizeRequestsId;
-  // int readSizeRequestTimeId;
-  // int processSizeTimeId;
-  // int sizeResponsesId;
-  // int writeSizeResponseTimeId;
-
+  private int destroyRequestsId;
+  private int readDestroyRequestTimeId;
+  private int processDestroyTimeId;
+  private int destroyResponsesId;
+  private int writeDestroyResponseTimeId;
 
   // Query request / response statistics
-  int queryRequestsId;
+  private int queryRequestsId;
 
-  int readQueryRequestTimeId;
+  private int readQueryRequestTimeId;
 
-  int processQueryTimeId;
+  private int processQueryTimeId;
 
-  int queryResponsesId;
+  private int queryResponsesId;
 
-  int writeQueryResponseTimeId;
-
-  // CQ commands request / response statistics
-  // int processCreateCqTimeId;
-  // int processExecuteCqWithIRCqTimeId;
-  // int processStopCqTimeId;
-  // int processCloseCqTimeId;
-  // int processCloseClientCqsTimeId;
-  // int processGetCqStatsTimeId;
-
+  private int writeQueryResponseTimeId;
 
   // Destroy region request / response statistics
-  int destroyRegionRequestsId;
+  private int destroyRegionRequestsId;
 
-  int readDestroyRegionRequestTimeId;
+  private int readDestroyRegionRequestTimeId;
 
-  int processDestroyRegionTimeId;
+  private int processDestroyRegionTimeId;
 
-  int destroyRegionResponsesId;
+  private int destroyRegionResponsesId;
 
-  int writeDestroyRegionResponseTimeId;
+  private int writeDestroyRegionResponseTimeId;
 
   // ContainsKey request / response statistics
-  int containsKeyRequestsId;
-  int readContainsKeyRequestTimeId;
-  int processContainsKeyTimeId;
-  int containsKeyResponsesId;
-  int writeContainsKeyResponseTimeId;
+  private int containsKeyRequestsId;
+  private int readContainsKeyRequestTimeId;
+  private int processContainsKeyTimeId;
+  private int containsKeyResponsesId;
+  private int writeContainsKeyResponseTimeId;
 
   // Clear region request / response statistics
-  int clearRegionRequestsId;
+  private int clearRegionRequestsId;
 
-  int readClearRegionRequestTimeId;
+  private int readClearRegionRequestTimeId;
 
-  int processClearRegionTimeId;
+  private int processClearRegionTimeId;
 
-  int clearRegionResponsesId;
+  private int clearRegionResponsesId;
 
-  int writeClearRegionResponseTimeId;
+  private int writeClearRegionResponseTimeId;
 
 
   // Batch processing statistics
-  int processBatchRequestsId;
+  private int processBatchRequestsId;
 
-  int readProcessBatchRequestTimeId;
+  private int readProcessBatchRequestTimeId;
 
-  int processBatchTimeId;
+  private int processBatchTimeId;
 
-  int processBatchResponsesId;
+  private int processBatchResponsesId;
 
-  int writeProcessBatchResponseTimeId;
+  private int writeProcessBatchResponseTimeId;
 
-  int batchSizeId;
+  private int batchSizeId;
 
   // Client notification request statistics
-  int clientNotificationRequestsId;
+  private int clientNotificationRequestsId;
 
-  int readClientNotificationRequestTimeId;
+  private int readClientNotificationRequestTimeId;
 
-  int processClientNotificationTimeId;
+  private int processClientNotificationTimeId;
 
   // Update client notification request statistics
-  int updateClientNotificationRequestsId;
+  private int updateClientNotificationRequestsId;
 
-  int readUpdateClientNotificationRequestTimeId;
+  private int readUpdateClientNotificationRequestTimeId;
 
-  int processUpdateClientNotificationTimeId;
+  private int processUpdateClientNotificationTimeId;
 
   // Close connection request statistics
-  int closeConnectionRequestsId;
+  private int closeConnectionRequestsId;
 
-  int readCloseConnectionRequestTimeId;
+  private int readCloseConnectionRequestTimeId;
 
-  int processCloseConnectionTimeId;
+  private int processCloseConnectionTimeId;
 
   // Client ready request / response statistics
-  int clientReadyRequestsId;
+  private int clientReadyRequestsId;
 
-  int readClientReadyRequestTimeId;
+  private int readClientReadyRequestTimeId;
 
-  int processClientReadyTimeId;
+  private int processClientReadyTimeId;
 
-  int clientReadyResponsesId;
+  private int clientReadyResponsesId;
 
-  int writeClientReadyResponseTimeId;
+  private int writeClientReadyResponseTimeId;
 
   // Connection statistics
-  int currentClientConnectionsId;
-  int currentQueueConnectionsId;
+  private int currentClientConnectionsId;
+  private int currentQueueConnectionsId;
 
-  int currentClientsId;
+  private int currentClientsId;
 
-  int failedConnectionAttemptsId;
+  private int failedConnectionAttemptsId;
 
-  int receivedBytesId;
-  int sentBytesId;
+  private int receivedBytesId;
+  private int sentBytesId;
 
-  int outOfOrderBatchIdsId;
-  int abandonedWriteRequestsId;
-  int abandonedReadRequestsId;
+  private int outOfOrderBatchIdsId;
+  private int abandonedWriteRequestsId;
+  private int abandonedReadRequestsId;
 
-  int messagesBeingReceivedId;
-  int messageBytesBeingReceivedId;
+  private int messagesBeingReceivedId;
+  private int messageBytesBeingReceivedId;
 
-  int connectionsTimedOutId;
-  int threadQueueSizeId;
-  int acceptsInProgressId;
-  int acceptThreadStartsId;
-  int connectionThreadStartsId;
-  int connectionThreadsId;
+  private int connectionsTimedOutId;
+  private int threadQueueSizeId;
+  private int acceptsInProgressId;
+  private int acceptThreadStartsId;
+  private int connectionThreadStartsId;
+  private int connectionThreadsId;
 
   // Load callback stats
-  int connectionLoadId;
-  int queueLoadId;
-  int loadPerConnectionId;
-  int loadPerQueueId;
+  private int connectionLoadId;
+  private int queueLoadId;
+  private int loadPerConnectionId;
+  private int loadPerQueueId;
 
   protected StatisticsType statType;
 
@@ -602,89 +578,85 @@ public class CacheServerStats implements MessageStats {
     loadPerQueueId = this.stats.nameToId("loadPerQueue");
   }
 
-  public void incAcceptThreadsCreated() {
-    this.stats.incInt(acceptThreadStartsId, 1);
+  void incAcceptThreadsCreated() {
+    this.stats.incLong(acceptThreadStartsId, 1);
   }
 
-  public void incConnectionThreadsCreated() {
-    this.stats.incInt(connectionThreadStartsId, 1);
+  void incConnectionThreadsCreated() {
+    this.stats.incLong(connectionThreadStartsId, 1);
   }
 
-  public void incAcceptsInProgress() {
-    this.stats.incInt(acceptsInProgressId, 1);
+  void incAcceptsInProgress() {
+    this.stats.incLong(acceptsInProgressId, 1);
   }
 
-  public void decAcceptsInProgress() {
-    this.stats.incInt(acceptsInProgressId, -1);
+  void decAcceptsInProgress() {
+    this.stats.incLong(acceptsInProgressId, -1);
   }
 
   public void incConnectionThreads() {
-    this.stats.incInt(connectionThreadsId, 1);
+    this.stats.incLong(connectionThreadsId, 1);
   }
 
-  public void decConnectionThreads() {
-    this.stats.incInt(connectionThreadsId, -1);
+  private void decConnectionThreads() {
+    this.stats.incLong(connectionThreadsId, -1);
   }
 
-  public void incAbandonedWriteRequests() {
-    this.stats.incInt(abandonedWriteRequestsId, 1);
+  void incAbandonedWriteRequests() {
+    this.stats.incLong(abandonedWriteRequestsId, 1);
   }
 
-  public void incAbandonedReadRequests() {
-    this.stats.incInt(abandonedReadRequestsId, 1);
+  void incAbandonedReadRequests() {
+    this.stats.incLong(abandonedReadRequestsId, 1);
   }
 
   public void incFailedConnectionAttempts() {
-    this.stats.incInt(failedConnectionAttemptsId, 1);
+    this.stats.incLong(failedConnectionAttemptsId, 1);
   }
 
   public void incConnectionsTimedOut() {
-    this.stats.incInt(connectionsTimedOutId, 1);
+    this.stats.incLong(connectionsTimedOutId, 1);
   }
 
   public void incCurrentClientConnections() {
-    this.stats.incInt(currentClientConnectionsId, 1);
+    this.stats.incLong(currentClientConnectionsId, 1);
   }
 
-  public void decCurrentClientConnections() {
-    this.stats.incInt(currentClientConnectionsId, -1);
+  void decCurrentClientConnections() {
+    this.stats.incLong(currentClientConnectionsId, -1);
   }
 
   public int getCurrentClientConnections() {
-    return this.stats.getInt(currentClientConnectionsId);
+    return (int) this.stats.getLong(currentClientConnectionsId);
   }
 
   public void incCurrentQueueConnections() {
-    this.stats.incInt(currentQueueConnectionsId, 1);
+    this.stats.incLong(currentQueueConnectionsId, 1);
   }
 
-  public void decCurrentQueueConnections() {
-    this.stats.incInt(currentQueueConnectionsId, -1);
-  }
-
-  public int getCurrentQueueConnections() {
-    return this.stats.getInt(currentQueueConnectionsId);
+  void decCurrentQueueConnections() {
+    this.stats.incLong(currentQueueConnectionsId, -1);
   }
 
   public void incCurrentClients() {
-    this.stats.incInt(currentClientsId, 1);
+    this.stats.incLong(currentClientsId, 1);
   }
 
-  public void decCurrentClients() {
-    this.stats.incInt(currentClientsId, -1);
+  void decCurrentClients() {
+    this.stats.incLong(currentClientsId, -1);
   }
 
   public void incThreadQueueSize() {
-    this.stats.incInt(threadQueueSizeId, 1);
+    this.stats.incLong(threadQueueSizeId, 1);
   }
 
   public void decThreadQueueSize() {
-    this.stats.incInt(threadQueueSizeId, -1);
+    this.stats.incLong(threadQueueSizeId, -1);
   }
 
   public void incReadGetRequestTime(long delta) {
     this.stats.incLong(readGetRequestTimeId, delta);
-    this.stats.incInt(getRequestsId, 1);
+    this.stats.incLong(getRequestsId, 1);
   }
 
   public void incProcessGetTime(long delta) {
@@ -693,12 +665,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteGetResponseTime(long delta) {
     this.stats.incLong(writeGetResponseTimeId, delta);
-    this.stats.incInt(getResponsesId, 1);
+    this.stats.incLong(getResponsesId, 1);
   }
 
   public void incReadPutAllRequestTime(long delta) {
     this.stats.incLong(readPutAllRequestTimeId, delta);
-    this.stats.incInt(putAllRequestsId, 1);
+    this.stats.incLong(putAllRequestsId, 1);
   }
 
   public void incProcessPutAllTime(long delta) {
@@ -707,12 +679,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWritePutAllResponseTime(long delta) {
     this.stats.incLong(writePutAllResponseTimeId, delta);
-    this.stats.incInt(putAllResponsesId, 1);
+    this.stats.incLong(putAllResponsesId, 1);
   }
 
   public void incReadRemoveAllRequestTime(long delta) {
     this.stats.incLong(readRemoveAllRequestTimeId, delta);
-    this.stats.incInt(removeAllRequestsId, 1);
+    this.stats.incLong(removeAllRequestsId, 1);
   }
 
   public void incProcessRemoveAllTime(long delta) {
@@ -721,26 +693,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteRemoveAllResponseTime(long delta) {
     this.stats.incLong(writeRemoveAllResponseTimeId, delta);
-    this.stats.incInt(removeAllResponsesId, 1);
-  }
-
-  public void incReadGetAllRequestTime(long delta) {
-    this.stats.incLong(readGetAllRequestTimeId, delta);
-    this.stats.incInt(getAllRequestsId, 1);
-  }
-
-  public void incProcessGetAllTime(long delta) {
-    this.stats.incLong(processGetAllTimeId, delta);
-  }
-
-  public void incWriteGetAllResponseTime(long delta) {
-    this.stats.incLong(writeGetAllResponseTimeId, delta);
-    this.stats.incInt(getAllResponsesId, 1);
+    this.stats.incLong(removeAllResponsesId, 1);
   }
 
   public void incReadPutRequestTime(long delta) {
     this.stats.incLong(readPutRequestTimeId, delta);
-    this.stats.incInt(putRequestsId, 1);
+    this.stats.incLong(putRequestsId, 1);
   }
 
   public void incProcessPutTime(long delta) {
@@ -749,12 +707,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWritePutResponseTime(long delta) {
     this.stats.incLong(writePutResponseTimeId, delta);
-    this.stats.incInt(putResponsesId, 1);
+    this.stats.incLong(putResponsesId, 1);
   }
 
   public void incReadDestroyRequestTime(long delta) {
     this.stats.incLong(readDestroyRequestTimeId, delta);
-    this.stats.incInt(destroyRequestsId, 1);
+    this.stats.incLong(destroyRequestsId, 1);
   }
 
   public void incProcessDestroyTime(long delta) {
@@ -763,84 +721,26 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteDestroyResponseTime(long delta) {
     this.stats.incLong(writeDestroyResponseTimeId, delta);
-    this.stats.incInt(destroyResponsesId, 1);
+    this.stats.incLong(destroyResponsesId, 1);
   }
-
-
-
-  public void incReadInvalidateRequestTime(long delta) {
-    // this.stats.incLong(readInvalidateRequestTimeId, delta);
-    // this.stats.incInt(invalidateRequestsId, 1);
-  }
-
-  public void incProcessInvalidateTime(long delta) {
-    // this.stats.incLong(processInvalidateTimeId, delta);
-  }
-
-  public void incWriteInvalidateResponseTime(long delta) {
-    // this.stats.incLong(writeInvalidateResponseTimeId, delta);
-    // this.stats.incInt(invalidateResponsesId, 1);
-  }
-
-
-
-  public void incReadSizeRequestTime(long delta) {
-    // this.stats.incLong(readSizeRequestTimeId, delta);
-    // this.stats.incInt(sizeRequestsId, 1);
-  }
-
-  public void incProcessSizeTime(long delta) {
-    // this.stats.incLong(processSizeTimeId, delta);
-  }
-
-  public void incWriteSizeResponseTime(long delta) {
-    // this.stats.incLong(writeSizeResponseTimeId, delta);
-    // this.stats.incInt(sizeResponsesId, 1);
-  }
-
-
 
   public void incReadQueryRequestTime(long delta) {
     this.stats.incLong(readQueryRequestTimeId, delta);
-    this.stats.incInt(queryRequestsId, 1);
+    this.stats.incLong(queryRequestsId, 1);
   }
 
-  public void incProcessQueryTime(long delta) {
+  void incProcessQueryTime(long delta) {
     this.stats.incLong(processQueryTimeId, delta);
   }
 
-  public void incWriteQueryResponseTime(long delta) {
+  void incWriteQueryResponseTime(long delta) {
     this.stats.incLong(writeQueryResponseTimeId, delta);
-    this.stats.incInt(queryResponsesId, 1);
-  }
-
-  public void incProcessCreateCqTime(long delta) {
-    // this.stats.incLong(processCreateCqTimeId, delta);
-  }
-
-  public void incProcessCloseCqTime(long delta) {
-    // this.stats.incLong(processCloseCqTimeId, delta);
-  }
-
-  public void incProcessExecuteCqWithIRTime(long delta) {
-    // this.stats.incLong(processExecuteCqWithIRCqTimeId, delta);
-  }
-
-  public void incProcessStopCqTime(long delta) {
-    // this.stats.incLong(processStopCqTimeId, delta);
-  }
-
-  public void incProcessCloseClientCqsTime(long delta) {
-    // this.stats.incLong(processCloseClientCqsTimeId, delta);
-  }
-
-  public void incProcessGetCqStatsTime(long delta) {
-    // this.stats.incLong(processGetCqStatsTimeId, delta);
+    this.stats.incLong(queryResponsesId, 1);
   }
 
   public void incReadDestroyRegionRequestTime(long delta) {
     this.stats.incLong(readDestroyRegionRequestTimeId, delta);
-    this.stats.incInt(destroyRegionRequestsId, 1);
+    this.stats.incLong(destroyRegionRequestsId, 1);
   }
 
   public void incProcessDestroyRegionTime(long delta) {
@@ -849,12 +749,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteDestroyRegionResponseTime(long delta) {
     this.stats.incLong(writeDestroyRegionResponseTimeId, delta);
-    this.stats.incInt(destroyRegionResponsesId, 1);
+    this.stats.incLong(destroyRegionResponsesId, 1);
   }
 
   public void incReadContainsKeyRequestTime(long delta) {
     this.stats.incLong(readContainsKeyRequestTimeId, delta);
-    this.stats.incInt(containsKeyRequestsId, 1);
+    this.stats.incLong(containsKeyRequestsId, 1);
   }
 
   public void incProcessContainsKeyTime(long delta) {
@@ -863,12 +763,12 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteContainsKeyResponseTime(long delta) {
     this.stats.incLong(writeContainsKeyResponseTimeId, delta);
-    this.stats.incInt(containsKeyResponsesId, 1);
+    this.stats.incLong(containsKeyResponsesId, 1);
   }
 
   public void incReadClearRegionRequestTime(long delta) {
     this.stats.incLong(readClearRegionRequestTimeId, delta);
-    this.stats.incInt(clearRegionRequestsId, 1);
+    this.stats.incLong(clearRegionRequestsId, 1);
   }
 
   public void incProcessClearRegionTime(long delta) {
@@ -877,17 +777,17 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteClearRegionResponseTime(long delta) {
     this.stats.incLong(writeClearRegionResponseTimeId, delta);
-    this.stats.incInt(clearRegionResponsesId, 1);
+    this.stats.incLong(clearRegionResponsesId, 1);
   }
 
   public void incReadProcessBatchRequestTime(long delta) {
     this.stats.incLong(readProcessBatchRequestTimeId, delta);
-    this.stats.incInt(processBatchRequestsId, 1);
+    this.stats.incLong(processBatchRequestsId, 1);
   }
 
   public void incWriteProcessBatchResponseTime(long delta) {
     this.stats.incLong(writeProcessBatchResponseTimeId, delta);
-    this.stats.incInt(processBatchResponsesId, 1);
+    this.stats.incLong(processBatchResponsesId, 1);
   }
 
   public void incProcessBatchTime(long delta) {
@@ -898,18 +798,9 @@ public class CacheServerStats implements MessageStats {
     this.stats.incLong(batchSizeId, size);
   }
 
-  public void incReadClientNotificationRequestTime(long delta) {
-    this.stats.incLong(readClientNotificationRequestTimeId, delta);
-    this.stats.incInt(clientNotificationRequestsId, 1);
-  }
-
-  public void incProcessClientNotificationTime(long delta) {
-    this.stats.incLong(processClientNotificationTimeId, delta);
-  }
-
   public void incReadUpdateClientNotificationRequestTime(long delta) {
     this.stats.incLong(readUpdateClientNotificationRequestTimeId, delta);
-    this.stats.incInt(updateClientNotificationRequestsId, 1);
+    this.stats.incLong(updateClientNotificationRequestsId, 1);
   }
 
   public void incProcessUpdateClientNotificationTime(long delta) {
@@ -918,15 +809,15 @@ public class CacheServerStats implements MessageStats {
 
   public void incReadCloseConnectionRequestTime(long delta) {
     this.stats.incLong(readCloseConnectionRequestTimeId, delta);
-    this.stats.incInt(closeConnectionRequestsId, 1);
+    this.stats.incLong(closeConnectionRequestsId, 1);
   }
 
   public void incProcessCloseConnectionTime(long delta) {
     this.stats.incLong(processCloseConnectionTimeId, delta);
   }
 
-  public void incOutOfOrderBatchIds() {
-    this.stats.incInt(outOfOrderBatchIdsId, 1);
+  void incOutOfOrderBatchIds() {
+    this.stats.incLong(outOfOrderBatchIdsId, 1);
   }
 
   @Override
@@ -941,7 +832,7 @@ public class CacheServerStats implements MessageStats {
 
   @Override
   public void incMessagesBeingReceived(int bytes) {
-    stats.incInt(messagesBeingReceivedId, 1);
+    stats.incLong(messagesBeingReceivedId, 1);
     if (bytes > 0) {
       stats.incLong(messageBytesBeingReceivedId, bytes);
     }
@@ -949,7 +840,7 @@ public class CacheServerStats implements MessageStats {
 
   @Override
   public void decMessagesBeingReceived(int bytes) {
-    stats.incInt(messagesBeingReceivedId, -1);
+    stats.incLong(messagesBeingReceivedId, -1);
     if (bytes > 0) {
       stats.incLong(messageBytesBeingReceivedId, -bytes);
     }
@@ -957,7 +848,7 @@ public class CacheServerStats implements MessageStats {
 
   public void incReadClientReadyRequestTime(long delta) {
     this.stats.incLong(readClientReadyRequestTimeId, delta);
-    this.stats.incInt(clientReadyRequestsId, 1);
+    this.stats.incLong(clientReadyRequestsId, 1);
   }
 
   public void incProcessClientReadyTime(long delta) {
@@ -966,7 +857,7 @@ public class CacheServerStats implements MessageStats {
 
   public void incWriteClientReadyResponseTime(long delta) {
     this.stats.incLong(writeClientReadyResponseTimeId, delta);
-    this.stats.incInt(clientReadyResponsesId, 1);
+    this.stats.incLong(clientReadyResponsesId, 1);
   }
 
   public void setLoad(ServerLoad load) {
@@ -974,14 +865,6 @@ public class CacheServerStats implements MessageStats {
     this.stats.setDouble(queueLoadId, load.getSubscriptionConnectionLoad());
     this.stats.setDouble(loadPerConnectionId, load.getLoadPerConnection());
     this.stats.setDouble(loadPerQueueId, load.getLoadPerSubscriptionConnection());
-  }
-
-  public double getQueueLoad() {
-    return this.stats.getDouble(queueLoadId);
-  }
-
-  public double getLoadPerQueue() {
-    return this.stats.getDouble(loadPerQueueId);
   }
 
   public double getConnectionLoad() {
@@ -993,14 +876,14 @@ public class CacheServerStats implements MessageStats {
   }
 
   public int getProcessBatchRequests() {
-    return this.stats.getInt(processBatchRequestsId);
+    return (int) this.stats.getLong(processBatchRequestsId);
   }
 
   public void close() {
     this.stats.close();
   }
 
-  public PoolStatHelper getCnxPoolHelper() {
+  PoolStatHelper getCnxPoolHelper() {
     return new PoolStatHelper() {
       @Override
       public void startJob() {
