@@ -80,13 +80,17 @@ public class Configuration implements DataSerializable {
     this.cacheXmlContent = cacheXmlContent;
   }
 
-  public void setCacheXmlFile(File cacheXmlFile)
-      throws TransformerException, ParserConfigurationException, IOException, SAXException {
+  public void setCacheXmlFile(File cacheXmlFile) throws IOException {
     if (cacheXmlFile.length() == 0) {
       this.cacheXmlContent = "";
     } else {
-      Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
-      this.cacheXmlContent = XmlUtils.elementToString(doc);
+      try {
+        Document doc = XmlUtils.getDocumentBuilder().parse(cacheXmlFile);
+        this.cacheXmlContent = XmlUtils.elementToString(doc);
+      } catch (SAXException | TransformerException | ParserConfigurationException e) {
+        throw new IOException("Unable to parse existing cluster configuration from file: "
+            + cacheXmlFile.getAbsolutePath(), e);
+      }
     }
   }
 
