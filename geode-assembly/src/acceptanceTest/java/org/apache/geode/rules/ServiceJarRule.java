@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -31,23 +32,14 @@ import org.apache.geode.test.junit.rules.accessible.AccessibleTemporaryFolder;
 public class ServiceJarRule extends ExternalResource {
 
   private final AccessibleTemporaryFolder temporaryFolder;
-  private final String jarName;
-  private final String serviceName;
-  private final Class providerClass;
 
-  private Path jarPath;
-
-  public ServiceJarRule(String jarName, String serviceName, Class providerClass) {
+  public ServiceJarRule() {
     temporaryFolder = new AccessibleTemporaryFolder();
-    this.jarName = jarName;
-    this.serviceName = serviceName;
-    this.providerClass = providerClass;
   }
 
   @Override
   protected void before() throws Throwable {
     temporaryFolder.before();
-    jarPath = newJar();
   }
 
   @Override
@@ -55,11 +47,16 @@ public class ServiceJarRule extends ExternalResource {
     temporaryFolder.after();
   }
 
-  public String absolutePath() {
-    return jarPath.toAbsolutePath().toString();
+  public <S> String createJarFor(String jarName, Class<S> serviceClass,
+      Class<? extends S> providerClass) {
+    try {
+      return newJar(jarName, serviceClass.getName(), providerClass).toAbsolutePath().toString();
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
-  private Path newJar() throws IOException {
+  private Path newJar(String jarName, String serviceName, Class providerClass) throws IOException {
     File jar = temporaryFolder.newFile(jarName);
 
     String className = providerClass.getName();

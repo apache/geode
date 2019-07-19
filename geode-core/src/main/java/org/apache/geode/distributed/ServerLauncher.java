@@ -1036,8 +1036,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
   private void logStartCompletedWithError(long startTime, Throwable throwable) {
     long startupDuration = System.currentTimeMillis() - startTime;
-    log.error("Server {} startup completed in {} ms with error: ", memberName, startupDuration,
-        throwable);
+    log.error("Server {} startup completed in {} ms with error: {}", memberName, startupDuration,
+        throwable, throwable);
   }
 
   /**

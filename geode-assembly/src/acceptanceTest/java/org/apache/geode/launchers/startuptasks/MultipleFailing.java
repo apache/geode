@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.launchers;
+package org.apache.geode.launchers.startuptasks;
 
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
@@ -24,17 +24,24 @@ import org.apache.geode.distributed.ServerLauncher;
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
 import org.apache.geode.internal.cache.InternalCache;
 
-public class CacheProviderWithFailingStartupTask implements ServerLauncherCacheProvider {
+public class MultipleFailing implements ServerLauncherCacheProvider {
+
+  public static final Exception EXCEPTION = new IllegalStateException("Startup task 1 failed");
+
   @Override
   public Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher) {
     final CacheFactory cacheFactory = new CacheFactory(gemfireProperties);
 
     InternalCache cache = (InternalCache) cacheFactory.create();
 
-    CompletableFuture<Void> failingStartupTask = new CompletableFuture<>();
-    failingStartupTask.completeExceptionally(new IllegalStateException("Startup task failed"));
+    CompletableFuture<Void> failingStartupTask1 = new CompletableFuture<>();
+    failingStartupTask1.completeExceptionally(EXCEPTION);
 
-    cache.getInternalResourceManager().addStartupTask(failingStartupTask);
+    CompletableFuture<Void> failingStartupTask2 = new CompletableFuture<>();
+    failingStartupTask2.completeExceptionally(new RuntimeException("Startup task 2 failed"));
+
+    cache.getInternalResourceManager().addStartupTask(failingStartupTask1);
+    cache.getInternalResourceManager().addStartupTask(failingStartupTask2);
     return cache;
   }
 }
