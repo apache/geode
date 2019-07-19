@@ -1505,10 +1505,13 @@ public class PRHARedundancyProvider {
           providerStartupTask.complete(null);
         } catch (CancelException e) {
           logger.debug("Cache closed while recovery in progress");
+          providerStartupTask.completeExceptionally(e);
         } catch (RegionDestroyedException e) {
           logger.debug("Region destroyed while recovery in progress");
+          providerStartupTask.completeExceptionally(e);
         } catch (Exception e) {
           logger.error("Unexpected exception during bucket recovery", e);
+          providerStartupTask.completeExceptionally(e);
         }
       }
     };
