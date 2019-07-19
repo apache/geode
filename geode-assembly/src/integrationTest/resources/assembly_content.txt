@@ -737,12 +737,17 @@ javadoc/org/apache/geode/management/membership/UniversalMembershipListenerAdapte
 javadoc/org/apache/geode/management/membership/package-frame.html
 javadoc/org/apache/geode/management/membership/package-summary.html
 javadoc/org/apache/geode/management/membership/package-tree.html
+javadoc/org/apache/geode/management/operation/RebalanceOperation.html
+javadoc/org/apache/geode/management/operation/package-frame.html
+javadoc/org/apache/geode/management/operation/package-summary.html
+javadoc/org/apache/geode/management/operation/package-tree.html
 javadoc/org/apache/geode/management/package-frame.html
 javadoc/org/apache/geode/management/package-summary.html
 javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
+javadoc/org/apache/geode/management/runtime/RebalanceResult.html
 javadoc/org/apache/geode/management/runtime/RuntimeInfo.html
 javadoc/org/apache/geode/management/runtime/RuntimeRegionInfo.html
 javadoc/org/apache/geode/management/runtime/package-frame.html

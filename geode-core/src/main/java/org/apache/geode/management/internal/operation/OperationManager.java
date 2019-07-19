@@ -27,6 +27,7 @@ import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
+import org.apache.geode.management.operation.RebalanceOperation;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
@@ -40,6 +41,7 @@ public class OperationManager implements AutoCloseable {
 
     // initialize the list of operation performers
     performers = new ConcurrentHashMap<>();
+    registerOperation(RebalanceOperation.class, RebalanceOperationPerformer::perform);
   }
 
   /**

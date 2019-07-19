@@ -15,6 +15,8 @@
 package org.apache.geode.management.api;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Geode modules, extensions, or user code can define cluster management operations to use with
  * {@link ClusterManagementService#startOperation(ClusterManagementOperation)} by subclassing this
@@ -33,5 +35,6 @@ public interface ClusterManagementOperation<V extends JsonSerializable> {
    *
    * @return the portion after /management/v2, e.g. /operations/name
    */
+  @JsonIgnore
   String getEndpoint();
 }
