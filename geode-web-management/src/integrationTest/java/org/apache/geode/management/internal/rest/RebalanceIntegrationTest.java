@@ -82,6 +82,7 @@ public class RebalanceIntegrationTest {
   public void doOperation() {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceResult> result = client.startOperation(rebalance);
-    assertThatThrownBy(result.getResult()::get).hasMessage("java.lang.RuntimeException: ERROR: java.util.concurrent.ExecutionException: java.lang.RuntimeException: rebalance returned info: Distributed system has no regions that can be rebalanced");
+    assertThatThrownBy(result.getResult()::get).hasMessage(
+        "java.lang.RuntimeException: ERROR: java.util.concurrent.ExecutionException: java.lang.RuntimeException: rebalance returned info: Distributed system has no regions that can be rebalanced");
   }
 }

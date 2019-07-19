@@ -17,7 +17,9 @@ package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -84,11 +86,28 @@ public class RebalanceManagementDunitTest {
   }
 
   @Test
+  public void rebalanceExistRegion() throws Exception {
+    List<String> includeRegions = new ArrayList<>();
+    includeRegions.add("customers1");
+    includeRegions.add("customers2");
+    RebalanceOperation op = new RebalanceOperation();
+    op.setIncludeRegions(includeRegions);
+    ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
+    assertThat(cmr.isSuccessful()).isTrue();
+
+    RebalanceResult result = cmr.getResult().get();
+    assertThat(result.getRebalanceSummary().size()).isEqualTo(9);
+    assertThat(result.getRebalanceSummary().keySet())
+        .contains("total-time-in-milliseconds-for-this-rebalance");
+    assertThat(result.getPerRegionResults().size()).isEqualTo(2);
+    // TODO assert something about contents of per region results
+  }
+
+  @Test
   public void rebalanceNonExistRegion() throws Exception {
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
-    ClusterManagementOperationResult<RebalanceResult> cmr =
-        client.startOperation(op);
+    ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
     assertThat(cmr.isSuccessful()).isFalse();
     assertThat(cmr.getStatusMessage()).contains("not exist"); // TODO
   }
