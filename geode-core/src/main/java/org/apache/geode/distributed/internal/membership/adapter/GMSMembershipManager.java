@@ -129,6 +129,9 @@ public class GMSMembershipManager implements MembershipManager {
 
   private final ManagerImpl gmsManager;
 
+  private long ackSevereAlertThreshold;
+  private long ackWaitThreshold;
+
   /**
    * Trick class to make the startup synch more visible in stack traces
    *
@@ -1557,9 +1560,8 @@ public class GMSMembershipManager implements MembershipManager {
 
     int sentBytes;
     try {
-      sentBytes = directChannel.send(this, keys, content,
-          this.services.getConfig().getDistributionConfig().getAckWaitThreshold(),
-          this.services.getConfig().getDistributionConfig().getAckSevereAlertThreshold());
+      sentBytes =
+          directChannel.send(this, keys, content, ackWaitThreshold, ackSevereAlertThreshold);
 
       if (theStats != null) {
         theStats.incSentBytes(sentBytes);
@@ -1752,17 +1754,14 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
+    GMSMembershipView view = services.getJoinLeave().getView();
     for (int i = 0; i < addresses.length; i++) {
       InternalDistributedMember m = addresses[i];
       if (m != null) {
-        GMSMember id = ((GMSMemberAdapter) m.getNetMember()).getGmsMember();
+        GMSMemberAdapter adapter = (GMSMemberAdapter) m.getNetMember();
+        GMSMember id = adapter.getGmsMember();
         if (!id.hasUUID()) {
-          latestViewReadLock.lock();
-          try {
-            addresses[i] = latestView.getCanonicalID(addresses[i]);
-          } finally {
-            latestViewReadLock.unlock();
-          }
+          adapter.setGmsMember(view.getCanonicalID(id));
         }
       }
     }
@@ -2429,6 +2428,8 @@ public class GMSMembershipManager implements MembershipManager {
       // cache these settings for use in send()
       mcastEnabled = transport.isMcastEnabled();
       tcpDisabled = transport.isTcpDisabled();
+      ackSevereAlertThreshold = config.getAckSevereAlertThreshold();
+      ackWaitThreshold = config.getAckWaitThreshold();
 
       if (!tcpDisabled) {
         dcReceiver = new MyDCReceiver(listener);

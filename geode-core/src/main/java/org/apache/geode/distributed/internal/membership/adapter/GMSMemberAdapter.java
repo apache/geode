@@ -31,7 +31,7 @@ import org.apache.geode.internal.Version;
  */
 public class GMSMemberAdapter implements NetMember {
 
-  private final GMSMember gmsMember;
+  private GMSMember gmsMember;
   private DurableClientAttributes durableClientAttributes;
 
   public GMSMemberAdapter(GMSMember gmsMember) {
@@ -222,5 +222,9 @@ public class GMSMemberAdapter implements NetMember {
   @Override
   public String toString() {
     return "adapter(" + gmsMember + ")";
+  }
+
+  public void setGmsMember(GMSMember canonicalID) {
+    gmsMember = canonicalID;
   }
 }

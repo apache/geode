@@ -42,7 +42,6 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
-import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -58,10 +57,6 @@ import org.apache.geode.internal.net.SocketCreator;
 public class InternalDistributedMember implements DistributedMember, Externalizable,
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
   private static final long serialVersionUID = -2785249969777296507L;
-
-  /** whether to show NetMember components in toString() */
-  private static final boolean SHOW_NETMEMBER =
-      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_netmembers");
 
   protected NetMember netMbr; // the underlying member object
 
@@ -656,10 +651,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         sb.append("(version:").append(Version.toString(version)).append(')');
       }
 
-      if (SHOW_NETMEMBER) {
-        sb.append("[[").append(this.netMbr).append("]]");
-      }
-
       // leave out Roles on purpose
 
       // if (netMbr instanceof GMSMember) {
@@ -1181,10 +1172,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     short version = netMbr.getVersionOrdinal();
     if (version != Version.CURRENT.ordinal()) {
       sb.append("(version:").append(Version.toString(version)).append(')');
-    }
-
-    if (SHOW_NETMEMBER) {
-      sb.append("[[").append(netMbr.getUniqueId()).append("]]");
     }
 
     return sb.toString();

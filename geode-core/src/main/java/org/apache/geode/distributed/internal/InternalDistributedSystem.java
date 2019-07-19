@@ -773,6 +773,10 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm != null);
       Assert.assertTrue(dm.getSystem() == this);
 
+      if (dm != null && dm.getMembershipManager() != null) {
+        id = dm.getMembershipManager().getLocalMember().getPort();
+      }
+
       synchronized (isConnectedMutex) {
         isConnected = true;
       }
