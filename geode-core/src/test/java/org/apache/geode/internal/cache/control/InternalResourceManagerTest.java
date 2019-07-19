@@ -22,13 +22,18 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.distributed.DistributedSystem;
@@ -39,6 +44,9 @@ public class InternalResourceManagerTest {
   private InternalResourceManager resourceManager;
 
   private final CountDownLatch hangLatch = new CountDownLatch(1);
+
+  @Rule
+  public ExpectedException thrown = ExpectedException.none();
 
   @Before
   public void setUp() {
@@ -68,5 +76,21 @@ public class InternalResourceManagerTest {
 
     await("Submitted task is done")
         .until(() -> submittedTask.isDone());
+  }
+
+  @Test
+  public void nonExecutedRunnablesShouldBeInterruptedSoFutureGetDoesNotHang()
+      throws InterruptedException, ExecutionException {
+    ScheduledExecutorService executor = resourceManager.getExecutor();
+
+    Future<Boolean> submittedTask =
+        executor.schedule(() -> {
+          return true;
+        }, 1, TimeUnit.DAYS);
+
+    resourceManager.close();
+
+    thrown.expect(CancellationException.class);
+    submittedTask.get();
   }
 }

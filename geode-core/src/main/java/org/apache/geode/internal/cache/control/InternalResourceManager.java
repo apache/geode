@@ -17,10 +17,12 @@ package org.apache.geode.internal.cache.control;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -348,7 +350,12 @@ public class InternalResourceManager implements ResourceManager {
     if (!executor.isTerminated()) {
       logger.warn("Failed to stop resource manager threads in {} seconds, forcing shutdown",
           secToWait);
-      executor.shutdownNow();
+      List<Runnable> remainingTasks = executor.shutdownNow();
+      remainingTasks.forEach(runnable -> {
+        if (runnable instanceof Future) {
+          ((Future) runnable).cancel(true);
+        }
+      });
     }
   }
 
