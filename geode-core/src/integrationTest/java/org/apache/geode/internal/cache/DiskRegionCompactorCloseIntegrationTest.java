@@ -149,12 +149,8 @@ public class DiskRegionCompactorCloseIntegrationTest {
       DiskStoreFactory diskStoreFactory,
       long maxOplogSizeInBytes) {
     ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      diskStoreFactory.create(diskStoreName);
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    ((DiskStoreFactoryImpl) diskStoreFactory).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    diskStoreFactory.create(diskStoreName);
   }
 
   private class CompactorCacheObserver extends CacheObserverAdapter {

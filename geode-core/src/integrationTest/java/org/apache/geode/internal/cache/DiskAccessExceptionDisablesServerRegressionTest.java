@@ -98,7 +98,6 @@ public class DiskAccessExceptionDisablesServerRegressionTest {
     String uniqueName = getClass().getSimpleName() + "_" + testName.getMethodName();
     File temporaryDirectory = temporaryFolder.newFolder(uniqueName);
 
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = true;
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = true;
 
@@ -110,7 +109,7 @@ public class DiskAccessExceptionDisablesServerRegressionTest {
     DiskStoreFactory dsf = cache.createDiskStoreFactory();
     dsf.setDiskDirsAndSizes(new File[] {temporaryDirectory}, new int[] {2000});
     ((DiskStoreFactoryImpl) dsf).setMaxOplogSizeInBytes(MAX_OPLOG_SIZE);
-
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit((DiskDirSizesUnit.BYTES));
     DiskStore diskStore = dsf.create(uniqueName);
 
     RegionFactory<String, byte[]> regionFactory =
@@ -124,7 +123,6 @@ public class DiskAccessExceptionDisablesServerRegressionTest {
   public void tearDown() {
     CacheObserverHolder.setInstance(null);
 
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
     DiskStoreImpl.SET_IGNORE_PREALLOCATE = false;
     LocalRegion.ISSUE_CALLBACKS_TO_CACHE_OBSERVER = false;
 

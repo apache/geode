@@ -153,6 +153,8 @@ public class DiskStoreImpl implements DiskStore {
 
   static final int MINIMUM_DIR_SIZE = 1024;
 
+  private DiskDirSizesUnit diskDirSizesUnit;
+
   /**
    * The static field delays the joining of the close/clear/destroy & forceFlush operation, with the
    * compactor thread. This joining occurs after the compactor thread is notified to exit. This was
@@ -421,6 +423,7 @@ public class DiskStoreImpl implements DiskStore {
     this.writeBufferSize = props.getWriteBufferSize();
     this.diskDirs = props.getDiskDirs();
     this.diskDirSizes = props.getDiskDirSizes();
+    this.diskDirSizesUnit = props.getDiskDirSizesUnit();
     this.warningPercent = props.getDiskUsageWarningPercentage();
     this.criticalPercent = props.getDiskUsageCriticalPercentage();
 
@@ -459,11 +462,12 @@ public class DiskStoreImpl implements DiskStore {
     int length = dirs.length;
     this.directories = new DirectoryHolder[length];
     long tempMaxDirSize = 0;
-
     this.totalDiskStoreSpace = 0;
+
     for (int i = 0; i < length; i++) {
       directories[i] =
-          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
+          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i,
+              this.diskDirSizesUnit);
 
       if (tempMaxDirSize < dirSizes[i]) {
         tempMaxDirSize = dirSizes[i];
@@ -3455,6 +3459,14 @@ public class DiskStoreImpl implements DiskStore {
   public void setDiskUsageCriticalPercentage(float criticalPercent) {
     DiskStoreMonitor.checkCritical(criticalPercent);
     this.criticalPercent = criticalPercent;
+  }
+
+  public DiskDirSizesUnit getDiskDirSizesUnit() {
+    return this.diskDirSizesUnit;
+  }
+
+  public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
+    this.diskDirSizesUnit = unit;
   }
 
   public static class AsyncDiskEntry {

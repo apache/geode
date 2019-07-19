@@ -69,12 +69,9 @@ public class DiskRegionHelperFactory {
       dsf.setQueueSize((int) diskProps.getBytesThreshold());
     }
     factory.setDiskSynchronous(diskProps.isSynchronous());
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      factory.setDiskStoreName(dsf.create(diskProps.getRegionName()).getName());
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    ((DiskStoreFactoryImpl) dsf).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    factory.setDiskStoreName(dsf.create(diskProps.getRegionName()).getName());
+
     if (diskProps.isPersistBackup()) {
       factory.setDataPolicy(DataPolicy.PERSISTENT_REPLICATE);
     }
