@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletionException;
 import java.util.regex.Pattern;
 
 import org.junit.After;
@@ -30,6 +31,9 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
+import org.apache.geode.launchers.startuptasks.CompletingAndFailing;
+import org.apache.geode.launchers.startuptasks.Failing;
+import org.apache.geode.launchers.startuptasks.MultipleFailing;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
 
@@ -45,8 +49,7 @@ public class ServerStartupNotificationTest {
   public TestName testName = new TestName();
 
   @Rule
-  public ServiceJarRule serviceJarRule = new ServiceJarRule("ServerLauncherCacheProvider.jar",
-      ServerLauncherCacheProvider.class.getName(), CacheProviderWithFailingStartupTask.class);
+  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   private File serverFolder;
   private String serverName;
@@ -84,20 +87,83 @@ public class ServerStartupNotificationTest {
 
   @Test
   public void startupWithFailingAsyncTask() {
+    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+        ServerLauncherCacheProvider.class, Failing.class);
+
     String startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + serverFolder.getAbsolutePath(),
-        "--classpath=" + serviceJarRule.absolutePath(),
+        "--classpath=" + serviceJarPath,
         "--disable-default-server");
 
     gfshRule.execute(startServerCommand);
 
     Path logFile = serverFolder.toPath().resolve(serverName + ".log");
 
-    Pattern expectedLogLine =
-        Pattern.compile(
-            "^\\[error .*].*Server " + serverName + " startup completed in \\d+ ms with error: ");
+    Exception exception = Failing.EXCEPTION;
+    String errorDetail = CompletionException.class.getName() + ": " +
+        exception.getClass().getName() + ": " + exception.getMessage();
+
+    Pattern expectedLogLine = Pattern.compile("^\\[error .*].*Server " + serverName +
+        " startup completed in \\d+ ms with error: " + errorDetail);
+
+    await().untilAsserted(() -> assertThat(Files.lines(logFile))
+        .as("Log file " + logFile + " includes line matching " + expectedLogLine)
+        .anyMatch(expectedLogLine.asPredicate()));
+  }
+
+  @Test
+  public void startupWithMultipleFailingAsyncTasks() {
+    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+        ServerLauncherCacheProvider.class, MultipleFailing.class);
+
+    String startServerCommand = String.join(" ",
+        "start server",
+        "--name=" + serverName,
+        "--dir=" + serverFolder.getAbsolutePath(),
+        "--classpath=" + serviceJarPath,
+        "--disable-default-server");
+
+    gfshRule.execute(startServerCommand);
+
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
+
+    Exception exception = MultipleFailing.EXCEPTION;
+    String errorDetail = CompletionException.class.getName() + ": " +
+        exception.getClass().getName() + ": " + exception.getMessage();
+
+    Pattern expectedLogLine = Pattern.compile("^\\[error .*].*Server " + serverName +
+        " startup completed in \\d+ ms with error: " + errorDetail);
+
+    await().untilAsserted(() -> assertThat(Files.lines(logFile))
+        .as("Log file " + logFile + " includes line matching " + expectedLogLine)
+        .anyMatch(expectedLogLine.asPredicate()));
+  }
+
+  @Test
+  public void startupWithCompletingAndFailingAsyncTasks() {
+    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+        ServerLauncherCacheProvider.class, CompletingAndFailing.class);
+
+    String startServerCommand = String.join(" ",
+        "start server",
+        "--name=" + serverName,
+        "--dir=" + serverFolder.getAbsolutePath(),
+        "--classpath=" + serviceJarPath,
+        "--disable-default-server");
+
+    gfshRule.execute(startServerCommand);
+
+    Path logFile = serverFolder.toPath().resolve(serverName + ".log");
+
+    Exception exception = CompletingAndFailing.EXCEPTION;
+    String errorDetail = CompletionException.class.getName() + ": " +
+        exception.getClass().getName() + ": " + exception.getMessage();
+
+    Pattern expectedLogLine = Pattern.compile("^\\[error .*].*Server " + serverName +
+        " startup completed in \\d+ ms with error: " + errorDetail);
+
     await().untilAsserted(() -> assertThat(Files.lines(logFile))
         .as("Log file " + logFile + " includes line matching " + expectedLogLine)
         .anyMatch(expectedLogLine.asPredicate()));

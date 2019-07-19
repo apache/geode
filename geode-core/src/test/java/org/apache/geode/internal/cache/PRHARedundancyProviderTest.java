@@ -249,7 +249,8 @@ public class PRHARedundancyProviderTest {
   @Test
   @Parameters({"RUNTIME", "CANCEL", "REGION_DESTROYED"})
   @TestCaseName("{method}[{index}]: {params}")
-  public void startTaskCompletesExceptionallyIfExceptionIsThrown(ExceptionToThrow exceptionToThrow) {
+  public void startTaskCompletesExceptionallyIfExceptionIsThrown(
+      ExceptionToThrow exceptionToThrow) {
     DistributedSystem distributedSystem = mock(DistributedSystem.class);
     when(distributedSystem.getCancelCriterion()).thenReturn(mock(CancelCriterion.class));
 

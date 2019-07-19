@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.control;
 
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +67,7 @@ public class InternalResourceManager implements ResourceManager {
   final int MAX_RESOURCE_MANAGER_EXE_THREADS =
       Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "resource.manager.threads", 1);
 
-  private final Collection<CompletableFuture<Void>> startupTasks = new HashSet<>();
+  private final Collection<CompletableFuture<Void>> startupTasks = new ArrayList<>();
 
   public enum ResourceType {
     HEAP_MEMORY(0x1), OFFHEAP_MEMORY(0x2), MEMORY(0x3), ALL(0xFFFFFFFF);

@@ -50,8 +50,7 @@ public class GatewayReceiverMetricsTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
-  public ServiceJarRule serviceJarRule = new ServiceJarRule("metrics-publishing-service.jar",
-      MetricsPublishingService.class.getName(), SimpleMetricsPublishingService.class);
+  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   private static final String SENDER_LOCATOR_NAME = "sender-locator";
   private static final String RECEIVER_LOCATOR_NAME = "receiver-locator";
@@ -119,13 +118,16 @@ public class GatewayReceiverMetricsTest {
         "--server-port=" + senderServerPort,
         "--J=-Dgemfire.distributed-system-id=" + senderSystemId);
 
+    String serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
+        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
+
     String startReceiverServerCommand = String.join(GFSH_COMMAND_SEPARATOR,
         "start server",
         "--name=" + RECEIVER_SERVER_NAME,
         "--dir=" + receiverServerFolder,
         "--locators=localhost[" + receiverLocatorPort + "]",
         "--server-port=" + receiverServerPort,
-        "--classpath=" + serviceJarRule.absolutePath(),
+        "--classpath=" + serviceJarPath,
         "--J=-Dgemfire.distributed-system-id=" + receiverSystemId);
 
     gfshRule.execute(startSenderLocatorCommand, startReceiverLocatorCommand,
