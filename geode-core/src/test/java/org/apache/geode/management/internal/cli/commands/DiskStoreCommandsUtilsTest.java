@@ -110,7 +110,7 @@ public class DiskStoreCommandsUtilsTest {
   @Test
   public void diskStoreBeanExistsMemberDiskStoreNamesHasNullValues() throws Exception {
     Map<String, String[]> memberDiskStore = new HashMap<>();
-    memberDiskStore.put(memberName, new String[]{null, null});
+    memberDiskStore.put(memberName, new String[] {null, null});
     ObjectName objectName = new ObjectName("");
 
     DistributedSystemMXBean distributedSystemMXBean = Mockito.mock(DistributedSystemMXBean.class);
