@@ -84,7 +84,7 @@ public class StartVsdCommand extends OfflineGfshCommand {
     commandLine.add(getPathToVsd());
     commandLine.addAll(processStatisticsArchiveFiles(statisticsArchiveFilePathnames));
 
-    return commandLine.toArray(new String[commandLine.size()]);
+    return commandLine.toArray(new String[0]);
   }
 
   protected String getPathToVsd() {

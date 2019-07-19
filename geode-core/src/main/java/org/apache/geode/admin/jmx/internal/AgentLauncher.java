@@ -289,7 +289,7 @@ public class AgentLauncher {
       commands.add(key + "=" + agentProps.get(key.toString()));
     }
 
-    return commands.toArray(new String[commands.size()]);
+    return commands.toArray(new String[0]);
   }
 
   private void printCommandLine(final String[] commandLine) {

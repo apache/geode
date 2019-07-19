@@ -563,7 +563,7 @@ public class QCompiler implements OQLLexerTokenTypes {
     }
 
     push(new CompiledJunction(
-        (CompiledValue[]) operands.toArray(new CompiledValue[operands.size()]), operator));
+        (CompiledValue[]) operands.toArray(new CompiledValue[0]), operator));
   }
 
 

@@ -555,7 +555,7 @@ public class DLockGrantor {
           batchList.add(batch);
         }
       }
-      return (DLockBatch[]) batchList.toArray(new DLockBatch[batchList.size()]);
+      return (DLockBatch[]) batchList.toArray(new DLockBatch[0]);
     }
   }
 

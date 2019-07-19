@@ -84,7 +84,7 @@ public class HttpInvocationHandler implements InvocationHandler {
       return null;
     }
 
-    return signature.toArray(new String[signature.size()]);
+    return signature.toArray(new String[0]);
   }
 
   @Override

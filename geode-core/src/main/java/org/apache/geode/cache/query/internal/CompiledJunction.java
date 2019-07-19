@@ -667,7 +667,7 @@ public class CompiledJunction extends AbstractCompiledValue implements Negatable
           if (listOrPosition instanceof List) {
             List ops = (List) listOrPosition;
             nullifiedFields += ops.size();
-            CompiledValue operands[] = (CompiledValue[]) ops.toArray(new CompiledValue[ops.size()]);
+            CompiledValue operands[] = (CompiledValue[]) ops.toArray(new CompiledValue[0]);
             rangeJunctions[numRangeJunctions++] =
                 new RangeJunction(this._operator, grpIndpndntItr, completeExpnsn, operands);
           }

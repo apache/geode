@@ -199,7 +199,7 @@ public class SnapshotPacket implements DataSerializableFixedID {
     this.windowId = windowId;
     this.packetId = UUID.randomUUID().toString();
     this.sender = sender;
-    records = recs.toArray(new SnapshotRecord[recs.size()]);
+    records = recs.toArray(new SnapshotRecord[0]);
   }
 
   /**

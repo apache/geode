@@ -47,7 +47,7 @@ public class PathUtils {
     while (tokenizer.hasMoreTokens()) {
       alist.add(tokenizer.nextToken());
     }
-    return (String[]) alist.toArray(new String[alist.size()]);
+    return (String[]) alist.toArray(new String[0]);
   }
 
   public static String buildPathString(String[] path) {

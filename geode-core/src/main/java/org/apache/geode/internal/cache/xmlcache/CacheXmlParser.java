@@ -1515,7 +1515,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     ResumptionAction raction = ResumptionAction.fromName(raName);
 
     MembershipAttributes ra = new MembershipAttributes(
-        (String[]) roles.toArray(new String[roles.size()]), laction, raction);
+        (String[]) roles.toArray(new String[0]), laction, raction);
     RegionAttributesCreation rattrs = (RegionAttributesCreation) stack.peek();
     rattrs.setMembershipAttributes(ra);
   }

@@ -214,7 +214,7 @@ public class SystemMemberCacheImpl implements SystemMemberCache {
     for (int i = 0; i < stats.length; i++) {
       statList.add(createStatistic(stats[i]));
     }
-    this.statistics = (Statistic[]) statList.toArray(new Statistic[statList.size()]);
+    this.statistics = (Statistic[]) statList.toArray(new Statistic[0]);
   }
 
   private void updateStats() {

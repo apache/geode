@@ -799,13 +799,13 @@ public class DistributedSystemConfigImpl implements DistributedSystemConfig {
   @Override
   public CacheServerConfig[] getCacheServerConfigs() {
     return (CacheServerConfig[]) this.cacheServerConfigs
-        .toArray(new CacheServerConfig[this.cacheServerConfigs.size()]);
+        .toArray(new CacheServerConfig[0]);
   }
 
   @Override
   public CacheVmConfig[] getCacheVmConfigs() {
     return (CacheVmConfig[]) this.cacheServerConfigs
-        .toArray(new CacheVmConfig[this.cacheServerConfigs.size()]);
+        .toArray(new CacheVmConfig[0]);
   }
 
   /**

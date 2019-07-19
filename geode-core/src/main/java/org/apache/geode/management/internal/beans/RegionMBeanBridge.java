@@ -233,7 +233,7 @@ public class RegionMBeanBridge<K, V> {
     for (Region<?, ?> region : subregions) {
       subregionPaths.add(region.getFullPath());
     }
-    return subregionPaths.toArray(new String[subregionPaths.size()]);
+    return subregionPaths.toArray(new String[0]);
   }
 
   public RegionMBeanBridge(CachePerfStats cachePerfStats) {

@@ -48,7 +48,7 @@ public class MethodDispatch {
       String methodName, List argTypes) throws NameResolutionException {
     _targetClass = targetClass;
     _methodName = methodName;
-    _argTypes = (Class[]) argTypes.toArray(new Class[argTypes.size()]);
+    _argTypes = (Class[]) argTypes.toArray(new Class[0]);
     _methodInvocationAuthorizer = methodInvocationAuthorizer;
 
     resolve();
