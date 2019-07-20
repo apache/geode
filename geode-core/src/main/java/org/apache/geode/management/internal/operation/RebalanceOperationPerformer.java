@@ -41,7 +41,8 @@ public class RebalanceOperationPerformer {
 
       if (result.getStatus().equals(Result.Status.ERROR)) {
         throw new RuntimeException(
-            "rebalance returned error: " + result.getInfoSection("error").getContent());
+            "rebalance returned error: " + String
+                .join("\n", result.getInfoSection("error").getContent()));
       }
       RebalanceResult rebalanceResult = new RebalanceResult();
 
@@ -57,7 +58,7 @@ public class RebalanceOperationPerformer {
         InfoResultModel info = result.getInfoSection("info");
         if (info != null)
           throw new RuntimeException(
-              "rebalance returned info: " + info.getContent());
+              "rebalance returned info: " + String.join("\n", info.getContent()));
       }
 
       return rebalanceResult;

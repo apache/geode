@@ -101,7 +101,8 @@ public class RebalanceManagementDunitTest {
     assertThat(result.getRebalanceSummary().keySet())
         .contains("total-time-in-milliseconds-for-this-rebalance");
     assertThat(result.getPerRegionResults().size()).isEqualTo(2);
-    assertThat(result.getPerRegionResults().get(0).toString()).contains("Rebalanced partition regions  /customers1");
+    assertThat(result.getPerRegionResults().get(0).toString())
+        .contains("Rebalanced partition regions  /customers1");
   }
 
   @Test
@@ -113,9 +114,12 @@ public class RebalanceManagementDunitTest {
 
     CompletableFuture<RebalanceResult> future = cmr.getResult();
     String[] message = new String[1];
-    RebalanceResult result = future.exceptionally((ex)->{message[0]=ex.getMessage();return null;}).get();
+    RebalanceResult result = future.exceptionally((ex) -> {
+      message[0] = ex.getMessage();
+      return null;
+    }).get();
 
     assertThat(future.isCompletedExceptionally()).isTrue();
-    assertThat(message[0].contains("For the region /nonexisting_region, no member was found");
+    assertThat(message[0].contains("For the region /nonexisting_region, no member was found"));
   }
 }
