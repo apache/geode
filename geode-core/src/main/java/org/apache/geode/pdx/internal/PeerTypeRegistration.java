@@ -360,23 +360,25 @@ public class PeerTypeRegistration implements TypeRegistration {
     statistics.typeDefined();
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
+
     if (existingId != null) {
       return existingId;
     }
     lock();
     try {
-      int id = getExistingIdForType(newType);
-      if (id != -1) {
-        return id;
+      if (typeToId.isEmpty()) {
+        buildTypeToIdFromRegion();
+      }
+      // double check if my type is in region in case the typeToId map has been updated while
+      // waiting to obtain a lock
+      existingId = typeToId.get(newType);
+      if (existingId != null) {
+        return existingId;
       }
 
-      id = allocateTypeId(newType);
+      int id = allocateTypeId(newType);
       newType.setTypeId(id);
-
       updateIdToTypeRegion(newType);
-
-      typeToId.put(newType, id);
-
       return newType.getTypeId();
     } finally {
       unlock();
@@ -543,12 +545,10 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  /** Should be called holding the dlock */
-  private int getExistingIdForType(PdxType newType) {
+  private void buildTypeToIdFromRegion() {
     int totalPdxTypeIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
-      int result = -1;
       for (Map.Entry<Object, Object> entry : getIdToType().entrySet()) {
         Object v = entry.getValue();
         Object k = entry.getKey();
@@ -565,9 +565,6 @@ public class PeerTypeRegistration implements TypeRegistration {
           }
 
           typeToId.put(foundType, id);
-          if (foundType.equals(newType)) {
-            result = foundType.getTypeId();
-          }
         }
       }
       if (totalPdxTypeIdInDS == MAX_TYPE_ID) {
@@ -575,7 +572,6 @@ public class PeerTypeRegistration implements TypeRegistration {
             "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
                 + MAX_TYPE_ID);
       }
-      return result;
     } finally {
       resumeTX(currentState);
     }
@@ -724,6 +720,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   private void updateClassToTypeMap(PdxType type) {
     if (type != null) {
       synchronized (classToType) {
+        typeToId.put(type, type.getTypeId());
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
@@ -787,5 +784,9 @@ public class PeerTypeRegistration implements TypeRegistration {
   @Override
   public int getLocalSize() {
     return getIdToType().size();
+  }
+
+  public int getTypeToIdSize() {
+    return typeToId.size();
   }
 }
