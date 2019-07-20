@@ -84,7 +84,6 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the future for an async operation by id
    */
-  @SuppressWarnings("unchecked")
   public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
     return historyManager.getStatus(opId);
   }

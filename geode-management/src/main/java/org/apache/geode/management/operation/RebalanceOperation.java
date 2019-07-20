@@ -19,9 +19,11 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
+@Experimental
 public class RebalanceOperation implements ClusterManagementOperation<RebalanceResult> {
   public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
   private List<String> includeRegions = new ArrayList<>();

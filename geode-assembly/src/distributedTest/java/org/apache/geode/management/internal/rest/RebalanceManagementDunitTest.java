@@ -20,7 +20,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -33,6 +35,7 @@ import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
+import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
@@ -80,16 +83,17 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = cmr.getResult().get();
-    assertThat(result.getRebalanceSummary().size()).isEqualTo(9);
-    assertThat(result.getRebalanceSummary().keySet())
+    assertThat(result.getRebalanceSummary().size()).isEqualTo(2);
+    Map.Entry<String, Map<String, String>> firstRegionSummary =
+        result.getRebalanceSummary().entrySet().iterator().next();
+    assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers");
+    assertThat(firstRegionSummary.getValue().keySet())
         .contains("total-time-in-milliseconds-for-this-rebalance");
-    assertThat(result.getPerRegionResults().size()).isEqualTo(0);
   }
 
   @Test
   public void rebalanceExistRegion() throws Exception {
     List<String> includeRegions = new ArrayList<>();
-    includeRegions.add("customers1");
     includeRegions.add("customers2");
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(includeRegions);
@@ -97,16 +101,18 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = cmr.getResult().get();
-    assertThat(result.getRebalanceSummary().size()).isEqualTo(9);
-    assertThat(result.getRebalanceSummary().keySet())
+    assertThat(result.getRebalanceSummary().size()).isEqualTo(1);
+    Map.Entry<String, Map<String, String>> firstRegionSummary =
+        result.getRebalanceSummary().entrySet().iterator().next();
+    assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers2");
+    assertThat(firstRegionSummary.getValue().keySet())
         .contains("total-time-in-milliseconds-for-this-rebalance");
-    assertThat(result.getPerRegionResults().size()).isEqualTo(2);
-    assertThat(result.getPerRegionResults().get(0).toString())
-        .contains("Rebalanced partition regions  /customers1");
   }
 
   @Test
   public void rebalanceNonExistRegion() throws Exception {
+    IgnoredException.addIgnoredException(ExecutionException.class);
+    IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
     ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);

@@ -47,12 +47,12 @@ public class RebalanceOperationPerformer {
       RebalanceResult rebalanceResult = new RebalanceResult();
 
       List<TabularResultModel> tableSections = result.getTableSections();
-      TabularResultModel lastSection =
-          (tableSections.size() > 0) ? tableSections.get(tableSections.size() - 1) : null;
-      for (TabularResultModel table : tableSections) {
-        rebalanceResult.getPerRegionResults().add(toMap(table));
+
+      Map<String, Map<String, String>> results = new LinkedHashMap<>();
+      for (TabularResultModel tableSection : tableSections) {
+        results.put(tableSection.getHeader(), toMap(tableSection));
       }
-      rebalanceResult.setRebalanceSummary(toMap(lastSection));
+      rebalanceResult.setRebalanceSummary(results);
 
       if (tableSections.size() == 0) {
         InfoResultModel info = result.getInfoSection("info");
