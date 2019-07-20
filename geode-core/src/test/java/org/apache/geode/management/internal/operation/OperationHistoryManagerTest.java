@@ -16,6 +16,7 @@ package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import org.junit.Before;
@@ -103,9 +104,33 @@ public class OperationHistoryManagerTest {
     assertThat(history.getStatus("3")).isNotNull();
   }
 
+  @Test
+  public void timestampsAreCorrect() throws Exception {
+    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
+    future1.complete(null);
+    long now = System.currentTimeMillis();
+    history.save(op("1", future1));
+    assertThat(history.getOperationStart("1").getTime()).isBetween(now - 10000, now);
+    assertThat(history.getOperationEnd("1").isDone()).isTrue();
+    assertThat(history.getOperationEnd("1").get().getTime())
+        .isGreaterThanOrEqualTo(history.getOperationStart("1").getTime());
+    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
+    history.save(op("2", future2));
+    assertThat(history.getOperationEnd("2").isDone()).isFalse();
+    future2.complete(null);
+    now = System.currentTimeMillis();
+    assertThat(history.getOperationStart("2").getTime()).isBetween(now - 10000, now);
+    assertThat(history.getOperationEnd("2").isDone()).isTrue();
+    assertThat(history.getOperationEnd("2").get().getTime())
+        .isGreaterThanOrEqualTo(history.getOperationStart("2").getTime());
+    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
+    history.save(op("3", future3));
+    assertThat(history.getOperationEnd("3").isDone()).isFalse();
+  }
+
   private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
       String id, CompletableFuture<V> future) {
     A op = null;
-    return new OperationInstance<>(future, id, op);
+    return new OperationInstance<>(future, id, op, new Date());
   }
 }

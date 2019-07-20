@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -330,9 +331,11 @@ public class LocatorClusterManagementServiceTest {
   public void startOperation() {
     final String URI = "test/uri";
     ClusterManagementOperation<JsonSerializable> operation = mock(ClusterManagementOperation.class);
-    when(executorManager.submit(any())).thenReturn(new OperationInstance<>(null, "42", operation));
-    ClusterManagementOperationResult<?> result = service.startOperation(operation, URI);
-    assertThat(result.getUri()).isEqualTo(URI + "/42");
+    when(operation.getEndpoint()).thenReturn(URI);
+    when(executorManager.submit(any()))
+        .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
+    ClusterManagementOperationResult<?> result = service.startOperation(operation);
+    assertThat(result.getUri()).isEqualTo("/management/v2" + URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).isEqualTo("async operation started");
   }
@@ -347,6 +350,7 @@ public class LocatorClusterManagementServiceTest {
   public void checkStatus() {
     CompletableFuture future = mock(CompletableFuture.class);
     when(executorManager.getStatus(any())).thenReturn(future);
+    when(executorManager.getOperationEnd(any())).thenReturn(future);
     when(future.isDone()).thenReturn(false);
     ClusterManagementOperationStatusResult<JsonSerializable> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);

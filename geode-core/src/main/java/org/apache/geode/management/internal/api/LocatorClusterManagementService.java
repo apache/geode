@@ -383,25 +383,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION + op.getEndpoint() + "/"
         + operationInstance.getId());
 
-    return new ClusterManagementOperationResult<>(result, future);
-  }
-
-  /**
-   * this is intended for use by the REST controller. for Java usage, please use
-   * {@link #startOperation(ClusterManagementOperation)}
-   */
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
-      A op, String uri) {
-    OperationInstance<A, V> operationInstance = executorManager.submit(op);
-
-    ClusterManagementResult result = new ClusterManagementResult(
-        ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
-
-    String opId = operationInstance.getId();
-    String instUri = uri + "/" + opId;
-    result.setUri(instUri);
-
-    return new ClusterManagementOperationResult<>(result, operationInstance.getFuture());
+    return new ClusterManagementOperationResult<>(result, future,
+        operationInstance.getOperationStart(), operationInstance.getOperationEnd());
   }
 
   /**
@@ -416,10 +399,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
     ClusterManagementOperationStatusResult<V> result =
         new ClusterManagementOperationStatusResult<>();
+    result.setOperationStart(executorManager.getOperationStart(opId));
     if (!status.isDone()) {
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
     } else {
       try {
+        result.setOperationEnd(executorManager.getOperationEnd(opId).get());
         result.setResult(status.get());
         result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
       } catch (InterruptedException e) {

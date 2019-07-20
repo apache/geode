@@ -32,7 +32,7 @@ public class RebalanceResult implements JsonSerializable {
   public RebalanceResult() {}
 
   /**
-   * @return a map of human-readable descriptions -> values for the statistics reported by rebalance
+   * @return for each region, a map of stat -> value for the statistics reported by rebalance
    */
   public Map<String, Map<String, String>> getRebalanceSummary() {
     return rebalanceSummary;

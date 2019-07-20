@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -69,7 +70,7 @@ public class OperationManager implements AutoCloseable {
     CompletableFuture<V> future =
         CompletableFuture.supplyAsync(() -> performer.apply(cache, op), executor);
 
-    OperationInstance<A, V> inst = new OperationInstance<>(future, opId, op);
+    OperationInstance<A, V> inst = new OperationInstance<>(future, opId, op, new Date());
 
     // save the Future so we can check on it later
     return historyManager.save(inst);
@@ -86,6 +87,20 @@ public class OperationManager implements AutoCloseable {
    */
   public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
     return historyManager.getStatus(opId);
+  }
+
+  /**
+   * looks up the start time of an operation by id, or null if not found
+   */
+  public Date getOperationStart(String opId) {
+    return historyManager.getOperationStart(opId);
+  }
+
+  /**
+   * looks up the end time of an operation by id, or null if not found or in progress
+   */
+  public CompletableFuture<Date> getOperationEnd(String opId) {
+    return historyManager.getOperationEnd(opId);
   }
 
   @Override

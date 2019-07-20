@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal;
 
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -116,20 +117,22 @@ public class ClientClusterManagementService implements ClusterManagementService 
   @SuppressWarnings("unchecked")
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
-    final ClusterManagementResult result;
+    final ClusterManagementOperationResult result;
 
     // make the REST call to start the operation
     result = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
-        ClusterManagementResult.class).getBody();
+        ClusterManagementOperationResult.class).getBody();
 
     // our restTemplate requires the url to be modified to start from "/v2"
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
     CompletableFutureProxy<V> operationResult =
-        new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool);
+        new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool,
+            new CompletableFuture<>());
 
-    return new ClusterManagementOperationResult<>(result, operationResult);
+    return new ClusterManagementOperationResult<>(result, operationResult,
+        result.getOperationStart(), result.getOperationEnd());
   }
 
   private static String stripPrefix(String prefix, String s) {

@@ -16,6 +16,7 @@ package org.apache.geode.management.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,11 +40,12 @@ public class ClusterManagementOperationResultTest {
     ClusterManagementResult result1 = new ClusterManagementResult();
     result1.setStatus(true, "success!!");
     ClusterManagementOperationResult<TestResult> result =
-        new ClusterManagementOperationResult<>(result1, operationResult);
+        new ClusterManagementOperationResult<>(result1, operationResult, new Date(),
+            new CompletableFuture<>());
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementResult value =
-        mapper.readValue(json, ClusterManagementResult.class);
+    ClusterManagementOperationResult value =
+        mapper.readValue(json, ClusterManagementOperationResult.class);
     assertThat(value.getStatusMessage()).isEqualTo("success!!");
   }
 

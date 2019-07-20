@@ -81,8 +81,14 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr =
         client.startOperation(new RebalanceOperation());
     assertThat(cmr.isSuccessful()).isTrue();
+    long now = System.currentTimeMillis();
+    assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
     RebalanceResult result = cmr.getResult().get();
+    long end = cmr.getOperationEnd().get().getTime();
+    now = System.currentTimeMillis();
+    assertThat(end).isBetween(now - 60000, now)
+        .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
     assertThat(result.getRebalanceSummary().size()).isEqualTo(2);
     Map.Entry<String, Map<String, String>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
