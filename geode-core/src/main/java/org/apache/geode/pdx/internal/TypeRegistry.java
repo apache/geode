@@ -202,12 +202,12 @@ public class TypeRegistry {
     int id = this.distributedTypeRegistry.defineType(newType);
     PdxType oldType = this.idToType.get(id);
     if (oldType == null) {
-      newType.setTypeId(id);
-      this.idToType.put(id, newType);
-      this.typeToId.put(newType, id);
-      if (logger.isInfoEnabled()) {
-        logger.info("Caching {}", newType.toFormattedString());
-      }
+      // newType.setTypeId(id);
+      // this.idToType.put(id, newType);
+      // this.typeToId.put(newType, id);
+      // if (logger.isInfoEnabled()) {
+      // logger.info("Caching {}", newType.toFormattedString());
+      // }
       return newType;
     } else {
       if (!oldType.equals(newType)) {
