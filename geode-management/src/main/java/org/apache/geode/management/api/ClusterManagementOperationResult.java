@@ -32,7 +32,8 @@ import org.apache.geode.management.internal.Dormant;
  * @param <V> the type of the operation's result
  */
 @Experimental
-public class ClusterManagementOperationResult<V extends JsonSerializable> extends ClusterManagementResult {
+public class ClusterManagementOperationResult<V extends JsonSerializable>
+    extends ClusterManagementResult {
   @JsonIgnore
   private final CompletableFuture<V> operationResult;
   @JsonIgnore

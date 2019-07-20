@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal;
 
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -127,12 +128,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
+    CompletableFuture<Date> operationEnd = new CompletableFuture<>();
     CompletableFutureProxy<V> operationResult =
         new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool,
-            new CompletableFuture<>());
+            operationEnd);
 
     return new ClusterManagementOperationResult<>(result, operationResult,
-        result.getOperationStart(), result.getOperationEnd());
+        result.getOperationStart(), operationEnd);
   }
 
   private static String stripPrefix(String prefix, String s) {
