@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -100,7 +101,7 @@ public class RebalanceManagementDunitTest {
     assertThat(result.getRebalanceSummary().keySet())
         .contains("total-time-in-milliseconds-for-this-rebalance");
     assertThat(result.getPerRegionResults().size()).isEqualTo(2);
-    // TODO assert something about contents of per region results
+    assertThat(result.getPerRegionResults().get(0).toString()).contains("Rebalanced partition regions  /customers1");
   }
 
   @Test
@@ -108,7 +109,13 @@ public class RebalanceManagementDunitTest {
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
     ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
-    assertThat(cmr.isSuccessful()).isFalse();
-    assertThat(cmr.getStatusMessage()).contains("not exist"); // TODO
+    assertThat(cmr.isSuccessful()).isTrue();
+
+    CompletableFuture<RebalanceResult> future = cmr.getResult();
+    String[] message = new String[1];
+    RebalanceResult result = future.exceptionally((ex)->{message[0]=ex.getMessage();return null;}).get();
+
+    assertThat(future.isCompletedExceptionally()).isTrue();
+    assertThat(message[0].contains("For the region /nonexisting_region, no member was found");
   }
 }
