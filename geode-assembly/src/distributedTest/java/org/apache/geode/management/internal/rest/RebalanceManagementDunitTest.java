@@ -59,7 +59,8 @@ public class RebalanceManagementDunitTest {
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
     client = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort()).build();
+        .setHostAddress("localhost", locator.getHttpPort())
+        .setCredentials("cluster", "cluster").build();
     gfsh.connect(locator);
 
     // create regions
@@ -81,6 +82,8 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr =
         client.startOperation(new RebalanceOperation());
     assertThat(cmr.isSuccessful()).isTrue();
+    assertThat(cmr.getAuthorization()).isEqualTo("DATA:MANAGE");
+    assertThat(cmr.getOperator()).isEqualTo("cluster");
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
@@ -125,13 +128,13 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     CompletableFuture<RebalanceResult> future = cmr.getResult();
-    String[] message = new String[1];
-    RebalanceResult result = future.exceptionally((ex) -> {
-      message[0] = ex.getMessage();
+    CompletableFuture<String> message = new CompletableFuture<>();
+    future.exceptionally((ex) -> {
+      message.complete(ex.getMessage());
       return null;
     }).get();
 
     assertThat(future.isCompletedExceptionally()).isTrue();
-    assertThat(message[0].contains("For the region /nonexisting_region, no member was found"));
+    assertThat(message.get()).contains("For the region /nonexisting_region, no member was found");
   }
 }

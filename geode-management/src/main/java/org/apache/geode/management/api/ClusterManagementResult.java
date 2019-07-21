@@ -61,6 +61,8 @@ public class ClusterManagementResult {
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
   private String uri;
+  private String operator;
+  private String authorization;
 
   public ClusterManagementResult() {}
 
@@ -129,5 +131,21 @@ public class ClusterManagementResult {
 
   public StatusCode getStatusCode() {
     return statusCode;
+  }
+
+  public String getOperator() {
+    return operator;
+  }
+
+  public void setOperator(String operator) {
+    this.operator = operator;
+  }
+
+  public String getAuthorization() {
+    return authorization;
+  }
+
+  public void setAuthorization(String authorization) {
+    this.authorization = authorization;
   }
 }

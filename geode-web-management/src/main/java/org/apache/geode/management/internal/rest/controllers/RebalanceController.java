@@ -41,7 +41,10 @@ public class RebalanceController extends AbstractManagementController {
   @ResponseBody
   public ClusterManagementOperationStatusResult<RebalanceResult> checkRebalanceStatus(
       @PathVariable String id) {
-    return clusterManagementService.checkStatus(id);
+    ClusterManagementOperationStatusResult<RebalanceResult> result =
+        clusterManagementService.checkStatus(id);
+    decorate(result);
+    return result;
   }
 
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
@@ -50,7 +53,7 @@ public class RebalanceController extends AbstractManagementController {
       @RequestBody RebalanceOperation operation) {
     ClusterManagementOperationResult<RebalanceResult> result =
         clusterManagementService.startOperation(operation);
-
+    decorate(result);
     return new ResponseEntity<>(result,
         result.isSuccessful() ? HttpStatus.ACCEPTED : HttpStatus.INTERNAL_SERVER_ERROR);
   }

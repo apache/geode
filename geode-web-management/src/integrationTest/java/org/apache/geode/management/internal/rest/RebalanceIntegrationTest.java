@@ -65,8 +65,8 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isAccepted())
         .andExpect(
             jsonPath("$.uri", Matchers.containsString("/management/v2/operations/rebalance/")))
-        .andExpect(jsonPath("$.statusMessage",
-            Matchers.containsString("async operation started")));
+        .andExpect(jsonPath("$.statusMessage", Matchers.containsString("async operation started")))
+        .andExpect(jsonPath("$.authorization", Matchers.equalTo("DATA:MANAGE")));
   }
 
   @Test
@@ -74,8 +74,8 @@ public class RebalanceIntegrationTest {
     context.perform(get("/v2/operations/rebalance/abc"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
-        .andExpect(jsonPath("$.statusMessage",
-            Matchers.containsString("Operation id = abc not found")));
+        .andExpect(
+            jsonPath("$.statusMessage", Matchers.containsString("Operation id = abc not found")));
   }
 
   @Test

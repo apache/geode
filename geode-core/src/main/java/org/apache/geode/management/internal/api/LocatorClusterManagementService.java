@@ -379,7 +379,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     CompletableFuture<V> future = operationInstance.getFuture();
 
     ClusterManagementResult result = new ClusterManagementResult(
-        ClusterManagementResult.StatusCode.ACCEPTED, "async operation started");
+        ClusterManagementResult.StatusCode.ACCEPTED,
+        "async operation started (GET uri to check status)");
     result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION + op.getEndpoint() + "/"
         + operationInstance.getId());
 
