@@ -80,6 +80,8 @@ public class ClusterManagementResult {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
     this.uri = copyFrom.uri;
+    this.operator = copyFrom.operator;
+    this.authorization = copyFrom.authorization;
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
