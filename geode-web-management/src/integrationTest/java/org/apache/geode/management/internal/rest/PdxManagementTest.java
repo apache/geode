@@ -57,7 +57,7 @@ public class PdxManagementTest {
   public void success() throws Exception {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
-    context.perform(post("/v2/configurations/pdx")
+    context.perform(post("/experimental/configurations/pdx")
         .with(httpBasic("clusterManage", "clusterManage"))
         .content(mapper.writeValueAsString(pdx)))
         .andExpect(status().isCreated())
@@ -65,6 +65,6 @@ public class PdxManagementTest {
         .andExpect(
             jsonPath("$.statusMessage", containsString("Successfully updated config for cluster")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
-        .andExpect(jsonPath("$.uri", is("/management/v2/configurations/pdx")));
+        .andExpect(jsonPath("$.uri", is("/management/experimental/configurations/pdx")));
   }
 }

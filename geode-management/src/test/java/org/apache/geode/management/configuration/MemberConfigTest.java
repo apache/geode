@@ -29,6 +29,7 @@ public class MemberConfigTest {
     MemberConfig config = new MemberConfig();
     config.setId("memberA");
     assertThat(config.getEndpoint()).isEqualTo("/members");
-    assertThat(config.getUri()).isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/members/memberA");
+    assertThat(config.getUri())
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/members/memberA");
   }
 }

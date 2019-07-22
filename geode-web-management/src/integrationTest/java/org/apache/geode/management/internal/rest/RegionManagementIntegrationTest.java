@@ -97,7 +97,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void ping() throws Exception {
-    context.perform(get("/v2/ping"))
+    context.perform(get("/experimental/ping"))
         .andExpect(content().string("pong"));
   }
 }
