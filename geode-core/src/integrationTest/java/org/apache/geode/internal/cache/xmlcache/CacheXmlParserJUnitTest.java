@@ -30,8 +30,12 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
+import org.junit.rules.TemporaryFolder;
 import org.xml.sax.Attributes;
 
+import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheFactory;
+import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
@@ -45,6 +49,9 @@ public class CacheXmlParserJUnitTest {
 
   @Rule
   public final RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
+
+  @Rule
+  public final TemporaryFolder temporaryFolderRule = new TemporaryFolder();
 
   private static final String NAMESPACE_URI =
       "urn:java:org.apache.geode.internal.cache.xmlcache.MockXmlParser";
@@ -126,16 +133,16 @@ public class CacheXmlParserJUnitTest {
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
+
     ClientCache cache = new ClientCacheFactory(nonDefault).set("cache-xml-file",
         "xmlcache/CacheXmlParserJUnitTest.testMultiplePools.cache.xml").create();
-
     assertThat(cache.getRegion("regionOne").getAttributes().getPoolName()).isEqualTo("poolOne");
     assertThat(cache.getRegion("regionTwo").getAttributes().getPoolName()).isEqualTo("poolTwo");
     cache.close();
   }
 
   @Test
-  public void cacheXmlParserShouldShouldThrowExceptionWhenPoolDoesNotExist() {
+  public void cacheXmlParserShouldThrowExceptionWhenPoolDoesNotExist() {
     Properties nonDefault = new Properties();
     nonDefault.setProperty(MCAST_PORT, "0"); // loner
 
@@ -143,6 +150,23 @@ public class CacheXmlParserJUnitTest {
         "xmlcache/CacheXmlParserJUnitTest.testRegionWithNonExistingPool.cache.xml").create())
             .isInstanceOf(IllegalStateException.class)
             .hasMessage("The connection pool nonExistingPool has not been created");
+  }
+
+  @Test
+  public void cacheXmlParserShouldCorrectlyHandleDiskUsageWarningPercentage() {
+    String diskStoreName = "myDiskStore";
+    System.setProperty("DISK_STORE_NAME", diskStoreName);
+    System.setProperty("DISK_STORE_DIRECTORY", temporaryFolderRule.getRoot().getAbsolutePath());
+
+    Cache cache =
+        new CacheFactory()
+            .set("cache-xml-file",
+                "xmlcache/CacheXmlParserJUnitTest.testDiskUsageWarningPercentage.cache.xml")
+            .create();
+    DiskStore diskStore = cache.findDiskStore(diskStoreName);
+    assertThat(diskStore).isNotNull();
+    assertThat(diskStore.getDiskUsageWarningPercentage()).isEqualTo(70);
+    cache.close();
   }
 
   /**
