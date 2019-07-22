@@ -343,6 +343,15 @@ public class ConcurrentSerialGatewaySenderEventProcessor
     }
   }
 
+  public List<SerialGatewaySenderEventProcessor> getProcessors() {
+    List<SerialGatewaySenderEventProcessor> l =
+        new ArrayList<SerialGatewaySenderEventProcessor>();
+    for (int i = 0; i < processors.size(); i++) {
+      l.add(processors.get(i));
+    }
+    return l;
+  }
+
   /**
    * @return the queues
    */

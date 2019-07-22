@@ -309,9 +309,6 @@ public class ConcurrentParallelGatewaySenderEventProcessor
     super.waitForResumption();
   }
 
-  /**
-   * Test only methods for verification purpose.
-   */
   public List<ParallelGatewaySenderEventProcessor> getProcessors() {
     List<ParallelGatewaySenderEventProcessor> l =
         new LinkedList<ParallelGatewaySenderEventProcessor>();

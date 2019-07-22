@@ -24,6 +24,10 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventDispatcher;
 import org.apache.geode.internal.cache.wan.GatewaySenderStats;
+import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.parallel.ParallelGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.serial.ConcurrentSerialGatewaySenderEventProcessor;
+import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderEventProcessor;
 import org.apache.geode.management.internal.beans.stats.GatewaySenderOverflowMonitor;
 import org.apache.geode.management.internal.beans.stats.MBeanStatsMonitor;
 import org.apache.geode.management.internal.beans.stats.StatType;
@@ -293,9 +297,29 @@ public class GatewaySenderMBeanBridge {
   public boolean isConnected() {
     if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {
       return true;
-    } else {
-      return false;
     }
+    if (!this.sender.isParallel()) {
+      ConcurrentSerialGatewaySenderEventProcessor cProc =
+          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+              .getEventProcessor();
+      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+        if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+          this.dispatcher = lProc.getDispatcher();
+          return true;
+        }
+      }
+    } else {
+      ConcurrentParallelGatewaySenderEventProcessor cProc =
+          (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+              .getEventProcessor();
+      for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+        if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
+          this.dispatcher = lProc.getDispatcher();
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public int getEventsExceedingAlertThreshold() {
