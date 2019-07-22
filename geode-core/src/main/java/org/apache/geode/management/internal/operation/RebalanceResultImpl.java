@@ -18,7 +18,6 @@ package org.apache.geode.management.internal.operation;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RebalanceResultImpl implements RebalanceResult {
