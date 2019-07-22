@@ -104,12 +104,6 @@ public interface NetMember extends Comparable<NetMember> {
   /** compare data that is not known to DistributedMember instances */
   int compareAdditionalData(NetMember other);
 
-  /**
-   * Return a unique string id for this member which is immutable and will not change during the
-   * life of this member.
-   */
-  String getUniqueId();
-
   void setDurableTimeout(int newValue);
 
   void setHostName(String hostName);

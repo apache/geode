@@ -409,7 +409,9 @@ public class GMSMembershipManagerJUnitTest {
 
     List<InternalDistributedMember> viewmembers =
         Arrays.asList(new InternalDistributedMember[] {mockMembers[0], mockMembers[1], myMemberId});
-    manager.getGMSManager().installView(createView(myMemberId, 2, viewmembers));
+    GMSMembershipView view = createView(myMemberId, 2, viewmembers);
+    manager.getGMSManager().installView(view);
+    when(services.getJoinLeave().getView()).thenReturn(view);
 
     InternalDistributedMember[] destinations = new InternalDistributedMember[viewmembers.size()];
     for (int i = 0; i < destinations.length; i++) {

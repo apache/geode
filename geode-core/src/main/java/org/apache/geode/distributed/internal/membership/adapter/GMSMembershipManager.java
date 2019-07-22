@@ -132,15 +132,6 @@ public class GMSMembershipManager implements MembershipManager {
   private long ackSevereAlertThreshold;
   private long ackWaitThreshold;
 
-  /**
-   * Trick class to make the startup synch more visible in stack traces
-   *
-   * @see GMSMembershipManager#startupLock
-   */
-  static class EventProcessingLock {
-    public EventProcessingLock() {}
-  }
-
   static class StartupEvent {
     static final int SURPRISE_CONNECT = 1;
     static final int VIEW = 2;
@@ -248,7 +239,7 @@ public class GMSMembershipManager implements MembershipManager {
    * This object synchronizes threads waiting for startup to finish. Updates to
    * {@link #startupMessages} are synchronized through this object.
    */
-  private final EventProcessingLock startupLock = new EventProcessingLock();
+  private final ReadWriteLock startupLock = new ReentrantReadWriteLock();
 
   /**
    * This is the latest view (ordered list of DistributedMembers) that has been installed
@@ -371,7 +362,7 @@ public class GMSMembershipManager implements MembershipManager {
 
   /**
    * A list of messages received during channel startup that couldn't be processed yet. Additions or
-   * removals of this list must be synchronized via {@link #startupLock}.
+   * removals of this list must be protected via {@link #startupLock}.
    *
    * @since GemFire 5.0
    */
@@ -791,11 +782,14 @@ public class GMSMembershipManager implements MembershipManager {
    * @param member the member
    */
   protected void handleOrDeferSurpriseConnect(InternalDistributedMember member) {
-    synchronized (startupLock) {
+    startupLock.readLock().lock();
+    try {
       if (!processingEvents) {
         startupMessages.add(new StartupEvent(member));
         return;
       }
+    } finally {
+      startupLock.readLock().unlock();
     }
     processSurpriseConnect(member);
   }
@@ -957,7 +951,8 @@ public class GMSMembershipManager implements MembershipManager {
    * @param msg the message to process
    */
   protected void handleOrDeferMessage(DistributionMessage msg) {
-    synchronized (startupLock) {
+    startupLock.readLock().lock();
+    try {
       if (beingSick || playingDead) {
         // cache operations are blocked in a "sick" member
         if (msg.containsRegionContentChange() || msg instanceof PartitionMessageWithDirectReply) {
@@ -969,6 +964,8 @@ public class GMSMembershipManager implements MembershipManager {
         startupMessages.add(new StartupEvent(msg));
         return;
       }
+    } finally {
+      startupLock.readLock().unlock();
     }
     dispatchMessage(msg);
   }
@@ -1082,12 +1079,11 @@ public class GMSMembershipManager implements MembershipManager {
       }
     }
     latestViewWriteLock.lock();
+    startupLock.readLock().lock();
     try {
-      synchronized (startupLock) {
-        if (!processingEvents) {
-          startupMessages.add(new StartupEvent(viewArg));
-          return;
-        }
+      if (!processingEvents) {
+        startupMessages.add(new StartupEvent(viewArg));
+        return;
       }
       // view processing can take a while, so we use a separate thread
       // to avoid blocking a reader thread
@@ -1096,6 +1092,7 @@ public class GMSMembershipManager implements MembershipManager {
 
       listener.messageReceived(v);
     } finally {
+      startupLock.readLock().unlock();
       latestViewWriteLock.unlock();
     }
   }
@@ -1186,21 +1183,23 @@ public class GMSMembershipManager implements MembershipManager {
         // Other events may arrive while we're attempting to
         // drain the queue. This is OK, we'll just keep processing
         // events here until we've caught up.
-        synchronized (startupLock) {
+        startupLock.writeLock().lock();
+        try {
           int remaining = startupMessages.size();
           if (remaining == 0) {
             // While holding the lock, flip the bit so that
             // no more events get put into startupMessages, and
             // notify all waiters to proceed.
             processingEvents = true;
-            startupLock.notifyAll();
             break; // ...and we're done.
           }
           if (logger.isDebugEnabled()) {
             logger.debug("Membership: {} remaining startup message(s)", remaining);
           }
           ev = startupMessages.removeFirst();
-        } // startupLock
+        } finally {
+          startupLock.writeLock().unlock();
+        }
         try {
           processStartupEvent(ev);
         } catch (VirtualMachineError err) {
@@ -1238,22 +1237,20 @@ public class GMSMembershipManager implements MembershipManager {
     }
     for (;;) {
       directChannel.getCancelCriterion().checkCancelInProgress(null);
-      synchronized (startupLock) {
-        // Now check using a memory fence and synchronization.
-        if (processingEvents)
-          break;
-        boolean interrupted = Thread.interrupted();
-        try {
-          startupLock.wait();
-        } catch (InterruptedException e) {
-          interrupted = true;
-          directChannel.getCancelCriterion().checkCancelInProgress(e);
-        } finally {
-          if (interrupted) {
-            Thread.currentThread().interrupt();
-          }
+      if (processingEvents) { // volatile read
+        break;
+      }
+      boolean interrupted = Thread.interrupted();
+      try {
+        Thread.sleep(50);
+      } catch (InterruptedException e) {
+        interrupted = true;
+        directChannel.getCancelCriterion().checkCancelInProgress(e);
+      } finally {
+        if (interrupted) {
+          Thread.currentThread().interrupt();
         }
-      } // synchronized
+      }
     } // for
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: continuing");

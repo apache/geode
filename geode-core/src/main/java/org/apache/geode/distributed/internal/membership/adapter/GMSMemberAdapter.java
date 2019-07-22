@@ -210,11 +210,6 @@ public class GMSMemberAdapter implements NetMember {
   }
 
   @Override
-  public String getUniqueId() {
-    return gmsMember.getUniqueId();
-  }
-
-  @Override
   public int compareTo(NetMember o) {
     return gmsMember.compareTo(((GMSMemberAdapter) o).getGmsMember());
   }

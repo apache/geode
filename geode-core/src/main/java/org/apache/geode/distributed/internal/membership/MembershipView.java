@@ -20,17 +20,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 
 /**
  * The MembershipView class represents a membership view. Note that this class is not synchronized,
- * so take
- * that under advisement if you decide to modify a view with add() or remove().
- *
- * @since GemFire 5.5
+ * so take that under advisement if you decide to modify a view with add() or remove().
  */
 public class MembershipView {
 
@@ -40,7 +36,6 @@ public class MembershipView {
   private Set<InternalDistributedMember> crashedMembers;
   private InternalDistributedMember creator;
   private Set<InternalDistributedMember> hashedMembers;
-  private final Object membersLock = new Object();
 
 
   public MembershipView() {
@@ -60,21 +55,6 @@ public class MembershipView {
     shutdownMembers = new HashSet<>();
     crashedMembers = Collections.emptySet();
     this.creator = creator;
-  }
-
-  /**
-   * Test method
-   *
-   * @param size size of the view, used for presizing collections
-   * @param viewId the ID of the view
-   */
-  public MembershipView(int size, long viewId) {
-    this.viewId = (int) viewId;
-    members = new ArrayList<>(size);
-    this.hashedMembers = new HashSet<>();
-    shutdownMembers = new HashSet<>();
-    crashedMembers = Collections.emptySet();
-    creator = null;
   }
 
   /**
@@ -131,16 +111,6 @@ public class MembershipView {
     return result;
   }
 
-  /**
-   * return members added in this view
-   */
-  public List<InternalDistributedMember> getNewMembers() {
-    List<InternalDistributedMember> result = new ArrayList<>(5);
-    result.addAll(this.members.stream().filter(mbr -> mbr.getVmViewId() == this.viewId)
-        .collect(Collectors.toList()));
-    return result;
-  }
-
   public Object get(int i) {
     return this.members.get(i);
   }
@@ -165,23 +135,6 @@ public class MembershipView {
     return this.hashedMembers.contains(mbr);
   }
 
-  /**
-   * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
-   * is returned.
-   */
-  public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
-    if (hashedMembers.contains(id)) {
-      for (InternalDistributedMember m : this.members) {
-        if (id.equals(m)) {
-          return m;
-        }
-      }
-    }
-    return id;
-  }
-
-
-
   public int size() {
     return this.members.size();
   }
@@ -196,38 +149,13 @@ public class MembershipView {
   }
 
   public InternalDistributedMember getCoordinator() {
-    synchronized (membersLock) {
-      for (InternalDistributedMember addr : members) {
-        if (addr.getNetMember().preferredForCoordinator()) {
-          return addr;
-        }
-      }
-      if (members.size() > 0) {
-        return members.get(0);
+    for (InternalDistributedMember addr : members) {
+      if (addr.getNetMember().preferredForCoordinator()) {
+        return addr;
       }
     }
-    return null;
-  }
-
-  /**
-   * Returns the coordinator of this view, rejecting any in the given collection of IDs
-   */
-  public InternalDistributedMember getCoordinator(
-      Collection<InternalDistributedMember> rejections) {
-    if (rejections == null) {
-      return getCoordinator();
-    }
-    synchronized (membersLock) {
-      for (InternalDistributedMember addr : members) {
-        if (addr.getNetMember().preferredForCoordinator() && !rejections.contains(addr)) {
-          return addr;
-        }
-      }
-      for (InternalDistributedMember addr : members) {
-        if (!rejections.contains(addr)) {
-          return addr;
-        }
-      }
+    if (members.size() > 0) {
+      return members.get(0);
     }
     return null;
   }

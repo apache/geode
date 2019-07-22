@@ -229,11 +229,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       throw new ServerConnectivityException("Unable to resolve server location " + location, e);
     }
 
-    netMbr = MemberFactory.newNetMember(addr, location.getPort());
-    netMbr.setHostName(location.getHostName());
-    netMbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    netMbr = MemberFactory.newNetMember(addr, location.getHostName(), location.getPort(), false, true,
+        Version.CURRENT_ORDINAL, MemberAttributes.DEFAULT);
     versionObj = Version.CURRENT;
-    netMbr.setVersion(versionObj);
   }
 
   /**
@@ -1096,8 +1094,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     MemberAttributes attr = new MemberAttributes(-1, -1, vmKind, vmViewId, name, null, null);
     netMbr = MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord,
         InternalDataSerializer.getVersionForDataStream(in).ordinal(), attr);
-
-    netMbr.setHostName(hostName);
 
     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
       netMbr.readAdditionalData(in);

@@ -347,20 +347,6 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
-  public String getUniqueId() {
-    StringBuilder sb = new StringBuilder(100);
-    sb.append("GMSMember[addr=").append(inetAddr);
-    sb.append(";processId=").append(processId);
-    sb.append(";name=").append(name);
-    sb.append(formatUUID()).append("]");
-    return sb.toString();
-  }
-
-  public int getUdpPort() {
-    return udpPort;
-  }
-
-
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
   }
