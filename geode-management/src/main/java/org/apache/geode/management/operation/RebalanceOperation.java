@@ -64,8 +64,8 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   }
 
   /**
-   * requests the rebalance operation to be limited to specific region(s)
-   * an empty list (the default) means ALL regions (except excluded)
+   * requests rebalance of the specified region(s) only. When at least one region is specified, this
+   * takes precedence over any excluded regions.
    */
   public void setIncludeRegions(List<String> includeRegions) {
     this.includeRegions.clear();
@@ -75,14 +75,15 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   }
 
   /***
-   * @return the list of regions to definitely not be rebalanced
+   * @return the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty)
    */
   public List<String> getExcludeRegions() {
     return excludeRegions;
   }
 
   /**
-   * excludes specific named regions from the rebalance
+   * excludes specific regions from the rebalance, if {@link #getIncludeRegions()} is empty,
+   * otherwise has no effect
    * default: no regions are excluded
    */
   public void setExcludeRegions(List<String> excludeRegions) {
