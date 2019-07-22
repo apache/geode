@@ -36,7 +36,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
-@Category({SecurityTest.class})
+@Category(SecurityTest.class)
 public class BootstrappingFunctionTest {
 
   @Test
@@ -90,7 +90,8 @@ public class BootstrappingFunctionTest {
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
 
     FunctionContext functionContext = mock(FunctionContext.class);
-    ResultSender resultSender = mock(ResultSender.class);
+    @SuppressWarnings("unchecked")
+    ResultSender<String> resultSender = (ResultSender<String>) mock(ResultSender.class);
     doNothing().when(resultSender).lastResult(any());
 
     when(functionContext.getResultSender()).thenReturn(resultSender);
@@ -117,7 +118,8 @@ public class BootstrappingFunctionTest {
     doNothing().when(distributionManager).addMembershipListener(bootstrappingFunction);
 
     FunctionContext functionContext = mock(FunctionContext.class);
-    ResultSender resultSender = mock(ResultSender.class);
+    @SuppressWarnings("unchecked")
+    ResultSender<String> resultSender = (ResultSender<String>) mock(ResultSender.class);
     doNothing().when(resultSender).lastResult(any());
 
     when(functionContext.getResultSender()).thenReturn(resultSender);

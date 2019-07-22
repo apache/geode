@@ -32,8 +32,6 @@ public interface SessionCache {
 
   boolean getDefaultEnableLocalCache();
 
-  String getSessionRegionName();
-
   String getOperatingRegionName();
 
   void putSession(Session session);

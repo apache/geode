@@ -47,6 +47,7 @@ public class DeltaEvent implements DataSerializable {
   /**
    * Constructor for de-serialization only
    */
+  @SuppressWarnings("unused")
   public DeltaEvent() {}
 
   /**
@@ -56,13 +57,13 @@ public class DeltaEvent implements DataSerializable {
    * @param session the session from which the value ultimately will be retrieved
    * @param attribute the name of the attribute
    */
-  public DeltaEvent(GemfireHttpSession session, String attribute) {
+  DeltaEvent(GemfireHttpSession session, String attribute) {
     this.session = session;
     this.name = attribute;
     this.update = true;
   }
 
-  public DeltaEvent(boolean update, String attribute, Object value) {
+  DeltaEvent(boolean update, String attribute, Object value) {
     this.update = update;
     this.name = attribute;
     this.value = value;

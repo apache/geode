@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.util;
 
-import java.util.Properties;
-
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Declarable;
@@ -30,7 +28,7 @@ public class RegionConfigurationCacheListener
 
   private Cache cache;
 
-  public RegionConfigurationCacheListener() {
+  RegionConfigurationCacheListener() {
     this.cache = CacheFactory.getAnyInstance();
   }
 
@@ -65,7 +63,7 @@ public class RegionConfigurationCacheListener
 
   @Override
   public void afterRegionCreate(RegionEvent<String, RegionConfiguration> event) {
-    StringBuilder builder1 = null, builder2 = null;
+    StringBuilder builder1 = new StringBuilder(), builder2 = new StringBuilder();
     Region<String, RegionConfiguration> region = event.getRegion();
     if (this.cache.getLogger().fineEnabled()) {
       builder1 = new StringBuilder();
@@ -99,14 +97,12 @@ public class RegionConfigurationCacheListener
       }
 
     }
+
     if (this.cache.getLogger().fineEnabled()) {
       this.cache.getLogger().fine(builder1.toString());
-      if (builder2 != null) {
+      if (builder2.length() != 0) {
         this.cache.getLogger().fine(builder2.toString());
       }
     }
   }
-
-  @Override
-  public void init(Properties p) {}
 }

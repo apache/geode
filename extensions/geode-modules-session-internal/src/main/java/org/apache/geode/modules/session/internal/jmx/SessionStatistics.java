@@ -44,14 +44,6 @@ public class SessionStatistics implements SessionStatisticsMXBean {
     return regionUpdates.get();
   }
 
-  public void setActiveSessions(int sessions) {
-    activeSessions.set(sessions);
-  }
-
-  public void setTotalSessions(int sessions) {
-    totalSessions.set(sessions);
-  }
-
   public void incActiveSessions() {
     activeSessions.incrementAndGet();
     totalSessions.incrementAndGet();
@@ -61,16 +53,7 @@ public class SessionStatistics implements SessionStatisticsMXBean {
     activeSessions.decrementAndGet();
   }
 
-  public void incTotalSessions() {
-    totalSessions.incrementAndGet();
-  }
-
-  public void decTotalSessions() {
-    totalSessions.decrementAndGet();
-  }
-
   public void incRegionUpdates() {
     regionUpdates.incrementAndGet();
   }
-
 }

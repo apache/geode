@@ -18,31 +18,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
 import org.apache.geode.modules.session.catalina.DeltaSessionInterface;
 
 @SuppressWarnings("serial")
 public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEvent {
-
   private String attributeName;
-
   private Object attributeValue;
 
+  @SuppressWarnings("unused")
   public DeltaSessionUpdateAttributeEvent() {}
 
   public DeltaSessionUpdateAttributeEvent(String attributeName, Object attributeValue) {
     this.attributeName = attributeName;
     this.attributeValue = attributeValue;
-  }
-
-  public String getAttributeName() {
-    return this.attributeName;
-  }
-
-  public Object getAttributeValue() {
-    return this.attributeValue;
   }
 
   @Override
@@ -62,18 +51,9 @@ public class DeltaSessionUpdateAttributeEvent implements DeltaSessionAttributeEv
     DataSerializer.writeObject(this.attributeValue, out);
   }
 
-  public static void registerInstantiator(int id) {
-    Instantiator.register(new Instantiator(DeltaSessionUpdateAttributeEvent.class, id) {
-      @Override
-      public DataSerializable newInstance() {
-        return new DeltaSessionUpdateAttributeEvent();
-      }
-    });
-  }
-
   public String toString() {
-    return new StringBuilder().append("DeltaSessionUpdateAttributeEvent[").append("attributeName=")
-        .append(this.attributeName).append("; attributeValue=").append(this.attributeValue)
-        .append("]").toString();
+    return "DeltaSessionUpdateAttributeEvent[" + "attributeName="
+        + this.attributeName + "; attributeValue=" + this.attributeValue
+        + "]";
   }
 }
