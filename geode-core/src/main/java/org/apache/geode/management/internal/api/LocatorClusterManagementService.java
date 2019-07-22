@@ -385,7 +385,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         + operationInstance.getId());
 
     return new ClusterManagementOperationResult<>(result, future,
-        operationInstance.getOperationStart(), operationInstance.getOperationEnd());
+        operationInstance.getOperationStart(), operationInstance.getOperationEnded());
   }
 
   /**
@@ -405,7 +405,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
     } else {
       try {
-        result.setOperationEnd(executorManager.getOperationEnd(opId).get());
+        result.setOperationEnded(executorManager.getOperationEnded(opId).get());
         result.setResult(status.get());
         result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
       } catch (InterruptedException e) {

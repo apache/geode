@@ -350,7 +350,7 @@ public class LocatorClusterManagementServiceTest {
   public void checkStatus() {
     CompletableFuture future = mock(CompletableFuture.class);
     when(executorManager.getStatus(any())).thenReturn(future);
-    when(executorManager.getOperationEnd(any())).thenReturn(future);
+    when(executorManager.getOperationEnded(any())).thenReturn(future);
     when(future.isDone()).thenReturn(false);
     ClusterManagementOperationStatusResult<JsonSerializable> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);

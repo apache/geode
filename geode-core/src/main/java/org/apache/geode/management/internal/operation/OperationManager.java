@@ -99,8 +99,8 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the end time of an operation by id, or null if not found or in progress
    */
-  public CompletableFuture<Date> getOperationEnd(String opId) {
-    return historyManager.getOperationEnd(opId);
+  public CompletableFuture<Date> getOperationEnded(String opId) {
+    return historyManager.getOperationEnded(opId);
   }
 
   @Override

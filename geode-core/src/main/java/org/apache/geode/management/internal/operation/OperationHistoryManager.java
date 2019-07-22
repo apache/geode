@@ -72,9 +72,9 @@ public class OperationHistoryManager {
    * looks up the end time of an operation by id, or null if not found or in progress
    */
   @SuppressWarnings("unchecked")
-  public CompletableFuture<Date> getOperationEnd(String opId) {
+  public CompletableFuture<Date> getOperationEnded(String opId) {
     OperationInstance ret = getOperationInstance(opId);
-    return ret == null ? null : ret.getOperationEnd();
+    return ret == null ? null : ret.getOperationEnded();
   }
 
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> save(
@@ -87,7 +87,7 @@ public class OperationHistoryManager {
     CompletableFuture<V> newFuture = future.whenComplete((result, exception) -> {
       completedHistory.put(opId, operationInstance);
       inProgressHistory.remove(opId);
-      operationInstance.setOperationEnd(new Date());
+      operationInstance.setOperationEnded(new Date());
     });
 
     OperationInstance<A, V> newOperationInstance = new OperationInstance<>(newFuture, opId,
@@ -104,7 +104,7 @@ public class OperationHistoryManager {
     private final String opId;
     private final A operation;
     private final Date operationStart;
-    private final CompletableFuture<Date> operationEnd;
+    private final CompletableFuture<Date> operationEnded;
 
     public OperationInstance(CompletableFuture<V> future, String opId, A operation,
         Date operationStart) {
@@ -112,7 +112,7 @@ public class OperationHistoryManager {
       this.opId = opId;
       this.operation = operation;
       this.operationStart = operationStart;
-      this.operationEnd = new CompletableFuture<>();
+      this.operationEnded = new CompletableFuture<>();
     }
 
     @Override
@@ -132,12 +132,12 @@ public class OperationHistoryManager {
       return operationStart;
     }
 
-    public CompletableFuture<Date> getOperationEnd() {
-      return operationEnd;
+    public CompletableFuture<Date> getOperationEnded() {
+      return operationEnded;
     }
 
-    public void setOperationEnd(Date operationEnd) {
-      this.operationEnd.complete(operationEnd);
+    public void setOperationEnded(Date operationEnded) {
+      this.operationEnded.complete(operationEnded);
     }
   }
 }

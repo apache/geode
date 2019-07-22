@@ -37,14 +37,14 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   @JsonIgnore
   private final CompletableFuture<V> operationResult;
   @JsonIgnore
-  private final CompletableFuture<Date> operationEnd;
+  private final CompletableFuture<Date> operationEnded;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
 
   public ClusterManagementOperationResult() {
     this.operationResult = null;
-    this.operationEnd = null;
+    this.operationEnded = null;
   }
 
   /**
@@ -52,11 +52,11 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       CompletableFuture<V> operationResult, Date operationStart,
-      CompletableFuture<Date> operationEnd) {
+      CompletableFuture<Date> operationEnded) {
     super(result);
     this.operationResult = operationResult;
     this.operationStart = operationStart;
-    this.operationEnd = operationEnd;
+    this.operationEnded = operationEnded;
   }
 
   /**
@@ -81,7 +81,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
    *         immediately before {@link #getResult()}; any subsequent stages must be chained to
    *         {@link #getResult()}, not here.
    */
-  public CompletableFuture<Date> getOperationEnd() {
-    return operationEnd;
+  public CompletableFuture<Date> getOperationEnded() {
+    return operationEnded;
   }
 }
