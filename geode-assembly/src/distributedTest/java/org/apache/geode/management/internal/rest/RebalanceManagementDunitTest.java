@@ -59,8 +59,7 @@ public class RebalanceManagementDunitTest {
     server2 = cluster.startServerVM(2, "group2", locator.getPort());
 
     client = ClusterManagementServiceBuilder.buildWithHostAddress()
-        .setHostAddress("localhost", locator.getHttpPort())
-        .setCredentials("cluster", "cluster").build();
+        .setHostAddress("localhost", locator.getHttpPort()).build();
     gfsh.connect(locator);
 
     // create regions
@@ -82,8 +81,6 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr =
         client.startOperation(new RebalanceOperation());
     assertThat(cmr.isSuccessful()).isTrue();
-    assertThat(cmr.getAuthorization()).isEqualTo("DATA:MANAGE");
-    assertThat(cmr.getOperator()).isEqualTo("cluster");
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 

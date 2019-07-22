@@ -61,8 +61,6 @@ public class ClusterManagementResult {
   private StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
   private String uri;
-  private String operator;
-  private String authorization;
 
   public ClusterManagementResult() {}
 
@@ -80,8 +78,6 @@ public class ClusterManagementResult {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
     this.uri = copyFrom.uri;
-    this.operator = copyFrom.operator;
-    this.authorization = copyFrom.authorization;
   }
 
   public void addMemberStatus(String member, boolean success, String message) {
@@ -133,21 +129,5 @@ public class ClusterManagementResult {
 
   public StatusCode getStatusCode() {
     return statusCode;
-  }
-
-  public String getOperator() {
-    return operator;
-  }
-
-  public void setOperator(String operator) {
-    this.operator = operator;
-  }
-
-  public String getAuthorization() {
-    return authorization;
-  }
-
-  public void setAuthorization(String authorization) {
-    this.authorization = authorization;
   }
 }
