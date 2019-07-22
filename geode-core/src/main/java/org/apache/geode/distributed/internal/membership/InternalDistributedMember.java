@@ -229,8 +229,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       throw new ServerConnectivityException("Unable to resolve server location " + location, e);
     }
 
-    netMbr = MemberFactory.newNetMember(addr, location.getHostName(), location.getPort(), false, true,
-        Version.CURRENT_ORDINAL, MemberAttributes.DEFAULT);
+    netMbr =
+        MemberFactory.newNetMember(addr, location.getHostName(), location.getPort(), false, true,
+            Version.CURRENT_ORDINAL, MemberAttributes.DEFAULT);
     versionObj = Version.CURRENT;
   }
 

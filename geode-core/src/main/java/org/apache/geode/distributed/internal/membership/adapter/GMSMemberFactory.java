@@ -70,7 +70,7 @@ public class GMSMemberFactory implements MemberServices {
       durableTimeout = durableClientAttributes.getTimeout();
     }
     GMSMemberAdapter result =
-        new GMSMemberAdapter(new GMSMember(i, p, attr.getVmPid(), (byte) attr.getVmKind(),
+        new GMSMemberAdapter(new GMSMember(i, hostName, p, attr.getVmPid(), (byte) attr.getVmKind(),
             attr.getPort(), attr.getVmViewId(), attr.getName(), attr.getGroups(),
             durableId, durableTimeout, splitBrainEnabled, canBeCoordinator, version, 0, 0));
     return result;

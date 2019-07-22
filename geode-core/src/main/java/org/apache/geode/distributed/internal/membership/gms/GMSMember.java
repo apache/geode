@@ -106,13 +106,14 @@ public class GMSMember implements DataSerializableFixedID {
    * @param msbs - most significant bytes of UUID
    * @param lsbs - least significant bytes of UUID
    */
-  public GMSMember(InetAddress i, int p, int processId, byte vmKind, int directPort, int vmViewId,
+  public GMSMember(InetAddress i, String hostName, int p, int processId, byte vmKind,
+      int directPort, int vmViewId,
       String name, String[] groups,
       String durableId, int durableTimeout,
       boolean networkPartitionDetectionEnabled, boolean preferredForCoordinator, short version,
       long msbs, long lsbs) {
     this.inetAddr = i;
-    this.hostName = inetAddr.getHostName();
+    this.hostName = hostName;
     this.udpPort = p;
     this.processId = processId;
     this.vmKind = vmKind;

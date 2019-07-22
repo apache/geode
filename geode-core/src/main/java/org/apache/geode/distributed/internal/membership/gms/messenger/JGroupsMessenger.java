@@ -535,7 +535,8 @@ public class JGroupsMessenger implements Messenger {
         || !services.getConfig().getDistributionConfig().getStartLocator().isEmpty();
 
     // establish the DistributedSystem's address
-    GMSMember gmsMember = new GMSMember(jgAddress.getInetAddress(), jgAddress.getPort(),
+    GMSMember gmsMember = new GMSMember(jgAddress.getInetAddress(),
+        jgAddress.getInetAddress().getHostName(), jgAddress.getPort(),
         OSProcess.getId(), (byte) services.getConfig().getTransport().getVmKind(),
         -1 /* directport */, -1 /* viewID */, config.getName(),
         GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
