@@ -1466,6 +1466,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException {
     int dsfid = o.getDSFID();
+    writeDSFID(o, dsfid, out);
+  }
+
+  public static void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
+      throws IOException {
     if (dsfidToClassMap != null
         && logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE)) {
       logger.trace(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE, "writeDSFID {} class={}", dsfid,

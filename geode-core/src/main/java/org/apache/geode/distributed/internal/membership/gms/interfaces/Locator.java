@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 
 /**
  * The Locator interface allows member services to interact with the Locator TcpHandler component of
@@ -24,7 +24,7 @@ public interface Locator {
   /**
    * called when a new view is installed by Membership
    */
-  void installView(NetView v);
+  void installView(GMSMembershipView v);
 
   /**
    * informs the locator that this process is becoming the membership coordinator

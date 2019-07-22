@@ -14,10 +14,8 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 
 public interface JoinLeave extends Service {
 
@@ -35,40 +33,40 @@ public interface JoinLeave extends Service {
   /**
    * force another member out of the system
    */
-  void remove(InternalDistributedMember m, String reason);
+  void remove(GMSMember m, String reason);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(DistributedMember mbr, String reason);
+  void memberShutdown(GMSMember mbr, String reason);
 
   /**
    * returns the local address
    */
-  InternalDistributedMember getMemberID();
+  GMSMember getMemberID();
 
   /**
-   * Get "InternalDistributedMember" from current view or prepared view.
+   * Get canonical "GMSMember" from current view or prepared view.
    */
-  InternalDistributedMember getMemberID(NetMember m);
+  GMSMember getMemberID(GMSMember m);
 
   /**
    * returns the current membership view
    */
-  NetView getView();
+  GMSMembershipView getView();
 
 
   /**
    * returns the last known view prior to close - for reconnecting
    */
-  NetView getPreviousView();
+  GMSMembershipView getPreviousView();
 
   /**
    * check to see if a member is already in the process of leaving or being removed (in the next
    * view)
    */
-  boolean isMemberLeaving(DistributedMember mbr);
+  boolean isMemberLeaving(GMSMember mbr);
 
   /**
    * test hook

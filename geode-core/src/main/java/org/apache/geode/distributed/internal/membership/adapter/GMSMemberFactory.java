@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms;
+package org.apache.geode.distributed.internal.membership.adapter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -20,6 +20,7 @@ import java.nio.file.Path;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
@@ -28,9 +29,11 @@ import org.apache.geode.distributed.internal.membership.DistributedMembershipLis
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.NetMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
-import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -49,17 +52,27 @@ public class GMSMemberFactory implements MemberServices {
    *
    * @param i the name of the host for the specified NetMember, the current host (hopefully) if
    *        there are any problems.
+   * @param p the membership port
    * @param splitBrainEnabled whether the member has this feature enabled
    * @param canBeCoordinator whether the member can be membership coordinator
-   * @param p the membership port
    * @param attr the MemberAttributes
    * @return the new NetMember
    */
   @Override
-  public NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
+  public NetMember newNetMember(InetAddress i, String hostName, int p,
+      boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr, short version) {
-    GMSMember result =
-        new GMSMember(attr, i, p, splitBrainEnabled, canBeCoordinator, version, 0, 0);
+    DurableClientAttributes durableClientAttributes = attr.getDurableClientAttributes();
+    String durableId = null;
+    int durableTimeout = 0;
+    if (durableClientAttributes != null) {
+      durableId = durableClientAttributes.getId();
+      durableTimeout = durableClientAttributes.getTimeout();
+    }
+    GMSMemberAdapter result =
+        new GMSMemberAdapter(new GMSMember(i, hostName, p, attr.getVmPid(), (byte) attr.getVmKind(),
+            attr.getPort(), attr.getVmViewId(), attr.getName(), attr.getGroups(),
+            durableId, durableTimeout, splitBrainEnabled, canBeCoordinator, version, 0, 0));
     return result;
   }
 
@@ -73,8 +86,8 @@ public class GMSMemberFactory implements MemberServices {
    */
   @Override
   public NetMember newNetMember(InetAddress i, int p) {
-    return new GMSMember(MemberAttributes.DEFAULT, i, p, false, true, Version.CURRENT_ORDINAL, 0,
-        0);
+    return newNetMember(i, i.getHostName(), p, false, true, MemberAttributes.DEFAULT,
+        Version.CURRENT_ORDINAL);
   }
 
   /**
@@ -102,7 +115,9 @@ public class GMSMemberFactory implements MemberServices {
       final RemoteTransportConfig transport, DMStats stats,
       final Authenticator authenticator,
       final DistributionConfig config) throws DistributionException {
-    Services services = new Services(listener, transport, stats, authenticator, config);
+    GMSMembershipManager gmsMembershipManager = new GMSMembershipManager(listener);
+    Services services =
+        new Services(gmsMembershipManager.getGMSManager(), transport, stats, authenticator, config);
     try {
       services.init();
       services.start();
@@ -116,7 +131,7 @@ public class GMSMemberFactory implements MemberServices {
       Services.getLogger().error("Unexpected problem starting up membership services", e);
       throw new SystemConnectException("Problem starting up membership services", e);
     }
-    return (MembershipManager) services.getManager();
+    return gmsMembershipManager;
   }
 
   @Override
@@ -124,7 +139,7 @@ public class GMSMemberFactory implements MemberServices {
       boolean usePreferredCoordinators, boolean networkPartitionDetectionEnabled,
       LocatorStats stats, String securityUDPDHAlgo, Path workingDirectory) {
 
-    return new GMSLocator(bindAddress, locatorString, usePreferredCoordinators,
+    return new GMSLocatorAdapter(bindAddress, locatorString, usePreferredCoordinators,
         networkPartitionDetectionEnabled, stats, securityUDPDHAlgo, workingDirectory);
   }
 

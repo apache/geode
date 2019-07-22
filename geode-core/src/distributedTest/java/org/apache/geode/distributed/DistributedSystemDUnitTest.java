@@ -68,7 +68,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.distributed.internal.SizeableRunnable;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -120,7 +120,8 @@ public class DistributedSystemDUnitTest extends JUnit4DistributedTestCase {
 
     // construct a member ID that will represent a departed member
     InternalDistributedMember member =
-        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null, null);
+        new InternalDistributedMember("localhost", 12345, "", "", NORMAL_DM_TYPE, null,
+            null);
 
     // schedule a message in order to create a queue for the fake member
     ClusterDistributionManager distributionManager =

@@ -31,6 +31,7 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -50,21 +51,14 @@ import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
-import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -184,14 +178,14 @@ public class MembershipJUnitTest {
         }
       }
 
-      NetView view = jl1.getView();
-      InternalDistributedMember notCreator;
+      GMSMembershipView view = jl1.getView();
+      GMSMember notCreator;
       if (view.getCreator().equals(jl1.getMemberID())) {
         notCreator = view.getMembers().get(1);
       } else {
         notCreator = view.getMembers().get(0);
       }
-      List<String> result = notCreator.getGroups();
+      List<String> result = Arrays.asList(notCreator.getGroups());
 
       System.out.println("sending SerialAckedMessage from m1 to m2");
       SerialAckedMessage msg = new SerialAckedMessage();
@@ -452,65 +446,4 @@ public class MembershipJUnitTest {
       // expected
     }
   }
-
-  @Test
-  public void testMessagesThrowExceptionIfProcessed() throws Exception {
-    ClusterDistributionManager dm = null;
-    try {
-      new HeartbeatMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new HeartbeatRequestMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new InstallViewMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new JoinRequestMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new JoinResponseMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new LeaveRequestMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new RemoveMemberMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new SuspectMembersMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-    try {
-      new ViewAckMessage().process(dm);
-      fail("expected an exception to be thrown");
-    } catch (Exception e) {
-      // okay
-    }
-  }
-
-
 }

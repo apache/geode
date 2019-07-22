@@ -21,8 +21,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMemberFactory;
-import org.apache.geode.distributed.internal.membership.gms.NetLocator;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 
@@ -48,9 +47,12 @@ public class MemberFactory {
    * @param payload the payload for this member
    * @return the new NetMember
    */
-  public static NetMember newNetMember(InetAddress i, int p, boolean splitBrainEnabled,
-      boolean canBeCoordinator, short version, MemberAttributes payload) {
-    return services.newNetMember(i, p, splitBrainEnabled, canBeCoordinator, payload, version);
+  public static NetMember newNetMember(InetAddress i, String hostName, int p,
+      boolean splitBrainEnabled,
+      boolean canBeCoordinator, short version,
+      MemberAttributes payload) {
+    return services.newNetMember(i, hostName, p, splitBrainEnabled, canBeCoordinator, payload,
+        version);
   }
 
   /**

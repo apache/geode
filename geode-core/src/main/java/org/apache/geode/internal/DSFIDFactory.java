@@ -85,8 +85,8 @@ import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.locks.NonGrantorDestroyedProcessor;
 import org.apache.geode.distributed.internal.locks.NonGrantorDestroyedProcessor.NonGrantorDestroyedReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
 import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
 import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
@@ -492,7 +492,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
     registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
     registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
     registerDSFID(GMSMEMBER, GMSMember.class);
-    registerDSFID(NETVIEW, NetView.class);
+    registerDSFID(NETVIEW, GMSMembershipView.class);
     registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
     registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
     registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);

@@ -48,7 +48,7 @@ public interface MembershipManager {
    *
    * @return list of members
    */
-  NetView getView();
+  MembershipView getView();
 
   /**
    * Returns an object that is used to sync access to the view. While this lock is held the view
@@ -83,6 +83,21 @@ public interface MembershipManager {
 
 
   /**
+   * test method for simulating a sick/dead member
+   */
+  void beSick();
+
+  /**
+   * test method for simulating a sick/dead member
+   */
+  void playDead();
+
+  /**
+   * test method for simulating a sick/dead member
+   */
+  void beHealthy();
+
+  /**
    * A test hook for healthiness tests
    */
   boolean isBeingSick();
@@ -107,7 +122,7 @@ public interface MembershipManager {
   /**
    * A shutdown message has been received from another member
    */
-  void shutdownMessageReceived(InternalDistributedMember id, String reason);
+  void shutdownMessageReceived(DistributedMember id, String reason);
 
   /**
    * Stall the current thread until we are ready to accept view events
@@ -214,7 +229,7 @@ public interface MembershipManager {
    *
    * @return true if membership is confirmed, else timeout and false
    */
-  boolean waitForNewMember(InternalDistributedMember remoteId);
+  boolean waitForNewMember(DistributedMember remoteId);
 
   /**
    * Release critical resources, avoiding any possibility of deadlock
@@ -222,6 +237,12 @@ public interface MembershipManager {
    * @see SystemFailure#emergencyClose()
    */
   void emergencyClose();
+
+  /**
+   * Notifies the manager that a member has contacted us who is not in the current membership view
+   *
+   */
+  void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
 
   /**
    * Request the current membership coordinator to remove the given member
@@ -238,20 +259,20 @@ public interface MembershipManager {
    * @param reason why the check is being done (must not be blank/null)
    * @return true if the member checks out
    */
-  boolean verifyMember(InternalDistributedMember mbr, String reason);
+  boolean verifyMember(DistributedMember mbr, String reason);
 
 
   /**
    * Initiate SUSPECT processing for the given members. This may be done if the members have not
    * been responsive. If they fail SUSPECT processing, they will be removed from membership.
    */
-  void suspectMembers(Set<InternalDistributedMember> members, String reason);
+  void suspectMembers(Set<DistributedMember> members, String reason);
 
   /**
    * Initiate SUSPECT processing for the given member. This may be done if the member has not been
    * responsive. If it fails SUSPECT processing, it will be removed from membership.
    */
-  void suspectMember(InternalDistributedMember member, String reason);
+  void suspectMember(DistributedMember member, String reason);
 
   /**
    * if the manager initiated shutdown, this will return the cause of abnormal termination of

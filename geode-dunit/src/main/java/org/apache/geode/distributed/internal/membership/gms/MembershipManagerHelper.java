@@ -25,8 +25,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.WaitCriterion;
 
@@ -53,7 +52,7 @@ public class MembershipManagerHelper {
    *
    */
   public static void beSickMember(DistributedSystem sys) {
-    ((Manager) getMembershipManager(sys)).beSick();
+    getMembershipManager(sys).beSick();
   }
 
   /**
@@ -61,7 +60,7 @@ public class MembershipManagerHelper {
    */
   public static void playDead(DistributedSystem sys) {
     try {
-      ((Manager) getMembershipManager(sys)).playDead();
+      getMembershipManager(sys).playDead();
     } catch (CancelException e) {
       // really dead is as good as playing dead
     }
@@ -69,12 +68,12 @@ public class MembershipManagerHelper {
 
   /** returns the current coordinator address */
   public static DistributedMember getCoordinator(DistributedSystem sys) {
-    return ((Manager) getMembershipManager(sys)).getCoordinator();
+    return getMembershipManager(sys).getView().getCoordinator();
   }
 
   /** returns the current lead member address */
   public static DistributedMember getLeadMember(DistributedSystem sys) {
-    return ((Manager) getMembershipManager(sys)).getLeadMember();
+    return getMembershipManager(sys).getView().getLeadMember();
   }
 
   /** register a test hook with the manager */
@@ -92,7 +91,7 @@ public class MembershipManagerHelper {
    */
   public static void addSurpriseMember(DistributedSystem sys, DistributedMember mbr,
       long birthTime) {
-    ((Manager) getMembershipManager(sys)).addSurpriseMemberForTesting(mbr, birthTime);
+    getMembershipManager(sys).addSurpriseMemberForTesting(mbr, birthTime);
   }
 
   /**
@@ -131,7 +130,7 @@ public class MembershipManagerHelper {
     MembershipManagerHelper.inhibitForcedDisconnectLogging(true);
     MembershipManagerHelper.beSickMember(msys);
     MembershipManagerHelper.playDead(msys);
-    mgr.forceDisconnect("for testing");
+    mgr.getGMSManager().forceDisconnect("for testing");
     // wait at most 10 seconds for system to be disconnected
     await().until(() -> !msys.isConnected());
     MembershipManagerHelper.inhibitForcedDisconnectLogging(false);

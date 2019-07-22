@@ -18,25 +18,23 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
+public class HeartbeatRequestMessage extends AbstractGMSMessage {
 
   int requestId;
-  InternalDistributedMember target;
+  GMSMember target;
 
-  public HeartbeatRequestMessage(InternalDistributedMember neighbour, int id) {
+  public HeartbeatRequestMessage(GMSMember neighbour, int id) {
     requestId = id;
     this.target = neighbour;
   }
 
   public HeartbeatRequestMessage() {}
 
-  public InternalDistributedMember getTarget() {
+  public GMSMember getTarget() {
     return target;
   }
 
@@ -50,11 +48,6 @@ public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
   @Override
   public int getDSFID() {
     return HEARTBEAT_REQUEST;
-  }
-
-  @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   @Override
@@ -74,12 +67,12 @@ public class HeartbeatRequestMessage extends HighPriorityDistributionMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     out.writeInt(requestId);
-    DataSerializer.writeObject(target, out);
+    GMSUtil.writeMemberID(target, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     requestId = in.readInt();
-    target = DataSerializer.readObject(in);
+    target = GMSUtil.readMemberID(in);
   }
 }

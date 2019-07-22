@@ -61,9 +61,9 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
@@ -324,7 +324,7 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
     InternalDistributedSystem system = getSystem(new Properties());
     ClusterDistributionManager dm = (ClusterDistributionManager) system.getDM();
     GMSMembershipManager membershipManager = (GMSMembershipManager) dm.getMembershipManager();
-    NetView view = membershipManager.getView();
+    GMSMembershipView view = membershipManager.getServices().getJoinLeave().getView();
 
     AtomicBoolean waitForViewInstallationDone = new AtomicBoolean();
     executorService.submit(() -> {
@@ -338,8 +338,8 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
 
     pause(2000);
 
-    NetView newView = new NetView(view, view.getViewId() + 1);
-    membershipManager.installView(newView);
+    GMSMembershipView newView = new GMSMembershipView(view, view.getViewId() + 1);
+    membershipManager.getGMSManager().installView(newView);
 
     await()
         .untilAsserted(() -> assertThat(waitForViewInstallationDone.get()).isTrue());

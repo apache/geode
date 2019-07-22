@@ -28,8 +28,10 @@ import org.mockito.MockitoAnnotations;
 import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.security.AuthInitialize;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -46,7 +48,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
   @Mock
   protected Services services;
   @Mock
-  protected DistributedMember member;
+  protected GMSMember member;
   @Mock
   protected Subject subject;
 
@@ -62,6 +64,7 @@ public abstract class AbstractGMSAuthenticatorTestCase {
   public void setUp() throws Exception {
     clearStatics();
     MockitoAnnotations.initMocks(this);
+    when(this.member.getInetAddress()).thenReturn(SocketCreator.getLocalHost());
 
     this.props = new Properties();
     this.securityProps = new Properties();

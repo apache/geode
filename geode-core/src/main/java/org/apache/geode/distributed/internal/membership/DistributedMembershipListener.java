@@ -17,13 +17,14 @@ package org.apache.geode.distributed.internal.membership;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.direct.DirectChannelListener;
 
 public interface DistributedMembershipListener extends DirectChannelListener {
 
   /** this method is invoked when the processing of a new view is completed */
-  void viewInstalled(NetView view);
+  void viewInstalled(MembershipView view);
 
   /**
    * this is invoked when there has been a loss of quorum and enable-network-partition-detection is
@@ -37,7 +38,7 @@ public interface DistributedMembershipListener extends DirectChannelListener {
    *
    * @param m the new member
    */
-  void newMemberConnected(InternalDistributedMember m);
+  void newMemberConnected(DistributedMember m);
 
   /**
    * Event indicating that a member has left the system

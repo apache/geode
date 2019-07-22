@@ -20,21 +20,23 @@ import java.io.IOException;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.Version;
 
-public class JoinRequestMessage extends HighPriorityDistributionMessage {
-  private InternalDistributedMember memberID;
+public class JoinRequestMessage extends AbstractGMSMessage {
+  private GMSMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
+  private boolean useMulticast;
 
-  public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
+  public JoinRequestMessage(GMSMember coord, GMSMember id,
       Object credentials, int fdPort, int requestId) {
     super();
-    setRecipient(coord);
+    if (coord != null) {
+      setRecipient(coord);
+    }
     this.memberID = id;
     this.credentials = credentials;
     this.failureDetectionPort = fdPort;
@@ -55,11 +57,16 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message is not intended to execute in a thread pool");
+  public boolean getMulticast() {
+    return useMulticast;
   }
 
-  public InternalDistributedMember getMemberID() {
+  @Override
+  public void setMulticast(boolean useMulticast) {
+    this.useMulticast = useMulticast;
+  }
+
+  public GMSMember getMemberID() {
     return memberID;
   }
 
@@ -69,7 +76,7 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
 
   @Override
   public String toString() {
-    return getShortClassName() + "(" + memberID
+    return getClass().getSimpleName() + "(" + memberID
         + (credentials == null ? ")" : "; with credentials)") + " failureDetectionPort:"
         + failureDetectionPort;
   }
@@ -81,21 +88,22 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(memberID, out);
+    GMSUtil.writeMemberID(memberID, out);
     DataSerializer.writeObject(credentials, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
-    out.writeBoolean(getMulticast());
+    out.writeBoolean(false);
     out.writeInt(requestId);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = DataSerializer.readObject(in);
+    memberID = GMSUtil.readMemberID(in);
     credentials = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
-    setMulticast(in.readBoolean());
+    // setMulticast(in.readBoolean());
+    in.readBoolean();
     requestId = in.readInt();
   }
 
