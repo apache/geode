@@ -27,18 +27,18 @@ import org.apache.geode.management.operation.RebalanceOperation;
  */
 @Experimental
 public class RebalanceResult implements JsonSerializable {
-  private Map<String, Map<String, String>> rebalanceSummary = new LinkedHashMap<>();
+  private Map<String, Map<String, Long>> rebalanceSummary = new LinkedHashMap<>();
 
   public RebalanceResult() {}
 
   /**
    * @return for each region, a map of stat -> value for the statistics reported by rebalance
    */
-  public Map<String, Map<String, String>> getRebalanceSummary() {
+  public Map<String, Map<String, Long>> getRebalanceSummary() {
     return rebalanceSummary;
   }
 
-  public void setRebalanceSummary(Map<String, Map<String, String>> rebalanceSummary) {
+  public void setRebalanceSummary(Map<String, Map<String, Long>> rebalanceSummary) {
     this.rebalanceSummary = rebalanceSummary;
   }
 }

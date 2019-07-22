@@ -88,12 +88,12 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
     RebalanceResult result = cmr.getResult().get();
-    long end = cmr.getOperationEnd().get().getTime();
+    long end = cmr.getOperationEnded().get().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
     assertThat(result.getRebalanceSummary().size()).isEqualTo(2);
-    Map.Entry<String, Map<String, String>> firstRegionSummary =
+    Map.Entry<String, Map<String, Long>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers");
     assertThat(firstRegionSummary.getValue().keySet())
@@ -111,7 +111,7 @@ public class RebalanceManagementDunitTest {
 
     RebalanceResult result = cmr.getResult().get();
     assertThat(result.getRebalanceSummary().size()).isEqualTo(1);
-    Map.Entry<String, Map<String, String>> firstRegionSummary =
+    Map.Entry<String, Map<String, Long>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers2");
     assertThat(firstRegionSummary.getValue().keySet())

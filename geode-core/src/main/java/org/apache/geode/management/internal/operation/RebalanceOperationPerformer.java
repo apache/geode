@@ -48,7 +48,7 @@ public class RebalanceOperationPerformer {
 
       List<TabularResultModel> tableSections = result.getTableSections();
 
-      Map<String, Map<String, String>> results = new LinkedHashMap<>();
+      Map<String, Map<String, Long>> results = new LinkedHashMap<>();
       for (TabularResultModel tableSection : tableSections) {
         results.put(tableSection.getHeader(), toMap(tableSection));
       }
@@ -69,10 +69,10 @@ public class RebalanceOperationPerformer {
     }
   }
 
-  private static Map<String, String> toMap(TabularResultModel table) {
+  private static Map<String, Long> toMap(TabularResultModel table) {
     if (table == null)
       return null;
-    Map<String, String> section = new LinkedHashMap<>();
+    Map<String, Long> section = new LinkedHashMap<>();
     if (table.getColumnSize() != 2)
       throw new IllegalStateException();
     for (int i = 0; i < table.getRowSize(); i++) {
@@ -80,9 +80,21 @@ public class RebalanceOperationPerformer {
       String key = row.get(0);
       String val = row.get(1);
       key = key.replace("(", "").replace(")", "").replace(' ', '-').toLowerCase();
-      section.put(key, val);
+      section.put(key, toLong(val));
     }
     return section;
+  }
+
+  /**
+   * try to convert a result model value to a first-class numeric type so it can be serialized
+   * without string quotes
+   */
+  private static Long toLong(String val) {
+    try {
+      return Long.parseLong(val);
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   private static final String[] STRING_ARRAY_TYPE = new String[] {};
