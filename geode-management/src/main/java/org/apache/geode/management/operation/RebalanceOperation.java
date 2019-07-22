@@ -23,44 +23,73 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
+/**
+ * Defines a requests for the distributed system to optimize storage across members.
+ */
 @Experimental
 public class RebalanceOperation implements ClusterManagementOperation<RebalanceResult> {
+  /**
+   * see {@link #getEndpoint()}
+   */
   public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
   private List<String> includeRegions = new ArrayList<>();
   private List<String> excludeRegions = new ArrayList<>();
   private boolean simulate;
 
+  /**
+   * by default, requests all partitioned regions to be rebalanced
+   */
   public RebalanceOperation() {}
 
-  public RebalanceOperation(List<String> includeRegions,
-      List<String> excludeRegions, boolean simulate) {
-    this.includeRegions = includeRegions;
-    this.excludeRegions = excludeRegions;
-    this.simulate = simulate;
-  }
-
+  /***
+   * @return true if a "dry run" only is requested
+   */
   public boolean isSimulate() {
     return simulate;
   }
 
+  /**
+   * true requests a "dry run" (no actual buckets will be moved)
+   * default is false
+   */
   public void setSimulate(boolean simulate) {
     this.simulate = simulate;
   }
 
+  /***
+   * @return the list of regions to be rebalanced (or an empty list for all-except-excluded)
+   */
   public List<String> getIncludeRegions() {
     return includeRegions;
   }
 
+  /**
+   * requests the rebalance operation to be limited to specific region(s)
+   * an empty list (the default) means ALL regions (except excluded)
+   */
   public void setIncludeRegions(List<String> includeRegions) {
-    this.includeRegions = includeRegions;
+    this.includeRegions.clear();
+    if (includeRegions != null) {
+      this.includeRegions.addAll(includeRegions);
+    }
   }
 
+  /***
+   * @return the list of regions to definitely not be rebalanced
+   */
   public List<String> getExcludeRegions() {
     return excludeRegions;
   }
 
+  /**
+   * excludes specific named regions from the rebalance
+   * default: no regions are excluded
+   */
   public void setExcludeRegions(List<String> excludeRegions) {
-    this.excludeRegions = excludeRegions;
+    this.excludeRegions.clear();
+    if (excludeRegions != null) {
+      this.excludeRegions.addAll(excludeRegions);
+    }
   }
 
   @Override

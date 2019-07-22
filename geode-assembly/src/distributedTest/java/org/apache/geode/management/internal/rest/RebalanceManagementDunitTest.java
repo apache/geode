@@ -84,8 +84,8 @@ public class RebalanceManagementDunitTest {
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
 
-    RebalanceResult result = cmr.getResult().get();
-    long end = cmr.getOperationEnded().get().getTime();
+    RebalanceResult result = cmr.getFutureResult().get();
+    long end = cmr.getFutureOperationEnded().get().getTime();
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
@@ -106,7 +106,7 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    RebalanceResult result = cmr.getResult().get();
+    RebalanceResult result = cmr.getFutureResult().get();
     assertThat(result.getRebalanceSummary().size()).isEqualTo(1);
     Map.Entry<String, Map<String, Long>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
@@ -124,7 +124,7 @@ public class RebalanceManagementDunitTest {
     ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
-    CompletableFuture<RebalanceResult> future = cmr.getResult();
+    CompletableFuture<RebalanceResult> future = cmr.getFutureResult();
     CompletableFuture<String> message = new CompletableFuture<>();
     future.exceptionally((ex) -> {
       message.complete(ex.getMessage());

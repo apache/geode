@@ -128,13 +128,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
-    CompletableFuture<Date> operationEnded = new CompletableFuture<>();
+    CompletableFuture<Date> futureOperationEnded = new CompletableFuture<>();
     CompletableFutureProxy<V> operationResult =
         new CompletableFutureProxy<>(restTemplate, uri, longRunningStatusPollingThreadPool,
-            operationEnded);
+            futureOperationEnded);
 
     return new ClusterManagementOperationResult<>(result, operationResult,
-        result.getOperationStart(), operationEnded);
+        result.getOperationStart(), futureOperationEnded);
   }
 
   private static String stripPrefix(String prefix, String s) {

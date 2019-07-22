@@ -42,15 +42,15 @@ public class OperationManagerTest {
   public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
     OperationInstance<TestOperation, TestResult> inst = executorManager.submit(operation);
-    CompletableFuture<TestResult> future1 = inst.getFuture();
+    CompletableFuture<TestResult> future1 = inst.getFutureResult();
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
     OperationInstance<TestOperation, TestResult> inst2 = executorManager.submit(operation2);
-    CompletableFuture<TestResult> future2 = inst2.getFuture();
+    CompletableFuture<TestResult> future2 = inst2.getFutureResult();
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
 
@@ -60,8 +60,9 @@ public class OperationManagerTest {
     operation2.latch.countDown();
     future2.get();
 
-    assertThat(executorManager.getStatus(id)).isNull(); // queue size 1 so should have been bumped
-    assertThat(executorManager.getStatus(id2)).isNotNull();
+    // queue size 1 so should have been bumped
+    assertThat(executorManager.getOperationInstance(id)).isNull();
+    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
   }
 
   @Test
@@ -70,14 +71,15 @@ public class OperationManagerTest {
     String id = executorManager.submit(operation).getId();
     assertThat(id).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
     String id2 = executorManager.submit(operation2).getId();
     assertThat(id2).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull(); // all in progress, none should be bumped
-    assertThat(executorManager.getStatus(id2)).isNotNull();
+    // all in progress, none should be bumped
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
 
     operation.latch.countDown();
     operation2.latch.countDown();

@@ -13,21 +13,25 @@
  * the License.
  */
 
-package org.apache.geode.management.runtime;
+package org.apache.geode.management.internal.operation;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.JsonSerializable;
-import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.RebalanceResult;
 
-/**
- * the final results of a {@link RebalanceOperation}
- */
-@Experimental
-public interface RebalanceResult extends JsonSerializable {
-  /**
-   * @return for each region, a map of stat -> value for the statistics reported by rebalance
-   */
-  Map<String, Map<String, Long>> getRebalanceSummary();
+public class RebalanceResultImpl implements RebalanceResult {
+  private Map<String, Map<String, Long>> rebalanceSummary = new LinkedHashMap<>();
+
+  RebalanceResultImpl() {}
+
+  @Override
+  public Map<String, Map<String, Long>> getRebalanceSummary() {
+    return rebalanceSummary;
+  }
+
+  void setRebalanceSummary(Map<String, Map<String, Long>> rebalanceSummary) {
+    this.rebalanceSummary = rebalanceSummary;
+  }
 }

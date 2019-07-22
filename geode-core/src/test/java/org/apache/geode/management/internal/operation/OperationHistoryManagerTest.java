@@ -36,14 +36,14 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void getNoStatus() {
-    assertThat(history.getStatus("foo")).isNull();
+    assertThat(history.getOperationInstance("foo")).isNull();
   }
 
   @Test
   public void getInProgStatus() {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFuture();
-    assertThat(history.getStatus("1")).isSameAs(future2);
+    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future2);
   }
 
   @Test
@@ -51,7 +51,7 @@ public class OperationHistoryManagerTest {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
     future.complete(null);
     history.save(op("1", future));
-    assertThat(history.getStatus("1")).isSameAs(future);
+    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future);
   }
 
 
@@ -60,7 +60,7 @@ public class OperationHistoryManagerTest {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
     history.save(op("1", future));
     future.complete(null);
-    assertThat(history.getStatus("1")).isSameAs(future);
+    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future);
   }
 
   @Test
@@ -68,9 +68,9 @@ public class OperationHistoryManagerTest {
     history.save(op("1", new CompletableFuture<>()));
     history.save(op("2", new CompletableFuture<>()));
     history.save(op("3", new CompletableFuture<>()));
-    assertThat(history.getStatus("1")).isNotNull();
-    assertThat(history.getStatus("2")).isNotNull();
-    assertThat(history.getStatus("3")).isNotNull();
+    assertThat(history.getOperationInstance("1")).isNotNull();
+    assertThat(history.getOperationInstance("2")).isNotNull();
+    assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
   @Test
@@ -84,9 +84,9 @@ public class OperationHistoryManagerTest {
     CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
     history.save(op("3", future3));
     future3.complete(null);
-    assertThat(history.getStatus("1")).isNull();
-    assertThat(history.getStatus("2")).isNotNull();
-    assertThat(history.getStatus("3")).isNotNull();
+    assertThat(history.getOperationInstance("1")).isNull();
+    assertThat(history.getOperationInstance("2")).isNotNull();
+    assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
   @Test
@@ -99,38 +99,43 @@ public class OperationHistoryManagerTest {
     future2.complete(null);
     CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
     history.save(op("3", future3));
-    assertThat(history.getStatus("1")).isNotNull();
-    assertThat(history.getStatus("2")).isNotNull();
-    assertThat(history.getStatus("3")).isNotNull();
+    assertThat(history.getOperationInstance("1")).isNotNull();
+    assertThat(history.getOperationInstance("2")).isNotNull();
+    assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
   @Test
-  public void timestampsAreCorrect() throws Exception {
+  public void timestampsAreCorrectWhenFutureIsAlreadyCompleteBeforeSave() throws Exception {
     CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
     future1.complete(null);
-    long now = System.currentTimeMillis();
-    history.save(op("1", future1));
-    assertThat(history.getOperationStart("1").getTime()).isBetween(now - 10000, now);
-    assertThat(history.getOperationEnded("1").isDone()).isTrue();
-    assertThat(history.getOperationEnded("1").get().getTime())
-        .isGreaterThanOrEqualTo(history.getOperationStart("1").getTime());
+    Date start = new Date();
+    history.save(op("1", future1, start));
+    assertThat(history.getOperationInstance("1").getOperationStart()).isEqualTo(start);
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().get().getTime())
+        .isGreaterThanOrEqualTo(start.getTime());
+  }
+
+  @Test
+  public void timestampsAreCorrectWhenFutureCompletesAfterSave() throws Exception {
     CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
-    history.save(op("2", future2));
-    assertThat(history.getOperationEnded("2").isDone()).isFalse();
+    Date start = new Date();
+    history.save(op("2", future2, start));
+    assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isFalse();
     future2.complete(null);
-    now = System.currentTimeMillis();
-    assertThat(history.getOperationStart("2").getTime()).isBetween(now - 10000, now);
-    assertThat(history.getOperationEnded("2").isDone()).isTrue();
-    assertThat(history.getOperationEnded("2").get().getTime())
-        .isGreaterThanOrEqualTo(history.getOperationStart("2").getTime());
-    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
-    history.save(op("3", future3));
-    assertThat(history.getOperationEnded("3").isDone()).isFalse();
+    assertThat(history.getOperationInstance("2").getOperationStart()).isEqualTo(start);
+    assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isTrue();
+    assertThat(history.getOperationInstance("2").getFutureOperationEnded().get().getTime())
+        .isGreaterThanOrEqualTo(start.getTime());
   }
 
   private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
       String id, CompletableFuture<V> future) {
-    A op = null;
-    return new OperationInstance<>(future, id, op, new Date());
+    return op(id, future, new Date());
+  }
+
+  private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
+      String id, CompletableFuture<V> future, Date startDate) {
+    return new OperationInstance<>(future, id, null, startDate);
   }
 }

@@ -376,7 +376,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
     OperationInstance<A, V> operationInstance = executorManager.submit(op);
-    CompletableFuture<V> future = operationInstance.getFuture();
+    CompletableFuture<V> future = operationInstance.getFutureResult();
 
     ClusterManagementResult result = new ClusterManagementResult(
         ClusterManagementResult.StatusCode.ACCEPTED,
@@ -385,27 +385,28 @@ public class LocatorClusterManagementService implements ClusterManagementService
         + operationInstance.getId());
 
     return new ClusterManagementOperationResult<>(result, future,
-        operationInstance.getOperationStart(), operationInstance.getOperationEnded());
+        operationInstance.getOperationStart(), operationInstance.getFutureOperationEnded());
   }
 
   /**
    * this is intended for use by the REST controller. for Java usage, please use
-   * {@link ClusterManagementOperationResult#getResult()}
+   * {@link ClusterManagementOperationResult#getFutureResult()}
    */
   public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final CompletableFuture<V> status = executorManager.getStatus(opId);
-    if (status == null) {
+    final OperationInstance<?, V> operationInstance = executorManager.getOperationInstance(opId);
+    if (operationInstance == null) {
       throw new EntityNotFoundException("Operation id = " + opId + " not found");
     }
+    final CompletableFuture<V> status = operationInstance.getFutureResult();
     ClusterManagementOperationStatusResult<V> result =
         new ClusterManagementOperationStatusResult<>();
-    result.setOperationStart(executorManager.getOperationStart(opId));
+    result.setOperationStart(operationInstance.getOperationStart());
     if (!status.isDone()) {
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
     } else {
       try {
-        result.setOperationEnded(executorManager.getOperationEnded(opId).get());
+        result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
         result.setResult(status.get());
         result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
       } catch (InterruptedException e) {

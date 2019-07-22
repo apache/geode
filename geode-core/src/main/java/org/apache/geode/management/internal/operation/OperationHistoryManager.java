@@ -28,6 +28,12 @@ import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.JsonSerializable;
 
+/**
+ * Retains references to all running and some recently-completed operations.
+ *
+ * The policy for expiring completed operations is subject to change, but may be based on age,
+ * count, when it was last accessed, or some combination thereof.
+ */
 @Experimental
 public class OperationHistoryManager {
   private final ConcurrentMap<String, OperationInstance> inProgressHistory;
@@ -43,51 +49,34 @@ public class OperationHistoryManager {
     completedHistory = Collections.synchronizedMap(new LRUMap(historySize));
   }
 
-  private OperationInstance getOperationInstance(String opId) {
-    OperationInstance ret = inProgressHistory.get(opId);
-    if (ret == null) {
-      ret = completedHistory.get(opId);
+  /**
+   * check both maps for the specified key
+   */
+  @SuppressWarnings("unchecked")
+  <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> getOperationInstance(
+      String opId) {
+    OperationInstance operationInstance = inProgressHistory.get(opId);
+    if (operationInstance == null) {
+      operationInstance = completedHistory.get(opId);
     }
-    return ret;
+    return operationInstance;
   }
 
   /**
-   * looks up the future for an async operation by id
+   * Stores a new operation in the history and installs a trigger to move the event from the
+   * in-progress map to the completed map upon completion.
    */
-  @SuppressWarnings("unchecked")
-  public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
-    OperationInstance ret = getOperationInstance(opId);
-    return ret == null ? null : ret.getFuture();
-  }
-
-  /**
-   * looks up the start time of an operation by id, or null if not found
-   */
-  public Date getOperationStart(String opId) {
-    OperationInstance ret = getOperationInstance(opId);
-    return ret == null ? null : ret.getOperationStart();
-  }
-
-  /**
-   * looks up the end time of an operation by id, or null if not found or in progress
-   */
-  @SuppressWarnings("unchecked")
-  public CompletableFuture<Date> getOperationEnded(String opId) {
-    OperationInstance ret = getOperationInstance(opId);
-    return ret == null ? null : ret.getOperationEnded();
-  }
-
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> save(
       OperationInstance<A, V> operationInstance) {
     String opId = operationInstance.getId();
-    CompletableFuture<V> future = operationInstance.getFuture();
+    CompletableFuture<V> future = operationInstance.getFutureResult();
 
     inProgressHistory.put(opId, operationInstance);
 
     CompletableFuture<V> newFuture = future.whenComplete((result, exception) -> {
       completedHistory.put(opId, operationInstance);
       inProgressHistory.remove(opId);
-      operationInstance.setOperationEnded(new Date());
+      operationInstance.setFutureOperationEnded(new Date());
     });
 
     OperationInstance<A, V> newOperationInstance = new OperationInstance<>(newFuture, opId,
@@ -98,13 +87,19 @@ public class OperationHistoryManager {
     return newOperationInstance;
   }
 
-  public static final class OperationInstance<A extends ClusterManagementOperation<V>, V extends JsonSerializable>
+  /**
+   * struct for holding information pertinent to a specific instance of an operation
+   *
+   * all fields are immutable, however note that {@link #setFutureOperationEnded(Date)} completes
+   * {@link #getFutureOperationEnded()}
+   */
+  public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends JsonSerializable>
       implements Identifiable<String> {
     private final CompletableFuture<V> future;
     private final String opId;
     private final A operation;
     private final Date operationStart;
-    private final CompletableFuture<Date> operationEnded;
+    private final CompletableFuture<Date> futureOperationEnded;
 
     public OperationInstance(CompletableFuture<V> future, String opId, A operation,
         Date operationStart) {
@@ -112,7 +107,7 @@ public class OperationHistoryManager {
       this.opId = opId;
       this.operation = operation;
       this.operationStart = operationStart;
-      this.operationEnded = new CompletableFuture<>();
+      this.futureOperationEnded = new CompletableFuture<>();
     }
 
     @Override
@@ -120,7 +115,7 @@ public class OperationHistoryManager {
       return opId;
     }
 
-    public CompletableFuture<V> getFuture() {
+    public CompletableFuture<V> getFutureResult() {
       return future;
     }
 
@@ -132,12 +127,12 @@ public class OperationHistoryManager {
       return operationStart;
     }
 
-    public CompletableFuture<Date> getOperationEnded() {
-      return operationEnded;
+    public CompletableFuture<Date> getFutureOperationEnded() {
+      return futureOperationEnded;
     }
 
-    public void setOperationEnded(Date operationEnded) {
-      this.operationEnded.complete(operationEnded);
+    public void setFutureOperationEnded(Date futureOperationEnded) {
+      this.futureOperationEnded.complete(futureOperationEnded);
     }
   }
 }

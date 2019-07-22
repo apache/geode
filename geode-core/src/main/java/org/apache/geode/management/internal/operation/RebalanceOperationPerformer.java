@@ -44,7 +44,7 @@ public class RebalanceOperationPerformer {
             "rebalance returned error: " + String
                 .join("\n", result.getInfoSection("error").getContent()));
       }
-      RebalanceResult rebalanceResult = new RebalanceResult();
+      RebalanceResultImpl rebalanceResult = new RebalanceResultImpl();
 
       List<TabularResultModel> tableSections = result.getTableSections();
 

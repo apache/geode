@@ -85,22 +85,9 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the future for an async operation by id
    */
-  public <V extends JsonSerializable> CompletableFuture<V> getStatus(String opId) {
-    return historyManager.getStatus(opId);
-  }
-
-  /**
-   * looks up the start time of an operation by id, or null if not found
-   */
-  public Date getOperationStart(String opId) {
-    return historyManager.getOperationStart(opId);
-  }
-
-  /**
-   * looks up the end time of an operation by id, or null if not found or in progress
-   */
-  public CompletableFuture<Date> getOperationEnded(String opId) {
-    return historyManager.getOperationEnded(opId);
+  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> getOperationInstance(
+      String opId) {
+    return historyManager.getOperationInstance(opId);
   }
 
   @Override

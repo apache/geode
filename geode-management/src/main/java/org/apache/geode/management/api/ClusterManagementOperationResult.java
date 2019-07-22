@@ -16,6 +16,7 @@ package org.apache.geode.management.api;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -37,14 +38,14 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   @JsonIgnore
   private final CompletableFuture<V> operationResult;
   @JsonIgnore
-  private final CompletableFuture<Date> operationEnded;
+  private final CompletableFuture<Date> futureOperationEnded;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
 
   public ClusterManagementOperationResult() {
     this.operationResult = null;
-    this.operationEnded = null;
+    this.futureOperationEnded = null;
   }
 
   /**
@@ -52,21 +53,29 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
    */
   public ClusterManagementOperationResult(ClusterManagementResult result,
       CompletableFuture<V> operationResult, Date operationStart,
-      CompletableFuture<Date> operationEnded) {
+      CompletableFuture<Date> futureOperationEnded) {
     super(result);
     this.operationResult = operationResult;
     this.operationStart = operationStart;
-    this.operationEnded = operationEnded;
+    this.futureOperationEnded = futureOperationEnded;
   }
 
   /**
    * @return the future result of the async operation
    */
   @JsonIgnore
-  public CompletableFuture<V> getResult() {
+  public CompletableFuture<V> getFutureResult() {
     if (operationResult instanceof Dormant)
       ((Dormant) operationResult).wakeUp();
     return operationResult;
+  }
+
+  /**
+   * @return the completed result of the async operation (blocks until complete_if necessary)
+   */
+  @JsonIgnore
+  public V getResult() throws ExecutionException, InterruptedException {
+    return getFutureResult().get();
   }
 
   /**
@@ -77,11 +86,11 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   /**
-   * @return the future time the async operation completed. This is guaranteed to compete
-   *         immediately before {@link #getResult()}; any subsequent stages must be chained to
-   *         {@link #getResult()}, not here.
+   * @return the future time the async operation completed. This is guaranteed to complete before
+   *         {@link #getFutureResult()}; any subsequent stages must be chained to
+   *         {@link #getFutureResult()}, not here.
    */
-  public CompletableFuture<Date> getOperationEnded() {
-    return operationEnded;
+  public CompletableFuture<Date> getFutureOperationEnded() {
+    return futureOperationEnded;
   }
 }

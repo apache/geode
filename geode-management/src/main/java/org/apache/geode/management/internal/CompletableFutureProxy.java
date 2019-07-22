@@ -38,14 +38,14 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
   private final RestTemplate restTemplate;
   private final String uri;
   private ScheduledFuture<?> scheduledFuture;
-  private final CompletableFuture<Date> operationEnded;
+  private final CompletableFuture<Date> futureOperationEnded;
 
   public CompletableFutureProxy(RestTemplate restTemplate, String uri,
-      ScheduledExecutorService pool, CompletableFuture<Date> operationEnded) {
+      ScheduledExecutorService pool, CompletableFuture<Date> futureOperationEnded) {
     this.restTemplate = restTemplate;
     this.uri = uri;
     this.pool = pool;
-    this.operationEnded = operationEnded;
+    this.futureOperationEnded = futureOperationEnded;
   }
 
   @Override
@@ -61,7 +61,7 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
       // bail out if the future has already been completed (successfully by us, or by user cancel,
       // or by exception)
       if (isDone()) {
-        operationEnded.complete(null);
+        futureOperationEnded.complete(null);
         scheduledFuture.cancel(true);
         return;
       }
@@ -74,7 +74,7 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
       } catch (Exception e) {
         // don't panic if a few checks fail, might just be network issue
         if (++consecutiveCheckFailures > TOLERABLE_FAILURES) {
-          operationEnded.complete(null);
+          futureOperationEnded.complete(null);
           completeExceptionally(new RuntimeException("Lost connectivity to locator " + e));
         }
         return;
@@ -87,12 +87,12 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
   private void completeAccordingToStatus(ClusterManagementOperationStatusResult<V> result) {
     ClusterManagementResult.StatusCode statusCode = result.getStatusCode();
     if (statusCode == ClusterManagementResult.StatusCode.OK) {
-      operationEnded.complete(result.getOperationEnded());
+      futureOperationEnded.complete(result.getOperationEnded());
       complete(result.getResult());
     } else if (statusCode == ClusterManagementResult.StatusCode.IN_PROGRESS) {
       // do nothing
     } else {
-      operationEnded.complete(null);
+      futureOperationEnded.complete(null);
       completeExceptionally(
           new RuntimeException(statusCode + ": " + result.getStatusMessage()));
     }
