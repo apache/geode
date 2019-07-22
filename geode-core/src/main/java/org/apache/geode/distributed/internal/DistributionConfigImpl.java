@@ -450,6 +450,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private boolean enableSharedConfiguration =
       DistributionConfig.DEFAULT_ENABLE_CLUSTER_CONFIGURATION;
+  private boolean enableManagementRestService =
+      DistributionConfig.DEFAULT_ENABLE_MANAGEMENT_REST_SERVICE;
   private boolean useSharedConfiguration = DistributionConfig.DEFAULT_USE_CLUSTER_CONFIGURATION;
   private boolean loadSharedConfigurationFromDir =
       DistributionConfig.DEFAULT_LOAD_CLUSTER_CONFIG_FROM_DIR;
@@ -863,6 +865,9 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
+
+    // following added for 9.9
+    enableManagementRestService = other.getEnableManagementRestService();
   }
 
   /**
@@ -3465,6 +3470,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setUseSharedConfiguration(boolean newValue) {
     useSharedConfiguration = newValue;
+  }
+
+  @Override
+  public boolean getEnableManagementRestService() {
+    return enableManagementRestService;
+  }
+
+  @Override
+  public void setEnableManagementRestService(boolean enableManagementRestService) {
+    this.enableManagementRestService = enableManagementRestService;
   }
 
   @Override
