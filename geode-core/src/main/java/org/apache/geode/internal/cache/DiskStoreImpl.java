@@ -4362,6 +4362,8 @@ public class DiskStoreImpl implements DiskStore {
       try {
         doAsyncValueRecovery();
         startupTask.complete(null);
+        logger.info("Recovered values for disk store " + getName() + " with unique id "
+            + getDiskStoreUUID());
       } catch (CancelException e) {
         startupTask.completeExceptionally(e);
       } catch (RuntimeException e) {
