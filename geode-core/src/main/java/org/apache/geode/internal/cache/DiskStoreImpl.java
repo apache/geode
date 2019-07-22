@@ -472,7 +472,7 @@ public class DiskStoreImpl implements DiskStore {
 
     for (int i = 0; i < length; i++) {
       directories[i] =
-          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i,
+          new DirectoryHolder(getName() + "_DIR#" + i, statisticsFactory, dirs[i], dirSizes[i], i,
               this.diskDirSizesUnit);
 
       if (tempMaxDirSize < dirSizes[i]) {
