@@ -57,7 +57,6 @@ public abstract class AbstractCache {
   private static final float DEFAULT_CRITICAL_HEAP_PERCENTAGE =
       ResourceManager.DEFAULT_CRITICAL_PERCENTAGE;
 
-  // TODO: DistributionConfig is internal, change these fields when the attributes are public.
   private static final String GEMFIRE_PREFIX = DistributionConfig.GEMFIRE_PREFIX;
   private static final String DEFAULT_CACHE_XML_FILE =
       DistributionConfig.DEFAULT_CACHE_XML_FILE.getName();

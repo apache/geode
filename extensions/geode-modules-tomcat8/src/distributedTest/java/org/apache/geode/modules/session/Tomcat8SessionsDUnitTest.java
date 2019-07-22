@@ -34,7 +34,7 @@ public class Tomcat8SessionsDUnitTest extends TestSessionsTomcat8Base {
   @Before
   public void setUp() throws Exception {
     port = SocketUtils.findAvailableTcpPort();
-    server = new EmbeddedTomcat8("/test", port, "JVM-1");
+    server = new EmbeddedTomcat8(port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
     p2pListener.setProperty(MCAST_PORT, "0");

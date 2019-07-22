@@ -15,6 +15,8 @@
 
 package org.apache.geode.modules.session.internal.common;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpSession;
 
 import org.apache.geode.cache.Region;
@@ -38,9 +40,10 @@ public abstract class AbstractSessionCache implements SessionCache {
    */
   Region<String, HttpSession> operatingRegion;
 
-  protected TypeAwareMap<CacheProperty, Object> properties =
-      new TypeAwareMap<>(CacheProperty.class);
+  @SuppressWarnings("unchecked")
+  protected Map<CacheProperty, Object> properties = new TypeAwareMap<>(CacheProperty.class);
 
+  @SuppressWarnings("unused")
   private DeltaSessionStatistics statistics;
 
   /**

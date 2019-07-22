@@ -57,7 +57,7 @@ public abstract class TestSessionsBase {
     FileUtils.copyDirectory(Paths.get("..", "resources", "integrationTest", "tomcat").toFile(),
         new File("./tomcat"));
     port = SocketUtils.findAvailableTcpPort();
-    server = new EmbeddedTomcat("/test", port, "JVM-1");
+    server = new EmbeddedTomcat(port, "JVM-1");
 
     PeerToPeerCacheLifecycleListener p2pListener = new PeerToPeerCacheLifecycleListener();
     p2pListener.setProperty(MCAST_PORT, "0");

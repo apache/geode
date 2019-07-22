@@ -41,22 +41,20 @@ public class EmbeddedTomcat {
   private Embedded container;
   private Context rootContext;
 
-  EmbeddedTomcat(String contextPath, int port, String jvmRoute) throws MalformedURLException {
+  EmbeddedTomcat(int port, String jvmRoute) throws MalformedURLException {
     this.port = port;
 
     // create server
     container = new Embedded();
 
     // The directory to create the Tomcat server configuration under.
-    String catalinaHome = "tomcat";
-    container.setCatalinaHome(catalinaHome);
+    container.setCatalinaHome("tomcat");
     container.setRealm(new MemoryRealm());
 
     // create webapp loader
     WebappLoader loader = new WebappLoader(this.getClass().getClassLoader());
     // The classes directory for the web application being run.
-    String classesDir = "target/classes";
-    loader.addRepository(new File(classesDir).toURI().toURL().toString());
+    loader.addRepository(new File("target/classes").toURI().toURL().toString());
 
     // The web resources directory for the web application being run.
     String webappDir = "";

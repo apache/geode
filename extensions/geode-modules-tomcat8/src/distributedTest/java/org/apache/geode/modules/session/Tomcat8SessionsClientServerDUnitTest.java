@@ -57,7 +57,7 @@ public class Tomcat8SessionsClientServerDUnitTest extends TestSessionsTomcat8Bas
     });
 
     port = SocketUtils.findAvailableTcpPort();
-    server = new EmbeddedTomcat8("/test", port, "JVM-1");
+    server = new EmbeddedTomcat8(port, "JVM-1");
 
     ClientCacheFactory cacheFactory = new ClientCacheFactory();
     cacheFactory.addPoolServer(hostName, cacheServerPort);

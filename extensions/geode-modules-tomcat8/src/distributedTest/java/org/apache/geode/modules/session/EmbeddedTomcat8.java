@@ -39,7 +39,7 @@ class EmbeddedTomcat8 {
   private Context rootContext;
   private Log logger = LogFactory.getLog(getClass());
 
-  EmbeddedTomcat8(@SuppressWarnings("unused") String contextPath, int port, String jvmRoute) {
+  EmbeddedTomcat8(int port, String jvmRoute) {
     // create server
     container = new Tomcat();
     container.setBaseDir(System.getProperty("user.dir") + "/tomcat");
@@ -69,7 +69,6 @@ class EmbeddedTomcat8 {
 
     // create http connector
     container.setPort(port);
-    container.getConnector();// ((InetAddress) null, port, false);
 
     // Create the JVMRoute valve for session failover
     ValveBase valve = new JvmRouteBinderValve();
