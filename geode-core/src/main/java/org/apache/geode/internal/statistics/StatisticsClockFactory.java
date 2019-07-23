@@ -17,11 +17,15 @@ package org.apache.geode.internal.statistics;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 
+import org.apache.geode.annotations.Immutable;
+
 public class StatisticsClockFactory {
 
-  public static String ENABLE_CLOCK_STATS_PROPERTY = "enableClockStats";
+  @Immutable
+  public static final String ENABLE_CLOCK_STATS_PROPERTY = "enableClockStats";
 
-  public static boolean enableClockStats = Boolean.getBoolean(ENABLE_CLOCK_STATS_PROPERTY);
+  @Immutable
+  public static final boolean enableClockStats = Boolean.getBoolean(ENABLE_CLOCK_STATS_PROPERTY);
 
   /**
    * TODO: delete getTimeIfEnabled
