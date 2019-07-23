@@ -1015,7 +1015,7 @@ public class CacheXmlParser extends CacheXml implements ContentHandler {
     }
 
     String criticalPct = atts.getValue(DISK_USAGE_CRITICAL_PERCENTAGE);
-    if (warnPct != null) {
+    if (criticalPct != null) {
       attrs.setDiskUsageCriticalPercentage(parseFloat(criticalPct));
     }
 
