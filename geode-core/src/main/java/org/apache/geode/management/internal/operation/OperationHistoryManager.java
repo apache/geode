@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -65,54 +66,58 @@ public class OperationHistoryManager {
   }
 
   private void expireHistory() {
-    final long purgeThreshold = System.currentTimeMillis() - keepCompletedMillis;
-    Set<String> expiredKeys = history.entrySet().stream()
-        .filter(e -> e.getValue().getFutureOperationEnded().isDone()
-            && getOperationEnded(e.getValue()).getTime() < purgeThreshold)
-        .map(e -> e.getKey()).collect(Collectors.toSet());
+    final long expirationDate = now() - keepCompletedMillis;
+    Set<String> expiredKeys =
+        history.entrySet().stream().filter(e -> isExpired(expirationDate, e.getValue()))
+            .map(Map.Entry::getKey).collect(Collectors.toSet());
     expiredKeys.forEach(history::remove);
   }
 
-  /**
-   * @return null if unavailable
-   */
-  private static Date getOperationEnded(OperationInstance<?, ?> operationInstance) {
+  long now() {
+    return System.currentTimeMillis();
+  }
+
+  private static boolean isExpired(long expirationDate, OperationInstance<?, ?> operationInstance) {
+    CompletableFuture<Date> futureOperationEnded = operationInstance.getFutureOperationEnded();
+
+    if (!futureOperationEnded.isDone())
+      return false; // always keep while still in-progress
+
+    final long endTime;
     try {
-      return operationInstance.futureOperationEnded.get();
+      endTime = futureOperationEnded.get().getTime();
     } catch (ExecutionException ignore) {
-      return null;
+      // cannot ever happen because we've already checked isDone above
+      return false;
     } catch (InterruptedException ignore) {
+      // cannot ever happen because we've already checked isDone above
       Thread.currentThread().interrupt();
-      return null;
+      return false;
     }
+
+    return endTime <= expirationDate;
   }
 
   /**
-   * Stores a new operation in the history and installs a trigger to move the event from the
-   * in-progress map to the completed map upon completion.
+   * Stores a new operation in the history and installs a trigger to record the operation end time.
    */
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> save(
       OperationInstance<A, V> operationInstance) {
     String opId = operationInstance.getId();
     CompletableFuture<V> future = operationInstance.getFutureResult();
 
-    CompletableFuture<V> newFuture = future.whenComplete((result, exception) -> {
-      operationInstance.setFutureOperationEnded(new Date());
-    });
-
-    OperationInstance<A, V> newOperationInstance = new OperationInstance<>(newFuture, opId,
-        operationInstance.getOperation(), operationInstance.getOperationStart());
+    future.whenComplete((result, exception) -> operationInstance.setOperationEnded(new Date()));
 
     history.put(opId, operationInstance);
     expireHistory();
 
-    return newOperationInstance;
+    return operationInstance;
   }
 
   /**
    * struct for holding information pertinent to a specific instance of an operation
    *
-   * all fields are immutable, however note that {@link #setFutureOperationEnded(Date)} completes
+   * all fields are immutable, however note that {@link #setOperationEnded(Date)} completes
    * {@link #getFutureOperationEnded()}
    */
   public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends JsonSerializable>
@@ -122,6 +127,7 @@ public class OperationHistoryManager {
     private final A operation;
     private final Date operationStart;
     private final CompletableFuture<Date> futureOperationEnded;
+    private String operator;
 
     public OperationInstance(CompletableFuture<V> future, String opId, A operation,
         Date operationStart) {
@@ -153,8 +159,16 @@ public class OperationHistoryManager {
       return futureOperationEnded;
     }
 
-    public void setFutureOperationEnded(Date futureOperationEnded) {
-      this.futureOperationEnded.complete(futureOperationEnded);
+    public void setOperationEnded(Date operationEnded) {
+      this.futureOperationEnded.complete(operationEnded);
+    }
+
+    public String getOperator() {
+      return operator;
+    }
+
+    public void setOperator(String operator) {
+      this.operator = operator;
     }
   }
 }

@@ -32,87 +32,76 @@ public class OperationHistoryManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    history = new OperationHistoryManager(500, TimeUnit.MILLISECONDS);
+    history = new OperationHistoryManager();
   }
 
   @Test
-  public void getNoStatus() {
+  public void idNotFound() {
     assertThat(history.getOperationInstance("foo")).isNull();
   }
 
   @Test
-  public void getInProgStatus() {
+  public void inProgressStatusIsConsistent() {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
     CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
+    assertThat(future2.isDone()).isFalse();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
     assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isFalse();
+  }
+
+  @Test
+  public void endDateIsSetBeforeOperationCompletedFires() {
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    future.whenComplete(
+        (r, e) -> assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone())
+            .isTrue());
     future.complete(null);
-    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
+  }
+
+  @Test
+  public void completedStatusIsConsistent() {
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    future.complete(null);
+    assertThat(future2.isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
   }
 
   @Test
-  public void getCompletedBeforeStatus() {
+  public void completedStatusIsConsistentWhenResultOfSaveIsCompleted() {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    future.complete(null);
-    history.save(op("1", future));
-    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future);
-  }
-
-
-  @Test
-  public void getCompletedAfterStatus() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    history.save(op("1", future));
-    future.complete(null);
-    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future);
+    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    future2.complete(null);
+    assertThat(future.isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
   }
 
   @Test
-  public void getLotsOfInProgStatus() {
+  public void completedStatusIsConsistentEvenWhenReallyFast() {
+    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    future.complete(null);
+    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    assertThat(future2.isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
+  }
+
+  @Test
+  public void retainsHistoryForAllInProgressOperations() {
+    history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
     history.save(op("1", new CompletableFuture<>()));
     history.save(op("2", new CompletableFuture<>()));
-    history.save(op("3", new CompletableFuture<>()));
     assertThat(history.getOperationInstance("1")).isNotNull();
     assertThat(history.getOperationInstance("2")).isNotNull();
-    assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
   @Test
-  public void getLotsOfCompleted() throws Exception {
-    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
-    future1.complete(null);
-    history.save(op("1", future1));
-    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
-    history.save(op("2", future2));
-    future2.complete(null);
-    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
-    history.save(op("3", future3));
-    assertThat(history.getOperationInstance("1")).isNotNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
-    assertThat(history.getOperationInstance("3")).isNotNull();
-    Thread.sleep(1000); // for test, completed expiry is 500ms so this should trigger expiry
-    future3.complete(null);
+  public void expiresHistoryForCompletedOperation() {
+    history = new OperationHistoryManager(0, TimeUnit.MILLISECONDS);
+    history.save(op("1", new CompletableFuture<>())).getFutureResult().complete(null);
     assertThat(history.getOperationInstance("1")).isNull();
-    assertThat(history.getOperationInstance("2")).isNull();
-    assertThat(history.getOperationInstance("3")).isNotNull();
-  }
-
-  @Test
-  public void getSomeCompleted() {
-    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
-    future1.complete(null);
-    history.save(op("1", future1));
-    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
-    history.save(op("2", future2));
-    future2.complete(null);
-    CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
-    history.save(op("3", future3));
-    assertThat(history.getOperationInstance("1")).isNotNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
-    assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
   @Test
@@ -138,6 +127,20 @@ public class OperationHistoryManagerTest {
     assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isTrue();
     assertThat(history.getOperationInstance("2").getFutureOperationEnded().get().getTime())
         .isGreaterThanOrEqualTo(start.getTime());
+  }
+
+  @Test
+  public void onlyExpiresOldOperations() {
+    // make op1 one ended yesterday
+    OperationInstance<?, ?> op1 = history.save(op("1", new CompletableFuture<>()));
+    op1.getFutureOperationEnded().complete(new Date(System.currentTimeMillis() - 86400000));
+    op1.getFutureResult().complete(null);
+
+    // op2 ended just now
+    history.save(op("2", new CompletableFuture<>())).getFutureResult().complete(null);
+
+    assertThat(history.getOperationInstance("1")).isNull();
+    assertThat(history.getOperationInstance("2")).isNotNull();
   }
 
   private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(

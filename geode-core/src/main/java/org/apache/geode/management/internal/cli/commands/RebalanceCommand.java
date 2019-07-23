@@ -95,13 +95,6 @@ public class RebalanceCommand extends GfshCommand {
       result = ResultModel.createInfo(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
 
-    // if the result contains only error section, i.e. no rebalance operation is done, mark this
-    // command result to be error. This would happy if user hasn't specified any valid region. If
-    // only one region specified is valid and rebalance is done, the result would be marked as
-    // success.
-    if (result.getSection("error") != null && result.getSectionSize() == 1) {
-      result.setStatus(Result.Status.ERROR);
-    }
     return result;
   }
 
@@ -210,9 +203,9 @@ public class RebalanceCommand extends GfshCommand {
 
     String headerText;
     if (simulate) {
-      headerText = "Simulated partition regions ";
+      headerText = "Simulated partition regions";
     } else {
-      headerText = "Rebalanced partition regions ";
+      headerText = "Rebalanced partition regions";
     }
     for (int i = resultItemCount; i < rstlist.size(); i++) {
       headerText = headerText + " " + rstlist.get(i);
@@ -232,7 +225,17 @@ public class RebalanceCommand extends GfshCommand {
 
     @Override
     public ResultModel call() throws Exception {
-      return executeRebalanceWithTimeout(includeRegions, excludeRegions, simulate);
+      ResultModel result = executeRebalanceWithTimeout(includeRegions, excludeRegions, simulate);
+
+      // if the result contains only error section, i.e. no rebalance operation is done, mark this
+      // command result to be error. This would happy if user hasn't specified any valid region. If
+      // only one region specified is valid and rebalance is done, the result would be marked as
+      // success.
+      if (result.getSectionSize() == 1 && result.getInfoSection("error") != null) {
+        result.setStatus(Result.Status.ERROR);
+      }
+
+      return result;
     }
 
     ExecuteRebalanceWithTimeout(String[] includedRegions, String[] excludedRegions,
@@ -243,7 +246,8 @@ public class RebalanceCommand extends GfshCommand {
       this.cache = cache;
     }
 
-    ResultModel executeRebalanceWithTimeout(String[] includeRegions, String[] excludeRegions,
+    private ResultModel executeRebalanceWithTimeout(String[] includeRegions,
+        String[] excludeRegions,
         boolean simulate) {
 
       ResultModel result = new ResultModel();
@@ -329,9 +333,9 @@ public class RebalanceCommand extends GfshCommand {
           LogWrapper.getInstance(cache).info("Rebalance returning result " + result);
           return result;
         } else {
-          result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
           LogWrapper.getInstance(cache)
-              .info("Starting Rebalance simulate false result >> " + result);
+              .info("Starting Rebalance simulate=" + simulate + " result >> " + result);
+          result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
         }
       } catch (Exception e) {
         result = ResultModel.createError(e.getMessage());

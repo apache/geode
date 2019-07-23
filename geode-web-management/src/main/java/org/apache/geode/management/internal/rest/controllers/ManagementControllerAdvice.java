@@ -40,8 +40,18 @@ public class ManagementControllerAdvice {
     logger.error(e.getMessage(), e);
     return new ResponseEntity<>(
         new ClusterManagementResult(ClusterManagementResult.StatusCode.ERROR,
-            e.getMessage()),
+            cleanup(e.getMessage())),
         HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+  private String cleanup(String message) {
+    if (message == null) {
+      return "";
+    } else {
+      return message.replace("java.lang.Exception: ", "")
+          .replace("java.lang.RuntimeException: ", "")
+          .replace("java.util.concurrent.ExecutionException: ", "");
+    }
   }
 
   @ExceptionHandler(EntityExistsException.class)

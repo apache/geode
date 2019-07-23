@@ -24,7 +24,7 @@ import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 /**
- * Defines a requests for the distributed system to optimize storage across members.
+ * Defines a distributed system request to optimize bucket allocation across members.
  */
 @Experimental
 public class RebalanceOperation implements ClusterManagementOperation<RebalanceResult> {
@@ -40,6 +40,15 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
    * by default, requests all partitioned regions to be rebalanced
    */
   public RebalanceOperation() {}
+
+  /**
+   * copy constructor
+   */
+  public RebalanceOperation(RebalanceOperation other) {
+    this.setExcludeRegions(other.getExcludeRegions());
+    this.setIncludeRegions(other.getIncludeRegions());
+    this.setSimulate(other.isSimulate());
+  }
 
   /***
    * @return true if a "dry run" only is requested

@@ -30,6 +30,7 @@ public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
   public ClusterManagementOperationStatusResult() {}
 
   private V operationResult;
+  private String operator;
 
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
   private Date operationStart;
@@ -59,5 +60,13 @@ public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
 
   public void setOperationEnded(Date operationEnded) {
     this.operationEnded = operationEnded;
+  }
+
+  public String getOperator() {
+    return operator;
+  }
+
+  public void setOperator(String operator) {
+    this.operator = operator;
   }
 }

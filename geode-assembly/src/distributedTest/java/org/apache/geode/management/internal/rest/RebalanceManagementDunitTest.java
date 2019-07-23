@@ -92,9 +92,9 @@ public class RebalanceManagementDunitTest {
     assertThat(result.getRebalanceSummary().size()).isEqualTo(2);
     Map.Entry<String, Map<String, Long>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
-    assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers");
+    assertThat(firstRegionSummary.getKey()).isEqualTo("customers");
     assertThat(firstRegionSummary.getValue().keySet())
-        .contains("total-time-in-milliseconds-for-this-rebalance");
+        .contains("timeInMilliseconds");
   }
 
   @Test
@@ -110,9 +110,9 @@ public class RebalanceManagementDunitTest {
     assertThat(result.getRebalanceSummary().size()).isEqualTo(1);
     Map.Entry<String, Map<String, Long>> firstRegionSummary =
         result.getRebalanceSummary().entrySet().iterator().next();
-    assertThat(firstRegionSummary.getKey()).contains("Rebalanced partition regions  /customers2");
+    assertThat(firstRegionSummary.getKey()).isEqualTo("customers2");
     assertThat(firstRegionSummary.getValue().keySet())
-        .contains("total-time-in-milliseconds-for-this-rebalance");
+        .contains("timeInMilliseconds");
   }
 
   @Test

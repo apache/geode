@@ -14,14 +14,18 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.RebalanceCommand;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
@@ -30,6 +34,28 @@ import org.apache.geode.management.runtime.RebalanceResult;
 
 @Experimental
 public class RebalanceOperationPerformer {
+  /**
+   * the {@link ResultModel} contains human-readable strings, however we want property names that
+   * more closely resemble {@link PartitionRebalanceInfo} (but with time units)
+   */
+  private static final Map<String, String> translations =
+      Collections.unmodifiableMap(new HashMap<String, String>() {
+        {
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES, "bucketCreateBytes");
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM, "bucketCreateTimeInMilliseconds");
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED, "bucketCreatesCompleted");
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES, "bucketTransferBytes");
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME,
+              "bucketTransferTimeInMilliseconds");
+          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED, "bucketTransfersCompleted");
+          put(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME,
+              "primaryTransferTimeInMilliseconds");
+          put(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED,
+              "primaryTransfersCompleted");
+          put(CliStrings.REBALANCE__MSG__TOTALTIME, "timeInMilliseconds");
+        }
+      });
+
   public static RebalanceResult perform(Cache cache, RebalanceOperation parameters) {
     try {
       RebalanceCommand rebalanceCommand = new RebalanceCommand();
@@ -38,8 +64,7 @@ public class RebalanceOperationPerformer {
       ResultModel result = rebalanceCommand.rebalanceCallable(arr(parameters.getIncludeRegions()),
           arr(parameters.getExcludeRegions()), parameters.isSimulate()).call();
 
-      if (result.getStatus().equals(Result.Status.ERROR)
-          || (result.getInfoSection("error") != null) && result.getSectionSize() == 1) {
+      if (result.getStatus().equals(Result.Status.ERROR)) {
         throw new RuntimeException(
             "rebalance returned error: " + String
                 .join("\n", result.getInfoSection("error").getContent()));
@@ -50,7 +75,7 @@ public class RebalanceOperationPerformer {
 
       Map<String, Map<String, Long>> results = new LinkedHashMap<>();
       for (TabularResultModel tableSection : tableSections) {
-        results.put(tableSection.getHeader(), toMap(tableSection));
+        results.put(toRegion(tableSection.getHeader()), toMap(tableSection));
       }
       rebalanceResult.setRebalanceSummary(results);
 
@@ -69,6 +94,10 @@ public class RebalanceOperationPerformer {
     }
   }
 
+  private static String toRegion(String header) {
+    return header.replace("Rebalanced partition regions /", "");
+  }
+
   private static Map<String, Long> toMap(TabularResultModel table) {
     if (table == null)
       return null;
@@ -79,7 +108,10 @@ public class RebalanceOperationPerformer {
       List<String> row = table.getValuesInRow(i);
       String key = row.get(0);
       String val = row.get(1);
-      key = key.replace("(", "").replace(")", "").replace(' ', '-').toLowerCase();
+      String betterKey = translations.get(key);
+      if (betterKey != null) {
+        key = betterKey;
+      }
       section.put(key, toLong(val));
     }
     return section;

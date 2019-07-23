@@ -74,6 +74,7 @@ import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.internal.operation.TaggedWithOperator;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
@@ -81,7 +82,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private final ConfigurationPersistenceService persistenceService;
   private final Map<Class, ConfigurationManager> managers;
   private final Map<Class, ConfigurationValidator> validators;
-  private final OperationManager executorManager;
+  private final OperationManager operationManager;
   private final MemberValidator memberValidator;
   private final CacheElementValidator commonValidator;
 
@@ -106,13 +107,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
       Map<Class, ConfigurationValidator> validators,
       MemberValidator memberValidator,
       CacheElementValidator commonValidator,
-      OperationManager executorManager) {
+      OperationManager operationManager) {
     this.persistenceService = persistenceService;
     this.managers = managers;
     this.validators = validators;
     this.memberValidator = memberValidator;
     this.commonValidator = commonValidator;
-    this.executorManager = executorManager;
+    this.operationManager = operationManager;
   }
 
   @Override
@@ -375,8 +376,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
   @Override
   public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
       A op) {
-    OperationInstance<A, V> operationInstance = executorManager.submit(op);
+    OperationInstance<A, V> operationInstance = operationManager.submit(op);
     CompletableFuture<V> future = operationInstance.getFutureResult();
+    if (op instanceof TaggedWithOperator) {
+      operationInstance.setOperator(((TaggedWithOperator) op).getOperator());
+    }
 
     ClusterManagementResult result = new ClusterManagementResult(
         ClusterManagementResult.StatusCode.ACCEPTED,
@@ -394,13 +398,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
    */
   public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
-    final OperationInstance<?, V> operationInstance = executorManager.getOperationInstance(opId);
+    final OperationInstance<?, V> operationInstance = operationManager.getOperationInstance(opId);
     if (operationInstance == null) {
       throw new EntityNotFoundException("Operation id = " + opId + " not found");
     }
     final CompletableFuture<V> status = operationInstance.getFutureResult();
     ClusterManagementOperationStatusResult<V> result =
         new ClusterManagementOperationStatusResult<>();
+    result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
     if (!status.isDone()) {
       result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
@@ -426,7 +431,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   @Override
   public void close() {
-    executorManager.close();
+    operationManager.close();
   }
 
   private <T extends CacheElement> ConfigurationManager<T> getConfigurationManager(

@@ -71,7 +71,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   /**
-   * @return the completed result of the async operation (blocks until complete_if necessary)
+   * @return the completed result of the async operation (blocks until complete, if necessary)
    */
   @JsonIgnore
   public V getResult() throws ExecutionException, InterruptedException {
