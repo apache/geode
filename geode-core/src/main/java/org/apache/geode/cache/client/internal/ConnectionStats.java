@@ -39,6 +39,11 @@ public class ConnectionStats implements MessageStats {
   private static final StatisticsType sendType;
 
   @VisibleForTesting
+  static StatisticsType getType() {
+    return type;
+  }
+
+  @VisibleForTesting
   static StatisticsType getSendType() {
     return sendType;
   }

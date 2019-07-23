@@ -30,6 +30,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.cache.PoolStats;
 
 public class ConnectionStatsTest {
+  private final Statistics stats = mock(Statistics.class);
   private final Statistics sendStats = mock(Statistics.class);
   private final StatisticsFactory statisticsFactory = createStatisticsFactory(sendStats);
   private final PoolStats poolStats = mock(PoolStats.class);
@@ -38,9 +39,49 @@ public class ConnectionStatsTest {
 
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
+    when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
+            .thenReturn(stats);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientSendStats-name")))
         .thenReturn(sendStats);
     return statisticsFactory;
+  }
+
+  @Test
+  public void endAddPdxTypeSendIncsSendStatsFailureOpCount() {
+    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendFailures");
+
+    connectionStats.endAddPdxTypeSend(1, true);
+
+    verify(sendStats).incInt(statId, 1);
+  }
+
+  @Test
+  public void endAddPdxTypeSendIncsSendStatsSuccessfulOpCount() {
+    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendsSuccessful");
+
+    connectionStats.endAddPdxTypeSend(1, false);
+
+    verify(sendStats).incInt(statId, 1);
+  }
+
+  @Test
+  public void endAddPdxTypeSendIncsSendStats() {
+    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendTime");
+
+    connectionStats.endAddPdxTypeSend(1, false);
+
+    verify(sendStats).incLong(eq(statId), anyLong());
+  }
+
+  @Test
+  public void startAddPdxTypeIncsStatsAndSendStats() {
+    int statId = ConnectionStats.getType().nameToId("addPdxTypeInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("addPdxTypeSendsInProgress");
+
+    connectionStats.startAddPdxType();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
   }
 
   @Test
@@ -863,23 +904,9 @@ public class ConnectionStatsTest {
     verify(sendStats).incLong(eq(statId), anyLong());
   }
 
-  @Test
-  public void endAddPdxTypeSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendsSuccessful");
 
-    connectionStats.endAddPdxTypeSend(1, false);
 
-    verify(sendStats).incInt(statId, 1);
-  }
 
-  @Test
-  public void endAddPdxTypeSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendFailures");
-
-    connectionStats.endAddPdxTypeSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
 
   @Test
   public void endSizeSendIncsStatIdOnSendStats() {
