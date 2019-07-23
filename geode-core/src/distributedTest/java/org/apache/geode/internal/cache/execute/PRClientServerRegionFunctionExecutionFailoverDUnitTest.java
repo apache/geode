@@ -28,6 +28,9 @@ import java.util.Properties;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
@@ -57,20 +60,24 @@ import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({ClientServerTest.class, FunctionServiceTest.class})
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRClientServerTestBase {
 
   private static Locator locator = null;
 
-  private static Region region = null;
+  private static Region<Integer, Object> region = null;
 
   @Override
-  protected void postSetUpPRClientServerTestBase() throws Exception {
+  protected void postSetUpPRClientServerTestBase() {
     IgnoredException.addIgnoredException("Connection reset");
     IgnoredException.addIgnoredException("SocketTimeoutException");
     IgnoredException.addIgnoredException("ServerConnectivityException");
@@ -83,7 +90,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_SOCKET_TIMEOUT);
     registerFunctionAtServer(function);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .serverMultiKeyExecutionSocketTimeOut(new Boolean(true)));
+        .serverMultiKeyExecutionSocketTimeOut(Boolean.TRUE));
   }
 
   /*
@@ -91,25 +98,25 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * failover to other available server
    */
   @Test
-  public void testServerFailoverWithTwoServerAliveHA() throws InterruptedException {
+  public void testServerFailoverWithTwoServerAliveHA() {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 1, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.stopServerHA());
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.stopServerHA());
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.putOperation());
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::putOperation);
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
     async[0] = client
-        .invokeAsync(() -> PRClientServerRegionFunctionExecutionDUnitTest.executeFunctionHA());
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.startServerHA());
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.startServerHA());
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.stopServerHA());
+        .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::executeFunctionHA);
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
+    server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyDeadAndLiveServers(new Integer(1), new Integer(2)));
+        .verifyDeadAndLiveServers(2));
     ThreadUtils.join(async[0], 6 * 60 * 1000);
     if (async[0].getException() != null) {
       Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
@@ -123,25 +130,25 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * failover to other available server
    */
   @Test
-  public void testServerCacheClosedFailoverWithTwoServerAliveHA() throws InterruptedException {
+  public void testServerCacheClosedFailoverWithTwoServerAliveHA() {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 1, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA);
     registerFunctionAtServer(function);
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.stopServerHA());
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.stopServerHA());
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.putOperation());
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::stopServerHA);
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::putOperation);
     int AsyncInvocationArrSize = 1;
     AsyncInvocation[] async = new AsyncInvocation[AsyncInvocationArrSize];
     async[0] = client
-        .invokeAsync(() -> PRClientServerRegionFunctionExecutionDUnitTest.executeFunctionHA());
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.startServerHA());
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.startServerHA());
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.closeCacheHA());
+        .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::executeFunctionHA);
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::startServerHA);
+    server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::closeCacheHA);
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyDeadAndLiveServers(new Integer(1), new Integer(2)));
+        .verifyDeadAndLiveServers(2));
     ThreadUtils.join(async[0], 5 * 60 * 1000);
     if (async[0].getException() != null) {
       Assert.fail("UnExpected Exception Occurred : ", async[0].getException());
@@ -153,27 +160,30 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
   @Test
   public void testBug40714() {
     createScenario();
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.registerFunction());
+    server1.invoke(
+        (SerializableRunnableIF) PRClientServerRegionFunctionExecutionDUnitTest::registerFunction);
+    server1.invoke(
+        (SerializableRunnableIF) PRClientServerRegionFunctionExecutionDUnitTest::registerFunction);
+    server1.invoke(
+        (SerializableRunnableIF) PRClientServerRegionFunctionExecutionDUnitTest::registerFunction);
     client.invoke(
-        () -> PRClientServerRegionFunctionExecutionDUnitTest.FunctionExecution_Inline_Bug40714());
+        (SerializableRunnableIF) PRClientServerRegionFunctionExecutionDUnitTest::registerFunction);
+    client.invoke(
+        PRClientServerRegionFunctionExecutionDUnitTest::FunctionExecution_Inline_Bug40714);
   }
 
   @Test
-  public void testOnRegionFailoverWithTwoServerDownHA() throws InterruptedException {
+  public void testOnRegionFailoverWithTwoServerDownHA() {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     createScenario();
 
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .createProxyRegion(NetworkUtils.getServerHostName(server1.getHost())));
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createProxyRegion);
 
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA_REGION);
     registerFunctionAtServer(function);
@@ -181,27 +191,25 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .regionExecutionHATwoServerDown(Boolean.FALSE, function, Boolean.FALSE));
 
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyMetaData(new Integer(2), new Integer(1)));
+    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.verifyMetaData(2, 1));
   }
 
   // retry attempts is 2
   @Test
-  public void testOnRegionFailoverWithOneServerDownHA() throws InterruptedException {
+  public void testOnRegionFailoverWithOneServerDownHA() {
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
     createScenario();
 
     server1
-        .invokeAsync(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+        .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
     server2
-        .invokeAsync(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+        .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
     server3
-        .invokeAsync(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+        .invokeAsync(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .createProxyRegion(NetworkUtils.getServerHostName(server1.getHost())));
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createProxyRegion);
 
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_HA_REGION);
     registerFunctionAtServer(function);
@@ -210,7 +218,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
         .regionExecutionHAOneServerDown(Boolean.FALSE, function, Boolean.FALSE));
 
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyMetaData(new Integer(1), new Integer(1)));
+        .verifyMetaData(1, 1));
   }
 
   /*
@@ -218,18 +226,16 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * shouldn't failover to other available server
    */
   @Test
-  public void testOnRegionFailoverNonHA() throws InterruptedException { // See #47489 before
-                                                                        // enabling it
+  public void testOnRegionFailoverNonHA() {
     createScenario();
     IgnoredException.addIgnoredException("FunctionInvocationTargetException");
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .createProxyRegion(NetworkUtils.getServerHostName(server1.getHost())));
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createProxyRegion);
 
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NONHA_REGION);
     registerFunctionAtServer(function);
@@ -237,7 +243,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .regionSingleKeyExecutionNonHA(Boolean.FALSE, function, Boolean.FALSE));
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyMetaData(new Integer(1), new Integer(0)));
+        .verifyMetaData(1, 0));
   }
 
   /*
@@ -245,28 +251,24 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
    * shouldn't failover to other available server
    */
   @Test
-  public void testOnRegionFailoverNonHASingleHop() throws InterruptedException { // See #47489
-                                                                                 // before enabling
-                                                                                 // it
+  public void testOnRegionFailoverNonHASingleHop() {
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 0, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
     createClientServerScenarioSingleHop(commonAttributes, 20, 20, 20);
 
-    server1.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server1.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server2.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server2.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    server3.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest.createReplicatedRegion());
+    server3.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createReplicatedRegion);
 
-    client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .createProxyRegion(NetworkUtils.getServerHostName(server1.getHost())));
+    client.invoke(PRClientServerRegionFunctionExecutionDUnitTest::createProxyRegion);
 
     // Make sure the buckets are created.
     client.invoke(new SerializableRunnable() {
-
       @Override
       public void run() {
-        region = (LocalRegion) cache.getRegion(PRClientServerTestBase.PartitionedRegionName);
+        region = cache.getRegion(PRClientServerTestBase.PartitionedRegionName);
         for (int i = 0; i < 13; i++) {
           region.put(i, i);
         }
@@ -274,12 +276,12 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     });
 
     // Make sure the client metadata is up to date.
-    client.invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.fetchMetaData());
+    client.invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::fetchMetaData);
 
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION_NONHA_REGION);
     registerFunctionAtServer(function);
     final Function function2 = new TestFunction(true, TestFunction.TEST_FUNCTION_NONHA_NOP);
-    registerFunctionAtServer(function);
+    registerFunctionAtServer(function2);
 
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
         .regionSingleKeyExecutionNonHA(Boolean.FALSE, function, Boolean.FALSE));
@@ -300,11 +302,11 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     // });
 
     client.invoke(() -> PRClientServerRegionFunctionExecutionDUnitTest
-        .verifyMetaData(new Integer(1), new Integer(0)));
+        .verifyMetaData(1, 0));
   }
 
   @Test
-  public void testServerBucketMovedException() throws InterruptedException {
+  public void testServerBucketMovedException() {
 
     IgnoredException.addIgnoredException("BucketMovedException");
     final Host host = Host.getHost(0);
@@ -316,7 +318,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     disconnectAllFromDS();
 
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 1, 113, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 1, null);
 
     final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
@@ -325,22 +327,19 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     startLocatorInVM(portLocator);
     try {
 
-      Integer port1 =
-          (Integer) server1.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
+      server1.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
 
-      Integer port2 =
-          (Integer) server2.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
+      server2.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
 
       server4.invoke(() -> createClientWithLocator(hostLocator, portLocator));
-      server4.invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.putIntoRegion());
+      server4.invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::putIntoRegion);
 
-      server4.invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.fetchMetaData());
+      server4.invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::fetchMetaData);
 
-      Integer port3 =
-          (Integer) server3.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
+      server3.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
 
       Object result = server4
-          .invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.executeFunction());
+          .invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::executeFunction);
       List l = (List) result;
       assertEquals(2, l.size());
 
@@ -350,17 +349,16 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
   }
 
   @Test
-  public void testServerBucketMovedException_LocalServer() throws InterruptedException {
+  public void testServerBucketMovedException_LocalServer() {
     IgnoredException.addIgnoredException("BucketMovedException");
 
     final Host host = Host.getHost(0);
     VM server1 = host.getVM(0);
     VM server2 = host.getVM(1);
-    VM server3 = host.getVM(2);
     VM server4 = host.getVM(3);
 
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 0, 113, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
 
     final int portLocator = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     final String hostLocator = NetworkUtils.getServerHostName(server1.getHost());
@@ -369,19 +367,17 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     startLocatorInVM(portLocator);
     try {
 
-      Integer port1 =
-          (Integer) server1.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
+      server1.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
 
       server4.invoke(() -> createClientWithLocator(hostLocator, portLocator));
-      server4.invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.putIntoRegion());
+      server4.invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::putIntoRegion);
 
-      server4.invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.fetchMetaData());
+      server4.invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::fetchMetaData);
 
-      Integer port2 =
-          (Integer) server2.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
+      server2.invoke(() -> createServerWithLocator(locator, false, commonAttributes));
 
       Object result = server4
-          .invoke(() -> PRClientServerRegionFunctionExecutionFailoverDUnitTest.executeFunction());
+          .invoke(PRClientServerRegionFunctionExecutionFailoverDUnitTest::executeFunction);
       List l = (List) result;
       assertEquals(2, l.size());
 
@@ -390,11 +386,11 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     }
   }
 
-  public static void fetchMetaData() {
+  private static void fetchMetaData() {
     ((GemFireCacheImpl) cache).getClientMetadataService().getClientPRMetadata((LocalRegion) region);
   }
 
-  public void startLocatorInVM(final int locatorPort) {
+  private void startLocatorInVM(final int locatorPort) {
 
     File logFile = new File("locator-" + locatorPort + ".log");
 
@@ -413,12 +409,11 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     locator.stop();
   }
 
-  public int createServerWithLocator(String locator, boolean isAccessor, ArrayList commonAttrs) {
+  private int createServerWithLocator(String locator, boolean isAccessor, ArrayList commonAttrs) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(LOCATORS, locator);
     DistributedSystem ds = getSystem(props);
-    cache = new CacheFactory(props).create(ds);
+    cache = CacheFactory.create(ds);
 
     CacheServer server = cache.addCacheServer();
     int port = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
@@ -433,8 +428,8 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     if (isAccessor) {
       paf.setLocalMaxMemory(0);
     }
-    paf.setTotalNumBuckets(((Integer) commonAttrs.get(3)).intValue())
-        .setRedundantCopies(((Integer) commonAttrs.get(2)).intValue());
+    paf.setTotalNumBuckets((Integer) commonAttrs.get(3))
+        .setRedundantCopies((Integer) commonAttrs.get(2));
 
 
     AttributesFactory attr = new AttributesFactory();
@@ -446,9 +441,8 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     return port;
   }
 
-  public void createClientWithLocator(String host, int port0) {
+  private void createClientWithLocator(String host, int port0) {
     Properties props = new Properties();
-    props = new Properties();
     props.setProperty(MCAST_PORT, "0");
     props.setProperty(LOCATORS, "");
     DistributedSystem ds = getSystem(props);
@@ -491,14 +485,9 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     return l;
   }
 
-  public static void checkSize() {
-    LogWriterUtils.getLogWriter()
-        .info("Partitioned Region " + regionName + " Have size :" + region.size());
-  }
-
   protected void createScenario() {
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 0, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 0, null);
     createClientServerScenarion(commonAttributes, 20, 20, 20);
   }
 

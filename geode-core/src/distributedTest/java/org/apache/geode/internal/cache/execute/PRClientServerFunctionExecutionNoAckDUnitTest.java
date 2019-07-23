@@ -24,6 +24,9 @@ import java.util.List;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -34,8 +37,11 @@ import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.categories.FunctionServiceTest;
+import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactory;
 
 @Category({ClientServerTest.class, FunctionServiceTest.class})
+@RunWith(Parameterized.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PRClientServerFunctionExecutionNoAckDUnitTest extends PRClientServerTestBase {
   private static final String TEST_FUNCTION1 = TestFunction.TEST_FUNCTION1;
 
