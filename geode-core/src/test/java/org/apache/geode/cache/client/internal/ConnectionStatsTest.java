@@ -51,6 +51,14 @@ public class ConnectionStatsTest {
   private final int clearSendInProgressId =
       ConnectionStats.getSendType().nameToId("clearSendsInProgress");
 
+  private final int closeConDurationId = ConnectionStats.getType().nameToId("closeConTime");
+  private final int closeConInProgressId =
+      ConnectionStats.getType().nameToId("closeConsInProgress");
+  private final int closeConSendDurationId =
+      ConnectionStats.getSendType().nameToId("closeConSendTime");
+  private final int closeConSendInProgressId =
+      ConnectionStats.getSendType().nameToId("closeConSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -214,7 +222,82 @@ public class ConnectionStatsTest {
     verify(sendStats).incInt(sendStatId, 1);
   }
 
+  @Test
+  public void endCloseConSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("closeConSendFailures");
 
+    connectionStats.endCloseConSend(1, true);
+
+    verify(sendStats).incInt(eq(closeConSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(closeConSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCloseConSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("closeConSends");
+
+    connectionStats.endCloseConSend(1, false);
+
+    verify(sendStats).incInt(eq(closeConSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(closeConSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCloseCon_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("closeConTimeouts");
+
+    connectionStats.endCloseCon(1, true, true);
+
+    verify(stats).incInt(eq(closeConInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(closeConDurationId), anyLong());
+  }
+
+  @Test
+  public void endCloseCon_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("closeConTimeouts");
+
+    connectionStats.endCloseCon(1, true, false);
+
+    verify(stats).incInt(eq(closeConInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(closeConDurationId), anyLong());
+  }
+
+  @Test
+  public void endCloseCon_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("closeConFailures");
+
+    connectionStats.endCloseCon(1, false, true);
+
+    verify(stats).incInt(eq(closeConInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(closeConDurationId), anyLong());
+  }
+
+  @Test
+  public void endCloseCon_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("closeCons");
+
+    connectionStats.endCloseCon(1, false, false);
+
+    verify(stats).incInt(eq(closeConInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(closeConDurationId), anyLong());
+  }
+
+  @Test
+  public void startCloseCon() {
+    int statId = ConnectionStats.getType().nameToId("closeConsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("closeConSendsInProgress");
+
+    connectionStats.startCloseCon();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
 
   @Test
   public void endGetSendIncsStatIdOnSendStats() {
@@ -644,33 +727,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("makePrimarySendFailures");
 
     connectionStats.endMakePrimarySend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCloseConSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("closeConSendTime");
-
-    connectionStats.endCloseConSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endCloseConSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("closeConSends");
-
-    connectionStats.endCloseConSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCloseConSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("closeConSendFailures");
-
-    connectionStats.endCloseConSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
