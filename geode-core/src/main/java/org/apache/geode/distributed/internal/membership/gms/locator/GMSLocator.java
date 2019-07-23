@@ -423,6 +423,9 @@ public class GMSLocator implements Locator {
       if (version != Version.CURRENT_ORDINAL) {
         Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
         logger.info("Peer locator found that persistent view was written with {}", geodeVersion);
+        if (version > Version.CURRENT_ORDINAL) {
+          return false;
+        }
         input = new VersionedObjectInput(input, geodeVersion);
       }
 

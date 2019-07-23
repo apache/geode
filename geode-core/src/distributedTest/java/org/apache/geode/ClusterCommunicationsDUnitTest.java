@@ -76,8 +76,10 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -201,7 +203,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     // create a cluster with the previous version of Geode
     VM locatorVM = Host.getHost(0).getVM(testVersion, 0);
     VM server1VM = Host.getHost(0).getVM(testVersion, 1);
-    int locatorPort = createLocator(locatorVM);
+    int locatorPort = createLocator(locatorVM, true);
     createCacheAndRegion(server1VM, locatorPort);
     performCreate(getVM(1));
 
@@ -273,13 +275,24 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   private int createLocator(VM memberVM) {
+    return createLocator(memberVM, false);
+  }
+
+  private int createLocator(VM memberVM, boolean usingOldVersion) {
     return memberVM.invoke("create locator", () -> {
       // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
       Properties dsProperties = getDistributedSystemProperties();
       try {
-        return Locator.startLocatorAndDS(0, new File(""), getDistributedSystemProperties())
+        int port = 0;
+        // for stress-tests make sure that an older-version locator doesn't try
+        // to read state persisted by another run's newer-version locator
+        if (usingOldVersion) {
+          port = AvailablePortHelper.getRandomAvailableTCPPort();
+          DistributedTestUtils.deleteLocatorStateFile(port);
+        }
+        return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
             .getPort();
       } finally {
         System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
