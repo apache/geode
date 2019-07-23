@@ -21,8 +21,6 @@ limitations under the License.
 
 Add or update a region entry.
 
-Add or update an entry in a region.
-
 **Availability:** Online. You must be connected in `gfsh` to a JMX Manager member to use this command.
 
 **Syntax:**
@@ -32,13 +30,14 @@ put --key=value --value=value --region=value [--key-class=value]
 [--value-class=value] [--if-not-exists(=value)]
 ```
 
-| Name                                                   | Description                                                                                                              | Default Value      |
-|--------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|--------------------|
+| Name                                              | Description                                                                                                | Default Value      |
+|---------------------------------------------------|------------------------------------------------------------------------------------------------------------|--------------------|
 | <span class="ph">\\-\\-key</span>                          | *Required.* String or JSON text from which to create the key. For example: "`James`", "`100L`" and "`('id': 'l34s')`".   |                    |
 | <span class="keyword parmname">\\-\\-value</span>          | *Required.* String or JSON text from which to create the value. For example: "`James`", "`100L`" and "`('id': 'l34s')`". |                    |
-| <span class="keyword parmname">\\-\\-region</span>         | *Required.* Region into which the entry will be put.                                                                     |                    |
-| <span class="keyword parmname">\\-\\-key-class</span>      | Fully qualified class name of the key's type.                                                                            | `java.lang.String` |
-| <span class="keyword parmname">\\-\\-value-class</span>    | Fully qualified class name of the value's type.                                                                          | `java.lang.String` |
+| <span class="keyword parmname">&#8209;&#8209;region</span> | *Required.* Region into which the entry will be put.                                                                     |                    |
+| <span class="keyword parmname">&#8209;&#8209;key-class</span>  | Fully qualified class name of the key's type.                                                                        | `java.lang.String` |
+| <span class="keyword parmname">\\-\\-value-class</span>    | Fully qualified class name of the value's type. The type may not be an internal PDX class.                               | `java.lang.String` |
+| <span class="keyword parmname">&#8209;&#8209;value-class</span>    | Fully qualified class name of the value's type. The type may not be an internal PDX class.                               | `java.lang.String` |
 | <span class="keyword parmname">\\-\\-if-not-exists</span> | Skip the put operation when an entry with the same key already exists.                                                   | false              |
 
 **Example Commands:**
