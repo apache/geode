@@ -98,6 +98,8 @@ public class LocatorMembershipListenerTest {
 
     if (distributorThread.isPresent()) {
       distributorThread.get().join();
+    } else {
+      System.out.println("[JUAN]: Couldn't find " + LOCATORS_DISTRIBUTOR_THREAD_NAME);
     }
   }
 
