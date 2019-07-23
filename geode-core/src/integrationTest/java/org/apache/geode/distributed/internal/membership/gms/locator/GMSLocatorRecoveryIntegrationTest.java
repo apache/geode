@@ -120,10 +120,8 @@ public class GMSLocatorRecoveryIntegrationTest {
     // add 1 to ordinal to make it wrong
     populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL + 1, 1);
 
-    Throwable thrown = catchThrowable(() -> gmsLocator.recoverFromFile(stateFile));
-
-    assertThat(thrown)
-        .isInstanceOf(InternalGemFireException.class);
+    boolean recovered = gmsLocator.recoverFromFile(stateFile);
+    assertThat(recovered).isFalse();
   }
 
   @Test
