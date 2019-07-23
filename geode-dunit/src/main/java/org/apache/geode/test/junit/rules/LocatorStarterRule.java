@@ -15,6 +15,7 @@
 package org.apache.geode.test.junit.rules;
 
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
 import static org.apache.geode.distributed.Locator.startLocatorAndDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.junit.Assert.assertTrue;
@@ -104,6 +105,11 @@ public class LocatorStarterRule extends MemberStarterRule<LocatorStarterRule> im
 
   public LocatorStarterRule withoutClusterConfigurationService() {
     properties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
+    return this;
+  }
+
+  public LocatorStarterRule withoutManagementRestService() {
+    properties.put(ENABLE_MANAGEMENT_REST_SERVICE, "false");
     return this;
   }
 

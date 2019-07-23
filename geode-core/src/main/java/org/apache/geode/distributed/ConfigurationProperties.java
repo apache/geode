@@ -456,6 +456,26 @@ public interface ConfigurationProperties {
    * <U>Since</U>: GemFire 8.0
    */
   String ENABLE_CLUSTER_CONFIGURATION = "enable-cluster-configuration";
+
+  /**
+   * The static String definition of the <i>"enable-management-rest-service"</i> property <a
+   * name="enable-management-rest-service"/a>
+   * </p>
+   * <U>Description</U>: "true" causes the cluster management rest service to be enabled. This
+   * service
+   * requires the cluster configuration service to be enabled. If "enable-cluster-configuration" is
+   * false and this is true, the management rest service would do nothing but report an error if you
+   * try to use it. Also even if this property is set to "true", The management rest service will
+   * only be started if "http-service-port" is not "0".
+   * </p>
+   * <U>Default</U>: "true"
+   * </p>
+   * <U>Allowed values</U>: true or false
+   * </p>
+   * <U>Since</U>: Geode 1.10
+   */
+  String ENABLE_MANAGEMENT_REST_SERVICE = "enable-management-rest-service";
+
   /**
    * The static String definition of the <i>"enable-network-partition-detection"</i> property <a
    * name="enable-network-partition-detection"/a>

@@ -68,7 +68,6 @@ import org.apache.geode.management.CacheServerMXBean;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
-import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.MBeanJMXAdapter;
 import org.apache.geode.management.internal.SystemManagementService;
 import org.apache.geode.management.internal.cli.CliUtil;
@@ -121,7 +120,6 @@ public abstract class MemberStarterRule<T> extends SerializableExternalResource 
     properties.setProperty(MCAST_PORT, "0");
     properties.setProperty(LOCATORS, "");
     properties.setProperty(MAX_WAIT_TIME_RECONNECT, "5000");
-    systemProperties.setProperty(ClusterManagementService.FEATURE_FLAG, "true");
   }
 
   @Override

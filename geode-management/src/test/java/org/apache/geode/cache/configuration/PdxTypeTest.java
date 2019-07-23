@@ -38,7 +38,7 @@ public class PdxTypeTest {
     assertThat(config.getEndpoint())
         .isEqualTo("/configurations/pdx");
     assertThat(config.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/configurations/pdx");
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/configurations/pdx");
   }
 
 }

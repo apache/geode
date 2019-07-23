@@ -54,7 +54,8 @@ public class ClusterManagementLocatorReconnectDunitTest {
     locator = rule.startLocatorVM(0, l -> l.withHttpService());
     server = rule.startServerVM(1, locator.getPort());
     restClient =
-        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/experimental", "localhost", locator.getHttpPort(),
+            false);
 
     makeRestCallAndVerifyResult("customers");
 

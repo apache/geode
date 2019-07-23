@@ -59,7 +59,8 @@ public class RegionManagementDunitTest {
     server3 = cluster.startServerVM(3, "group2,group3", locator.getPort());
 
     restClient =
-        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/experimental", "localhost", locator.getHttpPort(),
+            false);
     cms = ClusterManagementServiceBuilder.buildWithHostAddress()
         .setHostAddress("localhost", locator.getHttpPort())
         .build();

@@ -27,9 +27,6 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 @Experimental
 public interface ClusterManagementService extends AutoCloseable {
-
-  String FEATURE_FLAG = "gemfire.enable-experimental-cluster-management-service";
-
   /**
    * This method will create the element on all the applicable members in the cluster and persist
    * the configuration in the cluster configuration if persistence is enabled.

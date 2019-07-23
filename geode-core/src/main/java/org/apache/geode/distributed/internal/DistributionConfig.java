@@ -45,6 +45,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
@@ -1745,6 +1746,30 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
    * The default value of the {@link ConfigurationProperties#ENABLE_CLUSTER_CONFIGURATION} property
    */
   boolean DEFAULT_ENABLE_CLUSTER_CONFIGURATION = true;
+
+  /**
+   * Sets the value for {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE}
+   */
+  @ConfigAttributeSetter(name = ENABLE_MANAGEMENT_REST_SERVICE)
+  void setEnableManagementRestService(boolean newValue);
+
+  /**
+   * Returns the value of {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE} property
+   */
+  @ConfigAttributeGetter(name = ENABLE_MANAGEMENT_REST_SERVICE)
+  boolean getEnableManagementRestService();
+
+  /**
+   * the name of the {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE} property
+   */
+  @ConfigAttribute(type = Boolean.class)
+  String ENABLE_MANAGEMENT_REST_SERVICE_NAME = ENABLE_MANAGEMENT_REST_SERVICE;
+
+  /**
+   * The default value of the {@link ConfigurationProperties#ENABLE_MANAGEMENT_REST_SERVICE}
+   * property
+   */
+  boolean DEFAULT_ENABLE_MANAGEMENT_REST_SERVICE = true;
 
   @ConfigAttribute(type = Boolean.class)
   String LOAD_CLUSTER_CONFIG_FROM_DIR_NAME = LOAD_CLUSTER_CONFIGURATION_FROM_DIR;
