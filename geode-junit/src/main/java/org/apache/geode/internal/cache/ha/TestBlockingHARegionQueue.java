@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Test class for Blocking HA region queue functionalities
@@ -43,9 +44,10 @@ public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQue
 
   boolean takeWhenPeekInProgress = false;
 
-  public TestBlockingHARegionQueue(String regionName, InternalCache cache)
+  public TestBlockingHARegionQueue(String regionName, InternalCache cache,
+      StatisticsClock statisticsClock)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    super(regionName, cache);
+    super(regionName, cache, statisticsClock);
   }
 
   /**

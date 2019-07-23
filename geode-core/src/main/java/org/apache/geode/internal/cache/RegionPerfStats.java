@@ -15,25 +15,18 @@
 package org.apache.geode.internal.cache;
 
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   private final CachePerfStats cachePerfStats;
+  private final StatisticsClock clock;
 
-  RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
-      String regionName) {
-    this(statisticsFactory, cachePerfStats, regionName,
-        enableClockStats ? NanoTimer::getTime : () -> 0);
-  }
-
-  @VisibleForTesting
   RegionPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
       String regionName, StatisticsClock clock) {
     super(statisticsFactory, "RegionStats-" + regionName, clock);
     this.cachePerfStats = cachePerfStats;
+    this.clock = clock;
   }
 
   @Override
@@ -105,7 +98,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endLoad(long start) {
     // note that load times are used in health checks and
-    // should not be disabled by enableClockStats==false
+    // should not be disabled by clock.isEnabled()==false
 
     // don't use getStatTime so always enabled
     long ts = getTime();
@@ -126,7 +119,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endNetload(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(netloadTimeId, getTime() - start);
     }
     stats.incInt(netloadsInProgressId, -1);
@@ -143,7 +136,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endNetsearch(long start) {
     // note that netsearch is used in health checks and timings should
-    // not be disabled by enableClockStats==false
+    // not be disabled by clock.isEnabled()==false
 
     // don't use getStatTime so always enabled
     long ts = getTime();
@@ -162,7 +155,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endCacheWriterCall(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(cacheWriterCallTimeId, getTime() - start);
     }
     stats.incInt(cacheWriterCallsInProgressId, -1);
@@ -179,7 +172,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endCacheListenerCall(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(cacheListenerCallTimeId, getTime() - start);
     }
     stats.incInt(cacheListenerCallsInProgressId, -1);
@@ -196,7 +189,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endGetInitialImage(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
@@ -206,7 +199,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endNoGIIDone(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(getInitialImageTimeId, getTime() - start);
     }
     stats.incInt(getInitialImagesInProgressId, -1);
@@ -292,7 +285,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endGet(long start, boolean miss) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       long totalNanos = getTime() - start;
       stats.incLong(getTimeId, totalNanos);
     }
@@ -308,13 +301,13 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
     long totalNanos = 0;
     if (isUpdate) {
       stats.incLong(updatesId, 1L);
-      if (enableClockStats) {
+      if (clock.isEnabled()) {
         totalNanos = getTime() - start;
         stats.incLong(updateTimeId, totalNanos);
       }
     } else {
       stats.incLong(putsId, 1L);
-      if (enableClockStats) {
+      if (clock.isEnabled()) {
         totalNanos = getTime() - start;
         stats.incLong(putTimeId, totalNanos);
       }
@@ -326,7 +319,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endPutAll(long start) {
     stats.incInt(putAllsId, 1);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(putAllTimeId, getTime() - start);
     }
     cachePerfStats.endPutAll(start);
@@ -335,7 +328,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endQueryExecution(long executionTime) {
     stats.incInt(queryExecutionsId, 1);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(queryExecutionTimeId, executionTime);
     }
     cachePerfStats.endQueryExecution(executionTime);
@@ -343,7 +336,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endQueryResultsHashCollisionProbe(long start) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(queryResultsHashCollisionProbeTimeId, getTime() - start);
     }
     cachePerfStats.endQueryResultsHashCollisionProbe(start);
@@ -487,7 +480,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endImport(long entryCount, long start) {
     stats.incLong(importedEntriesCountId, entryCount);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(importTimeId, getTime() - start);
     }
     cachePerfStats.endImport(entryCount, start);
@@ -496,7 +489,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
   @Override
   public void endExport(long entryCount, long start) {
     stats.incLong(exportedEntriesCountId, entryCount);
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       stats.incLong(exportTimeId, getTime() - start);
     }
     cachePerfStats.endExport(entryCount, start);
@@ -511,7 +504,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endCompression(long startTime, long startSize, long endSize) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       long time = getTime() - startTime;
       stats.incLong(compressionCompressTimeId, time);
       cachePerfStats.stats.incLong(compressionCompressTimeId, time);
@@ -533,7 +526,7 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
 
   @Override
   public void endDecompression(long startTime) {
-    if (enableClockStats) {
+    if (clock.isEnabled()) {
       long time = getTime() - startTime;
       stats.incLong(compressionDecompressTimeId, time);
       cachePerfStats.stats.incLong(compressionDecompressTimeId, time);

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.enabledClock;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -148,7 +149,8 @@ public class ClearDuringGiiOplogWithMissingCreateRegressionTest extends CacheTes
 
     DistributedRegion distRegion = new DistributedRegion(regionName, factory.create(), null,
         getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+            .setSnapshotInputStream(null).setImageTarget(null),
+        enabledClock());
 
     distRegion.entries.setEntryFactory(new TestableDiskRegionEntryFactory());
 

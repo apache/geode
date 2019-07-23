@@ -157,6 +157,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.JSONFormatter;
@@ -2423,6 +2424,11 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public void saveCacheXmlForReconnect() {
+    throw new UnsupportedOperationException("Should not be invoked");
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
     throw new UnsupportedOperationException("Should not be invoked");
   }
 

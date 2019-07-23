@@ -89,6 +89,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.internal.JmxManagerAdvisor;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.JSONFormatter;
@@ -1255,5 +1256,10 @@ public class InternalCacheForClientAccess implements InternalCache {
   @Override
   public void saveCacheXmlForReconnect() {
     delegate.saveCacheXmlForReconnect();
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    return delegate.getStatisticsClock();
   }
 }

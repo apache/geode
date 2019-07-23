@@ -355,7 +355,7 @@ public class TXState implements TXStateInterface {
     this.locks.obtain(getCache().getInternalDistributedSystem());
     // for now check account the dlock service time
     // later this stat end should be moved to a finally block
-    if (CachePerfStats.enableClockStats)
+    if (getCache().getStatisticsClock().isEnabled())
       this.proxy.getTxMgr().getCachePerfStats()
           .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
     if (this.internalAfterReservation != null) {
@@ -889,7 +889,7 @@ public class TXState implements TXStateInterface {
         } catch (IllegalArgumentException | IllegalMonitorStateException e) {
           exception = e;
         }
-        if (CachePerfStats.enableClockStats)
+        if (getCache().getStatisticsClock().isEnabled())
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(CachePerfStats.getStatTime() - conflictStart);
       }

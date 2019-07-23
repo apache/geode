@@ -214,6 +214,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
@@ -517,6 +518,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   private final CopyOnWriteHashMap<String, CacheServiceProfile> cacheServiceProfiles =
       new CopyOnWriteHashMap<>();
 
+  private final StatisticsClock statisticsClock;
+
   private static String calcFullPath(String regionName, Region parentRegion) {
     StringBuilder buf;
     if (parentRegion == null) {
@@ -531,16 +534,20 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
   }
 
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
-      InternalCache cache, InternalRegionArguments internalRegionArgs) throws DiskAccessException {
-    this(regionName, attrs, parentRegion, cache, internalRegionArgs, new LocalRegionDataView());
+      InternalCache cache, InternalRegionArguments internalRegionArgs,
+      StatisticsClock statisticsClock) throws DiskAccessException {
+    this(regionName, attrs, parentRegion, cache, internalRegionArgs, new LocalRegionDataView(),
+        statisticsClock);
   }
 
   protected LocalRegion(String regionName, RegionAttributes attrs, LocalRegion parentRegion,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
-      InternalDataView internalDataView) throws DiskAccessException {
+      InternalDataView internalDataView, StatisticsClock statisticsClock)
+      throws DiskAccessException {
     this(regionName, attrs, parentRegion, cache, internalRegionArgs, internalDataView,
         RegionMapFactory::createVM, new DefaultServerRegionProxyConstructor(),
-        new DefaultEntryEventFactory(), poolName -> (PoolImpl) PoolManager.find(poolName));
+        new DefaultEntryEventFactory(), poolName -> (PoolImpl) PoolManager.find(poolName),
+        statisticsClock);
   }
 
   @VisibleForTesting
@@ -548,9 +555,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
       InternalDataView internalDataView, RegionMapConstructor regionMapConstructor,
       ServerRegionProxyConstructor serverRegionProxyConstructor,
-      EntryEventFactory entryEventFactory, PoolFinder poolFinder)
+      EntryEventFactory entryEventFactory, PoolFinder poolFinder, StatisticsClock statisticsClock)
       throws DiskAccessException {
     super(cache, attrs, regionName, internalRegionArgs, poolFinder);
+
+    this.statisticsClock = statisticsClock;
 
     this.regionMapConstructor = regionMapConstructor;
     this.entryEventFactory = entryEventFactory;
@@ -599,7 +608,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         hasOwnStats = true;
         cachePerfStats = new RegionPerfStats(
             cache.getInternalDistributedSystem().getStatisticsManager(), cache.getCachePerfStats(),
-            regionName);
+            regionName, cache.getStatisticsClock());
       }
     }
 
@@ -912,21 +921,21 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
               internalRegionArgs.setUserAttribute(pr.getUserAttribute());
               if (pr.isShadowPR()) {
                 newRegion = new BucketRegionQueue(subregionName, regionAttributes, this, cache,
-                    internalRegionArgs);
+                    internalRegionArgs, statisticsClock);
               } else {
                 newRegion = new BucketRegion(subregionName, regionAttributes, this, cache,
-                    internalRegionArgs);
+                    internalRegionArgs, statisticsClock);
               }
             } else if (regionAttributes.getPartitionAttributes() != null) {
               newRegion = new PartitionedRegion(subregionName, regionAttributes, this, cache,
-                  internalRegionArgs);
+                  internalRegionArgs, statisticsClock);
             } else {
               boolean local = regionAttributes.getScope().isLocal();
               newRegion = local
                   ? new LocalRegion(subregionName, regionAttributes, this, cache,
-                      internalRegionArgs)
+                      internalRegionArgs, statisticsClock)
                   : new DistributedRegion(subregionName, regionAttributes, this, cache,
-                      internalRegionArgs);
+                      internalRegionArgs, statisticsClock);
             }
             Object previousValue = subregions.putIfAbsent(subregionName, newRegion);
 

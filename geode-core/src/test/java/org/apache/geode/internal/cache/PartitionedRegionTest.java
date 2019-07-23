@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -73,7 +74,7 @@ public class PartitionedRegionTest {
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
     partitionedRegion = new PartitionedRegion("prTestRegion", attributesFactory.create(), null,
-        internalCache, mock(InternalRegionArguments.class));
+        internalCache, mock(InternalRegionArguments.class), disabledClock());
     DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
     when(internalCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
     when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);

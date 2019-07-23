@@ -374,7 +374,8 @@ public class FederatingManager extends Manager {
 
             // Create anonymous stats holder for Management Regions
             HasCachePerfStats monitoringRegionStats =
-                () -> new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats");
+                () -> new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats",
+                    cache.getStatisticsClock());
 
             internalRegionArguments.setCachePerfStatsHolder(monitoringRegionStats);
 

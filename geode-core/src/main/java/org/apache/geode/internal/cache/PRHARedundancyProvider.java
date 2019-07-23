@@ -172,7 +172,6 @@ public class PRHARedundancyProvider {
 
   private boolean shutdown;
 
-
   /**
    * Constructor for PRHARedundancyProvider.
    *

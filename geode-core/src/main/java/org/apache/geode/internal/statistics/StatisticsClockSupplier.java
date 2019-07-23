@@ -12,15 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache;
+package org.apache.geode.internal.statistics;
 
-import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.statistics.StatisticsClock;
+public interface StatisticsClockSupplier {
 
-public class BucketPerfStats extends RegionPerfStats {
-
-  BucketPerfStats(StatisticsFactory statisticsFactory, CachePerfStats cachePerfStats,
-      String regionName, StatisticsClock statisticsClock) {
-    super(statisticsFactory, cachePerfStats, regionName, statisticsClock);
-  }
+  StatisticsClock getStatisticsClock();
 }

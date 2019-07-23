@@ -26,7 +26,6 @@ import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -548,22 +547,10 @@ public class PartitionedRegionStats {
    */
   private final Map startTimeMap;
 
-  public static long startTime() {
-    return CachePerfStats.getStatTime();
-  }
-
-  public static long getStatTime() {
-    return CachePerfStats.getStatTime();
-  }
-
-  public PartitionedRegionStats(StatisticsFactory factory, String name) {
-    this(factory, name, StatisticsClockFactory.clock());
-  }
-
-  private PartitionedRegionStats(StatisticsFactory factory, String name, StatisticsClock clock) {
+  public PartitionedRegionStats(StatisticsFactory factory, String name, StatisticsClock clock) {
     stats = factory.createAtomicStatistics(type, name);
 
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       startTimeMap = new ConcurrentHashMap();
     } else {
       startTimeMap = Collections.emptyMap();
@@ -578,6 +565,14 @@ public class PartitionedRegionStats {
 
   public Statistics getStats() {
     return this.stats;
+  }
+
+  public long startTime() {
+    return clock.getTime();
+  }
+
+  public long getStatTime() {
+    return clock.getTime();
   }
 
   // ------------------------------------------------------------------------
@@ -617,8 +612,8 @@ public class PartitionedRegionStats {
   }
 
   public void endPut(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(putTimeId, delta);
     }
     this.stats.incLong(putsCompletedId, numInc);
@@ -629,8 +624,8 @@ public class PartitionedRegionStats {
    *
    */
   public void endPutAll(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(fieldId_PUTALL_TIME, delta);
       // this.putStatsHistogram.endOp(delta);
 
@@ -639,52 +634,52 @@ public class PartitionedRegionStats {
   }
 
   public void endRemoveAll(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(fieldId_REMOVE_ALL_TIME, delta);
     }
     this.stats.incLong(fieldId_REMOVE_ALLS_COMPLETED, numInc);
   }
 
   public void endCreate(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(createTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(createTimeId, clock.getTime() - start);
     }
     this.stats.incLong(createsCompletedId, numInc);
   }
 
   public void endGet(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      final long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      final long delta = clock.getTime() - start;
       this.stats.incLong(getTimeId, delta);
     }
     this.stats.incLong(getsCompletedId, numInc);
   }
 
   public void endDestroy(long start) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(destroyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(destroyTimeId, clock.getTime() - start);
     }
     this.stats.incLong(destroysCompletedId, 1);
   }
 
   public void endInvalidate(long start) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(invalidateTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(invalidateTimeId, clock.getTime() - start);
     }
     this.stats.incLong(invalidatesCompletedId, 1);
   }
 
   public void endContainsKey(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(containsKeyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(containsKeyTimeId, clock.getTime() - start);
     }
     this.stats.incLong(containsKeyCompletedId, numInc);
   }
 
   public void endContainsValueForKey(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(containsValueForKeyTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(containsValueForKeyTimeId, clock.getTime() - start);
     }
     this.stats.incLong(containsValueForKeyCompletedId, numInc);
   }
@@ -759,8 +754,8 @@ public class PartitionedRegionStats {
   }
 
   public void endPartitionMessagesProcessing(long start) {
-    if (CachePerfStats.enableClockStats) {
-      long delta = CachePerfStats.getStatTime() - start;
+    if (clock.isEnabled()) {
+      long delta = clock.getTime() - start;
       this.stats.incLong(partitionMessagesProcessingTimeId, delta);
     }
     this.stats.incLong(partitionMessagesProcessedId, 1);
@@ -852,34 +847,34 @@ public class PartitionedRegionStats {
 
   public long startVolunteering() {
     this.stats.incLong(volunteeringInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endVolunteeringBecamePrimary(long start) {
-    long ts = CachePerfStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(volunteeringInProgressId, -1);
     this.stats.incLong(volunteeringBecamePrimaryId, 1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringBecamePrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringOtherPrimary(long start) {
-    long ts = CachePerfStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(volunteeringInProgressId, -1);
     this.stats.incLong(volunteeringOtherPrimaryId, 1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringOtherPrimaryTimeId, time);
     }
   }
 
   public void endVolunteeringClosed(long start) {
-    long ts = CachePerfStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(volunteeringInProgressId, -1);
     this.stats.incLong(volunteeringClosedId, 1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       long time = ts - start;
       this.stats.incLong(volunteeringClosedTimeId, time);
     }
@@ -947,7 +942,7 @@ public class PartitionedRegionStats {
 
   /** Put stat start time in holding map for later removal and use by caller */
   public void putStartTime(Object key, long startTime) {
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.startTimeMap.put(key, Long.valueOf(startTime));
     }
   }
@@ -972,8 +967,8 @@ public class PartitionedRegionStats {
    *
    */
   public void endGetEntry(long start, int numInc) {
-    if (CachePerfStats.enableClockStats) {
-      this.stats.incLong(getEntryTimeId, CachePerfStats.getStatTime() - start);
+    if (clock.isEnabled()) {
+      this.stats.incLong(getEntryTimeId, clock.getTime() - start);
     }
     this.stats.incLong(getEntriesCompletedId, numInc);
   }
@@ -983,13 +978,13 @@ public class PartitionedRegionStats {
   // ------------------------------------------------------------------------
   public long startRecovery() {
     this.stats.incLong(recoveriesInProgressId, 1);
-    return PartitionedRegionStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endRecovery(long start) {
-    long ts = PartitionedRegionStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(recoveriesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(recoveriesTimeId, ts - start);
     }
     this.stats.incLong(recoveriesCompletedId, 1);
@@ -1000,13 +995,13 @@ public class PartitionedRegionStats {
     if (isRebalance) {
       startRebalanceBucketCreate();
     }
-    return PartitionedRegionStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endBucketCreate(long start, boolean success, boolean isRebalance) {
-    long ts = PartitionedRegionStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(bucketCreatesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(bucketCreateTimeId, ts - start);
     }
     if (success) {
@@ -1024,13 +1019,13 @@ public class PartitionedRegionStats {
     if (isRebalance) {
       startRebalancePrimaryTransfer();
     }
-    return PartitionedRegionStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endPrimaryTransfer(long start, boolean success, boolean isRebalance) {
-    long ts = PartitionedRegionStats.getStatTime();
+    long ts = clock.getTime();
     this.stats.incLong(primaryTransfersInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(primaryTransferTimeId, ts - start);
     }
     if (success) {
@@ -1085,7 +1080,7 @@ public class PartitionedRegionStats {
 
   private void endRebalanceBucketCreate(long start, long end, boolean success) {
     this.stats.incLong(rebalanceBucketCreatesInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(rebalanceBucketCreateTimeId, end - start);
     }
     if (success) {
@@ -1101,7 +1096,7 @@ public class PartitionedRegionStats {
 
   private void endRebalancePrimaryTransfer(long start, long end, boolean success) {
     this.stats.incLong(rebalancePrimaryTransfersInProgressId, -1);
-    if (CachePerfStats.enableClockStats) {
+    if (clock.isEnabled()) {
       this.stats.incLong(rebalancePrimaryTransferTimeId, end - start);
     }
     if (success) {
@@ -1145,11 +1140,11 @@ public class PartitionedRegionStats {
 
   public long startApplyReplication() {
     stats.incLong(applyReplicationInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endApplyReplication(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
+    long delta = clock.getTime() - start;
     stats.incLong(applyReplicationInProgressId, -1);
     stats.incLong(applyReplicationCompletedId, 1);
     stats.incLong(applyReplicationTimeId, delta);
@@ -1157,11 +1152,11 @@ public class PartitionedRegionStats {
 
   public long startSendReplication() {
     stats.incLong(sendReplicationInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endSendReplication(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
+    long delta = clock.getTime() - start;
     stats.incLong(sendReplicationInProgressId, -1);
     stats.incLong(sendReplicationCompletedId, 1);
     stats.incLong(sendReplicationTimeId, delta);
@@ -1169,11 +1164,11 @@ public class PartitionedRegionStats {
 
   public long startPutRemote() {
     stats.incLong(putRemoteInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endPutRemote(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
+    long delta = clock.getTime() - start;
     stats.incLong(putRemoteInProgressId, -1);
     stats.incLong(putRemoteCompletedId, 1);
     stats.incLong(putRemoteTimeId, delta);
@@ -1181,11 +1176,11 @@ public class PartitionedRegionStats {
 
   public long startPutLocal() {
     stats.incLong(putLocalInProgressId, 1);
-    return CachePerfStats.getStatTime();
+    return clock.getTime();
   }
 
   public void endPutLocal(long start) {
-    long delta = CachePerfStats.getStatTime() - start;
+    long delta = clock.getTime() - start;
     stats.incLong(putLocalInProgressId, -1);
     stats.incLong(putLocalCompletedId, 1);
     stats.incLong(putLocalTimeId, delta);

@@ -17,17 +17,11 @@ package org.apache.geode.internal.statistics;
 import java.util.function.BooleanSupplier;
 import java.util.function.LongSupplier;
 
-import org.apache.geode.annotations.VisibleForTesting;
-
-/**
- * Factory for creating instances of {@code StatisticsClock}.
- */
 public class StatisticsClockFactory {
 
-  @VisibleForTesting
-  static final String ENABLE_CLOCK_STATS_PROPERTY = "enableClockStats";
+  public static String ENABLE_CLOCK_STATS_PROPERTY = "enableClockStats";
 
-  private static final boolean enableClockStats = Boolean.getBoolean(ENABLE_CLOCK_STATS_PROPERTY);
+  public static boolean enableClockStats = Boolean.getBoolean(ENABLE_CLOCK_STATS_PROPERTY);
 
   /**
    * TODO: delete getTimeIfEnabled
@@ -37,7 +31,7 @@ public class StatisticsClockFactory {
     return enableClockStats ? getTime() : 0;
   }
 
-  private static long getTime() {
+  public static long getTime() {
     return System.nanoTime();
   }
 
@@ -58,15 +52,19 @@ public class StatisticsClockFactory {
     return disabledClock();
   }
 
-  static StatisticsClock enabledClock(LongSupplier time) {
+  public static StatisticsClock enabledClock() {
+    return clock(() -> getTime(), () -> true);
+  }
+
+  public static StatisticsClock enabledClock(LongSupplier time) {
     return clock(() -> time.getAsLong(), () -> true);
   }
 
-  static StatisticsClock disabledClock() {
+  public static StatisticsClock disabledClock() {
     return clock(() -> 0, () -> false);
   }
 
-  static StatisticsClock clock(LongSupplier time, BooleanSupplier isEnabled) {
+  public static StatisticsClock clock(LongSupplier time, BooleanSupplier isEnabled) {
     return new StatisticsClock() {
       @Override
       public long getTime() {
@@ -80,7 +78,4 @@ public class StatisticsClockFactory {
     };
   }
 
-  private StatisticsClockFactory() {
-    // do not construct
-  }
 }

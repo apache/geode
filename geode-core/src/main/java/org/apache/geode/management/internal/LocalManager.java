@@ -118,7 +118,8 @@ public class LocalManager extends Manager {
         final HasCachePerfStats monitoringRegionStats = new HasCachePerfStats() {
           @Override
           public CachePerfStats getCachePerfStats() {
-            return new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats");
+            return new CachePerfStats(cache.getDistributedSystem(), "managementRegionStats",
+                cache.getStatisticsClock());
           }
         };
 

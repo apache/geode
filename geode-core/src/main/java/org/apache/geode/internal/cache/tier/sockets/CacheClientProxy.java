@@ -100,6 +100,7 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.security.AuthorizeRequestPP;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.security.AccessControl;
 
 /**
@@ -1704,7 +1705,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   MessageDispatcher createMessageDispatcher(String name) {
-    return new MessageDispatcher(this, name);
+    return new MessageDispatcher(this, name, _cache.getStatisticsClock());
   }
 
   protected void startOrResumeMessageDispatcher(boolean processedMarker) {
@@ -2225,7 +2226,8 @@ public class CacheClientProxy implements ClientSession {
      *        messages
      * @param name thread name for this dispatcher
      */
-    protected MessageDispatcher(CacheClientProxy proxy, String name) throws CacheException {
+    protected MessageDispatcher(CacheClientProxy proxy, String name,
+        StatisticsClock statisticsClock) throws CacheException {
       super(name);
 
       this._proxy = proxy;
@@ -2252,7 +2254,7 @@ public class CacheClientProxy implements ClientSession {
         this._messageQueue = HARegionQueue.getHARegionQueueInstance(getProxy().getHARegionName(),
             getCache(), harq, HARegionQueue.BLOCKING_HA_QUEUE, createDurableQueue,
             proxy._cacheClientNotifier.getHaContainer(), proxy.getProxyID(),
-            this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta);
+            this._proxy.clientConflation, this._proxy.isPrimary(), canHandleDelta, statisticsClock);
         // Check if interests were registered during HARegion GII.
         if (this._proxy.hasRegisteredInterested()) {
           this._messageQueue.setHasRegisteredInterest(true);

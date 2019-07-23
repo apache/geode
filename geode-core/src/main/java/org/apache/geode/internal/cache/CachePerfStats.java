@@ -20,8 +20,6 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.StatisticsTypeFactory;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
@@ -33,9 +31,6 @@ import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
  * CachePerfStats tracks statistics about Geode cache performance and usage.
  */
 public class CachePerfStats {
-  @MakeNotStatic
-  public static boolean enableClockStats;
-
   @Immutable
   private static final StatisticsType type;
 
@@ -624,26 +619,10 @@ public class CachePerfStats {
 
   private final StatisticsClock clock;
 
-  /**
-   * Created specially for bug 39348. Should not be invoked in any other case.
-   */
-  public CachePerfStats() {
-    this(null);
-  }
-
-  public CachePerfStats(StatisticsFactory factory) {
-    this(factory, "cachePerfStats", StatisticsClockFactory.clock());
-  }
-
   public CachePerfStats(StatisticsFactory factory, StatisticsClock clock) {
     this(factory, "cachePerfStats", clock);
   }
 
-  public CachePerfStats(StatisticsFactory factory, String regionName) {
-    this(factory, "RegionStats-" + regionName, StatisticsClockFactory.clock());
-  }
-
-  @VisibleForTesting
   public CachePerfStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
@@ -655,7 +634,7 @@ public class CachePerfStats {
    * @since GemFire 5.0
    * @deprecated Please use instance method {@link #getTime()} instead.
    */
-  @Deprecated
+  @Deprecated // TODO: delete static getStatTime
   public static long getStatTime() {
     return StatisticsClockFactory.getTimeIfEnabled();
   }
@@ -664,7 +643,7 @@ public class CachePerfStats {
     return type;
   }
 
-  protected long getTime() {
+  public long getTime() {
     return clock.getTime();
   }
 
