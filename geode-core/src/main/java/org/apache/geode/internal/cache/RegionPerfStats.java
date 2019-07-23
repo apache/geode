@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.LongSupplier;
 
 import io.micrometer.core.instrument.Gauge;
@@ -30,7 +30,7 @@ class RegionPerfStats extends CachePerfStats {
   private final CachePerfStats cachePerfStats;
   private final MeterRegistry meterRegistry;
   private final Gauge entriesGauge;
-  private final AtomicLong entryCount;
+  private final LongAdder entryCount;
 
   RegionPerfStats(StatisticsFactory statisticsFactory, String textId, CachePerfStats cachePerfStats,
       String regionName, DataPolicy dataPolicy, MeterRegistry meterRegistry) {
@@ -45,14 +45,14 @@ class RegionPerfStats extends CachePerfStats {
     super(statisticsFactory, textId, clock);
     this.cachePerfStats = cachePerfStats;
     this.meterRegistry = meterRegistry;
-    entryCount = new AtomicLong();
-    entriesGauge = Gauge.builder("member.region.entries", entryCount::get)
+    entryCount = new LongAdder();
+    entriesGauge = Gauge.builder("member.region.entries", entryCount::longValue)
         .description("Current number of entries in the region.")
         .tag("region.name", regionName)
         .tag("data.policy", dataPolicy.toString())
         .baseUnit("entries")
         .register(meterRegistry);
-    stats.setLongSupplier(entryCountId, entryCount::get);
+    stats.setLongSupplier(entryCountId, entryCount::longValue);
   }
 
   private static LongSupplier createClock() {
@@ -491,7 +491,7 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incEntryCount(int delta) {
-    entryCount.addAndGet(delta);
+    entryCount.add(delta);
     cachePerfStats.incEntryCount(delta);
   }
 
