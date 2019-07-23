@@ -452,6 +452,18 @@ public class ConnectionStats implements MessageStats {
       StatisticsTypeFactory f = StatisticsTypeFactoryImpl.singleton();
       type = f.createType("ClientStats", "Statistics about client to server communication",
           new StatisticDescriptor[] {
+              f.createIntGauge("addPdxTypeInProgress",
+                  "Current number of addPdxType operations being executed", "addPdxType"),
+              f.createIntCounter("addPdxTypeFailures",
+                  "Total number of addPdxType operation attempts that have failed", "addPdxType"),
+              f.createIntCounter("addPdxTypeSuccessful",
+                  "Total number of addPdxType operations completed successfully", "addPdxType"),
+              f.createIntCounter("addPdxTypeTimeouts",
+                  "Total number of addPdxType operation attempts that have timed out",
+                  "addPdxType"),
+              f.createLongCounter("addPdxTypeTime",
+                  "Total amount of time, in nanoseconds spent doing addPdxType successfully/unsuccessfully.",
+                  "nanoseconds"),
               f.createIntGauge("getsInProgress", "Current number of gets being executed", "gets"),
               f.createLongCounter("gets", "Total number of gets completed successfully", "gets"),
               f.createLongCounter("getFailures", "Total number of get attempts that have failed",
@@ -894,19 +906,7 @@ public class ConnectionStats implements MessageStats {
               f.createLongCounter("getPDXIdForTypeTime",
                   "Total amount of time, in nanoseconds spent doing getPDXIdForType successfully/unsuccessfully.",
                   "nanoseconds"),
-
-              f.createIntGauge("addPdxTypeInProgress",
-                  "Current number of addPdxType operations being executed", "addPdxType"),
-              f.createIntCounter("addPdxTypeFailures",
-                  "Total number of addPdxType operation attempts that have failed", "addPdxType"),
-              f.createIntCounter("addPdxTypeSuccessful",
-                  "Total number of addPdxType operations completed successfully", "addPdxType"),
-              f.createIntCounter("addPdxTypeTimeouts",
-                  "Total number of addPdxType operation attempts that have timed out",
-                  "addPdxType"),
-              f.createLongCounter("addPdxTypeTime",
-                  "Total amount of time, in nanoseconds spent doing addPdxType successfully/unsuccessfully.",
-                  "nanoseconds"),});
+          });
 
       sendType = f.createType("ClientSendStats", "Statistics about client to server communication",
           new StatisticDescriptor[] {

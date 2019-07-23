@@ -47,6 +47,59 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endAddPdxTypeIncsStatsTimeoutCount() {
+    int statId = ConnectionStats.getType().nameToId("addPdxTypeTimeouts");
+    int addPdxTypeDurationId = ConnectionStats.getType().nameToId("addPdxTypeTime");
+    int addPdxTypeInProgressId = ConnectionStats.getType().nameToId("addPdxTypeInProgress");
+
+    connectionStats.endAddPdxType(1, true, true);
+
+    verify(stats).incInt(eq(addPdxTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(addPdxTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endAddPdxTypeIncsStatsTimeoutCountIfTimeoutAndNotFailed() {
+    // I would not expect to receive an successful and timeout operation...
+    int statId = ConnectionStats.getType().nameToId("addPdxTypeTimeouts");
+    int addPdxTypeDurationId = ConnectionStats.getType().nameToId("addPdxTypeTime");
+    int addPdxTypeInProgressId = ConnectionStats.getType().nameToId("addPdxTypeInProgress");
+
+    connectionStats.endAddPdxType(1, true, false);
+
+    verify(stats).incInt(eq(addPdxTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(addPdxTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endAddPdxTypeIncsStatsFailuresCount() {
+    int statId = ConnectionStats.getType().nameToId("addPdxTypeFailures");
+    int addPdxTypeDurationId = ConnectionStats.getType().nameToId("addPdxTypeTime");
+    int addPdxTypeInProgressId = ConnectionStats.getType().nameToId("addPdxTypeInProgress");
+
+    connectionStats.endAddPdxType(1, false, true);
+
+    verify(stats).incInt(eq(addPdxTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(addPdxTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endAddPdxTypeIncsStatsSuccessfulCount() {
+    int statId = ConnectionStats.getType().nameToId("addPdxTypeSuccessful");
+    int addPdxTypeDurationId = ConnectionStats.getType().nameToId("addPdxTypeTime");
+    int addPdxTypeInProgressId = ConnectionStats.getType().nameToId("addPdxTypeInProgress");
+
+    connectionStats.endAddPdxType(1, false, false);
+
+    verify(stats).incInt(eq(addPdxTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(addPdxTypeDurationId), anyLong());
+  }
+
+  @Test
   public void endAddPdxTypeSendIncsSendStatsFailureOpCount() {
     int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendFailures");
 
