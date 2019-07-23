@@ -341,7 +341,8 @@ public class GMSMember implements DataSerializableFixedID {
     String uuid = formatUUID();
 
     sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
-        .append(";kind=").append(vmKind).append(";processId=").append(processId).append(";name=")
+        .append(";kind=").append(vmKind).append(";processId=").append(";viewId=").append(vmViewId)
+        .append(processId).append(";v").append(versionOrdinal).append(";name=")
         .append(name).append(uuid).append(";weight=").append(memberWeight)
         .append("]");
     return sb.toString();

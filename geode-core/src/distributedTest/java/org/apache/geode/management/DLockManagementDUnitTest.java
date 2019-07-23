@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.management.ObjectName;
@@ -28,6 +29,7 @@ import javax.management.ObjectName;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.locks.DLockService;
@@ -117,7 +119,7 @@ public class DLockManagementDUnitTest implements Serializable {
       assertThat(DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME)).isNull();
 
       DLockService lockService = (DLockService) DistributedLockService.create(LOCK_SERVICE_NAME,
-          this.managementTestRule.getCache().getDistributedSystem());
+          this.managementTestRule.getCache(this.getProperties()).getDistributedSystem());
       DistributedMember grantor = lockService.getLockGrantorId().getLockGrantorMember();
       assertThat(grantor).isNotNull();
 
@@ -132,12 +134,18 @@ public class DLockManagementDUnitTest implements Serializable {
     });
   }
 
+  private Properties getProperties() {
+    Properties nonDefault = new Properties();
+    nonDefault.put(ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION, "true");
+    return nonDefault;
+  }
+
   private void createLockService(final VM anyVM) {
     anyVM.invoke("createLockService", () -> {
       assertThat(DistributedLockService.getServiceNamed(LOCK_SERVICE_NAME)).isNull();
 
       DistributedLockService.create(LOCK_SERVICE_NAME,
-          this.managementTestRule.getCache().getDistributedSystem());
+          this.managementTestRule.getCache(this.getProperties()).getDistributedSystem());
 
       LockServiceMXBean lockServiceMXBean = awaitLockServiceMXBean(LOCK_SERVICE_NAME);
 
