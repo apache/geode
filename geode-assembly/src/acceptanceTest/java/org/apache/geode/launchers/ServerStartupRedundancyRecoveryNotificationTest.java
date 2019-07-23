@@ -62,25 +62,16 @@ public class ServerStartupRedundancyRecoveryNotificationTest {
   public void redundantRegionThatRequiresRedundancyRecovery() throws IOException {
     locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
     server1Folder = temporaryFolder.newFolder(SERVER_1_NAME).toPath().toAbsolutePath();
-    Files.createDirectories(server1Folder);
     server2Folder = temporaryFolder.newFolder(SERVER_2_NAME).toPath().toAbsolutePath();
 
-    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-
-    int senderLocatorJmxPort = ports[0];
-    int senderLocatorHttpPort = ports[1];
-    locatorPort = ports[2];
-
+    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + LOCATOR_NAME,
         "--dir=" + locatorFolder,
         "--port=" + locatorPort,
-        "--locators=localhost[" + locatorPort + "]",
-        "--J=-Dgemfire.jmx-manager-start=true",
-        "--J=-Dgemfire.jmx-manager-http-port=" + senderLocatorHttpPort,
-        "--J=-Dgemfire.jmx-manager-port=" + senderLocatorJmxPort);
+        "--locators=localhost[" + locatorPort + "]");
 
     startServer1Command = String.join(" ",
         "start server",

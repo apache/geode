@@ -67,9 +67,6 @@ public class ServerStartupValueRecoveryNotificationTest {
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     locatorPort = ports[0];
 
-    Files.createDirectories(server1Folder);
-
-
     String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + LOCATOR_NAME,
@@ -85,22 +82,28 @@ public class ServerStartupValueRecoveryNotificationTest {
         "--disable-default-server");
 
     String createDiskStore1 = String.join(" ",
-        "create disk-store --name=" + DISKSTORE_1 + " --dir=" + diskStore1Folder);
+        "create disk-store",
+        "--name=" + DISKSTORE_1,
+        "--dir=" + diskStore1Folder);
 
     String regionName = "myRegion";
     String createRegionCommand = String.join(" ",
         "create region",
         "--name=" + regionName,
-        "--type=REPLICATE_PERSISTENT --disk-store=" + DISKSTORE_1);
+        "--type=REPLICATE_PERSISTENT",
+        "--disk-store=" + DISKSTORE_1);
 
     String createDiskStore2 = String.join(" ",
-        "create disk-store --name=" + DISKSTORE_2 + " --dir=" + diskStore2Folder);
+        "create disk-store",
+        "--name=" + DISKSTORE_2,
+        "--dir=" + diskStore2Folder);
 
     String regionNameTwo = "mySecondRegion";
     String createRegionTwoCommand = String.join(" ",
         "create region",
         "--name=" + regionNameTwo,
-        "--type=REPLICATE_PERSISTENT --disk-store=" + DISKSTORE_2);
+        "--type=REPLICATE_PERSISTENT",
+        "--disk-store=" + DISKSTORE_2);
 
     String putCommand = String.join(" ",
         "put",
