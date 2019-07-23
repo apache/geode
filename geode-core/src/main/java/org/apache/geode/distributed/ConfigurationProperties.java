@@ -465,8 +465,8 @@ public interface ConfigurationProperties {
    * service
    * requires the cluster configuration service to be enabled. If "enable-cluster-configuration" is
    * false and this is true, the management rest service would do nothing but report an error if you
-   * try to use it. Also even this property is set to "true", The management rest service will only
-   * be started if "http-service-port" is not "0".
+   * try to use it. Also even if this property is set to "true", The management rest service will
+   * only be started if "http-service-port" is not "0".
    * </p>
    * <U>Default</U>: "true"
    * </p>

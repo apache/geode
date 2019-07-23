@@ -932,12 +932,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         if (systemConfig.getHttpServicePort() == 0) {
           logger.info("HttpService is disabled with http-serivce-port = 0");
           httpService = Optional.empty();
-        }
-        else {
+        } else {
           try {
             httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
                 systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
+                    .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
           } catch (Throwable ex) {
             logger.warn("Could not enable HttpService: {}", ex.getMessage());
           }
