@@ -40,7 +40,7 @@ public class ConnectionStatsTest {
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
-            .thenReturn(stats);
+        .thenReturn(stats);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientSendStats-name")))
         .thenReturn(sendStats);
     return statisticsFactory;
@@ -903,8 +903,6 @@ public class ConnectionStatsTest {
 
     verify(sendStats).incLong(eq(statId), anyLong());
   }
-
-
 
 
 
