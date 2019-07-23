@@ -14,14 +14,14 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.apache.commons.collections.map.LRUMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
@@ -36,30 +36,55 @@ import org.apache.geode.management.api.JsonSerializable;
  */
 @Experimental
 public class OperationHistoryManager {
-  private final ConcurrentMap<String, OperationInstance> inProgressHistory;
-  private final Map<String, OperationInstance> completedHistory;
+  private final ConcurrentMap<String, OperationInstance> history;
+  private final long keepCompletedMillis;
 
+  /**
+   * set a default retention policy to keep results for 2 hours after completion
+   */
   public OperationHistoryManager() {
-    this(100);
-  }
-
-  @SuppressWarnings("unchecked")
-  public OperationHistoryManager(int historySize) {
-    inProgressHistory = new ConcurrentHashMap<>();
-    completedHistory = Collections.synchronizedMap(new LRUMap(historySize));
+    this(2, TimeUnit.HOURS);
   }
 
   /**
-   * check both maps for the specified key
+   * set a custom retention policy to keep results for X amount of time after completion
+   */
+  public OperationHistoryManager(long keepCompleted, TimeUnit timeUnit) {
+    history = new ConcurrentHashMap<>();
+    keepCompletedMillis = timeUnit.toMillis(keepCompleted);
+  }
+
+  /**
+   * look up the specified key
    */
   @SuppressWarnings("unchecked")
   <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> getOperationInstance(
       String opId) {
-    OperationInstance operationInstance = inProgressHistory.get(opId);
-    if (operationInstance == null) {
-      operationInstance = completedHistory.get(opId);
+    expireHistory();
+    return history.get(opId);
+  }
+
+  private void expireHistory() {
+    final long purgeThreshold = System.currentTimeMillis() - keepCompletedMillis;
+    Set<String> expiredKeys = history.entrySet().stream()
+        .filter(e -> e.getValue().getFutureOperationEnded().isDone()
+            && getOperationEnded(e.getValue()).getTime() < purgeThreshold)
+        .map(e -> e.getKey()).collect(Collectors.toSet());
+    expiredKeys.forEach(history::remove);
+  }
+
+  /**
+   * @return null if unavailable
+   */
+  private static Date getOperationEnded(OperationInstance<?, ?> operationInstance) {
+    try {
+      return operationInstance.futureOperationEnded.get();
+    } catch (ExecutionException ignore) {
+      return null;
+    } catch (InterruptedException ignore) {
+      Thread.currentThread().interrupt();
+      return null;
     }
-    return operationInstance;
   }
 
   /**
@@ -71,18 +96,15 @@ public class OperationHistoryManager {
     String opId = operationInstance.getId();
     CompletableFuture<V> future = operationInstance.getFutureResult();
 
-    inProgressHistory.put(opId, operationInstance);
-
     CompletableFuture<V> newFuture = future.whenComplete((result, exception) -> {
-      completedHistory.put(opId, operationInstance);
-      inProgressHistory.remove(opId);
       operationInstance.setFutureOperationEnded(new Date());
     });
 
     OperationInstance<A, V> newOperationInstance = new OperationInstance<>(newFuture, opId,
         operationInstance.getOperation(), operationInstance.getOperationStart());
-    // we want to replace only if still in in-progress.
-    inProgressHistory.replace(opId, operationInstance, newOperationInstance);
+
+    history.put(opId, operationInstance);
+    expireHistory();
 
     return newOperationInstance;
   }

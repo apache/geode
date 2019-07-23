@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,7 +35,8 @@ public class OperationManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new OperationManager(null, new OperationHistoryManager(1));
+    executorManager =
+        new OperationManager(null, new OperationHistoryManager(500, TimeUnit.MILLISECONDS));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
@@ -60,8 +62,8 @@ public class OperationManagerTest {
     operation2.latch.countDown();
     future2.get();
 
-    // queue size 1 so should have been bumped
-    assertThat(executorManager.getOperationInstance(id)).isNull();
+    // time-based expiry so nothing should be bumped yet
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
     assertThat(executorManager.getOperationInstance(id2)).isNotNull();
   }
 

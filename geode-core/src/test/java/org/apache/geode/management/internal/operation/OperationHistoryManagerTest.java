@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class OperationHistoryManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    history = new OperationHistoryManager(2);
+    history = new OperationHistoryManager(500, TimeUnit.MILLISECONDS);
   }
 
   @Test
@@ -43,7 +44,13 @@ public class OperationHistoryManagerTest {
   public void getInProgStatus() {
     CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
     CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
-    assertThat(history.getOperationInstance("1").getFutureResult()).isSameAs(future2);
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isFalse();
+    future.complete(null);
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
+    assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
   }
 
   @Test
@@ -74,7 +81,7 @@ public class OperationHistoryManagerTest {
   }
 
   @Test
-  public void getLotsOfCompleted() {
+  public void getLotsOfCompleted() throws Exception {
     CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
     future1.complete(null);
     history.save(op("1", future1));
@@ -83,9 +90,13 @@ public class OperationHistoryManagerTest {
     future2.complete(null);
     CompletableFuture<JsonSerializable> future3 = new CompletableFuture<>();
     history.save(op("3", future3));
+    assertThat(history.getOperationInstance("1")).isNotNull();
+    assertThat(history.getOperationInstance("2")).isNotNull();
+    assertThat(history.getOperationInstance("3")).isNotNull();
+    Thread.sleep(1000); // for test, completed expiry is 500ms so this should trigger expiry
     future3.complete(null);
     assertThat(history.getOperationInstance("1")).isNull();
-    assertThat(history.getOperationInstance("2")).isNotNull();
+    assertThat(history.getOperationInstance("2")).isNull();
     assertThat(history.getOperationInstance("3")).isNotNull();
   }
 
