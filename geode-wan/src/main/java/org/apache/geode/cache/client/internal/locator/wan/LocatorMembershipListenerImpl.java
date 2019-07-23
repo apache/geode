@@ -307,6 +307,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                   Thread.sleep(memberTimeout);
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();
+                  logger.warn(
+                      "Locator Membership listener permanently failed to exchange locator information due to interruption.");
                 }
               }
             }

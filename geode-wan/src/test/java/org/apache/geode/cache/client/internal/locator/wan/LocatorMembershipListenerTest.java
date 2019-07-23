@@ -16,6 +16,7 @@ package org.apache.geode.cache.client.internal.locator.wan;
 
 import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATORS_DISTRIBUTOR_THREAD_NAME;
 import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -45,6 +46,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,9 +94,19 @@ public class LocatorMembershipListenerTest {
 
   private void joinLocatorsDistributorThread() throws InterruptedException {
     Set<Thread> threads = Thread.getAllStackTraces().keySet();
+
+    // Wait for the daemon thread to be alive.
+    try {
+      await().untilAsserted(() -> assertThat(
+          threads.stream().anyMatch(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME)))
+              .isTrue());
+    } catch (ConditionTimeoutException conditionTimeoutException) {
+      // Do Nothing, the thread might have finished before we even started searching for it.
+    }
+
+    // Get the thread reference and, if found, wait until it finishes.
     Optional<Thread> distributorThread = threads.stream()
-        .filter(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME))
-        .findFirst();
+        .filter(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME)).findFirst();
 
     if (distributorThread.isPresent()) {
       distributorThread.get().join();
