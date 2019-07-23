@@ -52,7 +52,7 @@ public class SwaggerVerificationIntegrationTest {
 
     // Check the JSON
     JsonNode json =
-        assertResponse(client.get("/geode/experimental/api-docs")).hasStatusCode(200)
+        assertResponse(client.get("/geode/v2/api-docs")).hasStatusCode(200)
             .getJsonObject();
     assertThat(json.get("swagger").asText(), is("2.0"));
 

@@ -758,10 +758,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
             clusterManagementService);
 
     if (distributionConfig.getEnableManagementRestService()) {
-      logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
-          ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
       internalCache.getHttpService().ifPresent(x -> {
         try {
+          logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
+              ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
           x.addWebApplication("/management", gemfireManagementWar, securityServiceAttribute,
               clusterManagementServiceAttribute);
         } catch (Throwable e) {

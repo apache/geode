@@ -929,12 +929,18 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       addRegionEntrySynchronizationListener(new GatewaySenderQueueEntrySynchronizationListener());
       backupService = new BackupService(this);
       if (!this.isClient) {
-        try {
-          httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
-              systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                  .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
-        } catch (Throwable ex) {
-          logger.warn("Could not enable HttpService: {}", ex.getMessage());
+        if (systemConfig.getHttpServicePort() == 0) {
+          logger.info("HttpService is disabled with http-serivce-port = 0");
+          httpService = Optional.empty();
+        }
+        else {
+          try {
+            httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
+                systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
+          } catch (Throwable ex) {
+            logger.warn("Could not enable HttpService: {}", ex.getMessage());
+          }
         }
       }
     } // synchronized

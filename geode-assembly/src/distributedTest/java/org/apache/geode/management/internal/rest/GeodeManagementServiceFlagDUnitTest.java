@@ -21,7 +21,7 @@ import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 
-public class GeodeManagementFeatureFlagDUnitTest {
+public class GeodeManagementServiceFlagDUnitTest {
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -31,7 +31,7 @@ public class GeodeManagementFeatureFlagDUnitTest {
   private GeodeDevRestClient restClient;
 
   @Test
-  public void geodeManagementShouldNotBeAvailableByDefault() throws Exception {
+  public void withOutService() throws Exception {
     locator = cluster.startLocatorVM(0,
         l -> l.withoutManagementRestService()
             .withHttpService());
@@ -42,7 +42,7 @@ public class GeodeManagementFeatureFlagDUnitTest {
   }
 
   @Test
-  public void geodeManagementIsEnabledWithFeatureFlag() throws Exception {
+  public void withServiceByDefault() throws Exception {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     restClient =
         new GeodeDevRestClient("/management/experimental", "localhost", locator.getHttpPort(),
