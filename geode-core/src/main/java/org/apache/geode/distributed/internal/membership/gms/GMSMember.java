@@ -676,6 +676,9 @@ public class GMSMember implements DataSerializableFixedID {
 
     @Override
     public boolean equals(Object obj) {
+      if (obj == null || !(obj instanceof GMSMemberWrapper)) {
+        return false;
+      }
       GMSMember other = ((GMSMemberWrapper) obj).mbr;
       return mbr.compareTo(other) == 0;
     }

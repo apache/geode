@@ -47,6 +47,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.Assertions;
 import org.jgroups.util.UUID;
@@ -183,6 +184,27 @@ public class GMSMembershipManagerJUnitTest {
       manager.getGMSManager().stopped();
     }
   }
+
+  @Test
+  public void testSendMessage() throws Exception {
+    HighPriorityAckedMessage m = new HighPriorityAckedMessage();
+    m.setRecipient(mockMembers[0]);
+    manager.getGMSManager().start();
+    manager.getGMSManager().started();
+    GMSMember myGMSMemberId = ((GMSMemberAdapter) myMemberId.getNetMember()).getGmsMember();
+    List<GMSMember> gmsMembers =
+        members.stream().map(x -> ((GMSMemberAdapter) x.getNetMember()).getGmsMember()).collect(
+            Collectors.toList());
+    manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
+    Set<InternalDistributedMember> failures =
+        manager.send(m.getRecipients(), m, this.services.getStatistics());
+    verify(messenger).send(isA(GMSMessageAdapter.class));
+    if (failures != null) {
+      assertEquals(0, failures.size());
+    }
+  }
+
+
 
   private GMSMembershipView createView(InternalDistributedMember creator, int viewId,
       List<InternalDistributedMember> members) {

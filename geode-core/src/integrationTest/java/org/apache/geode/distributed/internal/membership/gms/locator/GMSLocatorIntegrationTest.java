@@ -53,14 +53,14 @@ public class GMSLocatorIntegrationTest {
 
   @Test
   public void initDefinesViewFileInSpecifiedDirectory() {
-    gmsLocator.init("" + tcpServer.getPort());
+    gmsLocator.init(String.valueOf(tcpServer.getPort()));
 
     assertThat(gmsLocator.getViewFile()).isNotNull();
   }
 
   @Test
   public void installViewCreatesViewFileInSpecifiedDirectory() {
-    gmsLocator.init("" + tcpServer.getPort());
+    gmsLocator.init(String.valueOf(tcpServer.getPort()));
 
     gmsLocator.installView(view);
 
