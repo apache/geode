@@ -67,6 +67,14 @@ public class ConnectionStatsTest {
   private final int closeCQSendInProgressId =
       ConnectionStats.getSendType().nameToId("closeCQSendsInProgress");
 
+  private final int createCQDurationId = ConnectionStats.getType().nameToId("createCQTime");
+  private final int createCQInProgressId =
+      ConnectionStats.getType().nameToId("createCQsInProgress");
+  private final int createCQSendDurationId =
+      ConnectionStats.getSendType().nameToId("createCQSendTime");
+  private final int createCQSendInProgressId =
+      ConnectionStats.getSendType().nameToId("createCQSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -307,8 +315,6 @@ public class ConnectionStatsTest {
     verify(sendStats).incInt(sendStatId, 1);
   }
 
-
-
   @Test
   public void endCloseCQSend_FailedOperation() {
     int statId = ConnectionStats.getSendType().nameToId("closeCQSendFailures");
@@ -381,6 +387,85 @@ public class ConnectionStatsTest {
     int sendStatId = ConnectionStats.getSendType().nameToId("closeCQSendsInProgress");
 
     connectionStats.startCloseCQ();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+
+
+  @Test
+  public void endCreateCQSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("createCQSendFailures");
+
+    connectionStats.endCreateCQSend(1, true);
+
+    verify(sendStats).incInt(eq(createCQSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(createCQSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCreateCQSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("createCQSends");
+
+    connectionStats.endCreateCQSend(1, false);
+
+    verify(sendStats).incInt(eq(createCQSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(createCQSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCreateCQ_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("createCQTimeouts");
+
+    connectionStats.endCreateCQ(1, true, true);
+
+    verify(stats).incInt(eq(createCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(createCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endCreateCQ_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("createCQTimeouts");
+
+    connectionStats.endCreateCQ(1, true, false);
+
+    verify(stats).incInt(eq(createCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(createCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endCreateCQ_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("createCQFailures");
+
+    connectionStats.endCreateCQ(1, false, true);
+
+    verify(stats).incInt(eq(createCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(createCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endCreateCQ_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("createCQs");
+
+    connectionStats.endCreateCQ(1, false, false);
+
+    verify(stats).incInt(eq(createCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(createCQDurationId), anyLong());
+  }
+
+  @Test
+  public void startCreateCQ() {
+    int statId = ConnectionStats.getType().nameToId("createCQsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("createCQSendsInProgress");
+
+    connectionStats.startCreateCQ();
 
     verify(stats).incInt(statId, 1);
     verify(sendStats).incInt(sendStatId, 1);
