@@ -35,11 +35,11 @@ public class RebalanceOperationPerformer {
       RebalanceCommand rebalanceCommand = new RebalanceCommand();
       rebalanceCommand.setCache(cache);
 
-      ResultModel result = rebalanceCommand
-          .rebalance(arr(parameters.getIncludeRegions()), arr(parameters.getExcludeRegions()), -1,
-              parameters.isSimulate());
+      ResultModel result = rebalanceCommand.rebalanceCallable(arr(parameters.getIncludeRegions()),
+          arr(parameters.getExcludeRegions()), parameters.isSimulate()).call();
 
-      if (result.getStatus().equals(Result.Status.ERROR)) {
+      if (result.getStatus().equals(Result.Status.ERROR)
+          || result.getInfoSection("error") != null) {
         throw new RuntimeException(
             "rebalance returned error: " + String
                 .join("\n", result.getInfoSection("error").getContent()));

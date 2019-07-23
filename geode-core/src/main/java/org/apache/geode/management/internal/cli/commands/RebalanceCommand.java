@@ -82,8 +82,8 @@ public class RebalanceCommand extends GfshCommand {
     List<Future<ResultModel>> commandResult = new ArrayList<>();
     ResultModel result;
     try {
-      commandResult.add(commandExecutors.submit(new ExecuteRebalanceWithTimeout(includeRegions,
-          excludeRegions, simulate, (InternalCache) getCache())));
+      commandResult.add(
+          commandExecutors.submit(rebalanceCallable(includeRegions, excludeRegions, simulate)));
 
       Future<ResultModel> fs = commandResult.get(0);
       if (timeout > 0) {
@@ -103,6 +103,12 @@ public class RebalanceCommand extends GfshCommand {
       result.setStatus(Result.Status.ERROR);
     }
     return result;
+  }
+
+  public Callable<ResultModel> rebalanceCallable(String[] includeRegions, String[] excludeRegions,
+      boolean simulate) {
+    return new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate,
+        (InternalCache) getCache());
   }
 
   private boolean checkResultList(InfoResultModel errors, List resultList,
@@ -312,13 +318,11 @@ public class RebalanceCommand extends GfshCommand {
 
               if (simulate) {
                 op = manager.createRebalanceFactory().simulate();
-                buildResultForRebalance(result, op.getResults(), index, true, cache);
-
               } else {
                 op = manager.createRebalanceFactory().start();
-                // Wait until the rebalance is complete and then get the results
-                buildResultForRebalance(result, op.getResults(), index, false, cache);
               }
+              // Wait until the rebalance is complete and then get the results
+              buildResultForRebalance(result, op.getResults(), index, simulate, cache);
             }
             index++;
           }
