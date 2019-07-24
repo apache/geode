@@ -18,6 +18,7 @@
 set -x
 
 PACKER=${PACKER:-packer135}
+PACKER_ARGS="${*}"
 INTERNAL=${INTERNAL:-true}
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
@@ -56,7 +57,7 @@ fi
 HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
-PACKER_LOG=1 ${PACKER} build \
+PACKER_LOG=1 ${PACKER} build ${PACKER_ARGS} \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \
