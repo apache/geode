@@ -116,6 +116,14 @@ public class ConnectionStatsTest {
   private final int executeFunctionSendInProgressId =
       ConnectionStats.getSendType().nameToId("executeFunctionSendsInProgress");
 
+  private final int gatewayBatchDurationId = ConnectionStats.getType().nameToId("gatewayBatchTime");
+  private final int gatewayBatchInProgressId =
+      ConnectionStats.getType().nameToId("gatewayBatchsInProgress");
+  private final int gatewayBatchSendDurationId =
+      ConnectionStats.getSendType().nameToId("gatewayBatchSendTime");
+  private final int gatewayBatchSendInProgressId =
+      ConnectionStats.getSendType().nameToId("gatewayBatchSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -863,6 +871,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGatewayBatchSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("gatewayBatchSendFailures");
+
+    connectionStats.endGatewayBatchSend(1, true);
+
+    verify(sendStats).incInt(eq(gatewayBatchSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(gatewayBatchSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGatewayBatchSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("gatewayBatchSends");
+
+    connectionStats.endGatewayBatchSend(1, false);
+
+    verify(sendStats).incInt(eq(gatewayBatchSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(gatewayBatchSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGatewayBatch_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("gatewayBatchTimeouts");
+
+    connectionStats.endGatewayBatch(1, true, true);
+
+    verify(stats).incInt(eq(gatewayBatchInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(gatewayBatchDurationId), anyLong());
+  }
+
+  @Test
+  public void endGatewayBatch_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("gatewayBatchTimeouts");
+
+    connectionStats.endGatewayBatch(1, true, false);
+
+    verify(stats).incInt(eq(gatewayBatchInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(gatewayBatchDurationId), anyLong());
+  }
+
+  @Test
+  public void endGatewayBatch_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("gatewayBatchFailures");
+
+    connectionStats.endGatewayBatch(1, false, true);
+
+    verify(stats).incInt(eq(gatewayBatchInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(gatewayBatchDurationId), anyLong());
+  }
+
+  @Test
+  public void endGatewayBatch_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("gatewayBatchs");
+
+    connectionStats.endGatewayBatch(1, false, false);
+
+    verify(stats).incInt(eq(gatewayBatchInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(gatewayBatchDurationId), anyLong());
+  }
+
+  @Test
+  public void startGatewayBatch() {
+    int statId = ConnectionStats.getType().nameToId("gatewayBatchsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("gatewayBatchSendsInProgress");
+
+    connectionStats.startGatewayBatch();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1155,33 +1240,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSendFailures");
 
     connectionStats.endGetDurableCQsSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGatewayBatchSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("gatewayBatchSendTime");
-
-    connectionStats.endGatewayBatchSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGatewayBatchSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("gatewayBatchSends");
-
-    connectionStats.endGatewayBatchSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGatewayBatchSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("gatewayBatchSendFailures");
-
-    connectionStats.endGatewayBatchSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
