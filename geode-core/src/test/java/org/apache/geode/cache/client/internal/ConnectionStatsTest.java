@@ -139,6 +139,15 @@ public class ConnectionStatsTest {
   private final int getClientPartitionAttributesSendInProgressId =
       ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendsInProgress");
 
+  private final int getClientPRMetadataDurationId =
+      ConnectionStats.getType().nameToId("getClientPRMetadataTime");
+  private final int getClientPRMetadataInProgressId =
+      ConnectionStats.getType().nameToId("getClientPRMetadataInProgress");
+  private final int getClientPRMetadataSendDurationId =
+      ConnectionStats.getSendType().nameToId("getClientPRMetadataSendTime");
+  private final int getClientPRMetadataSendInProgressId =
+      ConnectionStats.getSendType().nameToId("getClientPRMetadataSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1119,6 +1128,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGetClientPRMetadataSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendFailures");
+
+    connectionStats.endGetClientPRMetadataSend(1, true);
+
+    verify(sendStats).incInt(eq(getClientPRMetadataSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getClientPRMetadataSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPRMetadataSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendsSuccessful");
+
+    connectionStats.endGetClientPRMetadataSend(1, false);
+
+    verify(sendStats).incInt(eq(getClientPRMetadataSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getClientPRMetadataSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPRMetadata_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPRMetadataTimeouts");
+
+    connectionStats.endGetClientPRMetadata(1, true, true);
+
+    verify(stats).incInt(eq(getClientPRMetadataInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPRMetadataDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPRMetadata_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getClientPRMetadataTimeouts");
+
+    connectionStats.endGetClientPRMetadata(1, true, false);
+
+    verify(stats).incInt(eq(getClientPRMetadataInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPRMetadataDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPRMetadata_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPRMetadataFailures");
+
+    connectionStats.endGetClientPRMetadata(1, false, true);
+
+    verify(stats).incInt(eq(getClientPRMetadataInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPRMetadataDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPRMetadata_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPRMetadataSuccessful");
+
+    connectionStats.endGetClientPRMetadata(1, false, false);
+
+    verify(stats).incInt(eq(getClientPRMetadataInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPRMetadataDurationId), anyLong());
+  }
+
+  @Test
+  public void startGetClientPRMetadata() {
+    int statId = ConnectionStats.getType().nameToId("getClientPRMetadataInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendsInProgress");
+
+    connectionStats.startGetClientPRMetadata();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1627,33 +1713,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("removeAllSendFailures");
 
     connectionStats.endRemoveAllSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetClientPRMetadataSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendTime");
-
-    connectionStats.endGetClientPRMetadataSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetClientPRMetadataSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendsSuccessful");
-
-    connectionStats.endGetClientPRMetadataSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetClientPRMetadataSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendFailures");
-
-    connectionStats.endGetClientPRMetadataSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
