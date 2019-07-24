@@ -14,7 +14,6 @@
  */
 package org.apache.geode.cache.client.internal.locator.wan;
 
-import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATORS_DISTRIBUTOR_THREAD_NAME;
 import static org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListenerImpl.LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,9 +44,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import org.awaitility.core.ConditionTimeoutException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -56,6 +54,7 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 
 public class LocatorMembershipListenerTest {
   private TcpClient tcpClient;
+  private ArgumentCaptor<Thread> argumentCaptor;
   private LocatorMembershipListenerImpl locatorMembershipListener;
 
   private DistributionLocatorId buildDistributionLocatorId(int port) {
@@ -92,25 +91,11 @@ public class LocatorMembershipListenerTest {
         DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
   }
 
-  private void joinLocatorsDistributorThread() throws InterruptedException {
-    Set<Thread> threads = Thread.getAllStackTraces().keySet();
-
-    // Wait for the daemon thread to be alive.
-    try {
-      await().untilAsserted(() -> assertThat(
-          threads.stream().anyMatch(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME)))
-              .isTrue());
-    } catch (ConditionTimeoutException conditionTimeoutException) {
-      // Do Nothing, the thread might have finished before we even started searching for it.
-    }
-
-    // Get the thread reference and, if found, wait until it finishes.
-    Optional<Thread> distributorThread = threads.stream()
-        .filter(t -> t.getName().startsWith(LOCATORS_DISTRIBUTOR_THREAD_NAME)).findFirst();
-
-    if (distributorThread.isPresent()) {
-      distributorThread.get().join();
-    }
+  private void joinLocatorsDistributorThread(ArgumentCaptor<Thread> argumentCaptor) {
+    verify(locatorMembershipListener).launchLocatorsDistributorThread(argumentCaptor.capture());
+    Thread distributorThread = argumentCaptor.getValue();
+    await().untilAsserted(
+        () -> assertThat(distributorThread.getState()).isEqualTo(Thread.State.TERMINATED));
   }
 
   @Before
@@ -121,6 +106,7 @@ public class LocatorMembershipListenerTest {
         .thenReturn(DistributionConfig.DEFAULT_MEMBER_TIMEOUT);
 
     tcpClient = mock(TcpClient.class);
+    argumentCaptor = ArgumentCaptor.forClass(Thread.class);
     locatorMembershipListener = spy(new LocatorMembershipListenerImpl(tcpClient));
     locatorMembershipListener.setConfig(distributionConfig);
   }
@@ -215,21 +201,21 @@ public class LocatorMembershipListenerTest {
 
   @Test
   public void locatorJoinedShouldNotifyNobodyIfThereAreNoKnownLocators()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(20202);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
     verify(tcpClient, times(0)).requestToServer(any(InetSocketAddress.class),
         any(LocatorJoinMessage.class), anyInt(), anyBoolean());
   }
 
   @Test
   public void locatorJoinedShouldNotifyKnownLocatorAboutTheJoiningLocatorAndJoiningLocatorAboutTheKnownOne()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(20202);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
@@ -238,13 +224,13 @@ public class LocatorMembershipListenerTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
     verifyMessagesSentBothWays(locator1Site1, 2, joiningLocator, 3, locator3Site3);
   }
 
   @Test
   public void locatorJoinedShouldNotifyEveryKnownLocatorAboutTheJoiningLocatorAndJoiningLocatorAboutAllTheKnownLocators()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(10102);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
@@ -261,7 +247,7 @@ public class LocatorMembershipListenerTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 1, locator3Site1);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator1Site2);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator2Site2);
@@ -272,7 +258,7 @@ public class LocatorMembershipListenerTest {
 
   @Test
   public void locatorJoinedShouldRetryUpToTheConfiguredUpperBoundOnConnectionFailures()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(10102);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
@@ -285,7 +271,7 @@ public class LocatorMembershipListenerTest {
             .thenThrow(new EOFException("Mock Exception"));
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
 
     verify(tcpClient, times(LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
         locator3Site1.getHost(),
@@ -298,7 +284,7 @@ public class LocatorMembershipListenerTest {
 
   @Test
   public void locatorJoinedShouldNotRetryAgainAfterSuccessfulRetryOnConnectionFailures()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(10102);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
@@ -312,7 +298,7 @@ public class LocatorMembershipListenerTest {
             .thenReturn(null);
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
 
     verify(tcpClient, times(2)).requestToServer(locator3Site1.getHost(),
         new LocatorJoinMessage(1, joiningLocator, locator1Site1, ""),
@@ -324,7 +310,7 @@ public class LocatorMembershipListenerTest {
 
   @Test
   public void locatorJoinedShouldRetryOnlyFailedMessagesOnConnectionFailures()
-      throws IOException, ClassNotFoundException, InterruptedException {
+      throws IOException, ClassNotFoundException {
     ConcurrentMap<Integer, Set<DistributionLocatorId>> allLocatorsInfo = new ConcurrentHashMap<>();
     DistributionLocatorId joiningLocator = buildDistributionLocatorId(10102);
     DistributionLocatorId locator1Site1 = buildDistributionLocatorId(10101);
@@ -350,7 +336,7 @@ public class LocatorMembershipListenerTest {
             .thenThrow(new EOFException("Mock Exception"));
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread();
+    joinLocatorsDistributorThread(argumentCaptor);
 
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator1Site2);
     verify(tcpClient, times(3)).requestToServer(locator3Site1.getHost(),

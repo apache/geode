@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.LoggingThreadFactory;
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
   private static final Logger logger = LogService.getLogger();
   static final int LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = 3;
-  static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
+  private static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
   private static final String LISTENER_FAILURE_MESSAGE =
       "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts";
   private static final String LISTENER_FINAL_FAILURE_MESSAGE =
@@ -72,6 +72,10 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   @Override
   public void setConfig(DistributionConfig config) {
     this.config = config;
+  }
+
+  void launchLocatorsDistributorThread(Thread thread) {
+    thread.start();
   }
 
   /**
@@ -116,8 +120,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
         tcpClient, localLocatorId, localCopy, locator, distributedSystemId);
     ThreadFactory threadFactory =
         new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
-    Thread distributeLocatorsThread = threadFactory.newThread(distributeLocatorsRunnable);
-    distributeLocatorsThread.start();
+    Thread locatorsDistributorThread = threadFactory.newThread(distributeLocatorsRunnable);
+    launchLocatorsDistributorThread(locatorsDistributorThread);
   }
 
   @Override
