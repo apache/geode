@@ -18,13 +18,10 @@ import java.io.File;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 
-import javax.servlet.ServletException;
-
 import org.apache.catalina.Context;
 import org.apache.catalina.Engine;
 import org.apache.catalina.Host;
 import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Valve;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.core.StandardService;
@@ -39,55 +36,32 @@ import org.apache.juli.logging.LogFactory;
 import org.apache.geode.modules.session.catalina.JvmRouteBinderValve;
 
 public class EmbeddedTomcat {
-
-  private String contextPath = null;
-  private Embedded container = null;
   private Log logger = LogFactory.getLog(getClass());
+  private int port;
+  private Embedded container;
+  private Context rootContext;
 
-  /**
-   * The directory to create the Tomcat server configuration under.
-   */
-  private String catalinaHome = "tomcat";
-
-  /**
-   * The port to run the Tomcat server on.
-   */
-  private int port = 8089;
-
-  /**
-   * The classes directory for the web application being run.
-   */
-  private String classesDir = "target/classes";
-
-  private Context rootContext = null;
-
-  private Engine engine;
-
-  /**
-   * The web resources directory for the web application being run.
-   */
-  private String webappDir = "";
-
-  public EmbeddedTomcat(String contextPath, int port, String jvmRoute)
-      throws MalformedURLException {
-    this.contextPath = contextPath;
+  EmbeddedTomcat(int port, String jvmRoute) throws MalformedURLException {
     this.port = port;
 
     // create server
     container = new Embedded();
-    container.setCatalinaHome(catalinaHome);
 
+    // The directory to create the Tomcat server configuration under.
+    container.setCatalinaHome("tomcat");
     container.setRealm(new MemoryRealm());
 
     // create webapp loader
     WebappLoader loader = new WebappLoader(this.getClass().getClassLoader());
-    if (classesDir != null) {
-      loader.addRepository(new File(classesDir).toURI().toURL().toString());
-    }
+    // The classes directory for the web application being run.
+    loader.addRepository(new File("target/classes").toURI().toURL().toString());
 
+    // The web resources directory for the web application being run.
+    String webappDir = "";
     rootContext = container.createContext("", webappDir);
     rootContext.setLoader(loader);
     rootContext.setReloadable(true);
+
     // Otherwise we get NPE when instantiating servlets
     rootContext.setIgnoreAnnotations(true);
 
@@ -98,7 +72,7 @@ public class EmbeddedTomcat {
     localHost.setDeployOnStartup(true);
 
     // create engine
-    engine = container.createEngine();
+    Engine engine = container.createEngine();
     engine.setName("localEngine");
     engine.addChild(localHost);
     engine.setDefaultHost(localHost.getName());
@@ -119,23 +93,18 @@ public class EmbeddedTomcat {
   /**
    * Starts the embedded Tomcat server.
    */
-  public void startContainer() throws LifecycleException {
+  void startContainer() throws LifecycleException {
     // start server
     container.start();
 
     // add shutdown hook to stop server
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        stopContainer();
-      }
-    });
+    Runtime.getRuntime().addShutdownHook(new Thread(this::stopContainer));
   }
 
   /**
    * Stops the embedded Tomcat server.
    */
-  public void stopContainer() {
+  void stopContainer() {
     try {
       if (container != null) {
         container.stop();
@@ -146,8 +115,7 @@ public class EmbeddedTomcat {
     }
   }
 
-  public StandardWrapper addServlet(String path, String name, String clazz)
-      throws ServletException {
+  StandardWrapper addServlet(String path, String name, String clazz) {
     StandardWrapper servlet = (StandardWrapper) rootContext.createWrapper();
     servlet.setName(name);
     servlet.setServletClass(clazz);
@@ -157,36 +125,19 @@ public class EmbeddedTomcat {
     rootContext.addServletMapping(path, name);
 
     servlet.setParent(rootContext);
-    // servlet.load();
 
     return servlet;
   }
 
-  public Embedded getEmbedded() {
+  Embedded getEmbedded() {
     return container;
   }
 
-  public Context getRootContext() {
+  Context getRootContext() {
     return rootContext;
-  }
-
-  public String getPath() {
-    return contextPath;
-  }
-
-  public void setPath(String path) {
-    this.contextPath = path;
   }
 
   public int getPort() {
     return port;
-  }
-
-  public void addValve(Valve valve) {
-    ((StandardEngine) engine).addValve(valve);
-  }
-
-  public void removeValve(Valve valve) {
-    ((StandardEngine) engine).removeValve(valve);
   }
 }

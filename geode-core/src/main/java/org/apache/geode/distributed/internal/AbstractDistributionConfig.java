@@ -45,6 +45,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.DISTRIBUTED_T
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_ID;
 import static org.apache.geode.distributed.ConfigurationProperties.DURABLE_CLIENT_TIMEOUT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
+import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQUE_HOST;
@@ -1309,6 +1310,8 @@ public abstract class AbstractDistributionConfig extends AbstractConfig
         "The password which client of GeodeRedisServer must use to authenticate themselves. The default is none and no authentication will be required.");
     m.put(ENABLE_CLUSTER_CONFIGURATION,
         "Enables cluster configuration support in dedicated locators.  This allows the locator to share configuration information amongst members and save configuration changes made using GFSH.");
+    m.put(ENABLE_MANAGEMENT_REST_SERVICE,
+        "Enables management rest service in dedicated locators.  This allows users to manage the cluster through rest api.");
     m.put(USE_CLUSTER_CONFIGURATION,
         "Boolean flag that allows the cache to use the cluster configuration provided by the cluster config service");
     m.put(LOAD_CLUSTER_CONFIGURATION_FROM_DIR,

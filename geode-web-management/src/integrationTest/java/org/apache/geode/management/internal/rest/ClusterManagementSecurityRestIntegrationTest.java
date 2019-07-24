@@ -68,31 +68,34 @@ public class ClusterManagementSecurityRestIntegrationTest {
     regionConfig.setName(REGION);
     regionConfig.setType(RegionType.REPLICATE);
 
-    testContexts.add(new TestContext(post("/v2/regions"), "DATA:MANAGE")
+    testContexts.add(new TestContext(post("/experimental/regions"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(regionConfig)));
 
     // additional credentials needed to create persistent regions
     regionConfig.setType(RegionType.REPLICATE_PERSISTENT);
-    testContexts.add(new TestContext(post("/v2/regions"), "CLUSTER:WRITE:DISK")
+    testContexts.add(new TestContext(post("/experimental/regions"), "CLUSTER:WRITE:DISK")
         .setCredentials("dataManage", "dataManage")
         .setContent(mapper.writeValueAsString(regionConfig)));
 
-    testContexts.add(new TestContext(get("/v2/regions"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(get("/v2/regions/regionA"), "CLUSTER:READ:regionA"));
-    testContexts.add(new TestContext(delete("/v2/regions/regionA"), "DATA:MANAGE"));
-    testContexts.add(new TestContext(get("/v2/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
-    testContexts.add(new TestContext(get("/v2/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
+    testContexts.add(new TestContext(get("/experimental/regions"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/experimental/regions/regionA"), "CLUSTER:READ:regionA"));
+    testContexts.add(new TestContext(delete("/experimental/regions/regionA"), "DATA:MANAGE"));
     testContexts
-        .add(new TestContext(get("/v2/regions/regionA/indexes/index1"), "CLUSTER:READ:QUERY"));
+        .add(new TestContext(get("/experimental/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
+    testContexts
+        .add(new TestContext(get("/experimental/regions/regionA/indexes"), "CLUSTER:READ:QUERY"));
+    testContexts
+        .add(new TestContext(get("/experimental/regions/regionA/indexes/index1"),
+            "CLUSTER:READ:QUERY"));
 
-    testContexts.add(new TestContext(get("/v2/gateways/receivers"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(post("/v2/gateways/receivers"), "CLUSTER:MANAGE")
+    testContexts.add(new TestContext(get("/experimental/gateways/receivers"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(post("/experimental/gateways/receivers"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new GatewayReceiverConfig())));
 
-    testContexts.add(new TestContext(get("/v2/members"), "CLUSTER:READ"));
-    testContexts.add(new TestContext(get("/v2/members/server1"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/experimental/members"), "CLUSTER:READ"));
+    testContexts.add(new TestContext(get("/experimental/members/server1"), "CLUSTER:READ"));
 
-    testContexts.add(new TestContext(post("/v2/configurations/pdx"), "CLUSTER:MANAGE")
+    testContexts.add(new TestContext(post("/experimental/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
 
     testContexts.add(new TestContext(post("/v2/operations/rebalance"), "DATA:MANAGE")
@@ -124,7 +127,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
   @Test
   public void noCredentials() throws Exception {
-    context.perform(post("/v2/regions"))
+    context.perform(post("/experimental/regions"))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
         .andExpect(jsonPath("$.statusMessage",
@@ -133,7 +136,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
 
   @Test
   public void wrongCredentials() throws Exception {
-    context.perform(post("/v2/regions")
+    context.perform(post("/experimental/regions")
         .with(httpBasic("user", "wrong_password")))
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
@@ -146,7 +149,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName(REGION);
     regionConfig.setType(RegionType.REPLICATE);
-    context.perform(post("/v2/regions")
+    context.perform(post("/experimental/regions")
         .with(httpBasic("dataManage", "dataManage"))
         .content(mapper.writeValueAsString(regionConfig)))
         .andExpect(status().isCreated())

@@ -14,8 +14,6 @@
  */
 package org.apache.geode.test.junit.rules.gfsh;
 
-import org.apache.geode.management.api.ClusterManagementService;
-
 public class DebuggableCommand {
   final int debugPort;
   final String command;
@@ -25,10 +23,6 @@ public class DebuggableCommand {
   }
 
   public DebuggableCommand(String command, int debugPort) {
-
-    if (command.startsWith("start locator")) {
-      command += " --J=-D" + ClusterManagementService.FEATURE_FLAG + "=true ";
-    }
     this.command = command;
     this.debugPort = debugPort;
   }

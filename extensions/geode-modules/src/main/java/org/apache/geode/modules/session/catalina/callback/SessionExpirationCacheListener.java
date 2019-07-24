@@ -14,8 +14,6 @@
  */
 package org.apache.geode.modules.session.catalina.callback;
 
-import java.util.Properties;
-
 import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.session.ManagerBase;
@@ -46,7 +44,7 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
        * property gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK.
        */
       Object callback = event.getCallbackArgument();
-      if (callback != null && callback instanceof DeltaSessionInterface) {
+      if (callback instanceof DeltaSessionInterface) {
         session = (DeltaSessionInterface) callback;
         ManagerBase m = ContextMapper.getContext(session.getContextName());
         if (m != null) {
@@ -54,34 +52,24 @@ public class SessionExpirationCacheListener extends CacheListenerAdapter<String,
         }
       }
     }
+
     if (session != null) {
       session.processExpired();
     }
   }
 
   @Override
-  public void init(Properties p) {}
-
-
-  @Override
   public boolean equals(Object obj) {
-    // This method is only implemented so that RegionAttributesCreation.sameAs
-    // works properly.
+    // Only implemented so that RegionAttributesCreation.sameAs works properly.
     if (this == obj) {
       return true;
     }
 
-    if (obj == null || !(obj instanceof SessionExpirationCacheListener)) {
-      return false;
-    }
-
-    return true;
+    return (obj instanceof SessionExpirationCacheListener);
   }
-
 
   @Override
   public int hashCode() {
     return SessionExpirationCacheListener.class.hashCode();
   }
-
 }

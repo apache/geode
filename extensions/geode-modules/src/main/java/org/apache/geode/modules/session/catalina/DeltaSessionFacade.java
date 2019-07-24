@@ -25,20 +25,15 @@ public class DeltaSessionFacade extends StandardSessionFacade {
   /**
    * Construct a new session facade.
    */
-  public DeltaSessionFacade(DeltaSessionInterface session) {
+  DeltaSessionFacade(DeltaSessionInterface session) {
     super((HttpSession) session);
     // Store session locally since the super session is private and provides no accessor.
     this.session = session;
   }
 
   // ----------- DeltaSession Methods
-
-  public void commit() {
+  void commit() {
     this.session.commit();
-  }
-
-  public void abort() {
-    this.session.abort();
   }
 
   boolean isValid() {

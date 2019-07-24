@@ -17,6 +17,8 @@
 # limitations under the License.
 set -x
 
+PACKER=${PACKER:-packer135}
+INTERNAL=${INTERNAL:-true}
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
   SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
@@ -46,10 +48,15 @@ if [[ -n "${MY_NAME}" ]]; then
   GCP_SUBNETWORK=${GCP_SUBNETWORK##*/}
 fi
 
+if [[ -z "${GCP_PROJECT}" ]]; then
+  echo "GCP_PROJECT is unset. Cowardly refusing to continue."
+  exit 1
+fi
+
 HASHED_PIPELINE_PREFIX="i$(uuidgen -n @dns -s -N "${PIPELINE_PREFIX}")-"
 
 echo "Running packer"
-PACKER_LOG=1 packer135 build \
+PACKER_LOG=1 ${PACKER} build \
   --var "geode_docker_image=${GEODE_DOCKER_IMAGE}" \
   --var "pipeline_prefix=${PIPELINE_PREFIX}" \
   --var "hashed_pipeline_prefix=${HASHED_PIPELINE_PREFIX}" \
@@ -57,5 +64,5 @@ PACKER_LOG=1 packer135 build \
   --var "gcp_project=${GCP_PROJECT}" \
   --var "gcp_network=${GCP_NETWORK}" \
   --var "gcp_subnetwork=${GCP_SUBNETWORK}" \
-  --var "use_internal_ip=true" \
+  --var "use_internal_ip=${INTERNAL}" \
   windows-packer.json

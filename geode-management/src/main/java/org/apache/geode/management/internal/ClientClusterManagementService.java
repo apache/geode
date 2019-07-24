@@ -54,7 +54,8 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 public class ClientClusterManagementService implements ClusterManagementService {
   // the restTemplate needs to have the context as the baseUrl, and request URI is the part after
-  // the context (including /v2), it needs to be set up this way so that spring test runner's
+  // the context (including /experimental), it needs to be set up this way so that spring test
+  // runner's
   // injected RequestFactory can work
   private final RestTemplate restTemplate;
   private final ScheduledExecutorService longRunningStatusPollingThreadPool;
@@ -124,7 +125,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     result = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
         ClusterManagementOperationResult.class).getBody();
 
-    // our restTemplate requires the url to be modified to start from "/v2"
+    // our restTemplate requires the url to be modified to start from "/experimental"
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint

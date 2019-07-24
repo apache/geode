@@ -249,8 +249,9 @@ org/apache/geode/internal/cache/BucketRegion$SizeOp,false
 org/apache/geode/internal/cache/CacheClientStatus,true,-56148046466517217,_id:org/apache/geode/internal/cache/tier/sockets/ClientProxyMembershipID,_memberId:java/lang/String,_numberOfConnections:int,_socketAddresses:java/util/List,_socketPorts:java/util/List
 org/apache/geode/internal/cache/CommitReplyException,true,-7711083075296622596,exceptions:java/util/Set
 org/apache/geode/internal/cache/DataLocationException,true,-7385193860335007389
+org/apache/geode/internal/cache/DiskDirSizesUnit,false
 org/apache/geode/internal/cache/DiskInitFile$DiskRegionFlag,false
-org/apache/geode/internal/cache/DiskStoreAttributes,true,1,allowForceCompaction:boolean,autoCompact:boolean,compactionThreshold:int,diskDirSizes:int[],diskDirs:java/io/File[],diskUsageCriticalPct:float,diskUsageWarningPct:float,maxOplogSizeInBytes:long,name:java/lang/String,queueSize:int,timeInterval:long,writeBufferSize:int
+org/apache/geode/internal/cache/DiskStoreAttributes,true,1,allowForceCompaction:boolean,autoCompact:boolean,compactionThreshold:int,diskDirSizes:int[],diskDirSizesUnit:org/apache/geode/internal/cache/DiskDirSizesUnit,diskDirs:java/io/File[],diskUsageCriticalPct:float,diskUsageWarningPct:float,maxOplogSizeInBytes:long,name:java/lang/String,queueSize:int,timeInterval:long,writeBufferSize:int
 org/apache/geode/internal/cache/DiskStoreImpl$KillCompactorException,false
 org/apache/geode/internal/cache/DiskWriteAttributesImpl,true,-4269181954992768424,bytesThreshold:long,compactOplogs:boolean,isSynchronous:boolean,maxOplogSize:long,timeInterval:long
 org/apache/geode/internal/cache/DistTXCommitMessage$DistTxCommitExceptionCollectingException,true,-2681117727592137893,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map

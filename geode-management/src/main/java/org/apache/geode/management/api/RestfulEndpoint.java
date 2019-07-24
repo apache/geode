@@ -33,11 +33,11 @@ import org.apache.geode.lang.Identifiable;
 @Experimental
 public interface RestfulEndpoint extends Identifiable<String> {
   String URI_CONTEXT = "/management";
-  String URI_VERSION = "/v2";
+  String URI_VERSION = "/experimental";
 
   /**
    * this returns the URI that display the list of entries.
-   * it should return URI the part after /v2
+   * it should return URI the part after /experimental
    *
    * @return e.g. /regions
    */
@@ -49,7 +49,7 @@ public interface RestfulEndpoint extends Identifiable<String> {
    * return the uri that points to a single entity. If the id is not available for the object,
    * this will return null
    *
-   * it should return the URI part after /v2
+   * it should return the URI part after /experimental
    *
    * @return e.g. /regions/regionA
    */

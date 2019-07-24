@@ -2475,12 +2475,8 @@ public class DiskRegionJUnitTest {
       DiskStoreFactory diskStoreFactory,
       long maxOplogSizeInBytes) {
     ((DiskStoreFactoryImpl) diskStoreFactory).setMaxOplogSizeInBytes(maxOplogSizeInBytes);
-    DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = true;
-    try {
-      return diskStoreFactory.create(diskStoreName);
-    } finally {
-      DirectoryHolder.SET_DIRECTORY_SIZE_IN_BYTES_FOR_TESTING_PURPOSES = false;
-    }
+    ((DiskStoreFactoryImpl) diskStoreFactory).setDiskDirSizesUnit(DiskDirSizesUnit.BYTES);
+    return diskStoreFactory.create(diskStoreName);
   }
 
   private DiskStoreImpl toDiskStoreImpl(DiskStore diskStore) {

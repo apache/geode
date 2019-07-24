@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import joptsimple.internal.Strings;
 import org.apache.commons.io.FileUtils;
@@ -54,15 +53,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import org.apache.geode.CancelException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
-import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedLockService;
@@ -427,14 +423,12 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    * @param loadSharedConfigFromDir when set to true, loads the configuration from the share_config
    *        directory
    */
-  void initSharedConfiguration(boolean loadSharedConfigFromDir)
-      throws CacheLoaderException, TimeoutException, IllegalStateException, IOException,
-      TransformerException, SAXException, ParserConfigurationException {
+  void initSharedConfiguration(boolean loadSharedConfigFromDir) throws IOException {
     status.set(SharedConfigurationStatus.STARTED);
     Region<String, Configuration> configRegion = getConfigurationRegion();
     lockSharedConfiguration();
-    removeInvalidXmlConfigurations(configRegion);
     try {
+      removeInvalidXmlConfigurations(configRegion);
       if (loadSharedConfigFromDir) {
         logger.info("Reading cluster configuration from '{}' directory",
             InternalConfigurationPersistenceService.CLUSTER_CONFIG_ARTIFACTS_DIR_NAME);
@@ -461,18 +455,22 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   void removeInvalidXmlConfigurations(Region<String, Configuration> configRegion)
-      throws IOException, SAXException, ParserConfigurationException, TransformerException {
+      throws IOException {
     for (Map.Entry<String, Configuration> entry : configRegion.entrySet()) {
       String group = entry.getKey();
       Configuration configuration = entry.getValue();
       String configurationXml = configuration.getCacheXmlContent();
       if (configurationXml != null && !configurationXml.isEmpty()) {
-        Document document = XmlUtils.createDocumentFromXml(configurationXml);
-        boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
-        boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
-        if (removedInvalidReceivers || removedDuplicateReceivers) {
-          configuration.setCacheXmlContent(XmlUtils.prettyXml(document));
-          configRegion.put(group, configuration);
+        try {
+          Document document = XmlUtils.createDocumentFromXml(configurationXml);
+          boolean removedInvalidReceivers = removeInvalidGatewayReceivers(document);
+          boolean removedDuplicateReceivers = removeDuplicateGatewayReceivers(document);
+          if (removedInvalidReceivers || removedDuplicateReceivers) {
+            configuration.setCacheXmlContent(XmlUtils.prettyXml(document));
+            configRegion.put(group, configuration);
+          }
+        } catch (SAXException | TransformerException | ParserConfigurationException e) {
+          throw new IOException("Unable to parse existing cluster configuration from disk. ", e);
         }
       }
     }
@@ -660,8 +658,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
   }
 
   // configDir is the dir that has all the groups structure underneath it.
-  public void loadSharedConfigurationFromDir(File configDir)
-      throws SAXException, ParserConfigurationException, TransformerException, IOException {
+  public void loadSharedConfigurationFromDir(File configDir) throws IOException {
     lockSharedConfiguration();
     try {
       File[] groupNames = configDir.listFiles((FileFilter) DirectoryFileFilter.INSTANCE);
@@ -697,7 +694,6 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
       // Overwrite the security settings using the locator's properties, ignoring whatever
       // in the import
       persistSecuritySettings(clusterRegion);
-
     } finally {
       unlockSharedConfiguration();
     }
@@ -772,18 +768,17 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
         configRegion = cache.createVMRegion(CONFIG_REGION_NAME, regionAttrsFactory.create(),
             internalArgs);
       }
-
-    } catch (CancelException e) {
+    } catch (RuntimeException e) {
       if (configRegion == null) {
         status.set(SharedConfigurationStatus.STOPPED);
       }
-      // CONFIG: don't rethrow as Exception, keep it a subclass of CancelException
+      // throw RuntimeException as is
       throw e;
-
     } catch (Exception e) {
       if (configRegion == null) {
         status.set(SharedConfigurationStatus.STOPPED);
       }
+      // turn all other exceptions into runtime exceptions
       throw new RuntimeException("Error occurred while initializing cluster configuration", e);
     }
 
@@ -796,9 +791,7 @@ public class InternalConfigurationPersistenceService implements ConfigurationPer
    *
    * @return {@link Configuration}
    */
-  private Configuration readConfiguration(File groupConfigDir)
-      throws SAXException, ParserConfigurationException, TransformerFactoryConfigurationError,
-      TransformerException, IOException {
+  private Configuration readConfiguration(File groupConfigDir) throws IOException {
     Configuration configuration = new Configuration(groupConfigDir.getName());
     File cacheXmlFull = new File(groupConfigDir, configuration.getCacheXmlFileName());
     File propertiesFull = new File(groupConfigDir, configuration.getPropertiesFileName());

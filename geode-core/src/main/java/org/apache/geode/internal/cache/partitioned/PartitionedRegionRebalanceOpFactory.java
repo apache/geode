@@ -12,30 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.cache.partitioned;
 
-package org.apache.geode.modules.session.internal.filter;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-public class RendezvousManager {
-
-  private static AbstractListener listener = null;
-
-  private static CountDownLatch latch = new CountDownLatch(1);
-
-  public static void registerListener(AbstractListener listener) {
-    RendezvousManager.listener = listener;
-    latch.countDown();
-  }
-
-  public static AbstractListener getListener() {
-    try {
-      latch.await(2, TimeUnit.SECONDS);
-    } catch (InterruptedException ex) {
-    }
-
-    return listener;
-  }
-
+public interface PartitionedRegionRebalanceOpFactory {
+  PartitionedRegionRebalanceOp create(PartitionedRegion region, boolean simulate,
+      RebalanceDirector director, boolean replaceOfflineData, boolean isRebalance);
 }

@@ -39,7 +39,6 @@ import javax.servlet.http.HttpSession;
 import com.mockrunner.mock.web.MockHttpServletRequest;
 import com.mockrunner.mock.web.MockHttpServletResponse;
 import com.mockrunner.servlet.BasicServletTestCaseAdapter;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.modules.session.filter.SessionCachingFilter;
@@ -49,11 +48,10 @@ import org.apache.geode.modules.session.filter.SessionCachingFilter;
  * are performed, the filter would already have taken effect.
  */
 public abstract class CommonTests extends BasicServletTestCaseAdapter {
-
-  protected static final String CONTEXT_PATH = "/test";
+  static final String CONTEXT_PATH = "/test";
 
   @Test
-  public void testGetSession1() throws Exception {
+  public void testGetSession1() {
     doFilter();
     HttpSession session1 = ((HttpServletRequest) getFilteredRequest()).getSession();
     HttpSession session2 = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -62,7 +60,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetSession2() throws Exception {
+  public void testGetSession2() {
     doFilter();
 
     HttpSession session1 = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -79,7 +77,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetAttributeRequest1() throws Exception {
+  public void testGetAttributeRequest1() {
     doFilter();
 
     getFilteredRequest().setAttribute("foo", "bar");
@@ -89,15 +87,10 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetAttributeRequest2() throws Exception {
+  public void testGetAttributeRequest2() {
     // Setup
     CallbackServlet s = (CallbackServlet) getServlet();
-    s.setCallback(new Callback() {
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) {
-        request.setAttribute("foo", "bar");
-      }
-    });
+    s.setCallback((request, response) -> request.setAttribute("foo", "bar"));
     doFilter();
 
     assertEquals("bar", getFilteredRequest().getAttribute("foo"));
@@ -105,7 +98,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetAttributeSession1() throws Exception {
+  public void testGetAttributeSession1() {
     doFilter();
 
     ((HttpServletRequest) getFilteredRequest()).getSession().setAttribute("foo", "bar");
@@ -118,7 +111,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Are attributes preserved across client requests?
    */
   @Test
-  public void testGetAttributeSession2() throws Exception {
+  public void testGetAttributeSession2() {
     doFilter();
 
     ((HttpServletRequest) getFilteredRequest()).getSession().setAttribute("foo", "bar");
@@ -137,7 +130,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Setting a session attribute to null should remove it
    */
   @Test
-  public void testSetAttributeNullSession1() throws Exception {
+  public void testSetAttributeNullSession1() {
     // Setup
     CallbackServlet s = (CallbackServlet) getServlet();
     s.setCallback(new Callback() {
@@ -168,7 +161,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Test that various methods throw the appropriate exception when the session is invalid.
    */
   @Test
-  public void testInvalidate1() throws Exception {
+  public void testInvalidate1() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -183,7 +176,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate2() throws Exception {
+  public void testInvalidate2() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -197,8 +190,8 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     }
   }
 
-  @Ignore(value = "until mockrunner 1.0.9 - see pull request #23")
-  public void testInvalidate3() throws Exception {
+  @Test
+  public void testInvalidate3() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -213,7 +206,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate4() throws Exception {
+  public void testInvalidate4() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -227,7 +220,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate5() throws Exception {
+  public void testInvalidate5() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -242,7 +235,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate6() throws Exception {
+  public void testInvalidate6() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -256,7 +249,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate7() throws Exception {
+  public void testInvalidate7() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -270,7 +263,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate8() throws Exception {
+  public void testInvalidate8() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -285,7 +278,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate9() throws Exception {
+  public void testInvalidate9() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -300,7 +293,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate10() throws Exception {
+  public void testInvalidate10() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -315,7 +308,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testInvalidate11() throws Exception {
+  public void testInvalidate11() {
     doFilter();
 
     HttpSession session = ((HttpServletRequest) getFilteredRequest()).getSession();
@@ -329,7 +322,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetId1() throws Exception {
+  public void testGetId1() {
     doFilter();
 
     assertNotNull("Session Id should not be null",
@@ -340,7 +333,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Test that multiple calls from the same client return the same session id
    */
   @Test
-  public void testGetId2() throws Exception {
+  public void testGetId2() {
     doFilter();
 
     String sessionId = ((HttpServletRequest) getFilteredRequest()).getSession().getId();
@@ -356,7 +349,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetCreationTime1() throws Exception {
+  public void testGetCreationTime1() {
     doFilter();
 
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -369,7 +362,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Test that multiple calls from the same client don't change the creation time.
    */
   @Test
-  public void testGetCreationTime2() throws Exception {
+  public void testGetCreationTime2() {
     doFilter();
 
     long creationTime = ((HttpServletRequest) getFilteredRequest()).getSession().getCreationTime();
@@ -385,7 +378,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testResponseContainsRequestedSessionId1() throws Exception {
+  public void testResponseContainsRequestedSessionId1() {
     Cookie cookie = new Cookie("JSESSIONID", "999-GF");
     getWebMockObjectFactory().getMockRequest().addCookie(cookie);
 
@@ -398,7 +391,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetLastAccessedTime1() throws Exception {
+  public void testGetLastAccessedTime1() {
     doFilter();
 
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -414,13 +407,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   public void testGetLastAccessedTime2() throws Exception {
     // Setup
     CallbackServlet s = (CallbackServlet) getServlet();
-    s.setCallback(new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) {
-        request.getSession();
-      }
-    });
+    s.setCallback((request, response) -> request.getSession());
 
     doFilter();
 
@@ -445,7 +432,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testGetSetMaxInactiveInterval() throws Exception {
+  public void testGetSetMaxInactiveInterval() {
     doFilter();
 
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -455,7 +442,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testIsNew1() throws Exception {
+  public void testIsNew1() {
     doFilter();
 
     HttpServletRequest request = (HttpServletRequest) getFilteredRequest();
@@ -466,16 +453,10 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
    * Subsequent calls should not return true
    */
   @Test
-  public void testIsNew2() throws Exception {
+  public void testIsNew2() {
     // Setup
     CallbackServlet s = (CallbackServlet) getServlet();
-    s.setCallback(new Callback() {
-
-      @Override
-      public void call(HttpServletRequest request, HttpServletResponse response) {
-        request.getSession();
-      }
-    });
+    s.setCallback((request, response) -> request.getSession());
 
     doFilter();
 
@@ -494,7 +475,6 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     doFilter();
 
     request = (HttpServletRequest) getFilteredRequest();
-    HttpSession s1 = request.getSession();
 
     assertFalse("Subsequent isNew() calls should be false", request.getSession().isNew());
   }
@@ -526,7 +506,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   }
 
   @Test
-  public void testOnlyOneSessionWhenSecondFilterWrapsRequest() throws Exception {
+  public void testOnlyOneSessionWhenSecondFilterWrapsRequest() {
     createFilter(RequestWrappingFilter.class);
     createFilter(SessionCachingFilter.class);
     doFilter();
@@ -538,9 +518,7 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
   public static class RequestWrappingFilter implements Filter {
 
     @Override
-    public void init(final FilterConfig filterConfig) throws ServletException {
-
-    }
+    public void init(final FilterConfig filterConfig) {}
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -554,9 +532,6 @@ public abstract class CommonTests extends BasicServletTestCaseAdapter {
     }
 
     @Override
-    public void destroy() {
-
-    }
+    public void destroy() {}
   }
-
 }

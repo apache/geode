@@ -38,7 +38,7 @@ public class AvailablePortHelper {
   private final AtomicInteger currentAvailablePort;
 
   // Singleton object is only used to track the current ports
-  private static AvailablePortHelper singleton = new AvailablePortHelper();
+  private static final AvailablePortHelper singleton = new AvailablePortHelper();
 
   AvailablePortHelper() {
     Random rand;
@@ -85,9 +85,9 @@ public class AvailablePortHelper {
     return getRandomAvailableTCPPortKeepers(count, false);
   }
 
-  public static List<Keeper> getRandomAvailableTCPPortKeepers(int count,
+  private static List<Keeper> getRandomAvailableTCPPortKeepers(int count,
       boolean useMembershipPortRange) {
-    List<Keeper> result = new ArrayList<Keeper>();
+    List<Keeper> result = new ArrayList<>();
     while (result.size() < count) {
       result.add(getUniquePortKeeper(useMembershipPortRange, AvailablePort.SOCKET));
     }
@@ -174,7 +174,7 @@ public class AvailablePortHelper {
   /**
    * Returns array of unique randomly available udp ports of specified count.
    */
-  public static int[] getRandomAvailableUDPPorts(int count) {
+  private static int[] getRandomAvailableUDPPorts(int count) {
     int[] ports = new int[count];
     int i = 0;
     while (i < count) {

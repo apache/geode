@@ -12,33 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.cache;
 
-package org.apache.geode.modules.session.filter;
-
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
-/**
- * Listener to destroy gemfire sessions when native sessions are destroyed.
- *
- * @deprecated No longer does anything, native sessions are no longer kept around
- */
-public class SessionListener implements HttpSessionListener {
-
-  private static final Logger LOG = LoggerFactory.getLogger(SessionListener.class.getName());
-
-  @Override
-  public void sessionCreated(HttpSessionEvent httpSessionEvent) {}
-
-  /**
-   * This will receive events from the container using the native sessions.
-   */
-  @Override
-  public void sessionDestroyed(HttpSessionEvent event) {
-    // No op
-  }
+public enum DiskDirSizesUnit {
+  BYTES,
+  MEGABYTES
 }

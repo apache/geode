@@ -45,6 +45,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -91,6 +92,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.ExportDiskRegion.ExportWriter;
 import org.apache.geode.internal.cache.backup.BackupService;
 import org.apache.geode.internal.cache.backup.DiskStoreBackup;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.entries.DiskEntry;
 import org.apache.geode.internal.cache.entries.DiskEntry.Helper.ValueWrapper;
 import org.apache.geode.internal.cache.entries.DiskEntry.RecoveredEntry;
@@ -152,6 +154,8 @@ public class DiskStoreImpl implements DiskStore {
       DistributionConfig.GEMFIRE_PREFIX + "disk.completeCompactionBeforeTermination";
 
   static final int MINIMUM_DIR_SIZE = 1024;
+
+  private DiskDirSizesUnit diskDirSizesUnit;
 
   /**
    * The static field delays the joining of the close/clear/destroy & forceFlush operation, with the
@@ -393,18 +397,23 @@ public class DiskStoreImpl implements DiskStore {
   DiskStoreImpl(InternalCache cache, DiskStoreAttributes props, boolean ownedByRegion,
       InternalRegionArguments internalRegionArgs) {
     this(cache, props.getName(), props, ownedByRegion, internalRegionArgs, false,
-        false/* upgradeVersionOnly */, false, false, true, false/* offlineModify */);
+        false/* upgradeVersionOnly */, false, false, true, false, /* offlineModify */
+        cache.getInternalDistributedSystem().getStatisticsManager(),
+        cache.getInternalResourceManager());
   }
 
   DiskStoreImpl(InternalCache cache, String name, DiskStoreAttributes props, boolean ownedByRegion,
-      InternalRegionArguments internalRegionArgs, boolean offline, boolean upgradeVersionOnly,
+      InternalRegionArguments internalRegionArgs, boolean offline,
+      boolean upgradeVersionOnly,
       boolean offlineValidating, boolean offlineCompacting, boolean needsOplogs,
-      boolean offlineModify) {
+      boolean offlineModify, StatisticsFactory statisticsFactory,
+      InternalResourceManager internalResourceManager) {
     this.offline = offline;
     this.upgradeVersionOnly = upgradeVersionOnly;
     this.validating = offlineValidating;
     this.offlineCompacting = offlineCompacting;
     this.offlineModify = offlineModify;
+    this.internalResourceManager = internalResourceManager;
 
     assert internalRegionArgs == null || ownedByRegion : "internalRegionArgs "
         + "should be non-null only if the DiskStore is owned by region";
@@ -421,12 +430,12 @@ public class DiskStoreImpl implements DiskStore {
     this.writeBufferSize = props.getWriteBufferSize();
     this.diskDirs = props.getDiskDirs();
     this.diskDirSizes = props.getDiskDirSizes();
+    this.diskDirSizesUnit = props.getDiskDirSizesUnit();
     this.warningPercent = props.getDiskUsageWarningPercentage();
     this.criticalPercent = props.getDiskUsageCriticalPercentage();
 
     this.cache = cache;
-    StatisticsFactory factory = cache.getDistributedSystem();
-    this.stats = new DiskStoreStats(factory, getName());
+    this.stats = new DiskStoreStats(statisticsFactory, getName());
 
     // start simple init
 
@@ -459,11 +468,12 @@ public class DiskStoreImpl implements DiskStore {
     int length = dirs.length;
     this.directories = new DirectoryHolder[length];
     long tempMaxDirSize = 0;
-
     this.totalDiskStoreSpace = 0;
+
     for (int i = 0; i < length; i++) {
       directories[i] =
-          new DirectoryHolder(getName() + "_DIR#" + i, factory, dirs[i], dirSizes[i], i);
+          new DirectoryHolder(getName() + "_DIR#" + i, statisticsFactory, dirs[i], dirSizes[i], i,
+              this.diskDirSizesUnit);
 
       if (tempMaxDirSize < dirSizes[i]) {
         tempMaxDirSize = dirSizes[i];
@@ -2067,11 +2077,14 @@ public class DiskStoreImpl implements DiskStore {
 
   void scheduleValueRecovery(Set<Oplog> oplogsNeedingValueRecovery,
       Map<Long, DiskRecoveryStore> recoveredStores) {
-    ValueRecoveryTask task = new ValueRecoveryTask(oplogsNeedingValueRecovery, recoveredStores);
+    CompletableFuture<Void> startupTask = new CompletableFuture<>();
+    ValueRecoveryTask task =
+        new ValueRecoveryTask(oplogsNeedingValueRecovery, recoveredStores, startupTask);
     synchronized (currentAsyncValueRecoveryMap) {
-      DiskStoreImpl.this.currentAsyncValueRecoveryMap.putAll(recoveredStores);
+      currentAsyncValueRecoveryMap.putAll(recoveredStores);
     }
     executeDiskStoreTask(task);
+    internalResourceManager.addStartupTask(startupTask);
   }
 
   /**
@@ -3457,6 +3470,14 @@ public class DiskStoreImpl implements DiskStore {
     this.criticalPercent = criticalPercent;
   }
 
+  public DiskDirSizesUnit getDiskDirSizesUnit() {
+    return this.diskDirSizesUnit;
+  }
+
+  public void setDiskDirSizesUnit(DiskDirSizesUnit unit) {
+    this.diskDirSizesUnit = unit;
+  }
+
   public static class AsyncDiskEntry {
     public final InternalRegion region;
     public final DiskEntry de;
@@ -3581,6 +3602,7 @@ public class DiskStoreImpl implements DiskStore {
 
   // Set to true if diskStore will be used by an offline tool that modifies the disk store.
   private final boolean offlineModify;
+  private final InternalResourceManager internalResourceManager;
 
   boolean isOfflineModify() {
     return this.offlineModify;
@@ -4141,7 +4163,9 @@ public class DiskStoreImpl implements DiskStore {
     }
     DiskStoreImpl dsi = new DiskStoreImpl(cache, dsName,
         ((DiskStoreFactoryImpl) dsf).getDiskStoreAttributes(), false, null, true,
-        upgradeVersionOnly, offlineValidate, offlineCompacting, needsOplogs, offlineModify);
+        upgradeVersionOnly, offlineValidate, offlineCompacting, needsOplogs, offlineModify,
+        cache.getInternalDistributedSystem().getStatisticsManager(),
+        cache.getInternalResourceManager());
     cache.addDiskStore(dsi);
     return dsi;
   }
@@ -4324,26 +4348,40 @@ public class DiskStoreImpl implements DiskStore {
   private class ValueRecoveryTask implements Runnable {
     private final Set<Oplog> oplogSet;
     private final Map<Long, DiskRecoveryStore> recoveredStores;
+    private final CompletableFuture<Void> startupTask;
 
-    public ValueRecoveryTask(Set<Oplog> oplogSet, Map<Long, DiskRecoveryStore> recoveredStores) {
+    ValueRecoveryTask(Set<Oplog> oplogSet, Map<Long, DiskRecoveryStore> recoveredStores,
+        CompletableFuture<Void> startupTask) {
       this.oplogSet = oplogSet;
-      this.recoveredStores = new HashMap<Long, DiskRecoveryStore>(recoveredStores);
+      this.recoveredStores = new HashMap<>(recoveredStores);
+      this.startupTask = startupTask;
     }
 
     @Override
     public void run() {
+      try {
+        doAsyncValueRecovery();
+        startupTask.complete(null);
+        logger.info("Recovered values for disk store " + getName() + " with unique id "
+            + getDiskStoreUUID());
+      } catch (CancelException e) {
+        startupTask.completeExceptionally(e);
+      } catch (RuntimeException e) {
+        startupTask.completeExceptionally(e);
+        throw e;
+      }
+    }
+
+    private void doAsyncValueRecovery() {
       synchronized (asyncValueRecoveryLock) {
         DiskStoreObserver.startAsyncValueRecovery(DiskStoreImpl.this);
         try {
           for (Oplog oplog : oplogSet) {
             oplog.recoverValuesIfNeeded(currentAsyncValueRecoveryMap);
           }
-        } catch (CancelException ignore) {
-          // do nothing
         } finally {
           synchronized (currentAsyncValueRecoveryMap) {
-            DiskStoreImpl.this.currentAsyncValueRecoveryMap.keySet()
-                .removeAll(recoveredStores.keySet());
+            currentAsyncValueRecoveryMap.keySet().removeAll(recoveredStores.keySet());
             currentAsyncValueRecoveryMap.notifyAll();
           }
           DiskStoreObserver.endAsyncValueRecovery(DiskStoreImpl.this);

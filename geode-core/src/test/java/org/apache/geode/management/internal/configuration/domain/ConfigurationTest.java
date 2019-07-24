@@ -13,19 +13,29 @@
  * the License.
  */
 
-package org.apache.geode.modules.session.functions;
+package org.apache.geode.management.internal.configuration.domain;
 
-import java.util.function.Function;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 
-import org.apache.geode.modules.session.SessionCountingListener;
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
-public class GetSessionCreatedCount implements Function<HttpServletRequest, String> {
-  @Override
-  public String apply(final HttpServletRequest request) {
-    SessionCountingListener listener = (SessionCountingListener) request.getSession()
-        .getServletContext().getAttribute(SessionCountingListener.class.getName());
-    return String.valueOf(listener.getSessionCreates());
+public class ConfigurationTest {
+
+  @Rule
+  public TemporaryFolder folder = new TemporaryFolder();
+
+  @Test
+  public void setInvalidCacheXmlFile() throws IOException {
+    File file = folder.newFile("test.xml");
+    FileUtils.writeStringToFile(file, "invalid xml content", "UTF-8");
+    Configuration configuration = new Configuration();
+    assertThatThrownBy(() -> configuration.setCacheXmlFile(file)).isInstanceOf(IOException.class)
+        .hasMessageContaining("Unable to parse");
   }
 }

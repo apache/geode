@@ -53,9 +53,9 @@ import org.apache.geode.cache.client.internal.locator.LocatorListRequest;
 import org.apache.geode.cache.client.internal.locator.LocatorStatusRequest;
 import org.apache.geode.cache.client.internal.locator.QueueConnectionRequest;
 import org.apache.geode.cache.client.internal.locator.wan.LocatorMembershipListener;
+import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
-import org.apache.geode.distributed.LockServiceDestroyedException;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
@@ -647,7 +647,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
    *
    * @since GemFire 5.7
    */
-  private void startDistributedSystem() throws UnknownHostException {
+  private void startDistributedSystem() throws IOException {
     InternalDistributedSystem existing = InternalDistributedSystem.getConnectedInstance();
     if (existing != null) {
       // LOG: changed from config to info
@@ -713,7 +713,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
   }
 
-  private void startCache(DistributedSystem system) {
+  private void startCache(DistributedSystem system) throws IOException {
     InternalCache internalCache = GemFireCacheImpl.getInstance();
     if (internalCache == null) {
       logger.info("Creating cache for locator.");
@@ -729,7 +729,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     startClusterManagementService();
   }
 
-  private void startClusterManagementService() {
+  private void startClusterManagementService() throws IOException {
     startConfigurationPersistenceService();
 
     if (internalCache == null) {
@@ -757,11 +757,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
             clusterManagementService);
 
-    if (Boolean.getBoolean(ClusterManagementService.FEATURE_FLAG)) {
-      logger.info("System Property {}=true Geode Management API is enabled.",
-          ClusterManagementService.FEATURE_FLAG);
+    if (distributionConfig.getEnableManagementRestService()) {
       internalCache.getHttpService().ifPresent(x -> {
         try {
+          logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
+              ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
           x.addWebApplication("/management", gemfireManagementWar, securityServiceAttribute,
               clusterManagementServiceAttribute);
         } catch (Throwable e) {
@@ -769,8 +769,8 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
         }
       });
     } else {
-      logger.info("System Property {}=false Geode Management API is disabled.",
-          ClusterManagementService.FEATURE_FLAG);
+      logger.info("Geode Property {}=false Geode Management Rest Service is disabled.",
+          ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
     }
   }
 
@@ -1313,7 +1313,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     return locatorStrings;
   }
 
-  private void startConfigurationPersistenceService() {
+  private void startConfigurationPersistenceService() throws IOException {
     installRequestHandlers();
 
     if (!distributionConfig.getEnableClusterConfiguration()) {
@@ -1337,25 +1337,18 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
 
-    try {
-      if (locator.configurationPersistenceService == null) {
-        // configurationPersistenceService will already be created in case of auto-reconnect
-        locator.configurationPersistenceService =
-            new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory,
-                JAXBService.create());
-      }
-      locator.configurationPersistenceService
-          .initSharedConfiguration(locator.loadFromSharedConfigDir());
-      logger.info(
-          "Cluster configuration service start up completed successfully and is now running ....");
-      isSharedConfigurationStarted = true;
-    } catch (CancelException | LockServiceDestroyedException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Cluster configuration start up was cancelled", e);
-      }
-    } catch (Exception e) {
-      logger.error(e.getMessage(), e);
+
+    if (locator.configurationPersistenceService == null) {
+      // configurationPersistenceService will already be created in case of auto-reconnect
+      locator.configurationPersistenceService =
+          new InternalConfigurationPersistenceService(locator.internalCache, workingDirectory,
+              JAXBService.create());
     }
+    locator.configurationPersistenceService
+        .initSharedConfiguration(locator.loadFromSharedConfigDir());
+    logger.info(
+        "Cluster configuration service start up completed successfully and is now running ....");
+    isSharedConfigurationStarted = true;
   }
 
   public void startJmxManagerLocationService(InternalCache internalCache) {

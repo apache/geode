@@ -42,10 +42,10 @@ public class GatewayReceiverConfigTest {
   @Test
   public void getUri() throws Exception {
     assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/gateways/receivers/cluster");
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/gateways/receivers/cluster");
 
     receiver.setGroup("group");
     assertThat(receiver.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/gateways/receivers/group");
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/gateways/receivers/group");
   }
 }
