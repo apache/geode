@@ -24,7 +24,7 @@ fi
 GEODE=$1
 
 $GEODE/bin/gfsh -e "start locator --name=test --J=-Dgemfire.enable-experimental-cluster-management-service=true" > /dev/null
-curl -H "Content-Type: application/json" http://localhost:7070/management/v2/api-docs --fail --silent --show-error | jq -r '.paths | to_entries[] | {url:.key, method:.value|keys[]} | .method + " " + .url'
+curl -H "Content-Type: application/json" http://localhost:7070/management/experimental/api-docs --fail --silent --show-error | jq -r '.paths | to_entries[] | {url:.key, method:.value|keys[]} | .method + " " + .url'
 
 $GEODE/bin/gfsh -e "stop locator --dir=test" > /dev/null
 rm -r test
