@@ -12,19 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.operation;
+package org.apache.geode.management.internal.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
-public class RebalanceOperationTest {
+public class RebalanceResultTest {
   private ObjectMapper mapper;
 
   @Before
@@ -33,11 +35,14 @@ public class RebalanceOperationTest {
   }
 
   @Test
-  public void serializeRebalanceOperation() throws Exception {
-    RebalanceOperation operation = new RebalanceOperation();
-    operation.setIncludeRegions(Arrays.asList("a", "b"));
-    String json = mapper.writeValueAsString(operation);
-    RebalanceOperation value = mapper.readValue(json, RebalanceOperation.class);
-    assertThat(value.getIncludeRegions()).isEqualTo(Arrays.asList("a", "b"));
+  public void serializeRebalanceResult() throws Exception {
+    RebalanceResult.PerRegionStats summary = new RebalanceResultImpl.PerRegionStatsImpl();
+    Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
+    results.put("testRegion", summary);
+    RebalanceResultImpl result = new RebalanceResultImpl();
+    result.setRebalanceSummary(results);
+    String json = mapper.writeValueAsString(result);
+    RebalanceResult value = mapper.readValue(json, RebalanceResult.class);
+    assertThat(value.getRebalanceStats().get("testRegion").getBucketCreateBytes()).isEqualTo(0);
   }
 }

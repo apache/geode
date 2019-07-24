@@ -78,10 +78,12 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void doOperation() {
+  public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceResult> result = client.startOperation(rebalance);
+    // note: the "java.lang.RuntimeException: " prefix is appended by CompletableFuture itself when
+    // you call get() and it had completed exceptionally.
     assertThatThrownBy(result.getFutureResult()::get).hasMessage(
-        "ERROR: rebalance returned info: Distributed system has no regions that can be rebalanced");
+        "java.lang.RuntimeException: ERROR: rebalance returned info: Distributed system has no regions that can be rebalanced");
   }
 }

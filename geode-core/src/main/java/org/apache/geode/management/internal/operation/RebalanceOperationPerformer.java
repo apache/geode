@@ -14,11 +14,14 @@
  */
 package org.apache.geode.management.internal.operation;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
@@ -31,6 +34,7 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
+import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @Experimental
 public class RebalanceOperationPerformer {
@@ -73,9 +77,9 @@ public class RebalanceOperationPerformer {
 
       List<TabularResultModel> tableSections = result.getTableSections();
 
-      Map<String, Map<String, Long>> results = new LinkedHashMap<>();
+      Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
       for (TabularResultModel tableSection : tableSections) {
-        results.put(toRegion(tableSection.getHeader()), toMap(tableSection));
+        results.put(toRegion(tableSection.getHeader()), toRegionStats(toMap(tableSection)));
       }
       rebalanceResult.setRebalanceSummary(results);
 
@@ -92,6 +96,13 @@ public class RebalanceOperationPerformer {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private static RebalanceResult.PerRegionStats toRegionStats(Map<String, Long> props)
+      throws IOException {
+    ObjectMapper mapper = GeodeJsonMapper.getMapper();
+    String json = mapper.writeValueAsString(props);
+    return mapper.readValue(json, RebalanceResultImpl.PerRegionStatsImpl.class);
   }
 
   private static String toRegion(String header) {

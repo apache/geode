@@ -89,12 +89,11 @@ public class RebalanceManagementDunitTest {
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
-    assertThat(result.getRebalanceSummary().size()).isEqualTo(2);
-    Map.Entry<String, Map<String, Long>> firstRegionSummary =
-        result.getRebalanceSummary().entrySet().iterator().next();
+    assertThat(result.getRebalanceStats().size()).isEqualTo(2);
+    Map.Entry<String, RebalanceResult.PerRegionStats> firstRegionSummary =
+        result.getRebalanceStats().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).isEqualTo("customers");
-    assertThat(firstRegionSummary.getValue().keySet())
-        .contains("timeInMilliseconds");
+    assertThat(firstRegionSummary.getValue()).isNotNull();
   }
 
   @Test
@@ -107,12 +106,13 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = cmr.getFutureResult().get();
-    assertThat(result.getRebalanceSummary().size()).isEqualTo(1);
-    Map.Entry<String, Map<String, Long>> firstRegionSummary =
-        result.getRebalanceSummary().entrySet().iterator().next();
+    assertThat(result.getRebalanceStats().size()).isEqualTo(1);
+    Map.Entry<String, RebalanceResult.PerRegionStats> firstRegionSummary =
+        result.getRebalanceStats().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).isEqualTo("customers2");
-    assertThat(firstRegionSummary.getValue().keySet())
-        .contains("timeInMilliseconds");
+    assertThat(firstRegionSummary.getValue()).isNotNull();
+    assertThat(firstRegionSummary.getValue().getBucketCreateBytes()).isEqualTo(0);
+    assertThat(firstRegionSummary.getValue().getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
   }
 
   @Test
