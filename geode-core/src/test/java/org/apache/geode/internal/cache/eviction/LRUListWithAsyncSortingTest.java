@@ -225,10 +225,9 @@ public class LRUListWithAsyncSortingTest {
     when(recentlyUsedNode.isRecentlyUsed()).thenReturn(true);
     list.incrementRecentlyUsed();
 
-    // unsetRecentlyUsed() is called once during scan
-    await()
-        .untilAsserted(() -> verify(recentlyUsedNode, times(1)).unsetRecentlyUsed());
-    assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode);
+    await().untilAsserted(() -> assertThat(list.tail.previous()).isEqualTo(recentlyUsedNode));
+    verify(recentlyUsedNode, times(1)).unsetRecentlyUsed();
+
     realExecutor.shutdown();
   }
 
