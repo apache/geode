@@ -40,7 +40,7 @@ import org.apache.geode.internal.net.SocketCreator;
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public class StartupMessage extends HighPriorityDistributionMessage implements AdminMessageType {
+public class StartupMessage extends DistributionMessage implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
   private String version = GemFireVersion.getGemFireVersion(); // added for bug 29005
@@ -302,6 +302,11 @@ public class StartupMessage extends HighPriorityDistributionMessage implements A
     if (myMcastHostAddr == null)
       return false;
     return myMcastHostAddr.equals(otherMcastHostAddr);
+  }
+
+  @Override
+  public int getProcessorType() {
+    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   @Override
