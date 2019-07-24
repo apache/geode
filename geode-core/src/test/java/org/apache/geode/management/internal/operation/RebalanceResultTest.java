@@ -28,21 +28,28 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RebalanceResultTest {
   private ObjectMapper mapper;
+  private RebalanceResultImpl result;
 
   @Before
   public void setUp() {
     mapper = GeodeJsonMapper.getMapper();
+    RebalanceResult.PerRegionStats summary = new RebalanceResultImpl.PerRegionStatsImpl();
+    Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
+    results.put("testRegion", summary);
+    result = new RebalanceResultImpl();
+    result.setRebalanceSummary(results);
   }
 
   @Test
   public void serializeRebalanceResult() throws Exception {
-    RebalanceResult.PerRegionStats summary = new RebalanceResultImpl.PerRegionStatsImpl();
-    Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
-    results.put("testRegion", summary);
-    RebalanceResultImpl result = new RebalanceResultImpl();
-    result.setRebalanceSummary(results);
     String json = mapper.writeValueAsString(result);
     RebalanceResult value = mapper.readValue(json, RebalanceResult.class);
     assertThat(value.getRebalanceStats().get("testRegion").getBucketCreateBytes()).isEqualTo(0);
+  }
+
+  @Test
+  public void toStringRebalanceResult() {
+    String toStr = result.toString();
+    assertThat(toStr).isEqualTo("{testRegion: {bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0}}");
   }
 }

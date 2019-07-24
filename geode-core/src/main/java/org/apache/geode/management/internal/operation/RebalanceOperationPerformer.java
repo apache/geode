@@ -36,13 +36,13 @@ public class RebalanceOperationPerformer {
       RebalanceCommand rebalanceCommand = new RebalanceCommand();
       rebalanceCommand.setCache(cache);
 
-      ResultModel result = rebalanceCommand.rebalanceCallable(arr(parameters.getIncludeRegions()),
-          arr(parameters.getExcludeRegions()), parameters.isSimulate()).call();
+      ResultModel result =
+          rebalanceCommand.rebalanceCallable(toArray(parameters.getIncludeRegions()),
+              toArray(parameters.getExcludeRegions()), parameters.isSimulate()).call();
 
       if (result.getStatus().equals(Result.Status.ERROR)) {
-        throw new RuntimeException(
-            "rebalance returned error: " + String
-                .join("\n", result.getInfoSection("error").getContent()));
+        throw new RuntimeException("rebalance returned error: "
+            + String.join("\n", result.getInfoSection("error").getContent()));
       }
       RebalanceResultImpl rebalanceResult = new RebalanceResultImpl();
 
@@ -84,8 +84,7 @@ public class RebalanceOperationPerformer {
 
       if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES)) {
         section.setBucketCreateBytes(Long.parseLong(val));
-      }
-      if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM)) {
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM)) {
         section.setBucketCreateTimeInMilliseconds(Long.parseLong(val));
       } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED)) {
         section.setBucketCreatesCompleted(Integer.parseInt(val));
@@ -112,7 +111,7 @@ public class RebalanceOperationPerformer {
 
   private static final String[] STRING_ARRAY_TYPE = new String[] {};
 
-  private static String[] arr(List<String> list) {
+  private static String[] toArray(List<String> list) {
     if (list == null) {
       return null;
     } else {

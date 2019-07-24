@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.operation;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.geode.management.runtime.RebalanceResult;
 
@@ -32,6 +33,12 @@ public class RebalanceResultImpl implements RebalanceResult {
 
   void setRebalanceSummary(Map<String, PerRegionStats> rebalanceSummary) {
     this.rebalanceSummary = rebalanceSummary;
+  }
+
+  @Override
+  public String toString() {
+    return "{" + rebalanceSummary.entrySet().stream()
+        .map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining(",\n ")) + "}";
   }
 
   public static class PerRegionStatsImpl implements PerRegionStats {
@@ -125,6 +132,20 @@ public class RebalanceResultImpl implements RebalanceResult {
     public void setTimeInMilliseconds(long timeInMilliseconds) {
       this.timeInMilliseconds = timeInMilliseconds;
     }
-  }
 
+    @Override
+    public String toString() {
+      return "{" +
+          "bucketCreateBytes=" + bucketCreateBytes +
+          ", bucketCreateTimeInMilliseconds=" + bucketCreateTimeInMilliseconds +
+          ", bucketCreatesCompleted=" + bucketCreatesCompleted +
+          ", bucketTransferBytes=" + bucketTransferBytes +
+          ", bucketTransferTimeInMilliseconds=" + bucketTransferTimeInMilliseconds +
+          ", bucketTransfersCompleted=" + bucketTransfersCompleted +
+          ", primaryTransferTimeInMilliseconds=" + primaryTransferTimeInMilliseconds +
+          ", primaryTransfersCompleted=" + primaryTransfersCompleted +
+          ", timeInMilliseconds=" + timeInMilliseconds +
+          '}';
+    }
+  }
 }
