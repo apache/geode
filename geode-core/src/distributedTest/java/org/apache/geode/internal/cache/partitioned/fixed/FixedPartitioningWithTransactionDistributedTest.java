@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.partitioned.fixed;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -33,6 +34,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.CacheTransactionManager;
@@ -49,6 +54,7 @@ import org.apache.geode.cache.client.ClientRegionShortcut;
 import org.apache.geode.cache.client.PoolFactory;
 import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.cache.client.internal.ClientMetadataService;
 import org.apache.geode.cache.client.internal.PoolImpl;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -59,10 +65,14 @@ import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.internal.ServerLocation;
+import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.test.dunit.Invoke;
+import org.apache.geode.test.dunit.SerializableCallableIF;
+import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.CacheRule;
 import org.apache.geode.test.dunit.rules.ClientCacheRule;
@@ -70,6 +80,7 @@ import org.apache.geode.test.dunit.rules.DistributedDiskDirRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
 
+@RunWith(Parameterized.class)
 public class FixedPartitioningWithTransactionDistributedTest implements
     Serializable {
 
@@ -89,6 +100,21 @@ public class FixedPartitioningWithTransactionDistributedTest implements
 
   private static final String FIXED_PARTITION_NAME = "singleBucket";
 
+  private enum ExecuteFunctionMethod {
+    ExecuteFunctionByObject, ExecuteFunctionById
+  }
+
+  @Parameters(name = "{0}")
+  public static ExecuteFunctionMethod[] data() {
+    return ExecuteFunctionMethod.values();
+  }
+
+  @Parameter
+  public ExecuteFunctionMethod functionExecutionType;
+
+  private boolean executeFunctionByIdOnClient() {
+    return ExecuteFunctionMethod.ExecuteFunctionById == functionExecutionType;
+  }
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule();
@@ -106,7 +132,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   public SerializableTestName testName = new SerializableTestName();
 
   @Before
-  public void setup() throws Exception {
+  public void setup() {
     server1 = getVM(0);
     server2 = getVM(1);
     accessor = getVM(2);
@@ -132,9 +158,10 @@ public class FixedPartitioningWithTransactionDistributedTest implements
 
     server1.invoke(() -> cacheRule.closeAndNullCache());
 
-    TransactionId transactionId = server2.invoke(() -> doFunctionTransactionAndSuspend());
+    TransactionId transactionId = server2.invoke(
+        (SerializableCallableIF<TransactionId>) this::doFunctionTransactionAndSuspend);
 
-    server1.invoke(() -> restartPrimary());
+    server1.invoke(this::restartPrimary);
     server2.invoke(() -> {
       assertThatThrownBy(() -> resumeFunctionTransaction(transactionId))
           .isInstanceOf(TransactionDataRebalancedException.class);
@@ -144,17 +171,16 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   @Test
   public void accessorExecuteFunctionOnMovedPrimaryBucketFailWithTransactionDataRebalancedException() {
     createData();
-    server2.invoke(() -> registerFunctions());
+    server2.invoke(this::registerFunctions);
 
     accessor.invoke(() -> createServerRegion(false, 1, 1, true));
-    accessor.invoke(() -> registerFunctions());
-    server1.invoke(() -> {
-      cacheRule.closeAndNullCache();
-    });
+    accessor.invoke(this::registerFunctions);
+    server1.invoke(() -> cacheRule.closeAndNullCache());
 
-    TransactionId transactionId = accessor.invoke(() -> doFunctionTransactionAndSuspend());
+    TransactionId transactionId = accessor.invoke(
+        (SerializableCallableIF<TransactionId>) this::doFunctionTransactionAndSuspend);
 
-    server1.invoke(() -> restartPrimary());
+    server1.invoke(this::restartPrimary);
 
     accessor.invoke(() -> {
       assertThatThrownBy(() -> resumeFunctionTransaction(transactionId))
@@ -167,12 +193,10 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     server1.invoke(() -> createServerRegion(true, 1, 1));
     int port2 = server2.invoke(() -> createServerRegion(false, 1, 1));
     int port1 = accessor.invoke(() -> createServerRegion(false, 1, 1, true));
-    server1.invoke(() -> doPuts());
-    server1.invoke(() -> {
-      cacheRule.closeAndNullCache();
-    });
-    server2.invoke(() -> registerFunctions());
-    accessor.invoke(() -> registerFunctions());
+    server1.invoke((SerializableRunnableIF) this::doPuts);
+    server1.invoke(() -> cacheRule.closeAndNullCache());
+    server2.invoke(this::registerFunctions);
+    accessor.invoke(this::registerFunctions);
 
 
     createClientRegion(true, port1, port2);
@@ -181,10 +205,8 @@ public class FixedPartitioningWithTransactionDistributedTest implements
         clientCacheRule.getClientCache().getCacheTransactionManager();
     TransactionId transactionId = doFunctionTransactionAndSuspend(region, txManager);
 
-    accessor.invoke(() -> {
-      cacheRule.closeAndNullCache();
-    });
-    server1.invoke(() -> restartPrimary());
+    accessor.invoke(() -> cacheRule.closeAndNullCache());
+    server1.invoke(this::restartPrimary);
 
     Throwable caughtException =
         catchThrowable(() -> resumeFunctionTransaction(transactionId, region, txManager));
@@ -210,6 +232,13 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     server1.invoke(() -> {
       assertThat(cacheRule.getCache().getRegion(regionName).get(2)).isEqualTo(2);
     });
+  }
+
+  private void forceClientMetadataUpdate(Region region) {
+    ClientMetadataService clientMetadataService =
+        ((InternalCache) clientCacheRule.getClientCache()).getClientMetadataService();
+    clientMetadataService.scheduleGetPRMetaData((InternalRegion) region, true);
+    await().atMost(5, MINUTES).until(clientMetadataService::isMetadataStable);
   }
 
   @Test
@@ -277,13 +306,13 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     port1 = server1.invoke(() -> createServerRegion(true, 1, 1));
     port2 = server2.invoke(() -> createServerRegion(false, 1, 1));
 
-    server1.invoke(() -> registerFunctions());
-    server2.invoke(() -> registerFunctions());
+    server1.invoke(this::registerFunctions);
+    server2.invoke(this::registerFunctions);
   }
 
   private void setupClient() {
     createClientRegion(true, true, port1, port2);
-    Region region = clientCacheRule.getClientCache().getRegion(regionName);
+    Region<Integer, Integer> region = clientCacheRule.getClientCache().getRegion(regionName);
     doPuts(region);
   }
 
@@ -299,14 +328,14 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   private void createData() {
     server1.invoke(() -> createServerRegion(true, 1, 1));
     server2.invoke(() -> createServerRegion(false, 1, 1));
-    server1.invoke(() -> doPuts());
+    server1.invoke((SerializableRunnableIF) this::doPuts);
   }
 
   private void doPuts() {
     doPuts(cacheRule.getCache().getRegion(regionName));
   }
 
-  private void doPuts(Region region) {
+  private void doPuts(Region<Integer, Integer> region) {
     region.put(1, 1);
     region.put(2, 2);
     region.put(3, 3);
@@ -322,7 +351,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     FixedPartitionAttributes fixedPartition =
         FixedPartitionAttributes.createFixedPartition(FIXED_PARTITION_NAME, isPrimary,
             totalNumOfBuckets);
-    PartitionAttributesFactory factory = new PartitionAttributesFactory();
+    PartitionAttributesFactory<Integer, Integer> factory = new PartitionAttributesFactory<>();
     factory.setRedundantCopies(redundantCopies).setTotalNumBuckets(totalNumOfBuckets)
         .setPartitionResolver(new MyFixedPartitionResolver());
     if (isAccessor) {
@@ -378,6 +407,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   private void registerFunctions() {
     FunctionService.registerFunction(new MySuspendTransactionFunction());
     FunctionService.registerFunction(new MyResumeTransactionFunction());
+    FunctionService.registerFunction(new MyTransactionFunction());
   }
 
   private TransactionId doFunctionTransactionAndSuspend() {
@@ -404,7 +434,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   private TransactionId doFunctionTransactionAndSuspend(Region region,
       CacheTransactionManager manager, Function function, Type type, boolean withFilter) {
     Execution execution;
-    Set keySet = new HashSet();
+    Set<Integer> keySet = new HashSet<>();
     keySet.add(2);
     switch (type) {
       case ON_MEMBER:
@@ -423,8 +453,19 @@ public class FixedPartitioningWithTransactionDistributedTest implements
         throw new RuntimeException("unexpected type");
     }
 
+    boolean executeFunctionByIdOnClient = false;
+    if (clientCacheRule.getClientCache() != null) {
+      forceClientMetadataUpdate(region);
+      executeFunctionByIdOnClient = executeFunctionByIdOnClient() && type != Type.ON_MEMBER;
+    }
+
     manager.begin();
-    ResultCollector resultCollector = execution.execute(function);
+    final ResultCollector resultCollector;
+    if (executeFunctionByIdOnClient) {
+      resultCollector = execution.execute(function.getId());
+    } else {
+      resultCollector = execution.execute(function);
+    }
     resultCollector.getResult();
     return manager.suspend();
   }
@@ -440,7 +481,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     Execution execution = FunctionService.onRegion(region);
     manager.resume(transactionId);
     try {
-      Set keySet = new HashSet();
+      Set<Integer> keySet = new HashSet<>();
       keySet.add(3);
       ResultCollector resultCollector =
           execution.withFilter(keySet).execute(new MyResumeTransactionFunction());
@@ -450,9 +491,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
     }
   }
 
-  public static class MyFixedPartitionResolver implements FixedPartitionResolver {
-
-    public MyFixedPartitionResolver() {}
+  public static class MyFixedPartitionResolver implements FixedPartitionResolver<Integer, Integer> {
 
     @Override
     public String getPartitionName(final EntryOperation opDetails,
@@ -474,7 +513,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   public static class MySuspendTransactionFunction implements Function, DataSerializable {
     @Override
     public void execute(FunctionContext context) {
-      assertThat(context instanceof RegionFunctionContext);
+      assertThat(context).isInstanceOf(RegionFunctionContext.class);
       PartitionedRegion region = (PartitionedRegion) ((RegionFunctionContext) context).getDataSet();
       region.containsValueForKey(2);
       context.getResultSender().lastResult(Boolean.TRUE);
@@ -494,7 +533,7 @@ public class FixedPartitioningWithTransactionDistributedTest implements
   public static class MyResumeTransactionFunction implements Function, DataSerializable {
     @Override
     public void execute(FunctionContext context) {
-      assertThat(context instanceof RegionFunctionContext);
+      assertThat(context).isInstanceOf(RegionFunctionContext.class);
       PartitionedRegion region = (PartitionedRegion) ((RegionFunctionContext) context).getDataSet();
       region.containsValueForKey(3);
       context.getResultSender().lastResult(Boolean.TRUE);
