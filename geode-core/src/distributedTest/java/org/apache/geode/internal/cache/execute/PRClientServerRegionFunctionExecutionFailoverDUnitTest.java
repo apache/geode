@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -52,12 +53,12 @@ import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
@@ -71,6 +72,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRClientServerTestBase {
+
+  private static final Logger logger = LogService.getLogger();
 
   private static Locator locator = null;
 
@@ -436,7 +439,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     attr.setPartitionAttributes(paf.create());
     region = cache.createRegion(regionName, attr.create());
     assertNotNull(region);
-    LogWriterUtils.getLogWriter()
+    logger
         .info("Partitioned Region " + regionName + " created Successfully :" + region.toString());
     return port;
   }
@@ -464,7 +467,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     RegionAttributes attrs = factory.create();
     region = cache.createRegion(regionName, attrs);
     assertNotNull(region);
-    LogWriterUtils.getLogWriter()
+    logger
         .info("Distributed Region " + regionName + " created Successfully :" + region.toString());
   }
 
@@ -472,7 +475,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     for (int i = 0; i < 113; i++) {
       region.put(i, "KB_" + i);
     }
-    LogWriterUtils.getLogWriter()
+    logger
         .info("Distributed Region " + regionName + " Have size :" + region.size());
   }
 
@@ -480,7 +483,7 @@ public class PRClientServerRegionFunctionExecutionFailoverDUnitTest extends PRCl
     Execution execute = FunctionService.onRegion(region);
     ResultCollector rc = execute.setArguments(Boolean.TRUE)
         .execute(new TestFunction(true, TestFunction.TEST_FUNCTION_LASTRESULT));
-    LogWriterUtils.getLogWriter().info("Exeuction Result :" + rc.getResult());
+    logger.info("Exeuction Result :" + rc.getResult());
     List l = ((List) rc.getResult());
     return l;
   }

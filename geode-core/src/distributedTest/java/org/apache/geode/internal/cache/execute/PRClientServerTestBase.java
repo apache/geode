@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -55,9 +56,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -66,6 +67,7 @@ import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class PRClientServerTestBase extends JUnit4CacheTestCase {
+  private static final Logger logger = LogService.getLogger();
 
   protected VM server1 = null;
 
@@ -369,7 +371,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   private static void createCacheClientWithoutRegion(String host, Integer port1, Integer port2,
       Integer port3) {
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    LogWriterUtils.getLogWriter()
+    logger
         .info("PRClientServerTestBase#createCacheClientWithoutRegion : creating pool");
 
     Pool p;
@@ -388,7 +390,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   private static void createCacheClientWithDistributedRegion(String host, Integer port1,
       Integer port2, Integer port3) throws Exception {
     CacheServerTestUtil.disableShufflingOfEndpoints();
-    LogWriterUtils.getLogWriter()
+    logger
         .info("PRClientServerTestBase#createCacheClientWithoutRegion : creating pool");
 
     Pool p;
@@ -504,7 +506,7 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
 
 
   void createClientServerScenarionWithoutRegion() {
-    LogWriterUtils.getLogWriter().info(
+    logger.info(
         "PRClientServerTestBase#createClientServerScenarionWithoutRegion : creating client server");
     createCacheInClientServer();
     Integer port1 = server1.invoke(
@@ -572,11 +574,11 @@ public class PRClientServerTestBase extends JUnit4CacheTestCase {
   static void startServerHA() throws Exception {
     Wait.pause(2000);
     Collection bridgeServers = cache.getCacheServers();
-    LogWriterUtils.getLogWriter()
+    logger
         .info("Start Server cache servers list : " + bridgeServers.size());
     Iterator bridgeIterator = bridgeServers.iterator();
     CacheServer bridgeServer = (CacheServer) bridgeIterator.next();
-    LogWriterUtils.getLogWriter().info("start Server cache server" + bridgeServer);
+    logger.info("start Server cache server" + bridgeServer);
     bridgeServer.start();
   }
 

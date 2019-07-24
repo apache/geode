@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -61,9 +62,9 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.Wait;
 import org.apache.geode.test.dunit.WaitCriterion;
@@ -75,6 +76,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServerTestBase {
+
+  private static final Logger logger = LogService.getLogger();
 
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
@@ -656,7 +659,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
-        LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
+        logger.info("Checking for the Live Servers : Expected  : "
             + expectedLiveServers + " Available :" + sz);
         if (sz == expectedLiveServers) {
           return true;
@@ -689,7 +692,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       ResultCollector rc1 =
           dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
 
       for (Object o : l) {
@@ -713,7 +716,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     ResultCollector rc1 =
         dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
     List l = ((List) rc1.getResult());
-    LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+    logger.info("Result size : " + l.size());
     return l;
   }
 
@@ -761,7 +764,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
   private static void checkBucketsOnServer() {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(PartitionedRegionName);
     HashMap localBucket2RegionMap = (HashMap) region.getDataStore().getSizeLocally();
-    LogWriterUtils.getLogWriter().info(
+    logger.info(
         "Size of the " + PartitionedRegionName + " in this VM :- " + localBucket2RegionMap.size());
     Set entrySet = localBucket2RegionMap.entrySet();
     assertNotNull(entrySet);
@@ -821,7 +824,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       }
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object item : l) {
         assertEquals(Boolean.TRUE, item);
@@ -867,7 +870,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
     try {
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object o : l) {
         assertTrue(o instanceof MyFunctionExecutionException);
@@ -939,7 +942,7 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
       }
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object o : l) {
         assertEquals(Boolean.TRUE, o);
@@ -1012,13 +1015,13 @@ public class PRClientServerRegionFunctionExecutionDUnitTest extends PRClientServ
             }
           });
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object o : l) {
         assertEquals(Boolean.TRUE, o);
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception : " + e.getMessage());
+      logger.info("Exception : " + e.getMessage());
       e.printStackTrace();
       fail("Test failed after the put operation");
 

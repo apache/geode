@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -51,10 +52,10 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.functions.TestFunction;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.IgnoredException;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.Wait;
@@ -68,6 +69,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     extends PRClientServerTestBase {
+
+  private static final Logger logger = LogService.getLogger();
 
   private static final String TEST_FUNCTION7 = TestFunction.TEST_FUNCTION7;
 
@@ -452,7 +455,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       @Override
       public boolean done() {
         int sz = pool.getConnectedServerCount();
-        LogWriterUtils.getLogWriter().info("Checking for the Live Servers : Expected  : "
+        logger.info("Checking for the Live Servers : Expected  : "
             + expectedLiveServers + " Available :" + sz);
         if (sz == expectedLiveServers) {
           return true;
@@ -501,7 +504,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         }
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Got an exception : " + e.getMessage());
+      logger.info("Got an exception : " + e.getMessage());
       assertTrue(e instanceof CacheClosedException);
     }
   }
@@ -519,7 +522,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
     ResultCollector rc1 =
         dataSet.withFilter(testKeysSet).setArguments(Boolean.TRUE).execute(function.getId());
     List l = ((List) rc1.getResult());
-    LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+    logger.info("Result size : " + l.size());
     return l;
   }
 
@@ -552,7 +555,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
   private static void checkBucketsOnServer() {
     PartitionedRegion region = (PartitionedRegion) cache.getRegion(PartitionedRegionName);
     HashMap localBucket2RegionMap = (HashMap) region.getDataStore().getSizeLocally();
-    LogWriterUtils.getLogWriter().info(
+    logger.info(
         "Size of the " + PartitionedRegionName + " in this VM :- " + localBucket2RegionMap.size());
     Set entrySet = localBucket2RegionMap.entrySet();
     assertNotNull(entrySet);
@@ -579,8 +582,8 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       }
       ResultCollector rc1 = executeOnAll(dataSet, Boolean.TRUE, function, isByName);
       List resultList = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + resultList.size());
-      LogWriterUtils.getLogWriter().info("Result are SSSS : " + resultList);
+      logger.info("Result size : " + resultList.size());
+      logger.info("Result are SSSS : " + resultList);
       assertEquals(3, resultList.size());
 
       // while (resultIterator.hasNext()) {
@@ -704,7 +707,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         assertEquals(1, subList.size());
         assertEquals(region.get(singleKeySet.iterator().next()), subList.iterator().next());
       } catch (Exception expected) {
-        LogWriterUtils.getLogWriter().info("Exception : " + expected.getMessage());
+        logger.info("Exception : " + expected.getMessage());
         expected.printStackTrace();
         fail("Test failed after the put operation");
       }
@@ -732,7 +735,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       }
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object item : l) {
         assertEquals(Boolean.TRUE, item);
@@ -776,7 +779,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       }
       ResultCollector rc1 = execute(dataSet, testKeysSet, Boolean.TRUE, function, isByName);
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object o : l) {
         assertEquals(Boolean.TRUE, o);
@@ -809,7 +812,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
 
     } catch (Exception ex) {
       ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : ", ex);
+      logger.info("Exception : ", ex);
       Assert.fail("Test failed after the put operation", ex);
     }
   }
@@ -853,13 +856,13 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
             }
           });
       List l = ((List) rc1.getResult());
-      LogWriterUtils.getLogWriter().info("Result size : " + l.size());
+      logger.info("Result size : " + l.size());
       assertEquals(3, l.size());
       for (Object o : l) {
         assertEquals(Boolean.TRUE, o);
       }
     } catch (Exception e) {
-      LogWriterUtils.getLogWriter().info("Exception : " + e.getMessage());
+      logger.info("Exception : " + e.getMessage());
       e.printStackTrace();
       fail("Test failed after the put operation");
 
@@ -939,7 +942,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
       fail("Test failed after the put operation");
     } catch (FunctionException expected) {
       expected.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : " + expected.getMessage());
+      logger.info("Exception : " + expected.getMessage());
       assertTrue(expected.getMessage()
           .startsWith((String.format("Cannot %s result as the Function#hasResult() is false",
               "return any"))));
@@ -990,7 +993,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
 
     } catch (Exception ex) {
       ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : ", ex);
+      logger.info("Exception : ", ex);
       Assert.fail("Test failed after the put operation", ex);
     }
   }
@@ -1054,7 +1057,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
         }
       });
     } catch (Exception expected) {
-      LogWriterUtils.getLogWriter().fine("Exception occurred : " + expected.getMessage());
+      logger.debug("Exception occurred : " + expected.getMessage());
       assertTrue(expected.getMessage().contains("No target node found for KEY = " + testKey)
           || expected.getMessage().startsWith("Server could not send the reply")
           || expected.getMessage().startsWith("Unexpected exception during"));
@@ -1119,7 +1122,7 @@ public class PRClientServerRegionFunctionExecutionSingleHopDUnitTest
 
     } catch (Exception ex) {
       ex.printStackTrace();
-      LogWriterUtils.getLogWriter().info("Exception : ", ex);
+      logger.info("Exception : ", ex);
       Assert.fail("Test failed after the put operation", ex);
     }
   }

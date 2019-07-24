@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -63,7 +64,6 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.SerializableCallableIF;
 import org.apache.geode.test.dunit.SerializableRunnableIF;
 import org.apache.geode.test.dunit.VM;
@@ -80,6 +80,8 @@ import org.apache.geode.test.junit.runners.CategoryWithParameterizedRunnerFactor
 @RunWith(Parameterized.class)
 @UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
+
+  private static final Logger logger = LogService.getLogger();
 
   static InternalDistributedSystem ds = null;
 
@@ -233,7 +235,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         noOfExecutionsCompleted_TESTFUNCTION3++;
 
       } catch (Exception e) {
-        LogWriterUtils.getLogWriter().info("Exception : " + e.getMessage());
+        logger.info("Exception : " + e.getMessage());
         e.printStackTrace();
         fail("Test failed after the put operation");
       }
@@ -251,10 +253,10 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
           functionServiceStats.getFunctionExecutionsCompleted());
       assertTrue(functionServiceStats.getResultsReceived() >= resultReceived_Aggregate);
 
-      LogWriterUtils.getLogWriter().info("Calling FunctionStats for  TEST_FUNCTION2 :");
+      logger.info("Calling FunctionStats for  TEST_FUNCTION2 :");
       FunctionStats functionStats =
           FunctionStats.getFunctionStats(TestFunction.TEST_FUNCTION2, iDS);
-      LogWriterUtils.getLogWriter().info("Called FunctionStats for  TEST_FUNCTION2 :");
+      logger.info("Called FunctionStats for  TEST_FUNCTION2 :");
       assertEquals(noOfExecutionCalls_TESTFUNCTION2, functionStats.getFunctionExecutionCalls());
       assertEquals(noOfExecutionsCompleted_TESTFUNCTION2,
           functionStats.getFunctionExecutionsCompleted());
@@ -324,14 +326,14 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         ds.disconnect();
         ds = getSystem(props);
         cache = CacheFactory.create(ds);
-        LogWriterUtils.getLogWriter().info("Created Cache on Server");
+        logger.info("Created Cache on Server");
         assertNotNull(cache);
         AttributesFactory factory = new AttributesFactory();
         factory.setScope(Scope.DISTRIBUTED_ACK);
         factory.setDataPolicy(DataPolicy.REPLICATE);
         assertNotNull(cache);
         Region<String, Integer> region = cache.createRegion(regionName, factory.create());
-        LogWriterUtils.getLogWriter().info("Region Created :" + region);
+        logger.info("Region Created :" + region);
         assertNotNull(region);
         for (int i = 1; i <= 200; i++) {
           region.put("execKey-" + i, i);
@@ -367,7 +369,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         ds.disconnect();
         ds = getSystem(props);
         cache = CacheFactory.create(ds);
-        LogWriterUtils.getLogWriter().info("Created Cache on Client");
+        logger.info("Created Cache on Client");
         assertNotNull(cache);
 
 
@@ -389,7 +391,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         factory.setPoolName(p.getName());
         assertNotNull(cache);
         Region<String, Integer> region = cache.createRegion(regionName, factory.create());
-        LogWriterUtils.getLogWriter().info("Client Region Created :" + region);
+        logger.info("Client Region Created :" + region);
         assertNotNull(region);
         for (int i = 1; i <= 200; i++) {
           region.put("execKey-" + i, i);
@@ -507,7 +509,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         noOfExecutionsCompleted_TESTFUNCTION1++;
       } catch (Exception ex) {
         ex.printStackTrace();
-        LogWriterUtils.getLogWriter().info("Exception : ", ex);
+        logger.info("Exception : ", ex);
         fail("Test failed after the execute operation nn TRUE");
       }
       function = new TestFunction(true, TestFunction.TEST_FUNCTION5);
@@ -525,7 +527,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         noOfExecutionsCompleted_TESTFUNCTION5++;
       } catch (Exception ex) {
         ex.printStackTrace();
-        LogWriterUtils.getLogWriter().info("Exception : ", ex);
+        logger.info("Exception : ", ex);
         fail("Test failed after the execute operationssssss");
       }
     });
@@ -799,7 +801,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.EMPTY);
       Region<String, Integer> region = getCache().createRegion(rName, factory.create());
-      LogWriterUtils.getLogWriter().info("Region Created :" + region);
+      logger.info("Region Created :" + region);
       assertNotNull(region);
       FunctionService.registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION2));
       for (int i = 1; i <= 200; i++) {
@@ -812,7 +814,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
       factory.setScope(Scope.DISTRIBUTED_ACK);
       factory.setDataPolicy(DataPolicy.REPLICATE);
       Region<String, Integer> region = getCache().createRegion(rName, factory.create());
-      LogWriterUtils.getLogWriter().info("Region Created :" + region);
+      logger.info("Region Created :" + region);
       assertNotNull(region);
       FunctionService.registerFunction(new TestFunction(true, TestFunction.TEST_FUNCTION2));
       for (int i = 1; i <= 200; i++) {
@@ -934,7 +936,7 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         noOfExecutionsCompleted_Inline++;
 
       } catch (Exception e) {
-        LogWriterUtils.getLogWriter().info("Exception Occurred : " + e.getMessage());
+        logger.info("Exception Occurred : " + e.getMessage());
         e.printStackTrace();
         Assert.fail("Test failed", e);
       }
