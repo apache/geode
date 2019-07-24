@@ -100,6 +100,13 @@ public class ConnectionStatsTest {
   private final int destroyRegionSendInProgressId =
       ConnectionStats.getSendType().nameToId("destroyRegionSendsInProgress");
 
+  private final int destroyDurationId = ConnectionStats.getType().nameToId("destroyTime");
+  private final int destroyInProgressId = ConnectionStats.getType().nameToId("destroysInProgress");
+  private final int destroySendDurationId =
+      ConnectionStats.getSendType().nameToId("destroySendTime");
+  private final int destroySendInProgressId =
+      ConnectionStats.getSendType().nameToId("destroySendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -723,6 +730,50 @@ public class ConnectionStatsTest {
 
     verify(stats).incInt(statId, 1);
     verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
+  public void endDestroySend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("destroySendFailures");
+
+    connectionStats.endDestroySend(1, true);
+
+    verify(sendStats).incInt(eq(destroySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(destroySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroySend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("destroySends");
+
+    connectionStats.endDestroySend(1, false);
+
+    verify(sendStats).incInt(eq(destroySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(destroySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroy_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("destroyTimeouts");
+
+    connectionStats.endDestroy(1, true, true);
+
+    verify(stats).incInt(eq(destroyInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1);
+    verify(stats).incLong(eq(destroyDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroy_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("destroyTimeouts");
+
+    connectionStats.endDestroy(1, true, false);
+
+    verify(stats).incInt(eq(destroyInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1);
+    verify(stats).incLong(eq(destroyDurationId), anyLong());
   }
 
   @Test
