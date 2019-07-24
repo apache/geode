@@ -14,18 +14,12 @@
  */
 package org.apache.geode.management.internal.operation;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.partition.PartitionRebalanceInfo;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.commands.RebalanceCommand;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -34,32 +28,9 @@ import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceResult;
-import org.apache.geode.util.internal.GeodeJsonMapper;
 
 @Experimental
 public class RebalanceOperationPerformer {
-  /**
-   * the {@link ResultModel} contains human-readable strings, however we want property names that
-   * more closely resemble {@link PartitionRebalanceInfo} (but with time units)
-   */
-  private static final Map<String, String> translations =
-      Collections.unmodifiableMap(new HashMap<String, String>() {
-        {
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES, "bucketCreateBytes");
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM, "bucketCreateTimeInMilliseconds");
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED, "bucketCreatesCompleted");
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES, "bucketTransferBytes");
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME,
-              "bucketTransferTimeInMilliseconds");
-          put(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED, "bucketTransfersCompleted");
-          put(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME,
-              "primaryTransferTimeInMilliseconds");
-          put(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED,
-              "primaryTransfersCompleted");
-          put(CliStrings.REBALANCE__MSG__TOTALTIME, "timeInMilliseconds");
-        }
-      });
-
   public static RebalanceResult perform(Cache cache, RebalanceOperation parameters) {
     try {
       RebalanceCommand rebalanceCommand = new RebalanceCommand();
@@ -79,7 +50,7 @@ public class RebalanceOperationPerformer {
 
       Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
       for (TabularResultModel tableSection : tableSections) {
-        results.put(toRegion(tableSection.getHeader()), toRegionStats(toMap(tableSection)));
+        results.put(toRegion(tableSection.getHeader()), toRegionStats(tableSection));
       }
       rebalanceResult.setRebalanceSummary(results);
 
@@ -98,46 +69,45 @@ public class RebalanceOperationPerformer {
     }
   }
 
-  private static RebalanceResult.PerRegionStats toRegionStats(Map<String, Long> props)
-      throws IOException {
-    ObjectMapper mapper = GeodeJsonMapper.getMapper();
-    String json = mapper.writeValueAsString(props);
-    return mapper.readValue(json, RebalanceResultImpl.PerRegionStatsImpl.class);
-  }
-
-  private static String toRegion(String header) {
-    return header.replace("Rebalanced partition regions /", "");
-  }
-
-  private static Map<String, Long> toMap(TabularResultModel table) {
-    if (table == null)
+  private static RebalanceResult.PerRegionStats toRegionStats(TabularResultModel table) {
+    if (table == null) {
       return null;
-    Map<String, Long> section = new LinkedHashMap<>();
-    if (table.getColumnSize() != 2)
+    }
+    if (table.getColumnSize() != 2) {
       throw new IllegalStateException();
+    }
+    RebalanceResultImpl.PerRegionStatsImpl section = new RebalanceResultImpl.PerRegionStatsImpl();
     for (int i = 0; i < table.getRowSize(); i++) {
       List<String> row = table.getValuesInRow(i);
       String key = row.get(0);
       String val = row.get(1);
-      String betterKey = translations.get(key);
-      if (betterKey != null) {
-        key = betterKey;
+
+      if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATEBYTES)) {
+        section.setBucketCreateBytes(Long.parseLong(val));
       }
-      section.put(key, toLong(val));
+      if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATETIM)) {
+        section.setBucketCreateTimeInMilliseconds(Long.parseLong(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETCREATESCOMPLETED)) {
+        section.setBucketCreatesCompleted(Integer.parseInt(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERBYTES)) {
+        section.setBucketTransferBytes(Long.parseLong(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERTIME)) {
+        section.setBucketTransferTimeInMilliseconds(Long.parseLong(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALBUCKETTRANSFERSCOMPLETED)) {
+        section.setBucketTransfersCompleted(Integer.parseInt(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERTIME)) {
+        section.setPrimaryTransferTimeInMilliseconds(Long.parseLong(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALPRIMARYTRANSFERSCOMPLETED)) {
+        section.setPrimaryTransfersCompleted(Integer.parseInt(val));
+      } else if (key.equals(CliStrings.REBALANCE__MSG__TOTALTIME)) {
+        section.setTimeInMilliseconds(Long.parseLong(val));
+      }
     }
     return section;
   }
 
-  /**
-   * try to convert a result model value to a first-class numeric type so it can be serialized
-   * without string quotes
-   */
-  private static Long toLong(String val) {
-    try {
-      return Long.parseLong(val);
-    } catch (Exception e) {
-      return null;
-    }
+  private static String toRegion(String header) {
+    return header.replace("Rebalanced partition regions /", "");
   }
 
   private static final String[] STRING_ARRAY_TYPE = new String[] {};
