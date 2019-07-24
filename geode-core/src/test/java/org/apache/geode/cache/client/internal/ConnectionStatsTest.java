@@ -107,6 +107,15 @@ public class ConnectionStatsTest {
   private final int destroySendInProgressId =
       ConnectionStats.getSendType().nameToId("destroySendsInProgress");
 
+  private final int executeFunctionDurationId =
+      ConnectionStats.getType().nameToId("executeFunctionTime");
+  private final int executeFunctionInProgressId =
+      ConnectionStats.getType().nameToId("executeFunctionsInProgress");
+  private final int executeFunctionSendDurationId =
+      ConnectionStats.getSendType().nameToId("executeFunctionSendTime");
+  private final int executeFunctionSendInProgressId =
+      ConnectionStats.getSendType().nameToId("executeFunctionSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -777,6 +786,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endExecuteFunctionSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("executeFunctionSendFailures");
+
+    connectionStats.endExecuteFunctionSend(1, true);
+
+    verify(sendStats).incInt(eq(executeFunctionSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(executeFunctionSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endExecuteFunctionSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("executeFunctionSends");
+
+    connectionStats.endExecuteFunctionSend(1, false);
+
+    verify(sendStats).incInt(eq(executeFunctionSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(executeFunctionSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endExecuteFunction_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("executeFunctionTimeouts");
+
+    connectionStats.endExecuteFunction(1, true, true);
+
+    verify(stats).incInt(eq(executeFunctionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(executeFunctionDurationId), anyLong());
+  }
+
+  @Test
+  public void endExecuteFunction_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("executeFunctionTimeouts");
+
+    connectionStats.endExecuteFunction(1, true, false);
+
+    verify(stats).incInt(eq(executeFunctionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(executeFunctionDurationId), anyLong());
+  }
+
+  @Test
+  public void endExecuteFunction_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("executeFunctionFailures");
+
+    connectionStats.endExecuteFunction(1, false, true);
+
+    verify(stats).incInt(eq(executeFunctionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(executeFunctionDurationId), anyLong());
+  }
+
+  @Test
+  public void endExecuteFunction_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("executeFunctions");
+
+    connectionStats.endExecuteFunction(1, false, false);
+
+    verify(stats).incInt(eq(executeFunctionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(executeFunctionDurationId), anyLong());
+  }
+
+  @Test
+  public void startExecuteFunction() {
+    int statId = ConnectionStats.getType().nameToId("executeFunctionsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("executeFunctionSendsInProgress");
+
+    connectionStats.startExecuteFunction();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1339,33 +1425,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("getAllSendFailures");
 
     connectionStats.endGetAllSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endExecuteFunctionSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("executeFunctionSendTime");
-
-    connectionStats.endExecuteFunctionSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endExecuteFunctionSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("executeFunctionSends");
-
-    connectionStats.endExecuteFunctionSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endExecuteFunctionSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("executeFunctionSendFailures");
-
-    connectionStats.endExecuteFunctionSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
