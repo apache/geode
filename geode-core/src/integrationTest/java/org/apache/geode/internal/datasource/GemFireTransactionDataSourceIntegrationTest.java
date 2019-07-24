@@ -100,7 +100,11 @@ public class GemFireTransactionDataSourceIntegrationTest {
         .hasMessageContaining("SQL exception");
 
     // wait for activation of clean thread
-    await().untilAsserted(() -> assertThat(connection.isClosed()).isTrue());
+    await()
+        // BrokeredConnection.isClosed() throws a SQLException if the clean thread closes the
+        // connection while we are in the middle of checking whether it is closed.
+        .ignoreExceptionsInstanceOf(SQLException.class)
+        .untilAsserted(() -> assertThat(connection.isClosed()).isTrue());
 
     // Check that all connections are cleaned
     assertThat(poolCache.getActiveCacheSize()).isZero();
@@ -135,7 +139,11 @@ public class GemFireTransactionDataSourceIntegrationTest {
         .hasMessageContaining("SQL exception2");
 
     // wait for activation of clean thread
-    await().untilAsserted(() -> assertThat(connection.isClosed()).isTrue());
+    await()
+        // BrokeredConnection.isClosed() throws a SQLException if the clean thread closes the
+        // connection while we are in the middle of checking whether it is closed.
+        .ignoreExceptionsInstanceOf(SQLException.class)
+        .untilAsserted(() -> assertThat(connection.isClosed()).isTrue());
 
     // Check that all connections are cleaned
     assertThat(poolCache.getActiveCacheSize()).isZero();
