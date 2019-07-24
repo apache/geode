@@ -92,7 +92,7 @@ public class RebalanceManagementDunitTest {
     assertThat(result.getRebalanceStats().size()).isEqualTo(2);
     Map.Entry<String, RebalanceResult.PerRegionStats> firstRegionSummary =
         result.getRebalanceStats().entrySet().iterator().next();
-    assertThat(firstRegionSummary.getKey()).isEqualTo("customers");
+    assertThat(firstRegionSummary.getKey()).isIn("customers1", "customers2");
     assertThat(firstRegionSummary.getValue()).isNotNull();
   }
 
