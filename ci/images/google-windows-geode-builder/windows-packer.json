@@ -61,7 +61,6 @@
         "Move-Item \"C:\\java8tmp\" c:\\java8",
         "choco install -y openssh --version 7.7.2.1 /SSHServerFeature",
         "refreshenv",
-
         "$a = 10",
         "do {",
         "write-output \">>>>>>>>>> Installing rsync: $a attempts remaining <<<<<<<<<<\"",
@@ -69,7 +68,6 @@
         "$a--",
         "} while (-not (test-path C:\\ProgramData\\chocolatey\\bin\\rsync.exe) -and $a -gt 0)",
         "get-item C:\\ProgramData\\chocolatey\\bin\\rsync.exe",
-
         "winrm set winrm/config/service '@{AllowUnencrypted=\"true\"}'",
         "New-NetFirewallRule -DisplayName sshd -Direction inbound -Action allow -Protocol tcp -LocalPort 22",
         "New-NetFirewallRule -DisplayName \"Docker containers\" -LocalAddress 172.0.0.0/8 -Action allow -Direction inbound",
@@ -78,14 +76,24 @@
         "$NewPath = $OldPath + ';' + 'c:\\Program Files\\Git\\bin'",
         "Set-ItemProperty -Path 'Registry::HKEY_LOCAL_MACHINE\\System\\CurrentControlSet\\Control\\Session Manager\\Environment' -Name PATH -Value $NewPath",
         "write-output '>>>>>>>>>> Modify sshd config to comment use of administrators authorized key file <<<<<<<<<<'",
-        "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8",
+        "(Get-Content \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\") -replace '(Match Group administrators)', '#$1' -replace '(\\s*AuthorizedKeysFile.*)', '#$1' | Out-File \"C:\\Program Files\\OpenSSH-Win64\\sshd_config_default\" -encoding UTF8"
+      ]
+    },
+    {
+      "type":  "powershell",
+      "elevated_user": "geode",
+      "elevated_password": "{{.WinRMPassword}}",
+      "inline": [
+        "net start \"Docker Engine\"",
         "write-output '>>>>>>>>>> Adding openjdk docker image <<<<<<<<<<'",
-        "docker pull openjdk:8u212-jdk-windowsservercore-1809",
+        "docker pull openjdk:8",
         "write-output '>>>>>>>>>> Removing unused docker images <<<<<<<<<<'",
-        "docker rmi microsoft/windowsservercore:1809",
-        "docker rmi microsoft/nanoserver:1809",
-
-        "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'",
+        "Set-Content -Path c:\\ProgramData\\docker\\config\\daemon.json -Value '{ \"hosts\": [\"tcp://0.0.0.0:2375\", \"npipe://\"] }'"
+      ]
+    },
+    {
+      "type":  "powershell",
+      "inline": [
 
         "write-output '>>>>>>>>>> Cloning geode repo <<<<<<<<<<'",
         "& 'c:\\Program Files\\Git\\bin\\git.exe' clone -b develop --depth 1 https://github.com/apache/geode.git geode",
