@@ -48,8 +48,8 @@ public class RegionPerfStatsTest {
   private static final DataPolicy DATA_POLICY = DataPolicy.PERSISTENT_REPLICATE;
 
   private MeterRegistry meterRegistry;
-  private StatisticsFactory statisticsFactory;
   private CachePerfStats cachePerfStats;
+  private InternalRegion region;
 
   private RegionPerfStats regionPerfStats;
   private RegionPerfStats regionPerfStats2;
@@ -62,14 +62,17 @@ public class RegionPerfStatsTest {
   public void setUp() {
     meterRegistry = new SimpleMeterRegistry();
     cachePerfStats = mock(CachePerfStats.class);
-    statisticsFactory = mock(StatisticsFactory.class);
+    StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     statistics = mock(Statistics.class);
+    region = mock(InternalRegion.class);
+    when(region.getName()).thenReturn(REGION_NAME);
+    when(region.getDataPolicy()).thenReturn(DATA_POLICY);
 
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(statistics);
 
     regionPerfStats =
-        new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats, REGION_NAME, DATA_POLICY,
-            meterRegistry);
+        new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats,
+            region, meterRegistry);
   }
 
   @After
@@ -87,8 +90,8 @@ public class RegionPerfStatsTest {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), any())).thenReturn(mock(Statistics.class));
 
-    new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats, REGION_NAME, DataPolicy.NORMAL,
-        meterRegistry);
+    new RegionPerfStats(statisticsFactory, TEXT_ID, cachePerfStats,
+        region, meterRegistry);
 
     verify(statisticsFactory).createAtomicStatistics(any(), eq(TEXT_ID));
   }
@@ -115,23 +118,16 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void suppliesEntryCountStatWithAccumulatedEntryCount() {
+  public void suppliesEntryCountStatWithRegionLocalSize() {
     ArgumentCaptor<LongSupplier> supplierCaptor = ArgumentCaptor.forClass(LongSupplier.class);
 
     verify(statistics).setLongSupplier(eq(RegionPerfStats.entryCountId), supplierCaptor.capture());
 
-    LongSupplier capturedSupplier = supplierCaptor.getValue();
-    assertThat(capturedSupplier.getAsLong())
-        .as("Initial value of supplier")
-        .isEqualTo(0);
+    when(region.getLocalSize()).thenReturn(92);
 
-    regionPerfStats.incEntryCount(3);
-    regionPerfStats.incEntryCount(7);
-    regionPerfStats.incEntryCount(-4);
-
-    assertThat(capturedSupplier.getAsLong())
+    assertThat(supplierCaptor.getValue().getAsLong())
         .as("Accumulated value of supplier")
-        .isEqualTo(6);
+        .isEqualTo(92);
   }
 
   @Test
@@ -142,33 +138,14 @@ public class RegionPerfStatsTest {
   }
 
   @Test
-  public void incEntryCount_updatesMeterForThisRegion() {
-    regionPerfStats.incEntryCount(1);
-    regionPerfStats.incEntryCount(3);
-    regionPerfStats.incEntryCount(-1);
+  public void entryCountGaugeFetchesValueFromRegionLocalSize() {
+    when(region.getLocalSize()).thenReturn(3);
 
     Gauge entriesGauge = meterRegistry
         .find("member.region.entries")
         .tag("region.name", REGION_NAME)
         .gauge();
     assertThat(entriesGauge.value()).isEqualTo(3);
-  }
-
-  @Test
-  public void incEntryCount_doesNotUpdateMeterForOtherRegion() {
-    regionPerfStats2 =
-        new RegionPerfStats(statisticsFactory, "region2", () -> 0, cachePerfStats, "region2",
-            DataPolicy.NORMAL, meterRegistry);
-
-    regionPerfStats.incEntryCount(1);
-    regionPerfStats.incEntryCount(3);
-    regionPerfStats.incEntryCount(-1);
-
-    Gauge region2EntriesGauge = meterRegistry
-        .find("member.region.entries")
-        .tag("region.name", "region2")
-        .gauge();
-    assertThat(region2EntriesGauge.value()).isZero();
   }
 
   @Test

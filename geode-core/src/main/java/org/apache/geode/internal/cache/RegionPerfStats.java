@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import java.util.concurrent.atomic.LongAdder;
 import java.util.function.LongSupplier;
 
 import io.micrometer.core.instrument.Gauge;
@@ -22,7 +21,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.internal.NanoTimer;
 
 class RegionPerfStats extends CachePerfStats {
@@ -30,29 +28,28 @@ class RegionPerfStats extends CachePerfStats {
   private final CachePerfStats cachePerfStats;
   private final MeterRegistry meterRegistry;
   private final Gauge entriesGauge;
-  private final LongAdder entryCount;
 
   RegionPerfStats(StatisticsFactory statisticsFactory, String textId, CachePerfStats cachePerfStats,
-      String regionName, DataPolicy dataPolicy, MeterRegistry meterRegistry) {
-    this(statisticsFactory, textId, createClock(), cachePerfStats, regionName, dataPolicy,
+      InternalRegion region,
+      MeterRegistry meterRegistry) {
+    this(statisticsFactory, textId, createClock(), cachePerfStats, region,
         meterRegistry);
   }
 
   @VisibleForTesting
   RegionPerfStats(StatisticsFactory statisticsFactory, String textId, LongSupplier clock,
-      CachePerfStats cachePerfStats, String regionName, DataPolicy dataPolicy,
-      MeterRegistry meterRegistry) {
+      CachePerfStats cachePerfStats,
+      InternalRegion region, MeterRegistry meterRegistry) {
     super(statisticsFactory, textId, clock);
     this.cachePerfStats = cachePerfStats;
     this.meterRegistry = meterRegistry;
-    entryCount = new LongAdder();
-    entriesGauge = Gauge.builder("member.region.entries", entryCount::longValue)
+    entriesGauge = Gauge.builder("member.region.entries", region::getLocalSize)
         .description("Current number of entries in the region.")
-        .tag("region.name", regionName)
-        .tag("data.policy", dataPolicy.toString())
+        .tag("region.name", region.getName())
+        .tag("data.policy", region.getDataPolicy().toString())
         .baseUnit("entries")
         .register(meterRegistry);
-    stats.setLongSupplier(entryCountId, entryCount::longValue);
+    stats.setLongSupplier(entryCountId, region::getLocalSize);
   }
 
   private static LongSupplier createClock() {
@@ -491,7 +488,6 @@ class RegionPerfStats extends CachePerfStats {
 
   @Override
   public void incEntryCount(int delta) {
-    entryCount.add(delta);
     cachePerfStats.incEntryCount(delta);
   }
 

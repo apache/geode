@@ -64,12 +64,13 @@ public class RegionEntriesGaugeTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  // TODO: refactor to JarRule
+  // TODO: refactor to ServiceJarRule
   @Rule
   public MetricsPublishingServiceJarRule metricsPublishingServiceJarRule =
       new MetricsPublishingServiceJarRule("metrics-publishing-service.jar",
           SimpleMetricsPublishingService.class);
 
+  // TODO: Inline the code that builds this jar
   @Rule
   public SingleFunctionJarRule functionJarRule =
       new SingleFunctionJarRule("function.jar", GetMemberRegionEntriesGaugeFunction.class);

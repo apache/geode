@@ -204,8 +204,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     // this.bucketStats = new CachePerfStats(pr.getSystem(), "partition-" + pr.getName());
     this.bucketStats =
         new RegionPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
-            "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(), pr.getName(),
-            pr.getDataPolicy(),
+            "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(),
+            pr,
             pr.getCache().getMeterRegistry());
     this.keysOfInterest = new ConcurrentHashMap();
   }
@@ -2433,12 +2433,9 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public int getSizeOfLocalBuckets() {
-    int sizeOfLocal = 0;
-    Set<BucketRegion> allLocalBuckets = getAllLocalBucketRegions();
-    for (BucketRegion br : allLocalBuckets) {
-      sizeOfLocal += br.size();
-    }
-    return sizeOfLocal;
+    return localBucket2RegionMap.values().stream()
+        .mapToInt(BucketRegion::getLocalSize)
+        .sum();
   }
 
 

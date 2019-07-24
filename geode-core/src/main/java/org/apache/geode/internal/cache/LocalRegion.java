@@ -599,8 +599,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         hasOwnStats = true;
         cachePerfStats =
             new RegionPerfStats(cache.getInternalDistributedSystem().getStatisticsManager(),
-                "RegionStats-" + regionName, cache.getCachePerfStats(), regionName, getDataPolicy(),
-                cache.getMeterRegistry());
+                "RegionStats-" + regionName, cache.getCachePerfStats(),
+                this, cache.getMeterRegistry());
       }
     }
 
@@ -8256,6 +8256,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         unlockRIReadLock();
       }
     }
+  }
+
+  @Override
+  public int getLocalSize() {
+    return getRegionMap().size() - tombstoneCount.get();
   }
 
   /**
