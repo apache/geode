@@ -166,6 +166,13 @@ public class ConnectionStatsTest {
   private final int getPDXTypeByIdSendInProgressId =
       ConnectionStats.getSendType().nameToId("getPDXTypeByIdSendsInProgress");
 
+  private final int getEntryDurationId = ConnectionStats.getType().nameToId("getEntryTime");
+  private final int getEntryInProgressId =
+      ConnectionStats.getType().nameToId("getEntrysInProgress");
+  private final int getEntrySendDurationId =
+      ConnectionStats.getSendType().nameToId("getEntrySendTime");
+  private final int getEntrySendInProgressId =
+      ConnectionStats.getSendType().nameToId("getEntrySendsInProgress");
 
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
@@ -1378,6 +1385,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGetEntrySend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getEntrySendFailures");
+
+    connectionStats.endGetEntrySend(1, true);
+
+    verify(sendStats).incInt(eq(getEntrySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getEntrySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetEntrySend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getEntrySends");
+
+    connectionStats.endGetEntrySend(1, false);
+
+    verify(sendStats).incInt(eq(getEntrySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getEntrySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetEntry_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getEntryTimeouts");
+
+    connectionStats.endGetEntry(1, true, true);
+
+    verify(stats).incInt(eq(getEntryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getEntryDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetEntry_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getEntryTimeouts");
+
+    connectionStats.endGetEntry(1, true, false);
+
+    verify(stats).incInt(eq(getEntryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getEntryDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetEntry_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getEntryFailures");
+
+    connectionStats.endGetEntry(1, false, true);
+
+    verify(stats).incInt(eq(getEntryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getEntryDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetEntry_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("getEntrys");
+
+    connectionStats.endGetEntry(1, false, false);
+
+    verify(stats).incInt(eq(getEntryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getEntryDurationId), anyLong());
+  }
+
+  @Test
+  public void startGetEntry() {
+    int statId = ConnectionStats.getType().nameToId("getEntrysInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("getEntrySendsInProgress");
+
+    connectionStats.startGetEntry();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1949,33 +2033,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("invalidateSendFailures");
 
     connectionStats.endInvalidateSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetEntrySendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getEntrySendTime");
-
-    connectionStats.endGetEntrySend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetEntrySendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getEntrySends");
-
-    connectionStats.endGetEntrySend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetEntrySendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getEntrySendFailures");
-
-    connectionStats.endGetEntrySend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
