@@ -60,6 +60,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionTestHelper;
 import org.apache.geode.internal.cache.functions.TestFunction;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerTestUtil;
+import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.LogWriterUtils;
@@ -85,7 +86,6 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
   private static int noOfExecutionCalls_Aggregate = 0;
   private static int noOfExecutionsCompleted_Aggregate = 0;
   private static int resultReceived_Aggregate = 0;
-  private static int noOfExecutionExceptions_Aggregate = 0;
 
   private static int noOfExecutionCalls_TESTFUNCTION1 = 0;
   private static int noOfExecutionsCompleted_TESTFUNCTION1 = 0;
@@ -107,21 +107,16 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
   private static int noOfExecutionsCompleted_Inline = 0;
   private static int resultReceived_Inline = 0;
 
-  private static int noOfExecutionCalls_TestFunctionException = 0;
-  private static int noOfExecutionsCompleted_TestFunctionException = 0;
-  private static int noOfExecutionExceptions_TestFunctionException = 0;
-
   @Override
   protected final void postSetUpPRClientServerTestBase() {
     // Make sure stats to linger from a previous test
     disconnectAllFromDS();
   }
 
-  private final transient SerializableCallableIF<Boolean> initializeStats = () -> {
+  private final transient SerializableRunnableIF initializeStats = () -> {
     noOfExecutionCalls_Aggregate = 0;
     noOfExecutionsCompleted_Aggregate = 0;
     resultReceived_Aggregate = 0;
-    noOfExecutionExceptions_Aggregate = 0;
 
     noOfExecutionCalls_TESTFUNCTION1 = 0;
     noOfExecutionsCompleted_TESTFUNCTION1 = 0;
@@ -142,11 +137,6 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
     noOfExecutionCalls_Inline = 0;
     noOfExecutionsCompleted_Inline = 0;
     resultReceived_Inline = 0;
-
-    noOfExecutionCalls_TestFunctionException = 0;
-    noOfExecutionsCompleted_TestFunctionException = 0;
-    noOfExecutionExceptions_TestFunctionException = 0;
-    return Boolean.TRUE;
   };
 
   private final transient SerializableRunnableIF closeDistributedSystem = () -> {
@@ -1063,9 +1053,9 @@ public class FunctionServiceStatsDUnitTest extends PRClientServerTestBase {
         // incremented,
         Wait.pause(2000);
         rc.getResult();
+        fail("No exception Occurred");
       } catch (Exception ignored) {
       }
-      fail("No exception Occurred");
     });
 
     datastore0.invoke(closeDistributedSystem);
