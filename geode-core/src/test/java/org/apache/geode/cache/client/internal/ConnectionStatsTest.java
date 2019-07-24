@@ -148,6 +148,16 @@ public class ConnectionStatsTest {
   private final int getClientPRMetadataSendInProgressId =
       ConnectionStats.getSendType().nameToId("getClientPRMetadataSendsInProgress");
 
+  private final int getPDXIdForTypeDurationId =
+      ConnectionStats.getType().nameToId("getPDXIdForTypeTime");
+  private final int getPDXIdForTypeInProgressId =
+      ConnectionStats.getType().nameToId("getPDXIdForTypeInProgress");
+  private final int getPDXIdForTypeSendDurationId =
+      ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendTime");
+  private final int getPDXIdForTypeSendInProgressId =
+      ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendsInProgress");
+
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1205,6 +1215,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGetPDXIdForTypeSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendFailures");
+
+    connectionStats.endGetPDXIdForTypeSend(1, true);
+
+    verify(sendStats).incInt(eq(getPDXIdForTypeSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getPDXIdForTypeSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetPDXIdForTypeSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendsSuccessful");
+
+    connectionStats.endGetPDXIdForTypeSend(1, false);
+
+    verify(sendStats).incInt(eq(getPDXIdForTypeSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getPDXIdForTypeSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetPDXIdForType_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getPDXIdForTypeTimeouts");
+
+    connectionStats.endGetPDXIdForType(1, true, true);
+
+    verify(stats).incInt(eq(getPDXIdForTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getPDXIdForTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetPDXIdForType_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getPDXIdForTypeTimeouts");
+
+    connectionStats.endGetPDXIdForType(1, true, false);
+
+    verify(stats).incInt(eq(getPDXIdForTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getPDXIdForTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetPDXIdForType_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getPDXIdForTypeFailures");
+
+    connectionStats.endGetPDXIdForType(1, false, true);
+
+    verify(stats).incInt(eq(getPDXIdForTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getPDXIdForTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetPDXIdForType_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("getPDXIdForTypeSuccessful");
+
+    connectionStats.endGetPDXIdForType(1, false, false);
+
+    verify(stats).incInt(eq(getPDXIdForTypeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getPDXIdForTypeDurationId), anyLong());
+  }
+
+  @Test
+  public void startGetPDXIdForType() {
+    int statId = ConnectionStats.getType().nameToId("getPDXIdForTypeInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendsInProgress");
+
+    connectionStats.startGetPDXIdForType();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1740,33 +1827,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("getPDXTypeByIdSendFailures");
 
     connectionStats.endGetPDXTypeByIdSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetPDXIdForTypeSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendTime");
-
-    connectionStats.endGetPDXIdForTypeSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetPDXIdForTypeSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendsSuccessful");
-
-    connectionStats.endGetPDXIdForTypeSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetPDXIdForTypeSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getPDXIdForTypeSendFailures");
-
-    connectionStats.endGetPDXIdForTypeSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
