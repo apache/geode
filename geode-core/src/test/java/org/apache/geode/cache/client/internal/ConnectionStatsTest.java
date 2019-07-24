@@ -75,6 +75,14 @@ public class ConnectionStatsTest {
   private final int createCQSendInProgressId =
       ConnectionStats.getSendType().nameToId("createCQSendsInProgress");
 
+  private final int commitDurationId = ConnectionStats.getType().nameToId("commitTime");
+  private final int commitInProgressId =
+      ConnectionStats.getType().nameToId("commitsInProgress");
+  private final int commitSendDurationId =
+      ConnectionStats.getSendType().nameToId("commitSendTime");
+  private final int commitSendInProgressId =
+      ConnectionStats.getSendType().nameToId("commitSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -392,8 +400,6 @@ public class ConnectionStatsTest {
     verify(sendStats).incInt(sendStatId, 1);
   }
 
-
-
   @Test
   public void endCreateCQSend_FailedOperation() {
     int statId = ConnectionStats.getSendType().nameToId("createCQSendFailures");
@@ -471,7 +477,82 @@ public class ConnectionStatsTest {
     verify(sendStats).incInt(sendStatId, 1);
   }
 
+  @Test
+  public void endCommitSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("commitSendFailures");
 
+    connectionStats.endCommitSend(1, true);
+
+    verify(sendStats).incInt(eq(commitSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(commitSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCommitSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("commitSends");
+
+    connectionStats.endCommitSend(1, false);
+
+    verify(sendStats).incInt(eq(commitSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(commitSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endCommit_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("commitTimeouts");
+
+    connectionStats.endCommit(1, true, true);
+
+    verify(stats).incInt(eq(commitInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(commitDurationId), anyLong());
+  }
+
+  @Test
+  public void endCommit_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("commitTimeouts");
+
+    connectionStats.endCommit(1, true, false);
+
+    verify(stats).incInt(eq(commitInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(commitDurationId), anyLong());
+  }
+
+  @Test
+  public void endCommit_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("commitFailures");
+
+    connectionStats.endCommit(1, false, true);
+
+    verify(stats).incInt(eq(commitInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(commitDurationId), anyLong());
+  }
+
+  @Test
+  public void endCommit_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("commits");
+
+    connectionStats.endCommit(1, false, false);
+
+    verify(stats).incInt(eq(commitInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(commitDurationId), anyLong());
+  }
+
+  @Test
+  public void startCommit() {
+    int statId = ConnectionStats.getType().nameToId("commitsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("commitSendsInProgress");
+
+    connectionStats.startCommit();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
 
   @Test
   public void endGetSendIncsStatIdOnSendStats() {
@@ -1291,33 +1372,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("invalidateSendFailures");
 
     connectionStats.endInvalidateSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCommitSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("commitSendTime");
-
-    connectionStats.endCommitSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endCommitSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("commitSends");
-
-    connectionStats.endCommitSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCommitSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("commitSendFailures");
-
-    connectionStats.endCommitSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
