@@ -17,6 +17,9 @@ package org.apache.geode.management.runtime;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.JsonSerializable;
 
+/**
+ * Details of the rebalancing work performed for a partitioned region.
+ */
 @Experimental
 public interface RebalanceRegionResult extends JsonSerializable {
   /**
@@ -61,7 +64,7 @@ public interface RebalanceRegionResult extends JsonSerializable {
   int getPrimaryTransfersCompleted();
 
   /**
-   * @return the time, in milliseconds, that the rebalance operation took for this region.
+   * Returns the time, in milliseconds, that the rebalance operation took for this region.
    */
   long getTimeInMilliseconds();
 }
