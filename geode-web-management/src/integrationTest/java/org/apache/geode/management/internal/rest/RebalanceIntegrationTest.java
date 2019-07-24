@@ -61,16 +61,17 @@ public class RebalanceIntegrationTest {
   @Test
   public void startOperation() throws Exception {
     String json = "{}";
-    context.perform(post("/v2/operations/rebalance").content(json))
+    context.perform(post("/experimental/operations/rebalance").content(json))
         .andExpect(status().isAccepted())
         .andExpect(
-            jsonPath("$.uri", Matchers.containsString("/management/v2/operations/rebalance/")))
+            jsonPath("$.uri",
+                Matchers.containsString("/management/experimental/operations/rebalance/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("async operation started")));
   }
 
   @Test
   public void checkStatus() throws Exception {
-    context.perform(get("/v2/operations/rebalance/abc"))
+    context.perform(get("/experimental/operations/rebalance/abc"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(

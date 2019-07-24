@@ -50,6 +50,7 @@ public class RebalanceResultTest {
   @Test
   public void toStringRebalanceResult() {
     String toStr = result.toString();
-    assertThat(toStr).isEqualTo("{testRegion: {bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0}}");
+    assertThat(toStr).isEqualTo(
+        "{testRegion: {bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0}}");
   }
 }

@@ -335,7 +335,7 @@ public class LocatorClusterManagementServiceTest {
     when(executorManager.submit(any()))
         .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
     ClusterManagementOperationResult<?> result = service.startOperation(operation);
-    assertThat(result.getUri()).isEqualTo("/management/v2" + URI + "/42");
+    assertThat(result.getUri()).isEqualTo("/management/experimental" + URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
     assertThat(result.getStatusMessage()).contains("async operation started");
   }

@@ -98,9 +98,9 @@ public class ClusterManagementSecurityRestIntegrationTest {
     testContexts.add(new TestContext(post("/experimental/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
 
-    testContexts.add(new TestContext(post("/v2/operations/rebalance"), "DATA:MANAGE")
+    testContexts.add(new TestContext(post("/experimental/operations/rebalance"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(new RebalanceOperation())));
-    testContexts.add(new TestContext(get("/v2/operations/rebalance/123"), "DATA:MANAGE"));
+    testContexts.add(new TestContext(get("/experimental/operations/rebalance/123"), "DATA:MANAGE"));
   }
 
   @Before
