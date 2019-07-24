@@ -61,7 +61,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   /**
-   * @return the future result of the async operation
+   * Returns the future result of the async operation
    */
   @JsonIgnore
   public CompletableFuture<V> getFutureResult() {
@@ -71,7 +71,7 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   /**
-   * @return the completed result of the async operation (blocks until complete, if necessary)
+   * Returns the completed result of the async operation (blocks until complete, if necessary)
    */
   @JsonIgnore
   public V getResult() throws ExecutionException, InterruptedException {
@@ -79,16 +79,16 @@ public class ClusterManagementOperationResult<V extends JsonSerializable>
   }
 
   /**
-   * @return the time the async operation was requested
+   * Returns the time at which the async operation was requested
    */
   public Date getOperationStart() {
     return operationStart;
   }
 
   /**
-   * @return the future time the async operation completed. This is guaranteed to complete before
-   *         {@link #getFutureResult()}; any subsequent stages must be chained to
-   *         {@link #getFutureResult()}, not here.
+   * Returns the future time the async operation completed. This is guaranteed to complete before
+   * {@link #getFutureResult()}. Note: subsequent stages must be chained to
+   * {@link #getFutureResult()}, not here.
    */
   public CompletableFuture<Date> getFutureOperationEnded() {
     return futureOperationEnded;

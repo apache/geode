@@ -27,6 +27,7 @@ import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.cli.result.model.TabularResultModel;
 import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 @Experimental
@@ -48,7 +49,7 @@ public class RebalanceOperationPerformer {
 
       List<TabularResultModel> tableSections = result.getTableSections();
 
-      Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
+      Map<String, RebalanceRegionResult> results = new LinkedHashMap<>();
       for (TabularResultModel tableSection : tableSections) {
         results.put(toRegion(tableSection.getHeader()), toRegionStats(tableSection));
       }
@@ -69,14 +70,14 @@ public class RebalanceOperationPerformer {
     }
   }
 
-  private static RebalanceResult.PerRegionStats toRegionStats(TabularResultModel table) {
+  private static RebalanceRegionResult toRegionStats(TabularResultModel table) {
     if (table == null) {
       return null;
     }
     if (table.getColumnSize() != 2) {
       throw new IllegalStateException();
     }
-    RebalanceResultImpl.PerRegionStatsImpl section = new RebalanceResultImpl.PerRegionStatsImpl();
+    RebalanceRegionResultImpl section = new RebalanceRegionResultImpl();
     for (int i = 0; i < table.getRowSize(); i++) {
       List<String> row = table.getValuesInRow(i);
       String key = row.get(0);

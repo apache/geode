@@ -15,14 +15,11 @@
 
 package org.apache.geode.management.runtime;
 
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public class RuntimeRegionInfo extends RuntimeInfo {
+public class RuntimeRegionInfo extends RuntimeInfo implements JsonSerializable {
   private long entryCount;
 
   public long getEntryCount() {

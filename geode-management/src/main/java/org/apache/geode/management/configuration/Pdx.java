@@ -18,6 +18,7 @@ package org.apache.geode.management.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -26,6 +27,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 /**
  * Configuration Objects for Pdx in the cache
  */
+@Experimental
 public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";

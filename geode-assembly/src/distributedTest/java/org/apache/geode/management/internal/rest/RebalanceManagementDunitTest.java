@@ -34,6 +34,7 @@ import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -89,9 +90,9 @@ public class RebalanceManagementDunitTest {
     now = System.currentTimeMillis();
     assertThat(end).isBetween(now - 60000, now)
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
-    assertThat(result.getRebalanceStats().size()).isEqualTo(2);
-    Map.Entry<String, RebalanceResult.PerRegionStats> firstRegionSummary =
-        result.getRebalanceStats().entrySet().iterator().next();
+    assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
+    Map.Entry<String, RebalanceRegionResult> firstRegionSummary =
+        result.getRebalanceRegionResults().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).isIn("customers1", "customers2");
     assertThat(firstRegionSummary.getValue()).isNotNull();
   }
@@ -106,9 +107,9 @@ public class RebalanceManagementDunitTest {
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = cmr.getFutureResult().get();
-    assertThat(result.getRebalanceStats().size()).isEqualTo(1);
-    Map.Entry<String, RebalanceResult.PerRegionStats> firstRegionSummary =
-        result.getRebalanceStats().entrySet().iterator().next();
+    assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
+    Map.Entry<String, RebalanceRegionResult> firstRegionSummary =
+        result.getRebalanceRegionResults().entrySet().iterator().next();
     assertThat(firstRegionSummary.getKey()).isEqualTo("customers2");
     assertThat(firstRegionSummary.getValue()).isNotNull();
     assertThat(firstRegionSummary.getValue().getBucketCreateBytes()).isEqualTo(0);

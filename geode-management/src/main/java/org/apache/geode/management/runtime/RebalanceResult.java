@@ -27,27 +27,8 @@ import org.apache.geode.management.operation.RebalanceOperation;
 @Experimental
 public interface RebalanceResult extends JsonSerializable {
   /**
-   * @return for each region, the statistics reported by rebalance
+   * Return a map of region name -> summary of work performed
    */
-  Map<String, PerRegionStats> getRebalanceStats();
+  Map<String, RebalanceRegionResult> getRebalanceRegionResults();
 
-  interface PerRegionStats extends JsonSerializable {
-    long getBucketCreateBytes();
-
-    long getBucketCreateTimeInMilliseconds();
-
-    int getBucketCreatesCompleted();
-
-    long getBucketTransferBytes();
-
-    long getBucketTransferTimeInMilliseconds();
-
-    int getBucketTransfersCompleted();
-
-    long getPrimaryTransferTimeInMilliseconds();
-
-    int getPrimaryTransfersCompleted();
-
-    long getTimeInMilliseconds();
-  }
 }

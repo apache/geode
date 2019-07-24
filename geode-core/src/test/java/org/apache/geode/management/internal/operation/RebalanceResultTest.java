@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -33,8 +34,8 @@ public class RebalanceResultTest {
   @Before
   public void setUp() {
     mapper = GeodeJsonMapper.getMapper();
-    RebalanceResult.PerRegionStats summary = new RebalanceResultImpl.PerRegionStatsImpl();
-    Map<String, RebalanceResult.PerRegionStats> results = new LinkedHashMap<>();
+    RebalanceRegionResult summary = new RebalanceRegionResultImpl();
+    Map<String, RebalanceRegionResult> results = new LinkedHashMap<>();
     results.put("testRegion", summary);
     result = new RebalanceResultImpl();
     result.setRebalanceSummary(results);
@@ -44,7 +45,8 @@ public class RebalanceResultTest {
   public void serializeRebalanceResult() throws Exception {
     String json = mapper.writeValueAsString(result);
     RebalanceResult value = mapper.readValue(json, RebalanceResult.class);
-    assertThat(value.getRebalanceStats().get("testRegion").getBucketCreateBytes()).isEqualTo(0);
+    assertThat(value.getRebalanceRegionResults().get("testRegion").getBucketCreateBytes())
+        .isEqualTo(0);
   }
 
   @Test

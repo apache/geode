@@ -18,17 +18,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.api.JsonSerializable;
 
 
 /***
  * Data class to hold the information of the member Used in describe member command
  *
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public class MemberInformation extends RuntimeInfo implements Identifiable<String> {
+@Experimental
+public class MemberInformation extends RuntimeInfo
+    implements Identifiable<String>, JsonSerializable {
   private static final long serialVersionUID = 1L;
   private String id;
   private String workingDirPath;

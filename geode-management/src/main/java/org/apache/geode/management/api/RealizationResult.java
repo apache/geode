@@ -17,6 +17,8 @@ package org.apache.geode.management.api;
 
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Experimental;
+
 
 /**
  * this holds the information returned by the ConfigurationRealizers to indicate the
@@ -24,7 +26,7 @@ import java.io.Serializable;
  *
  * It by default should have at least memberName, success and a message.
  */
-
+@Experimental
 public class RealizationResult implements Serializable {
   private String memberName;
   private boolean success = true;

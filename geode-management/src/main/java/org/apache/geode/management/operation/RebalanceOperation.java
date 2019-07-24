@@ -51,7 +51,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   }
 
   /***
-   * @return true if a "dry run" only is requested
+   * Returns true if a "dry run" only is requested
    */
   public boolean isSimulate() {
     return simulate;
@@ -66,7 +66,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   }
 
   /***
-   * @return the list of regions to be rebalanced (or an empty list for all-except-excluded)
+   * Returns the list of regions to be rebalanced (or an empty list for all-except-excluded)
    */
   public List<String> getIncludeRegions() {
     return includeRegions;
@@ -84,7 +84,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   }
 
   /***
-   * @return the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty)
+   * Returns the list of regions NOT to be rebalanced (iff {@link #getIncludeRegions()} is empty)
    */
   public List<String> getExcludeRegions() {
     return excludeRegions;
