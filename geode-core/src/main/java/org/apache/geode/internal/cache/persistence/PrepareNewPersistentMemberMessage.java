@@ -38,7 +38,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
@@ -107,21 +106,9 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       }
 
     } catch (RegionDestroyedException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("<RegionDestroyed> {}", this);
-      }
-      if (getSender().getVersionObject().compareTo(Version.GEODE_1_10_0) >= 0) {
-        // Reply with exception to sender to indicate we have not persisted its id.
-        exception = new ReplyException(e);
-      }
+      logger.debug("<RegionDestroyed> {}", this);
     } catch (CancelException e) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("<CancelException> {}", this);
-      }
-      if (getSender().getVersionObject().compareTo(Version.GEODE_1_10_0) >= 0) {
-        // Reply with exception to sender to indicate we have not persisted its id.
-        exception = new ReplyException(e);
-      }
+      logger.debug("<CancelException> {}", this);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -130,7 +117,7 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       exception = new ReplyException(t);
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
-      ReplyMessage replyMsg = createReplyMessage();
+      ReplyMessage replyMsg = new ReplyMessage();
       replyMsg.setRecipient(getSender());
       replyMsg.setProcessorId(processorId);
       if (exception != null) {
@@ -138,10 +125,6 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       }
       dm.putOutgoing(replyMsg);
     }
-  }
-
-  ReplyMessage createReplyMessage() {
-    return new ReplyMessage();
   }
 
   @Override

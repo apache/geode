@@ -55,7 +55,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.MembershipListener;
-import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
@@ -461,7 +460,7 @@ public class PRHARedundancyProvider {
           partitionedRegion.getRegionAdvisor().adviseFixedPrimaryPartitionDataStore(bucketId);
     }
 
-    InternalDistributedMember memberHostingBucket = null;
+    InternalDistributedMember memberHostingBucket;
     Collection<InternalDistributedMember> attempted = new HashSet<>();
     do {
       partitionedRegion.checkReadiness();
@@ -492,14 +491,7 @@ public class PRHARedundancyProvider {
         }
         CreateBucketMessage.NodeResponse response =
             CreateBucketMessage.send(targetMember, partitionedRegion, bucketId, size);
-        try {
-          memberHostingBucket = response.waitForResponse();
-        } catch (ReplyException replyException) {
-          if (logger.isDebugEnabled()) {
-            logger.debug("create bucket failed on member {}: ", targetMember, replyException);
-          }
-          // Will start over and retry again.
-        }
+        memberHostingBucket = response.waitForResponse();
         if (memberHostingBucket != null) {
           return memberHostingBucket;
         }
@@ -687,15 +679,7 @@ public class PRHARedundancyProvider {
           if (redundancySatisfied || exhaustedPotentialCandidates) {
             // Tell one of the members to become primary.
             // The rest of the members will be allowed to volunteer for primary.
-            try {
-              endBucketCreation(bucketId, acceptedMembers, bucketPrimary, partitionName);
-            } catch (ReplyException replyException) {
-              if (logger.isDebugEnabled()) {
-                logger.debug("Will retry as endBucketCreation failed with: ", replyException);
-              }
-              // One of the accepted members failed. Retry again.
-              continue;
-            }
+            endBucketCreation(bucketId, acceptedMembers, bucketPrimary, partitionName);
 
             int expectedRemoteHosts = acceptedMembers.size()
                 - (acceptedMembers.contains(partitionedRegion.getMyId()) ? 1 : 0);
