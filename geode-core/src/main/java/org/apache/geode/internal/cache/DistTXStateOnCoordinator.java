@@ -24,6 +24,7 @@ import org.apache.geode.cache.UnsupportedOperationInTransactionException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
 import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * TxState on TX coordinator, created when coordinator is also a data node
@@ -38,8 +39,9 @@ public class DistTXStateOnCoordinator extends DistTXState implements DistTXCoord
   private boolean preCommitResponse = false;
   private boolean rollbackResponse = false;
 
-  public DistTXStateOnCoordinator(TXStateProxy proxy, boolean onBehalfOfRemoteStub) {
-    super(proxy, onBehalfOfRemoteStub);
+  public DistTXStateOnCoordinator(TXStateProxy proxy, boolean onBehalfOfRemoteStub,
+      StatisticsClock statisticsClock) {
+    super(proxy, onBehalfOfRemoteStub, statisticsClock);
     primaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
     secondaryTransactionalOperations = new ArrayList<DistTxEntryEvent>();
   }

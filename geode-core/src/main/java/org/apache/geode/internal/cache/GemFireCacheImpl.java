@@ -851,7 +851,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
       cachePerfStats = new CachePerfStats(
           internalDistributedSystem.getStatisticsManager(), statisticsClock);
 
-      transactionManager = new TXManagerImpl(cachePerfStats, this);
+      transactionManager = new TXManagerImpl(cachePerfStats, this, statisticsClock);
       dm.addMembershipListener(transactionManager);
 
       creationDate = new Date();
@@ -2013,7 +2013,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (heapEvictorLock) {
       stopper.checkCancelInProgress(null);
       if (heapEvictor == null) {
-        heapEvictor = new HeapEvictor(this);
+        heapEvictor = new HeapEvictor(this, statisticsClock);
       }
       return heapEvictor;
     }
@@ -2023,7 +2023,7 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     synchronized (offHeapEvictorLock) {
       stopper.checkCancelInProgress(null);
       if (offHeapEvictor == null) {
-        offHeapEvictor = new OffHeapEvictor(this);
+        offHeapEvictor = new OffHeapEvictor(this, statisticsClock);
       }
       return offHeapEvictor;
     }
