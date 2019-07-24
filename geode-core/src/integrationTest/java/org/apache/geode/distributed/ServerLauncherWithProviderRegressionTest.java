@@ -17,12 +17,14 @@ package org.apache.geode.distributed;
 import static org.apache.geode.internal.process.ProcessType.PROPERTY_TEST_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 
 /**
  * Extracted from {@link ServerLauncherLocalIntegrationTest}. This tests the same mechanism used by
@@ -41,6 +43,7 @@ public class ServerLauncherWithProviderRegressionTest extends ServerLauncherInte
     System.setProperty(PROPERTY_TEST_PREFIX, getUniqueName() + "-");
 
     providerCache = mock(Cache.class);
+    when(providerCache.getResourceManager()).thenReturn(mock(InternalResourceManager.class));
     TestServerLauncherCacheProvider.setCache(providerCache);
   }
 

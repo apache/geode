@@ -45,6 +45,7 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -75,6 +76,7 @@ import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerHelper;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.logging.LogService;
@@ -184,6 +186,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private static final ServerLauncherCacheProvider DEFAULT_CACHE_PROVIDER =
       new DefaultServerLauncherCacheProvider();
 
+  private static final Logger logger = LogService.getLogger();
   private volatile boolean debug;
 
   private final ControlNotificationHandler controlHandler;
@@ -235,6 +238,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private volatile ControllableProcess process;
 
   private final ServerControllerParameters controllerParameters;
+  private final Runnable startupCompletionAction;
+  private final Consumer<Throwable> startupExceptionAction;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -315,6 +320,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     messageTimeToLive = builder.getMessageTimeToLive();
     socketBufferSize = builder.getSocketBufferSize();
     controllerParameters = new ServerControllerParameters();
+    startupCompletionAction = builder.getStartupCompletionAction();
+    startupExceptionAction = builder.getStartupExceptionAction();
     controlHandler = new ControlNotificationHandler() {
       @Override
       public void handleStop() {
@@ -771,6 +778,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * @see #run()
    */
   public ServerState start() {
+    long startTime = System.currentTimeMillis();
     if (isStartable()) {
       INSTANCE.compareAndSet(null, this);
 
@@ -811,8 +819,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
 
           cache.setIsServer(true);
-          startCacheServer(cache);
-          log.debug("Server is online");
+          startCacheServer(cache, startTime);
+
           assignBuckets(cache);
           rebalance(cache);
         } finally {
@@ -969,9 +977,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Thread on the specified bind address and port.
    *
    * @param cache the Cache to which the server will be added.
+   * @param startTime the system clock time at which the start method was called
    * @throws IOException if the Cache server fails to start due to IO error.
    */
-  void startCacheServer(final Cache cache) throws IOException {
+  @VisibleForTesting
+  void startCacheServer(final Cache cache, long startTime) throws IOException {
     if (isDefaultServerEnabled(cache)) {
       final String serverBindAddress =
           getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress();
@@ -1008,6 +1018,26 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       cacheServer.start();
     }
+
+    Runnable afterStartup = startupCompletionAction == null
+        ? () -> logStartCompleted(startTime) : startupCompletionAction;
+
+    Consumer<Throwable> exceptionAction = startupExceptionAction == null
+        ? (throwable) -> logStartCompletedWithError(startTime, throwable) : startupExceptionAction;
+
+    ((InternalResourceManager) cache.getResourceManager())
+        .runWhenStartupTasksComplete(afterStartup, exceptionAction);
+  }
+
+  private void logStartCompleted(long startTime) {
+    long startupDuration = System.currentTimeMillis() - startTime;
+    log.info("Server {} startup completed in {} ms", memberName, startupDuration);
+  }
+
+  private void logStartCompletedWithError(long startTime, Throwable throwable) {
+    long startupDuration = System.currentTimeMillis() - startTime;
+    log.error("Server {} startup completed in {} ms with error: {}", memberName, startupDuration,
+        throwable, throwable);
   }
 
   /**
@@ -1419,6 +1449,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer messageTimeToLive;
     private Integer socketBufferSize;
     private Integer maxThreads;
+    private Runnable startupCompletionAction;
+    private Consumer<Throwable> startupExceptionAction;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2240,7 +2272,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public Builder setHostNameForClients(String hostNameForClients) {
       if (isBlank(hostNameForClients)) {
         throw new IllegalArgumentException(
-            "The hostname used by clients to connect to the Server must have an argument if the --hostname-for-clients command-line option is specified!");
+            "The hostname used by clients to connect to the Server must have an argument if the "
+                + "--hostname-for-clients command-line option is specified!");
       }
       this.hostNameForClients = hostNameForClients;
       return this;
@@ -2463,6 +2496,46 @@ public class ServerLauncher extends AbstractLauncher<String> {
     public ServerLauncher build() {
       validate();
       return new ServerLauncher(this);
+    }
+
+    /**
+     * Sets the action to run when the server is online.
+     *
+     * @param startupCompletionAction the action to run
+     * @return this builder
+     */
+    Builder setStartupCompletionAction(Runnable startupCompletionAction) {
+      this.startupCompletionAction = startupCompletionAction;
+      return this;
+    }
+
+    /**
+     * Gets the action to run when the server is online.
+     *
+     * @return the action to run
+     */
+    Runnable getStartupCompletionAction() {
+      return startupCompletionAction;
+    }
+
+    /**
+     * Sets the action to run when server startup completes with errors.
+     *
+     * @param startupExceptionAction the action to run
+     * @return this builder
+     */
+    Builder setStartupExceptionAction(Consumer<Throwable> startupExceptionAction) {
+      this.startupExceptionAction = startupExceptionAction;
+      return this;
+    }
+
+    /**
+     * Gets the action to run when server startup completed with errors.
+     *
+     * @return the action to run
+     */
+    Consumer<Throwable> getStartupExceptionAction() {
+      return this.startupExceptionAction;
     }
   }
 
