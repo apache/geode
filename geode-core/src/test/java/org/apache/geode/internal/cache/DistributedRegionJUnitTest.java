@@ -224,9 +224,7 @@ public class DistributedRegionJUnitTest
     byte[] memId = {1, 2, 3};
     long threadId = 1;
     long retrySeqId = 1;
-    ThreadIdentifier tid = new ThreadIdentifier(memId, threadId);
     EventID retryEventID = new EventID(memId, threadId, retrySeqId);
-    boolean skipCallbacks = true;
 
     final EventIDHolder clientEvent = new EventIDHolder(retryEventID);
     clientEvent.setOperation(Operation.UPDATE);
