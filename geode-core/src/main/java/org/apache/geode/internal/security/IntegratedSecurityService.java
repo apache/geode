@@ -139,7 +139,9 @@ public class IntegratedSecurityService implements SecurityService {
     Subject currentUser = SecurityUtils.getSubject();
     GeodeAuthenticationToken token = new GeodeAuthenticationToken(credentials);
     try {
-      logger.debug("Logging in " + token.getPrincipal());
+      if (logger.isDebugEnabled()) {
+        logger.debug("Logging in " + token.getPrincipal());
+      }
       currentUser.login(token);
     } catch (ShiroException e) {
       logger.info("error logging in: " + token.getPrincipal());
@@ -153,24 +155,13 @@ public class IntegratedSecurityService implements SecurityService {
   }
 
   @Override
-  public void logout() {
-    Subject currentUser = getSubject();
-    try {
-      logger.debug("Logging out " + currentUser.getPrincipal());
-      currentUser.logout();
-    } catch (ShiroException e) {
-      logger.info("error logging out: " + currentUser.getPrincipal());
-      throw new GemFireSecurityException(e.getMessage(), e);
+  public void logout(Subject currentUser) {
+    if (currentUser == null) {
+      currentUser = getSubject();
     }
-
-    // clean out Shiro's thread local content
-    ThreadContext.remove();
-  }
-
-  public void logoutJmxUser(String user, Subject currentUser) {
     try {
       if (logger.isDebugEnabled()) {
-        logger.debug("Logging out {}", currentUser.getPrincipal());
+        logger.debug("Logging out " + currentUser.getPrincipal());
       }
       currentUser.logout();
     } catch (ShiroException e) {

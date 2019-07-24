@@ -111,7 +111,7 @@ public class LoginHandlerInterceptor extends HandlerInterceptorAdapter
   public void afterCompletion(final HttpServletRequest request, final HttpServletResponse response,
       final Object handler, final Exception ex) throws Exception {
     afterConcurrentHandlingStarted(request, response, handler);
-    this.securityService.logout();
+    this.securityService.logout(null);
   }
 
   @Override

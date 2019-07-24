@@ -309,7 +309,7 @@ public class UserFunctionExecutionTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage()).isEqualTo("[result1, result2]");
     verify(securityService, times(1)).login(any());
-    verify(securityService, times(1)).logout();
+    verify(securityService, times(1)).logout(null);
   }
 
   @Test
@@ -323,6 +323,6 @@ public class UserFunctionExecutionTest {
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusMessage()).isEqualTo("[]");
     verify(securityService, times(1)).login(any());
-    verify(securityService, times(1)).logout();
+    verify(securityService, times(1)).logout(null);
   }
 }

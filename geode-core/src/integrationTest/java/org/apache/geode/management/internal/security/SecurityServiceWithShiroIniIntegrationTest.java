@@ -48,7 +48,7 @@ public class SecurityServiceWithShiroIniIntegrationTest {
 
   @After
   public void after() throws Exception {
-    this.securityService.logout();
+    this.securityService.logout(null);
   }
 
   @Test

@@ -141,7 +141,7 @@ public class LoginHandlerInterceptorTest {
 
     interceptor.afterCompletion(request, null, null, null);
 
-    verify(securityService, times(1)).logout();
+    verify(securityService, times(1)).logout(null);
   }
 
   @Test

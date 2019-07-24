@@ -39,8 +39,8 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
-  private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap();
-  private Map<Long, org.apache.shiro.subject.Subject> threadIdUser = new HashMap();
+  private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap<>();
+  private Map<Long, org.apache.shiro.subject.Subject> threadIdUser = new HashMap<>();
   org.apache.shiro.subject.Subject currentUser;
 
   public JMXShiroAuthenticator(SecurityService securityService) {
@@ -90,7 +90,7 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
             connectedUsers.put(connectionId, currentUser);
           }
         } else if (JMXConnectionNotification.CLOSED.equals(type)) {
-          this.securityService.logoutJmxUser(connectionId, connectedUsers.get(connectionId));
+          this.securityService.logout(connectedUsers.get(connectionId));
           connectedUsers.remove(connectionId);
         }
       }

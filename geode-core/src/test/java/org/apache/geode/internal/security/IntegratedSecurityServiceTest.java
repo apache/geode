@@ -92,7 +92,7 @@ public class IntegratedSecurityServiceTest {
     Subject subject = this.securityService.getSubject();
     assertThat(subject).isNotNull();
     assertThat(ThreadContext.getSubject()).isNotNull();
-    this.securityService.logout();
+    this.securityService.logout(null);
     assertThat(ThreadContext.getSubject()).isNull();
   }
 

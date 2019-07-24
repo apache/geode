@@ -243,7 +243,7 @@ public class UserFunctionExecution implements InternalFunction<Object[]> {
           new CliFunctionResult(context.getMemberName(), ERROR, "Exception: " + e.getMessage()));
     } finally {
       if (loginSuccessful) {
-        securityService.logout();
+        securityService.logout(null);
       }
     }
   }

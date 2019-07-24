@@ -74,7 +74,7 @@ public class LegacySecurityService implements SecurityService {
   }
 
   @Override
-  public void logout() {}
+  public void logout(Subject currentUser) {}
 
   @Override
   public Callable associateWith(Callable callable) {
@@ -136,7 +136,4 @@ public class LegacySecurityService implements SecurityService {
   public PostProcessor getPostProcessor() {
     return null;
   }
-
-  @Override
-  public void logoutJmxUser(String user, Subject subject) {}
 }

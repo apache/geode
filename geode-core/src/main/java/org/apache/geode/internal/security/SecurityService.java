@@ -35,7 +35,7 @@ public interface SecurityService {
 
   Subject login(Properties credentials);
 
-  void logout();
+  void logout(Subject currentUser);
 
   Callable associateWith(Callable callable);
 
@@ -71,7 +71,4 @@ public interface SecurityService {
   SecurityManager getSecurityManager();
 
   PostProcessor getPostProcessor();
-
-  void logoutJmxUser(String user, Subject subject);
-
 }
