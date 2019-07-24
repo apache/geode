@@ -15,6 +15,7 @@
 package org.apache.geode.cache.query.dunit;
 
 import static org.apache.geode.cache.query.Utils.createPortfoliosAndPositions;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -672,7 +673,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
       Set buckets = getBucketsForFilter((Set) args[1]);
       Region localDataSet = new LocalDataSet(
           (PartitionedRegion) CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1),
-          buckets);
+          buckets, disabledClock());
 
       try {
         Query query = queryService.newQuery((String) args[0]);
@@ -866,7 +867,7 @@ public class QueryUsingFunctionContextDUnitTest extends JUnit4CacheTestCase {
     Set buckets = getBucketsForFilter(filter);
     Region localDataSet = new LocalDataSet(
         (PartitionedRegion) CacheFactory.getAnyInstance().getRegion(PartitionedRegionName1),
-        buckets);
+        buckets, disabledClock());
 
     QueryService qservice = CacheFactory.getAnyInstance().getQueryService();
 

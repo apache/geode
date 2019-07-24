@@ -17,6 +17,7 @@ package org.apache.geode.cache.query;
 
 import static org.apache.geode.cache.query.data.TestData.createAndPopulateSet;
 import static org.apache.geode.cache.query.data.TestData.populateRegion;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -71,7 +72,7 @@ public class QueryWithBucketParameterIntegrationTest {
     String query = "select distinct e1.value from /pr1 e1";
     queryExecutor = (DefaultQuery) CacheUtils.getQueryService().newQuery(query);
     Set<Integer> set = createAndPopulateSet(totalBuckets);
-    lds = new LocalDataSet(pr1, set);
+    lds = new LocalDataSet(pr1, set, disabledClock());
   }
 
   @After

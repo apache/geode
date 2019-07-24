@@ -46,12 +46,12 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
 
   public SerialAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+    super(cache, attrs, cache.getStatisticsClock());
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
       this.statistics = new AsyncEventQueueStats(cache.getDistributedSystem(),
-          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id));
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), cache.getStatisticsClock());
     }
   }
 

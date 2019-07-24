@@ -337,16 +337,19 @@ public class ColocationHelper {
       PartitionedRegion region, Set<Integer> bucketSet) {
     Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<String, LocalDataSet>();
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
-      colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet(region, bucketSet));
+      colocatedLocalDataSets.put(region.getFullPath(),
+          new LocalDataSet(region, bucketSet, region.getStatisticsClock()));
       return colocatedLocalDataSets;
     }
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
       colocatedLocalDataSets.put(colocatedRegion.getFullPath(),
-          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet));
+          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet,
+              region.getStatisticsClock()));
     }
-    colocatedLocalDataSets.put(region.getFullPath(), new LocalDataSet(region, bucketSet));
+    colocatedLocalDataSets.put(region.getFullPath(),
+        new LocalDataSet(region, bucketSet, region.getStatisticsClock()));
     return colocatedLocalDataSets;
   }
 
@@ -360,7 +363,8 @@ public class ColocationHelper {
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
       ret.put(colocatedRegion.getFullPath(),
-          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet));
+          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet,
+              region.getStatisticsClock()));
     }
     return ret;
   }

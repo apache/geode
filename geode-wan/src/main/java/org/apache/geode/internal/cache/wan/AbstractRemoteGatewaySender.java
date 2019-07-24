@@ -40,7 +40,7 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
   protected int proxyFailureTries = 0;
 
   public AbstractRemoteGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+    super(cache, attrs, cache.getStatisticsClock());
   }
 
   @Override

@@ -24,7 +24,6 @@ import org.apache.geode.distributed.internal.PoolStatHelper;
 import org.apache.geode.distributed.internal.QueueStatHelper;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.statistics.StatisticsClock;
-import org.apache.geode.internal.statistics.StatisticsClockFactory;
 import org.apache.geode.internal.statistics.StatisticsTypeFactoryImpl;
 
 /**
@@ -626,17 +625,6 @@ public class CachePerfStats {
   public CachePerfStats(StatisticsFactory factory, String textId, StatisticsClock clock) {
     stats = factory == null ? null : factory.createAtomicStatistics(type, textId);
     this.clock = clock;
-  }
-
-  /**
-   * Returns the current NanoTime or, if clock stats are disabled, zero.
-   *
-   * @since GemFire 5.0
-   * @deprecated Please use instance method {@link #getTime()} instead.
-   */
-  @Deprecated // TODO: delete static getStatTime
-  public static long getStatTime() {
-    return StatisticsClockFactory.getTimeIfEnabled();
   }
 
   public static StatisticsType getStatisticsType() {
