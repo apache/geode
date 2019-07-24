@@ -91,6 +91,15 @@ public class ConnectionStatsTest {
   private final int containsKeySendInProgressId =
       ConnectionStats.getSendType().nameToId("containsKeySendsInProgress");
 
+  private final int destroyRegionDurationId =
+      ConnectionStats.getType().nameToId("destroyRegionTime");
+  private final int destroyRegionInProgressId =
+      ConnectionStats.getType().nameToId("destroyRegionsInProgress");
+  private final int destroyRegionSendDurationId =
+      ConnectionStats.getSendType().nameToId("destroyRegionSendTime");
+  private final int destroyRegionSendInProgressId =
+      ConnectionStats.getSendType().nameToId("destroyRegionSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -640,6 +649,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endDestroyRegionSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("destroyRegionSendFailures");
+
+    connectionStats.endDestroyRegionSend(1, true);
+
+    verify(sendStats).incInt(eq(destroyRegionSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(destroyRegionSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroyRegionSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("destroyRegionSends");
+
+    connectionStats.endDestroyRegionSend(1, false);
+
+    verify(sendStats).incInt(eq(destroyRegionSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(destroyRegionSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroyRegion_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("destroyRegionTimeouts");
+
+    connectionStats.endDestroyRegion(1, true, true);
+
+    verify(stats).incInt(eq(destroyRegionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(destroyRegionDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroyRegion_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("destroyRegionTimeouts");
+
+    connectionStats.endDestroyRegion(1, true, false);
+
+    verify(stats).incInt(eq(destroyRegionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(destroyRegionDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroyRegion_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("destroyRegionFailures");
+
+    connectionStats.endDestroyRegion(1, false, true);
+
+    verify(stats).incInt(eq(destroyRegionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(destroyRegionDurationId), anyLong());
+  }
+
+  @Test
+  public void endDestroyRegion_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("destroyRegions");
+
+    connectionStats.endDestroyRegion(1, false, false);
+
+    verify(stats).incInt(eq(destroyRegionInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(destroyRegionDurationId), anyLong());
+  }
+
+  @Test
+  public void startDestroyRegion() {
+    int statId = ConnectionStats.getType().nameToId("destroyRegionsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("destroyRegionSendsInProgress");
+
+    connectionStats.startDestroyRegion();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -716,33 +802,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("destroySendFailures");
 
     connectionStats.endDestroySend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endDestroyRegionSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("destroyRegionSendTime");
-
-    connectionStats.endDestroyRegionSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endDestroyRegionSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("destroyRegionSends");
-
-    connectionStats.endDestroyRegionSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endDestroyRegionSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("destroyRegionSendFailures");
-
-    connectionStats.endDestroyRegionSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
