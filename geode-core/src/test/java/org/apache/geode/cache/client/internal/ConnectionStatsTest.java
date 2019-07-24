@@ -130,6 +130,15 @@ public class ConnectionStatsTest {
   private final int getAllSendInProgressId =
       ConnectionStats.getSendType().nameToId("getAllSendsInProgress");
 
+  private final int getClientPartitionAttributesDurationId =
+      ConnectionStats.getType().nameToId("getClientPartitionAttributesTime");
+  private final int getClientPartitionAttributesInProgressId =
+      ConnectionStats.getType().nameToId("getClientPartitionAttributesInProgress");
+  private final int getClientPartitionAttributesSendDurationId =
+      ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendTime");
+  private final int getClientPartitionAttributesSendInProgressId =
+      ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1031,6 +1040,85 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGetClientPartitionAttributesSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendFailures");
+
+    connectionStats.endGetClientPartitionAttributesSend(1, true);
+
+    verify(sendStats).incInt(eq(getClientPartitionAttributesSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getClientPartitionAttributesSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPartitionAttributesSend_SuccessfulOperation() {
+    int statId =
+        ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendsSuccessful");
+
+    connectionStats.endGetClientPartitionAttributesSend(1, false);
+
+    verify(sendStats).incInt(eq(getClientPartitionAttributesSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getClientPartitionAttributesSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPartitionAttributes_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPartitionAttributesTimeouts");
+
+    connectionStats.endGetClientPartitionAttributes(1, true, true);
+
+    verify(stats).incInt(eq(getClientPartitionAttributesInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPartitionAttributesDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPartitionAttributes_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getClientPartitionAttributesTimeouts");
+
+    connectionStats.endGetClientPartitionAttributes(1, true, false);
+
+    verify(stats).incInt(eq(getClientPartitionAttributesInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPartitionAttributesDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPartitionAttributes_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPartitionAttributesFailures");
+
+    connectionStats.endGetClientPartitionAttributes(1, false, true);
+
+    verify(stats).incInt(eq(getClientPartitionAttributesInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPartitionAttributesDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetClientPartitionAttributes_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("getClientPartitionAttributesSuccessful");
+
+    connectionStats.endGetClientPartitionAttributes(1, false, false);
+
+    verify(stats).incInt(eq(getClientPartitionAttributesInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getClientPartitionAttributesDurationId), anyLong());
+  }
+
+  @Test
+  public void startGetClientPartitionAttributes() {
+    int statId = ConnectionStats.getType().nameToId("getClientPartitionAttributesInProgress");
+    int sendStatId =
+        ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendsInProgress");
+
+    connectionStats.startGetClientPartitionAttributes();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1566,34 +1654,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("getClientPRMetadataSendFailures");
 
     connectionStats.endGetClientPRMetadataSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetClientPartitionAttributesSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendTime");
-
-    connectionStats.endGetClientPartitionAttributesSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetClientPartitionAttributesSendIncsSendStatsSuccessfulOpCount() {
-    int statId =
-        ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendsSuccessful");
-
-    connectionStats.endGetClientPartitionAttributesSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetClientPartitionAttributesSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getClientPartitionAttributesSendFailures");
-
-    connectionStats.endGetClientPartitionAttributesSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
