@@ -187,10 +187,6 @@ public class ManagementTestRule implements MethodRule, Serializable {
     return helper.getCache();
   }
 
-  public InternalCache getCache(Properties properties) {
-    return helper.getCache(properties);
-  }
-
   public InternalClientCache getClientCache() {
     return (InternalClientCache) helper.getClientCache(new ClientCacheFactory());
   }

@@ -84,7 +84,7 @@ public class LockServiceMBeanBridge {
 
   public String fetchGrantorMember() {
     return lockService.peekLockGrantorId() != null
-        ? lockService.peekLockGrantorId().getLockGrantorMember().getUniqueId() : null;
+        ? lockService.peekLockGrantorId().getLockGrantorMember().getId() : null;
   }
 
   public int getMemberCount() {
