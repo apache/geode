@@ -83,6 +83,14 @@ public class ConnectionStatsTest {
   private final int commitSendInProgressId =
       ConnectionStats.getSendType().nameToId("commitSendsInProgress");
 
+  private final int containsKeyDurationId = ConnectionStats.getType().nameToId("containsKeyTime");
+  private final int containsKeyInProgressId =
+      ConnectionStats.getType().nameToId("containsKeysInProgress");
+  private final int containsKeySendDurationId =
+      ConnectionStats.getSendType().nameToId("containsKeySendTime");
+  private final int containsKeySendInProgressId =
+      ConnectionStats.getSendType().nameToId("containsKeySendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -555,6 +563,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endContainsKeySend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("containsKeySendFailures");
+
+    connectionStats.endContainsKeySend(1, true);
+
+    verify(sendStats).incInt(eq(containsKeySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(containsKeySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endContainsKeySend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("containsKeySends");
+
+    connectionStats.endContainsKeySend(1, false);
+
+    verify(sendStats).incInt(eq(containsKeySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(containsKeySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endContainsKey_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("containsKeyTimeouts");
+
+    connectionStats.endContainsKey(1, true, true);
+
+    verify(stats).incInt(eq(containsKeyInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(containsKeyDurationId), anyLong());
+  }
+
+  @Test
+  public void endContainsKey_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("containsKeyTimeouts");
+
+    connectionStats.endContainsKey(1, true, false);
+
+    verify(stats).incInt(eq(containsKeyInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(containsKeyDurationId), anyLong());
+  }
+
+  @Test
+  public void endContainsKey_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("containsKeyFailures");
+
+    connectionStats.endContainsKey(1, false, true);
+
+    verify(stats).incInt(eq(containsKeyInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(containsKeyDurationId), anyLong());
+  }
+
+  @Test
+  public void endContainsKey_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("containsKeys");
+
+    connectionStats.endContainsKey(1, false, false);
+
+    verify(stats).incInt(eq(containsKeyInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(containsKeyDurationId), anyLong());
+  }
+
+  @Test
+  public void startContainsKey() {
+    int statId = ConnectionStats.getType().nameToId("containsKeysInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("containsKeySendsInProgress");
+
+    connectionStats.startContainsKey();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -658,33 +743,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("destroyRegionSendFailures");
 
     connectionStats.endDestroyRegionSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endContainsKeySendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("containsKeySendTime");
-
-    connectionStats.endContainsKeySend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endContainsKeySendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("containsKeySends");
-
-    connectionStats.endContainsKeySend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endContainsKeySendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("containsKeySendFailures");
-
-    connectionStats.endContainsKeySend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
