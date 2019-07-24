@@ -202,7 +202,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
   @Override
   public void invalidate(EntryEventImpl event) {
     recordTXOperation(ServerRegionOperation.INVALIDATE, event.getKey(), event);
-    InvalidateOp.execute(pool, region.getFullPath(), event);
+    InvalidateOp.execute(pool, region.getFullPath(), event, pool.getPRSingleHopEnabled(), region);
   }
 
 
