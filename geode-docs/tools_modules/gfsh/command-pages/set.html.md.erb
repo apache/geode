@@ -19,12 +19,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 
-Set variables in the GFSH environment.
+Set variables in the gfsh environment.
 
 <a id="concept_E9CC746480464556AA8FF69EB991776E__section_66C36B0123F54A52AE3815E5D31F8239"></a>
-Set GFSH variables that can be used by commands.
+Set gfsh variables that can be used by commands.
 
-You can use the [echo](echo.html) command to view the value of a variable. For example, to see a list of all environment variables and their current values, use the following command:
+You can use the gfsh [echo](echo.html) command to view the value of a variable. For example, to see a list of all environment variables and their current values, use the following command:
 
 ``` pre
 gfsh>echo --string=$*
@@ -44,15 +44,11 @@ set variable --name=value --value=value
 
 | Name                                          | Description                                                                                                                               |
 |-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| <span class="keyword parmname">&#8209;&#8209;name</span>  | *Required.* Name for the variable. Name must only be composed of letters, numbers and the "\_" character and may not start with a number. |
+| <span class="keyword parmname">&#8209;&#8209;name</span>  | *Required.* The name to be assigned for the variable. The name must only be composed of letters, digits, and the underscore character (`_`); the name may not start with a digit. |
 | <span class="keyword parmname">&#8209;&#8209;value</span> | *Required.* Value that the variable will be set to.                                                                                       |
-
-<span class="tablecap">Table 1. Set Variable Parameters</span>
-
 **Example Commands:**
 
 ``` pre
-set variable --name=APP_COLLECTION_LIMIT --value=10
 set variable --name=FOO --value="foo"
 set variable --name=BAR --value="bar"
 ```
@@ -60,9 +56,6 @@ set variable --name=BAR --value="bar"
 **Sample Output:**
 
 ``` pre
-gfsh>set variable --name=APP_COLLECTION_LIMIT --value=10
-Value for variable APP_COLLECTION_LIMIT is now: 10.
-
 gfsh>set variable --name=BAR --value="bar"
 Value for variable BAR is now: "bar".
 ```
