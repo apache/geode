@@ -54,6 +54,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -67,6 +68,7 @@ import org.junit.runner.RunWith;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheLoaderException;
 import org.apache.geode.cache.CacheWriterException;
@@ -89,8 +91,10 @@ import org.apache.geode.cache.partition.PartitionRegionInfo;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.BucketRegion;
+import org.apache.geode.internal.cache.CacheClosingDistributionMessageObserver;
 import org.apache.geode.internal.cache.ColocationHelper;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
@@ -1781,7 +1785,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Create the region in only 2 VMs
     for (VM vm : toArray(vm0, vm1)) {
-      vm.invoke(() -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs()));
+      vm.invoke(
+          () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
     }
 
     VM rebalanceVM = useAccessor ? vm3 : vm0;
@@ -1809,7 +1814,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     vm0.invoke(() -> validateRedundancy("region1", 6, 0, 6));
 
     // Now create the cache in another member
-    vm2.invoke(() -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs()));
+    vm2.invoke(
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
 
     // Make sure we still have low redundancy
     vm0.invoke(() -> validateRedundancy("region1", 6, 0, 6));
@@ -1869,9 +1875,9 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     // We need to restart both VMs at the same time, because
     // they will wait for each other before allowing operations.
     AsyncInvocation createRegionOnVM0 = vm0.invokeAsync(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs()));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
     AsyncInvocation createRegionOnVM2 = vm2.invokeAsync(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs()));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
 
     createRegionOnVM0.await();
     createRegionOnVM2.await();
@@ -1920,7 +1926,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       vm0.invoke(() -> validateRedundancy("region1", 6, 1, 0));
     }
 
-    vm1.invoke(() -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs()));
+    vm1.invoke(
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
 
     // Look at vm0 buckets.
     assertThat(vm0.invoke(() -> getBucketList("region1"))).isEqualTo(bucketsOnVM0);
@@ -2168,6 +2175,70 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     }
   }
 
+  /**
+   * If a member's cache is recycled while a bucket is moving during a rebalance,
+   * we expect a subsequent rebalance will succeed after the cache is reconstructed.
+   */
+  @Test
+  public void testCacheClosesDuringBucketMove()
+      throws ExecutionException, InterruptedException {
+    VM server1 = getVM(0);
+    VM server2 = getVM(1);
+
+    int redundantCopies = 0;
+    String regionName = "region1";
+
+    server1.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
+        getDiskDirs(), redundantCopies));
+
+    // Do puts before starting the second server so that we guarantee all buckets reside on the
+    // first server. This way we ensure a rebalance should have some work to do.
+    server1.invoke(() -> {
+      doPuts(regionName);
+    });
+
+    server2.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
+        getDiskDirs(), redundantCopies));
+
+    server1.invoke(() -> {
+      getCache().close();
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
+    });
+
+    server2.invoke(() -> {
+      getCache().close();
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
+    });
+
+    server1.invoke(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+
+      // This will cause a CacheClosedException to occur during rebalance, specifically
+      // when a RequestImageMessage during any bucket GII is received.
+      DistributionMessageObserver
+          .setInstance(new CacheClosingDistributionMessageObserver(regionName));
+
+      try {
+        RebalanceResults results = doRebalance(false, manager);
+      } catch (CacheClosedException ex) {
+        // The CacheClosingDistributionMessageObserver will cause an expected CacheClosedException
+      } finally {
+        DistributionMessageObserver.setInstance(null);
+      }
+
+      // Rebuild the cache and retry the rebalance. We expect it to succeed because the
+      // CacheClosingDistributionMessageObserver has been uninstalled.
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(), 1);
+      manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, manager);
+
+      // The rebalance should have done some work since the buckets were imbalanced
+      assertThat(results.getTotalBucketTransfersCompleted() > 0);
+    });
+  }
+
   private void createPartitionedRegion(String regionName, EvictionAttributes evictionAttributes) {
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
     partitionAttributesFactory.setRedundantCopies(1);
@@ -2280,7 +2351,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   }
 
   private void createPersistentPartitionedRegion(String regionName, String diskStoreName,
-      File[] diskDirs) {
+      File[] diskDirs, int redundantCopies) {
     DiskStoreFactory diskStoreFactory = getCache().createDiskStoreFactory();
     diskStoreFactory.setDiskDirs(diskDirs).create(diskStoreName);
 

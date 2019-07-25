@@ -681,15 +681,10 @@ public class DiskRegion extends AbstractDiskRegion {
   }
 
   void cleanupFailedInitialization(LocalRegion region) {
-    if (isRecreated() && !this.wasAboutToDestroy() && !this.wasAboutToDestroyDataStorage()) {
+    if (regionPreviouslyHostedData()) {
       close(region, isBucket());
     } else {
-      if (this.isBucket() && !this.wasAboutToDestroy()) {
-        // Fix for 48642
-        // If this is a bucket, only destroy the data, if required.
-        beginDestroyDataStorage();
-      }
-      endDestroy(region);
+      destroyPartiallyInitializedRegion(region);
     }
   }
 
@@ -855,5 +850,19 @@ public class DiskRegion extends AbstractDiskRegion {
     // should never be called so throw an exception
     throw new IllegalStateException(
         "getExistingController should never be called on " + getClass());
+  }
+
+  private boolean regionPreviouslyHostedData() {
+    return isRecreated() && this.getMyPersistentID() != null && !this.wasAboutToDestroy()
+        && !this.wasAboutToDestroyDataStorage();
+  }
+
+  private void destroyPartiallyInitializedRegion(final LocalRegion region) {
+    if (this.isBucket() && !this.wasAboutToDestroy()) {
+      // Fix for 48642
+      // If this is a bucket, only destroy the data, if required.
+      beginDestroyDataStorage();
+    }
+    endDestroy(region);
   }
 }
