@@ -37,7 +37,7 @@ public class ClusterManagementListOperationsResult<V extends OperationResult>
    */
   @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
   public ClusterManagementListOperationsResult(
-      @JsonProperty List<ClusterManagementOperationResult<V>> result) {
+      @JsonProperty("result") List<ClusterManagementOperationResult<V>> result) {
     this.result = result;
   }
 
