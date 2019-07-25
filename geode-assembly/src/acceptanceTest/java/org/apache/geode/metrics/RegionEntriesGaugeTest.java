@@ -30,6 +30,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.concurrent.TimeUnit;
@@ -53,8 +54,8 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.metrics.rules.MetricsPublishingServiceJarRule;
 import org.apache.geode.metrics.rules.SingleFunctionJarRule;
+import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.categories.MetricsTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -68,11 +69,8 @@ public class RegionEntriesGaugeTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-  // TODO: refactor to ServiceJarRule
   @Rule
-  public MetricsPublishingServiceJarRule metricsPublishingServiceJarRule =
-      new MetricsPublishingServiceJarRule("metrics-publishing-service.jar",
-          SimpleMetricsPublishingService.class);
+  public ServiceJarRule serviceJarRule = new ServiceJarRule();
 
   // TODO: Inline the code that builds this jar
   @Rule
@@ -83,9 +81,12 @@ public class RegionEntriesGaugeTest {
   private String connectToLocatorCommand;
   private String locatorString;
   private Pool server1Pool;
+  private Path serviceJarPath;
 
   @Before
   public void startMembers() throws Exception {
+    serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
+        MetricsPublishingService.class, SimpleMetricsPublishingService.class);
     int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int locatorPort = availablePorts[0];
     int serverPort1 = availablePorts[1];
@@ -169,7 +170,7 @@ public class RegionEntriesGaugeTest {
               .endsWith("[Meter not found.]");
         });
   }
-  
+
   @Test
   public void regionEntriesGaugeShowsCountOfReplicateRegionValuesInServer() {
     Region<String, String> otherRegion = createRegion(REPLICATE.name(), "otherRegionName");
@@ -341,7 +342,7 @@ public class RegionEntriesGaugeTest {
         "--dir=" + folderForServer.getAbsolutePath(),
         "--server-port=" + serverPort,
         "--locators=" + locatorString,
-        "--classpath=" + metricsPublishingServiceJarRule.absolutePath());
+        "--classpath=" + serviceJarPath);
   }
 
   private static String memberRegionEntryGaugeValueCommand(String regionName) {

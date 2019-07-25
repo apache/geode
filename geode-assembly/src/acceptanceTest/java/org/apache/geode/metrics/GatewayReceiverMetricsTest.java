@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -118,7 +119,7 @@ public class GatewayReceiverMetricsTest {
         "--server-port=" + senderServerPort,
         "--J=-Dgemfire.distributed-system-id=" + senderSystemId);
 
-    String serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
+    Path serviceJarPath = serviceJarRule.createJarFor("metrics-publishing-service.jar",
         MetricsPublishingService.class, SimpleMetricsPublishingService.class);
 
     String startReceiverServerCommand = String.join(GFSH_COMMAND_SEPARATOR,
