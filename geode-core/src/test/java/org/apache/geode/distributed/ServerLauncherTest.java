@@ -16,17 +16,19 @@ package org.apache.geode.distributed;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,6 +38,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.CacheConfig;
+import org.apache.geode.internal.cache.control.InternalResourceManager;
 
 /**
  * Unit tests for {@link ServerLauncher}.
@@ -82,9 +85,9 @@ public class ServerLauncherTest {
     when(launcher.isWaiting(eq(cache))).thenReturn(true);
     when(launcher.isHelping()).thenReturn(true);
 
-    launcher.startCacheServer(cache);
+    launcher.startCacheServer(cache, 0L);
 
-    verify(launcher, times(1)).startCacheServer(cache);
+    verify(launcher, times(1)).startCacheServer(cache, 0L);
 
     assertThat(launcher.getCache()).isSameAs(cache);
     assertThat(launcher.getCacheConfig()).isSameAs(cacheConfig);
@@ -162,13 +165,13 @@ public class ServerLauncherTest {
     launcher.running.set(true);
     launcher.stop();
 
-    verify(cache, times(1)).isReconnecting();
-    verify(cache, times(1)).getReconnectedCache();
-    verify(cache, times(1)).isReconnecting();
-    verify(cache, times(1)).getReconnectedCache();
-    verify(reconnectedCache, times(1)).getDistributedSystem();
-    verify(system, times(1)).stopReconnecting();
-    verify(reconnectedCache, times(1)).close();
+    verify(cache).isReconnecting();
+    verify(cache).getReconnectedCache();
+    verify(cache).isReconnecting();
+    verify(cache).getReconnectedCache();
+    verify(reconnectedCache).getDistributedSystem();
+    verify(system).stopReconnecting();
+    verify(reconnectedCache).close();
   }
 
   @Test
@@ -287,17 +290,20 @@ public class ServerLauncherTest {
         .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
         .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients").build();
 
-    launcher.startCacheServer(cache);
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    verify(cacheServer, times(1)).setBindAddress(null);
-    verify(cacheServer, times(1)).setPort(eq(11235));
-    verify(cacheServer, times(1)).setMaxThreads(10);
-    verify(cacheServer, times(1)).setMaxConnections(100);
-    verify(cacheServer, times(1)).setMaximumMessageCount(5);
-    verify(cacheServer, times(1)).setMessageTimeToLive(10000);
-    verify(cacheServer, times(1)).setSocketBufferSize(2048);
-    verify(cacheServer, times(1)).setHostnameForClients("hostName4Clients");
-    verify(cacheServer, times(1)).start();
+    launcher.startCacheServer(cache, 0L);
+
+    verify(cacheServer).setBindAddress(null);
+    verify(cacheServer).setPort(eq(11235));
+    verify(cacheServer).setMaxThreads(10);
+    verify(cacheServer).setMaxConnections(100);
+    verify(cacheServer).setMaximumMessageCount(5);
+    verify(cacheServer).setMessageTimeToLive(10000);
+    verify(cacheServer).setSocketBufferSize(2048);
+    verify(cacheServer).setHostnameForClients("hostName4Clients");
+    verify(cacheServer).start();
   }
 
   @Test
@@ -308,17 +314,12 @@ public class ServerLauncherTest {
     when(cache.addCacheServer()).thenReturn(cacheServer);
     ServerLauncher launcher = new Builder().setDisableDefaultServer(true).build();
 
-    launcher.startCacheServer(cache);
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    verify(cacheServer, times(0)).setBindAddress(anyString());
-    verify(cacheServer, times(0)).setPort(anyInt());
-    verify(cacheServer, times(0)).setMaxThreads(anyInt());
-    verify(cacheServer, times(0)).setMaxConnections(anyInt());
-    verify(cacheServer, times(0)).setMaximumMessageCount(anyInt());
-    verify(cacheServer, times(0)).setMessageTimeToLive(anyInt());
-    verify(cacheServer, times(0)).setSocketBufferSize(anyInt());
-    verify(cacheServer, times(0)).setHostnameForClients(anyString());
-    verify(cacheServer, times(0)).start();
+    launcher.startCacheServer(cache, 0L);
+
+    verifyZeroInteractions(cacheServer);
   }
 
   @Test
@@ -330,16 +331,52 @@ public class ServerLauncherTest {
     when(cache.addCacheServer()).thenReturn(cacheServer1);
     ServerLauncher launcher = new Builder().build();
 
-    launcher.startCacheServer(cache);
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
 
-    verify(cacheServer2, times(0)).setBindAddress(anyString());
-    verify(cacheServer2, times(0)).setPort(anyInt());
-    verify(cacheServer2, times(0)).setMaxThreads(anyInt());
-    verify(cacheServer2, times(0)).setMaxConnections(anyInt());
-    verify(cacheServer2, times(0)).setMaximumMessageCount(anyInt());
-    verify(cacheServer2, times(0)).setMessageTimeToLive(anyInt());
-    verify(cacheServer2, times(0)).setSocketBufferSize(anyInt());
-    verify(cacheServer2, times(0)).setHostnameForClients(anyString());
-    verify(cacheServer2, times(0)).start();
+    launcher.startCacheServer(cache, 0L);
+
+    verifyZeroInteractions(cacheServer2);
+  }
+
+  @Test
+  public void startCacheServerPassesStartupCompletionActionToResourceManager() throws IOException {
+    Runnable startupCompletionAction = mock(Runnable.class);
+    ServerLauncher serverLauncher = new Builder()
+        .setStartupCompletionAction(startupCompletionAction)
+        .build();
+
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+
+    when(cache.addCacheServer()).thenReturn(cacheServer);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    serverLauncher.startCacheServer(cache, 0L);
+
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(same(startupCompletionAction), any());
+  }
+
+  @Test
+  public void startCacheServerPassesStartupExceptionActionToResourceManager() throws IOException {
+    @SuppressWarnings("unchecked")
+    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
+    ServerLauncher serverLauncher = new Builder()
+        .setStartupExceptionAction(startupExceptionAction)
+        .build();
+
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+
+    when(cache.addCacheServer()).thenReturn(cacheServer);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    serverLauncher.startCacheServer(cache, 0L);
+
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(any(), same(startupExceptionAction));
   }
 }

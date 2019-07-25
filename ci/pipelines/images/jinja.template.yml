@@ -194,7 +194,7 @@ jobs:
       passed:
       - build-alpine-tools-docker-image
   - task: build-image
-    timeout: 1h
+    timeout: 3h
     attempts: 5
     image: alpine-tools-docker-image
     config:

@@ -31,7 +31,7 @@ public interface ClusterManagementOperation<V extends JsonSerializable> {
   /**
    * must match the REST controller's RequestMapping
    *
-   * @return the portion after /management/v2, e.g. /operations/name
+   * @return the portion after /management/experimental, e.g. /operations/name
    */
   String getEndpoint();
 }

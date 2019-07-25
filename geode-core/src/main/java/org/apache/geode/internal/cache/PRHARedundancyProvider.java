@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -82,6 +83,7 @@ import org.apache.geode.internal.cache.partitioned.PRLoad;
 import org.apache.geode.internal.cache.partitioned.PartitionMemberInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionRegionInfoImpl;
 import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOp;
+import org.apache.geode.internal.cache.partitioned.PartitionedRegionRebalanceOpFactory;
 import org.apache.geode.internal.cache.partitioned.PersistentBucketRecoverer;
 import org.apache.geode.internal.cache.partitioned.RecoveryRunnable;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
@@ -152,6 +154,9 @@ public class PRHARedundancyProvider {
   private final AtomicBoolean firstInsufficientStoresLogged = new AtomicBoolean(false);
 
   private final PartitionedRegion partitionedRegion;
+  private final InternalResourceManager resourceManager;
+  private final PartitionedRegionRebalanceOpFactory rebalanceOpFactory;
+  private final CompletableFuture<Void> providerStartupTask;
 
   /**
    * An executor to submit tasks for redundancy recovery too. It makes sure that there will only be
@@ -172,7 +177,6 @@ public class PRHARedundancyProvider {
 
   private boolean shutdown;
 
-
   /**
    * Constructor for PRHARedundancyProvider.
    *
@@ -181,14 +185,29 @@ public class PRHARedundancyProvider {
    */
   public PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager) {
-    this(partitionedRegion, resourceManager, PersistentBucketRecoverer::new);
+    this(partitionedRegion, resourceManager, PersistentBucketRecoverer::new,
+        PartitionedRegionRebalanceOp::new,
+        new CompletableFuture<>());
   }
 
   @VisibleForTesting
   PRHARedundancyProvider(PartitionedRegion partitionedRegion,
       InternalResourceManager resourceManager,
       BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer> persistentBucketRecovererFunction) {
+    this(partitionedRegion, resourceManager, persistentBucketRecovererFunction,
+        PartitionedRegionRebalanceOp::new, new CompletableFuture<>());
+  }
+
+  @VisibleForTesting
+  PRHARedundancyProvider(PartitionedRegion partitionedRegion,
+      InternalResourceManager resourceManager,
+      BiFunction<PRHARedundancyProvider, Integer, PersistentBucketRecoverer> persistentBucketRecovererFunction,
+      PartitionedRegionRebalanceOpFactory rebalanceOpFactory,
+      CompletableFuture<Void> providerStartupTask) {
     this.partitionedRegion = partitionedRegion;
+    this.resourceManager = resourceManager;
+    this.rebalanceOpFactory = rebalanceOpFactory;
+    this.providerStartupTask = providerStartupTask;
     recoveryExecutor = new OneTaskOnlyExecutor(resourceManager.getExecutor(),
         () -> InternalResourceManager.getResourceObserver().recoveryConflated(partitionedRegion),
         getThreadMonitorObj());
@@ -1431,7 +1450,6 @@ public class PRHARedundancyProvider {
    * Schedule a task to perform redundancy recovery for a new node or for the node departed.
    */
   private void scheduleRedundancyRecovery(Object failedMemberId) {
-    // note: isStartup is true even when not starting
     boolean isStartup = failedMemberId == null;
     long delay;
     boolean movePrimaries;
@@ -1471,7 +1489,7 @@ public class PRHARedundancyProvider {
             director = new CompositeDirector(true, true, false, movePrimaries);
           }
 
-          PartitionedRegionRebalanceOp rebalance = new PartitionedRegionRebalanceOp(
+          PartitionedRegionRebalanceOp rebalance = rebalanceOpFactory.create(
               partitionedRegion, false, director, replaceOfflineData, false);
 
           long start = partitionedRegion.getPrStats().startRecovery();
@@ -1484,12 +1502,16 @@ public class PRHARedundancyProvider {
 
           partitionedRegion.getPrStats().endRecovery(start);
           recoveryFuture = null;
+          providerStartupTask.complete(null);
         } catch (CancelException e) {
           logger.debug("Cache closed while recovery in progress");
+          providerStartupTask.completeExceptionally(e);
         } catch (RegionDestroyedException e) {
           logger.debug("Region destroyed while recovery in progress");
+          providerStartupTask.completeExceptionally(e);
         } catch (Exception e) {
           logger.error("Unexpected exception during bucket recovery", e);
+          providerStartupTask.completeExceptionally(e);
         }
       }
     };
@@ -1507,6 +1529,7 @@ public class PRHARedundancyProvider {
             }
           }
           recoveryFuture = recoveryExecutor.schedule(task, delay, MILLISECONDS);
+          resourceManager.addStartupTask(providerStartupTask);
         } catch (RejectedExecutionException e) {
           // ok, the executor is shutting down.
         }

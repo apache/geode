@@ -268,7 +268,7 @@ public class RegionConfigTest {
     assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
 
     assertThat(regionConfig.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/v2/regions/regionA");
+        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/regions/regionA");
   }
 
   @Test

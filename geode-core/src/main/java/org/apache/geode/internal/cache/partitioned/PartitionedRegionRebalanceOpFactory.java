@@ -12,24 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
+package org.apache.geode.internal.cache.partitioned;
 
-package org.apache.geode.management.configuration;
+import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.cache.partitioned.rebalance.RebalanceDirector;
 
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.Test;
-
-import org.apache.geode.management.api.RestfulEndpoint;
-
-public class MemberConfigTest {
-
-  @Test
-  public void getUri() {
-    MemberConfig config = new MemberConfig();
-    config.setId("memberA");
-    assertThat(config.getEndpoint()).isEqualTo("/members");
-    assertThat(config.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/members/memberA");
-  }
+public interface PartitionedRegionRebalanceOpFactory {
+  PartitionedRegionRebalanceOp create(PartitionedRegion region, boolean simulate,
+      RebalanceDirector director, boolean replaceOfflineData, boolean isRebalance);
 }

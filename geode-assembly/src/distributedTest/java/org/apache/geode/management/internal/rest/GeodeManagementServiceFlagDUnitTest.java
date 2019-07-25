@@ -17,12 +17,11 @@ package org.apache.geode.management.internal.rest;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.rules.GeodeDevRestClient;
 
-public class GeodeManagementFeatureFlagDUnitTest {
+public class GeodeManagementServiceFlagDUnitTest {
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -32,20 +31,22 @@ public class GeodeManagementFeatureFlagDUnitTest {
   private GeodeDevRestClient restClient;
 
   @Test
-  public void geodeManagementShouldNotBeAvailableByDefault() throws Exception {
+  public void withOutService() throws Exception {
     locator = cluster.startLocatorVM(0,
-        l -> l.withSystemProperty(ClusterManagementService.FEATURE_FLAG, "false")
+        l -> l.withoutManagementRestService()
             .withHttpService());
     restClient =
-        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/experimental", "localhost", locator.getHttpPort(),
+            false);
     restClient.doGetAndAssert("/ping").hasStatusCode(404);
   }
 
   @Test
-  public void geodeManagementIsEnabledWithFeatureFlag() throws Exception {
+  public void withServiceByDefault() throws Exception {
     locator = cluster.startLocatorVM(0, l -> l.withHttpService());
     restClient =
-        new GeodeDevRestClient("/management/v2", "localhost", locator.getHttpPort(), false);
+        new GeodeDevRestClient("/management/experimental", "localhost", locator.getHttpPort(),
+            false);
     restClient.doGetAndAssert("/ping").hasStatusCode(200).hasResponseBody().isEqualTo("pong");
   }
 }
