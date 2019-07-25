@@ -16,6 +16,7 @@ package org.apache.geode.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -87,7 +88,11 @@ public class ResourcePermission extends WildcardPermission {
   private String key = ALL;
 
   public ResourcePermission() {
-    setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
+    setParts(Arrays.asList(
+        Collections.singleton(this.resource),
+        Collections.singleton(this.operation),
+        Collections.singleton(this.target),
+        Collections.singleton(this.key)));
   }
 
   public ResourcePermission(Resource resource, Operation operation) {
@@ -145,8 +150,8 @@ public class ResourcePermission extends WildcardPermission {
     }
 
     setParts(Arrays.asList(
-        CollectionUtils.asSet(this.resource.split(SUBPART_DIVIDER_TOKEN)),
-        CollectionUtils.asSet(this.operation.split(SUBPART_DIVIDER_TOKEN)),
+        Collections.singleton(this.resource),
+        Collections.singleton(this.operation),
         CollectionUtils.asSet(this.target.split(SUBPART_DIVIDER_TOKEN)),
         CollectionUtils.asSet(this.key.split(SUBPART_DIVIDER_TOKEN))));
   }
