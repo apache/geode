@@ -15,6 +15,7 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -160,7 +161,7 @@ public class PoolImpl implements InternalPool {
       InternalCache cache, ThreadsMonitoring tMonitoring) {
     PoolImpl pool =
         new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring,
-            cache.getStatisticsClock());
+            cache == null ? disabledClock() : cache.getStatisticsClock());
     pool.finishCreate(pm);
     return pool;
   }
@@ -220,7 +221,8 @@ public class PoolImpl implements InternalPool {
     subscriptionAckInterval = attributes.getSubscriptionAckInterval();
     subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
     if (subscriptionTimeoutMultiplier < 0) {
-      throw new IllegalArgumentException("The subscription timeout multipler must not be negative");
+      throw new IllegalArgumentException(
+          "The subscription timeout multiplier must not be negative");
     }
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();

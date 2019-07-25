@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache.wan;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -231,6 +233,10 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   final Object lockForConcurrentDispatcher = new Object();
 
   private final StatisticsClock statisticsClock;
+
+  protected AbstractGatewaySender() {
+    statisticsClock = disabledClock();
+  }
 
   public AbstractGatewaySender(InternalCache cache, GatewaySenderAttributes attrs,
       StatisticsClock statisticsClock) {
