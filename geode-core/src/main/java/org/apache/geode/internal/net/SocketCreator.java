@@ -933,6 +933,24 @@ public class SocketCreator {
       BufferPool bufferPool)
       throws IOException {
     engine.setUseClientMode(clientSocket);
+    if (!clientSocket) {
+      engine.setNeedClientAuth(sslConfig.isRequireAuth());
+    }
+
+    if (clientSocket) {
+      if (sslConfig.doEndpointIdentification()) {
+        SSLParameters sslParameters = engine.getSSLParameters();
+        sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+        engine.setSSLParameters(sslParameters);
+      } else {
+        if (!hostnameValidationDisabledLogShown) {
+          logger.info("Your SSL configuration disables hostname validation. "
+              + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
+              + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+          hostnameValidationDisabledLogShown = true;
+        }
+      }
+    }
     while (!socketChannel.finishConnect()) {
       try {
         Thread.sleep(50);
