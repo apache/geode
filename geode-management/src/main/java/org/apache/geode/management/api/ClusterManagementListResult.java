@@ -35,14 +35,16 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 @Experimental
 public class ClusterManagementListResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
+  /**
+   * for internal use only
+   */
   public ClusterManagementListResult() {}
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementListResult(boolean success, String message) {
     super(success, message);
-  }
-
-  public ClusterManagementListResult(StatusCode statusCode, String message) {
-    super(statusCode, message);
   }
 
   // Override the mapper setting so that we always show result
@@ -73,6 +75,9 @@ public class ClusterManagementListResult<T extends CacheElement & CorrespondWith
     return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
   }
 
+  /**
+   * for internal use only
+   */
   public void setResult(List<ConfigurationResult<T, R>> result) {
     this.result = result;
   }

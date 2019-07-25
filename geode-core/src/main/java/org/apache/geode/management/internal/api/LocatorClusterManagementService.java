@@ -50,6 +50,7 @@ import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -119,12 +120,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult create(T config) {
+  public <T extends CacheElement> ClusterManagementRealizationResult create(T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementRealizationResult(false,
           "Cluster configuration service needs to be enabled");
     }
 
@@ -143,7 +144,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // execute function on all members
     Set<DistributedMember> targetedMembers = memberValidator.findServers(group);
 
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new CacheRealizationFunction(),
@@ -182,13 +183,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult delete(
+  public <T extends CacheElement> ClusterManagementRealizationResult delete(
       T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementResult(false,
+      return new ClusterManagementRealizationResult(false,
           "Cluster configuration service needs to be enabled");
     }
 
@@ -207,7 +208,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // execute function on all members
-    ClusterManagementResult result = new ClusterManagementResult();
+    ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
 
     List<RealizationResult> functionResults = executeAndGetFunctionResult(
         new CacheRealizationFunction(),
@@ -249,7 +250,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult update(
+  public <T extends CacheElement> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not implemented");
   }

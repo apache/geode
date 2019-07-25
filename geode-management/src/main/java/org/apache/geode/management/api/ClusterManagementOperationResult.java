@@ -47,6 +47,9 @@ public class ClusterManagementOperationResult<V extends OperationResult>
 
   private String operator;
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementOperationResult() {
     this.operationResult = null;
     this.futureOperationEnded = null;

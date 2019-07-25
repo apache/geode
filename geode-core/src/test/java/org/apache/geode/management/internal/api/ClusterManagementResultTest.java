@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementListResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -44,6 +45,7 @@ public class ClusterManagementResultTest {
 
   @Test
   public void failsWhenNotAppliedOnAllMembers() {
+    ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", false, "msg-2");
     result.setStatus(true, "message");
@@ -52,6 +54,7 @@ public class ClusterManagementResultTest {
 
   @Test
   public void successfulOnlyWhenResultIsSuccessfulOnAllMembers() {
+    ClusterManagementRealizationResult result = new ClusterManagementRealizationResult();
     result.addMemberStatus("member-1", true, "msg-1");
     result.addMemberStatus("member-2", true, "msg-2");
     result.setStatus(true, "message");
@@ -107,6 +110,12 @@ public class ClusterManagementResultTest {
     result = new ClusterManagementResult();
     result.setStatus(true, "message");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
+  }
+
+  @Test
+  public void unsuccessfulMemeberStatusSetsErrorCode() {
+    ClusterManagementRealizationResult result =
+        new ClusterManagementRealizationResult(true, "message");
     result.addMemberStatus("member-1", true, "message-1");
     result.addMemberStatus("member-2", false, "message-2");
     assertThat(result.isSuccessful()).isFalse();

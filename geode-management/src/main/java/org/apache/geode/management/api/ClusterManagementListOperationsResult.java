@@ -14,9 +14,9 @@
  */
 package org.apache.geode.management.api;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -31,25 +31,25 @@ import org.apache.geode.management.runtime.OperationResult;
 @Experimental
 public class ClusterManagementListOperationsResult<V extends OperationResult>
     extends ClusterManagementResult {
-  public ClusterManagementListOperationsResult() {}
 
-  public ClusterManagementListOperationsResult(List<ClusterManagementOperationResult<V>> result) {
+  /**
+   * for internal use only
+   */
+  @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+  public ClusterManagementListOperationsResult(
+      @JsonProperty List<ClusterManagementOperationResult<V>> result) {
     this.result = result;
   }
 
   // Override the mapper setting so that we always show result
   @JsonInclude
   @JsonProperty
-  private List<ClusterManagementOperationResult<V>> result = new ArrayList<>();
+  private final List<ClusterManagementOperationResult<V>> result;
 
   /**
    * Returns the payload of the list call
    */
   public List<ClusterManagementOperationResult<V>> getResult() {
     return result;
-  }
-
-  public void setResult(List<ClusterManagementOperationResult<V>> result) {
-    this.result = result;
   }
 }

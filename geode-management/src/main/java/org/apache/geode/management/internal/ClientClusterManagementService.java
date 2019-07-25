@@ -31,6 +31,7 @@ import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
@@ -57,8 +58,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
 public class ClientClusterManagementService implements ClusterManagementService {
   // the restTemplate needs to have the context as the baseUrl, and request URI is the part after
   // the context (including /experimental), it needs to be set up this way so that spring test
-  // runner's
-  // injected RequestFactory can work
+  // runner's injected RequestFactory can work
   private final RestTemplate restTemplate;
   private final ScheduledExecutorService longRunningStatusPollingThreadPool;
 
@@ -69,30 +69,30 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement> ClusterManagementResult create(T config) {
+  public <T extends CacheElement> ClusterManagementRealizationResult create(T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return restTemplate
-        .postForEntity(endPoint, config, ClusterManagementResult.class)
+        .postForEntity(endPoint, config, ClusterManagementRealizationResult.class)
         .getBody();
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement> ClusterManagementResult delete(
+  public <T extends CacheElement> ClusterManagementRealizationResult delete(
       T config) {
     String uri = getIdentityEndPoint(config);
     return restTemplate
         .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
             null,
-            ClusterManagementResult.class,
+            ClusterManagementRealizationResult.class,
             config.getGroup())
         .getBody();
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementResult update(
+  public <T extends CacheElement> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }

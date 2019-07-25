@@ -14,13 +14,9 @@
  */
 package org.apache.geode.management.api;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
 
 /**
  * This base class provides the common attributes returned from all {@link ClusterManagementService}
@@ -62,44 +58,43 @@ public class ClusterManagementResult {
     OK
   }
 
-  private List<RealizationResult> memberStatuses = new ArrayList<>();
-
   // we will always have statusCode when the object is created
-  private StatusCode statusCode = StatusCode.OK;
+  protected StatusCode statusCode = StatusCode.OK;
   private String statusMessage;
   private String uri;
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementResult() {}
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementResult(boolean success, String message) {
     setStatus(success, message);
   }
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementResult(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
     this.statusMessage = message;
   }
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementResult(ClusterManagementResult copyFrom) {
-    this.memberStatuses = copyFrom.memberStatuses;
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
     this.uri = copyFrom.uri;
   }
 
-  public void addMemberStatus(String member, boolean success, String message) {
-    addMemberStatus(new RealizationResult().setMemberName(member)
-        .setSuccess(success).setMessage(message));
-  }
-
-  public void addMemberStatus(RealizationResult result) {
-    this.memberStatuses.add(result);
-    // if any member failed, status code will be error
-    if (!result.isSuccess()) {
-      statusCode = StatusCode.ERROR;
-    }
-  }
-
+  /**
+   * for internal use only
+   */
   public void setStatus(boolean success, String message) {
     if (!success) {
       statusCode = StatusCode.ERROR;
@@ -107,17 +102,12 @@ public class ClusterManagementResult {
     this.statusMessage = message;
   }
 
+  /**
+   * for internal use only
+   */
   public void setStatus(StatusCode code, String message) {
     this.statusCode = code;
     this.statusMessage = message;
-  }
-
-  /**
-   * For a {@link ClusterManagementService#create(CacheElement)} operation, this will return
-   * per-member status of the create.
-   */
-  public List<RealizationResult> getMemberStatuses() {
-    return memberStatuses;
   }
 
   /**
@@ -135,6 +125,9 @@ public class ClusterManagementResult {
     return uri;
   }
 
+  /**
+   * for internal use only
+   */
   public void setUri(String uri) {
     this.uri = uri;
   }

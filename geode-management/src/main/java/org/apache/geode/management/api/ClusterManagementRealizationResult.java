@@ -12,7 +12,6 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.api;
 
 import java.util.ArrayList;
@@ -20,57 +19,52 @@ import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- * A simple object that holds a configuration object and its corresponding runtime info on each
- * member.
- *
- * @param <T> the config type
- * @param <R> the runtimeInfo type
+ * returned from {@link ClusterManagementService#create(CacheElement)} /
+ * {@link ClusterManagementService#update(CacheElement)} /
+ * {@link ClusterManagementService#delete(CacheElement)} methods
  */
 @Experimental
-public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
-  private T config;
-  private List<R> runtimeInfo = new ArrayList<>();
+public class ClusterManagementRealizationResult extends ClusterManagementResult {
+  private List<RealizationResult> memberStatuses = new ArrayList<>();
 
   /**
    * for internal use only
    */
-  public ConfigurationResult() {}
+  public ClusterManagementRealizationResult() {}
 
   /**
    * for internal use only
    */
-  public ConfigurationResult(T config) {
-    this.config = config;
-  }
-
-  /**
-   * Returns the static portion of the configuration
-   */
-  public T getConfig() {
-    return config;
+  public ClusterManagementRealizationResult(boolean success, String message) {
+    super(success, message);
   }
 
   /**
    * for internal use only
    */
-  public void setConfig(T config) {
-    this.config = config;
-  }
-
-  /**
-   * Returns the non-static information
-   */
-  public List<R> getRuntimeInfo() {
-    return runtimeInfo;
+  public void addMemberStatus(String member, boolean success, String message) {
+    addMemberStatus(new RealizationResult().setMemberName(member)
+        .setSuccess(success).setMessage(message));
   }
 
   /**
    * for internal use only
    */
-  public void setRuntimeInfo(List<R> runtimeInfo) {
-    this.runtimeInfo = runtimeInfo;
+  public void addMemberStatus(RealizationResult result) {
+    this.memberStatuses.add(result);
+    // if any member failed, status code will be error
+    if (!result.isSuccess()) {
+      statusCode = StatusCode.ERROR;
+    }
+  }
+
+  /**
+   * For a {@link ClusterManagementService#create(CacheElement)} operation, this will return
+   * per-member status of the create.
+   */
+  public List<RealizationResult> getMemberStatuses() {
+    return memberStatuses;
   }
 }

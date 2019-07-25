@@ -32,33 +32,54 @@ public class RealizationResult implements Serializable {
   private boolean success = true;
   private String message = "success";
 
+  /**
+   * for internal use only
+   */
   public RealizationResult() {
     setSuccess(true);
     setMessage("success");
   }
 
+  /**
+   * returns optional information to supplement {@link #isSuccess()}
+   */
   public String getMessage() {
     return message;
   }
 
+  /**
+   * for internal use only
+   */
   public RealizationResult setMessage(String message) {
     this.message = message;
     return this;
   }
 
+  /**
+   * returns the member name this realization result applies to
+   */
   public String getMemberName() {
     return memberName;
   }
 
+  /**
+   * for internal use only
+   */
   public RealizationResult setMemberName(String memberName) {
     this.memberName = memberName;
     return this;
   }
 
+  /**
+   * returns true if realization succeeded on this member
+   */
   public boolean isSuccess() {
     return success;
   }
 
+  /**
+   * for internal use only
+   */
   public RealizationResult setSuccess(boolean success) {
     this.success = success;
     return this;

@@ -68,6 +68,14 @@ public interface RestfulEndpoint extends Identifiable<String> {
     }
   }
 
+  /**
+   * return the full uri path that points to a single entity. If the id is not available for the
+   * object, this will return null
+   *
+   * it should return the URI part after http://hostname:port
+   *
+   * @return e.g. /management/experimental/regions/regionA
+   */
   @XmlTransient
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   default String getUri() {

@@ -683,6 +683,7 @@ javadoc/org/apache/geode/management/api/ClusterManagementOperation.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
 javadoc/org/apache/geode/management/api/ClusterManagementResult.html
+javadoc/org/apache/geode/management/api/ClusterManagementRealizationResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/CorrespondWith.html

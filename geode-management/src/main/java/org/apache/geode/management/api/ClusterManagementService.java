@@ -34,9 +34,10 @@ public interface ClusterManagementService extends AutoCloseable {
    *
    * @param config this holds the configuration attributes of the element to be created on the
    *        cluster, as well as the group this config belongs to
+   * @return a {@link ClusterManagementRealizationResult} indicating the success of the creation
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult create(T config);
+  <T extends CacheElement> ClusterManagementRealizationResult create(T config);
 
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
@@ -44,10 +45,11 @@ public interface ClusterManagementService extends AutoCloseable {
    *
    * @param config this holds the configuration attributes of the element to be deleted on the
    *        cluster
+   * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult delete(T config);
+  <T extends CacheElement> ClusterManagementRealizationResult delete(T config);
 
   /**
    * This method will update the element on all the applicable members in the cluster and persist
@@ -55,10 +57,11 @@ public interface ClusterManagementService extends AutoCloseable {
    *
    * @param config this holds the configuration attributes of the element to be updated on the
    *        cluster
+   * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
    * @throws IllegalArgumentException, NoMemberException, EntityExistsException
    * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementResult update(T config);
+  <T extends CacheElement> ClusterManagementRealizationResult update(T config);
 
   /**
    * This method will list instances of the element type in the cluster configuration, along with
@@ -66,6 +69,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *
    * @param config this may be used to filter the search results by id or group (check documentation
    *        for individual element types to see if they support filtering by addition attributes)
+   * @return a {@link ClusterManagementListResult} holding a list of matching instances in
+   *         {@link ClusterManagementListResult#getResult()}
    * @see CacheElement
    */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
@@ -77,6 +82,9 @@ public interface ClusterManagementService extends AutoCloseable {
    *
    * @param config this must be used to filter the search results to a single result, generally by
    *        supplying the name (id) of the desired config element
+   * @return a {@link ClusterManagementListResult} holding a single element in
+   *         {@link ClusterManagementListResult#getResult()}
+   * @throws RuntimeException if no matching element is found or multiple matches are found
    * @see CacheElement
    */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(

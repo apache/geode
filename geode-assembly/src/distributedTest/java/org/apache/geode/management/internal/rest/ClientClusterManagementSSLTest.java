@@ -43,6 +43,7 @@ import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
@@ -105,7 +106,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "dataManage").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
+      ClusterManagementRealizationResult result = cmsClient.create(region);
       assertThat(result.isSuccessful()).isTrue();
       assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
       assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
