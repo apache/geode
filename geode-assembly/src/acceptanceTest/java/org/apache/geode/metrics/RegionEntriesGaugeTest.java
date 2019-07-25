@@ -30,7 +30,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.concurrent.TimeUnit;
@@ -80,8 +79,6 @@ public class RegionEntriesGaugeTest {
   public SingleFunctionJarRule functionJarRule =
       new SingleFunctionJarRule("function.jar", GetMemberRegionEntriesGaugeFunction.class);
 
-  private final List<File> serverFolders = new ArrayList<>();
-  private File folderForLocator;
   private ClientCache clientCache;
   private String connectToLocatorCommand;
   private String locatorString;
@@ -96,11 +93,9 @@ public class RegionEntriesGaugeTest {
 
     locatorString = "localhost[" + locatorPort + "]";
 
-    folderForLocator = temporaryFolder.newFolder("locator");
+    File folderForLocator = temporaryFolder.newFolder("locator");
     File folderForServer1 = temporaryFolder.newFolder("server1");
     File folderForServer2 = temporaryFolder.newFolder("server2");
-    serverFolders.add(folderForServer1);
-    serverFolders.add(folderForServer2);
 
     String startLocatorCommand = String.join(" ",
         "start locator",
@@ -130,22 +125,12 @@ public class RegionEntriesGaugeTest {
   @After
   public void stopMembers() {
     clientCache.close();
-
-    List<String> commands = new ArrayList<>();
-    commands.add(connectToLocatorCommand);
-
-    serverFolders.stream()
-        .map(RegionEntriesGaugeTest::stopServerCommand)
-        .forEach(commands::add);
-
-    commands.add("stop locator --dir=" + folderForLocator.getAbsolutePath());
-
-    gfshRule.execute(commands.toArray(new String[0]));
     server1Pool.destroy();
-  }
 
-  private static String stopServerCommand(File folder) {
-    return "stop server --dir=" + folder.getAbsolutePath();
+    String shutdownCommand = String.join(" ",
+        "shutdown",
+        "--include-locators=true");
+    gfshRule.execute(connectToLocatorCommand, shutdownCommand);
   }
 
   @Test
@@ -163,7 +148,6 @@ public class RegionEntriesGaugeTest {
     String getGaugeValueCommand = memberRegionEntryGaugeValueCommand(regionName);
 
     await()
-        .atMost(30, TimeUnit.SECONDS)
         .untilAsserted(() -> {
           GfshExecution execution = gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
           OptionalInt server1EntryCount = linesOf(execution.getOutputText())
@@ -185,22 +169,7 @@ public class RegionEntriesGaugeTest {
               .endsWith("[Meter not found.]");
         });
   }
-
-  private Region<String, String> createRegionInGroup(String regionType, String regionName,
-      String groupName) {
-    String createRegionCommand = String.join(" ",
-        "create region",
-        "--name=" + regionName,
-        "--type=" + regionType,
-        "--groups=" + groupName);
-
-    gfshRule.execute(connectToLocatorCommand, createRegionCommand);
-
-    return clientCache.<String, String>createClientRegionFactory(PROXY)
-        .setPoolName(server1Pool.getName())
-        .create(regionName);
-  }
-
+  
   @Test
   public void regionEntriesGaugeShowsCountOfReplicateRegionValuesInServer() {
     Region<String, String> otherRegion = createRegion(REPLICATE.name(), "otherRegionName");
@@ -270,7 +239,6 @@ public class RegionEntriesGaugeTest {
     int server3Port = AvailablePortHelper.getRandomAvailableTCPPort();
 
     File folderForServer3 = temporaryFolder.newFolder("server3");
-    serverFolders.add(folderForServer3);
 
     String startServer3Command = startServerCommand("server3", server3Port, folderForServer3);
     gfshRule.execute(connectToLocatorCommand, startServer3Command);
@@ -347,6 +315,21 @@ public class RegionEntriesGaugeTest {
     gfshRule.execute(connectToLocatorCommand, createRegionCommand);
 
     return clientCache.<String, String>createClientRegionFactory(PROXY).create(regionName);
+  }
+
+  private Region<String, String> createRegionInGroup(String regionType, String regionName,
+      String groupName) {
+    String createRegionCommand = String.join(" ",
+        "create region",
+        "--name=" + regionName,
+        "--type=" + regionType,
+        "--groups=" + groupName);
+
+    gfshRule.execute(connectToLocatorCommand, createRegionCommand);
+
+    return clientCache.<String, String>createClientRegionFactory(PROXY)
+        .setPoolName(server1Pool.getName())
+        .create(regionName);
   }
 
   private String startServerCommand(String serverName, int serverPort, File folderForServer) {
