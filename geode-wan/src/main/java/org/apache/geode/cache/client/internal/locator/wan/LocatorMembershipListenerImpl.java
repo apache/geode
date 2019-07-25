@@ -42,7 +42,7 @@ import org.apache.geode.internal.logging.LoggingThreadFactory;
 public class LocatorMembershipListenerImpl implements LocatorMembershipListener {
   private static final Logger logger = LogService.getLogger();
   static final int LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS = 3;
-  static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
+  private static final String LOCATORS_DISTRIBUTOR_THREAD_NAME = "LocatorsDistributorThread";
   private static final String LISTENER_FAILURE_MESSAGE =
       "Locator Membership listener could not exchange locator information {}:{} with {}:{} after {} retry attempts";
   private static final String LISTENER_FINAL_FAILURE_MESSAGE =
@@ -72,6 +72,17 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
   @Override
   public void setConfig(DistributionConfig config) {
     this.config = config;
+  }
+
+  Thread buildLocatorsDistributorThread(DistributionLocatorId localLocatorId,
+      Map<Integer, Set<DistributionLocatorId>> remoteLocators, DistributionLocatorId joiningLocator,
+      int joiningLocatorDistributedSystemId) {
+    Runnable distributeLocatorsRunnable =
+        new DistributeLocatorsRunnable(config.getMemberTimeout(), tcpClient, localLocatorId,
+            remoteLocators, joiningLocator, joiningLocatorDistributedSystemId);
+    ThreadFactory threadFactory = new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+
+    return threadFactory.newThread(distributeLocatorsRunnable);
   }
 
   /**
@@ -112,12 +123,9 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     }
 
     // Launch Locators Distributor thread.
-    Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(config.getMemberTimeout(),
-        tcpClient, localLocatorId, localCopy, locator, distributedSystemId);
-    ThreadFactory threadFactory =
-        new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
-    Thread distributeLocatorsThread = threadFactory.newThread(distributeLocatorsRunnable);
-    distributeLocatorsThread.start();
+    Thread locatorsDistributorThread =
+        buildLocatorsDistributorThread(localLocatorId, localCopy, locator, distributedSystemId);
+    locatorsDistributorThread.start();
   }
 
   @Override
@@ -307,6 +315,8 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
                   Thread.sleep(memberTimeout);
                 } catch (InterruptedException e) {
                   Thread.currentThread().interrupt();
+                  logger.warn(
+                      "Locator Membership listener permanently failed to exchange locator information due to interruption.");
                 }
               }
             }
