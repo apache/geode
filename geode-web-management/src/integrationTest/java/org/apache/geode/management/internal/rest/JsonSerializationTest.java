@@ -36,7 +36,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 
 @RunWith(SpringRunner.class)
@@ -67,7 +67,7 @@ public class JsonSerializationTest {
   @Test
   public void invalidAttributes() throws Exception {
     String json = "{'name':'test','Group1':'group1','Group2':'group2'}";
-    when(cms.create(any())).thenReturn(new ClusterManagementResult());
+    when(cms.create(any())).thenReturn(new ClusterManagementRealizationResult());
     context.perform(post("/experimental/regions").content(json))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ILLEGAL_ARGUMENT")))
@@ -79,7 +79,7 @@ public class JsonSerializationTest {
   @Test
   public void validAttributes() throws Exception {
     String json = "{'name':'test','group':'group1'}";
-    when(cms.create(any())).thenReturn(new ClusterManagementResult());
+    when(cms.create(any())).thenReturn(new ClusterManagementRealizationResult());
     context.perform(post("/experimental/regions").content(json))
         .andExpect(status().isCreated());
     verify(cms, atLeastOnce()).create(regionConfigCaptor.capture());

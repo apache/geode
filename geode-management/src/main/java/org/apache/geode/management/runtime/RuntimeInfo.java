@@ -17,8 +17,10 @@ package org.apache.geode.management.runtime;
 
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.JsonSerializable;
 
+@Experimental
 public abstract class RuntimeInfo implements Serializable, JsonSerializable {
   private String memberName;
 

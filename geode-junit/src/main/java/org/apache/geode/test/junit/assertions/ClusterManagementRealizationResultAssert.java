@@ -22,33 +22,35 @@ import java.util.List;
 import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.ListAssert;
 
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
 
-public class ClusterManagementResultAssert
-    extends AbstractAssert<ClusterManagementResultAssert, ClusterManagementResult> {
-  public ClusterManagementResultAssert(
-      ClusterManagementResult clusterManagementResult, Class<?> selfType) {
+public class ClusterManagementRealizationResultAssert
+    extends
+    AbstractAssert<ClusterManagementRealizationResultAssert, ClusterManagementRealizationResult> {
+  public ClusterManagementRealizationResultAssert(
+      ClusterManagementRealizationResult clusterManagementResult, Class<?> selfType) {
     super(clusterManagementResult, selfType);
   }
 
-  public ClusterManagementResultAssert isSuccessful() {
+  public ClusterManagementRealizationResultAssert isSuccessful() {
     assertThat(actual.isSuccessful()).isTrue();
     return this;
   }
 
-  public ClusterManagementResultAssert failed() {
+  public ClusterManagementRealizationResultAssert failed() {
     assertThat(actual.isSuccessful()).isFalse();
     return this;
   }
 
-  public ClusterManagementResultAssert hasStatusCode(
+  public ClusterManagementRealizationResultAssert hasStatusCode(
       ClusterManagementResult.StatusCode... codes) {
     assertThat(actual.getStatusCode()).isIn(codes);
     return this;
   }
 
-  public ClusterManagementResultAssert containsStatusMessage(String statusMessage) {
+  public ClusterManagementRealizationResultAssert containsStatusMessage(String statusMessage) {
     assertThat(actual.getStatusMessage()).contains(statusMessage);
     return this;
   }
@@ -61,9 +63,10 @@ public class ClusterManagementResultAssert
     return actual.getMemberStatuses();
   }
 
-  public static ClusterManagementResultAssert assertManagementResult(
-      ClusterManagementResult result) {
-    return new ClusterManagementResultAssert(result, ClusterManagementResultAssert.class);
+  public static ClusterManagementRealizationResultAssert assertManagementResult(
+      ClusterManagementRealizationResult result) {
+    return new ClusterManagementRealizationResultAssert(result,
+        ClusterManagementRealizationResultAssert.class);
   }
 
   public ClusterManagementResult getActual() {

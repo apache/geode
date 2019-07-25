@@ -17,6 +17,11 @@ package org.apache.geode.management.api;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+/**
+ * marker interface that allows subclasses to be deserialized correctly
+ * note that any class can still be serialized using JSON (without implementing this interface) as
+ * long as it has no subclasses
+ */
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
 public interface JsonSerializable {
 }

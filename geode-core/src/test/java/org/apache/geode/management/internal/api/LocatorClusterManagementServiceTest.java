@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -54,8 +55,8 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -70,6 +71,7 @@ import org.apache.geode.management.internal.configuration.validators.RegionConfi
 import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
+import org.apache.geode.management.runtime.OperationResult;
 
 public class LocatorClusterManagementServiceTest {
 
@@ -319,7 +321,7 @@ public class LocatorClusterManagementServiceTest {
     Region mockRegion = mock(Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    ClusterManagementResult result = service.delete(regionConfig);
+    ClusterManagementRealizationResult result = service.delete(regionConfig);
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
@@ -329,12 +331,14 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void startOperation() {
     final String URI = "test/uri";
-    ClusterManagementOperation<JsonSerializable> operation = mock(ClusterManagementOperation.class);
-    when(executorManager.submit(any())).thenReturn(new OperationInstance<>(null, "42", operation));
-    ClusterManagementOperationResult<?> result = service.startOperation(operation, URI);
-    assertThat(result.getUri()).isEqualTo(URI + "/42");
+    ClusterManagementOperation<OperationResult> operation = mock(ClusterManagementOperation.class);
+    when(operation.getEndpoint()).thenReturn(URI);
+    when(executorManager.submit(any()))
+        .thenReturn(new OperationInstance<>(null, "42", operation, new Date()));
+    ClusterManagementOperationResult<?> result = service.start(operation);
+    assertThat(result.getUri()).isEqualTo("/management/experimental" + URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
-    assertThat(result.getStatusMessage()).isEqualTo("async operation started");
+    assertThat(result.getStatusMessage()).contains("async operation started");
   }
 
   @Test
@@ -346,9 +350,12 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void checkStatus() {
     CompletableFuture future = mock(CompletableFuture.class);
-    when(executorManager.getStatus(any())).thenReturn(future);
+    OperationInstance operationInstance = mock(OperationInstance.class);
+    when(operationInstance.getFutureResult()).thenReturn(future);
+    when(operationInstance.getFutureOperationEnded()).thenReturn(future);
+    when(executorManager.getOperationInstance(any())).thenReturn(operationInstance);
     when(future.isDone()).thenReturn(false);
-    ClusterManagementOperationStatusResult<JsonSerializable> result = service.checkStatus("456");
+    ClusterManagementOperationStatusResult<OperationResult> result = service.checkStatus("456");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.IN_PROGRESS);
     assertThat(result.getResult()).isNull();
 

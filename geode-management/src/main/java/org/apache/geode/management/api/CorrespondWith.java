@@ -34,6 +34,9 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 @Experimental
 public interface CorrespondWith<R extends RuntimeInfo> {
+  /**
+   * for internal use only
+   */
   @XmlTransient
   @JsonIgnore
   default Class<R> getRuntimeClass() {
@@ -50,6 +53,9 @@ public interface CorrespondWith<R extends RuntimeInfo> {
     return (Class<R>) type.getActualTypeArguments()[0];
   };
 
+  /**
+   * for internal use only
+   */
   default boolean hasRuntimeInfo() {
     return !RuntimeInfo.class.equals(getRuntimeClass());
   }

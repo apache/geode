@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -99,7 +99,7 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void getNonExistRegion() {
     regionConfig.setName("notExist");
-    assertManagementResult(cms.get(regionConfig)).failed().hasStatusCode(
+    assertManagementListResult(cms.get(regionConfig)).failed().hasStatusCode(
         ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
   }
 
@@ -163,7 +163,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
-    assertManagementResult(cms.get(index)).failed()
+    assertManagementListResult(cms.get(index)).failed()
         .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
   }
 

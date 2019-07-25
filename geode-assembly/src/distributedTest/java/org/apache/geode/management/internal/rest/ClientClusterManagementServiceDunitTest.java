@@ -13,6 +13,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
@@ -61,7 +62,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("customer");
     region.setType(RegionType.PARTITION);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementRealizationResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -79,7 +80,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setName("orders");
     region.setType(RegionType.PARTITION);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementRealizationResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);
@@ -106,7 +107,7 @@ public class ClientClusterManagementServiceDunitTest {
     region.setType(RegionType.PARTITION);
     region.setGroup(groupA);
 
-    ClusterManagementResult result = cmsClient.create(region);
+    ClusterManagementRealizationResult result = cmsClient.create(region);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.OK);

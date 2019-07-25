@@ -20,36 +20,40 @@ import static org.mockito.Mockito.mock;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.Cache;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
+import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationManagerTest {
   private OperationManager executorManager;
 
   @Before
   public void setUp() throws Exception {
-    executorManager = new OperationManager(new OperationHistoryManager(1));
+    executorManager =
+        new OperationManager(null, new OperationHistoryManager(500, TimeUnit.MILLISECONDS));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 
   @Test
   public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
-    OperationInstance<TestOperation, TestResult> inst = executorManager.submit(operation);
-    CompletableFuture<TestResult> future1 = inst.getFuture();
+    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
+    CompletableFuture<TestOperationResult> future1 = inst.getFutureResult();
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestResult> inst2 = executorManager.submit(operation2);
-    CompletableFuture<TestResult> future2 = inst2.getFuture();
+    OperationInstance<TestOperation, TestOperationResult> inst2 =
+        executorManager.submit(operation2);
+    CompletableFuture<TestOperationResult> future2 = inst2.getFutureResult();
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
 
@@ -59,8 +63,9 @@ public class OperationManagerTest {
     operation2.latch.countDown();
     future2.get();
 
-    assertThat(executorManager.getStatus(id)).isNull(); // queue size 1 so should have been bumped
-    assertThat(executorManager.getStatus(id2)).isNotNull();
+    // time-based expiry so nothing should be bumped yet
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
   }
 
   @Test
@@ -69,14 +74,15 @@ public class OperationManagerTest {
     String id = executorManager.submit(operation).getId();
     assertThat(id).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
     String id2 = executorManager.submit(operation2).getId();
     assertThat(id2).isNotBlank();
 
-    assertThat(executorManager.getStatus(id)).isNotNull(); // all in progress, none should be bumped
-    assertThat(executorManager.getStatus(id2)).isNotNull();
+    // all in progress, none should be bumped
+    assertThat(executorManager.getOperationInstance(id)).isNotNull();
+    assertThat(executorManager.getOperationInstance(id2)).isNotNull();
 
     operation.latch.countDown();
     operation2.latch.countDown();
@@ -90,7 +96,7 @@ public class OperationManagerTest {
         .hasMessageContaining(" not supported");
   }
 
-  static class TestOperation implements ClusterManagementOperation<TestResult> {
+  static class TestOperation implements ClusterManagementOperation<TestOperationResult> {
     CountDownLatch latch = new CountDownLatch(1);
 
     @Override
@@ -99,11 +105,10 @@ public class OperationManagerTest {
     }
   }
 
-  static class TestResult implements JsonSerializable {
-    String testResult;
+  static class TestOperationResult implements OperationResult {
   }
 
-  static TestResult perform(TestOperation operation) {
+  static TestOperationResult perform(Cache cache, TestOperation operation) {
     try {
       operation.latch.await();
     } catch (InterruptedException e) {

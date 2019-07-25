@@ -25,15 +25,14 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
+import org.apache.geode.management.api.JsonSerializable;
 
 @Experimental
-@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "class")
-public abstract class CacheElement implements Identifiable<String>, Serializable {
+public abstract class CacheElement implements Identifiable<String>, Serializable, JsonSerializable {
   public static final String CLUSTER = "cluster";
 
   protected List<String> groups = new ArrayList<>();

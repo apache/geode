@@ -16,6 +16,9 @@ package org.apache.geode.management.runtime;
 
 import java.io.Serializable;
 
+import org.apache.geode.annotations.Experimental;
+
+@Experimental
 public class CacheServerInfo implements Serializable {
 
   private static final long serialVersionUID = 1L;

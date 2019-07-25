@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementResultAssert.assertManagementResult;
+import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -32,6 +32,7 @@ import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
@@ -73,7 +74,7 @@ public class RegionManagementDunitTest {
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
 
-    ClusterManagementResult result = cms.create(regionConfig);
+    ClusterManagementRealizationResult result = cms.create(regionConfig);
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -121,10 +122,10 @@ public class RegionManagementDunitTest {
   public void createsAPartitionedRegion() throws Exception {
     String json = "{\"name\": \"orders\", \"type\": \"PARTITION\", \"group\": \"group1\"}";
 
-    ClusterManagementResult result =
+    ClusterManagementRealizationResult result =
         restClient.doPostAndAssert("/regions", json)
             .hasStatusCode(201)
-            .getClusterManagementResult();
+            .getClusterManagementRealizationResult();
 
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
@@ -139,7 +140,7 @@ public class RegionManagementDunitTest {
     // create the same region 2nd time
     result = restClient.doPostAndAssert("/regions", json)
         .hasStatusCode(409)
-        .getClusterManagementResult();
+        .getClusterManagementRealizationResult();
     assertThat(result.isSuccessful()).isFalse();
   }
 

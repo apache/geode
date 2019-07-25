@@ -30,6 +30,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
@@ -77,7 +78,7 @@ public class ConfigurePDXDUnitTest {
   @Test
   public void configurePdx() {
     Pdx pdxType = new Pdx();
-    ClusterManagementResult result = client.create(pdxType);
+    ClusterManagementRealizationResult result = client.create(pdxType);
 
     // needed to pass StressNewTest since we haven't yet implemented delete(PdxType)
     if (result.getStatusCode() == ClusterManagementResult.StatusCode.ENTITY_EXISTS)

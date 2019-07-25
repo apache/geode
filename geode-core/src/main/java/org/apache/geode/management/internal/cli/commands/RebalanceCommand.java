@@ -82,8 +82,8 @@ public class RebalanceCommand extends GfshCommand {
     List<Future<ResultModel>> commandResult = new ArrayList<>();
     ResultModel result;
     try {
-      commandResult.add(commandExecutors.submit(new ExecuteRebalanceWithTimeout(includeRegions,
-          excludeRegions, simulate, (InternalCache) getCache())));
+      commandResult.add(
+          commandExecutors.submit(rebalanceCallable(includeRegions, excludeRegions, simulate)));
 
       Future<ResultModel> fs = commandResult.get(0);
       if (timeout > 0) {
@@ -95,14 +95,13 @@ public class RebalanceCommand extends GfshCommand {
       result = ResultModel.createInfo(CliStrings.REBALANCE__MSG__REBALANCE_WILL_CONTINUE);
     }
 
-    // if the result contains only error section, i.e. no rebalance operation is done, mark this
-    // command result to be error. This would happy if user hasn't specified any valid region. If
-    // only one region specified is valid and rebalance is done, the result would be marked as
-    // success.
-    if (result.getSection("error") != null && result.getSectionSize() == 1) {
-      result.setStatus(Result.Status.ERROR);
-    }
     return result;
+  }
+
+  public Callable<ResultModel> rebalanceCallable(String[] includeRegions, String[] excludeRegions,
+      boolean simulate) {
+    return new ExecuteRebalanceWithTimeout(includeRegions, excludeRegions, simulate,
+        (InternalCache) getCache());
   }
 
   private boolean checkResultList(InfoResultModel errors, List resultList,
@@ -146,7 +145,7 @@ public class RebalanceCommand extends GfshCommand {
 
   private void toCompositeResultData(ResultModel result,
       List<String> rstlist, int index, boolean simulate, InternalCache cache) {
-    int resultItemCount = 9;
+    final int resultItemCount = 9;
 
     if (rstlist.size() <= resultItemCount || StringUtils.isEmpty(rstlist.get(resultItemCount))) {
       return;
@@ -204,9 +203,9 @@ public class RebalanceCommand extends GfshCommand {
 
     String headerText;
     if (simulate) {
-      headerText = "Simulated partition regions ";
+      headerText = "Simulated partition regions";
     } else {
-      headerText = "Rebalanced partition regions ";
+      headerText = "Rebalanced partition regions";
     }
     for (int i = resultItemCount; i < rstlist.size(); i++) {
       headerText = headerText + " " + rstlist.get(i);
@@ -226,7 +225,17 @@ public class RebalanceCommand extends GfshCommand {
 
     @Override
     public ResultModel call() throws Exception {
-      return executeRebalanceWithTimeout(includeRegions, excludeRegions, simulate);
+      ResultModel result = executeRebalanceWithTimeout(includeRegions, excludeRegions, simulate);
+
+      // if the result contains only error section, i.e. no rebalance operation is done, mark this
+      // command result to be error. This would happy if user hasn't specified any valid region. If
+      // only one region specified is valid and rebalance is done, the result would be marked as
+      // success.
+      if (result.getSectionSize() == 1 && result.getInfoSection("error") != null) {
+        result.setStatus(Result.Status.ERROR);
+      }
+
+      return result;
     }
 
     ExecuteRebalanceWithTimeout(String[] includedRegions, String[] excludedRegions,
@@ -237,7 +246,8 @@ public class RebalanceCommand extends GfshCommand {
       this.cache = cache;
     }
 
-    ResultModel executeRebalanceWithTimeout(String[] includeRegions, String[] excludeRegions,
+    private ResultModel executeRebalanceWithTimeout(String[] includeRegions,
+        String[] excludeRegions,
         boolean simulate) {
 
       ResultModel result = new ResultModel();
@@ -276,52 +286,27 @@ public class RebalanceCommand extends GfshCommand {
               }
               functionArgs[2] = excludeRegionSet;
 
-              if (simulate) {
-                List resultList;
-                try {
-                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
-                      .getResult();
-                } catch (Exception ex) {
-                  LogWrapper.getInstance(cache)
-                      .info(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
-                          member.getId(), ex.getMessage()), ex);
-                  errors.addLine(CliStrings.format(
-                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                      member.getId()) + ": " + ex.getMessage());
-                  continue;
-                }
-
-                if (checkResultList(errors, resultList, member)) {
-                  continue;
-                }
-                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-
-                toCompositeResultData(result, rstList, index, true, cache);
-              } else {
-                List resultList;
-                try {
-                  resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
-                      .getResult();
-                } catch (Exception ex) {
-                  LogWrapper.getInstance(cache)
-                      .info(CliStrings.format(
-                          CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
-                          member.getId(), ex.getMessage()), ex);
-                  errors.addLine(CliStrings.format(
-                      CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
-                      member.getId()) + ": " + ex.getMessage());
-                  continue;
-                }
-
-                if (checkResultList(errors, resultList, member)) {
-                  continue;
-                }
-                List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
-
-                toCompositeResultData(result, rstList, index, false, cache);
+              List resultList;
+              try {
+                resultList = (ArrayList) executeFunction(rebalanceFunction, functionArgs, member)
+                    .getResult();
+              } catch (Exception ex) {
+                LogWrapper.getInstance(cache)
+                    .info(CliStrings.format(
+                        CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception_1,
+                        member.getId(), ex.getMessage()), ex);
+                errors.addLine(CliStrings.format(
+                    CliStrings.REBALANCE__MSG__EXCEPTION_IN_REBALANCE_FOR_MEMBER_0_Exception,
+                    member.getId()) + ": " + ex.getMessage());
+                continue;
               }
 
+              if (checkResultList(errors, resultList, member)) {
+                continue;
+              }
+              List<String> rstList = Arrays.asList(((String) resultList.get(0)).split(","));
+
+              toCompositeResultData(result, rstList, index, simulate, cache);
             } else {
 
               ResourceManager manager = cache.getResourceManager();
@@ -337,22 +322,20 @@ public class RebalanceCommand extends GfshCommand {
 
               if (simulate) {
                 op = manager.createRebalanceFactory().simulate();
-                buildResultForRebalance(result, op.getResults(), index, true, cache);
-
               } else {
                 op = manager.createRebalanceFactory().start();
-                // Wait until the rebalance is complete and then get the results
-                buildResultForRebalance(result, op.getResults(), index, false, cache);
               }
+              // Wait until the rebalance is complete and then get the results
+              buildResultForRebalance(result, op.getResults(), index, simulate, cache);
             }
             index++;
           }
           LogWrapper.getInstance(cache).info("Rebalance returning result " + result);
           return result;
         } else {
-          result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
           LogWrapper.getInstance(cache)
-              .info("Starting Rebalance simulate false result >> " + result);
+              .info("Starting Rebalance simulate=" + simulate + " result >> " + result);
+          result = executeRebalanceOnDS(cache, String.valueOf(simulate), excludeRegions);
         }
       } catch (Exception e) {
         result = ResultModel.createError(e.getMessage());

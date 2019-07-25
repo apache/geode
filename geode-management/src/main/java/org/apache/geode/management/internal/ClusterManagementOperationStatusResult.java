@@ -14,26 +14,27 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
-public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
+public class ClusterManagementOperationStatusResult<V extends OperationResult>
     extends ClusterManagementResult {
   public ClusterManagementOperationStatusResult() {}
 
-  public ClusterManagementOperationStatusResult(boolean success, String message) {
-    super(success, message);
-  }
-
-  public ClusterManagementOperationStatusResult(StatusCode statusCode, String message) {
-    super(statusCode, message);
-  }
-
   private V operationResult;
+  private String operator;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  private Date operationStart;
+
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+  private Date operationEnded;
 
   public V getResult() {
     return operationResult;
@@ -41,5 +42,29 @@ public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
 
   public void setResult(V operationResult) {
     this.operationResult = operationResult;
+  }
+
+  public Date getOperationStart() {
+    return operationStart;
+  }
+
+  public void setOperationStart(Date operationStart) {
+    this.operationStart = operationStart;
+  }
+
+  public Date getOperationEnded() {
+    return operationEnded;
+  }
+
+  public void setOperationEnded(Date operationEnded) {
+    this.operationEnded = operationEnded;
+  }
+
+  public String getOperator() {
+    return operator;
+  }
+
+  public void setOperator(String operator) {
+    this.operator = operator;
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
+import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -23,10 +24,10 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
-public class CompletableFutureProxy<V extends JsonSerializable> extends CompletableFuture<V>
+public class CompletableFutureProxy<V extends OperationResult> extends CompletableFuture<V>
     implements Dormant {
   static final int POLL_INTERVAL = 100; // millis between http status checks
 
@@ -37,12 +38,14 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
   private final RestTemplate restTemplate;
   private final String uri;
   private ScheduledFuture<?> scheduledFuture;
+  private final CompletableFuture<Date> futureOperationEnded;
 
   public CompletableFutureProxy(RestTemplate restTemplate, String uri,
-      ScheduledExecutorService pool) {
+      ScheduledExecutorService pool, CompletableFuture<Date> futureOperationEnded) {
     this.restTemplate = restTemplate;
     this.uri = uri;
     this.pool = pool;
+    this.futureOperationEnded = futureOperationEnded;
   }
 
   @Override
@@ -58,6 +61,7 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
       // bail out if the future has already been completed (successfully by us, or by user cancel,
       // or by exception)
       if (isDone()) {
+        futureOperationEnded.complete(null);
         scheduledFuture.cancel(true);
         return;
       }
@@ -70,6 +74,7 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
       } catch (Exception e) {
         // don't panic if a few checks fail, might just be network issue
         if (++consecutiveCheckFailures > TOLERABLE_FAILURES) {
+          futureOperationEnded.complete(null);
           completeExceptionally(new RuntimeException("Lost connectivity to locator " + e));
         }
         return;
@@ -82,10 +87,12 @@ public class CompletableFutureProxy<V extends JsonSerializable> extends Completa
   private void completeAccordingToStatus(ClusterManagementOperationStatusResult<V> result) {
     ClusterManagementResult.StatusCode statusCode = result.getStatusCode();
     if (statusCode == ClusterManagementResult.StatusCode.OK) {
+      futureOperationEnded.complete(result.getOperationEnded());
       complete(result.getResult());
     } else if (statusCode == ClusterManagementResult.StatusCode.IN_PROGRESS) {
       // do nothing
     } else {
+      futureOperationEnded.complete(null);
       completeExceptionally(
           new RuntimeException(statusCode + ": " + result.getStatusMessage()));
     }

@@ -34,24 +34,42 @@ public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R e
   private T config;
   private List<R> runtimeInfo = new ArrayList<>();
 
+  /**
+   * for internal use only
+   */
   public ConfigurationResult() {}
 
+  /**
+   * for internal use only
+   */
   public ConfigurationResult(T config) {
     this.config = config;
   }
 
+  /**
+   * Returns the static portion of the configuration
+   */
   public T getConfig() {
     return config;
   }
 
+  /**
+   * for internal use only
+   */
   public void setConfig(T config) {
     this.config = config;
   }
 
+  /**
+   * Returns the non-static information
+   */
   public List<R> getRuntimeInfo() {
     return runtimeInfo;
   }
 
+  /**
+   * for internal use only
+   */
   public void setRuntimeInfo(List<R> runtimeInfo) {
     this.runtimeInfo = runtimeInfo;
   }

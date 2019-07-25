@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
@@ -60,6 +61,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
+@Experimental
 public class GatewayReceiverConfig extends CacheElement
     implements RestfulEndpoint, CorrespondWith<GatewayReceiverInfo> {
 

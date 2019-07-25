@@ -14,24 +14,27 @@
  */
 package org.apache.geode.management.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.apache.geode.management.runtime.OperationResult;
 
 /**
- * Geode modules, extensions, or user code can define cluster management operations to use with
- * {@link ClusterManagementService#startOperation(ClusterManagementOperation)} by subclassing this
- * abstract base class and adding any necessary parameters. For example, a CompactDiskStore
- * operation might need a parameter for the name of the disk store to compact.
+ * Interface for cluster management operations that can be used with
+ * {@link ClusterManagementService#start(ClusterManagementOperation)}
  *
- * The implementation of the operation is not to be included here; instead it must be registered
- * using OperationManager.registerOperation on the locator.
+ * Classes implementing this interface should hold only the parameters for the operation.
+ *
+ * Implementations must be registered in the locator using OperationManager.registerOperation.
  *
  * @param <V> the result type of the operation
  */
 @SuppressWarnings("unused")
-public interface ClusterManagementOperation<V extends JsonSerializable> {
+public interface ClusterManagementOperation<V extends OperationResult> {
   /**
    * must match the REST controller's RequestMapping
    *
    * @return the portion after /management/experimental, e.g. /operations/name
    */
+  @JsonIgnore
   String getEndpoint();
 }

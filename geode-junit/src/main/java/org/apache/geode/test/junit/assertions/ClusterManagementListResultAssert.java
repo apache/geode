@@ -27,7 +27,6 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class ClusterManagementListResultAssert<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo>
@@ -57,14 +56,6 @@ public class ClusterManagementListResultAssert<T extends CacheElement & Correspo
   public ClusterManagementListResultAssert<T, R> containsStatusMessage(String statusMessage) {
     assertThat(actual.getStatusMessage()).contains(statusMessage);
     return this;
-  }
-
-  public ListAssert<RealizationResult> hasMemberStatus() {
-    return assertThat(actual.getMemberStatuses());
-  }
-
-  public List<RealizationResult> getMemberStatus() {
-    return actual.getMemberStatuses();
   }
 
   public List<ConfigurationResult<T, R>> getResult() {

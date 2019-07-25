@@ -34,6 +34,7 @@ import org.assertj.core.api.ListAssert;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 
 public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpResponse> {
@@ -82,6 +83,13 @@ public class HttpResponseAssert extends AbstractAssert<HttpResponseAssert, HttpR
       throws Exception {
     ObjectMapper mapper = new ObjectMapper();
     return mapper.readValue(responseBody, ClusterManagementResult.class);
+  }
+
+  @SuppressWarnings("unchecked")
+  public <R extends CacheElement> ClusterManagementRealizationResult getClusterManagementRealizationResult()
+      throws Exception {
+    ObjectMapper mapper = new ObjectMapper();
+    return mapper.readValue(responseBody, ClusterManagementRealizationResult.class);
   }
 
   public HttpResponseAssert hasContentType(String contentType) {
