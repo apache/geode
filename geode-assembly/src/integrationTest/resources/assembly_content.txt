@@ -677,6 +677,7 @@ javadoc/org/apache/geode/management/PersistentMemberDetails.html
 javadoc/org/apache/geode/management/RegionAttributesData.html
 javadoc/org/apache/geode/management/RegionMXBean.html
 javadoc/org/apache/geode/management/ServerLoadData.html
+javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperation.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
@@ -747,6 +748,7 @@ javadoc/org/apache/geode/management/package-tree.html
 javadoc/org/apache/geode/management/runtime/CacheServerInfo.html
 javadoc/org/apache/geode/management/runtime/GatewayReceiverInfo.html
 javadoc/org/apache/geode/management/runtime/MemberInformation.html
+javadoc/org/apache/geode/management/runtime/OperationResult.html
 javadoc/org/apache/geode/management/runtime/RebalanceRegionResult.html
 javadoc/org/apache/geode/management/runtime/RebalanceResult.html
 javadoc/org/apache/geode/management/runtime/RuntimeInfo.html

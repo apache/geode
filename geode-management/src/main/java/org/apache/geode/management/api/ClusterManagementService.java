@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -59,23 +60,51 @@ public interface ClusterManagementService extends AutoCloseable {
    */
   <T extends CacheElement> ClusterManagementResult update(T config);
 
+  /**
+   * This method will list instances of the element type in the cluster configuration, along with
+   * additional runtime information from cluster members
+   *
+   * @param config this may be used to filter the search results by id or group (check documentation
+   *        for individual element types to see if they support filtering by addition attributes)
+   * @see CacheElement
+   */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config);
 
+  /**
+   * This method will list a single instance of the element type in the cluster configuration, along
+   * with additional runtime information from cluster members
+   *
+   * @param config this must be used to filter the search results to a single result, generally by
+   *        supplying the name (id) of the desired config element
+   * @see CacheElement
+   */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
   /**
    * This method will launch a cluster management operation asynchronously.
    *
-   * @param op the operation type plus any parameters.
+   * @param op the operation plus any parameters.
    * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
    * @param <V> the return type of the operation
    * @return a {@link ClusterManagementOperationResult} holding a {@link CompletableFuture} (if the
    *         operation was launched successfully) or an error code otherwise.
    */
-  <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op);
+
+  /**
+   * This method will list the status of all asynchronous cluster management operations in progress
+   * or recently completed.
+   *
+   * @param <A> the operation type (a subclass of {@link ClusterManagementOperation}
+   * @param <V> the return type of the operation
+   * @param opType the operation type to list
+   * @return a list of {@link ClusterManagementOperationResult}
+   */
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+      A opType);
 
   /**
    * Test to see if this instance of ClusterManagementService retrieved from the client side is

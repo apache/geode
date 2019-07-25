@@ -24,10 +24,10 @@ import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
-public class CompletableFutureProxy<V extends JsonSerializable> extends CompletableFuture<V>
+public class CompletableFutureProxy<V extends OperationResult> extends CompletableFuture<V>
     implements Dormant {
   static final int POLL_INTERVAL = 100; // millis between http status checks
 

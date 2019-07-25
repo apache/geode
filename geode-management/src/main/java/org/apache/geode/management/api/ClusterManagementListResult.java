@@ -26,6 +26,12 @@ import org.apache.geode.annotations.Experimental;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
+/**
+ * returned from {@link ClusterManagementService#list(CacheElement)}
+ *
+ * @param <T> the type of the static config, e.g. RegionConfig
+ * @param <R> the type of the corresponding runtime information, e.g. RuntimeRegionInfo
+ */
 @Experimental
 public class ClusterManagementListResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
@@ -44,15 +50,24 @@ public class ClusterManagementListResult<T extends CacheElement & CorrespondWith
   @JsonProperty
   private List<ConfigurationResult<T, R>> result = new ArrayList<>();
 
+  /**
+   * Returns the combined payload of the list call
+   */
   public List<ConfigurationResult<T, R>> getResult() {
     return result;
   }
 
+  /**
+   * Returns only the static config portion of the results
+   */
   @JsonIgnore
   public List<T> getConfigResult() {
     return result.stream().map(ConfigurationResult::getConfig).collect(Collectors.toList());
   }
 
+  /**
+   * Returns only the runtime information portion of the results
+   */
   @JsonIgnore
   public List<R> getRuntimeResult() {
     return result.stream().flatMap(r -> r.getRuntimeInfo().stream()).collect(Collectors.toList());
@@ -61,5 +76,4 @@ public class ClusterManagementListResult<T extends CacheElement & CorrespondWith
   public void setResult(List<ConfigurationResult<T, R>> result) {
     this.result = result;
   }
-
 }

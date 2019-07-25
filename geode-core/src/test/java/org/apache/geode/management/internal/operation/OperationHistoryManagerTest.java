@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
+import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationHistoryManagerTest {
   private OperationHistoryManager history;
@@ -42,8 +42,8 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void inProgressStatusIsConsistent() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
     assertThat(future2.isDone()).isFalse();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isFalse();
     assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isFalse();
@@ -51,7 +51,7 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void endDateIsSetBeforeOperationCompletedFires() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
     future.whenComplete(
         (r, e) -> assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone())
             .isTrue());
@@ -60,8 +60,8 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void completedStatusIsConsistent() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
     future.complete(null);
     assertThat(future2.isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
@@ -70,8 +70,8 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void completedStatusIsConsistentWhenResultOfSaveIsCompleted() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
-    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
     future2.complete(null);
     assertThat(future.isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
@@ -80,9 +80,9 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void completedStatusIsConsistentEvenWhenReallyFast() {
-    CompletableFuture<JsonSerializable> future = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future = new CompletableFuture<>();
     future.complete(null);
-    CompletableFuture<JsonSerializable> future2 = history.save(op("1", future)).getFutureResult();
+    CompletableFuture<OperationResult> future2 = history.save(op("1", future)).getFutureResult();
     assertThat(future2.isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureResult().isDone()).isTrue();
     assertThat(history.getOperationInstance("1").getFutureOperationEnded().isDone()).isTrue();
@@ -106,7 +106,7 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void timestampsAreCorrectWhenFutureIsAlreadyCompleteBeforeSave() throws Exception {
-    CompletableFuture<JsonSerializable> future1 = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future1 = new CompletableFuture<>();
     future1.complete(null);
     Date start = new Date();
     history.save(op("1", future1, start));
@@ -118,7 +118,7 @@ public class OperationHistoryManagerTest {
 
   @Test
   public void timestampsAreCorrectWhenFutureCompletesAfterSave() throws Exception {
-    CompletableFuture<JsonSerializable> future2 = new CompletableFuture<>();
+    CompletableFuture<OperationResult> future2 = new CompletableFuture<>();
     Date start = new Date();
     history.save(op("2", future2, start));
     assertThat(history.getOperationInstance("2").getFutureOperationEnded().isDone()).isFalse();
@@ -143,13 +143,41 @@ public class OperationHistoryManagerTest {
     assertThat(history.getOperationInstance("2")).isNotNull();
   }
 
-  private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
+  @Test
+  public void listOperationsFiltersByType() {
+    OperationInstance<OpType1, OperationResult> op1a = history.save(op("1a", new OpType1()));
+    OperationInstance<OpType1, OperationResult> op1b = history.save(op("1b", new OpType1()));
+    OperationInstance<OpType2, OperationResult> op2a = history.save(op("2a", new OpType2()));
+    assertThat(history.listOperationInstances(new OpType1()).size()).isEqualTo(2);
+    assertThat(history.listOperationInstances(new OpType2()).size()).isEqualTo(1);
+  }
+
+  static class OpType1 implements ClusterManagementOperation<OperationResult> {
+    @Override
+    public String getEndpoint() {
+      return null;
+    }
+  }
+
+  static class OpType2 implements ClusterManagementOperation<OperationResult> {
+    @Override
+    public String getEndpoint() {
+      return null;
+    }
+  }
+
+  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
       String id, CompletableFuture<V> future) {
     return op(id, future, new Date());
   }
 
-  private static <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> op(
+  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
       String id, CompletableFuture<V> future, Date startDate) {
     return new OperationInstance<>(future, id, null, startDate);
+  }
+
+  private static <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> op(
+      String id, A op) {
+    return new OperationInstance<>(new CompletableFuture<>(), id, op, new Date());
   }
 }

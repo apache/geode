@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -80,7 +79,7 @@ public class RebalanceManagementDunitTest {
   @Test
   public void rebalance() throws Exception {
     ClusterManagementOperationResult<RebalanceResult> cmr =
-        client.startOperation(new RebalanceOperation());
+        client.start(new RebalanceOperation());
     assertThat(cmr.isSuccessful()).isTrue();
     long now = System.currentTimeMillis();
     assertThat(cmr.getOperationStart().getTime()).isBetween(now - 60000, now);
@@ -91,10 +90,8 @@ public class RebalanceManagementDunitTest {
     assertThat(end).isBetween(now - 60000, now)
         .isGreaterThanOrEqualTo(cmr.getOperationStart().getTime());
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(2);
-    Map.Entry<String, RebalanceRegionResult> firstRegionSummary =
-        result.getRebalanceRegionResults().entrySet().iterator().next();
-    assertThat(firstRegionSummary.getKey()).isIn("customers1", "customers2");
-    assertThat(firstRegionSummary.getValue()).isNotNull();
+    RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
+    assertThat(firstRegionSummary.getRegionName()).isIn("customers1", "customers2");
   }
 
   @Test
@@ -103,17 +100,15 @@ public class RebalanceManagementDunitTest {
     includeRegions.add("customers2");
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(includeRegions);
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
+    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
     RebalanceResult result = cmr.getFutureResult().get();
     assertThat(result.getRebalanceRegionResults().size()).isEqualTo(1);
-    Map.Entry<String, RebalanceRegionResult> firstRegionSummary =
-        result.getRebalanceRegionResults().entrySet().iterator().next();
-    assertThat(firstRegionSummary.getKey()).isEqualTo("customers2");
-    assertThat(firstRegionSummary.getValue()).isNotNull();
-    assertThat(firstRegionSummary.getValue().getBucketCreateBytes()).isEqualTo(0);
-    assertThat(firstRegionSummary.getValue().getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
+    RebalanceRegionResult firstRegionSummary = result.getRebalanceRegionResults().get(0);
+    assertThat(firstRegionSummary.getRegionName()).isEqualTo("customers2");
+    assertThat(firstRegionSummary.getBucketCreateBytes()).isEqualTo(0);
+    assertThat(firstRegionSummary.getTimeInMilliseconds()).isGreaterThanOrEqualTo(0);
   }
 
   @Test
@@ -122,7 +117,7 @@ public class RebalanceManagementDunitTest {
     IgnoredException.addIgnoredException(RuntimeException.class);
     RebalanceOperation op = new RebalanceOperation();
     op.setIncludeRegions(Collections.singletonList("nonexisting_region"));
-    ClusterManagementOperationResult<RebalanceResult> cmr = client.startOperation(op);
+    ClusterManagementOperationResult<RebalanceResult> cmr = client.start(op);
     assertThat(cmr.isSuccessful()).isTrue();
 
     CompletableFuture<RebalanceResult> future = cmr.getFutureResult();

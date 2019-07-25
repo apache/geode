@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.operation;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 
 public class RebalanceRegionResultImpl implements RebalanceRegionResult {
+  private String regionName;
   private long bucketCreateBytes;
   private long bucketCreateTimeInMilliseconds;
   private int bucketCreatesCompleted;
@@ -26,6 +27,15 @@ public class RebalanceRegionResultImpl implements RebalanceRegionResult {
   private long primaryTransferTimeInMilliseconds;
   private int primaryTransfersCompleted;
   private long timeInMilliseconds;
+
+  @Override
+  public String getRegionName() {
+    return regionName;
+  }
+
+  public void setRegionName(String regionName) {
+    this.regionName = regionName;
+  }
 
   @Override
   public long getBucketCreateBytes() {
@@ -110,8 +120,7 @@ public class RebalanceRegionResultImpl implements RebalanceRegionResult {
 
   @Override
   public String toString() {
-    return "{" +
-        "bucketCreateBytes=" + bucketCreateBytes +
+    return "{bucketCreateBytes=" + bucketCreateBytes +
         ", bucketCreateTimeInMilliseconds=" + bucketCreateTimeInMilliseconds +
         ", bucketCreatesCompleted=" + bucketCreatesCompleted +
         ", bucketTransferBytes=" + bucketTransferBytes +
@@ -120,6 +129,7 @@ public class RebalanceRegionResultImpl implements RebalanceRegionResult {
         ", primaryTransferTimeInMilliseconds=" + primaryTransferTimeInMilliseconds +
         ", primaryTransfersCompleted=" + primaryTransfersCompleted +
         ", timeInMilliseconds=" + timeInMilliseconds +
+        ", regionName=" + regionName +
         '}';
   }
 }

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationResultTest {
@@ -35,13 +36,13 @@ public class ClusterManagementOperationResultTest {
 
   @Test
   public void serialize() throws Exception {
-    CompletableFuture<TestResult> operationResult =
+    CompletableFuture<TestOperationResult> operationResult =
         new CompletableFuture<>();
     ClusterManagementResult result1 = new ClusterManagementResult();
     result1.setStatus(true, "success!!");
-    ClusterManagementOperationResult<TestResult> result =
+    ClusterManagementOperationResult<TestOperationResult> result =
         new ClusterManagementOperationResult<>(result1, operationResult, new Date(),
-            new CompletableFuture<>());
+            new CompletableFuture<>(), "operator");
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
     ClusterManagementOperationResult value =
@@ -49,7 +50,6 @@ public class ClusterManagementOperationResultTest {
     assertThat(value.getStatusMessage()).isEqualTo("success!!");
   }
 
-  static class TestResult implements JsonSerializable {
-    String testResult;
+  static class TestOperationResult implements OperationResult {
   }
 }

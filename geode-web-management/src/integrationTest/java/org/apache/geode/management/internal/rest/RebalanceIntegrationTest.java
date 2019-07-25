@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
+import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -59,7 +61,7 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void startOperation() throws Exception {
+  public void start() throws Exception {
     String json = "{}";
     context.perform(post("/experimental/operations/rebalance").content(json))
         .andExpect(status().isAccepted())
@@ -79,12 +81,35 @@ public class RebalanceIntegrationTest {
   }
 
   @Test
-  public void doOperation() throws Exception {
+  public void list() throws Exception {
+    String json = "{}";
+    context.perform(post("/experimental/operations/rebalance").content(json));
+    context.perform(get("/experimental/operations/rebalance"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR")))
+        .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalance/")))
+        .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
+  }
+
+  @Test
+  public void doOperation() {
     RebalanceOperation rebalance = new RebalanceOperation();
-    ClusterManagementOperationResult<RebalanceResult> result = client.startOperation(rebalance);
+    ClusterManagementOperationResult<RebalanceResult> result = client.start(rebalance);
     // note: the "java.lang.RuntimeException: " prefix is appended by CompletableFuture itself when
     // you call get() and it had completed exceptionally.
     assertThatThrownBy(result.getFutureResult()::get).hasMessage(
         "java.lang.RuntimeException: ERROR: rebalance returned info: Distributed system has no regions that can be rebalanced");
+  }
+
+  @Test
+  public void doListOperations() {
+    client.start(new RebalanceOperation());
+    ClusterManagementListOperationsResult<RebalanceResult> listResult =
+        client.list(new RebalanceOperation());
+    assertThat(listResult.getResult().size()).isGreaterThanOrEqualTo(1);
+    assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
+    assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
+        "ERROR");
+    assertThat(listResult.getResult().get(0).getUri()).contains("rebalance/");
   }
 }

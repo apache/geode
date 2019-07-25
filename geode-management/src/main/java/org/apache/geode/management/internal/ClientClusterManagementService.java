@@ -20,20 +20,22 @@ import java.util.Date;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -117,7 +119,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
     final ClusterManagementOperationResult result;
 
@@ -126,6 +128,11 @@ public class ClientClusterManagementService implements ClusterManagementService 
         ClusterManagementOperationResult.class).getBody();
 
     // our restTemplate requires the url to be modified to start from "/experimental"
+    return reAnimate(result);
+  }
+
+  private <V extends OperationResult> ClusterManagementOperationResult<V> reAnimate(
+      ClusterManagementOperationResult<V> result) {
     String uri = stripPrefix(RestfulEndpoint.URI_CONTEXT, result.getUri());
 
     // complete the future by polling the check-status REST endpoint
@@ -135,7 +142,21 @@ public class ClientClusterManagementService implements ClusterManagementService 
             futureOperationEnded);
 
     return new ClusterManagementOperationResult<>(result, operationResult,
-        result.getOperationStart(), futureOperationEnded);
+        result.getOperationStart(), futureOperationEnded, result.getOperator());
+  }
+
+  @Override
+  @SuppressWarnings("unchecked")
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+      A opType) {
+    final ClusterManagementListOperationsResult<V> result;
+
+    // make the REST call to list in-progress operations
+    result = restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + opType.getEndpoint(),
+        ClusterManagementListOperationsResult.class).getBody();
+
+    return new ClusterManagementListOperationsResult<>(
+        result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
   }
 
   private static String stripPrefix(String prefix, String s) {

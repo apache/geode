@@ -46,14 +46,15 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.configuration.MemberConfig;
@@ -75,6 +76,7 @@ import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.internal.operation.TaggedWithOperator;
+import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class LocatorClusterManagementService implements ClusterManagementService {
@@ -151,7 +153,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
-    if (result.getStatusCode() != ClusterManagementResult.StatusCode.OK) {
+    if (result.getStatusCode() != StatusCode.OK) {
       result.setStatus(false, "Failed to apply the update on all members");
       return result;
     }
@@ -166,7 +168,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       } catch (Exception e) {
         String message = "Failed to update cluster config for " + finalGroup;
         logger.error(message, e);
-        result.setStatus(ClusterManagementResult.StatusCode.FAIL_TO_PERSIST, message);
+        result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
         return null;
       }
       return cacheConfigForGroup;
@@ -214,7 +216,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     functionResults.forEach(result::addMemberStatus);
 
     // if any false result is added to the member list
-    if (result.getStatusCode() != ClusterManagementResult.StatusCode.OK) {
+    if (result.getStatusCode() != StatusCode.OK) {
       result.setStatus(false, "Failed to apply the update on all members");
       return result;
     }
@@ -240,7 +242,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result.setStatus(true, "Successfully removed config for " + updatedGroups);
     } else {
       String message = "Failed to update cluster config for " + failedGroups;
-      result.setStatus(ClusterManagementResult.StatusCode.FAIL_TO_PERSIST, message);
+      result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
     }
 
     return result;
@@ -374,7 +376,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> ClusterManagementOperationResult<V> startOperation(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
     OperationInstance<A, V> operationInstance = operationManager.submit(op);
     CompletableFuture<V> future = operationInstance.getFutureResult();
@@ -383,20 +385,61 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult(
-        ClusterManagementResult.StatusCode.ACCEPTED,
+        StatusCode.ACCEPTED,
         "async operation started (GET uri to check status)");
-    result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION + op.getEndpoint() + "/"
-        + operationInstance.getId());
 
-    return new ClusterManagementOperationResult<>(result, future,
-        operationInstance.getOperationStart(), operationInstance.getFutureOperationEnded());
+    return toClusterManagementListOperationsResult(result, operationInstance);
+  }
+
+  @Override
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
+      A opType) {
+    return new ClusterManagementListOperationsResult<>(
+        operationManager.listOperationInstances(opType).stream()
+            .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList()));
+  }
+
+  /**
+   * builds a base status from the state of a future result
+   */
+  private static <V extends OperationResult> ClusterManagementResult getStatus(
+      CompletableFuture<V> future) {
+    if (future.isCompletedExceptionally()) {
+      return new ClusterManagementResult(StatusCode.ERROR, "failed");
+    } else if (future.isDone()) {
+      return new ClusterManagementResult(StatusCode.OK, "finished successfully");
+    } else {
+      return new ClusterManagementResult(StatusCode.IN_PROGRESS, "in progress");
+    }
+  }
+
+  /**
+   * builds a result object from a base status and an operation instance
+   */
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
+      ClusterManagementResult status, OperationInstance<A, V> operationInstance) {
+    ClusterManagementOperationResult<V> result = new ClusterManagementOperationResult<>(status,
+        operationInstance.getFutureResult(), operationInstance.getOperationStart(),
+        operationInstance.getFutureOperationEnded(), operationInstance.getOperator());
+    result.setUri(RestfulEndpoint.URI_CONTEXT + RestfulEndpoint.URI_VERSION
+        + operationInstance.getOperation().getEndpoint() + "/" + operationInstance.getId());
+    return result;
+  }
+
+  /**
+   * builds a result object from an operation instance
+   */
+  private <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> toClusterManagementListOperationsResult(
+      OperationInstance<A, V> operationInstance) {
+    return toClusterManagementListOperationsResult(getStatus(operationInstance.getFutureResult()),
+        operationInstance);
   }
 
   /**
    * this is intended for use by the REST controller. for Java usage, please use
    * {@link ClusterManagementOperationResult#getFutureResult()}
    */
-  public <V extends JsonSerializable> ClusterManagementOperationStatusResult<V> checkStatus(
+  public <V extends OperationResult> ClusterManagementOperationStatusResult<V> checkStatus(
       String opId) {
     final OperationInstance<?, V> operationInstance = operationManager.getOperationInstance(opId);
     if (operationInstance == null) {
@@ -408,12 +451,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
     result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
     if (!status.isDone()) {
-      result.setStatus(ClusterManagementResult.StatusCode.IN_PROGRESS, "in progress");
+      result.setStatus(StatusCode.IN_PROGRESS, "in progress");
     } else {
       try {
         result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
         result.setResult(status.get());
-        result.setStatus(ClusterManagementResult.StatusCode.OK, "finished successfully");
+        result.setStatus(StatusCode.OK, "finished successfully");
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(e);

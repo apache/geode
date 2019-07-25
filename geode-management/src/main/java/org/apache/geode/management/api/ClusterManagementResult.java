@@ -20,38 +20,45 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
+import org.apache.geode.cache.configuration.CacheElement;
 
-
+/**
+ * This base class provides the common attributes returned from all {@link ClusterManagementService}
+ * methods
+ */
 @Experimental
 public class ClusterManagementResult {
-  // this error code should include a one-to-one mapping to the http status code returned
-  // by the controller
+  /**
+   * these status codes generally have a one-to-one mapping to the http status code returned by the
+   * REST controller
+   */
   public enum StatusCode {
-    // configuration failed validation
+    /** configuration failed validation */
     ILLEGAL_ARGUMENT,
-    // user is not authenticated
+    /** user is not authenticated */
     UNAUTHENTICATED,
-    // user is not authorized to do this operation
+    /** user is not authorized to do this operation */
     UNAUTHORIZED,
-    // entity you are trying to create already exists
+    /** entity you are trying to create already exists */
     ENTITY_EXISTS,
-    // entity you are trying to modify/delete is not found
+    /** entity you are trying to modify/delete is not found */
     ENTITY_NOT_FOUND,
-    // operation not successful, this includes precondition is not met (either service is not
-    // running
-    // or no servers available, or the configuration encountered some error when trying to be
-    // realized
-    // on one member (configuration is not fully realized on all applicable members).
+    /**
+     * operation not successful, this includes precondition is not met (either service is not
+     * running or no servers available, or the configuration encountered some error when trying to
+     * be realized on one member (configuration is not fully realized on all applicable members).
+     */
     ERROR,
-    // configuration is realized on members, but encountered some error when persisting the
-    // configuration.
-    // the operation is still deemed unsuccessful.
+    /**
+     * configuration is realized on members, but encountered some error when persisting the
+     * configuration. the operation is still deemed unsuccessful.
+     */
     FAIL_TO_PERSIST,
-    // async operation launched successfully
+    /** async operation launched successfully */
     ACCEPTED,
-    // async operation has not yet completed
+    /** async operation has not yet completed */
     IN_PROGRESS,
-    // operation is successful, configuration is realized and persisted
+    /** operation is successful, configuration is realized and persisted */
     OK
   }
 
@@ -105,14 +112,25 @@ public class ClusterManagementResult {
     this.statusMessage = message;
   }
 
+  /**
+   * For a {@link ClusterManagementService#create(CacheElement)} operation, this will return
+   * per-member status of the create.
+   */
   public List<RealizationResult> getMemberStatuses() {
     return memberStatuses;
   }
 
+  /**
+   * Returns an optional message to accompany {@link #getStatusCode()}
+   */
   public String getStatusMessage() {
     return statusMessage;
   }
 
+  /**
+   * Returns the full path (not including http://server:port) by which this result can be referenced
+   * via REST
+   */
   public String getUri() {
     return uri;
   }
@@ -121,12 +139,18 @@ public class ClusterManagementResult {
     this.uri = uri;
   }
 
+  /**
+   * Returns true if {@link #getStatusCode()} has a non-error value
+   */
   @JsonIgnore
   public boolean isSuccessful() {
     return statusCode == StatusCode.OK || statusCode == StatusCode.ACCEPTED
         || statusCode == StatusCode.IN_PROGRESS;
   }
 
+  /**
+   * Returns the {@link StatusCode} for this request, such as ERROR or OK.
+   */
   public StatusCode getStatusCode() {
     return statusCode;
   }

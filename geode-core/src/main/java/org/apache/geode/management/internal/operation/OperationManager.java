@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -28,9 +29,9 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
 public class OperationManager implements AutoCloseable {
@@ -52,12 +53,12 @@ public class OperationManager implements AutoCloseable {
   /**
    * for use by modules/extensions to install custom cluster management operations
    */
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> void registerOperation(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> void registerOperation(
       Class<A> operationClass, BiFunction<Cache, A, V> operationPerformer) {
     performers.put(operationClass, operationPerformer);
   }
 
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> submit(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> submit(
       A op) {
     String opId = UUID.randomUUID().toString();
 
@@ -77,7 +78,7 @@ public class OperationManager implements AutoCloseable {
   }
 
   @SuppressWarnings("unchecked")
-  private <C extends Cache, A extends ClusterManagementOperation<V>, V extends JsonSerializable> BiFunction<C, A, V> getPerformer(
+  private <C extends Cache, A extends ClusterManagementOperation<V>, V extends OperationResult> BiFunction<C, A, V> getPerformer(
       A op) {
     Class<? extends ClusterManagementOperation> aClass = op.getClass();
 
@@ -92,9 +93,14 @@ public class OperationManager implements AutoCloseable {
   /**
    * looks up the future for an async operation by id
    */
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> getOperationInstance(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> getOperationInstance(
       String opId) {
     return historyManager.getOperationInstance(opId);
+  }
+
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances(
+      A opType) {
+    return historyManager.listOperationInstances(opType);
   }
 
   @Override

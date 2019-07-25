@@ -14,12 +14,13 @@
  */
 package org.apache.geode.management.api;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import org.apache.geode.management.runtime.OperationResult;
 
 /**
  * Geode modules, extensions, or user code can define cluster management operations to use with
- * {@link ClusterManagementService#startOperation(ClusterManagementOperation)} by subclassing this
+ * {@link ClusterManagementService#start(ClusterManagementOperation)} by subclassing this
  * abstract base class and adding any necessary parameters. For example, a CompactDiskStore
  * operation might need a parameter for the name of the disk store to compact.
  *
@@ -29,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @param <V> the result type of the operation
  */
 @SuppressWarnings("unused")
-public interface ClusterManagementOperation<V extends JsonSerializable> {
+public interface ClusterManagementOperation<V extends OperationResult> {
   /**
    * must match the REST controller's RequestMapping
    *

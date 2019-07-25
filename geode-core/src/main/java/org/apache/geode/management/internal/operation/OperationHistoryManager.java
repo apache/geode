@@ -15,6 +15,7 @@
 package org.apache.geode.management.internal.operation;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -27,7 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.runtime.OperationResult;
 
 /**
  * Retains references to all running and some recently-completed operations.
@@ -59,10 +60,10 @@ public class OperationHistoryManager {
    * look up the specified key
    */
   @SuppressWarnings("unchecked")
-  <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> getOperationInstance(
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> getOperationInstance(
       String opId) {
     expireHistory();
-    return history.get(opId);
+    return (OperationInstance<A, V>) history.get(opId);
   }
 
   private void expireHistory() {
@@ -101,7 +102,7 @@ public class OperationHistoryManager {
   /**
    * Stores a new operation in the history and installs a trigger to record the operation end time.
    */
-  public <A extends ClusterManagementOperation<V>, V extends JsonSerializable> OperationInstance<A, V> save(
+  public <A extends ClusterManagementOperation<V>, V extends OperationResult> OperationInstance<A, V> save(
       OperationInstance<A, V> operationInstance) {
     String opId = operationInstance.getId();
     CompletableFuture<V> future = operationInstance.getFutureResult();
@@ -114,13 +115,21 @@ public class OperationHistoryManager {
     return operationInstance;
   }
 
+  @SuppressWarnings("unchecked")
+  <A extends ClusterManagementOperation<V>, V extends OperationResult> List<OperationInstance<A, V>> listOperationInstances(
+      A opType) {
+    expireHistory();
+    return history.values().stream().filter(oi -> opType.getClass().isInstance(oi.getOperation()))
+        .map(oi -> (OperationInstance<A, V>) oi).collect(Collectors.toList());
+  }
+
   /**
    * struct for holding information pertinent to a specific instance of an operation
    *
    * all fields are immutable, however note that {@link #setOperationEnded(Date)} completes
    * {@link #getFutureOperationEnded()}
    */
-  public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends JsonSerializable>
+  public static class OperationInstance<A extends ClusterManagementOperation<V>, V extends OperationResult>
       implements Identifiable<String> {
     private final CompletableFuture<V> future;
     private final String opId;

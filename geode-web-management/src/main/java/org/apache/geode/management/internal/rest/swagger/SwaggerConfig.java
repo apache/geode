@@ -51,7 +51,7 @@ public class SwaggerConfig {
         .title("Apache Geode Management REST API")
         .description(
             "REST API and interface to manage Geode components.")
-        .version("1.0")
+        .version("v2")
         .termsOfServiceUrl("http://www.apache.org/licenses/")
         .license("Apache License, version 2.0")
         .licenseUrl("http://www.apache.org/licenses/")

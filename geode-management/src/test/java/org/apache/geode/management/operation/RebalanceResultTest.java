@@ -12,17 +12,19 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.management.internal.operation;
+package org.apache.geode.management.operation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.management.internal.operation.RebalanceRegionResultImpl;
+import org.apache.geode.management.internal.operation.RebalanceResultImpl;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -34,9 +36,9 @@ public class RebalanceResultTest {
   @Before
   public void setUp() {
     mapper = GeodeJsonMapper.getMapper();
-    RebalanceRegionResult summary = new RebalanceRegionResultImpl();
-    Map<String, RebalanceRegionResult> results = new LinkedHashMap<>();
-    results.put("testRegion", summary);
+    RebalanceRegionResultImpl summary = new RebalanceRegionResultImpl();
+    summary.setRegionName("testRegion");
+    List<RebalanceRegionResult> results = Collections.singletonList(summary);
     result = new RebalanceResultImpl();
     result.setRebalanceSummary(results);
   }
@@ -45,14 +47,14 @@ public class RebalanceResultTest {
   public void serializeRebalanceResult() throws Exception {
     String json = mapper.writeValueAsString(result);
     RebalanceResult value = mapper.readValue(json, RebalanceResult.class);
-    assertThat(value.getRebalanceRegionResults().get("testRegion").getBucketCreateBytes())
-        .isEqualTo(0);
+    assertThat(value.getRebalanceRegionResults().get(0).getBucketCreateBytes()).isEqualTo(0);
+    assertThat(value.getRebalanceRegionResults().get(0).getRegionName()).isEqualTo("testRegion");
   }
 
   @Test
   public void toStringRebalanceResult() {
     String toStr = result.toString();
     assertThat(toStr).isEqualTo(
-        "{testRegion: {bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0}}");
+        "{{bucketCreateBytes=0, bucketCreateTimeInMilliseconds=0, bucketCreatesCompleted=0, bucketTransferBytes=0, bucketTransferTimeInMilliseconds=0, bucketTransfersCompleted=0, primaryTransferTimeInMilliseconds=0, primaryTransfersCompleted=0, timeInMilliseconds=0, regionName=testRegion}}");
   }
 }

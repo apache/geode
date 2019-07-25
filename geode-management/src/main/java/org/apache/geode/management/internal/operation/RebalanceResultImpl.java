@@ -15,30 +15,30 @@
 
 package org.apache.geode.management.internal.operation;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RebalanceResultImpl implements RebalanceResult {
-  private Map<String, RebalanceRegionResult> rebalanceSummary = new LinkedHashMap<>();
+  private List<RebalanceRegionResult> rebalanceSummary = new ArrayList<>();
 
-  RebalanceResultImpl() {}
+  public RebalanceResultImpl() {}
 
   @Override
-  public Map<String, RebalanceRegionResult> getRebalanceRegionResults() {
+  public List<RebalanceRegionResult> getRebalanceRegionResults() {
     return rebalanceSummary;
   }
 
-  void setRebalanceSummary(Map<String, RebalanceRegionResult> rebalanceSummary) {
+  public void setRebalanceSummary(List<RebalanceRegionResult> rebalanceSummary) {
     this.rebalanceSummary = rebalanceSummary;
   }
 
   @Override
   public String toString() {
-    return "{" + rebalanceSummary.entrySet().stream()
-        .map(e -> e.getKey() + ": " + e.getValue()).collect(Collectors.joining(",\n ")) + "}";
+    return "{" + rebalanceSummary.stream().map(Object::toString).collect(Collectors.joining(",\n "))
+        + "}";
   }
 }

@@ -27,8 +27,8 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.management.api.ClusterManagementOperation;
-import org.apache.geode.management.api.JsonSerializable;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
+import org.apache.geode.management.runtime.OperationResult;
 
 public class OperationManagerTest {
   private OperationManager executorManager;
@@ -43,16 +43,17 @@ public class OperationManagerTest {
   @Test
   public void submitAndComplete() throws Exception {
     TestOperation operation = new TestOperation();
-    OperationInstance<TestOperation, TestResult> inst = executorManager.submit(operation);
-    CompletableFuture<TestResult> future1 = inst.getFutureResult();
+    OperationInstance<TestOperation, TestOperationResult> inst = executorManager.submit(operation);
+    CompletableFuture<TestOperationResult> future1 = inst.getFutureResult();
     String id = inst.getId();
     assertThat(id).isNotBlank();
 
     assertThat(executorManager.getOperationInstance(id)).isNotNull();
 
     TestOperation operation2 = new TestOperation();
-    OperationInstance<TestOperation, TestResult> inst2 = executorManager.submit(operation2);
-    CompletableFuture<TestResult> future2 = inst2.getFutureResult();
+    OperationInstance<TestOperation, TestOperationResult> inst2 =
+        executorManager.submit(operation2);
+    CompletableFuture<TestOperationResult> future2 = inst2.getFutureResult();
     String id2 = inst2.getId();
     assertThat(id2).isNotBlank();
 
@@ -95,7 +96,7 @@ public class OperationManagerTest {
         .hasMessageContaining(" not supported");
   }
 
-  static class TestOperation implements ClusterManagementOperation<TestResult> {
+  static class TestOperation implements ClusterManagementOperation<TestOperationResult> {
     CountDownLatch latch = new CountDownLatch(1);
 
     @Override
@@ -104,11 +105,10 @@ public class OperationManagerTest {
     }
   }
 
-  static class TestResult implements JsonSerializable {
-    String testResult;
+  static class TestOperationResult implements OperationResult {
   }
 
-  static TestResult perform(Cache cache, TestOperation operation) {
+  static TestOperationResult perform(Cache cache, TestOperation operation) {
     try {
       operation.latch.await();
     } catch (InterruptedException e) {

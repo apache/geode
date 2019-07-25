@@ -23,6 +23,11 @@ import org.apache.geode.management.api.JsonSerializable;
 @Experimental
 public interface RebalanceRegionResult extends JsonSerializable {
   /**
+   * Returns the name of this region
+   */
+  String getRegionName();
+
+  /**
    * Returns the size, in bytes, of all of the buckets that were created as part of the rebalance
    * operation for this region
    */

@@ -15,18 +15,13 @@
 
 package org.apache.geode.management.runtime;
 
-import java.util.List;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.operation.RebalanceOperation;
+import org.apache.geode.management.api.ClusterManagementOperation;
+import org.apache.geode.management.api.JsonSerializable;
 
 /**
- * the final results of a {@link RebalanceOperation}
+ * marker interface for the final result of a {@link ClusterManagementOperation}
  */
 @Experimental
-public interface RebalanceResult extends OperationResult {
-  /**
-   * Return summary of work performed for each region
-   */
-  List<RebalanceRegionResult> getRebalanceRegionResults();
+public interface OperationResult extends JsonSerializable {
 }

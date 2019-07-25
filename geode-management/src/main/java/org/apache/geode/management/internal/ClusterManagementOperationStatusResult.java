@@ -14,18 +14,16 @@
  */
 package org.apache.geode.management.internal;
 
-
-
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.management.api.ClusterManagementResult;
-import org.apache.geode.management.api.JsonSerializable;
+import org.apache.geode.management.runtime.OperationResult;
 
 @Experimental
-public class ClusterManagementOperationStatusResult<V extends JsonSerializable>
+public class ClusterManagementOperationStatusResult<V extends OperationResult>
     extends ClusterManagementResult {
   public ClusterManagementOperationStatusResult() {}
 

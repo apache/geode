@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
+import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class ClusterManagementOperationStatusResultTest {
@@ -43,7 +44,7 @@ public class ClusterManagementOperationStatusResultTest {
     assertThat(value.getResult().getTestResult()).isEqualTo("test2");
   }
 
-  static class TestResult implements JsonSerializable {
+  static class TestResult implements OperationResult {
     private String testResult;
 
     public TestResult() {}
