@@ -17,6 +17,7 @@ package org.apache.geode.metrics;
 
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.cache.RegionShortcut.LOCAL;
 import static org.apache.geode.cache.RegionShortcut.PARTITION;
 import static org.apache.geode.cache.RegionShortcut.PARTITION_REDUNDANT;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,6 +48,8 @@ import org.junit.rules.TemporaryFolder;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.client.ClientCache;
 import org.apache.geode.cache.client.ClientCacheFactory;
+import org.apache.geode.cache.client.Pool;
+import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -75,13 +79,12 @@ public class RegionEntriesGaugeTest {
   public SingleFunctionJarRule functionJarRule =
       new SingleFunctionJarRule("function.jar", GetMemberRegionEntriesGaugeFunction.class);
 
-  private static final String SPACE = " ";
-
   private final List<File> serverFolders = new ArrayList<>();
   private File folderForLocator;
   private ClientCache clientCache;
   private String connectToLocatorCommand;
   private String locatorString;
+  private Pool server1Pool;
 
   @Before
   public void startMembers() throws Exception {
@@ -100,7 +103,7 @@ public class RegionEntriesGaugeTest {
     serverFolders.add(folderForServer1);
     serverFolders.add(folderForServer2);
 
-    String startLocatorCommand = String.join(SPACE,
+    String startLocatorCommand = String.join(" ",
         "start locator",
         "--name=" + "locator",
         "--dir=" + folderForLocator.getAbsolutePath(),
@@ -122,6 +125,10 @@ public class RegionEntriesGaugeTest {
     gfshRule.execute(connectToLocatorCommand, deployCommand, listFunctionsCommand);
 
     clientCache = new ClientCacheFactory().addPoolLocator("localhost", locatorPort).create();
+
+    server1Pool = PoolManager.createFactory()
+        .addServer("localhost", serverPort1)
+        .create("server1pool");
   }
 
   @After
@@ -138,10 +145,64 @@ public class RegionEntriesGaugeTest {
     commands.add("stop locator --dir=" + folderForLocator.getAbsolutePath());
 
     gfshRule.execute(commands.toArray(new String[0]));
+    server1Pool.destroy();
   }
 
   private static String stopServerCommand(File folder) {
     return "stop server --dir=" + folder.getAbsolutePath();
+  }
+
+  @Test
+  public void regionEntriesGaugeShowsCountOfLocalRegionValuesInServer() {
+    String regionName = "localRegion";
+    Region<String, String> region = createRegionInGroup(LOCAL.name(), regionName, "server1");
+
+    List<String> keys = asList("a", "b", "c", "d", "e", "f", "g", "h");
+    for (String key : keys) {
+      region.put(key, key);
+    }
+    region.destroy(keys.get(0));
+    int expectedNumberOfEntries = keys.size() - 1;
+
+    String getGaugeValueCommand = memberRegionEntryGaugeValueCommand(regionName);
+
+    await()
+        .atMost(30, TimeUnit.SECONDS)
+        .untilAsserted(() -> {
+          GfshExecution execution = gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
+          OptionalInt server1EntryCount = linesOf(execution.getOutputText())
+              .filter(s -> s.startsWith("server1"))
+              .mapToInt(RegionEntriesGaugeTest::extractEntryCount)
+              .findFirst();
+
+          assertThat(server1EntryCount)
+              .as("Number of entries reported by server1")
+              .hasValue(expectedNumberOfEntries);
+
+          String server2Response = linesOf(execution.getOutputText())
+              .filter(s -> s.startsWith("server2"))
+              .findFirst()
+              .orElse("No response from server2");
+
+          assertThat(server2Response)
+              .as("server2 response from entry count function")
+              .endsWith("[Meter not found.]");
+        });
+  }
+
+  private Region<String, String> createRegionInGroup(String regionType, String regionName,
+      String groupName) {
+    String createRegionCommand = String.join(" ",
+        "create region",
+        "--name=" + regionName,
+        "--type=" + regionType,
+        "--groups=" + groupName);
+
+    gfshRule.execute(connectToLocatorCommand, createRegionCommand);
+
+    return clientCache.<String, String>createClientRegionFactory(PROXY)
+        .setPoolName(server1Pool.getName())
+        .create(regionName);
   }
 
   @Test
@@ -269,7 +330,7 @@ public class RegionEntriesGaugeTest {
   private Region<String, String> createPartitionedRegionWithRedundancy(String regionName,
       int numberOfRedundantCopies) {
 
-    String createRegionCommand = String.join(SPACE,
+    String createRegionCommand = String.join(" ",
         "create region",
         "--name=" + regionName,
         "--redundant-copies=" + numberOfRedundantCopies,
@@ -282,7 +343,7 @@ public class RegionEntriesGaugeTest {
 
   private Region<String, String> createRegion(String regionType, String regionName) {
 
-    String createRegionCommand = String.join(SPACE,
+    String createRegionCommand = String.join(" ",
         "create region",
         "--name=" + regionName,
         "--type=" + regionType);
@@ -293,9 +354,11 @@ public class RegionEntriesGaugeTest {
   }
 
   private String startServerCommand(String serverName, int serverPort, File folderForServer) {
-    return String.join(SPACE,
+    System.out.println("DHE: Assigning port " + serverPort + " to server " + serverName);
+    return String.join(" ",
         "start server",
         "--name=" + serverName,
+        "--groups=" + serverName,
         "--dir=" + folderForServer.getAbsolutePath(),
         "--server-port=" + serverPort,
         "--locators=" + locatorString,
@@ -303,7 +366,7 @@ public class RegionEntriesGaugeTest {
   }
 
   private static String memberRegionEntryGaugeValueCommand(String regionName) {
-    return String.join(SPACE,
+    return String.join(" ",
         "execute function",
         "--id=" + GetMemberRegionEntriesGaugeFunction.ID,
         "--arguments=" + regionName);
