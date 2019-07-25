@@ -74,8 +74,15 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     this.config = config;
   }
 
-  void launchLocatorsDistributorThread(Thread thread) {
-    thread.start();
+  Thread buildLocatorsDistributorThread(DistributionLocatorId localLocatorId,
+      Map<Integer, Set<DistributionLocatorId>> remoteLocators, DistributionLocatorId joiningLocator,
+      int joiningLocatorDistributedSystemId) {
+    Runnable distributeLocatorsRunnable =
+        new DistributeLocatorsRunnable(config.getMemberTimeout(), tcpClient, localLocatorId,
+            remoteLocators, joiningLocator, joiningLocatorDistributedSystemId);
+    ThreadFactory threadFactory = new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
+
+    return threadFactory.newThread(distributeLocatorsRunnable);
   }
 
   /**
@@ -116,12 +123,9 @@ public class LocatorMembershipListenerImpl implements LocatorMembershipListener 
     }
 
     // Launch Locators Distributor thread.
-    Runnable distributeLocatorsRunnable = new DistributeLocatorsRunnable(config.getMemberTimeout(),
-        tcpClient, localLocatorId, localCopy, locator, distributedSystemId);
-    ThreadFactory threadFactory =
-        new LoggingThreadFactory(LOCATORS_DISTRIBUTOR_THREAD_NAME, true);
-    Thread locatorsDistributorThread = threadFactory.newThread(distributeLocatorsRunnable);
-    launchLocatorsDistributorThread(locatorsDistributorThread);
+    Thread locatorsDistributorThread =
+        buildLocatorsDistributorThread(localLocatorId, localCopy, locator, distributedSystemId);
+    locatorsDistributorThread.start();
   }
 
   @Override

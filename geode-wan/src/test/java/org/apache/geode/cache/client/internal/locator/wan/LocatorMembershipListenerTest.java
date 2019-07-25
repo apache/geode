@@ -20,6 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -46,15 +48,15 @@ import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
+import org.apache.geode.test.junit.ResultCaptor;
 
 public class LocatorMembershipListenerTest {
   private TcpClient tcpClient;
-  private ArgumentCaptor<Thread> argumentCaptor;
+  private ResultCaptor<Thread> resultCaptor;
   private LocatorMembershipListenerImpl locatorMembershipListener;
 
   private DistributionLocatorId buildDistributionLocatorId(int port) {
@@ -91,9 +93,8 @@ public class LocatorMembershipListenerTest {
         DistributionConfig.DEFAULT_MEMBER_TIMEOUT, false);
   }
 
-  private void joinLocatorsDistributorThread(ArgumentCaptor<Thread> argumentCaptor) {
-    verify(locatorMembershipListener).launchLocatorsDistributorThread(argumentCaptor.capture());
-    Thread distributorThread = argumentCaptor.getValue();
+  private void joinLocatorsDistributorThread() {
+    Thread distributorThread = resultCaptor.getResult();
     await().untilAsserted(
         () -> assertThat(distributorThread.getState()).isEqualTo(Thread.State.TERMINATED));
   }
@@ -106,9 +107,11 @@ public class LocatorMembershipListenerTest {
         .thenReturn(DistributionConfig.DEFAULT_MEMBER_TIMEOUT);
 
     tcpClient = mock(TcpClient.class);
-    argumentCaptor = ArgumentCaptor.forClass(Thread.class);
+    resultCaptor = new ResultCaptor<>();
     locatorMembershipListener = spy(new LocatorMembershipListenerImpl(tcpClient));
     locatorMembershipListener.setConfig(distributionConfig);
+    doAnswer(resultCaptor).when(locatorMembershipListener).buildLocatorsDistributorThread(
+        any(DistributionLocatorId.class), anyMap(), any(DistributionLocatorId.class), anyInt());
   }
 
   @Test
@@ -208,7 +211,7 @@ public class LocatorMembershipListenerTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
     verify(tcpClient, times(0)).requestToServer(any(InetSocketAddress.class),
         any(LocatorJoinMessage.class), anyInt(), anyBoolean());
   }
@@ -224,7 +227,7 @@ public class LocatorMembershipListenerTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(2, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
     verifyMessagesSentBothWays(locator1Site1, 2, joiningLocator, 3, locator3Site3);
   }
 
@@ -247,7 +250,7 @@ public class LocatorMembershipListenerTest {
     when(locatorMembershipListener.getAllLocatorsInfo()).thenReturn(allLocatorsInfo);
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 1, locator3Site1);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator1Site2);
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator2Site2);
@@ -271,7 +274,7 @@ public class LocatorMembershipListenerTest {
             .thenThrow(new EOFException("Mock Exception"));
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
 
     verify(tcpClient, times(LOCATOR_DISTRIBUTION_RETRY_ATTEMPTS + 1)).requestToServer(
         locator3Site1.getHost(),
@@ -298,7 +301,7 @@ public class LocatorMembershipListenerTest {
             .thenReturn(null);
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
 
     verify(tcpClient, times(2)).requestToServer(locator3Site1.getHost(),
         new LocatorJoinMessage(1, joiningLocator, locator1Site1, ""),
@@ -336,7 +339,7 @@ public class LocatorMembershipListenerTest {
             .thenThrow(new EOFException("Mock Exception"));
 
     locatorMembershipListener.locatorJoined(1, joiningLocator, locator1Site1);
-    joinLocatorsDistributorThread(argumentCaptor);
+    joinLocatorsDistributorThread();
 
     verifyMessagesSentBothWays(locator1Site1, 1, joiningLocator, 2, locator1Site2);
     verify(tcpClient, times(3)).requestToServer(locator3Site1.getHost(),
