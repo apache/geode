@@ -15,6 +15,7 @@
 
 package org.apache.geode.metrics;
 
+import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.geode.cache.RegionShortcut.LOCAL;
@@ -88,12 +89,10 @@ public class RegionEntriesGaugeTest {
 
   @Before
   public void startMembers() throws Exception {
-    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(5);
+    int[] availablePorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
     int locatorPort = availablePorts[0];
-    int locatorHttpPort = availablePorts[1];
-    int locatorJmxPort = availablePorts[2];
-    int serverPort1 = availablePorts[3];
-    int serverPort2 = availablePorts[4];
+    int serverPort1 = availablePorts[1];
+    int serverPort2 = availablePorts[2];
 
     locatorString = "localhost[" + locatorPort + "]";
 
@@ -107,10 +106,7 @@ public class RegionEntriesGaugeTest {
         "start locator",
         "--name=" + "locator",
         "--dir=" + folderForLocator.getAbsolutePath(),
-        "--port=" + locatorPort,
-        "--J=-Dgemfire.jmx-manager-start=true",
-        "--J=-Dgemfire.jmx-manager-http-port=" + locatorHttpPort,
-        "--J=-Dgemfire.jmx-manager-port=" + locatorJmxPort);
+        "--port=" + locatorPort);
 
     String startServer1Command = startServerCommand("server1", serverPort1, folderForServer1);
     String startServer2Command = startServerCommand("server2", serverPort2, folderForServer2);
@@ -320,7 +316,7 @@ public class RegionEntriesGaugeTest {
         .withFailMessage("does not match " + entryCountExtractor)
         .isTrue();
     String matchedGroup = matcher.group(1);
-    return Integer.valueOf(matchedGroup);
+    return parseInt(matchedGroup);
   }
 
   private static Stream<String> linesOf(String text) {
