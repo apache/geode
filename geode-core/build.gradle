@@ -41,13 +41,6 @@ idea {
   }
 }
 
-configurations {
-  //declaring new configuration that will be used to associate with artifacts
-  archives
-
-  jmhRuntimeClasspath.extendsFrom runtimeClasspath
-}
-
 def generatedResources = "$buildDir/generated-resources/main"
 
 sourceSets {
@@ -57,24 +50,6 @@ sourceSets {
   test {
     output.dir(generatedResources, builtBy: 'createVersionPropertiesFile')
   }
-}
-
-jmh {
-  duplicateClassesStrategy = 'warn'
-  include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
-  profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
-}
-tasks.jmh.dependsOn jar
-
-jmhJar {
-  from {
-    configurations.jmhRuntimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
-  }
-  exclude('**/*.SF')
-  exclude('**/Log4j2Plugins.dat')
-
-  // figure out why changes to source doesn't cause this jar to rebuild.
-  outputs.upToDateWhen { false }
 }
 
 sourceSets {
@@ -160,10 +135,15 @@ task jcaJar(type: Jar, dependsOn: raJar) {
 }
 
 configurations {
+  //declaring new configuration that will be used to associate with artifacts
+  archives
+
   classesOutput {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
+
+  jmhRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 dependencies {
@@ -176,7 +156,6 @@ dependencies {
   antlr platform(project(':boms:geode-all-bom'))
   jcaAnnotationProcessor(platform(project(':boms:geode-all-bom')))
 
-  
   //A dependency that contains the compiled output of the source. What is this for?
   classesOutput sourceSets.main.output
 
@@ -235,7 +214,7 @@ dependencies {
 
   //Commons lang is used in many different places in core
   implementation('org.apache.commons:commons-lang3')
-  
+
   //Commons modeler is used by the (deprecated) admin API
   implementation('commons-modeler:commons-modeler') {
     exclude module: 'commons-logging-api'
@@ -243,7 +222,7 @@ dependencies {
     exclude module: 'xml-apis'
     ext.optional = true
   }
-    
+
   //micrometer is used for micrometer based metrics from geode geode
   api('io.micrometer:micrometer-core')
 
@@ -265,7 +244,7 @@ dependencies {
     ext.optional = true
   }
 
-  //MX4J remote is used by the old admin API 
+  //MX4J remote is used by the old admin API
   implementation('mx4j:mx4j-remote') {
     ext.optional = true
   }
@@ -306,15 +285,13 @@ dependencies {
   runtimeOnly('io.swagger:swagger-annotations') {
     ext.optional = true
   }
-  
+
   //Jetty is used by the http service, which is used for the developer and management rest APIs
   implementation('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
   //Jetty is used by the http service, which is used for the developer and management rest APIs
   implementation('org.eclipse.jetty:jetty-server')
-
-
 
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
@@ -354,7 +331,7 @@ dependencies {
   //Currently it has ExpirationAction in it, which is an API dependency in core, but
   //probably does not belong in this project
   api(project(':geode-common'))
-  
+
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency
   api(project(':geode-management'))
@@ -433,6 +410,41 @@ dependencies {
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+}
+
+jmh {
+  duplicateClassesStrategy = 'warn'
+  include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
+  profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
+}
+
+tasks.register('getJmhJarStuff', Sync) {
+  inputs.files {
+    configurations.jmhRuntimeClasspath
+  }
+  from {
+    configurations.jmhRuntimeClasspath.collect {
+      it
+    }
+  }
+  into "${buildDir}/tmp/getJmhJarStuff/"
+}
+
+tasks.named('jmhJar').configure {
+  inputs.files {
+    tasks.named('getJmhJarStuff').get().outputs.files
+  }
+
+  from {
+    tasks.named('getJmhJarStuff').get().outputs.files.asFileTree.collect {
+      it.isDirectory() ? it : zipTree(it)
+    }
+  }
+  exclude('**/*.SF')
+  exclude('**/Log4j2Plugins.dat')
+
+  // figure out why changes to source doesn't cause this jar to rebuild.
+  outputs.upToDateWhen { false }
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
