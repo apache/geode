@@ -54,8 +54,8 @@ import org.apache.geode.cache.client.PoolManager;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.metrics.rules.SingleFunctionJarRule;
 import org.apache.geode.rules.ServiceJarRule;
+import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.junit.categories.MetricsTest;
 import org.apache.geode.test.junit.rules.gfsh.GfshExecution;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -71,11 +71,6 @@ public class RegionEntriesGaugeTest {
 
   @Rule
   public ServiceJarRule serviceJarRule = new ServiceJarRule();
-
-  // TODO: Inline the code that builds this jar
-  @Rule
-  public SingleFunctionJarRule functionJarRule =
-      new SingleFunctionJarRule("function.jar", GetMemberRegionEntriesGaugeFunction.class);
 
   private ClientCache clientCache;
   private String connectToLocatorCommand;
@@ -111,7 +106,11 @@ public class RegionEntriesGaugeTest {
 
     connectToLocatorCommand = "connect --locator=" + locatorString;
 
-    String deployCommand = functionJarRule.deployCommand();
+    Path functionJarPath =
+        temporaryFolder.getRoot().toPath().resolve("function.jar").toAbsolutePath();
+    new ClassBuilder()
+        .writeJarFromClass(GetMemberRegionEntriesGaugeFunction.class, functionJarPath.toFile());
+    String deployCommand = "deploy --jar=" + functionJarPath.toAbsolutePath();
     String listFunctionsCommand = "list functions";
 
     gfshRule.execute(connectToLocatorCommand, deployCommand, listFunctionsCommand);
@@ -122,6 +121,7 @@ public class RegionEntriesGaugeTest {
         .addServer("localhost", serverPort1)
         .create("server1pool");
   }
+
 
   @After
   public void stopMembers() {
