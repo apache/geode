@@ -197,6 +197,15 @@ public class ConnectionStatsTest {
   private final int invalidateSendInProgressId =
       ConnectionStats.getSendType().nameToId("invalidateSendsInProgress");
 
+  private final int jtaSynchronizationDurationId =
+      ConnectionStats.getType().nameToId("jtaSynchronizationTime");
+  private final int jtaSynchronizationInProgressId =
+      ConnectionStats.getType().nameToId("jtaSynchronizationsInProgress");
+  private final int jtaSynchronizationSendDurationId =
+      ConnectionStats.getSendType().nameToId("jtaSynchronizationSendTime");
+  private final int jtaSynchronizationSendInProgressId =
+      ConnectionStats.getSendType().nameToId("jtaSynchronizationSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1716,6 +1725,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endTxSynchronizationSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSendFailures");
+
+    connectionStats.endTxSynchronizationSend(1, true);
+
+    verify(sendStats).incInt(eq(jtaSynchronizationSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(jtaSynchronizationSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxSynchronizationSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSends");
+
+    connectionStats.endTxSynchronizationSend(1, false);
+
+    verify(sendStats).incInt(eq(jtaSynchronizationSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(jtaSynchronizationSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxSynchronization_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("jtaSynchronizationTimeouts");
+
+    connectionStats.endTxSynchronization(1, true, true);
+
+    verify(stats).incInt(eq(jtaSynchronizationInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(jtaSynchronizationDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxSynchronization_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("jtaSynchronizationTimeouts");
+
+    connectionStats.endTxSynchronization(1, true, false);
+
+    verify(stats).incInt(eq(jtaSynchronizationInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(jtaSynchronizationDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxSynchronization_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("jtaSynchronizationFailures");
+
+    connectionStats.endTxSynchronization(1, false, true);
+
+    verify(stats).incInt(eq(jtaSynchronizationInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(jtaSynchronizationDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxSynchronization_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("jtaSynchronizations");
+
+    connectionStats.endTxSynchronization(1, false, false);
+
+    verify(stats).incInt(eq(jtaSynchronizationInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(jtaSynchronizationDurationId), anyLong());
+  }
+
+  @Test
+  public void startTxSynchronization() {
+    int statId = ConnectionStats.getType().nameToId("jtaSynchronizationsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSendsInProgress");
+
+    connectionStats.startTxSynchronization();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2263,32 +2349,4 @@ public class ConnectionStatsTest {
 
     verify(sendStats).incInt(statId, 1);
   }
-
-  @Test
-  public void endTxSynchronizationSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSendTime");
-
-    connectionStats.endTxSynchronizationSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endTxSynchronizationSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSends");
-
-    connectionStats.endTxSynchronizationSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endTxSynchronizationSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSendFailures");
-
-    connectionStats.endTxSynchronizationSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
 }
