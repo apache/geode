@@ -246,6 +246,12 @@ public class ConnectionStatsTest {
   private final int putSendInProgressId =
       ConnectionStats.getSendType().nameToId("putSendsInProgress");
 
+  private final int queryDurationId = ConnectionStats.getType().nameToId("queryTime");
+  private final int queryInProgressId = ConnectionStats.getType().nameToId("querysInProgress");
+  private final int querySendDurationId = ConnectionStats.getSendType().nameToId("querySendTime");
+  private final int querySendInProgressId =
+      ConnectionStats.getSendType().nameToId("querySendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2304,6 +2310,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endQuerySend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("querySendFailures");
+
+    connectionStats.endQuerySend(1, true);
+
+    verify(sendStats).incInt(eq(querySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(querySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endQuerySend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("querySends");
+
+    connectionStats.endQuerySend(1, false);
+
+    verify(sendStats).incInt(eq(querySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(querySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endQuery_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("queryTimeouts");
+
+    connectionStats.endQuery(1, true, true);
+
+    verify(stats).incInt(eq(queryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(queryDurationId), anyLong());
+  }
+
+  @Test
+  public void endQuery_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("queryTimeouts");
+
+    connectionStats.endQuery(1, true, false);
+
+    verify(stats).incInt(eq(queryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(queryDurationId), anyLong());
+  }
+
+  @Test
+  public void endQuery_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("queryFailures");
+
+    connectionStats.endQuery(1, false, true);
+
+    verify(stats).incInt(eq(queryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(queryDurationId), anyLong());
+  }
+
+  @Test
+  public void endQuery_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("querys");
+
+    connectionStats.endQuery(1, false, false);
+
+    verify(stats).incInt(eq(queryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(queryDurationId), anyLong());
+  }
+
+  @Test
+  public void startQuery() {
+    int statId = ConnectionStats.getType().nameToId("querysInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("querySendsInProgress");
+
+    connectionStats.startQuery();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -2407,33 +2490,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendFailures");
 
     connectionStats.endUnregisterInterestSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endQuerySendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("querySendTime");
-
-    connectionStats.endQuerySend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endQuerySendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("querySends");
-
-    connectionStats.endQuerySend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endQuerySendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("querySendFailures");
-
-    connectionStats.endQuerySend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
