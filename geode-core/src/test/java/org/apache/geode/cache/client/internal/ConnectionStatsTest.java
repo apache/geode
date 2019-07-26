@@ -206,6 +206,12 @@ public class ConnectionStatsTest {
   private final int jtaSynchronizationSendInProgressId =
       ConnectionStats.getSendType().nameToId("jtaSynchronizationSendsInProgress");
 
+  private final int keySetDurationId = ConnectionStats.getType().nameToId("keySetTime");
+  private final int keySetInProgressId = ConnectionStats.getType().nameToId("keySetsInProgress");
+  private final int keySetSendDurationId = ConnectionStats.getSendType().nameToId("keySetSendTime");
+  private final int keySetSendInProgressId =
+      ConnectionStats.getSendType().nameToId("keySetSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1796,6 +1802,83 @@ public class ConnectionStatsTest {
     int sendStatId = ConnectionStats.getSendType().nameToId("jtaSynchronizationSendsInProgress");
 
     connectionStats.startTxSynchronization();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
+  public void endKeySetSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("keySetSendFailures");
+
+    connectionStats.endKeySetSend(1, true);
+
+    verify(sendStats).incInt(eq(keySetSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(keySetSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endKeySetSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("keySetSends");
+
+    connectionStats.endKeySetSend(1, false);
+
+    verify(sendStats).incInt(eq(keySetSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(keySetSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endKeySet_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("keySetTimeouts");
+
+    connectionStats.endKeySet(1, true, true);
+
+    verify(stats).incInt(eq(keySetInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(keySetDurationId), anyLong());
+  }
+
+  @Test
+  public void endKeySet_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("keySetTimeouts");
+
+    connectionStats.endKeySet(1, true, false);
+
+    verify(stats).incInt(eq(keySetInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(keySetDurationId), anyLong());
+  }
+
+  @Test
+  public void endKeySet_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("keySetFailures");
+
+    connectionStats.endKeySet(1, false, true);
+
+    verify(stats).incInt(eq(keySetInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(keySetDurationId), anyLong());
+  }
+
+  @Test
+  public void endKeySet_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("keySets");
+
+    connectionStats.endKeySet(1, false, false);
+
+    verify(stats).incInt(eq(keySetInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(keySetDurationId), anyLong());
+  }
+
+  @Test
+  public void startKeySet() {
+    int statId = ConnectionStats.getType().nameToId("keySetsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("keySetSendsInProgress");
+
+    connectionStats.startKeySet();
 
     verify(stats).incInt(statId, 1);
     verify(sendStats).incInt(sendStatId, 1);
