@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache.xmlcache;
 import static java.lang.String.format;
 import static org.apache.geode.internal.logging.LogWriterFactory.toSecurityLogWriter;
 import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.io.File;
 import java.io.IOException;
@@ -2429,7 +2430,7 @@ public class CacheCreation implements InternalCache {
 
   @Override
   public StatisticsClock getStatisticsClock() {
-    throw new UnsupportedOperationException("Should not be invoked");
+    return disabledClock();
   }
 
   CacheTransactionManagerCreation getCacheTransactionManagerCreation() {
