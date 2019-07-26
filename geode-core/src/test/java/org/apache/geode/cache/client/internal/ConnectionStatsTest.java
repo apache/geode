@@ -252,6 +252,15 @@ public class ConnectionStatsTest {
   private final int querySendInProgressId =
       ConnectionStats.getSendType().nameToId("querySendsInProgress");
 
+  private final int readyForEventsDurationId =
+      ConnectionStats.getType().nameToId("readyForEventsTime");
+  private final int readyForEventsInProgressId =
+      ConnectionStats.getType().nameToId("readyForEventsInProgress");
+  private final int readyForEventsSendDurationId =
+      ConnectionStats.getSendType().nameToId("readyForEventsSendTime");
+  private final int readyForEventsSendInProgressId =
+      ConnectionStats.getSendType().nameToId("readyForEventsSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2387,6 +2396,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endReadyForEventsSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("readyForEventsSendFailures");
+
+    connectionStats.endReadyForEventsSend(1, true);
+
+    verify(sendStats).incInt(eq(readyForEventsSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(readyForEventsSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endReadyForEventsSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("readyForEventsSends");
+
+    connectionStats.endReadyForEventsSend(1, false);
+
+    verify(sendStats).incInt(eq(readyForEventsSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(readyForEventsSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endReadyForEvents_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("readyForEventsTimeouts");
+
+    connectionStats.endReadyForEvents(1, true, true);
+
+    verify(stats).incInt(eq(readyForEventsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(readyForEventsDurationId), anyLong());
+  }
+
+  @Test
+  public void endReadyForEvents_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("readyForEventsTimeouts");
+
+    connectionStats.endReadyForEvents(1, true, false);
+
+    verify(stats).incInt(eq(readyForEventsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(readyForEventsDurationId), anyLong());
+  }
+
+  @Test
+  public void endReadyForEvents_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("readyForEventsFailures");
+
+    connectionStats.endReadyForEvents(1, false, true);
+
+    verify(stats).incInt(eq(readyForEventsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(readyForEventsDurationId), anyLong());
+  }
+
+  @Test
+  public void endReadyForEvents_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("readyForEvents");
+
+    connectionStats.endReadyForEvents(1, false, false);
+
+    verify(stats).incInt(eq(readyForEventsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(readyForEventsDurationId), anyLong());
+  }
+
+  @Test
+  public void startReadyForEvents() {
+    int statId = ConnectionStats.getType().nameToId("readyForEventsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("readyForEventsSendsInProgress");
+
+    connectionStats.startReadyForEvents();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -2571,33 +2657,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("closeCQSendFailures");
 
     connectionStats.endCloseCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endReadyForEventsSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("readyForEventsSendTime");
-
-    connectionStats.endReadyForEventsSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endReadyForEventsSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("readyForEventsSends");
-
-    connectionStats.endReadyForEventsSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endReadyForEventsSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("readyForEventsSendFailures");
-
-    connectionStats.endReadyForEventsSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
