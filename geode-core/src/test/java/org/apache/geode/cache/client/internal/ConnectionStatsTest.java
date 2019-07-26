@@ -261,6 +261,15 @@ public class ConnectionStatsTest {
   private final int readyForEventsSendInProgressId =
       ConnectionStats.getSendType().nameToId("readyForEventsSendsInProgress");
 
+  private final int registerDataSerializersDurationId =
+      ConnectionStats.getType().nameToId("registerDataSerializersTime");
+  private final int registerDataSerializersInProgressId =
+      ConnectionStats.getType().nameToId("registerDataSerializersInProgress");
+  private final int registerDataSerializersSendDurationId =
+      ConnectionStats.getSendType().nameToId("registerDataSerializersSendTime");
+  private final int registerDataSerializersSendInProgressId =
+      ConnectionStats.getSendType().nameToId("registerDataSerializersSendInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2473,6 +2482,84 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endRegisterDataSerializersSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSendFailures");
+
+    connectionStats.endRegisterDataSerializersSend(1, true);
+
+    verify(sendStats).incInt(eq(registerDataSerializersSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(registerDataSerializersSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRegisterDataSerializersSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSends");
+
+    connectionStats.endRegisterDataSerializersSend(1, false);
+
+    verify(sendStats).incInt(eq(registerDataSerializersSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(registerDataSerializersSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRegisterDataSerializers_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("registerDataSerializersTimeouts");
+
+    connectionStats.endRegisterDataSerializers(1, true, true);
+
+    verify(stats).incInt(eq(registerDataSerializersInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(registerDataSerializersDurationId), anyLong());
+  }
+
+  @Test
+  public void endRegisterDataSerializers_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("registerDataSerializersTimeouts");
+
+    connectionStats.endRegisterDataSerializers(1, true, false);
+
+    verify(stats).incInt(eq(registerDataSerializersInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(registerDataSerializersDurationId), anyLong());
+  }
+
+  @Test
+  public void endRegisterDataSerializers_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("registerDataSerializersFailures");
+
+    connectionStats.endRegisterDataSerializers(1, false, true);
+
+    verify(stats).incInt(eq(registerDataSerializersInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(registerDataSerializersDurationId), anyLong());
+  }
+
+  @Test
+  public void endRegisterDataSerializers_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("registerDataSerializers");
+
+    connectionStats.endRegisterDataSerializers(1, false, false);
+
+    verify(stats).incInt(eq(registerDataSerializersInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(registerDataSerializersDurationId), anyLong());
+  }
+
+  @Test
+  public void startRegisterDataSerializers() {
+    int statId = ConnectionStats.getType().nameToId("registerDataSerializersInProgress");
+    int sendStatId =
+        ConnectionStats.getSendType().nameToId("registerDataSerializersSendInProgress");
+
+    connectionStats.startRegisterDataSerializers();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -2684,33 +2771,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("registerInstantiatorsSendFailures");
 
     connectionStats.endRegisterInstantiatorsSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRegisterDataSerializersSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSendTime");
-
-    connectionStats.endRegisterDataSerializersSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endRegisterDataSerializersSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSends");
-
-    connectionStats.endRegisterDataSerializersSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRegisterDataSerializersSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSendFailures");
-
-    connectionStats.endRegisterDataSerializersSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
