@@ -220,6 +220,12 @@ public class ConnectionStatsTest {
   private final int makePrimarySendInProgressId =
       ConnectionStats.getSendType().nameToId("makePrimarySendsInProgress");
 
+  private final int pingDurationId = ConnectionStats.getType().nameToId("pingTime");
+  private final int pingInProgressId = ConnectionStats.getType().nameToId("pingsInProgress");
+  private final int pingSendDurationId = ConnectionStats.getSendType().nameToId("pingSendTime");
+  private final int pingSendInProgressId =
+      ConnectionStats.getSendType().nameToId("pingSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1970,6 +1976,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endPingSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("pingSendFailures");
+
+    connectionStats.endPingSend(1, true);
+
+    verify(sendStats).incInt(eq(pingSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(pingSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPingSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("pingSends");
+
+    connectionStats.endPingSend(1, false);
+
+    verify(sendStats).incInt(eq(pingSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(pingSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPing_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("pingTimeouts");
+
+    connectionStats.endPing(1, true, true);
+
+    verify(stats).incInt(eq(pingInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(pingDurationId), anyLong());
+  }
+
+  @Test
+  public void endPing_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("pingTimeouts");
+
+    connectionStats.endPing(1, true, false);
+
+    verify(stats).incInt(eq(pingInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(pingDurationId), anyLong());
+  }
+
+  @Test
+  public void endPing_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("pingFailures");
+
+    connectionStats.endPing(1, false, true);
+
+    verify(stats).incInt(eq(pingInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(pingDurationId), anyLong());
+  }
+
+  @Test
+  public void endPing_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("pings");
+
+    connectionStats.endPing(1, false, false);
+
+    verify(stats).incInt(eq(pingInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(pingDurationId), anyLong());
+  }
+
+  @Test
+  public void startPing() {
+    int statId = ConnectionStats.getType().nameToId("pingsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("pingSendsInProgress");
+
+    connectionStats.startPing();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2262,33 +2345,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("primaryAckSendFailures");
 
     connectionStats.endPrimaryAckSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPingSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("pingSendTime");
-
-    connectionStats.endPingSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endPingSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("pingSends");
-
-    connectionStats.endPingSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPingSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("pingSendFailures");
-
-    connectionStats.endPingSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
