@@ -304,6 +304,12 @@ public class ConnectionStatsTest {
   private final int rollbackSendInProgressId =
       ConnectionStats.getSendType().nameToId("rollbackSendsInProgress");
 
+  private final int sizeDurationId = ConnectionStats.getType().nameToId("sizeTime");
+  private final int sizeInProgressId = ConnectionStats.getType().nameToId("sizesInProgress");
+  private final int sizeSendDurationId = ConnectionStats.getSendType().nameToId("sizeSendTime");
+  private final int sizeSendInProgressId =
+      ConnectionStats.getSendType().nameToId("sizeSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2902,6 +2908,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endSizeSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("sizeSendFailures");
+
+    connectionStats.endSizeSend(1, true);
+
+    verify(sendStats).incInt(eq(sizeSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(sizeSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endSizeSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("sizeSends");
+
+    connectionStats.endSizeSend(1, false);
+
+    verify(sendStats).incInt(eq(sizeSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(sizeSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endSize_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("sizeTimeouts");
+
+    connectionStats.endSize(1, true, true);
+
+    verify(stats).incInt(eq(sizeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(sizeDurationId), anyLong());
+  }
+
+  @Test
+  public void endSize_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("sizeTimeouts");
+
+    connectionStats.endSize(1, true, false);
+
+    verify(stats).incInt(eq(sizeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(sizeDurationId), anyLong());
+  }
+
+  @Test
+  public void endSize_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("sizeFailures");
+
+    connectionStats.endSize(1, false, true);
+
+    verify(stats).incInt(eq(sizeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(sizeDurationId), anyLong());
+  }
+
+  @Test
+  public void endSize_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("sizes");
+
+    connectionStats.endSize(1, false, false);
+
+    verify(stats).incInt(eq(sizeInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(sizeDurationId), anyLong());
+  }
+
+  @Test
+  public void startSize() {
+    int statId = ConnectionStats.getType().nameToId("sizesInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("sizeSendsInProgress");
+
+    connectionStats.startSize();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -3070,33 +3153,6 @@ public class ConnectionStatsTest {
     connectionStats.endAddPdxTypeSend(1, false);
 
     verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endSizeSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("sizeSendTime");
-
-    connectionStats.endSizeSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endSizeSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("sizeSends");
-
-    connectionStats.endSizeSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endSizeSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("sizeSendFailures");
-
-    connectionStats.endSizeSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
   }
 
   @Test
