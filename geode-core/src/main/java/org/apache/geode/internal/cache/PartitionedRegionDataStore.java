@@ -2433,11 +2433,13 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
   }
 
   public int getSizeOfLocalBuckets() {
-    return localBucket2RegionMap.values().stream()
-        .mapToInt(BucketRegion::getLocalSize)
-        .sum();
+    int sizeOfLocal = 0;
+    Set<BucketRegion> allLocalBuckets = getAllLocalBucketRegions();
+    for (BucketRegion br : allLocalBuckets) {
+      sizeOfLocal += br.size();
+    }
+    return sizeOfLocal;
   }
-
 
   /**
    * Interface for visiting buckets

@@ -6602,7 +6602,9 @@ public class PartitionedRegion extends LocalRegion
 
   @Override
   public int getLocalSize() {
-    return dataStore.getSizeOfLocalBuckets();
+    return dataStore.getLocalBucket2RegionMap().values().stream()
+        .mapToInt(BucketRegion::getLocalSize)
+        .sum();
   }
 
   public int entryCount(boolean localOnly) {
