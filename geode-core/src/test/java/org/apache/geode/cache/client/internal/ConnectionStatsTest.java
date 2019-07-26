@@ -288,6 +288,14 @@ public class ConnectionStatsTest {
   private final int registerInterestSendInProgressId =
       ConnectionStats.getSendType().nameToId("registerInterestSendsInProgress");
 
+  private final int removeAllDurationId = ConnectionStats.getType().nameToId("removeAllTime");
+  private final int removeAllInProgressId =
+      ConnectionStats.getType().nameToId("removeAllsInProgress");
+  private final int removeAllSendDurationId =
+      ConnectionStats.getSendType().nameToId("removeAllSendTime");
+  private final int removeAllSendInProgressId =
+      ConnectionStats.getSendType().nameToId("removeAllSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2732,6 +2740,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endRemoveAllSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("removeAllSendFailures");
+
+    connectionStats.endRemoveAllSend(1, true);
+
+    verify(sendStats).incInt(eq(removeAllSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(removeAllSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRemoveAllSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("removeAllSends");
+
+    connectionStats.endRemoveAllSend(1, false);
+
+    verify(sendStats).incInt(eq(removeAllSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(removeAllSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRemoveAll_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("removeAllTimeouts");
+
+    connectionStats.endRemoveAll(1, true, true);
+
+    verify(stats).incInt(eq(removeAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(removeAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endRemoveAll_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("removeAllTimeouts");
+
+    connectionStats.endRemoveAll(1, true, false);
+
+    verify(stats).incInt(eq(removeAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(removeAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endRemoveAll_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("removeAllFailures");
+
+    connectionStats.endRemoveAll(1, false, true);
+
+    verify(stats).incInt(eq(removeAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(removeAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endRemoveAll_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("removeAlls");
+
+    connectionStats.endRemoveAll(1, false, false);
+
+    verify(stats).incInt(eq(removeAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(removeAllDurationId), anyLong());
+  }
+
+  @Test
+  public void startRemoveAll() {
+    int statId = ConnectionStats.getType().nameToId("removeAllsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("removeAllSendsInProgress");
+
+    connectionStats.startRemoveAll();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -2889,33 +2974,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("closeCQSendFailures");
 
     connectionStats.endCloseCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRemoveAllSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("removeAllSendTime");
-
-    connectionStats.endRemoveAllSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endRemoveAllSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("removeAllSends");
-
-    connectionStats.endRemoveAllSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRemoveAllSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("removeAllSendFailures");
-
-    connectionStats.endRemoveAllSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
