@@ -55,13 +55,13 @@ import org.apache.geode.management.internal.cli.util.ClasspathScanLoadHelper;
  */
 public class CommandManager {
 
-  public static final String USER_CMD_PACKAGES_PROPERTY =
+  private static final String USER_CMD_PACKAGES_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + USER_COMMAND_PACKAGES;
-  public static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
+  private static final String USER_CMD_PACKAGES_ENV_VARIABLE = "GEMFIRE_USER_COMMAND_PACKAGES";
 
   private final Helper helper = new Helper();
 
-  private final List<Converter<?>> converters = new ArrayList<Converter<?>>();
+  private final List<Converter<?>> converters = new ArrayList<>();
   private final List<CommandMarker> commandMarkers = new ArrayList<>();
 
   private Properties cacheProperties;
@@ -121,7 +121,7 @@ public class CommandManager {
     }
 
     for (String source : userCommandSources) {
-      Arrays.stream(source.split(",")).forEach(userCommandPackages::add);
+      userCommandPackages.addAll(Arrays.asList(source.split(",")));
     }
 
     return userCommandPackages;
@@ -275,7 +275,7 @@ public class CommandManager {
   /**
    * Method to add new Converter
    */
-  void add(Converter<?> converter) {
+  private void add(Converter<?> converter) {
     if (CommandManagerAware.class.isAssignableFrom(converter.getClass())) {
       ((CommandManagerAware) converter).setCommandManager(this);
     }
