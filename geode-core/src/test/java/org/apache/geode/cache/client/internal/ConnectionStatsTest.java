@@ -234,6 +234,12 @@ public class ConnectionStatsTest {
   private final int primaryAckSendInProgressId =
       ConnectionStats.getSendType().nameToId("primaryAckSendsInProgress");
 
+  private final int putAllDurationId = ConnectionStats.getType().nameToId("putAllTime");
+  private final int putAllInProgressId = ConnectionStats.getType().nameToId("putAllsInProgress");
+  private final int putAllSendDurationId = ConnectionStats.getSendType().nameToId("putAllSendTime");
+  private final int putAllSendInProgressId =
+      ConnectionStats.getSendType().nameToId("putAllSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2138,6 +2144,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endPutAllSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("putAllSendFailures");
+
+    connectionStats.endPutAllSend(1, true);
+
+    verify(sendStats).incInt(eq(putAllSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(putAllSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPutAllSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("putAllSends");
+
+    connectionStats.endPutAllSend(1, false);
+
+    verify(sendStats).incInt(eq(putAllSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(putAllSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPutAll_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("putAllTimeouts");
+
+    connectionStats.endPutAll(1, true, true);
+
+    verify(stats).incInt(eq(putAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(putAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endPutAll_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("putAllTimeouts");
+
+    connectionStats.endPutAll(1, true, false);
+
+    verify(stats).incInt(eq(putAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(putAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endPutAll_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("putAllFailures");
+
+    connectionStats.endPutAll(1, false, true);
+
+    verify(stats).incInt(eq(putAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(putAllDurationId), anyLong());
+  }
+
+  @Test
+  public void endPutAll_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("putAlls");
+
+    connectionStats.endPutAll(1, false, false);
+
+    verify(stats).incInt(eq(putAllInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(putAllDurationId), anyLong());
+  }
+
+  @Test
+  public void startPutAll() {
+    int statId = ConnectionStats.getType().nameToId("putAllsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("putAllSendsInProgress");
+
+    connectionStats.startPutAll();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2457,33 +2540,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("registerDataSerializersSendFailures");
 
     connectionStats.endRegisterDataSerializersSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPutAllSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("putAllSendTime");
-
-    connectionStats.endPutAllSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endPutAllSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("putAllSends");
-
-    connectionStats.endPutAllSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPutAllSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("putAllSendFailures");
-
-    connectionStats.endPutAllSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
