@@ -324,6 +324,15 @@ public class ConnectionStatsTest {
   private final int txFailoverSendInProgressId =
       ConnectionStats.getSendType().nameToId("txFailoverSendsInProgress");
 
+  private final int unregisterInterestDurationId =
+      ConnectionStats.getType().nameToId("unregisterInterestTime");
+  private final int unregisterInterestInProgressId =
+      ConnectionStats.getType().nameToId("unregisterInterestsInProgress");
+  private final int unregisterInterestSendDurationId =
+      ConnectionStats.getSendType().nameToId("unregisterInterestSendTime");
+  private final int unregisterInterestSendInProgressId =
+      ConnectionStats.getSendType().nameToId("unregisterInterestSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -3153,29 +3162,79 @@ public class ConnectionStatsTest {
   }
 
   @Test
-  public void endUnregisterInterestSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendTime");
-
-    connectionStats.endUnregisterInterestSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endUnregisterInterestSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSends");
-
-    connectionStats.endUnregisterInterestSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endUnregisterInterestSendIncsSendStatsFailureOpCount() {
+  public void endUnregisterInterestSend_FailedOperation() {
     int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendFailures");
 
     connectionStats.endUnregisterInterestSend(1, true);
 
+    verify(sendStats).incInt(eq(unregisterInterestSendInProgressId), eq(-1));
     verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(unregisterInterestSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endUnregisterInterestSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSends");
+
+    connectionStats.endUnregisterInterestSend(1, false);
+
+    verify(sendStats).incInt(eq(unregisterInterestSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(unregisterInterestSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endUnregisterInterest_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("unregisterInterestTimeouts");
+
+    connectionStats.endUnregisterInterest(1, true, true);
+
+    verify(stats).incInt(eq(unregisterInterestInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(unregisterInterestDurationId), anyLong());
+  }
+
+  @Test
+  public void endUnregisterInterest_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("unregisterInterestTimeouts");
+
+    connectionStats.endUnregisterInterest(1, true, false);
+
+    verify(stats).incInt(eq(unregisterInterestInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(unregisterInterestDurationId), anyLong());
+  }
+
+  @Test
+  public void endUnregisterInterest_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("unregisterInterestFailures");
+
+    connectionStats.endUnregisterInterest(1, false, true);
+
+    verify(stats).incInt(eq(unregisterInterestInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(unregisterInterestDurationId), anyLong());
+  }
+
+  @Test
+  public void endUnregisterInterest_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("unregisterInterests");
+
+    connectionStats.endUnregisterInterest(1, false, false);
+
+    verify(stats).incInt(eq(unregisterInterestInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(unregisterInterestDurationId), anyLong());
+  }
+
+  @Test
+  public void startUnregisterInterest() {
+    int statId = ConnectionStats.getType().nameToId("unregisterInterestsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("unregisterInterestSendsInProgress");
+
+    connectionStats.startUnregisterInterest();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
   }
 }
