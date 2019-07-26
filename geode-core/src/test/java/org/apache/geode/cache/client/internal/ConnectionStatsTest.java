@@ -316,6 +316,14 @@ public class ConnectionStatsTest {
   private final int stopCQSendInProgressId =
       ConnectionStats.getSendType().nameToId("stopCQSendsInProgress");
 
+  private final int txFailoverDurationId = ConnectionStats.getType().nameToId("txFailoverTime");
+  private final int txFailoverInProgressId =
+      ConnectionStats.getType().nameToId("txFailoversInProgress");
+  private final int txFailoverSendDurationId =
+      ConnectionStats.getSendType().nameToId("txFailoverSendTime");
+  private final int txFailoverSendInProgressId =
+      ConnectionStats.getSendType().nameToId("txFailoverSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -3068,6 +3076,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endTxFailoverSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("txFailoverSendFailures");
+
+    connectionStats.endTxFailoverSend(1, true);
+
+    verify(sendStats).incInt(eq(txFailoverSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(txFailoverSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxFailoverSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("txFailoverSends");
+
+    connectionStats.endTxFailoverSend(1, false);
+
+    verify(sendStats).incInt(eq(txFailoverSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(txFailoverSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxFailover_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("txFailoverTimeouts");
+
+    connectionStats.endTxFailover(1, true, true);
+
+    verify(stats).incInt(eq(txFailoverInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(txFailoverDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxFailover_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("txFailoverTimeouts");
+
+    connectionStats.endTxFailover(1, true, false);
+
+    verify(stats).incInt(eq(txFailoverInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(txFailoverDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxFailover_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("txFailoverFailures");
+
+    connectionStats.endTxFailover(1, false, true);
+
+    verify(stats).incInt(eq(txFailoverInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(txFailoverDurationId), anyLong());
+  }
+
+  @Test
+  public void endTxFailover_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("txFailovers");
+
+    connectionStats.endTxFailover(1, false, false);
+
+    verify(stats).incInt(eq(txFailoverInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(txFailoverDurationId), anyLong());
+  }
+
+  @Test
+  public void startTxFailover() {
+    int statId = ConnectionStats.getType().nameToId("txFailoversInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("txFailoverSendsInProgress");
+
+    connectionStats.startTxFailover();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endUnregisterInterestSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendTime");
 
@@ -3090,33 +3175,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendFailures");
 
     connectionStats.endUnregisterInterestSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endTxFailoverSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("txFailoverSendTime");
-
-    connectionStats.endTxFailoverSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endTxFailoverSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("txFailoverSends");
-
-    connectionStats.endTxFailoverSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endTxFailoverSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("txFailoverSendFailures");
-
-    connectionStats.endTxFailoverSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
