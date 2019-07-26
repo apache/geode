@@ -226,6 +226,14 @@ public class ConnectionStatsTest {
   private final int pingSendInProgressId =
       ConnectionStats.getSendType().nameToId("pingSendsInProgress");
 
+  private final int primaryAckDurationId = ConnectionStats.getType().nameToId("primaryAckTime");
+  private final int primaryAckInProgressId =
+      ConnectionStats.getType().nameToId("primaryAcksInProgress");
+  private final int primaryAckSendDurationId =
+      ConnectionStats.getSendType().nameToId("primaryAckSendTime");
+  private final int primaryAckSendInProgressId =
+      ConnectionStats.getSendType().nameToId("primaryAckSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2053,6 +2061,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endPrimaryAckSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("primaryAckSendFailures");
+
+    connectionStats.endPrimaryAckSend(1, true);
+
+    verify(sendStats).incInt(eq(primaryAckSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(primaryAckSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPrimaryAckSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("primaryAckSends");
+
+    connectionStats.endPrimaryAckSend(1, false);
+
+    verify(sendStats).incInt(eq(primaryAckSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(primaryAckSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endPrimaryAck_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("primaryAckTimeouts");
+
+    connectionStats.endPrimaryAck(1, true, true);
+
+    verify(stats).incInt(eq(primaryAckInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(primaryAckDurationId), anyLong());
+  }
+
+  @Test
+  public void endPrimaryAck_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("primaryAckTimeouts");
+
+    connectionStats.endPrimaryAck(1, true, false);
+
+    verify(stats).incInt(eq(primaryAckInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(primaryAckDurationId), anyLong());
+  }
+
+  @Test
+  public void endPrimaryAck_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("primaryAckFailures");
+
+    connectionStats.endPrimaryAck(1, false, true);
+
+    verify(stats).incInt(eq(primaryAckInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(primaryAckDurationId), anyLong());
+  }
+
+  @Test
+  public void endPrimaryAck_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("primaryAcks");
+
+    connectionStats.endPrimaryAck(1, false, false);
+
+    verify(stats).incInt(eq(primaryAckInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(primaryAckDurationId), anyLong());
+  }
+
+  @Test
+  public void startPrimaryAck() {
+    int statId = ConnectionStats.getType().nameToId("primaryAcksInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("primaryAckSendsInProgress");
+
+    connectionStats.startPrimaryAck();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2318,33 +2403,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("readyForEventsSendFailures");
 
     connectionStats.endReadyForEventsSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPrimaryAckSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("primaryAckSendTime");
-
-    connectionStats.endPrimaryAckSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endPrimaryAckSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("primaryAckSends");
-
-    connectionStats.endPrimaryAckSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endPrimaryAckSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("primaryAckSendFailures");
-
-    connectionStats.endPrimaryAckSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
