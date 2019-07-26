@@ -296,6 +296,14 @@ public class ConnectionStatsTest {
   private final int removeAllSendInProgressId =
       ConnectionStats.getSendType().nameToId("removeAllSendsInProgress");
 
+  private final int rollbackDurationId = ConnectionStats.getType().nameToId("rollbackTime");
+  private final int rollbackInProgressId =
+      ConnectionStats.getType().nameToId("rollbacksInProgress");
+  private final int rollbackSendDurationId =
+      ConnectionStats.getSendType().nameToId("rollbackSendTime");
+  private final int rollbackSendInProgressId =
+      ConnectionStats.getSendType().nameToId("rollbackSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2817,6 +2825,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endRollbackSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("rollbackSendFailures");
+
+    connectionStats.endRollbackSend(1, true);
+
+    verify(sendStats).incInt(eq(rollbackSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(rollbackSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRollbackSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("rollbackSends");
+
+    connectionStats.endRollbackSend(1, false);
+
+    verify(sendStats).incInt(eq(rollbackSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(rollbackSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endRollback_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("rollbackTimeouts");
+
+    connectionStats.endRollback(1, true, true);
+
+    verify(stats).incInt(eq(rollbackInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(rollbackDurationId), anyLong());
+  }
+
+  @Test
+  public void endRollback_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("rollbackTimeouts");
+
+    connectionStats.endRollback(1, true, false);
+
+    verify(stats).incInt(eq(rollbackInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(rollbackDurationId), anyLong());
+  }
+
+  @Test
+  public void endRollback_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("rollbackFailures");
+
+    connectionStats.endRollback(1, false, true);
+
+    verify(stats).incInt(eq(rollbackInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(rollbackDurationId), anyLong());
+  }
+
+  @Test
+  public void endRollback_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("rollbacks");
+
+    connectionStats.endRollback(1, false, false);
+
+    verify(stats).incInt(eq(rollbackInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(rollbackDurationId), anyLong());
+  }
+
+  @Test
+  public void startRollback() {
+    int statId = ConnectionStats.getType().nameToId("rollbacksInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("rollbackSendsInProgress");
+
+    connectionStats.startRollback();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -3010,33 +3095,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("sizeSendFailures");
 
     connectionStats.endSizeSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRollbackSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("rollbackSendTime");
-
-    connectionStats.endRollbackSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endRollbackSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("rollbackSends");
-
-    connectionStats.endRollbackSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endRollbackSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("rollbackSendFailures");
-
-    connectionStats.endRollbackSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
