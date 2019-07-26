@@ -310,6 +310,12 @@ public class ConnectionStatsTest {
   private final int sizeSendInProgressId =
       ConnectionStats.getSendType().nameToId("sizeSendsInProgress");
 
+  private final int stopCQDurationId = ConnectionStats.getType().nameToId("stopCQTime");
+  private final int stopCQInProgressId = ConnectionStats.getType().nameToId("stopCQsInProgress");
+  private final int stopCQSendDurationId = ConnectionStats.getSendType().nameToId("stopCQSendTime");
+  private final int stopCQSendInProgressId =
+      ConnectionStats.getSendType().nameToId("stopCQSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -2985,6 +2991,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endStopCQSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("stopCQSendFailures");
+
+    connectionStats.endStopCQSend(1, true);
+
+    verify(sendStats).incInt(eq(stopCQSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(stopCQSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endStopCQSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("stopCQSends");
+
+    connectionStats.endStopCQSend(1, false);
+
+    verify(sendStats).incInt(eq(stopCQSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(stopCQSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endStopCQ_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("stopCQTimeouts");
+
+    connectionStats.endStopCQ(1, true, true);
+
+    verify(stats).incInt(eq(stopCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(stopCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endStopCQ_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("stopCQTimeouts");
+
+    connectionStats.endStopCQ(1, true, false);
+
+    verify(stats).incInt(eq(stopCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(stopCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endStopCQ_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("stopCQFailures");
+
+    connectionStats.endStopCQ(1, false, true);
+
+    verify(stats).incInt(eq(stopCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(stopCQDurationId), anyLong());
+  }
+
+  @Test
+  public void endStopCQ_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("stopCQs");
+
+    connectionStats.endStopCQ(1, false, false);
+
+    verify(stats).incInt(eq(stopCQInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(stopCQDurationId), anyLong());
+  }
+
+  @Test
+  public void startStopCQ() {
+    int statId = ConnectionStats.getType().nameToId("stopCQsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("stopCQSendsInProgress");
+
+    connectionStats.startStopCQ();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endDestroySendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
 
@@ -3088,33 +3171,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("createCQSendFailures");
 
     connectionStats.endCreateCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endStopCQSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("stopCQSendTime");
-
-    connectionStats.endStopCQSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endStopCQSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("stopCQSends");
-
-    connectionStats.endStopCQSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endStopCQSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("stopCQSendFailures");
-
-    connectionStats.endStopCQSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
