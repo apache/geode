@@ -212,6 +212,14 @@ public class ConnectionStatsTest {
   private final int keySetSendInProgressId =
       ConnectionStats.getSendType().nameToId("keySetSendsInProgress");
 
+  private final int makePrimaryDurationId = ConnectionStats.getType().nameToId("makePrimaryTime");
+  private final int makePrimaryInProgressId =
+      ConnectionStats.getType().nameToId("makePrimarysInProgress");
+  private final int makePrimarySendDurationId =
+      ConnectionStats.getSendType().nameToId("makePrimarySendTime");
+  private final int makePrimarySendInProgressId =
+      ConnectionStats.getSendType().nameToId("makePrimarySendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1885,6 +1893,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endMakePrimarySend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("makePrimarySendFailures");
+
+    connectionStats.endMakePrimarySend(1, true);
+
+    verify(sendStats).incInt(eq(makePrimarySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(makePrimarySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endMakePrimarySend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("makePrimarySends");
+
+    connectionStats.endMakePrimarySend(1, false);
+
+    verify(sendStats).incInt(eq(makePrimarySendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(makePrimarySendDurationId), anyLong());
+  }
+
+  @Test
+  public void endMakePrimary_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("makePrimaryTimeouts");
+
+    connectionStats.endMakePrimary(1, true, true);
+
+    verify(stats).incInt(eq(makePrimaryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(makePrimaryDurationId), anyLong());
+  }
+
+  @Test
+  public void endMakePrimary_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("makePrimaryTimeouts");
+
+    connectionStats.endMakePrimary(1, true, false);
+
+    verify(stats).incInt(eq(makePrimaryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(makePrimaryDurationId), anyLong());
+  }
+
+  @Test
+  public void endMakePrimary_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("makePrimaryFailures");
+
+    connectionStats.endMakePrimary(1, false, true);
+
+    verify(stats).incInt(eq(makePrimaryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(makePrimaryDurationId), anyLong());
+  }
+
+  @Test
+  public void endMakePrimary_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("makePrimarys");
+
+    connectionStats.endMakePrimary(1, false, false);
+
+    verify(stats).incInt(eq(makePrimaryInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(makePrimaryDurationId), anyLong());
+  }
+
+  @Test
+  public void startMakePrimary() {
+    int statId = ConnectionStats.getType().nameToId("makePrimarysInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("makePrimarySendsInProgress");
+
+    connectionStats.startMakePrimary();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2150,33 +2235,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("readyForEventsSendFailures");
 
     connectionStats.endReadyForEventsSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endMakePrimarySendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("makePrimarySendTime");
-
-    connectionStats.endMakePrimarySend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endMakePrimarySendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("makePrimarySends");
-
-    connectionStats.endMakePrimarySend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endMakePrimarySendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("makePrimarySendFailures");
-
-    connectionStats.endMakePrimarySend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
