@@ -196,7 +196,6 @@ public class SSLSocketHostNameVerificationIntegrationTest {
                 ByteBuffer.allocate(500),
                 new BufferPool(mock(DMStats.class)));
       } catch (Throwable throwable) {
-        throwable.printStackTrace(System.out);
         serverException = throwable;
       } finally {
         if (engine != null && socket != null) {
