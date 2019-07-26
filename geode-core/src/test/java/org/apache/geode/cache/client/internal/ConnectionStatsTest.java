@@ -3068,60 +3068,6 @@ public class ConnectionStatsTest {
   }
 
   @Test
-  public void endDestroySendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("destroySendTime");
-
-    connectionStats.endDestroySend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endDestroySendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("destroySends");
-
-    connectionStats.endDestroySend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endDestroySendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("destroySendFailures");
-
-    connectionStats.endDestroySend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endKeySetSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("keySetSendTime");
-
-    connectionStats.endKeySetSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endKeySetSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("keySetSends");
-
-    connectionStats.endKeySetSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endKeySetSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("keySetSendFailures");
-
-    connectionStats.endKeySetSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
   public void endUnregisterInterestSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("unregisterInterestSendTime");
 
@@ -3146,69 +3092,6 @@ public class ConnectionStatsTest {
     connectionStats.endUnregisterInterestSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCreateCQSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("createCQSendTime");
-
-    connectionStats.endCreateCQSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endCreateCQSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("createCQSends");
-
-    connectionStats.endCreateCQSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCreateCQSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("createCQSendFailures");
-
-    connectionStats.endCreateCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCloseCQSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("closeCQSendTime");
-
-    connectionStats.endCloseCQSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endCloseCQSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("closeCQSends");
-
-    connectionStats.endCloseCQSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endCloseCQSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("closeCQSendFailures");
-
-    connectionStats.endCloseCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endAddPdxTypeSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("addPdxTypeSendTime");
-
-    connectionStats.endAddPdxTypeSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
   }
 
   @Test
