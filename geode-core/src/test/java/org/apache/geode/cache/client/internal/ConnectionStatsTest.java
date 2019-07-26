@@ -17,9 +17,11 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -340,6 +342,49 @@ public class ConnectionStatsTest {
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientSendStats-name")))
         .thenReturn(sendStats);
     return statisticsFactory;
+  }
+
+  @Test
+  public void close() {
+    connectionStats.close();
+    verify(stats).close();
+    verify(sendStats).close();
+  }
+
+  @Test
+  public void incMessagesBeingReceived() {
+    int messagesStatId = ConnectionStats.getType().nameToId("messagesBeingReceived");
+    int messagesBytesStatId = ConnectionStats.getType().nameToId("messageBytesBeingReceived");
+    connectionStats.incMessagesBeingReceived(10);
+    verify(stats).incInt(messagesStatId, 1);
+    verify(stats).incLong(messagesBytesStatId, 10);
+  }
+
+  @Test
+  public void incMessagesBeingReceived_messageSizeIsZero() {
+    int messagesStatId = ConnectionStats.getType().nameToId("messagesBeingReceived");
+    int messagesBytesStatId = ConnectionStats.getType().nameToId("messageBytesBeingReceived");
+    connectionStats.incMessagesBeingReceived(0);
+    verify(stats).incInt(messagesStatId, 1);
+    verify(stats, never()).incLong(eq(messagesBytesStatId), anyInt());
+  }
+
+  @Test
+  public void decMessagesBeingReceived() {
+    int messagesStatId = ConnectionStats.getType().nameToId("messagesBeingReceived");
+    int messagesBytesStatId = ConnectionStats.getType().nameToId("messageBytesBeingReceived");
+    connectionStats.decMessagesBeingReceived(10);
+    verify(stats).incInt(messagesStatId, -1);
+    verify(stats).incLong(messagesBytesStatId, -10);
+  }
+
+  @Test
+  public void decMessagesBeingReceived_messageSizeIsZero() {
+    int messagesStatId = ConnectionStats.getType().nameToId("messagesBeingReceived");
+    int messagesBytesStatId = ConnectionStats.getType().nameToId("messageBytesBeingReceived");
+    connectionStats.decMessagesBeingReceived(0);
+    verify(stats).incInt(messagesStatId, -1);
+    verify(stats, never()).incLong(eq(messagesBytesStatId), anyInt());
   }
 
   @Test
