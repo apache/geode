@@ -174,6 +174,15 @@ public class ConnectionStatsTest {
   private final int getEntrySendInProgressId =
       ConnectionStats.getSendType().nameToId("getEntrySendsInProgress");
 
+  private final int getDurableCQsDurationId =
+      ConnectionStats.getType().nameToId("getDurableCQsTime");
+  private final int getDurableCQsInProgressId =
+      ConnectionStats.getType().nameToId("getDurableCQsInProgress");
+  private final int getDurableCQsSendDurationId =
+      ConnectionStats.getSendType().nameToId("getDurableCQsSendTime");
+  private final int getDurableCQsSendInProgressId =
+      ConnectionStats.getSendType().nameToId("getDurableCQsSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1462,6 +1471,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endGetDurableCQsSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSendFailures");
+
+    connectionStats.endGetDurableCQsSend(1, true);
+
+    verify(sendStats).incInt(eq(getDurableCQsSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getDurableCQsSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetDurableCQsSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSends");
+
+    connectionStats.endGetDurableCQsSend(1, false);
+
+    verify(sendStats).incInt(eq(getDurableCQsSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getDurableCQsSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetDurableCQs_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getDurableCQsTimeouts");
+
+    connectionStats.endGetDurableCQs(1, true, true);
+
+    verify(stats).incInt(eq(getDurableCQsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getDurableCQsDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetDurableCQs_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getDurableCQsTimeouts");
+
+    connectionStats.endGetDurableCQs(1, true, false);
+
+    verify(stats).incInt(eq(getDurableCQsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getDurableCQsDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetDurableCQs_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getDurableCQsFailures");
+
+    connectionStats.endGetDurableCQs(1, false, true);
+
+    verify(stats).incInt(eq(getDurableCQsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getDurableCQsDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetDurableCQs_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("getDurableCQs");
+
+    connectionStats.endGetDurableCQs(1, false, false);
+
+    verify(stats).incInt(eq(getDurableCQsInProgressId), eq(-1));
+    verify(stats).incInt(statId, 1);
+    verify(stats).incLong(eq(getDurableCQsDurationId), anyLong());
+  }
+
+  @Test
+  public void startGetDurableCQs() {
+    int statId = ConnectionStats.getType().nameToId("getDurableCQsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("getDurableCQsSendsInProgress");
+
+    connectionStats.startGetDurableCQs();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endGetSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("getSendTime");
 
@@ -1727,33 +1813,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("closeCQSendFailures");
 
     connectionStats.endCloseCQSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetDurableCQsSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSendTime");
-
-    connectionStats.endGetDurableCQsSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetDurableCQsSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSends");
-
-    connectionStats.endGetDurableCQsSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetDurableCQsSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getDurableCQsSendFailures");
-
-    connectionStats.endGetDurableCQsSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
