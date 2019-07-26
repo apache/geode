@@ -32,7 +32,7 @@ import org.apache.geode.internal.statistics.StatisticsClock;
 
 // TODO:Asif: Modify the test to allow working with the new class containing
 // ReadWrite lock functionality
-public class TestBlockingHARegionQueue extends HARegionQueue.TestOnlyHARegionQueue {
+public class TestBlockingHARegionQueue extends TestOnlyHARegionQueue {
   private static final Logger logger = LogService.getLogger();
 
   /**

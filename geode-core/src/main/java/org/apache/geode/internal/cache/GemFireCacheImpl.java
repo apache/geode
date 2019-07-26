@@ -3758,7 +3758,8 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     throwIfClient();
     stopper.checkCancelInProgress(null);
 
-    InternalCacheServer server = new ServerBuilder(this, securityService).createServer();
+    InternalCacheServer server = new ServerBuilder(this, securityService,
+        StatisticsClockFactory.disabledClock()).createServer();
     allCacheServers.add(server);
 
     sendAddCacheServerProfileMessage();
@@ -3850,8 +3851,9 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     requireNonNull(gatewayReceiver.get(),
         "GatewayReceiver must be added before adding a server endpoint.");
 
-    InternalCacheServer receiverServer = new ServerBuilder(this, securityService)
-        .forGatewayReceiver(receiver).createServer();
+    InternalCacheServer receiverServer = new ServerBuilder(this, securityService,
+        StatisticsClockFactory.disabledClock())
+            .forGatewayReceiver(receiver).createServer();
     gatewayReceiverServer.set(receiverServer);
 
     sendAddCacheServerProfileMessage();
@@ -5359,6 +5361,14 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
     }
   }
 
+  /**
+   * Feature factories may use this supplier to acquire the {@code StatisticsClock} which is
+   * created by the Cache as configured by {@link DistributionConfig#getEnableTimeStatistics()}.
+   *
+   * <p>
+   * Please pass the {@code StatisticsClock} through constructors where possible instead of
+   * accessing it from this supplier.
+   */
   public StatisticsClock getStatisticsClock() {
     return statisticsClock;
   }

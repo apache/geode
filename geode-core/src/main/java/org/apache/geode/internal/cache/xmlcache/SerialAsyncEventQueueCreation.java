@@ -34,7 +34,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 public class SerialAsyncEventQueueCreation extends AbstractGatewaySender implements GatewaySender {
 
   public SerialAsyncEventQueueCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs, disabledClock());
+    super(cache, disabledClock(), attrs);
   }
 
   @Override

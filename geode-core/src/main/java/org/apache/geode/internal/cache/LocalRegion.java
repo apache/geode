@@ -604,7 +604,7 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         hasOwnStats = true;
         cachePerfStats = new RegionPerfStats(
             cache.getInternalDistributedSystem().getStatisticsManager(), cache.getCachePerfStats(),
-            regionName, cache.getStatisticsClock());
+            regionName, getStatisticsClock());
       }
     }
 

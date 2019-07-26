@@ -1212,7 +1212,7 @@ public class HARegionQueueJUnitTest {
     haa.setExpiryTime(3);
 
     RegionQueue regionqueue =
-        new HARegionQueue.TestOnlyHARegionQueue(testName.getMethodName(), cache, haa,
+        new TestOnlyHARegionQueue(testName.getMethodName(), cache, haa,
             enabledClock()) {
           @Override
           CacheListener createCacheListenerForHARegion() {
@@ -1897,7 +1897,7 @@ public class HARegionQueueJUnitTest {
   /**
    * Extends HARegionQueue for testing purposes. used by testSafeConflationRemoval
    */
-  static class HARQTestClass extends HARegionQueue.TestOnlyHARegionQueue {
+  static class HARQTestClass extends TestOnlyHARegionQueue {
 
     HARQTestClass(String regionName, InternalCache cache)
         throws IOException, ClassNotFoundException, CacheException, InterruptedException {

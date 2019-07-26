@@ -17,6 +17,7 @@ package org.apache.geode.cache.asyncqueue.internal;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
+import org.apache.geode.StatisticsFactory;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.wan.GatewayTransportFilter;
 import org.apache.geode.distributed.DistributedLockService;
@@ -40,18 +41,20 @@ import org.apache.geode.internal.cache.wan.serial.SerialGatewaySenderQueue;
 import org.apache.geode.internal.cache.xmlcache.CacheCreation;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
 
   private static final Logger logger = LogService.getLogger();
 
-  public SerialAsyncEventQueueImpl(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs, cache.getStatisticsClock());
+  public SerialAsyncEventQueueImpl(InternalCache cache, StatisticsFactory statisticsFactory,
+      StatisticsClock statisticsClock, GatewaySenderAttributes attrs) {
+    super(cache, statisticsClock, attrs);
     if (!(this.cache instanceof CacheCreation)) {
       // this sender lies underneath the AsyncEventQueue. Need to have
       // AsyncEventQueueStats
-      this.statistics = new AsyncEventQueueStats(cache.getDistributedSystem(),
-          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), cache.getStatisticsClock());
+      this.statistics = new AsyncEventQueueStats(statisticsFactory,
+          AsyncEventQueueImpl.getAsyncEventQueueIdFromSenderId(id), statisticsClock);
     }
   }
 

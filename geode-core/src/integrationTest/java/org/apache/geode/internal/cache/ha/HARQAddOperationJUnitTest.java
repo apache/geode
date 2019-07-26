@@ -892,7 +892,7 @@ public class HARQAddOperationJUnitTest {
       HARegionQueueAttributes attrs = new HARegionQueueAttributes();
       attrs.setExpiryTime(10);
       final HARegionQueue regionqueue =
-          new HARegionQueue.TestOnlyHARegionQueue("testing", cache, attrs, enabledClock()) {
+          new TestOnlyHARegionQueue("testing", cache, attrs, enabledClock()) {
             @Override
             CacheListener createCacheListenerForHARegion() {
               return new CacheListenerAdapter() {

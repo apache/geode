@@ -46,7 +46,7 @@ public class WANFactoryImpl implements WANFactory {
 
   @Override
   public GatewaySenderFactory createGatewaySenderFactory(InternalCache cache) {
-    return new GatewaySenderFactoryImpl(cache);
+    return new GatewaySenderFactoryImpl(cache, cache.getStatisticsClock());
   }
 
   @Override

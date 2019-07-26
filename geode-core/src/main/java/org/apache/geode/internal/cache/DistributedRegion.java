@@ -2361,7 +2361,7 @@ public class DistributedRegion extends LocalRegion implements InternalDistribute
     // Set eventId. Required for interested clients.
     event.setNewEventId(cache.getDistributedSystem());
 
-    long startPut = cache.getStatisticsClock().getTime();
+    long startPut = getStatisticsClock().getTime();
     validateKey(event.getKey());
     // this next step also distributes the object to other processes, if necessary
     try {

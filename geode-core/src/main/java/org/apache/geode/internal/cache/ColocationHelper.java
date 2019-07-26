@@ -338,18 +338,17 @@ public class ColocationHelper {
     Map<String, LocalDataSet> colocatedLocalDataSets = new HashMap<String, LocalDataSet>();
     if (region.getColocatedWith() == null && (!region.isColocatedBy())) {
       colocatedLocalDataSets.put(region.getFullPath(),
-          new LocalDataSet(region, bucketSet, region.getStatisticsClock()));
+          new LocalDataSet(region, bucketSet));
       return colocatedLocalDataSets;
     }
     Map<String, PartitionedRegion> colocatedRegions =
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
       colocatedLocalDataSets.put(colocatedRegion.getFullPath(),
-          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet,
-              region.getStatisticsClock()));
+          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet));
     }
     colocatedLocalDataSets.put(region.getFullPath(),
-        new LocalDataSet(region, bucketSet, region.getStatisticsClock()));
+        new LocalDataSet(region, bucketSet));
     return colocatedLocalDataSets;
   }
 
@@ -363,8 +362,7 @@ public class ColocationHelper {
         ColocationHelper.getAllColocationRegions(region);
     for (Region colocatedRegion : colocatedRegions.values()) {
       ret.put(colocatedRegion.getFullPath(),
-          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet,
-              region.getStatisticsClock()));
+          new LocalDataSet((PartitionedRegion) colocatedRegion, bucketSet));
     }
     return ret;
   }

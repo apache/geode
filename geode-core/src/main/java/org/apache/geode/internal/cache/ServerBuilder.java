@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientHealthMonitor.ClientHe
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Builds instances of {@link InternalCacheServer}.
@@ -43,6 +44,7 @@ class ServerBuilder implements ServerFactory {
 
   private final InternalCache cache;
   private final SecurityService securityService;
+  private final StatisticsClock statisticsClock;
 
   private boolean sendResourceEvents = true;
   private boolean includeMemberGroups = true;
@@ -58,9 +60,11 @@ class ServerBuilder implements ServerFactory {
 
   private List<GatewayTransportFilter> gatewayTransportFilters = Collections.emptyList();
 
-  ServerBuilder(InternalCache cache, SecurityService securityService) {
+  ServerBuilder(InternalCache cache, SecurityService securityService,
+      StatisticsClock statisticsClock) {
     this.cache = cache;
     this.securityService = securityService;
+    this.statisticsClock = statisticsClock;
   }
 
   /**
@@ -109,8 +113,8 @@ class ServerBuilder implements ServerFactory {
     acceptorBuilder.setIsGatewayReceiver(socketCreatorType.isGateway());
     acceptorBuilder.setGatewayTransportFilters(gatewayTransportFilters);
 
-    return new CacheServerImpl(cache, securityService, acceptorBuilder, sendResourceEvents,
-        includeMemberGroups, socketCreatorSupplier, cacheClientNotifierProvider,
+    return new CacheServerImpl(cache, securityService, statisticsClock, acceptorBuilder,
+        sendResourceEvents, includeMemberGroups, socketCreatorSupplier, cacheClientNotifierProvider,
         clientHealthMonitorProvider, cacheServerAdvisorProvider);
   }
 

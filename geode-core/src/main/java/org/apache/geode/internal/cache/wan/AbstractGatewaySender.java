@@ -238,8 +238,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
     statisticsClock = disabledClock();
   }
 
-  public AbstractGatewaySender(InternalCache cache, GatewaySenderAttributes attrs,
-      StatisticsClock statisticsClock) {
+  public AbstractGatewaySender(InternalCache cache, StatisticsClock statisticsClock,
+      GatewaySenderAttributes attrs) {
     this.cache = cache;
     this.statisticsClock = statisticsClock;
     this.id = attrs.getId();
@@ -293,6 +293,11 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
   @Override
   public GatewaySenderStats getStatistics() {
     return statistics;
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 
   public void initProxy() {
@@ -1267,7 +1272,7 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
         @Override
         public CachePerfStats getCachePerfStats() {
           return new CachePerfStats(cache.getDistributedSystem(), META_DATA_REGION_NAME,
-              cache.getStatisticsClock());
+              sender.statisticsClock);
         }
       };
 

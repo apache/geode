@@ -77,6 +77,7 @@ import org.apache.geode.internal.cache.tier.sockets.ServerConnectionFactory;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.management.membership.ClientMembership;
 import org.apache.geode.management.membership.ClientMembershipListener;
 
@@ -93,10 +94,12 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   private static final int FORCE_LOAD_UPDATE_FREQUENCY = getInteger(
       DistributionConfig.GEMFIRE_PREFIX + "BridgeServer.FORCE_LOAD_UPDATE_FREQUENCY", 10);
 
+  static final String CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE =
+      "A cache server's bind address is only available if it has been started";
+
   private final SecurityService securityService;
 
-  public static final String CACHE_SERVER_BIND_ADDRESS_NOT_AVAILABLE_EXCEPTION_MESSAGE =
-      "A cache server's bind address is only available if it has been started";
+  private final StatisticsClock statisticsClock;
 
   private final AcceptorBuilder acceptorBuilder;
 
@@ -146,6 +149,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
 
   CacheServerImpl(final InternalCache cache,
       final SecurityService securityService,
+      final StatisticsClock statisticsClock,
       final AcceptorBuilder acceptorBuilder,
       final boolean sendResourceEvents,
       final boolean includeMembershipGroups,
@@ -155,6 +159,7 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
       final Function<DistributionAdvisee, CacheServerAdvisor> cacheServerAdvisorProvider) {
     super(cache);
     this.securityService = securityService;
+    this.statisticsClock = statisticsClock;
     this.acceptorBuilder = acceptorBuilder;
     this.sendResourceEvents = sendResourceEvents;
     this.includeMembershipGroups = includeMembershipGroups;
@@ -167,6 +172,11 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   @Override
   public CancelCriterion getCancelCriterion() {
     return cache.getCancelCriterion();
+  }
+
+  @Override
+  public StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 
   /**
@@ -275,7 +285,6 @@ public class CacheServerImpl extends AbstractCacheServer implements Distribution
   public int getMessageTimeToLive() {
     return this.messageTimeToLive;
   }
-
 
   @Override
   public ClientSubscriptionConfig getClientSubscriptionConfig() {

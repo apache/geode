@@ -316,6 +316,7 @@ public class CacheClientProxy implements ClientSession {
   private final Object drainsInProgressLock = new Object();
 
   private final SecurityService securityService;
+  private final StatisticsClock statisticsClock;
 
   /**
    * Constructor.
@@ -329,7 +330,8 @@ public class CacheClientProxy implements ClientSession {
   protected CacheClientProxy(CacheClientNotifier ccn, Socket socket,
       ClientProxyMembershipID proxyID, boolean isPrimary, byte clientConflation,
       Version clientVersion, long acceptorId, boolean notifyBySubscription,
-      SecurityService securityService, Subject subject) throws CacheException {
+      SecurityService securityService, Subject subject, StatisticsClock statisticsClock)
+      throws CacheException {
 
     initializeTransientFields(socket, proxyID, isPrimary, clientConflation, clientVersion);
     this._cacheClientNotifier = ccn;
@@ -339,7 +341,8 @@ public class CacheClientProxy implements ClientSession {
     this._messageTimeToLive = ccn.getMessageTimeToLive();
     this._acceptorId = acceptorId;
     this.notifyBySubscription = notifyBySubscription;
-    StatisticsFactory factory = this._cache.getDistributedSystem();
+    StatisticsFactory factory = this._cache.getInternalDistributedSystem().getStatisticsManager();
+    this.statisticsClock = statisticsClock;
     this._statistics =
         new CacheClientProxyStats(factory, "id_" + this.proxyID.getDistributedMember().getId()
             + "_at_" + this._remoteHostAddress + ":" + this._socket.getPort());
@@ -1705,7 +1708,7 @@ public class CacheClientProxy implements ClientSession {
   }
 
   MessageDispatcher createMessageDispatcher(String name) {
-    return new MessageDispatcher(this, name, _cache.getStatisticsClock());
+    return new MessageDispatcher(this, name, statisticsClock);
   }
 
   protected void startOrResumeMessageDispatcher(boolean processedMarker) {

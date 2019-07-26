@@ -15,7 +15,6 @@
 package org.apache.geode.cache.client.internal;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -66,7 +65,6 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.statistics.DummyStatisticsFactory;
-import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
  * Manages the client side of client to server connections and client queues.
@@ -151,17 +149,15 @@ public class PoolImpl implements InternalPool {
 
   public static final int PRIMARY_QUEUE_NOT_AVAILABLE = -2;
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;
-  private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
+  private final AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
   private final ThreadsMonitoring threadMonitoring;
-  private final StatisticsClock statisticsClock;
 
   public static PoolImpl create(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
       InternalCache cache, ThreadsMonitoring tMonitoring) {
     PoolImpl pool =
-        new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring,
-            cache == null ? disabledClock() : cache.getStatisticsClock());
+        new PoolImpl(pm, name, attributes, locatorAddresses, distributedSystem, cache, tMonitoring);
     pool.finishCreate(pm);
     return pool;
   }
@@ -189,7 +185,7 @@ public class PoolImpl implements InternalPool {
 
   protected PoolImpl(PoolManagerImpl pm, String name, Pool attributes,
       List<HostAddress> locatorAddresses, InternalDistributedSystem distributedSystem,
-      InternalCache cache, ThreadsMonitoring threadMonitoring, StatisticsClock statisticsClock) {
+      InternalCache cache, ThreadsMonitoring threadMonitoring) {
     this.pm = pm;
     this.name = name;
     this.locatorAddresses = locatorAddresses;
@@ -200,7 +196,6 @@ public class PoolImpl implements InternalPool {
     this.distributedSystem = distributedSystem;
     this.cache = cache;
     this.threadMonitoring = threadMonitoring;
-    this.statisticsClock = statisticsClock;
 
     socketConnectTimeout = attributes.getSocketConnectTimeout();
     freeConnectionTimeout = attributes.getFreeConnectionTimeout();
@@ -1413,7 +1408,7 @@ public class PoolImpl implements InternalPool {
             "Cache must be created before creating pool");
       }
     }
-    ProxyCache proxy = new ProxyCache(props, cache, this, statisticsClock);
+    ProxyCache proxy = new ProxyCache(props, cache, this);
     synchronized (proxyCacheList) {
       proxyCacheList.add(proxy);
     }

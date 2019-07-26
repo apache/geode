@@ -137,7 +137,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
         if (logger.isDebugEnabled()) {
           logger.debug("doPutOrCreate: attempting to update or create entry");
         }
-        final long startPut = rgn.getCache().getStatisticsClock().getTime();
+        final long startPut = rgn.getCachePerfStats().getTime();
         final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
         if (isBucket) {
           BucketRegion br = (BucketRegion) rgn;
@@ -169,7 +169,7 @@ public abstract class AbstractUpdateOperation extends DistributedCacheOperation 
       // from this message.
       if (doUpdate) {
         if (!ev.isLocalInvalid()) {
-          final long startPut = rgn.getCache().getStatisticsClock().getTime();
+          final long startPut = rgn.getCachePerfStats().getTime();
           boolean overwriteDestroyed = ev.getOperation().isCreate();
           final boolean isBucket = rgn.isUsedForPartitionedRegionBucket();
           if (isBucket) {

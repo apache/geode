@@ -1848,7 +1848,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @SuppressWarnings("unchecked")
   @Override
   public RegionSnapshotService getSnapshotService() {
-    return new RegionSnapshotServiceImpl(this, statisticsClock);
+    return new RegionSnapshotServiceImpl(this);
   }
 
   @Override
@@ -1874,8 +1874,14 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
     // nothing
   }
 
-  // TODO:KIRK: reduce scope of getStatisticsClock
-  public StatisticsClock getStatisticsClock() {
+  /**
+   * Only subclasses of {@code AbstractRegion} should use this supplier to acquire the
+   * {@code StatisticsClock}.
+   *
+   * <p>
+   * Please do not use this accessor from any class other than a Region.
+   */
+  protected StatisticsClock getStatisticsClock() {
     return statisticsClock;
   }
 

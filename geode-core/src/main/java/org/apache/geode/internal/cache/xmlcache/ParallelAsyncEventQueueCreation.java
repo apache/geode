@@ -35,7 +35,7 @@ public class ParallelAsyncEventQueueCreation extends AbstractGatewaySender
     implements GatewaySender {
 
   public ParallelAsyncEventQueueCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs, disabledClock());
+    super(cache, disabledClock(), attrs);
   }
 
   @Override

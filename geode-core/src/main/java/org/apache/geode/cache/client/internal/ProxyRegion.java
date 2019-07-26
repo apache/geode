@@ -767,7 +767,7 @@ public class ProxyRegion implements Region {
 
   @Override
   public RegionSnapshotService<?, ?> getSnapshotService() {
-    return new RegionSnapshotServiceImpl(this, statisticsClock);
+    return new RegionSnapshotServiceImpl(this);
   }
 
   @Override

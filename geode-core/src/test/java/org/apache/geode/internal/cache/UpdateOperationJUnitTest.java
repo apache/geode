@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -30,9 +29,10 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.RegionAttributes;
 
 public class UpdateOperationJUnitTest {
-  EntryEventImpl event;
-  UpdateOperation.UpdateMessage message;
-  DistributedRegion region;
+
+  private EntryEventImpl event;
+  private UpdateOperation.UpdateMessage message;
+  private DistributedRegion region;
 
   @Before
   public void setup() {
@@ -54,7 +54,7 @@ public class UpdateOperationJUnitTest {
     when(region.getConcurrencyChecksEnabled()).thenReturn(true);
     when(region.getCachePerfStats()).thenReturn(stats);
     when(region.getCache()).thenReturn(cache);
-    when(cache.getStatisticsClock()).thenReturn(disabledClock());
+    // when(cache.getStatisticsClock()).thenReturn(disabledClock());
     when(attr.getDataPolicy()).thenReturn(DataPolicy.REPLICATE);
     when(event.getOperation()).thenReturn(Operation.CREATE);
   }

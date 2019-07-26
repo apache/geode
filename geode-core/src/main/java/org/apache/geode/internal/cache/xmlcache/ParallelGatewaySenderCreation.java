@@ -35,7 +35,7 @@ import org.apache.geode.internal.cache.wan.GatewaySenderAttributes;
 public class ParallelGatewaySenderCreation extends AbstractGatewaySender implements GatewaySender {
 
   public ParallelGatewaySenderCreation(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs, disabledClock());
+    super(cache, disabledClock(), attrs);
   }
 
   @Override

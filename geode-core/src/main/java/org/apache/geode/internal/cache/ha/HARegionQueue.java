@@ -49,10 +49,10 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.CancelException;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.InternalGemFireException;
 import org.apache.geode.StatisticsFactory;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.AttributesFactory;
@@ -326,21 +326,63 @@ public class HARegionQueue implements RegionQueue {
     return regionName.replace('/', '#');
   }
 
+  /**
+   * @param isPrimary whether this is the primary queue for a client
+   */
+  protected HARegionQueue(String regionName, InternalCache cache, Map haContainer,
+      ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary,
+      StatisticsClock statisticsClock)
+      throws IOException, ClassNotFoundException, CacheException, InterruptedException {
+
+    String processedRegionName = createRegionName(regionName);
+
+    // Initialize the statistics
+    StatisticsFactory factory = cache.getInternalDistributedSystem().getStatisticsManager();
+
+    AttributesFactory af = new AttributesFactory();
+    af.setMirrorType(MirrorType.KEYS_VALUES);
+    af.addCacheListener(createCacheListenerForHARegion());
+    af.setStatisticsEnabled(true);
+    RegionAttributes ra = af.create();
+
+    this.region = HARegion.getInstance(processedRegionName, cache, this, ra, statisticsClock);
+
+    if (this.isPrimary) {// fix for 41878
+      // since it's primary queue, we will disable the EntryExpiryTask
+      // this should be done after region creation
+      disableEntryExpiryTasks();
+    }
+
+    this.regionName = processedRegionName;
+    this.threadIdToSeqId = new MapWrapper();
+    this.idsAvailable = new LinkedHashSet();
+    setClientConflation(clientConflation);
+    this.isPrimary = isPrimary;
+    // Initialize the statistics
+    this.stats = new HARegionQueueStats(factory, processedRegionName);
+    this.haContainer = haContainer;
+    this.giiLock = new StoppableReentrantReadWriteLock(cache.getCancelCriterion());
+    this.clientProxyID = clientProxyId;
+
+    this.stopper = this.region.getCancelCriterion();
+    this.rwLock = new StoppableReentrantReadWriteLock(region.getCancelCriterion());
+    this.readLock = this.rwLock.readLock();
+    this.writeLock = this.rwLock.writeLock();
+
+    putGIIDataInRegion();
+
+    if (this.getClass() == HARegionQueue.class) {
+      initialized.set(true);
+    }
+  }
+
+  @VisibleForTesting
   HARegionQueue(String regionName, HARegion haRegion, InternalCache cache, Map haContainer,
       ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary,
       HARegionQueueStats stats, StoppableReentrantReadWriteLock giiLock,
       StoppableReentrantReadWriteLock rwLock, CancelCriterion cancelCriterion,
-      boolean puttingGIIDataInQueue)
+      boolean puttingGIIDataInQueue, StatisticsClock statisticsClock)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-    initializeHARegionQueue(regionName, haRegion, haContainer, clientProxyId, clientConflation,
-        isPrimary, stats, giiLock, rwLock, cancelCriterion, puttingGIIDataInQueue);
-  }
-
-  private void initializeHARegionQueue(String regionName, HARegion haRegion, Map haContainer,
-      ClientProxyMembershipID clientProxyId, byte clientConflation, boolean isPrimary,
-      HARegionQueueStats stats, StoppableReentrantReadWriteLock giiLock,
-      StoppableReentrantReadWriteLock rwLock, CancelCriterion cancelCriterion,
-      boolean putGIIDataInQueue) throws InterruptedException {
     this.regionName = regionName;
     this.region = haRegion;
     this.threadIdToSeqId = new MapWrapper();
@@ -359,77 +401,13 @@ public class HARegionQueue implements RegionQueue {
     this.writeLock = this.rwLock.writeLock();
 
     // false specifically set in tests only
-    if (putGIIDataInQueue) {
+    if (puttingGIIDataInQueue) {
       putGIIDataInRegion();
     }
     if (this.getClass() == HARegionQueue.class) {
       initialized.set(true);
     }
   }
-
-  /**
-   * @param isPrimary whether this is the primary queue for a client
-   */
-  protected HARegionQueue(String regionName, InternalCache cache, Map haContainer,
-      ClientProxyMembershipID clientProxyId, final byte clientConflation, boolean isPrimary,
-      StatisticsClock statisticsClock)
-      throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-
-    String processedRegionName = createRegionName(regionName);
-
-    // Initialize the statistics
-    StatisticsFactory factory = cache.getDistributedSystem();
-    createHARegion(processedRegionName, cache, statisticsClock);
-
-    initializeHARegionQueue(processedRegionName, this.region, haContainer, clientProxyId,
-        clientConflation, isPrimary, new HARegionQueueStats(factory, processedRegionName),
-        new StoppableReentrantReadWriteLock(cache.getCancelCriterion()),
-        new StoppableReentrantReadWriteLock(region.getCancelCriterion()),
-        this.region.getCancelCriterion(), true);
-  }
-
-  private void createHARegion(String processedRegionName, InternalCache cache,
-      StatisticsClock statisticsClock)
-      throws IOException, ClassNotFoundException {
-    AttributesFactory af = new AttributesFactory();
-    af.setMirrorType(MirrorType.KEYS_VALUES);
-    af.addCacheListener(createCacheListenerForHARegion());
-    af.setStatisticsEnabled(true);
-    RegionAttributes ra = af.create();
-    this.region = HARegion.getInstance(processedRegionName, cache, this, ra, statisticsClock);
-
-    if (isPrimary) {// fix for 41878
-      // since it's primary queue, we will disable the EntryExpiryTask
-      // this should be done after region creation
-      disableEntryExpiryTasks();
-    }
-  }
-
-  /**
-   * reinitialize the queue, presumably pulling current information from seconaries
-   */
-  public void reinitializeRegion() {
-    InternalCache cache = this.region.getCache();
-    String regionName = this.region.getName();
-    this.region.destroyRegion();
-    Exception problem = null;
-    try {
-      createHARegion(regionName, cache, cache.getStatisticsClock());
-    } catch (IOException | ClassNotFoundException e) {
-      problem = e;
-    }
-    if (problem != null) {
-      throw new InternalGemFireException("Problem recreating region queue '" + regionName + "'");
-    }
-    try {
-      this.putGIIDataInRegion();
-    } catch (InterruptedException e) {
-      cache.getCancelCriterion().checkCancelInProgress(e);
-      Thread.currentThread().interrupt();
-    }
-  }
-
-
 
   /**
    * install DACE information from an initial image provider
@@ -2676,58 +2654,6 @@ public class HARegionQueue implements RegionQueue {
    */
   public void clearPeekedIDs() {
     peekedEventsContext.set(null);
-  }
-
-  /**
-   * A static class which is created only for for testing prposes as some existing tests extend the
-   * HARegionQueue. Since the constructors of HAregionQueue are private , this class can act as a
-   * bridge between the user defined HARegionQueue class & the actual class. This class object will
-   * be buggy as it will tend to publish the Object o QRM thread & the expiry thread before the
-   * complete creation of the HARegionQueue instance
-   */
-  static class TestOnlyHARegionQueue extends HARegionQueue {
-    /**
-     * Overloaded constructor to accept haContainer.
-     *
-     * @since GemFire 5.7
-     */
-    TestOnlyHARegionQueue(String regionName, InternalCache cache, Map haContainer,
-        StatisticsClock statisticsClock)
-        throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, haContainer,
-          Handshake.CONFLATION_DEFAULT, false, statisticsClock);
-      this.initialized.set(true);
-    }
-
-    TestOnlyHARegionQueue(String regionName, InternalCache cache, StatisticsClock statisticsClock)
-        throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      this(regionName, cache, HARegionQueueAttributes.DEFAULT_HARQ_ATTRIBUTES, new HashMap(),
-          Handshake.CONFLATION_DEFAULT, false, statisticsClock);
-    }
-
-    TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa,
-        Map haContainer, final byte clientConflation, boolean isPrimary,
-        StatisticsClock statisticsClock)
-        throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      super(regionName, cache, haContainer, null, clientConflation, isPrimary, statisticsClock);
-      ExpirationAttributes ea =
-          new ExpirationAttributes(hrqa.getExpiryTime(), ExpirationAction.LOCAL_INVALIDATE);
-      this.region.setOwner(this);
-      this.region.getAttributesMutator().setEntryTimeToLive(ea);
-      this.initialized.set(true);
-    }
-
-    /**
-     * Overloaded constructor to pass an {@code HashMap} instance as a haContainer.
-     *
-     * @since GemFire 5.7
-     */
-    TestOnlyHARegionQueue(String regionName, InternalCache cache, HARegionQueueAttributes hrqa,
-        StatisticsClock statisticsClock)
-        throws IOException, ClassNotFoundException, CacheException, InterruptedException {
-      this(regionName, cache, hrqa, new HashMap(), Handshake.CONFLATION_DEFAULT, false,
-          statisticsClock);
-    }
   }
 
   /**

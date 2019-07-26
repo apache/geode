@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionQueue;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public interface InternalGatewaySender extends GatewaySender {
 
@@ -32,6 +33,8 @@ public interface InternalGatewaySender extends GatewaySender {
   boolean isPrimary();
 
   GatewaySenderStats getStatistics();
+
+  StatisticsClock getStatisticsClock();
 
   boolean waitUntilFlushed(long timeout, TimeUnit unit) throws InterruptedException;
 

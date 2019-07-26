@@ -383,7 +383,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return new LocalDataSet(pr, buckets, pr.getStatisticsClock());
+      return new LocalDataSet(pr, buckets);
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {
@@ -413,7 +413,7 @@ public final class PartitionRegionHelper {
       } else {
         buckets = Collections.emptySet();
       }
-      return new LocalDataSet(pr, buckets, pr.getStatisticsClock());
+      return new LocalDataSet(pr, buckets);
     } else if (r instanceof LocalDataSet) {
       return r;
     } else {

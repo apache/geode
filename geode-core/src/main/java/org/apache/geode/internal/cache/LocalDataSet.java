@@ -63,8 +63,6 @@ import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.cache.execute.InternalRegionFunctionContext;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.statistics.StatisticsClock;
-
 
 public class LocalDataSet implements Region, QueryExecutor {
 
@@ -72,13 +70,11 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   private final PartitionedRegion proxy;
   private final Set<Integer> buckets;
-  private final StatisticsClock statisticsClock;
   private InternalRegionFunctionContext rfContext;
 
-  public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets, StatisticsClock statisticsClock) {
+  public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
     this.proxy = pr;
     this.buckets = buckets;
-    this.statisticsClock = statisticsClock;
   }
 
   @Override
@@ -707,7 +703,7 @@ public class LocalDataSet implements Region, QueryExecutor {
 
   @Override
   public RegionSnapshotService<?, ?> getSnapshotService() {
-    return new RegionSnapshotServiceImpl(this, statisticsClock);
+    return new RegionSnapshotServiceImpl(this);
   }
 
   protected class LocalEntriesSet extends EntriesSet {

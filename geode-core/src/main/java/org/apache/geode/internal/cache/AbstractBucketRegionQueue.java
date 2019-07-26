@@ -350,7 +350,7 @@ public abstract class AbstractBucketRegionQueue extends BucketRegion {
     }
 
     boolean didPut = false;
-    long startPut = cache.getStatisticsClock().getTime();
+    long startPut = getStatisticsClock().getTime();
     // Value will always be an instanceof GatewaySenderEventImpl which
     // is never stored offheap so this EntryEventImpl values will never be off-heap.
     // So the value that ends up being stored in this region is a GatewaySenderEventImpl

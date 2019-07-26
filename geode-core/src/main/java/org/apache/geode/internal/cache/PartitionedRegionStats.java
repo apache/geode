@@ -567,11 +567,7 @@ public class PartitionedRegionStats {
     return this.stats;
   }
 
-  public long startTime() {
-    return clock.getTime();
-  }
-
-  public long getStatTime() {
+  public long getTime() {
     return clock.getTime();
   }
 
@@ -750,7 +746,7 @@ public class PartitionedRegionStats {
 
   public long startPartitionMessageProcessing() {
     this.stats.incLong(partitionMessagesReceivedId, 1);
-    return startTime();
+    return getTime();
   }
 
   public void endPartitionMessagesProcessing(long start) {
