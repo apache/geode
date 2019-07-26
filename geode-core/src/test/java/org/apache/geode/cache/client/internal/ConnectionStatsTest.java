@@ -189,6 +189,14 @@ public class ConnectionStatsTest {
   private final int getSendInProgressId =
       ConnectionStats.getSendType().nameToId("getSendsInProgress");
 
+  private final int invalidateDurationId = ConnectionStats.getType().nameToId("invalidateTime");
+  private final int invalidateInProgressId =
+      ConnectionStats.getType().nameToId("invalidatesInProgress");
+  private final int invalidateSendDurationId =
+      ConnectionStats.getSendType().nameToId("invalidateSendTime");
+  private final int invalidateSendInProgressId =
+      ConnectionStats.getSendType().nameToId("invalidateSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1631,6 +1639,83 @@ public class ConnectionStatsTest {
   }
 
   @Test
+  public void endInvalidateSend_FailedOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("invalidateSendFailures");
+
+    connectionStats.endInvalidateSend(1, true);
+
+    verify(sendStats).incInt(eq(invalidateSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(invalidateSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endInvalidateSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("invalidateSends");
+
+    connectionStats.endInvalidateSend(1, false);
+
+    verify(sendStats).incInt(eq(invalidateSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(invalidateSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endInvalidate_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("invalidateTimeouts");
+
+    connectionStats.endInvalidate(1, true, true);
+
+    verify(stats).incInt(eq(invalidateInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(invalidateDurationId), anyLong());
+  }
+
+  @Test
+  public void endInvalidate_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("invalidateTimeouts");
+
+    connectionStats.endInvalidate(1, true, false);
+
+    verify(stats).incInt(eq(invalidateInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(invalidateDurationId), anyLong());
+  }
+
+  @Test
+  public void endInvalidate_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("invalidateFailures");
+
+    connectionStats.endInvalidate(1, false, true);
+
+    verify(stats).incInt(eq(invalidateInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(invalidateDurationId), anyLong());
+  }
+
+  @Test
+  public void endInvalidate_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("invalidates");
+
+    connectionStats.endInvalidate(1, false, false);
+
+    verify(stats).incInt(eq(invalidateInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(invalidateDurationId), anyLong());
+  }
+
+  @Test
+  public void startInvalidate() {
+    int statId = ConnectionStats.getType().nameToId("invalidatesInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("invalidateSendsInProgress");
+
+    connectionStats.startInvalidate();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
+  }
+
+  @Test
   public void endPutSendIncsStatIdOnSendStats() {
     int statId = ConnectionStats.getSendType().nameToId("putSendTime");
 
@@ -2121,33 +2206,6 @@ public class ConnectionStatsTest {
     int statId = ConnectionStats.getSendType().nameToId("sizeSendFailures");
 
     connectionStats.endSizeSend(1, true);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endInvalidateSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("invalidateSendTime");
-
-    connectionStats.endInvalidateSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endInvalidateSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("invalidateSends");
-
-    connectionStats.endInvalidateSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endInvalidateSendIncsSendStatsFailureOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("invalidateSendFailures");
-
-    connectionStats.endInvalidateSend(1, true);
 
     verify(sendStats).incInt(statId, 1);
   }
