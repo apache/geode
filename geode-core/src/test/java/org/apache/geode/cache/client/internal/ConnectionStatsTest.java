@@ -183,6 +183,12 @@ public class ConnectionStatsTest {
   private final int getDurableCQsSendInProgressId =
       ConnectionStats.getSendType().nameToId("getDurableCQsSendsInProgress");
 
+  private final int getDurationId = ConnectionStats.getType().nameToId("getTime");
+  private final int getInProgressId = ConnectionStats.getType().nameToId("getsInProgress");
+  private final int getSendDurationId = ConnectionStats.getSendType().nameToId("getSendTime");
+  private final int getSendInProgressId =
+      ConnectionStats.getSendType().nameToId("getSendsInProgress");
+
   private StatisticsFactory createStatisticsFactory(Statistics sendStats) {
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
     when(statisticsFactory.createAtomicStatistics(any(), eq("ClientStats-name")))
@@ -1548,30 +1554,80 @@ public class ConnectionStatsTest {
   }
 
   @Test
-  public void endGetSendIncsStatIdOnSendStats() {
-    int statId = ConnectionStats.getSendType().nameToId("getSendTime");
-
-    connectionStats.endGetSend(1, false);
-
-    verify(sendStats).incLong(eq(statId), anyLong());
-  }
-
-  @Test
-  public void endGetSendIncsSendStatsSuccessfulOpCount() {
-    int statId = ConnectionStats.getSendType().nameToId("getSends");
-
-    connectionStats.endGetSend(1, false);
-
-    verify(sendStats).incInt(statId, 1);
-  }
-
-  @Test
-  public void endGetSendIncsSendStatsFailureOpCount() {
+  public void endGetSend_FailedOperation() {
     int statId = ConnectionStats.getSendType().nameToId("getSendFailures");
 
     connectionStats.endGetSend(1, true);
 
+    verify(sendStats).incInt(eq(getSendInProgressId), eq(-1));
     verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGetSend_SuccessfulOperation() {
+    int statId = ConnectionStats.getSendType().nameToId("getSends");
+
+    connectionStats.endGetSend(1, false);
+
+    verify(sendStats).incInt(eq(getSendInProgressId), eq(-1));
+    verify(sendStats).incInt(statId, 1);
+    verify(sendStats).incLong(eq(getSendDurationId), anyLong());
+  }
+
+  @Test
+  public void endGet_TimeoutOperation() {
+    int statId = ConnectionStats.getType().nameToId("getTimeouts");
+
+    connectionStats.endGet(1, true, true);
+
+    verify(stats).incInt(eq(getInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(getDurationId), anyLong());
+  }
+
+  @Test
+  public void endGet_TimeoutOperationAndNotFailed() {
+    int statId = ConnectionStats.getType().nameToId("getTimeouts");
+
+    connectionStats.endGet(1, true, false);
+
+    verify(stats).incInt(eq(getInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(getDurationId), anyLong());
+  }
+
+  @Test
+  public void endGet_FailedOperation() {
+    int statId = ConnectionStats.getType().nameToId("getFailures");
+
+    connectionStats.endGet(1, false, true);
+
+    verify(stats).incInt(eq(getInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(getDurationId), anyLong());
+  }
+
+  @Test
+  public void endGet_SuccessfulOperation() {
+    int statId = ConnectionStats.getType().nameToId("gets");
+
+    connectionStats.endGet(1, false, false);
+
+    verify(stats).incInt(eq(getInProgressId), eq(-1));
+    verify(stats).incLong(statId, 1L);
+    verify(stats).incLong(eq(getDurationId), anyLong());
+  }
+
+  @Test
+  public void startGet() {
+    int statId = ConnectionStats.getType().nameToId("getsInProgress");
+    int sendStatId = ConnectionStats.getSendType().nameToId("getSendsInProgress");
+
+    connectionStats.startGet();
+
+    verify(stats).incInt(statId, 1);
+    verify(sendStats).incInt(sendStatId, 1);
   }
 
   @Test
