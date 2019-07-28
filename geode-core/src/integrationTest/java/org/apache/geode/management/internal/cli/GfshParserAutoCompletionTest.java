@@ -333,7 +333,8 @@ public class GfshParserAutoCompletionTest {
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split("\n");
     assertThat(hintsProvidedArray.length).isEqualTo(15);
-    assertThat(hintsProvidedArray[0]).isEqualTo("User data as stored in regions of the Geode distributed system.");
+    assertThat(hintsProvidedArray[0])
+        .isEqualTo("User data as stored in regions of the Geode distributed system.");
   }
 
   @Test
@@ -342,7 +343,8 @@ public class GfshParserAutoCompletionTest {
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split("\n");
     assertThat(hintsProvidedArray.length).isEqualTo(21);
-    assertThat(hintsProvidedArray[0]).isEqualTo("Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
   }
 
   @Test
@@ -351,7 +353,8 @@ public class GfshParserAutoCompletionTest {
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
     String[] hintsProvidedArray = hintsProvided.split("\n");
     assertThat(hintsProvidedArray.length).isEqualTo(1);
-    assertThat(hintsProvidedArray[0]).isEqualTo("Unknown topic: " + hintArgument + ". Use hint to view the list of available topics.");
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Unknown topic: " + hintArgument + ". Use hint to view the list of available topics.");
   }
 
   @Test
@@ -361,7 +364,8 @@ public class GfshParserAutoCompletionTest {
     System.out.println(hintsProvided);
     String[] hintsProvidedArray = hintsProvided.split("\n");
     assertThat(hintsProvidedArray.length).isEqualTo(5);
-    assertThat(hintsProvidedArray[0]).isEqualTo("Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
     assertThat(hintsProvidedArray).contains("Data");
     assertThat(hintsProvidedArray).contains("Debug-Utility");
     assertThat(hintsProvidedArray).contains("Disk Store");

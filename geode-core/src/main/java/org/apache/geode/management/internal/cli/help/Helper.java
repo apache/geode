@@ -19,7 +19,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,24 +149,21 @@ public class Helper {
   public String getHint(String buffer) {
     List<String> topicKeys = this.topics.keySet()
         .stream()
-        .filter(t -> t.startsWith(buffer))
+        .filter(t -> t.toLowerCase().startsWith(buffer.toLowerCase()))
         .sorted()
         .collect(Collectors.toList());
 
     StringBuilder builder = new StringBuilder();
     // if no topic is provided, return a list of topics
     if (topicKeys.isEmpty()) {
-      builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(GfshParser.LINE_SEPARATOR)
-          .append(GfshParser.LINE_SEPARATOR);
-
-      this.topics.keySet()
-          .forEach(topic -> builder.append(topic).append(GfshParser.LINE_SEPARATOR));
+      builder.append(CliStrings.format(CliStrings.HINT__MSG__UNKNOWN_TOPIC, buffer))
+          .append(GfshParser.LINE_SEPARATOR).append(GfshParser.LINE_SEPARATOR);
     } else if (topicKeys.size() == 1) {
-      Topic oneTopic = this.topics.get(0);
+      Topic oneTopic = this.topics.get(topicKeys.get(0));
       builder.append(oneTopic.desc).append(GfshParser.LINE_SEPARATOR)
           .append(GfshParser.LINE_SEPARATOR);
       oneTopic.relatedCommands.stream().sorted().forEach(command -> builder.append(command.command)
-        .append(": ").append(command.desc).append(GfshParser.LINE_SEPARATOR));
+          .append(": ").append(command.desc).append(GfshParser.LINE_SEPARATOR));
     } else {
       builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(GfshParser.LINE_SEPARATOR)
           .append(GfshParser.LINE_SEPARATOR);
