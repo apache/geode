@@ -142,8 +142,6 @@ configurations {
     extendsFrom api
     description 'a dependency that exposes the compiled classes'
   }
-
-  jmhRuntimeClasspath.extendsFrom runtimeClasspath
 }
 
 dependencies {
@@ -340,9 +338,6 @@ dependencies {
 
   jcaCompile(sourceSets.main.output)
 
-  jmhImplementation(platform(project(':boms:geode-all-bom')))
-  jmhImplementation('org.openjdk.jmh:jmh-core')
-
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
@@ -416,35 +411,22 @@ jmh {
   duplicateClassesStrategy = 'warn'
   include = project.hasProperty('jmh.include') ? project.getProperties().get('jmh.include') : '.*'
   profilers = project.hasProperty('jmh.profilers') ? project.getProperties().get('jmh.profilers').tokenize() : []
+  threads = project.hasProperty('jmh.threads') ? project.getProperties().get('jmh.threads') : null
 }
 
-tasks.register('getJmhJarStuff', Sync) {
-  inputs.files {
-    configurations.jmhRuntimeClasspath
-  }
+jmhJar {
   from {
-    configurations.jmhRuntimeClasspath.collect {
-      it
-    }
+    [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
+        it.asFileTree.collect {
+          it
+        }
+      }.flatten().unique().collect {
+          it.isDirectory() ? it : zipTree(it)
+      }
   }
-  into "${buildDir}/tmp/getJmhJarStuff/"
-}
-
-tasks.named('jmhJar').configure {
-  inputs.files {
-    tasks.named('getJmhJarStuff').get().outputs.files
-  }
-
-  from {
-    tasks.named('getJmhJarStuff').get().outputs.files.asFileTree.collect {
-      it.isDirectory() ? it : zipTree(it)
-    }
-  }
-  exclude('**/*.SF')
-  exclude('**/Log4j2Plugins.dat')
-
-  // figure out why changes to source doesn't cause this jar to rebuild.
-  outputs.upToDateWhen { false }
+  exclude(['META-INF/*.SF'])
+  exclude('META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat')
+  exclude('*.jar')
 }
 
 tasks.eclipse.dependsOn(generateGrammarSource)
