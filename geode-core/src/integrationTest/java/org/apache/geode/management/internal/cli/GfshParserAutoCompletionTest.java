@@ -298,6 +298,61 @@ public class GfshParserAutoCompletionTest {
   }
 
   @Test
+  public void testCompleteHintNonexistemt() {
+    buffer = "hint notfound";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(0);
+  }
+
+  @Test
+  public void testCompleteHintNada() {
+    buffer = "hint";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates()).size()).isGreaterThan(10);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint client");
+  }
+
+  @Test
+  public void testCompleteHintSpace() {
+    buffer = "hint ";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates()).size()).isGreaterThan(10);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint client");
+  }
+
+  @Test
+  public void testCompleteHintPartial() {
+    buffer = "hint d";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(3);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint data");
+  }
+
+  @Test
+  public void testCompleteHintAlreadyComplete() {
+    buffer = "hint data";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase(buffer);
+  }
+
+  @Test
+  public void testCompleteHelpFirstWord() {
+    buffer = "help start";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(8);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " gateway-receiver");
+  }
+
+  @Test
+  public void testCompleteHelpPartialFirstWord() {
+    buffer = "help st";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(17);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "art gateway-receiver");
+  }
+
+  @Test
   public void testObtainHelp() {
     String command = CliStrings.START_PULSE;
     String helpString = "NAME" + LINE_SEPARATOR + "start pulse" + LINE_SEPARATOR + "IS AVAILABLE"
@@ -317,8 +372,8 @@ public class GfshParserAutoCompletionTest {
     String command = "start";
     String helpProvided = parser.getCommandManager().getHelper().getHelp(command, 1000);
     String[] helpProvidedArray = helpProvided.split("\n");
-    assertThat(helpProvidedArray.length).isEqualTo(8 * 2);
-    for (int i = 0; i < helpProvidedArray.length; i++) {
+    assertThat(helpProvidedArray.length).isEqualTo((8 * 2) + 3);
+    for (int i = 0; i < helpProvidedArray.length - 3; i++) {
       if (i % 2 != 0) {
         assertThat(helpProvidedArray[i]).startsWith("    ");
       } else {

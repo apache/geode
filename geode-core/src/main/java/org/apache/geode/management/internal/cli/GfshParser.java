@@ -17,6 +17,7 @@ package org.apache.geode.management.internal.cli;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.converters.ArrayConverter;
@@ -27,6 +28,9 @@ import org.springframework.shell.core.Parser;
 import org.springframework.shell.core.SimpleParser;
 import org.springframework.shell.event.ParseResult;
 
+import org.apache.geode.management.cli.ConverterHint;
+import org.apache.geode.management.internal.cli.i18n.CliStrings;
+
 /**
  * Implementation of the {@link Parser} interface for GemFire SHell (gfsh) requirements.
  *
@@ -34,7 +38,7 @@ import org.springframework.shell.event.ParseResult;
  */
 public class GfshParser extends SimpleParser {
 
-  public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+  public static final String LINE_SEPARATOR = System.lineSeparator();
   public static final String OPTION_VALUE_SPECIFIER = "=";
   public static final String OPTION_SEPARATOR = " ";
   public static final String SHORT_OPTION_SPECIFIER = "-";
@@ -68,7 +72,7 @@ public class GfshParser extends SimpleParser {
   /**
    * it's assumed that the quoted string should not have escaped quotes inside it.
    */
-  public static List<String> splitWithWhiteSpace(String input) {
+  private static List<String> splitWithWhiteSpace(String input) {
     List<String> tokensList = new ArrayList<>();
     StringBuilder token = new StringBuilder();
     char insideQuoteOf = Character.MIN_VALUE;
@@ -165,7 +169,7 @@ public class GfshParser extends SimpleParser {
     }
 
     // concatenate the remaining tokens with space
-    StringBuffer rawInput = new StringBuffer();
+    StringBuilder rawInput = new StringBuilder();
     // firstJIndex must be less than or equal to the length of the inputToken
     for (int i = 0; i <= inputTokens.size(); i++) {
       // stick the --J arguments in the orginal first --J position
@@ -225,7 +229,6 @@ public class GfshParser extends SimpleParser {
   @Override
   public int completeAdvanced(String userInput, int cursor, final List<Completion> candidates) {
     // move the cursor to the end of the input
-    cursor = userInput.length();
     List<String> inputTokens = splitUserInput(userInput);
 
     // check if the input is before any option is specified, e.g. (start, describe)
@@ -239,6 +242,18 @@ public class GfshParser extends SimpleParser {
 
     // in the case of we are still trying to complete the command name
     if (inputIsBeforeOption) {
+      // workaround for SimpleParser bugs with "" option key, and spaces in option values
+      int curs =
+          completeSpecial(candidates, userInput, inputTokens, CliStrings.HELP, ConverterHint.HELP);
+      if (curs > 0) {
+        return curs;
+      }
+      curs =
+          completeSpecial(candidates, userInput, inputTokens, CliStrings.HINT, ConverterHint.HINT);
+      if (curs > 0) {
+        return curs;
+      }
+
       List<Completion> potentials = getCandidates(userInput);
       if (potentials.size() == 1 && potentials.get(0).getValue().equals(userInput)) {
         potentials = getCandidates(userInput.trim() + " ");
@@ -306,6 +321,40 @@ public class GfshParser extends SimpleParser {
     // between userInput and the converted input
     cursor = candidateBeginAt + (userInput.trim().length() - buffer.length());
     return cursor;
+  }
+
+  /**
+   * gets a specific String converter from the list of registered converters
+   */
+  private Converter<?> converterFor(String converterHint) {
+    for (Converter<?> candidate : getConverters()) {
+      if (candidate.supports(String.class, converterHint)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * uses a specific converter directly, bypassing the need to find it by the command's options
+   */
+  private int completeSpecial(List<Completion> candidates, String userInput,
+      List<String> inputTokens, String cmd,
+      String converterHint) {
+    if (inputTokens.get(0).equals(cmd)) {
+      String prefix = userInput.equals(cmd) ? " " : "";
+      String existing = String.join(" ", inputTokens.subList(1, inputTokens.size())).toLowerCase();
+      List<Completion> all = new ArrayList<>();
+      Converter<?> converter = converterFor(converterHint);
+      if (converter != null) {
+        converter.getAllPossibleValues(all, null, null, null, null);
+        candidates.addAll(all.stream().filter(c -> c.getValue().toLowerCase().startsWith(existing))
+            .map(c -> new Completion(prefix + c.getValue()))
+            .collect(Collectors.toList()));
+        return Math.min(userInput.length(), cmd.length() + 1);
+      }
+    }
+    return 0;
   }
 
   /**

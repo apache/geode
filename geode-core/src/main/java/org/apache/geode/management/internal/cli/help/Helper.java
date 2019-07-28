@@ -14,6 +14,10 @@
  */
 package org.apache.geode.management.internal.cli.help;
 
+import static org.apache.geode.management.internal.cli.GfshParser.LINE_SEPARATOR;
+import static org.apache.geode.management.internal.cli.GfshParser.LONG_OPTION_SPECIFIER;
+import static org.apache.geode.management.internal.cli.GfshParser.OPTION_VALUE_SPECIFIER;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,7 +37,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -62,6 +65,11 @@ public class Helper {
   private static final String FALSE_TOKEN = "false";
   private static final String AVAILABLE = "Available";
   private static final String NOT_AVAILABLE = "Not Available";
+  private static final String NO_HELP_EXISTS_FOR_THIS_COMMAND = "no help exists for this command";
+  private static final String HELP_INSTRUCTIONS = LINE_SEPARATOR
+      + "Use help <command name> to display detailed usage information for a specific command."
+      + LINE_SEPARATOR
+      + "Help with command and parameter completion can also be obtained by entering all or a portion of either followed by the \"TAB\" key.";
 
   private final Map<String, Topic> topics = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final Map<String, Method> commands = new TreeMap<>();
@@ -105,9 +113,6 @@ public class Helper {
 
     // for hint message, we only need to show the first synonym
     String commandString = command.value()[0];
-    if (related == null) {
-      return;
-    }
     Arrays.stream(related).forEach(topic -> {
       Topic foundTopic = topics.get(topic);
       if (foundTopic == null) {
@@ -137,19 +142,25 @@ public class Helper {
         .map(commands::get).collect(Collectors.toList());
 
     boolean summarize = methodList.size() > 1;
-    return methodList.stream()
+    String helpString = methodList.stream()
         .map(m -> getHelp(m.getDeclaredAnnotation(CliCommand.class),
             summarize ? null : m.getParameterAnnotations(),
             summarize ? null : m.getParameterTypes()))
         .map(helpBlock -> helpBlock.toString(terminalWidth))
         .reduce((s, s2) -> s + s2)
-        .orElse("no help exists for this command");
+        .orElse(NO_HELP_EXISTS_FOR_THIS_COMMAND);
+
+    if (summarize) {
+      helpString += HELP_INSTRUCTIONS;
+    }
+
+    return helpString;
   }
 
   public String getHint(String buffer) {
     List<String> topicKeys = this.topics.keySet()
         .stream()
-        .filter(t -> t.toLowerCase().startsWith(buffer.toLowerCase()))
+        .filter(t -> buffer == null || t.toLowerCase().startsWith(buffer.toLowerCase()))
         .sorted()
         .collect(Collectors.toList());
 
@@ -157,18 +168,18 @@ public class Helper {
     // if no topic is provided, return a list of topics
     if (topicKeys.isEmpty()) {
       builder.append(CliStrings.format(CliStrings.HINT__MSG__UNKNOWN_TOPIC, buffer))
-          .append(GfshParser.LINE_SEPARATOR).append(GfshParser.LINE_SEPARATOR);
+          .append(LINE_SEPARATOR).append(LINE_SEPARATOR);
     } else if (topicKeys.size() == 1) {
       Topic oneTopic = this.topics.get(topicKeys.get(0));
-      builder.append(oneTopic.desc).append(GfshParser.LINE_SEPARATOR)
-          .append(GfshParser.LINE_SEPARATOR);
+      builder.append(oneTopic.desc).append(LINE_SEPARATOR)
+          .append(LINE_SEPARATOR);
       oneTopic.relatedCommands.stream().sorted().forEach(command -> builder.append(command.command)
-          .append(": ").append(command.desc).append(GfshParser.LINE_SEPARATOR));
+          .append(": ").append(command.desc).append(LINE_SEPARATOR));
     } else {
-      builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(GfshParser.LINE_SEPARATOR)
-          .append(GfshParser.LINE_SEPARATOR);
+      builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(LINE_SEPARATOR)
+          .append(LINE_SEPARATOR);
 
-      topicKeys.forEach(topic -> builder.append(topic).append(GfshParser.LINE_SEPARATOR));
+      topicKeys.forEach(topic -> builder.append(topic).append(LINE_SEPARATOR));
     }
 
     return builder.toString();
@@ -292,7 +303,8 @@ public class Helper {
     return optionNode;
   }
 
-  private <T> T getAnnotation(Annotation[] annotations, Class<?> klass) {
+  @SuppressWarnings("unchecked")
+  private <T> T getAnnotation(Annotation[] annotations, Class<T> klass) {
     for (Annotation annotation : annotations) {
       if (klass.isAssignableFrom(annotation.getClass())) {
         return (T) annotation;
@@ -329,7 +341,7 @@ public class Helper {
     }
 
     StringBuilder buffer = new StringBuilder();
-    buffer.append(GfshParser.LONG_OPTION_SPECIFIER).append(key0);
+    buffer.append(LONG_OPTION_SPECIFIER).append(key0);
 
     boolean hasSpecifiedDefault = isNotNullOrBlank(cliOption.specifiedDefaultValue());
 
@@ -337,7 +349,7 @@ public class Helper {
       buffer.append("(");
     }
 
-    buffer.append(GfshParser.OPTION_VALUE_SPECIFIER).append(VALUE_FIELD);
+    buffer.append(OPTION_VALUE_SPECIFIER).append(VALUE_FIELD);
 
     if (hasSpecifiedDefault) {
       buffer.append(")?");
