@@ -29,7 +29,7 @@ import org.apache.geode.management.runtime.OperationResult;
 @Experimental
 public class CompletableFutureProxy<V extends OperationResult> extends CompletableFuture<V>
     implements Dormant {
-  static final int POLL_INTERVAL = 100; // millis between http status checks
+  private static final int POLL_INTERVAL = 1000; // millis between http status checks
 
   private static final int TOLERABLE_FAILURES = 3;
   private int consecutiveCheckFailures = 0;

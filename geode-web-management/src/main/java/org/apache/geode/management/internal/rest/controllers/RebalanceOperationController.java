@@ -20,6 +20,7 @@ import static org.apache.geode.management.operation.RebalanceOperation.REBALANCE
 
 import java.util.Optional;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,9 +62,13 @@ public class RebalanceOperationController extends AbstractManagementController {
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.GET, value = REBALANCE_ENDPOINT + "/{id}")
   @ResponseBody
-  public ClusterManagementOperationStatusResult<RebalanceResult> checkRebalanceStatus(
+  public ResponseEntity<ClusterManagementOperationStatusResult<RebalanceResult>> checkRebalanceStatus(
       @PathVariable String id) {
-    return clusterManagementService.checkStatus(id);
+    ClusterManagementOperationStatusResult<RebalanceResult> result =
+        clusterManagementService.checkStatus(id);
+    HttpHeaders headers = new HttpHeaders();
+    headers.add("Retry-After", "30");
+    return new ResponseEntity<>(result, headers, HttpStatus.OK);
   }
 
   private class RebalanceOperationWithOperator extends RebalanceOperation
