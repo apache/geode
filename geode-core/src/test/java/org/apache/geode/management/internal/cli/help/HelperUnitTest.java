@@ -189,36 +189,39 @@ public class HelperUnitTest {
 
   @Test
   public void testGetMiniHelpBothRequiredsMissing() {
-    assertThat(helper.getMiniHelp("describe offline-disk-store"))
-        .isEqualTo("  --name=  is required\n"
-            + "  --disk-dirs=  is required\n"
+    assertThat(toUnix(helper.getMiniHelp("describe offline-disk-store")))
+        .isEqualTo("  --name=  is required\n" + "  --disk-dirs=  is required\n"
             + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpDiskDirsMissing() {
-    assertThat(helper.getMiniHelp("describe offline-disk-store --name=foo"))
+    assertThat(toUnix(helper.getMiniHelp("describe offline-disk-store --name=foo")))
         .isEqualTo("  --disk-dirs=  is required\n"
             + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpNameMissing() {
-    assertThat(helper.getMiniHelp("describe offline-disk-store --disk-dirs=bar"))
+    assertThat(toUnix(helper.getMiniHelp("describe offline-disk-store --disk-dirs=bar")))
         .isEqualTo("  --name=  is required\n"
             + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpPartialCommand() {
-    assertThat(helper.getMiniHelp("describe offline-disk")).isEqualTo("  --name=  is required\n"
-        + "  --disk-dirs=  is required\n"
-        + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
+    assertThat(toUnix(helper.getMiniHelp("describe offline-disk")))
+        .isEqualTo("  --name=  is required\n" + "  --disk-dirs=  is required\n"
+            + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpNothingMissing() {
     assertThat(helper.getMiniHelp("describe offline-disk-store --name=foo --disk-dirs=bar"))
         .isNull();
+  }
+
+  private static String toUnix(String multiLineText) {
+    return multiLineText.replace(LINE_SEPARATOR, "\n");
   }
 }
