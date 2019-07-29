@@ -46,7 +46,11 @@ public class GfshParser extends SimpleParser {
   public static final String J_ARGUMENT_DELIMITER = "" + ASCII_UNIT_SEPARATOR;
   public static final String J_OPTION_CONTEXT = "splittingRegex=" + J_ARGUMENT_DELIMITER;
 
+  private final CommandManager commandManager;
+
   public GfshParser(CommandManager commandManager) {
+    this.commandManager = commandManager;
+
     for (CommandMarker command : commandManager.getCommandMarkers()) {
       add(command);
     }
@@ -199,6 +203,12 @@ public class GfshParser extends SimpleParser {
     ParseResult result = super.parse(rawInput);
 
     if (result == null) {
+      // do a quick check for required arguments, since SimpleParser unhelpfully suggests everything
+      String missingHelp = commandManager.getHelper().getMiniHelp(userInput);
+      if (missingHelp != null) {
+        System.out.println(missingHelp);
+      }
+
       return null;
     }
 
