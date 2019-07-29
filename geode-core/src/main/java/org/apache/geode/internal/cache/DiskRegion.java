@@ -859,8 +859,18 @@ public class DiskRegion extends AbstractDiskRegion {
 
   private void destroyPartiallyInitializedRegion(final LocalRegion region) {
     if (this.isBucket() && !this.wasAboutToDestroy()) {
-      // Fix for 48642
-      // If this is a bucket, only destroy the data, if required.
+      /*
+        For bucket regions, we only destroy data storage for the following reason:
+        The ProxyBucketRegion and DiskInitFile will hold a reference to the same AbstractDiskRegion
+        object.  If we do a full region destroy, it will result in the proxy and init file
+        referencing different objects.  This can lead to a memory leak because disk compaction will
+        use the init file's version which may not have all changes from the in-memory version.  A
+        partial destroy ensures that the ProxyBucketRegion and DiskInitFile continue to share the
+        same AbstractDiskRegion reference, which prevents this memory leak.
+
+        Because we only destroy data storage, the persistence view will be maintained (disk ID will
+        be non-null) but all data and initializing/initialized persistent IDs will be deleted.
+       */
       beginDestroyDataStorage();
     }
     endDestroy(region);
