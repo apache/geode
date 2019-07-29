@@ -177,7 +177,7 @@ public class Helper {
     if (builder.length() > 0) {
       String commandName = cliCommand.value()[0];
       builder.append("Use \"help ").append(commandName)
-          .append("\" (without the quotes) to display detailed usage information.")
+          .append("\" (without the quotes) for detailed usage information.")
           .append(GfshParser.LINE_SEPARATOR);
       return builder.toString();
     } else {
