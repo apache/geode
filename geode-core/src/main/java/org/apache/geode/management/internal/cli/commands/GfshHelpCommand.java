@@ -36,8 +36,8 @@ public class GfshHelpCommand extends OfflineGfshCommand implements CommandManage
   @CliCommand(value = CliStrings.HELP, help = CliStrings.HELP__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
   public ResultModel obtainHelp(
-      @CliOption(key = {"", CliStrings.SH__COMMAND}, optionContext = ConverterHint.HELP,
-          help = "Command name to provide help for") String buffer) {
+      @CliOption(key = {"", CliStrings.HELP__COMMAND}, optionContext = ConverterHint.HELP,
+          help = CliStrings.HELP__COMMAND__HELP) String buffer) {
 
     return ResultModel.createInfo(commandManager.obtainHelp(buffer));
   }

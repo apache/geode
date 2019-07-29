@@ -14,7 +14,6 @@
  */
 package org.apache.geode.management.internal.cli;
 
-import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collection;
@@ -39,6 +38,7 @@ public class GfshParserAutoCompletionTest {
 
   private String buffer;
   private GfshParserRule.CommandCandidate candidate;
+  private static String LINE_SEPARATOR = System.lineSeparator();
 
   @Test
   public void testCompletionDescribe() {
@@ -86,6 +86,32 @@ public class GfshParserAutoCompletionTest {
     candidate = parser.complete(buffer);
     assertThat(candidate.getCandidates()).hasSize(1);
     assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "--member");
+  }
+
+  @Test
+  public void testCompletionStart() {
+    buffer = "start";
+    candidate = parser.complete(buffer);
+    assertThat(candidate.getCandidates().size()).isEqualTo(8);
+    assertThat(candidate.getCandidates().stream()
+        .anyMatch(completion -> completion.getFormattedValue().contains("gateway-receiver")))
+            .isTrue();
+    assertThat(candidate.getCandidates().stream()
+        .anyMatch(completion -> completion.getFormattedValue().contains("vsd")))
+            .isTrue();
+  }
+
+  @Test
+  public void testCompletionStartWithSpace() {
+    buffer = "start ";
+    candidate = parser.complete(buffer);
+    assertThat(candidate.getCandidates().size()).isEqualTo(8);
+    assertThat(candidate.getCandidates().stream()
+        .anyMatch(completion -> completion.getFormattedValue().contains("gateway-receiver")))
+            .isTrue();
+    assertThat(candidate.getCandidates().stream()
+        .anyMatch(completion -> completion.getFormattedValue().contains("vsd")))
+            .isTrue();
   }
 
   @Test
@@ -272,6 +298,61 @@ public class GfshParserAutoCompletionTest {
   }
 
   @Test
+  public void testCompleteHintNonexistemt() {
+    buffer = "hint notfound";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(0);
+  }
+
+  @Test
+  public void testCompleteHintNada() {
+    buffer = "hint";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates()).size()).isGreaterThan(10);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint client");
+  }
+
+  @Test
+  public void testCompleteHintSpace() {
+    buffer = "hint ";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates()).size()).isGreaterThan(10);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint client");
+  }
+
+  @Test
+  public void testCompleteHintPartial() {
+    buffer = "hint d";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(3);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase("hint data");
+  }
+
+  @Test
+  public void testCompleteHintAlreadyComplete() {
+    buffer = "hint data";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(1);
+    assertThat(candidate.getFirstCandidate()).isEqualToIgnoringCase(buffer);
+  }
+
+  @Test
+  public void testCompleteHelpFirstWord() {
+    buffer = "help start";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(8);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + " gateway-receiver");
+  }
+
+  @Test
+  public void testCompleteHelpPartialFirstWord() {
+    buffer = "help st";
+    candidate = parser.complete(buffer);
+    assertThat(removeExtendedLevels(candidate.getCandidates())).hasSize(17);
+    assertThat(candidate.getFirstCandidate()).isEqualTo(buffer + "art gateway-receiver");
+  }
+
+  @Test
   public void testObtainHelp() {
     String command = CliStrings.START_PULSE;
     String helpString = "NAME" + LINE_SEPARATOR + "start pulse" + LINE_SEPARATOR + "IS AVAILABLE"
@@ -284,6 +365,65 @@ public class GfshParserAutoCompletionTest {
         + "Default (if the parameter is not specified): http://localhost:7070/pulse"
         + LINE_SEPARATOR;
     assertThat(parser.getCommandManager().obtainHelp(command)).isEqualTo(helpString);
+  }
+
+  @Test
+  public void testObtainHelpForStart() {
+    String command = "start";
+    String helpProvided = parser.getCommandManager().getHelper().getHelp(command, 1000);
+    String[] helpProvidedArray = helpProvided.split("\n");
+    assertThat(helpProvidedArray.length).isEqualTo((8 * 2) + 3);
+    for (int i = 0; i < helpProvidedArray.length - 3; i++) {
+      if (i % 2 != 0) {
+        assertThat(helpProvidedArray[i]).startsWith("    ");
+      } else {
+        assertThat(helpProvidedArray[i]).startsWith(command);
+      }
+    }
+  }
+
+  @Test
+  public void testObtainHintForData() {
+    String hintArgument = "data";
+    String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
+    String[] hintsProvidedArray = hintsProvided.split("\n");
+    assertThat(hintsProvidedArray.length).isEqualTo(15);
+    assertThat(hintsProvidedArray[0])
+        .isEqualTo("User data as stored in regions of the Geode distributed system.");
+  }
+
+  @Test
+  public void testObtainHintWithoutArgument() {
+    String hintArgument = "";
+    String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
+    String[] hintsProvidedArray = hintsProvided.split("\n");
+    assertThat(hintsProvidedArray.length).isEqualTo(21);
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
+  }
+
+  @Test
+  public void testObtainHintWithNonExistingCommand() {
+    String hintArgument = "fortytwo";
+    String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
+    String[] hintsProvidedArray = hintsProvided.split("\n");
+    assertThat(hintsProvidedArray.length).isEqualTo(1);
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Unknown topic: " + hintArgument + ". Use hint to view the list of available topics.");
+  }
+
+  @Test
+  public void testObtainHintWithPartialCommand() {
+    String hintArgument = "d";
+    String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
+    System.out.println(hintsProvided);
+    String[] hintsProvidedArray = hintsProvided.split("\n");
+    assertThat(hintsProvidedArray.length).isEqualTo(5);
+    assertThat(hintsProvidedArray[0]).isEqualTo(
+        "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
+    assertThat(hintsProvidedArray).contains("Data");
+    assertThat(hintsProvidedArray).contains("Debug-Utility");
+    assertThat(hintsProvidedArray).contains("Disk Store");
   }
 
   @Test

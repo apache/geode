@@ -14,12 +14,15 @@
  */
 package org.apache.geode.management.internal.cli.help;
 
+import static org.apache.geode.management.internal.cli.GfshParser.LINE_SEPARATOR;
+import static org.apache.geode.management.internal.cli.GfshParser.LONG_OPTION_SPECIFIER;
+import static org.apache.geode.management.internal.cli.GfshParser.OPTION_VALUE_SPECIFIER;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +37,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.management.cli.CliMetaData;
-import org.apache.geode.management.internal.cli.GfshParser;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 
 /**
@@ -63,6 +65,11 @@ public class Helper {
   private static final String FALSE_TOKEN = "false";
   private static final String AVAILABLE = "Available";
   private static final String NOT_AVAILABLE = "Not Available";
+  private static final String NO_HELP_EXISTS_FOR_THIS_COMMAND = "No help exists for this command.";
+  private static final String HELP_INSTRUCTIONS = LINE_SEPARATOR + "Use " + CliStrings.HELP
+      + " <command name> to display detailed usage information for a specific command."
+      + LINE_SEPARATOR
+      + "Help with command and parameter completion can also be obtained by entering all or a portion of either followed by the \"TAB\" key.";
 
   private final Map<String, Topic> topics = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private final Map<String, Method> commands = new TreeMap<>();
@@ -106,9 +113,6 @@ public class Helper {
 
     // for hint message, we only need to show the first synonym
     String commandString = command.value()[0];
-    if (related == null) {
-      return;
-    }
     Arrays.stream(related).forEach(topic -> {
       Topic foundTopic = topics.get(topic);
       if (foundTopic == null) {
@@ -160,17 +164,17 @@ public class Helper {
       boolean required = cliOption.mandatory();
       boolean requiredWithEquals = true;
 
-      if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
+      if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
         requiredWithEquals = false;
       }
-      if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+      if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
         required = false;
       }
       if (required) {
         String lookFor = "--" + option + (requiredWithEquals ? "=" : "");
         if (!userInput.contains(lookFor)) {
           builder.append("  --").append(option).append(requiredWithEquals ? "=" : "")
-              .append("  is required").append(GfshParser.LINE_SEPARATOR);
+              .append("  is required").append(LINE_SEPARATOR);
         }
       }
     }
@@ -178,7 +182,7 @@ public class Helper {
       String commandName = cliCommand.value()[0];
       builder.append("Use \"help ").append(commandName)
           .append("\" (without the quotes) for detailed usage information.")
-          .append(GfshParser.LINE_SEPARATOR);
+          .append(LINE_SEPARATOR);
       return builder.toString();
     } else {
       return null;
@@ -199,39 +203,52 @@ public class Helper {
       return getHelp().toString(terminalWidth);
     }
 
-    Method method = commands.get(buffer);
-    if (method == null) {
-      return "no help exists for this command.";
+    List<Method> methodList = commands.keySet()
+        .stream()
+        .filter(key -> key.startsWith(buffer))
+        .map(commands::get).collect(Collectors.toList());
+
+    boolean summarize = methodList.size() > 1;
+    String helpString = methodList.stream()
+        .map(m -> getHelp(m.getDeclaredAnnotation(CliCommand.class),
+            summarize ? null : m.getParameterAnnotations(),
+            summarize ? null : m.getParameterTypes()))
+        .map(helpBlock -> helpBlock.toString(terminalWidth))
+        .reduce((s, s2) -> s + s2)
+        .orElse(NO_HELP_EXISTS_FOR_THIS_COMMAND);
+
+    if (summarize) {
+      helpString += HELP_INSTRUCTIONS;
     }
 
-    HelpBlock helpBlock = getHelp(method.getDeclaredAnnotation(CliCommand.class),
-        method.getParameterAnnotations(), method.getParameterTypes());
-    return helpBlock.toString(terminalWidth);
+    return helpString;
   }
 
   public String getHint(String buffer) {
+    List<String> topicKeys = this.topics.keySet()
+        .stream()
+        .filter(t -> buffer == null || t.toLowerCase().startsWith(buffer.toLowerCase()))
+        .sorted()
+        .collect(Collectors.toList());
+
     StringBuilder builder = new StringBuilder();
     // if no topic is provided, return a list of topics
-    if (StringUtils.isBlank(buffer)) {
-      builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(GfshParser.LINE_SEPARATOR)
-          .append(GfshParser.LINE_SEPARATOR);
+    if (topicKeys.isEmpty()) {
+      builder.append(CliStrings.format(CliStrings.HINT__MSG__UNKNOWN_TOPIC, buffer))
+          .append(LINE_SEPARATOR).append(LINE_SEPARATOR);
+    } else if (topicKeys.size() == 1) {
+      Topic oneTopic = this.topics.get(topicKeys.get(0));
+      builder.append(oneTopic.desc).append(LINE_SEPARATOR)
+          .append(LINE_SEPARATOR);
+      oneTopic.relatedCommands.stream().sorted().forEach(command -> builder.append(command.command)
+          .append(": ").append(command.desc).append(LINE_SEPARATOR));
+    } else {
+      builder.append(CliStrings.HINT__MSG__TOPICS_AVAILABLE).append(LINE_SEPARATOR)
+          .append(LINE_SEPARATOR);
 
-      List<String> sortedTopics = new ArrayList<>(topics.keySet());
-      Collections.sort(sortedTopics);
-      sortedTopics.stream()
-          .forEachOrdered(topic -> builder.append(topic).append(GfshParser.LINE_SEPARATOR));
-      return builder.toString();
+      topicKeys.forEach(topic -> builder.append(topic).append(LINE_SEPARATOR));
     }
 
-    Topic topic = topics.get(buffer);
-    if (topic == null) {
-      return CliStrings.format(CliStrings.HINT__MSG__UNKNOWN_TOPIC, buffer);
-    }
-
-    builder.append(topic.desc).append(GfshParser.LINE_SEPARATOR).append(GfshParser.LINE_SEPARATOR);
-    Collections.sort(topic.relatedCommands);
-    topic.relatedCommands.stream().forEachOrdered(command -> builder.append(command.command)
-        .append(": ").append(command.desc).append(GfshParser.LINE_SEPARATOR));
     return builder.toString();
   }
 
@@ -255,7 +272,7 @@ public class Helper {
     return availabilityIndicators.get(command) != null;
   }
 
-  HelpBlock getHelp() {
+  private HelpBlock getHelp() {
     HelpBlock root = new HelpBlock();
     commands.keySet().stream().sorted().map(commands::get).forEach(method -> root
         .addChild(getHelp(method.getDeclaredAnnotation(CliCommand.class), null, null)));
@@ -342,18 +359,19 @@ public class Helper {
     }
     optionNode.addChild(
         new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));
-    if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
+    if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
       optionNode.addChild(
           new HelpBlock(SPECIFIEDDEFAULTVALUE_SUB_NAME + cliOption.specifiedDefaultValue()));
     }
-    if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+    if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
       optionNode.addChild(new HelpBlock(
           UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME + cliOption.unspecifiedDefaultValue()));
     }
     return optionNode;
   }
 
-  private <T> T getAnnotation(Annotation[] annotations, Class<?> klass) {
+  @SuppressWarnings("unchecked")
+  private <T> T getAnnotation(Annotation[] annotations, Class<T> klass) {
     for (Annotation annotation : annotations) {
       if (klass.isAssignableFrom(annotation.getClass())) {
         return (T) annotation;
@@ -390,15 +408,15 @@ public class Helper {
     }
 
     StringBuilder buffer = new StringBuilder();
-    buffer.append(GfshParser.LONG_OPTION_SPECIFIER).append(key0);
+    buffer.append(LONG_OPTION_SPECIFIER).append(key0);
 
-    boolean hasSpecifiedDefault = isNotNullOrBlank(cliOption.specifiedDefaultValue());
+    boolean hasSpecifiedDefault = isNonEmptyAnnotation(cliOption.specifiedDefaultValue());
 
     if (hasSpecifiedDefault) {
       buffer.append("(");
     }
 
-    buffer.append(GfshParser.OPTION_VALUE_SPECIFIER).append(VALUE_FIELD);
+    buffer.append(OPTION_VALUE_SPECIFIER).append(VALUE_FIELD);
 
     if (hasSpecifiedDefault) {
       buffer.append(")?");
@@ -436,13 +454,11 @@ public class Helper {
     if ("".equals(keys[0]))
       return synonyms;
 
-    for (int i = 1; i < keys.length; i++) {
-      synonyms.add(keys[i]);
-    }
+    synonyms.addAll(Arrays.asList(keys).subList(1, keys.length));
     return synonyms;
   }
 
-  private static boolean isNotNullOrBlank(String value) {
+  private static boolean isNonEmptyAnnotation(String value) {
     return !StringUtils.isBlank(value) && !CliMetaData.ANNOTATION_NULL_VALUE.equals(value);
   }
 

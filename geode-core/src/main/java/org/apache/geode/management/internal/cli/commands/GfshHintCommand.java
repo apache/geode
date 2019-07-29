@@ -36,7 +36,8 @@ public class GfshHintCommand extends OfflineGfshCommand implements CommandManage
   @CliCommand(value = CliStrings.HINT, help = CliStrings.HINT__HELP)
   @CliMetaData(shellOnly = true, relatedTopic = {CliStrings.TOPIC_GEODE_HELP})
   public ResultModel hint(@CliOption(key = {"", CliStrings.HINT__TOPICNAME},
-      optionContext = ConverterHint.HINT, help = CliStrings.HINT__TOPICNAME) String topicName) {
+      optionContext = ConverterHint.HINT,
+      help = CliStrings.HINT__TOPICNAME__HELP) String topicName) {
     return ResultModel.createInfo(commandManager.obtainHint(topicName));
   }
 }
