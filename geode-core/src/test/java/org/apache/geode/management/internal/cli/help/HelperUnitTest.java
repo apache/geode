@@ -30,6 +30,8 @@ import org.springframework.shell.core.annotation.CliAvailabilityIndicator;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
+import org.apache.geode.management.internal.cli.commands.DescribeOfflineDiskStoreCommand;
+
 
 public class HelperUnitTest {
   private Helper helper;
@@ -47,6 +49,15 @@ public class HelperUnitTest {
   @Before
   public void before() throws Exception {
     helper = new Helper();
+
+    Method[] methods = DescribeOfflineDiskStoreCommand.class.getMethods();
+    for (Method method1 : methods) {
+      CliCommand cliCommand1 = method1.getDeclaredAnnotation(CliCommand.class);
+      if (cliCommand1 != null) {
+        helper.addCommand(cliCommand1, method1);
+      }
+    }
+
     cliCommand = mock(CliCommand.class);
     when(cliCommand.value()).thenReturn("test,test-synonym".split(","));
     when(cliCommand.help()).thenReturn("This is a test description");
@@ -176,4 +187,38 @@ public class HelperUnitTest {
         + "Default (if the parameter is specified without value): value1,value2" + LINE_SEPARATOR);
   }
 
+  @Test
+  public void testGetMiniHelpBothRequiredsMissing() {
+    assertThat(helper.getMiniHelp("describe offline-disk-store"))
+        .isEqualTo("  --name=  is required\n"
+            + "  --disk-dirs=  is required\n"
+            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+  }
+
+  @Test
+  public void testGetMiniHelpDiskDirsMissing() {
+    assertThat(helper.getMiniHelp("describe offline-disk-store --name=foo"))
+        .isEqualTo("  --disk-dirs=  is required\n"
+            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+  }
+
+  @Test
+  public void testGetMiniHelpNameMissing() {
+    assertThat(helper.getMiniHelp("describe offline-disk-store --disk-dirs=bar"))
+        .isEqualTo("  --name=  is required\n"
+            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+  }
+
+  @Test
+  public void testGetMiniHelpPartialCommand() {
+    assertThat(helper.getMiniHelp("describe offline-disk")).isEqualTo("  --name=  is required\n"
+        + "  --disk-dirs=  is required\n"
+        + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+  }
+
+  @Test
+  public void testGetMiniHelpNothingMissing() {
+    assertThat(helper.getMiniHelp("describe offline-disk-store --name=foo --disk-dirs=bar"))
+        .isNull();
+  }
 }

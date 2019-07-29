@@ -123,6 +123,73 @@ public class Helper {
   }
 
   /**
+   * get mini-help for commands entered without all required parameters
+   *
+   * @returns null if unable to identify anything missing
+   */
+  public String getMiniHelp(String userInput) {
+    if (StringUtils.isBlank(userInput)) {
+      return null;
+    }
+
+    List<Method> methodList = commands.keySet()
+        .stream()
+        .filter(key -> key.startsWith(getCommandPart(userInput)))
+        .map(commands::get).collect(Collectors.toList());
+
+    if (methodList.size() != 1) {
+      // can't validate arguments if buffer is not a single command
+      return null;
+    }
+
+    Method m = methodList.get(0);
+    CliCommand cliCommand = m.getDeclaredAnnotation(CliCommand.class);
+    Annotation[][] annotations = m.getParameterAnnotations();
+
+    if (annotations == null || annotations.length == 0) {
+      // can't validate arguments if command doesn't have any
+      return null;
+    }
+
+    // loop through the required options and check that they appear in the buffer
+    StringBuilder builder = new StringBuilder();
+    for (Annotation[] annotation : annotations) {
+      CliOption cliOption = getAnnotation(annotation, CliOption.class);
+      String option = getPrimaryKey(cliOption);
+      boolean required = cliOption.mandatory();
+      boolean requiredWithEquals = true;
+
+      if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
+        requiredWithEquals = false;
+      }
+      if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+        required = false;
+      }
+      if (required) {
+        String lookFor = "--" + option + (requiredWithEquals ? "=" : "");
+        if (!userInput.contains(lookFor)) {
+          builder.append("  --").append(option).append(requiredWithEquals ? "=" : "")
+              .append("  is required").append(GfshParser.LINE_SEPARATOR);
+        }
+      }
+    }
+    if (builder.length() > 0) {
+      String commandName = cliCommand.value()[0];
+      builder.append("Use \"help ").append(commandName)
+          .append("\" (without the quotes) to display detailed usage information.")
+          .append(GfshParser.LINE_SEPARATOR);
+      return builder.toString();
+    } else {
+      return null;
+    }
+  }
+
+  private String getCommandPart(String userInput) {
+    int parms = userInput.indexOf(" --");
+    return (parms < 0 ? userInput : userInput.substring(0, parms)).trim();
+  }
+
+  /**
    * get help string for a specific command, or a brief description of all the commands if buffer is
    * null or empty
    */
