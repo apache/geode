@@ -34,7 +34,7 @@ import org.springframework.shell.event.ParseResult;
  */
 public class GfshParser extends SimpleParser {
 
-  public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+  public static final String LINE_SEPARATOR = System.lineSeparator();
   public static final String OPTION_VALUE_SPECIFIER = "=";
   public static final String OPTION_SEPARATOR = " ";
   public static final String SHORT_OPTION_SPECIFIER = "-";
