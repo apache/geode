@@ -65,9 +65,9 @@ public class Helper {
   private static final String FALSE_TOKEN = "false";
   private static final String AVAILABLE = "Available";
   private static final String NOT_AVAILABLE = "Not Available";
-  private static final String NO_HELP_EXISTS_FOR_THIS_COMMAND = "no help exists for this command";
-  private static final String HELP_INSTRUCTIONS = LINE_SEPARATOR
-      + "Use help <command name> to display detailed usage information for a specific command."
+  private static final String NO_HELP_EXISTS_FOR_THIS_COMMAND = "No help exists for this command.";
+  private static final String HELP_INSTRUCTIONS = LINE_SEPARATOR + "Use " + CliStrings.HELP
+      + " <command name> to display detailed usage information for a specific command."
       + LINE_SEPARATOR
       + "Help with command and parameter completion can also be obtained by entering all or a portion of either followed by the \"TAB\" key.";
 

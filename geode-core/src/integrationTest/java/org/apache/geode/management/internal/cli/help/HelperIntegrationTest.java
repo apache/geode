@@ -82,7 +82,7 @@ public class HelperIntegrationTest {
   public void testHelpWithInvalidInput() {
     getHelpCommand();
     String testInvalidInput = helper.getHelp("InvalidTopic", -1);
-    assertThat(testInvalidInput).isEqualTo("no help exists for this command.");
+    assertThat(testInvalidInput).isEqualTo("No help exists for this command.");
   }
 
   @Test
@@ -106,6 +106,6 @@ public class HelperIntegrationTest {
     getHintCommand();
     String testInvalidInput = helper.getHint("InvalidTopic");
     assertThat(testInvalidInput)
-        .isEqualTo(CliStrings.format(HINT__MSG__UNKNOWN_TOPIC, "InvalidTopic"));
+        .startsWith(CliStrings.format(HINT__MSG__UNKNOWN_TOPIC, "InvalidTopic"));
   }
 }
