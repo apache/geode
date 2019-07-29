@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.MethodTarget;
@@ -125,7 +126,7 @@ public class Helper {
   /**
    * get mini-help for commands entered without all required parameters
    *
-   * @returns null if unable to identify anything missing
+   * @return null if unable to identify anything missing
    */
   public String getMiniHelp(String userInput) {
     if (StringUtils.isBlank(userInput)) {
@@ -341,11 +342,11 @@ public class Helper {
     }
     optionNode.addChild(
         new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));
-    if (!isNullOrBlank(cliOption.specifiedDefaultValue())) {
+    if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
       optionNode.addChild(
           new HelpBlock(SPECIFIEDDEFAULTVALUE_SUB_NAME + cliOption.specifiedDefaultValue()));
     }
-    if (!isNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+    if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
       optionNode.addChild(new HelpBlock(
           UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME + cliOption.unspecifiedDefaultValue()));
     }
@@ -391,7 +392,7 @@ public class Helper {
     StringBuilder buffer = new StringBuilder();
     buffer.append(GfshParser.LONG_OPTION_SPECIFIER).append(key0);
 
-    boolean hasSpecifiedDefault = !isNullOrBlank(cliOption.specifiedDefaultValue());
+    boolean hasSpecifiedDefault = isNotNullOrBlank(cliOption.specifiedDefaultValue());
 
     if (hasSpecifiedDefault) {
       buffer.append("(");
@@ -441,8 +442,8 @@ public class Helper {
     return synonyms;
   }
 
-  private static boolean isNullOrBlank(String value) {
-    return StringUtils.isBlank(value) || CliMetaData.ANNOTATION_NULL_VALUE.equals(value);
+  private static boolean isNotNullOrBlank(String value) {
+    return !StringUtils.isBlank(value) && !CliMetaData.ANNOTATION_NULL_VALUE.equals(value);
   }
 
   public Set<String> getCommands() {
