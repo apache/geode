@@ -933,6 +933,14 @@ public class SocketCreator {
       BufferPool bufferPool)
       throws IOException {
     engine.setUseClientMode(clientSocket);
+    if (!clientSocket) {
+      engine.setNeedClientAuth(sslConfig.isRequireAuth());
+    }
+
+    if (clientSocket) {
+      SSLParameters modifiedParams = checkAndEnableHostnameValidation(engine.getSSLParameters());
+      engine.setSSLParameters(modifiedParams);
+    }
     while (!socketChannel.finishConnect()) {
       try {
         Thread.sleep(50);
@@ -974,6 +982,20 @@ public class SocketCreator {
       }
     }
     return nioSslEngine;
+  }
+
+  private SSLParameters checkAndEnableHostnameValidation(SSLParameters sslParameters) {
+    if (sslConfig.doEndpointIdentification()) {
+      sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+    } else {
+      if (!hostnameValidationDisabledLogShown) {
+        logger.info("Your SSL configuration disables hostname validation. "
+            + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
+            + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
+        hostnameValidationDisabledLogShown = true;
+      }
+    }
+    return sslParameters;
   }
 
   /**
@@ -1052,18 +1074,9 @@ public class SocketCreator {
       sslSocket.setUseClientMode(true);
       sslSocket.setEnableSessionCreation(true);
 
-      if (sslConfig.doEndpointIdentification()) {
-        SSLParameters sslParameters = sslSocket.getSSLParameters();
-        sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-        sslSocket.setSSLParameters(sslParameters);
-      } else {
-        if (!hostnameValidationDisabledLogShown) {
-          logger.info("Your SSL configuration disables hostname validation. "
-              + "ssl-endpoint-identification-enabled should be set to true when SSL is enabled. "
-              + "Please refer to the Apache GEODE SSL Documentation for SSL Property: ssl‑endpoint‑identification‑enabled");
-          hostnameValidationDisabledLogShown = true;
-        }
-      }
+      SSLParameters modifiedParams =
+          checkAndEnableHostnameValidation(sslSocket.getSSLParameters());
+      sslSocket.setSSLParameters(modifiedParams);
 
       String[] protocols = this.sslConfig.getProtocolsAsStringArray();
 
