@@ -164,25 +164,25 @@ public class Helper {
       boolean required = cliOption.mandatory();
       boolean requiredWithEquals = true;
 
-      if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
+      if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
         requiredWithEquals = false;
       }
-      if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+      if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
         required = false;
       }
       if (required) {
         String lookFor = "--" + option + (requiredWithEquals ? "=" : "");
         if (!userInput.contains(lookFor)) {
           builder.append("  --").append(option).append(requiredWithEquals ? "=" : "")
-              .append("  is required").append(GfshParser.LINE_SEPARATOR);
+              .append("  is required").append(LINE_SEPARATOR);
         }
       }
     }
     if (builder.length() > 0) {
       String commandName = cliCommand.value()[0];
       builder.append("Use \"help ").append(commandName)
-          .append("\" (without the quotes) to display detailed usage information.")
-          .append(GfshParser.LINE_SEPARATOR);
+          .append("\" (without the quotes) for detailed usage information.")
+          .append(LINE_SEPARATOR);
       return builder.toString();
     } else {
       return null;
@@ -359,11 +359,11 @@ public class Helper {
     }
     optionNode.addChild(
         new HelpBlock(REQUIRED_SUB_NAME + ((cliOption.mandatory()) ? TRUE_TOKEN : FALSE_TOKEN)));
-    if (isNotNullOrBlank(cliOption.specifiedDefaultValue())) {
+    if (isNonEmptyAnnotation(cliOption.specifiedDefaultValue())) {
       optionNode.addChild(
           new HelpBlock(SPECIFIEDDEFAULTVALUE_SUB_NAME + cliOption.specifiedDefaultValue()));
     }
-    if (isNotNullOrBlank(cliOption.unspecifiedDefaultValue())) {
+    if (isNonEmptyAnnotation(cliOption.unspecifiedDefaultValue())) {
       optionNode.addChild(new HelpBlock(
           UNSPECIFIEDDEFAULTVALUE_VALUE_SUB_NAME + cliOption.unspecifiedDefaultValue()));
     }
@@ -410,7 +410,7 @@ public class Helper {
     StringBuilder buffer = new StringBuilder();
     buffer.append(LONG_OPTION_SPECIFIER).append(key0);
 
-    boolean hasSpecifiedDefault = isNotNullOrBlank(cliOption.specifiedDefaultValue());
+    boolean hasSpecifiedDefault = isNonEmptyAnnotation(cliOption.specifiedDefaultValue());
 
     if (hasSpecifiedDefault) {
       buffer.append("(");
@@ -458,7 +458,7 @@ public class Helper {
     return synonyms;
   }
 
-  private static boolean isNotNullOrBlank(String value) {
+  private static boolean isNonEmptyAnnotation(String value) {
     return !StringUtils.isBlank(value) && !CliMetaData.ANNOTATION_NULL_VALUE.equals(value);
   }
 
