@@ -192,28 +192,28 @@ public class HelperUnitTest {
     assertThat(helper.getMiniHelp("describe offline-disk-store"))
         .isEqualTo("  --name=  is required\n"
             + "  --disk-dirs=  is required\n"
-            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+            + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpDiskDirsMissing() {
     assertThat(helper.getMiniHelp("describe offline-disk-store --name=foo"))
         .isEqualTo("  --disk-dirs=  is required\n"
-            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+            + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpNameMissing() {
     assertThat(helper.getMiniHelp("describe offline-disk-store --disk-dirs=bar"))
         .isEqualTo("  --name=  is required\n"
-            + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+            + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
   public void testGetMiniHelpPartialCommand() {
     assertThat(helper.getMiniHelp("describe offline-disk")).isEqualTo("  --name=  is required\n"
         + "  --disk-dirs=  is required\n"
-        + "Use \"help describe offline-disk-store\" (without the quotes) to display detailed usage information.\n");
+        + "Use \"help describe offline-disk-store\" (without the quotes) for detailed usage information.\n");
   }
 
   @Test
