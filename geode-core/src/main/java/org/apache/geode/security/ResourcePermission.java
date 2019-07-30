@@ -16,12 +16,14 @@ package org.apache.geode.security;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.authz.permission.WildcardPermission;
+import org.apache.shiro.util.CollectionUtils;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.Region;
@@ -86,7 +88,11 @@ public class ResourcePermission extends WildcardPermission {
   private String key = ALL;
 
   public ResourcePermission() {
-    setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
+    setParts(Arrays.asList(
+        Collections.singleton(this.resource),
+        Collections.singleton(this.operation),
+        Collections.singleton(this.target),
+        Collections.singleton(this.key)));
   }
 
   public ResourcePermission(Resource resource, Operation operation) {
@@ -102,14 +108,18 @@ public class ResourcePermission extends WildcardPermission {
   }
 
   public ResourcePermission(Resource resource, Operation operation, Target target, String key) {
-    this(resource == null ? null : resource.getName(),
-        operation == null ? null : operation.getName(), target == null ? null : target.getName(),
+    init(resource == null ? NULL : resource.getName(),
+        operation == null ? NULL : operation.getName(), target == null ? null : target.getName(),
         key);
   }
 
   public ResourcePermission(Resource resource, Operation operation, String target, String key) {
-    this(resource == null ? null : resource.getName(),
-        operation == null ? null : operation.getName(), target, key);
+    init(resource == null ? NULL : resource.getName(),
+        operation == null ? NULL : operation.getName(), parseTarget(target), key);
+  }
+
+  private String parseTarget(String target) {
+    return target == null ? null : StringUtils.stripStart(target, Region.SEPARATOR);
   }
 
   public ResourcePermission(String resource, String operation) {
@@ -123,17 +133,27 @@ public class ResourcePermission extends WildcardPermission {
   public ResourcePermission(String resource, String operation, String target, String key) {
     // what's eventually stored are either "*", "NULL" or a valid enum except ALL.
     // Fields are never null.
-    this.resource = parsePart(resource, r -> Resource.valueOf(r).getName());
-    this.operation = parsePart(operation, o -> Operation.valueOf(o).getName());
+    init(parsePart(resource, r -> Resource.valueOf(r).getName()),
+        parsePart(operation, o -> Operation.valueOf(o).getName()), parseTarget(target), key);
+  }
+
+  private void init(String resource, String operation, String target, String key) {
+    this.resource = resource;
+    this.operation = operation;
 
     if (target != null) {
-      this.target = StringUtils.stripStart(target, Region.SEPARATOR);
+      this.target = target;
     }
+
     if (key != null) {
       this.key = key;
     }
 
-    setParts(this.resource + ":" + this.operation + ":" + this.target + ":" + this.key, true);
+    setParts(Arrays.asList(
+        Collections.singleton(this.resource),
+        Collections.singleton(this.operation),
+        CollectionUtils.asSet(this.target.split(SUBPART_DIVIDER_TOKEN)),
+        CollectionUtils.asSet(this.key.split(SUBPART_DIVIDER_TOKEN))));
   }
 
   private String parsePart(String part, UnaryOperator<String> operator) {
