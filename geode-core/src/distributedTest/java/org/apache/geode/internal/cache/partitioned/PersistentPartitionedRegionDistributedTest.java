@@ -36,9 +36,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
@@ -366,7 +371,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
           try {
             adminDS.waitToBeConnected(MINUTES.toMillis(2));
-            adminDS.revokePersistentMember(InetAddress.getLocalHost(), null);
+            adminDS.revokePersistentMember(getFirstInet4Address(), null);
           } finally {
             adminDS.disconnect();
           }
@@ -390,7 +395,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       adminDS.connect();
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
-        adminDS.revokePersistentMember(InetAddress.getLocalHost(), diskDirPathOnVM1);
+        adminDS.revokePersistentMember(getFirstInet4Address(), diskDirPathOnVM1);
       } finally {
         adminDS.disconnect();
       }
@@ -1605,6 +1610,23 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       adminDS.disconnect();
     }
   }
+
+  private static InetAddress getFirstInet4Address() throws SocketException, UnknownHostException {
+    Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+    InetAddress firstInet4Address = InetAddress.getLocalHost();
+
+    for (NetworkInterface netint : Collections.list(nets)) {
+      Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+      for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+        if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
+          return inetAddress;
+        }
+      }
+    }
+
+    return InetAddress.getLocalHost();
+  }
+
 
   private InternalCache getCache() {
     return cacheRule.getOrCreateCache();
