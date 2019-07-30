@@ -97,10 +97,16 @@ public class ConnectionJUnitTest {
         .thenReturn(new InetSocketAddress(SocketCreator.getLocalHost(), 12345));
     DistributionConfig config = mock(DistributionConfig.class);
     when(config.getMemberTimeout()).thenReturn(100);
+    DistributionManager distMgr = mock(DistributionManager.class);
+    when(distMgr.getConfig())
+        .thenReturn(config);
+    when(conduit.getDM())
+        .thenReturn(distMgr);
     Connection connection = new Connection(table, mock(Socket.class));
     int normalTimeout = connection.getP2PConnectTimeout(config);
+    assertThat(normalTimeout).isEqualTo(600);
     AlertingAction.execute(() -> {
-      assertThat(normalTimeout).isEqualTo(6 * connection.getP2PConnectTimeout(config));
+      assertThat(connection.getP2PConnectTimeout(config)).isEqualTo(100);
     });
 
   }
