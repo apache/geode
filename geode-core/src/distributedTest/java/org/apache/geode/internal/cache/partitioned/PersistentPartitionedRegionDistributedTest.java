@@ -43,7 +43,6 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Properties;
@@ -1623,7 +1622,6 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     // If no INet4Address was found for any of the interfaces above, default to getLocalHost()
     return InetAddress.getLocalHost();
   }
-
 
   private InternalCache getCache() {
     return cacheRule.getOrCreateCache();
