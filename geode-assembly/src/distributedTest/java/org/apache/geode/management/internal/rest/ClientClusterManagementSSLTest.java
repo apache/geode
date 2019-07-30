@@ -91,7 +91,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_Successful() throws Exception {
+  public void createRegion_Successful() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -115,7 +115,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_NoSsl() throws Exception {
+  public void createRegion_NoSsl() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -132,7 +132,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_WrongPassword() throws Exception {
+  public void createRegion_WrongPassword() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -152,7 +152,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_NoUser() throws Exception {
+  public void createRegion_NoUser() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -173,7 +173,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_NoPassword() throws Exception {
+  public void createRegion_NoPassword() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -193,7 +193,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_NoPrivilege() throws Exception {
+  public void createRegion_NoPrivilege() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -213,7 +213,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void invokeFromServer() throws Exception {
+  public void invokeFromServer() {
     server.invoke(() -> {
       // when getting the service from the server, we don't need to provide the host information
       ClusterManagementService cmsClient = buildWithCache()

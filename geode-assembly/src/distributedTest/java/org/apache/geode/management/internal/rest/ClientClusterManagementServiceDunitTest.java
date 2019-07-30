@@ -88,7 +88,7 @@ public class ClientClusterManagementServiceDunitTest {
 
 
   @Test
-  public void createRegionWithInvalidName() throws Exception {
+  public void createRegionWithInvalidName() {
     RegionConfig region = new RegionConfig();
     region.setName("__test");
 

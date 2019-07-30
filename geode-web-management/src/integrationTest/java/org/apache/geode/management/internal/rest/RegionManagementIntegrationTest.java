@@ -59,7 +59,7 @@ public class RegionManagementIntegrationTest {
 
   @Test
   @WithMockUser
-  public void sanityCheck() throws Exception {
+  public void sanityCheck() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
@@ -72,7 +72,7 @@ public class RegionManagementIntegrationTest {
 
   @Test
   @WithMockUser
-  public void invalidType() throws Exception {
+  public void invalidType() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
@@ -83,7 +83,7 @@ public class RegionManagementIntegrationTest {
   }
 
   @Test
-  public void invalidGroup() throws Exception {
+  public void invalidGroup() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");

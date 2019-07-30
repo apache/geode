@@ -125,8 +125,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementRealizationResult(false,
-          "Cluster configuration service needs to be enabled");
+      return assertSuccessful(new ClusterManagementRealizationResult(false,
+          "Cluster configuration service needs to be enabled"));
     }
 
     // first validate common attributes of all configuration object
@@ -156,7 +156,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // if any false result is added to the member list
     if (result.getStatusCode() != StatusCode.OK) {
       result.setStatus(false, "Failed to apply the update on all members");
-      return result;
+      return assertSuccessful(result);
     }
 
     // persist configuration in cache config
@@ -179,7 +179,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (result.isSuccessful() && config instanceof RestfulEndpoint) {
       result.setUri(((RestfulEndpoint) config).getUri());
     }
-    return result;
+    return assertSuccessful(result);
   }
 
   @Override
@@ -189,8 +189,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return new ClusterManagementRealizationResult(false,
-          "Cluster configuration service needs to be enabled");
+      return assertSuccessful(new ClusterManagementRealizationResult(false,
+          "Cluster configuration service needs to be enabled"));
     }
 
     // first validate common attributes of all configuration object
@@ -246,7 +246,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
     }
 
-    return result;
+    return assertSuccessful(result);
   }
 
   @Override
@@ -261,8 +261,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementListResult<T, R> result = new ClusterManagementListResult<>();
 
     if (persistenceService == null) {
-      return new ClusterManagementListResult<>(false,
-          "Cluster configuration service needs to be enabled");
+      return assertSuccessful(new ClusterManagementListResult<>(false,
+          "Cluster configuration service needs to be enabled"));
     }
 
     List<T> resultList = new ArrayList<>();
@@ -355,7 +355,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     result.setResult(responses);
-    return result;
+    return assertSuccessful(result);
   }
 
   @Override
@@ -373,14 +373,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
       throw new IllegalStateException(
           "Expect only one matching " + config.getClass().getSimpleName());
     }
-    return list;
+    return assertSuccessful(list);
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op) {
     OperationInstance<A, V> operationInstance = operationManager.submit(op);
-    CompletableFuture<V> future = operationInstance.getFutureResult();
     if (op instanceof TaggedWithOperator) {
       operationInstance.setOperator(((TaggedWithOperator) op).getOperator());
     }
@@ -389,15 +388,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
         StatusCode.ACCEPTED,
         "async operation started (GET uri to check status)");
 
-    return toClusterManagementListOperationsResult(result, operationInstance);
+    return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
   }
 
   @Override
   public <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType) {
-    return new ClusterManagementListOperationsResult<>(
+    return assertSuccessful(new ClusterManagementListOperationsResult<>(
         operationManager.listOperationInstances(opType).stream()
-            .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList()));
+            .map(this::toClusterManagementListOperationsResult).collect(Collectors.toList())));
   }
 
   /**
@@ -468,9 +467,28 @@ public class LocatorClusterManagementService implements ClusterManagementService
     return result;
   }
 
-  @Override
+  private <T extends ClusterManagementResult> T assertSuccessful(T result) {
+    if (!result.isSuccessful()) {
+      throw new LocalClusterManagementException(result);
+    }
+    return result;
+  }
+
   public boolean isConnected() {
     return true;
+  }
+
+  /**
+   * not public because user code should *not* try to catch this exception by name, since other
+   * implementations of {@link ClusterManagementService} will throw different subtypes of
+   * RuntimeException
+   */
+  private static class LocalClusterManagementException extends RuntimeException {
+    public LocalClusterManagementException(ClusterManagementResult result) {
+      super(result.getStatusCode()
+          + (org.springframework.util.StringUtils.isEmpty(result.getStatusMessage()) ? ""
+              : (": " + result.getStatusMessage())));
+    }
   }
 
   @Override
