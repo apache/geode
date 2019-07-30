@@ -78,7 +78,8 @@ public class RegionManagementIntegrationTest {
     regionConfig.setType("LOCAL");
 
     assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessage("ILLEGAL_ARGUMENT: Type LOCAL is not supported in Management V2 API.");
+        .hasMessageContaining(
+            "ILLEGAL_ARGUMENT: Type LOCAL is not supported in Management V2 API.");
   }
 
   @Test
@@ -88,7 +89,7 @@ public class RegionManagementIntegrationTest {
     regionConfig.setGroup("cluster");
 
     assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessage("ILLEGAL_ARGUMENT: 'cluster' is a reserved group name");
+        .hasMessageContaining("ILLEGAL_ARGUMENT: 'cluster' is a reserved group name");
   }
 
   @Test
