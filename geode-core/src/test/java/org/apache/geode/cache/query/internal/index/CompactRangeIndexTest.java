@@ -19,9 +19,13 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.quality.Strictness.STRICT_STUBS;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.RegionAttributes;
@@ -36,18 +40,21 @@ import org.apache.geode.internal.cache.RegionEntry;
 
 public class CompactRangeIndexTest {
 
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule().strictness(STRICT_STUBS);
+
   private CompactRangeIndex index;
-  LocalRegion region = mock(LocalRegion.class);
-  GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
-  InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
-  Statistics stats = mock(Statistics.class);
-  InternalIndexStatistics indstats = mock(InternalIndexStatistics.class);
+  private LocalRegion region = mock(LocalRegion.class);
+  private GemFireCacheImpl cache = mock(GemFireCacheImpl.class);
+  private InternalDistributedSystem ids = mock(InternalDistributedSystem.class);
+  private Statistics stats = mock(Statistics.class);
+  private InternalIndexStatistics indstats = mock(InternalIndexStatistics.class);
 
-  RegionEntry entry = mock(RegionEntry.class);
-  IndexManager img = mock(IndexManager.class);
-  CachePerfStats cacheperfstat = mock(CachePerfStats.class);
+  private RegionEntry entry = mock(RegionEntry.class);
+  private IndexManager img = mock(IndexManager.class);
+  private CachePerfStats cacheperfstat = mock(CachePerfStats.class);
 
-  DefaultQueryService queryservice = mock(DefaultQueryService.class);
+  private DefaultQueryService queryservice = mock(DefaultQueryService.class);
 
   @Before
   public void setup() {

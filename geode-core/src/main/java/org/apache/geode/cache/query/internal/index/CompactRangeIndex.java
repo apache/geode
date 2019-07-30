@@ -165,7 +165,10 @@ public class CompactRangeIndex extends AbstractIndex {
       // we know in this specific case, that a before op was called and stored oldKey/value
       // we also know that a regular remove won't work due to the entry no longer being present
       // We know the old key so let's just remove mapping from the old key
-      if (oldKeyValue != null && oldKeyValue.get() != null) {
+      if (oldKeyValue != null) {
+        if (oldKeyValue.get() == null) {
+          return;
+        }
         indexStore.removeMapping(oldKeyValue.get().getOldKey(), entry);
       } else {
         // rely on reverse map in the index store to figure out the real key
