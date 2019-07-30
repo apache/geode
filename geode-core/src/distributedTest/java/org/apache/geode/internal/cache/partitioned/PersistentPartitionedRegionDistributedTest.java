@@ -34,6 +34,7 @@ import static org.apache.geode.test.dunit.VM.getVM;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.io.Serializable;
 import java.net.InetAddress;
@@ -1120,9 +1121,13 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       // closed when ConflictingPersistentDataException is encountered.
       vm0.invoke(() -> {
         Cache cache = getCache();
-        assertThatThrownBy(() -> createPartitionedRegion(0, -1, 113, true))
-            .isInstanceOf(CacheClosedException.class)
-            .hasCauseInstanceOf(ConflictingPersistentDataException.class);
+        Throwable expectedException =
+            catchThrowable(() -> createPartitionedRegion(0, -1, 113, true));
+
+        assertThat(thrownByDiskRecoveryDueToConflictingPersistentDataException(expectedException)
+            || thrownByAsyncFlusherThreadDueToConflictingPersistentDataException(expectedException))
+                .isTrue();
+
         // Wait for the cache to completely close
         cache.close();
       });
@@ -1156,9 +1161,11 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     addIgnoredException(CacheClosedException.class);
 
     vm0.invoke(() -> {
-      assertThatThrownBy(() -> createPartitionedRegion(1, -1, 113, true))
-          .isInstanceOf(CacheClosedException.class)
-          .hasCauseInstanceOf(ConflictingPersistentDataException.class);
+      Throwable expectedException = catchThrowable(() -> createPartitionedRegion(1, -1, 113, true));
+
+      assertThat(thrownByDiskRecoveryDueToConflictingPersistentDataException(expectedException)
+          || thrownByAsyncFlusherThreadDueToConflictingPersistentDataException(expectedException))
+              .isTrue();
     });
   }
 
@@ -1612,6 +1619,24 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   private InternalDistributedSystem getSystem() {
     return getCache().getInternalDistributedSystem();
+  }
+
+  private boolean thrownByDiskRecoveryDueToConflictingPersistentDataException(
+      Throwable expectedException) {
+    return expectedException instanceof CacheClosedException
+        && expectedException.getCause() instanceof ConflictingPersistentDataException;
+  }
+
+  private boolean thrownByAsyncFlusherThreadDueToConflictingPersistentDataException(
+      Throwable expectedException) {
+    Throwable rootExceptionCause = expectedException.getCause();
+    Throwable nestedExceptionCause = rootExceptionCause.getCause();
+
+    return expectedException instanceof CacheClosedException
+        && (rootExceptionCause instanceof CacheClosedException
+            && rootExceptionCause.getMessage().contains(
+                "Could not schedule asynchronous write because the flusher thread had been terminated"))
+        && nestedExceptionCause instanceof ConflictingPersistentDataException;
   }
 
   private static class RecoveryObserver extends ResourceObserverAdapter {
