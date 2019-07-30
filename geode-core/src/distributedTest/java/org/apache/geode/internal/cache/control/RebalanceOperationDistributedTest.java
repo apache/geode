@@ -1784,10 +1784,13 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     VM vm2 = getVM(2);
     VM vm3 = getVM(3);
 
+    int redundantCopies = 1;
+
     // Create the region in only 2 VMs
     for (VM vm : toArray(vm0, vm1)) {
       vm.invoke(
-          () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
+          () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
+              redundantCopies));
     }
 
     VM rebalanceVM = useAccessor ? vm3 : vm0;
@@ -1816,7 +1819,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
     // Now create the cache in another member
     vm2.invoke(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
+            redundantCopies));
 
     // Make sure we still have low redundancy
     vm0.invoke(() -> validateRedundancy("region1", 6, 0, 6));
@@ -1876,9 +1880,11 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     // We need to restart both VMs at the same time, because
     // they will wait for each other before allowing operations.
     AsyncInvocation createRegionOnVM0 = vm0.invokeAsync(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
+            redundantCopies));
     AsyncInvocation createRegionOnVM2 = vm2.invokeAsync(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
+            redundantCopies));
 
     createRegionOnVM0.await();
     createRegionOnVM2.await();
@@ -1928,7 +1934,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     }
 
     vm1.invoke(
-        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(), 1));
+        () -> createPersistentPartitionedRegion("region1", getUniqueName(), getDiskDirs(),
+            redundantCopies));
 
     // Look at vm0 buckets.
     assertThat(vm0.invoke(() -> getBucketList("region1"))).isEqualTo(bucketsOnVM0);
@@ -2198,13 +2205,12 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       doPuts(regionName);
     });
 
-    server2.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
-        getDiskDirs(), redundantCopies));
-
     // Recycling server 2 sets the "recreated" state on the partitioned buckets, which can
     // change the behavior during failed GII handling when receiving bucket images. See
     // AbstractDiskRegion.isRecreated.
     server2.invoke(() -> {
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
       getCache().close();
       createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
           redundantCopies);
@@ -2288,7 +2294,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
           redundantCopies);
     });
 
-    final AsyncInvocation<Object> objectAsyncInvocation = server1.invokeAsync(() -> {
+    AsyncInvocation<Object> objectAsyncInvocation = server1.invokeAsync(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
 
       // This will signal a bounce of the VM upon receving the request for any bucket GII for the
