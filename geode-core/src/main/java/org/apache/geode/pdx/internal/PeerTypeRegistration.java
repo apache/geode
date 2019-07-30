@@ -26,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.InternalGemFireException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheWriterException;
 import org.apache.geode.cache.DataPolicy;
@@ -557,15 +558,15 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == this.dsId) {
             totalPdxTypeIdInDS++;
+            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                      + this.maxTypeId);
+            }
           }
 
           typeToId.put(foundType, id);
         }
-      }
-      if (totalPdxTypeIdInDS == this.maxTypeId) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                + this.maxTypeId);
       }
     } finally {
       resumeTX(currentState);
@@ -735,8 +736,8 @@ public class PeerTypeRegistration implements TypeRegistration {
    */
   private void updateClassToTypeMap(PdxType type) {
     if (type != null) {
+      typeToId.put(type, type.getTypeId());
       synchronized (this.classToType) {
-        typeToId.put(type, type.getTypeId());
         if (type.getClassName().equals(JSONFormatter.JSON_CLASSNAME)) {
           return; // no need to include here
         }
@@ -805,6 +806,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     return idToType.size();
   }
 
+  @VisibleForTesting
   public int getTypeToIdSize() {
     return typeToId.size();
   }
