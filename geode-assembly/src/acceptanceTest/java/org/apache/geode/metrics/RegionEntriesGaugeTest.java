@@ -261,7 +261,6 @@ public class RegionEntriesGaugeTest {
     int expectedNumberOfEntries = numberOfEntries * totalNumberOfCopies;
 
     await()
-        .atMost(10, TimeUnit.SECONDS)
         .untilAsserted(() -> {
           GfshExecution execution =
               gfshRule.execute(connectToLocatorCommand, getGaugeValueCommand);
