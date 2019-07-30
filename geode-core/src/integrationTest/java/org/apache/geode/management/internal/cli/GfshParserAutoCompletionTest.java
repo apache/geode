@@ -371,7 +371,7 @@ public class GfshParserAutoCompletionTest {
   public void testObtainHelpForStart() {
     String command = "start";
     String helpProvided = parser.getCommandManager().getHelper().getHelp(command, 1000);
-    String[] helpProvidedArray = helpProvided.split("\n");
+    String[] helpProvidedArray = helpProvided.split(LINE_SEPARATOR);
     assertThat(helpProvidedArray.length).isEqualTo((8 * 2) + 3);
     for (int i = 0; i < helpProvidedArray.length - 3; i++) {
       if (i % 2 != 0) {
@@ -386,7 +386,7 @@ public class GfshParserAutoCompletionTest {
   public void testObtainHintForData() {
     String hintArgument = "data";
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
-    String[] hintsProvidedArray = hintsProvided.split("\n");
+    String[] hintsProvidedArray = hintsProvided.split(LINE_SEPARATOR);
     assertThat(hintsProvidedArray.length).isEqualTo(15);
     assertThat(hintsProvidedArray[0])
         .isEqualTo("User data as stored in regions of the Geode distributed system.");
@@ -396,7 +396,7 @@ public class GfshParserAutoCompletionTest {
   public void testObtainHintWithoutArgument() {
     String hintArgument = "";
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
-    String[] hintsProvidedArray = hintsProvided.split("\n");
+    String[] hintsProvidedArray = hintsProvided.split(LINE_SEPARATOR);
     assertThat(hintsProvidedArray.length).isEqualTo(21);
     assertThat(hintsProvidedArray[0]).isEqualTo(
         "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
@@ -406,7 +406,7 @@ public class GfshParserAutoCompletionTest {
   public void testObtainHintWithNonExistingCommand() {
     String hintArgument = "fortytwo";
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
-    String[] hintsProvidedArray = hintsProvided.split("\n");
+    String[] hintsProvidedArray = hintsProvided.split(LINE_SEPARATOR);
     assertThat(hintsProvidedArray.length).isEqualTo(1);
     assertThat(hintsProvidedArray[0]).isEqualTo(
         "Unknown topic: " + hintArgument + ". Use hint to view the list of available topics.");
@@ -417,7 +417,7 @@ public class GfshParserAutoCompletionTest {
     String hintArgument = "d";
     String hintsProvided = parser.getCommandManager().obtainHint(hintArgument);
     System.out.println(hintsProvided);
-    String[] hintsProvidedArray = hintsProvided.split("\n");
+    String[] hintsProvidedArray = hintsProvided.split(LINE_SEPARATOR);
     assertThat(hintsProvidedArray.length).isEqualTo(5);
     assertThat(hintsProvidedArray[0]).isEqualTo(
         "Hints are available for the following topics. Use \"hint <topic-name>\" for a specific hint.");
