@@ -346,12 +346,8 @@ public class ServerLauncherTest {
         .setStartupCompletionAction(startupCompletionAction)
         .build();
 
-    Cache cache = mock(Cache.class);
-    CacheServer cacheServer = mock(CacheServer.class);
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-
-    when(cache.addCacheServer()).thenReturn(cacheServer);
-    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+    Cache cache = createCache(internalResourceManager);
 
     serverLauncher.startCacheServer(cache, 0L);
 
@@ -367,16 +363,41 @@ public class ServerLauncherTest {
         .setStartupExceptionAction(startupExceptionAction)
         .build();
 
-    Cache cache = mock(Cache.class);
-    CacheServer cacheServer = mock(CacheServer.class);
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-
-    when(cache.addCacheServer()).thenReturn(cacheServer);
-    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+    Cache cache = createCache(internalResourceManager);
 
     serverLauncher.startCacheServer(cache, 0L);
 
     verify(internalResourceManager)
         .runWhenStartupTasksComplete(any(), same(startupExceptionAction));
+  }
+
+  @Test
+  public void startUsesCacheProviderFromBuilder() {
+    ServerLauncherCacheProvider serverLauncherCacheProvider =
+        mock(ServerLauncherCacheProvider.class);
+    Cache cacheFromBuilder = createCache();
+    when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
+
+    ServerLauncher serverLauncher = new Builder()
+        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
+        .build();
+    serverLauncher.start();
+
+    assertThat(serverLauncher.getCache()).isSameAs(cacheFromBuilder);
+  }
+
+  private Cache createCache() {
+    return createCache(mock(InternalResourceManager.class));
+  }
+
+  private Cache createCache(InternalResourceManager internalResourceManager) {
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+
+    when(cache.addCacheServer()).thenReturn(cacheServer);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    return cache;
   }
 }

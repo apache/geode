@@ -240,6 +240,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final ServerControllerParameters controllerParameters;
   private final Runnable startupCompletionAction;
   private final Consumer<Throwable> startupExceptionAction;
+  private final ServerLauncherCacheProvider serverLauncherCacheProvider;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -335,6 +336,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
+    serverLauncherCacheProvider = builder.getServerLauncherCacheProvider();
 
     Integer serverPort =
         builder.isServerPortSetByUser() && this.serverPort != null ? this.serverPort : null;
@@ -875,8 +877,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   Cache createCache(Properties gemfireProperties) {
-    ServiceLoader<ServerLauncherCacheProvider> loader =
-        ServiceLoader.load(ServerLauncherCacheProvider.class);
+    Iterable<ServerLauncherCacheProvider> loader = getServerLauncherCacheProviders();
     for (ServerLauncherCacheProvider provider : loader) {
       Cache cache = provider.createCache(gemfireProperties, this);
       if (cache != null) {
@@ -885,6 +886,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     return DEFAULT_CACHE_PROVIDER.createCache(gemfireProperties, this);
+  }
+
+  private Iterable<ServerLauncherCacheProvider> getServerLauncherCacheProviders() {
+    return serverLauncherCacheProvider != null
+        ? Collections.singleton(serverLauncherCacheProvider)
+        : ServiceLoader.load(ServerLauncherCacheProvider.class);
   }
 
   /**
@@ -1451,6 +1458,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer maxThreads;
     private Runnable startupCompletionAction;
     private Consumer<Throwable> startupExceptionAction;
+
+    private ServerLauncherCacheProvider serverLauncherCacheProvider;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2536,6 +2545,27 @@ public class ServerLauncher extends AbstractLauncher<String> {
      */
     Consumer<Throwable> getStartupExceptionAction() {
       return this.startupExceptionAction;
+    }
+
+    /**
+     * Sets the ServerLauncherCacheProvider to use when creating the cache.
+     *
+     * @param serverLauncherCacheProvider the cache provider to use
+     * @return this builder
+     */
+    Builder setServerLauncherCacheProvider(
+        ServerLauncherCacheProvider serverLauncherCacheProvider) {
+      this.serverLauncherCacheProvider = serverLauncherCacheProvider;
+      return this;
+    }
+
+    /**
+     * Gets the ServerLauncherCacheProvider to use when creating the cache.
+     *
+     * @return the cache provider
+     */
+    ServerLauncherCacheProvider getServerLauncherCacheProvider() {
+      return this.serverLauncherCacheProvider;
     }
   }
 

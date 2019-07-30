@@ -17,6 +17,7 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -922,5 +923,27 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getStartupExceptionAction())
         .isSameAs(myThrowable);
 
+  }
+
+  @Test
+  public void getServerLauncherCacheProviderReturnsNullByDefault() {
+    assertThat(new Builder().getServerLauncherCacheProvider()).isNull();
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setServerLauncherCacheProvider(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderUsesValue() {
+    Builder builder = new Builder();
+
+    ServerLauncherCacheProvider value = mock(ServerLauncherCacheProvider.class);
+    builder.setServerLauncherCacheProvider(value);
+
+    assertThat(builder.getServerLauncherCacheProvider()).isSameAs(value);
   }
 }
