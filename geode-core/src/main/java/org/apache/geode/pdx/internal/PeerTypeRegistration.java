@@ -562,15 +562,15 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
+            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+              throw new InternalGemFireError(
+                  "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
+                      + this.maxTypeId);
+            }
           }
 
           typeToId.put(foundType, id);
         }
-      }
-      if (totalPdxTypeIdInDS == MAX_TYPE_ID) {
-        throw new InternalGemFireError(
-            "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                + MAX_TYPE_ID);
       }
     } finally {
       resumeTX(currentState);
@@ -786,6 +786,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     return getIdToType().size();
   }
 
+  @VisibleForTesting
   public int getTypeToIdSize() {
     return typeToId.size();
   }
