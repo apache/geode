@@ -84,7 +84,7 @@ jobs:
           params:
             context: {{ build_test.name }}
             path: geode
-            status: pending
+            status: "in progress"
           get_params: {skip_download: true}
       - do:
         - put: concourse-metadata-resource
@@ -225,7 +225,7 @@ jobs:
           params:
             context: {{test.name}}Test{{java_test_version.name}}
             path: geode
-            status: pending
+            status: "in progress"
           get_params: {skip_download: true}
       - do:
         - put: concourse-metadata-resource
