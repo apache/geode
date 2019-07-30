@@ -168,14 +168,17 @@ public class Connection implements Runnable {
     return isReaderThread.get();
   }
 
-  private int getP2PConnectTimeout() {
+  int getP2PConnectTimeout(DistributionConfig config) {
+    if (AlertingAction.isThreadAlerting()) {
+      return config.getMemberTimeout();
+    }
     if (IS_P2P_CONNECT_TIMEOUT_INITIALIZED)
       return P2P_CONNECT_TIMEOUT;
     String connectTimeoutStr = System.getProperty("p2p.connectTimeout");
     if (connectTimeoutStr != null) {
       P2P_CONNECT_TIMEOUT = Integer.parseInt(connectTimeoutStr);
     } else {
-      P2P_CONNECT_TIMEOUT = 6 * this.conduit.getDM().getConfig().getMemberTimeout();
+      P2P_CONNECT_TIMEOUT = 6 * config.getMemberTimeout();
     }
     IS_P2P_CONNECT_TIMEOUT_INITIALIZED = true;
     return P2P_CONNECT_TIMEOUT;
@@ -513,7 +516,7 @@ public class Connection implements Runnable {
     this.isReceiver = true;
     this.owner = t;
     this.socket = socket;
-    this.conduitIdStr = owner.getConduit().getSocketId().toString();
+    this.conduitIdStr = conduit.getSocketId().toString();
     this.handshakeRead = false;
     this.handshakeCancelled = false;
     this.connected = true;
@@ -1138,7 +1141,7 @@ public class Connection implements Runnable {
       setSendBufferSize(channel.socket());
       channel.configureBlocking(true);
 
-      int connectTime = getP2PConnectTimeout();
+      int connectTime = getP2PConnectTimeout(conduit.getDM().getConfig());
 
       try {
 
