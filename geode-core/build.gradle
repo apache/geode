@@ -415,6 +415,7 @@ jmh {
 }
 
 jmhJar {
+  inputs.files(project.sourceSets.main.output, project.sourceSets.test.output)
   from {
     [configurations.jmh, configurations.jmhRuntime, configurations.runtimeClasspath].collect {
         it.asFileTree.collect {
