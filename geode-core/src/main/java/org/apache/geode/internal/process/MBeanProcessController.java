@@ -36,7 +36,7 @@ import com.sun.tools.attach.AttachNotSupportedException;
 import com.sun.tools.attach.VirtualMachine;
 
 /**
- * Controls a {@link ControllableProcess} using the Attach API to manipulate MBeans.
+ * Controls a process using the Attach API to manipulate MBeans.
  *
  * @since GemFire 8.0
  */

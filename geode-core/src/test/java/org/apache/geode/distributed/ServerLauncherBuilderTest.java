@@ -17,10 +17,12 @@ package org.apache.geode.distributed;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import joptsimple.OptionException;
 import org.junit.Before;
@@ -32,6 +34,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.process.ControllableProcess;
 
 /**
  * Unit tests for {@link ServerLauncher.Builder}. Extracted from {@link ServerLauncherTest}.
@@ -922,5 +925,50 @@ public class ServerLauncherBuilderTest {
     assertThat(builder.getStartupExceptionAction())
         .isSameAs(myThrowable);
 
+  }
+
+  @Test
+  public void getServerLauncherCacheProviderReturnsNullByDefault() {
+    assertThat(new Builder().getServerLauncherCacheProvider()).isNull();
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setServerLauncherCacheProvider(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setServerLauncherCacheProviderUsesValue() {
+    Builder builder = new Builder();
+
+    ServerLauncherCacheProvider value = mock(ServerLauncherCacheProvider.class);
+    builder.setServerLauncherCacheProvider(value);
+
+    assertThat(builder.getServerLauncherCacheProvider()).isSameAs(value);
+  }
+
+  @Test
+  public void getControllableProcessFactoryReturnsNullByDefault() {
+    assertThat(new Builder().getControllableProcessFactory()).isNull();
+  }
+
+  @Test
+  public void setControllableProcessFactoryReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setControllableProcessFactory(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setControllableProcessFactoryUsesValue() {
+    Builder builder = new Builder();
+
+    Supplier<ControllableProcess> controllableProcessFactory =
+        () -> mock(ControllableProcess.class);
+    builder.setControllableProcessFactory(controllableProcessFactory);
+
+    assertThat(builder.getControllableProcessFactory()).isSameAs(controllableProcessFactory);
   }
 }

@@ -18,7 +18,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -26,15 +26,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 import org.junit.After;
 import org.junit.Before;
@@ -104,113 +100,92 @@ public class InternalResourceManagerTest {
   }
 
   @Test
-  public void runsIfZeroStartupTask() {
-    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
-    Runnable completionAction = () -> completionActionHasRun.set(true);
+  public void addStartupTaskThrowsIfStartupTaskIsNull() {
+    Throwable thrown = catchThrowable(() -> resourceManager.addStartupTask(null));
 
-    resourceManager.runWhenStartupTasksComplete(completionAction, exceptionAction());
-
-    assertThat(completionActionHasRun)
-        .withFailMessage("Startup complete action did not run after startup tasks finished")
-        .isTrue();
+    assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  public void runsAfterOneStartupTaskComplete() {
-    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
-    Runnable completionAction = () -> completionActionHasRun.set(true);
+  public void allOfStartupTasksIsDoneIfZeroStartupTasks() {
+    CompletableFuture<Void> withoutStartupTasks = resourceManager.allOfStartupTasks();
 
-    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
-
-    resourceManager.runWhenStartupTasksComplete(completionAction, exceptionAction());
-
-    assertThat(completionActionHasRun)
-        .withFailMessage("Startup complete action ran before startup tasks finished")
-        .isFalse();
-
-    completeAnyWaitingTasks();
-
-    await().untilAsserted(() -> assertThat(completionActionHasRun)
-        .withFailMessage("Startup complete action did not run after startup tasks finished")
-        .isTrue());
+    assertThat(withoutStartupTasks).isDone();
   }
 
   @Test
-  public void runsAfterManyStartupTaskCompletes() {
-    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
-    Runnable completionAction = () -> completionActionHasRun.set(true);
+  public void allOfStartupTasksIsDoneAfterOneStartupTaskCompletes() {
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
 
-    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
-    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
+    CompletableFuture<Void> withOneStartupTask = resourceManager.allOfStartupTasks();
 
-    resourceManager.runWhenStartupTasksComplete(completionAction, exceptionAction());
-
-    assertThat(completionActionHasRun)
-        .withFailMessage("Startup complete action ran before startup tasks finished")
-        .isFalse();
-
-    completeAnyWaitingTasks();
-
-    await().untilAsserted(() -> assertThat(completionActionHasRun)
-        .withFailMessage("Startup complete action did not run after startup tasks finished")
-        .isTrue());
+    assertThat(withOneStartupTask).isDone();
   }
 
   @Test
-  public void runClearsAddedStartupTasks() {
-    AtomicBoolean completionActionHasRun = new AtomicBoolean(false);
-    Runnable completionAction = () -> completionActionHasRun.set(true);
+  public void allOfStartupTasksIsNotDoneIfOnlyStartupTaskIsNotComplete() {
+    resourceManager.addStartupTask(new CompletableFuture<>());
 
-    resourceManager.addStartupTask(CompletableFuture.runAsync(waitingTask()));
+    CompletableFuture<Void> withOneStartupTask = resourceManager.allOfStartupTasks();
 
-    resourceManager.runWhenStartupTasksComplete(() -> {
-    }, exceptionAction());
-
-    resourceManager.runWhenStartupTasksComplete(completionAction, exceptionAction());
-
-    assertThat(completionActionHasRun)
-        .withFailMessage("Did not clear added startup tasks")
-        .isTrue();
+    assertThat(withOneStartupTask).isNotDone();
   }
 
   @Test
-  public void runsExceptionActionAfterOneStartupTaskThrowsException() {
-    AtomicReference<Throwable> exceptionActionConsumed = new AtomicReference<>();
-    Consumer<Throwable> exceptionAction = exceptionActionConsumed::set;
+  public void allOfStartupTasksIsDoneAfterManyStartupTasksComplete() {
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
 
-    Runnable completionAction = () -> fail("Ran completion action");
+    CompletableFuture<Void> withManyStartupTasks = resourceManager.allOfStartupTasks();
 
-    CompletableFuture<Void> taskCompletedExceptionally = new CompletableFuture<>();
-    taskCompletedExceptionally.completeExceptionally(new IllegalStateException("Error message"));
-
-    resourceManager.addStartupTask(taskCompletedExceptionally);
-    resourceManager.runWhenStartupTasksComplete(completionAction, exceptionAction);
-
-    assertThat(exceptionActionConsumed.get())
-        .withFailMessage("Did not run exception action")
-        .isInstanceOf(CompletionException.class);
-
-    assertThat(exceptionActionConsumed.get().getCause())
-        .withFailMessage("Completion exception did not have cause")
-        .isInstanceOf(IllegalStateException.class)
-        .hasMessage("Error message");
+    assertThat(withManyStartupTasks).isDone();
   }
 
-  private void completeAnyWaitingTasks() {
-    numberOfStartupTasksRemaining.countDown();
+  @Test
+  public void allOfStartupTasksIsNotDoneIfAnyStartupTaskIsNotComplete() {
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
+    resourceManager.addStartupTask(new CompletableFuture<>());
+
+    CompletableFuture<Void> withManyStartupTasks = resourceManager.allOfStartupTasks();
+
+    assertThat(withManyStartupTasks).isNotDone();
   }
 
-  private Runnable waitingTask() {
-    return () -> {
-      try {
-        numberOfStartupTasksRemaining.await();
-      } catch (InterruptedException e) {
-        // ignore
-      }
-    };
+  @Test
+  public void allOfStartupTasksClearsAddedStartupTasks() {
+    resourceManager.addStartupTask(new CompletableFuture<>());
+
+    // Clears the startup tasks
+    resourceManager.allOfStartupTasks();
+
+    CompletableFuture<Void> withoutStartupTasks = resourceManager.allOfStartupTasks();
+
+    assertThat(withoutStartupTasks).isDone();
   }
 
-  private Consumer<Throwable> exceptionAction() {
-    return (throwable) -> fail("Ran exception action");
+  @Test
+  public void allOfStartupTasksIsCompletedExceptionallyIfFirstStartupTaskThrows() {
+    CompletableFuture<Void> completesExceptionally = new CompletableFuture<>();
+    completesExceptionally.completeExceptionally(new RuntimeException());
+
+    resourceManager.addStartupTask(completesExceptionally);
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
+
+    CompletableFuture<Void> withManyStartupTasks = resourceManager.allOfStartupTasks();
+
+    assertThat(withManyStartupTasks).isCompletedExceptionally();
+  }
+
+  @Test
+  public void allOfStartupTasksIsCompletedExceptionallyIfLastStartupTaskThrows() {
+    CompletableFuture<Void> completesExceptionally = new CompletableFuture<>();
+    completesExceptionally.completeExceptionally(new RuntimeException());
+
+    resourceManager.addStartupTask(CompletableFuture.completedFuture(null));
+    resourceManager.addStartupTask(completesExceptionally);
+
+    CompletableFuture<Void> withManyStartupTasks = resourceManager.allOfStartupTasks();
+
+    assertThat(withManyStartupTasks).isCompletedExceptionally();
   }
 }

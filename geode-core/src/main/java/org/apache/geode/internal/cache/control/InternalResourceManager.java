@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -30,7 +31,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 
 import org.apache.logging.log4j.Logger;
 
@@ -615,18 +615,25 @@ public class InternalResourceManager implements ResourceManager {
     }
   }
 
+  /**
+   * Adds a task that represents an asynchronous action during startup
+   *
+   * @param startupTask the CompletableFuture startup task
+   */
   public void addStartupTask(CompletableFuture<Void> startupTask) {
+    Objects.requireNonNull(startupTask);
     startupTasks.add(startupTask);
   }
 
-  public void runWhenStartupTasksComplete(Runnable runnable, Consumer<Throwable> exceptionAction) {
-    CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0]))
-        .thenRun(runnable)
-        .exceptionally((throwable) -> {
-          exceptionAction.accept(throwable);
-          return null;
-        });
-
+  /**
+   * Clears the startup tasks and returns a CompletableFuture that completes when all of the startup
+   * tasks complete.
+   *
+   * @return a CompletableFuture that completes when all of the startup tasks complete
+   */
+  public CompletableFuture<Void> allOfStartupTasks() {
+    CompletableFuture[] completableFutures = startupTasks.toArray(new CompletableFuture[0]);
     startupTasks.clear();
+    return CompletableFuture.allOf(completableFutures);
   }
 }
