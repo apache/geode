@@ -756,13 +756,14 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         serverRegionExecutor, resultCollector, hasResult, isHA, optimizeForWrite);
 
     int retryAttempts = pool.getRetryAttempts();
+    boolean inTransaction = TXManagerImpl.getCurrentTXState() != null;
 
     final Supplier<AbstractOp> executeRegionFunctionOpSupplier =
         () -> new ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl(region.getFullPath(),
             functionId, serverRegionExecutor, resultCollector, hasResult, isHA,
             optimizeForWrite, true, timeoutMs);
 
-    if (pool.getPRSingleHopEnabled()) {
+    if (pool.getPRSingleHopEnabled() && !inTransaction) {
       ClientMetadataService cms = region.getCache().getClientMetadataService();
       if (cms.isMetadataStable()) {
 
