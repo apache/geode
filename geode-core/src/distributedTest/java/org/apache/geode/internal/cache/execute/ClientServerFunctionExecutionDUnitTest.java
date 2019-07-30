@@ -97,7 +97,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   }
 
   @Test
-  public void test_Bug_43126_Function_Not_Registered() {
+  public void throwsExceptionWhenFunctionNotRegisteredOnServer() {
     createScenario();
     try {
       client.invoke(ClientServerFunctionExecutionDUnitTest::executeRegisteredFunction);
@@ -109,7 +109,7 @@ public class ClientServerFunctionExecutionDUnitTest extends PRClientServerTestBa
   }
 
   @Test
-  public void test_Bug43126() {
+  public void noExceptionWhenFunctionRegisteredOnServer() {
     createScenario();
     Function function = new TestFunction(true, TestFunction.TEST_FUNCTION1);
     registerFunctionAtServer(function);
