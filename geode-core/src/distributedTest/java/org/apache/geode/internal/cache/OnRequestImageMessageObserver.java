@@ -21,9 +21,9 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 public abstract class OnRequestImageMessageObserver extends DistributionMessageObserver {
   private final String regionName;
   private final Runnable onMessageReceived;
-  protected boolean hasExecutedOnMessageReceived = false;
+  private boolean hasExecutedOnMessageReceived = false;
 
-  public OnRequestImageMessageObserver(String regionName, Runnable onMessageReceived) {
+  OnRequestImageMessageObserver(String regionName, Runnable onMessageReceived) {
     this.regionName = regionName;
     this.onMessageReceived = onMessageReceived;
   }

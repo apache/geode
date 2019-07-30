@@ -18,6 +18,6 @@ import org.apache.geode.cache.Cache;
 
 public class CacheClosingDistributionMessageObserver extends OnRequestImageMessageObserver {
   public CacheClosingDistributionMessageObserver(String regionName, Cache cache) {
-    super(regionName, () -> cache.close());
+    super(regionName, cache::close);
   }
 }

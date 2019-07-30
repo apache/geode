@@ -54,7 +54,6 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -2188,8 +2187,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
    * we expect a subsequent rebalance will succeed after the cache is reconstructed.
    */
   @Test
-  public void testBucketImageProviderCacheClosesDuringBucketMove()
-      throws ExecutionException, InterruptedException {
+  public void testBucketImageProviderCacheClosesDuringBucketMove() {
     VM server1 = getVM(0);
     VM server2 = getVM(1);
 
@@ -2226,7 +2224,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
               new CacheClosingDistributionMessageObserver("_B__" + regionName + "_", getCache()));
 
       try {
-        RebalanceResults results = doRebalance(false, manager);
+        doRebalance(false, manager);
       } catch (CacheClosedException ex) {
         // The CacheClosingDistributionMessageObserver will cause an expected CacheClosedException
       } finally {
@@ -2241,7 +2239,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       RebalanceResults results = doRebalance(false, manager);
 
       // The rebalance should have done some work since the buckets were imbalanced
-      assertThat(results.getTotalBucketTransfersCompleted() > 0);
+      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
     });
   }
 
@@ -2251,7 +2249,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
    */
   @Test
   public void testBucketImageProviderBouncesDuringBucketMove()
-      throws ExecutionException, InterruptedException, TimeoutException {
+      throws InterruptedException, TimeoutException {
     getBlackboard().initBlackboard();
 
     // Setting up 3 servers to create the partitioned region on to avoid issues with
@@ -2294,7 +2292,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
           redundantCopies);
     });
 
-    AsyncInvocation<Object> objectAsyncInvocation = server1.invokeAsync(() -> {
+    server1.invokeAsync(() -> {
       InternalResourceManager manager = getCache().getInternalResourceManager();
 
       // This will signal a bounce of the VM upon receving the request for any bucket GII for the
@@ -2303,7 +2301,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
           .setInstance(new SignalBounceOnRequestImageMessageObserver("_B__" + regionName + "_",
               getCache(), getBlackboard()));
 
-      RebalanceResults results = doRebalance(false, manager);
+      doRebalance(false, manager);
     });
 
     SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), server1);
@@ -2317,7 +2315,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       RebalanceResults results = doRebalance(false, getCache().getInternalResourceManager());
 
       // The rebalance should have done some work since the buckets were imbalanced
-      assertThat(results.getTotalBucketTransfersCompleted() > 0);
+      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
     });
   }
 

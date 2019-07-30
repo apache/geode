@@ -30,7 +30,7 @@ public class SignalBounceOnRequestImageMessageObserver extends OnRequestImageMes
       DUnitBlackboard dUnitBlackboard) {
     super(regionName, () -> {
       dUnitBlackboard.signalGate(gateName);
-      await().until(() -> cache.isClosed());
+      await().until(cache::isClosed);
     });
   }
 
