@@ -14,29 +14,10 @@
  */
 package org.apache.geode.internal.cache;
 
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.distributed.internal.DistributionMessageObserver;
+import org.apache.geode.cache.Cache;
 
-public class CacheClosingDistributionMessageObserver extends DistributionMessageObserver {
-  private boolean hasDisconnected = false;
-  private String regionName;
-
-  public CacheClosingDistributionMessageObserver(String regionName) {
-    this.regionName = regionName;
-  }
-
-  @Override
-  public void beforeProcessMessage(ClusterDistributionManager dm, DistributionMessage message) {
-    if (message instanceof InitialImageOperation.RequestImageMessage) {
-      InitialImageOperation.RequestImageMessage rim =
-          (InitialImageOperation.RequestImageMessage) message;
-      synchronized (this) {
-        if (!hasDisconnected && rim.regionPath.contains("_B__" + regionName + "_")) {
-          dm.getCache().close();
-          hasDisconnected = true;
-        }
-      }
-    }
+public class CacheClosingDistributionMessageObserver extends OnRequestImageMessageObserver {
+  public CacheClosingDistributionMessageObserver(String regionName, Cache cache) {
+    super(regionName, () -> cache.close());
   }
 }

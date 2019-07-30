@@ -101,6 +101,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PRHARedundancyProvider;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
+import org.apache.geode.internal.cache.SignalBounceOnRequestImageMessageObserver;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceObserverAdapter;
 import org.apache.geode.internal.cache.partitioned.BucketCountLoadProbe;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -2176,11 +2177,11 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   }
 
   /**
-   * If a member's cache is recycled while a bucket is moving during a rebalance,
+   * If the bucket image provider's cache is recycled while a bucket is moving during a rebalance,
    * we expect a subsequent rebalance will succeed after the cache is reconstructed.
    */
   @Test
-  public void testCacheClosesDuringBucketMove()
+  public void testBucketImageProviderCacheClosesDuringBucketMove()
       throws ExecutionException, InterruptedException {
     VM server1 = getVM(0);
     VM server2 = getVM(1);
@@ -2200,12 +2201,9 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     server2.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
         getDiskDirs(), redundantCopies));
 
-    server1.invoke(() -> {
-      getCache().close();
-      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
-          redundantCopies);
-    });
-
+    // Recycling server 2 sets the "recreated" state on the partitioned buckets, which can
+    // change the behavior during failed GII handling when receiving bucket images. See
+    // AbstractDiskRegion.isRecreated.
     server2.invoke(() -> {
       getCache().close();
       createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
@@ -2218,7 +2216,8 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       // This will cause a CacheClosedException to occur during rebalance, specifically
       // when a RequestImageMessage during any bucket GII is received.
       DistributionMessageObserver
-          .setInstance(new CacheClosingDistributionMessageObserver(regionName));
+          .setInstance(
+              new CacheClosingDistributionMessageObserver("_B__" + regionName + "_", getCache()));
 
       try {
         RebalanceResults results = doRebalance(false, manager);
@@ -2230,9 +2229,86 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
       // Rebuild the cache and retry the rebalance. We expect it to succeed because the
       // CacheClosingDistributionMessageObserver has been uninstalled.
-      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(), 1);
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
       manager = getCache().getInternalResourceManager();
       RebalanceResults results = doRebalance(false, manager);
+
+      // The rebalance should have done some work since the buckets were imbalanced
+      assertThat(results.getTotalBucketTransfersCompleted() > 0);
+    });
+  }
+
+  /**
+   * If the bucket image provider is bounced while a bucket is moving during a rebalance,
+   * we expect a subsequent rebalance will succeed after member restarts and cache is reconstructed.
+   */
+  @Test
+  public void testBucketImageProviderBouncesDuringBucketMove()
+      throws ExecutionException, InterruptedException, TimeoutException {
+    getBlackboard().initBlackboard();
+
+    // Setting up 3 servers to create the partitioned region on to avoid issues with
+    // losing membership quorum. Alternatively we could disable network partition detection
+    // when constructing the cache, but this solves the same problem.
+    VM server1 = getVM(0);
+    VM server2 = getVM(1);
+    VM server3 = getVM(2);
+
+    int redundantCopies = 0;
+    String regionName = "region1";
+
+    server1.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
+        getDiskDirs(), redundantCopies));
+
+    // Do puts before starting the second server so that we guarantee all buckets reside on the
+    // first server. This way we ensure a rebalance should have some work to do.
+    server1.invoke(() -> {
+      doPuts(regionName);
+    });
+
+    // Recycling server 2 and 3 sets the "recreated" state on the partitioned buckets, which can
+    // change the behavior during failed GII handling when receiving bucket images. See
+    // AbstractDiskRegion.isRecreated.
+    server2.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
+        getDiskDirs(), redundantCopies));
+
+    server3.invoke(() -> createPersistentPartitionedRegion(regionName, getUniqueName(),
+        getDiskDirs(), redundantCopies));
+
+    server2.invoke(() -> {
+      getCache().close();
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
+    });
+
+    server3.invoke(() -> {
+      getCache().close();
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
+    });
+
+    final AsyncInvocation<Object> objectAsyncInvocation = server1.invokeAsync(() -> {
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+
+      // This will signal a bounce of the VM upon receving the request for any bucket GII for the
+      // test partitioned region
+      DistributionMessageObserver
+          .setInstance(new SignalBounceOnRequestImageMessageObserver("_B__" + regionName + "_",
+              getCache(), getBlackboard()));
+
+      RebalanceResults results = doRebalance(false, manager);
+    });
+
+    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), server1);
+
+    server1.invoke(() -> {
+      // Rebuild the cache and retry the rebalance. We expect it to succeed because the
+      // SignalBounceOnRequestImageMessageObserver has been uninstalled.
+      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+          redundantCopies);
+      InternalResourceManager manager = getCache().getInternalResourceManager();
+      RebalanceResults results = doRebalance(false, getCache().getInternalResourceManager());
 
       // The rebalance should have done some work since the buckets were imbalanced
       assertThat(results.getTotalBucketTransfersCompleted() > 0);
