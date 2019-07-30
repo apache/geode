@@ -298,21 +298,21 @@ public class GatewaySenderMBeanBridge {
     if (this.dispatcher != null && this.dispatcher.isConnectedToRemote()) {
       return true;
     }
-    if (!this.sender.isParallel()) {
-      ConcurrentSerialGatewaySenderEventProcessor cProc =
-          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+    if (this.sender.isParallel()) {
+      ConcurrentParallelGatewaySenderEventProcessor cProc =
+          (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
               .getEventProcessor();
-      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+      for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
           this.dispatcher = lProc.getDispatcher();
           return true;
         }
       }
     } else {
-      ConcurrentParallelGatewaySenderEventProcessor cProc =
-          (ConcurrentParallelGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
+      ConcurrentSerialGatewaySenderEventProcessor cProc =
+          (ConcurrentSerialGatewaySenderEventProcessor) ((AbstractGatewaySender) sender)
               .getEventProcessor();
-      for (ParallelGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
+      for (SerialGatewaySenderEventProcessor lProc : cProc.getProcessors()) {
         if (lProc.getDispatcher() != null && lProc.getDispatcher().isConnectedToRemote()) {
           this.dispatcher = lProc.getDispatcher();
           return true;

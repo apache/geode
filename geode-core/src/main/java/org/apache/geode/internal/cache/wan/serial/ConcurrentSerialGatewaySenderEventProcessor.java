@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
@@ -344,12 +345,7 @@ public class ConcurrentSerialGatewaySenderEventProcessor
   }
 
   public List<SerialGatewaySenderEventProcessor> getProcessors() {
-    List<SerialGatewaySenderEventProcessor> l =
-        new ArrayList<SerialGatewaySenderEventProcessor>();
-    for (int i = 0; i < processors.size(); i++) {
-      l.add(processors.get(i));
-    }
-    return l;
+    return new LinkedList<>(processors);
   }
 
   /**
