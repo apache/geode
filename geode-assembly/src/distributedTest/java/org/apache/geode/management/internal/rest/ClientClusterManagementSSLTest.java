@@ -147,10 +147,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "wrongPassword").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -171,10 +168,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -194,10 +188,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", null).build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
@@ -217,9 +208,7 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataRead", "dataRead").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHORIZED");
     });
   }
 

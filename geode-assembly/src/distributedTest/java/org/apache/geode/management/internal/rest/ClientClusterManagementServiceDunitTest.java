@@ -69,9 +69,7 @@ public class ClientClusterManagementServiceDunitTest {
     assertThat(result.getMemberStatuses()).extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1", "server-2");
 
-    result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+    assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("ENTITY_EXISTS");
   }
 
   @Test
@@ -94,10 +92,7 @@ public class ClientClusterManagementServiceDunitTest {
     RegionConfig region = new RegionConfig();
     region.setName("__test");
 
-    ClusterManagementResult result = cmsClient.create(region);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode())
-        .isEqualTo(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
+    assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("ILLEGAL_ARGUMENT");
   }
 
   @Test
