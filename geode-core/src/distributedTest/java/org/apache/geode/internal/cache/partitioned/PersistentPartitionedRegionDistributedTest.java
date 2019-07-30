@@ -1612,18 +1612,15 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
   }
 
   private static InetAddress getFirstInet4Address() throws SocketException, UnknownHostException {
-    Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-    InetAddress firstInet4Address = InetAddress.getLocalHost();
-
-    for (NetworkInterface netint : Collections.list(nets)) {
-      Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-      for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+    for (NetworkInterface netint : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+      for (InetAddress inetAddress : Collections.list(netint.getInetAddresses())) {
         if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
           return inetAddress;
         }
       }
     }
 
+    // If no INet4Address was found for any of the interfaces above, default to getLocalHost()
     return InetAddress.getLocalHost();
   }
 
