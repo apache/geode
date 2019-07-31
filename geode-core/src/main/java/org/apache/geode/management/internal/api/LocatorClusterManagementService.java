@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.api;
 
+import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ENTITY_EXISTS;
 import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND;
 import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ERROR;
 import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT;
@@ -78,6 +79,7 @@ import org.apache.geode.management.internal.configuration.validators.Configurati
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
+import org.apache.geode.management.internal.exceptions.EntityExistsException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
@@ -147,6 +149,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
       // check if this config already exists on all/some members of this group
       memberValidator.validateCreate(config, configurationManager);
       // execute function on all members
+    } catch (EntityExistsException e) {
+      raise(ENTITY_EXISTS, e.getMessage());
     } catch (IllegalArgumentException e) {
       raise(ILLEGAL_ARGUMENT, e.getMessage());
     }
