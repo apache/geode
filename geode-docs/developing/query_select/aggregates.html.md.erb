@@ -29,7 +29,8 @@ The aggregate functions
 ```COUNT```, and
 ```COUNT``` over a DISTINCT expression
 are supported.
-The ```GROUP BY``` extension is also supported where appropriate.
+The ```GROUP BY``` extension is also supported, and required  whenever an aggregate function is used within a query with other selected fields.
+If there are no other aggregate functions within the query, then all fields included within a ```GROUP BY``` clause must also be part of the original projection list, and all fields included within the projection list must also be part of the ```GROUP BY``` clause.
 
 The ```MIN``` function returns the smallest of the selected
 expression.
