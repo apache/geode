@@ -32,7 +32,7 @@ import org.apache.geode.annotations.Immutable;
  * @since GemFire 3.0
  */
 @Immutable
-public class StatisticsTypeImpl implements StatisticsType {
+public class StatisticsTypeImpl implements ValidatingStatisticsType {
 
   /** The name of this statistics type */
   private final String name;
@@ -221,10 +221,12 @@ public class StatisticsTypeImpl implements StatisticsType {
     return true;
   }
 
+  @Override
   public boolean isValidLongId(int id) {
     return id < longStatCount;
   }
 
+  @Override
   public boolean isValidDoubleId(int id) {
     return longStatCount <= id && id < longStatCount + doubleStatCount;
   }

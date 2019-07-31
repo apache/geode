@@ -47,10 +47,10 @@ public class ServiceJarRule extends ExternalResource {
     temporaryFolder.after();
   }
 
-  public <S> String createJarFor(String jarName, Class<S> serviceClass,
+  public <S> Path createJarFor(String jarName, Class<S> serviceClass,
       Class<? extends S> providerClass) {
     try {
-      return newJar(jarName, serviceClass.getName(), providerClass).toAbsolutePath().toString();
+      return newJar(jarName, serviceClass.getName(), providerClass).toAbsolutePath();
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }

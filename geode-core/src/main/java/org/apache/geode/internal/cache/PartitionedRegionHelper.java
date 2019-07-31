@@ -268,7 +268,7 @@ public class PartitionedRegionHelper {
       final HasCachePerfStats prMetaStatsHolder = new HasCachePerfStats() {
         @Override
         public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(), "partitionMetaData");
+          return new CachePerfStats(cache.getDistributedSystem(), "RegionStats-partitionMetaData");
         }
       };
 
