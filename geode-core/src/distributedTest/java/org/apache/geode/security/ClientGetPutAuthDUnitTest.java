@@ -89,8 +89,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
       assertNotAuthorized(() -> region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // not authorized for either keys, get no record back
-      Map keyValues = region.getAll(keys);
-      assertEquals(0, keyValues.size());
+      assertNotAuthorized(() -> region.getAll(keys), "DATA:READ:AuthRegion");
 
       assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");
     });
@@ -127,8 +126,7 @@ public class ClientGetPutAuthDUnitTest extends JUnit4DistributedTestCase {
       assertNotAuthorized(() -> region.putAll(allValues), "DATA:WRITE:AuthRegion");
 
       // only authorized for one recrod
-      Map keyValues = region.getAll(keys);
-      assertEquals(1, keyValues.size());
+      assertNotAuthorized(() -> region.getAll(keys), "DATA:READ:AuthRegion:key2");
 
       // keyset
       assertNotAuthorized(() -> region.keySetOnServer(), "DATA:READ:AuthRegion");

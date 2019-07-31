@@ -15,9 +15,7 @@
 package org.apache.geode.internal.cache.tier.sockets.command;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.geode.annotations.Immutable;
@@ -25,6 +23,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.operations.GetOperationContext;
 import org.apache.geode.cache.operations.internal.GetOperationContextImpl;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.BaseCommand;
@@ -109,7 +108,7 @@ public class GetAll70 extends BaseCommand {
       return;
     }
 
-    Region region = (Region) serverConnection.getCache().getRegion(regionName);
+    LocalRegion region = (LocalRegion) serverConnection.getCache().getRegion(regionName);
     if (region == null) {
       String reason = " was not found during getAll request";
       writeRegionDestroyedEx(clientMessage, regionName, reason, serverConnection);
@@ -131,7 +130,6 @@ public class GetAll70 extends BaseCommand {
     } catch (Exception e) {
       // If an interrupted exception is thrown , rethrow it
       checkForInterrupt(serverConnection, e);
-      logger.info(" exception ");
       // Otherwise, write an exception message and continue
       writeChunkedException(clientMessage, e, serverConnection);
       serverConnection.setAsTrue(RESPONDED);
@@ -145,7 +143,6 @@ public class GetAll70 extends BaseCommand {
 
     // Interpret null keys object as a request to get all key,value entry pairs
     // of the region; otherwise iterate each key and perform the get behavior.
-    List<Exception> errors = new ArrayList<>();
     Iterator allKeysIter;
     int numKeys;
     if (keys != null) {
@@ -177,7 +174,6 @@ public class GetAll70 extends BaseCommand {
       Get70 request = (Get70) Get70.getCommand();
       final boolean isDebugEnabled = logger.isDebugEnabled();
       for (int i = 0; i < numKeys; i++) {
-        logger.info("i = " + i + " numKeys = " + numKeys);
         // Send the intermediate chunk if necessary
         if (values.size() == MAXIMUM_CHUNK_SIZE) {
           // Send the chunk and clear the list
@@ -215,19 +211,7 @@ public class GetAll70 extends BaseCommand {
           }
         }
 
-
-        try {
-          securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
-        } catch (NotAuthorizedException ex) {
-          logger.warn(
-              String.format("%s: Caught the following exception attempting to get value for key=%s",
-                  new Object[] {servConn.getName(), key}),
-              ex);
-          values.addExceptionPart(key, ex);
-          errors.add(ex);
-          logger.info("2values = " + values + " size = " + values.size());
-          continue;
-        }
+        securityService.authorize(Resource.DATA, Operation.READ, regionName, key);
 
         // Get the value and update the statistics. Do not deserialize
         // the value if it is a byte[].
@@ -257,13 +241,12 @@ public class GetAll70 extends BaseCommand {
                 isObject = getContext.isObject();
                 data = newData;
               }
-            } catch (Exception ex) {
+            } catch (NotAuthorizedException ex) {
               logger.warn(String.format(
                   "%s: Caught the following exception attempting to get value for key=%s",
                   new Object[] {servConn.getName(), key}),
                   ex);
               values.addExceptionPart(key, ex);
-              logger.info("3values = " + values + " size = " + values.size());
               continue;
             } finally {
               if (getContext != null) {
@@ -294,18 +277,11 @@ public class GetAll70 extends BaseCommand {
         // 7.0.1 and later clients do not expect the keys in the response
         values.setKeys(null);
       }
-      logger.info("4values = " + values + " size = " + values.size());
       sendGetAllResponseChunk(region, values, true, servConn);
       servConn.setAsTrue(RESPONDED);
     } finally {
-      logger.info("1values = " + values + " values.size = " + values.size());
       logger.info("getObjects = " + values.getObjects());
       values.release();
-      if (!errors.isEmpty()) {
-        for( Exception e : errors) {
-          throw new NotAuthorizedException(e.toString());
-        }
-      }
     }
   }
 
