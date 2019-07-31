@@ -78,9 +78,10 @@ public class DeployCommand extends GfshCommand {
   public ResultModel deploy(
       @CliOption(key = {CliStrings.GROUP, CliStrings.GROUPS}, help = CliStrings.DEPLOY__GROUP__HELP,
           optionContext = ConverterHint.MEMBERGROUP) String[] groups,
-      @CliOption(key = {CliStrings.JAR, CliStrings.JARS},
+      @CliOption(key = {CliStrings.JAR, CliStrings.JARS}, optionContext = ConverterHint.JARFILES,
           help = CliStrings.DEPLOY__JAR__HELP) String[] jars,
-      @CliOption(key = {CliStrings.DEPLOY__DIR}, help = CliStrings.DEPLOY__DIR__HELP) String dir)
+      @CliOption(key = {CliStrings.DEPLOY__DIR}, optionContext = ConverterHint.JARDIR,
+          help = CliStrings.DEPLOY__DIR__HELP) String dir)
       throws IOException {
 
     ResultModel result = new ResultModel();

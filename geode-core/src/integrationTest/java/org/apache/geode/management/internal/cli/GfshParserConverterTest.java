@@ -206,4 +206,28 @@ public class GfshParserConverterTest {
     result = parser.parse(command + "invalid_action");
     assertThat(result).isNull();
   }
+
+  @Test
+  public void testJarFilesPathConverter() {
+    String command = "deploy --jar=";
+    commandCandidate = parser.complete(command);
+    assertThat(commandCandidate.size()).isGreaterThan(0);
+    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+  }
+
+  @Test
+  public void testJarFilesPathConverterWithMultiplePaths() {
+    String command = "deploy --jar=foo.jar,";
+    commandCandidate = parser.complete(command);
+    assertThat(commandCandidate.size()).isGreaterThan(0);
+    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+  }
+
+  @Test
+  public void testJarDirPathConverter() {
+    String command = "deploy --dir=";
+    commandCandidate = parser.complete(command);
+    assertThat(commandCandidate.size()).isGreaterThan(0);
+    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+  }
 }
