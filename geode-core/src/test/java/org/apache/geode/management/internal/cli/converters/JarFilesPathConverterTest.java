@@ -42,11 +42,11 @@ public class JarFilesPathConverterTest {
 
   @Test
   public void itFindsJarDirs() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testOne", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(testDir.getPath() + "/empty", true);
-    createFileOrDir(libDir.getPath() + "/jar_one.jar", false);
-    createFileOrDir(libDir.getPath() + "/jar_two.jar", false);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testOne", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(testDir, "empty", true);
+    createFileOrDir(libDir, "jar_one.jar", false);
+    createFileOrDir(libDir, "jar_two.jar", false);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
@@ -58,11 +58,11 @@ public class JarFilesPathConverterTest {
 
   @Test
   public void itFindsJarFiles() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testOne", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(testDir.getPath() + "/empty", true);
-    createFileOrDir(libDir.getPath() + "/jar_one.jar", false);
-    createFileOrDir(libDir.getPath() + "/jar_two.jar", false);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testOne", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(testDir, "empty", true);
+    createFileOrDir(libDir, "jar_one.jar", false);
+    createFileOrDir(libDir, "jar_two.jar", false);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
@@ -74,12 +74,12 @@ public class JarFilesPathConverterTest {
 
   @Test
   public void itFindsDirsWithSubdirs() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testTwo", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(libDir.getPath() + "file.txt", false);
-    File nonEmptyDir = createFileOrDir(testDir.getPath() + "/nonEmpty", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirOne", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirTwo", true);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(libDir, "file.txt", false);
+    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
+    createFileOrDir(nonEmptyDir, "subDirOne", true);
+    createFileOrDir(nonEmptyDir, "subDirTwo", true);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
@@ -87,18 +87,18 @@ public class JarFilesPathConverterTest {
         null, null);
 
     assertThat(completions.size()).isEqualTo(1);
-    assertThat(completions.get(0).getValue()).endsWith("/nonEmpty");
+    assertThat(completions.get(0).getValue()).endsWith("nonEmpty");
     assertThat(completions.get(0).getValue()).startsWith("garbage,");
   }
 
   @Test
   public void itFindsDirsWithSubdirsAndJars() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testTwo", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(libDir.getPath() + "/file.jar", false);
-    File nonEmptyDir = createFileOrDir(testDir.getPath() + "/nonEmpty", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirOne", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirTwo", true);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(libDir, "file.jar", false);
+    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
+    createFileOrDir(nonEmptyDir, "subDirOne", true);
+    createFileOrDir(nonEmptyDir, "subDirTwo", true);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
@@ -111,12 +111,12 @@ public class JarFilesPathConverterTest {
 
   @Test
   public void itFindsNothingWithBadSearch() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testTwo", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(libDir.getPath() + "file.txt", false);
-    File nonEmptyDir = createFileOrDir(testDir.getPath() + "/nonEmpty", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirOne", true);
-    createFileOrDir(nonEmptyDir.getPath() + "/subDirTwo", true);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(libDir, "file.txt", false);
+    File nonEmptyDir = createFileOrDir(testDir, "nonEmpty", true);
+    createFileOrDir(nonEmptyDir, "subDirOne", true);
+    createFileOrDir(nonEmptyDir, "subDirTwo", true);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
@@ -127,21 +127,20 @@ public class JarFilesPathConverterTest {
 
   @Test
   public void itFindsNothing() throws Exception {
-    File testDir = createFileOrDir(tmpDir.getRoot() + "/testTwo", true);
-    File libDir = createFileOrDir(testDir.getPath() + "/lib", true);
-    createFileOrDir(libDir.getPath() + "file.txt", false);
-    createFileOrDir(testDir.getPath() + "/empty", true);
+    File testDir = createFileOrDir(tmpDir.getRoot(), "testTwo", true);
+    File libDir = createFileOrDir(testDir, "lib", true);
+    createFileOrDir(libDir, "file.txt", false);
+    createFileOrDir(testDir, "empty", true);
 
     JarFilesPathConverter jarFilesPathConverter = new JarFilesPathConverter();
     List<Completion> completions = new ArrayList<>();
-    jarFilesPathConverter.getAllPossibleValues(completions, null,
-        testDir.getPath() + testDir.getPath(), null, null);
+    jarFilesPathConverter.getAllPossibleValues(completions, null, testDir.getPath(), null, null);
 
     assertThat(completions.size()).isEqualTo(0);
   }
 
-  private File createFileOrDir(String path, boolean isDir) throws Exception {
-    File fileOrDir = new File(path);
+  private File createFileOrDir(File parent, String fileOrDirName, boolean isDir) throws Exception {
+    File fileOrDir = new File(parent, fileOrDirName);
     boolean success = fileOrDir.exists() || (isDir ? fileOrDir.mkdir() : fileOrDir.createNewFile());
     assertThat(success).isTrue();
 
