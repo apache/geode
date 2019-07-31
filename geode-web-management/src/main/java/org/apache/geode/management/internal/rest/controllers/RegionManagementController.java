@@ -39,10 +39,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -150,11 +151,13 @@ public class RegionManagementController extends AbstractManagementController {
     List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
-      throw new EntityNotFoundException("Index " + id + " not found.");
+      throw new ClusterManagementException(
+          new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND, "Index " + id + " not found."));
     }
 
     if (indexList.size() > 1) {
-      throw new IllegalStateException("More than one entity found.");
+      throw new ClusterManagementException(
+          new ClusterManagementResult(StatusCode.ERROR, "More than one entity found."));
     }
 
     result.setResult(indexList);
