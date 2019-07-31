@@ -965,7 +965,8 @@ public class ServerLauncherBuilderTest {
   public void setControllableProcessFactoryUsesValue() {
     Builder builder = new Builder();
 
-    Supplier<ControllableProcess> controllableProcessFactory = () -> mock(ControllableProcess.class);
+    Supplier<ControllableProcess> controllableProcessFactory =
+        () -> mock(ControllableProcess.class);
     builder.setControllableProcessFactory(controllableProcessFactory);
 
     assertThat(builder.getControllableProcessFactory()).isSameAs(controllableProcessFactory);

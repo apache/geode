@@ -1022,9 +1022,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
     CompletableFuture<Void> startupTasks =
         ((InternalResourceManager) cache.getResourceManager())
-            .runWhenStartupTasksComplete(afterStartup, exceptionAction);
+            .allOfStartupTasks();
 
-    startupTasks.join();
+    startupTasks
+        .thenRun(afterStartup)
+        .exceptionally((throwable) -> {
+          exceptionAction.accept(throwable);
+          return null;
+        })
+        .join();
   }
 
   private void logStartCompleted(long startTime) {
@@ -2594,7 +2600,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @param controllableProcessFactory the controllable process factory to use
      * @return this builder
      */
-    Builder setControllableProcessFactory(Supplier<ControllableProcess> controllableProcessFactory) {
+    Builder setControllableProcessFactory(
+        Supplier<ControllableProcess> controllableProcessFactory) {
       this.controllableProcessFactory = controllableProcessFactory;
       return this;
     }

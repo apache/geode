@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
@@ -328,24 +327,31 @@ public class ServerLauncherTest {
   }
 
   @Test
-  public void startCacheServerPassesStartupCompletionActionToResourceManager() throws IOException {
+  public void startRunsCompletionActionAfterStartupTasksComplete() {
     Runnable startupCompletionAction = mock(Runnable.class);
+    @SuppressWarnings("unchecked")
+    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
     Cache cache = createCache(internalResourceManager);
     ServerLauncher serverLauncher = new Builder()
         .setStartupCompletionAction(startupCompletionAction)
+        .setStartupExceptionAction(startupExceptionAction)
         .setServerLauncherCacheProvider((a, b) -> cache)
         .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
+    when(internalResourceManager.allOfStartupTasks())
+        .thenReturn(CompletableFuture.completedFuture(null));
+
     serverLauncher.start();
 
-    verify(internalResourceManager)
-        .runWhenStartupTasksComplete(same(startupCompletionAction), any());
+    verify(startupCompletionAction).run();
+    verifyZeroInteractions(startupExceptionAction);
   }
 
   @Test
-  public void startCacheServerPassesStartupExceptionActionToResourceManager() throws IOException {
+  public void startRunsExceptionActionAfterStartupTasksError() {
+    Runnable startupCompletionAction = mock(Runnable.class);
     @SuppressWarnings("unchecked")
     Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
     InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
@@ -356,10 +362,13 @@ public class ServerLauncherTest {
         .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
+    when(internalResourceManager.allOfStartupTasks())
+        .thenReturn(completedExceptionallyFuture());
+
     serverLauncher.start();
 
-    verify(internalResourceManager)
-        .runWhenStartupTasksComplete(any(), same(startupExceptionAction));
+    verify(startupExceptionAction).accept(any());
+    verifyZeroInteractions(startupCompletionAction);
   }
 
   @Test
@@ -410,17 +419,23 @@ public class ServerLauncherTest {
         .build();
 
     CompletableFuture<Void> startupTasks = spy(new CompletableFuture<>());
-    when(internalResourceManager.runWhenStartupTasksComplete(any(), any()))
+    when(internalResourceManager.allOfStartupTasks())
         .thenReturn(startupTasks);
 
     CompletableFuture<Void> serverLauncherStart = CompletableFuture.runAsync(serverLauncher::start);
 
-    await().untilAsserted(() -> verify(startupTasks).join());
+    await().untilAsserted(() -> verify(startupTasks).thenRun(any()));
     assertThat(serverLauncherStart).isNotDone();
 
     startupTasks.complete(null);
 
     await().untilAsserted(() -> assertThat(serverLauncherStart).isDone());
+  }
+
+  private CompletableFuture<Void> completedExceptionallyFuture() {
+    CompletableFuture<Void> completedExceptionallyFuture = new CompletableFuture<>();
+    completedExceptionallyFuture.completeExceptionally(new RuntimeException());
+    return completedExceptionallyFuture;
   }
 
   private InternalCache createCache() {
@@ -433,7 +448,7 @@ public class ServerLauncherTest {
 
     when(cache.addCacheServer()).thenReturn(cacheServer);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
-    when(internalResourceManager.runWhenStartupTasksComplete(any(), any()))
+    when(internalResourceManager.allOfStartupTasks())
         .thenReturn(CompletableFuture.completedFuture(null));
 
     return cache;
