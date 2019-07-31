@@ -24,10 +24,10 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpMethod;
-import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -199,7 +199,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   private <T extends ClusterManagementResult> T assertSuccessful(T result) {
     if (!result.isSuccessful()) {
-      throw new RemoteClusterManagementException(result);
+      throw new ClusterManagementException(result);
     }
     return result;
   }
@@ -210,18 +210,6 @@ public class ClientClusterManagementService implements ClusterManagementService 
           .getBody().equals("pong");
     } catch (Exception e) {
       return false;
-    }
-  }
-
-  /**
-   * not public because user code should *not* try to catch this exception by name, since other
-   * implementations of {@link ClusterManagementService} will throw different subtypes of
-   * RuntimeException
-   */
-  private static class RemoteClusterManagementException extends RuntimeException {
-    public RemoteClusterManagementException(ClusterManagementResult result) {
-      super(result.getStatusCode() + (StringUtils.isEmpty(result.getStatusMessage()) ? ""
-          : (": " + result.getStatusMessage())));
     }
   }
 

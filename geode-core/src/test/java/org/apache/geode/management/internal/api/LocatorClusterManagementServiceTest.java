@@ -53,6 +53,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -68,7 +69,6 @@ import org.apache.geode.management.internal.configuration.validators.CacheElemen
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.runtime.OperationResult;
@@ -192,8 +192,8 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void create_non_supportedConfigObject() {
     MemberConfig config = new MemberConfig();
-    assertThatThrownBy(() -> service.create(config)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Configuration type MemberConfig is not supported");
+    assertThatThrownBy(() -> service.create(config)).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ILLEGAL_ARGUMENT: Configuration type MemberConfig is not supported");
   }
 
   @Test
@@ -238,8 +238,8 @@ public class LocatorClusterManagementServiceTest {
     config.setName("unknown");
     doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage("Cache element 'unknown' does not exist");
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessage("ENTITY_NOT_FOUND: Cache element 'unknown' does not exist");
   }
 
   @Test
@@ -248,8 +248,8 @@ public class LocatorClusterManagementServiceTest {
     config.setName("test");
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("group is an invalid option when deleting region.");
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessage("ILLEGAL_ARGUMENT: group is an invalid option when deleting region.");
   }
 
   @Test
@@ -340,7 +340,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void checkStatusForNotFound() {
     assertThatThrownBy(() -> service.checkStatus("123"))
-        .isInstanceOf(EntityNotFoundException.class);
+        .isInstanceOf(ClusterManagementException.class);
   }
 
   @Test
