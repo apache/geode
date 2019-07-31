@@ -47,6 +47,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -243,6 +244,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final Runnable startupCompletionAction;
   private final Consumer<Throwable> startupExceptionAction;
   private final ServerLauncherCacheProvider serverLauncherCacheProvider;
+  private final Supplier<ControllableProcess> controllableProcessFactory;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -339,7 +341,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
     };
     serverLauncherCacheProvider = builder.getServerLauncherCacheProvider();
-    process = builder.getControllableProcess();
+    controllableProcessFactory = builder.getControllableProcessFactory();
 
     Integer serverPort =
         builder.isServerPortSetByUser() && this.serverPort != null ? this.serverPort : null;
@@ -788,11 +790,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       try {
-        // TODO Aaron redo with factory
-        if (process == null) {
-          process = new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
-              ProcessType.SERVER, isForcing());
-        }
+        process = getControllableProcess();
 
         if (!isDisableDefaultServer()) {
           assertPortAvailable(getServerBindAddress(), getServerPort());
@@ -850,24 +848,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
       } catch (GemFireSecurityException e) {
         failOnStart(e);
         throw new GemFireSecurityException(e.getMessage());
-      } catch (IOException e) {
-        failOnStart(e);
-        throw new RuntimeException(
-            String.format("An IO error occurred while starting a %s in %s on %s: %s",
-                getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
-            e);
-      } catch (FileAlreadyExistsException e) {
-        failOnStart(e);
-        throw new RuntimeException(
-            String.format("A PID file already exists and a %s may be running in %s on %s.",
-                getServiceName(), getWorkingDirectory(), getId()),
-            e);
-      } catch (PidUnavailableException e) {
-        failOnStart(e);
-        throw new RuntimeException(
-            String.format("The process ID could not be determined while starting %s %s in %s: %s",
-                getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
-            e);
       } catch (RuntimeException | Error e) {
         failOnStart(e);
         throw e;
@@ -1359,6 +1339,35 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return overriddenDefaults;
   }
 
+  private ControllableProcess getControllableProcess() {
+    if (controllableProcessFactory != null) {
+      return controllableProcessFactory.get();
+    }
+
+    try {
+      return new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
+          ProcessType.SERVER, isForcing());
+    } catch (IOException e) {
+      failOnStart(e);
+      throw new RuntimeException(
+          String.format("An IO error occurred while starting a %s in %s on %s: %s",
+              getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
+          e);
+    } catch (FileAlreadyExistsException e) {
+      failOnStart(e);
+      throw new RuntimeException(
+          String.format("A PID file already exists and a %s may be running in %s on %s.",
+              getServiceName(), getWorkingDirectory(), getId()),
+          e);
+    } catch (PidUnavailableException e) {
+      failOnStart(e);
+      throw new RuntimeException(
+          String.format("The process ID could not be determined while starting %s %s in %s: %s",
+              getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
+          e);
+    }
+  }
+
   private class ServerControllerParameters implements ProcessControllerParameters {
     @Override
     public File getPidFile() {
@@ -1470,7 +1479,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Runnable startupCompletionAction;
     private Consumer<Throwable> startupExceptionAction;
     private ServerLauncherCacheProvider serverLauncherCacheProvider;
-    private ControllableProcess controllableProcess;
+    private Supplier<ControllableProcess> controllableProcessFactory;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2580,23 +2589,23 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     /**
-     * Sets the {@code ControllableProcess} to use when starting the server.
+     * Sets the factory to use to get a {@code ControllableProcess} when starting the server.
      *
-     * @param controllableProcess the controllable process to use
+     * @param controllableProcessFactory the controllable process factory to use
      * @return this builder
      */
-    Builder setControllableProcess(ControllableProcess controllableProcess) {
-      this.controllableProcess = controllableProcess;
+    Builder setControllableProcessFactory(Supplier<ControllableProcess> controllableProcessFactory) {
+      this.controllableProcessFactory = controllableProcessFactory;
       return this;
     }
 
     /**
-     * Gets the {@code ControllableProcess} used when starting the server.
+     * Gets the factory used to get a {@code ControllableProcess} when starting the server.
      *
-     * @return the controllable process
+     * @return the controllable process factory
      */
-    ControllableProcess getControllableProcess() {
-      return controllableProcess;
+    Supplier<ControllableProcess> getControllableProcessFactory() {
+      return controllableProcessFactory;
     }
   }
 

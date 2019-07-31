@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import joptsimple.OptionException;
 import org.junit.Before;
@@ -949,24 +950,24 @@ public class ServerLauncherBuilderTest {
   }
 
   @Test
-  public void getControllableProcessReturnsNullByDefault() {
-    assertThat(new Builder().getControllableProcess()).isNull();
+  public void getControllableProcessFactoryReturnsNullByDefault() {
+    assertThat(new Builder().getControllableProcessFactory()).isNull();
   }
 
   @Test
-  public void setControllableProcessReturnsBuilderInstance() {
+  public void setControllableProcessFactoryReturnsBuilderInstance() {
     Builder builder = new Builder();
 
-    assertThat(builder.setControllableProcess(null)).isSameAs(builder);
+    assertThat(builder.setControllableProcessFactory(null)).isSameAs(builder);
   }
 
   @Test
-  public void setControllableProcessUsesValue() {
+  public void setControllableProcessFactoryUsesValue() {
     Builder builder = new Builder();
 
-    ControllableProcess controllableProcess = mock(ControllableProcess.class);
-    builder.setControllableProcess(controllableProcess);
+    Supplier<ControllableProcess> controllableProcessFactory = () -> mock(ControllableProcess.class);
+    builder.setControllableProcessFactory(controllableProcessFactory);
 
-    assertThat(builder.getControllableProcess()).isSameAs(controllableProcess);
+    assertThat(builder.getControllableProcessFactory()).isSameAs(controllableProcessFactory);
   }
 }

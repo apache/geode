@@ -277,7 +277,7 @@ public class ServerLauncherTest {
         .setSocketBufferSize(2048)
         .setHostNameForClients("hostName4Clients")
         .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     launcher.start();
@@ -302,7 +302,7 @@ public class ServerLauncherTest {
     ServerLauncher launcher = new Builder()
         .setDisableDefaultServer(true)
         .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     launcher.start();
@@ -319,7 +319,7 @@ public class ServerLauncherTest {
     when(cache.addCacheServer()).thenReturn(cacheServer1);
     ServerLauncher launcher = new Builder()
         .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     launcher.start();
@@ -335,7 +335,7 @@ public class ServerLauncherTest {
     ServerLauncher serverLauncher = new Builder()
         .setStartupCompletionAction(startupCompletionAction)
         .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     serverLauncher.start();
@@ -353,7 +353,7 @@ public class ServerLauncherTest {
     ServerLauncher serverLauncher = new Builder()
         .setStartupExceptionAction(startupExceptionAction)
         .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     serverLauncher.start();
@@ -371,7 +371,7 @@ public class ServerLauncherTest {
 
     ServerLauncher serverLauncher = new Builder()
         .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcess(mock(ControllableProcess.class))
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
     serverLauncher.start();
 
@@ -388,7 +388,7 @@ public class ServerLauncherTest {
 
     ServerLauncher serverLauncher = new Builder()
         .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcess(controllableProcess)
+        .setControllableProcessFactory(() -> controllableProcess)
         .build();
     serverLauncher.start();
 
