@@ -36,7 +36,11 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.Serializable;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -366,7 +370,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
           try {
             adminDS.waitToBeConnected(MINUTES.toMillis(2));
-            adminDS.revokePersistentMember(InetAddress.getLocalHost(), null);
+            adminDS.revokePersistentMember(getFirstInet4Address(), null);
           } finally {
             adminDS.disconnect();
           }
@@ -390,7 +394,7 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       adminDS.connect();
       try {
         adminDS.waitToBeConnected(MINUTES.toMillis(2));
-        adminDS.revokePersistentMember(InetAddress.getLocalHost(), diskDirPathOnVM1);
+        adminDS.revokePersistentMember(getFirstInet4Address(), diskDirPathOnVM1);
       } finally {
         adminDS.disconnect();
       }
@@ -1604,6 +1608,19 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
     } finally {
       adminDS.disconnect();
     }
+  }
+
+  private static InetAddress getFirstInet4Address() throws SocketException, UnknownHostException {
+    for (NetworkInterface netint : Collections.list(NetworkInterface.getNetworkInterfaces())) {
+      for (InetAddress inetAddress : Collections.list(netint.getInetAddresses())) {
+        if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
+          return inetAddress;
+        }
+      }
+    }
+
+    // If no INet4Address was found for any of the interfaces above, default to getLocalHost()
+    return InetAddress.getLocalHost();
   }
 
   private InternalCache getCache() {
