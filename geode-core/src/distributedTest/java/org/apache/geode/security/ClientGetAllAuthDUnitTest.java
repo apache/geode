@@ -16,9 +16,9 @@ package org.apache.geode.security;
 
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_MANAGER;
 import static org.apache.geode.internal.Assert.assertTrue;
+import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.apache.geode.security.SecurityTestUtil.createClientCache;
 import static org.apache.geode.security.SecurityTestUtil.createProxyRegion;
-import static org.apache.geode.security.SecurityTestUtil.assertNotAuthorized;
 import static org.jgroups.util.Util.assertEquals;
 
 import java.util.Arrays;
@@ -61,7 +61,8 @@ public class ClientGetAllAuthDUnitTest extends JUnit4DistributedTestCase {
       Map emptyMap = new HashMap<>();
       Region region = createProxyRegion(cache, REGION_NAME);
       try {
-        assertNotAuthorized(() -> region.getAll(Arrays.asList("key1", "key2", "key3", "key4")), "DATA:READ:AuthRegion");
+        assertNotAuthorized(() -> region.getAll(Arrays.asList("key1", "key2", "key3", "key4")),
+            "DATA:READ:AuthRegion");
       } finally {
         assertTrue(emptyMap.isEmpty());
       }
