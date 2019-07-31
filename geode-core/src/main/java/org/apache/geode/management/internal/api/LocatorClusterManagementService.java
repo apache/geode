@@ -150,9 +150,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       memberValidator.validateCreate(config, configurationManager);
       // execute function on all members
     } catch (EntityExistsException e) {
-      raise(ENTITY_EXISTS, e.getMessage());
+      raise(ENTITY_EXISTS, e);
     } catch (IllegalArgumentException e) {
-      raise(ILLEGAL_ARGUMENT, e.getMessage());
+      raise(ILLEGAL_ARGUMENT, e);
     }
 
     Set<DistributedMember> targetedMembers = memberValidator.findServers(group);
@@ -214,7 +214,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
         validator.validate(CacheElementOperation.DELETE, config);
       }
     } catch (IllegalArgumentException e) {
-      raise(ILLEGAL_ARGUMENT, e.getMessage());
+      raise(ILLEGAL_ARGUMENT, e);
     }
 
     String[] groupsWithThisElement =
@@ -496,6 +496,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
   private static void raise(StatusCode statusCode, String statusMessage) {
     throw new ClusterManagementException(new ClusterManagementResult(statusCode, statusMessage));
+  }
+
+  private static void raise(StatusCode statusCode, Exception e) {
+    throw new ClusterManagementException(new ClusterManagementResult(statusCode, e.getMessage()),
+        e);
   }
 
   public boolean isConnected() {

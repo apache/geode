@@ -23,19 +23,14 @@ import org.apache.geode.cache.configuration.CacheElement;
  * which have a possibility of "partial" failure.
  */
 public class ClusterManagementRealizationException extends ClusterManagementException {
+  private final ClusterManagementRealizationResult result;
+
   /**
    * for internal use only
    */
   public ClusterManagementRealizationException(ClusterManagementRealizationResult result) {
     super(result);
-  }
-
-  /**
-   * get the underlying result (not usually necessary since {@link #getStatusCode()},
-   * {@link #getStatusMessage()}, or {@link #getMemberStatuses() provide more direct access}
-   */
-  public ClusterManagementRealizationResult getRealizationResult() {
-    return (ClusterManagementRealizationResult) result;
+    this.result = result;
   }
 
   /**
@@ -43,6 +38,6 @@ public class ClusterManagementRealizationException extends ClusterManagementExce
    * only some. This will return the per-member status.
    */
   public List<RealizationResult> getMemberStatuses() {
-    return getRealizationResult().getMemberStatuses();
+    return result.getMemberStatuses();
   }
 }

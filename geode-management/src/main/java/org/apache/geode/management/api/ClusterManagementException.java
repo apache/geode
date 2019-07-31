@@ -14,27 +14,46 @@
  */
 package org.apache.geode.management.api;
 
+
 /**
  * Base class of all exceptions thrown by {@link ClusterManagementService} implementations.
  */
 public class ClusterManagementException extends RuntimeException {
-  protected final ClusterManagementResult result;
+  private final ClusterManagementResult result;
 
+  /**
+   * for internal use only
+   */
   public ClusterManagementException(ClusterManagementResult result) {
-    super(result.getStatusCode()
-        + (org.springframework.util.StringUtils.isEmpty(result.getStatusMessage()) ? ""
-            : (": " + result.getStatusMessage())));
+    super(result.toString());
     this.result = result;
   }
 
+  /**
+   * for internal use only
+   */
+  public ClusterManagementException(ClusterManagementResult result, Throwable cause) {
+    super(result.toString(), cause);
+    this.result = result;
+  }
+
+  /**
+   * for internal use only
+   */
   public ClusterManagementResult getResult() {
     return result;
   }
 
+  /**
+   * get the status code of the unsuccessful result
+   */
   public ClusterManagementResult.StatusCode getStatusCode() {
     return result.getStatusCode();
   }
 
+  /**
+   * get the status message of the unsuccessful result, if available
+   */
   public String getStatusMessage() {
     return result.getStatusMessage();
   }
