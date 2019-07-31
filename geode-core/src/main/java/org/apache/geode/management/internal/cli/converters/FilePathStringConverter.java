@@ -17,7 +17,9 @@ package org.apache.geode.management.internal.cli.converters;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.shell.core.Completion;
@@ -74,21 +76,25 @@ public class FilePathStringConverter implements Converter<String> {
     } else {
       prefix = path.endsWith(File.separator) ? path : path + File.separator;
     }
-    return Arrays.stream(currentFile.list()).map(s -> prefix + s).collect(Collectors.toList());
+
+    return Stream.of(currentFile)
+        .map(File::list)
+        .filter(Objects::nonNull)
+        .flatMap(Stream::of)
+        .map(s -> prefix + s)
+        .collect(Collectors.toList());
   }
 
   @Override
   public boolean getAllPossibleValues(List<Completion> completions, Class<?> targetType,
       String existingData, String optionContext, MethodTarget target) {
     if (StringUtils.isBlank(existingData)) {
-      getRoots().stream().forEach(path -> completions.add(new Completion(path)));
+      getRoots().forEach(path -> completions.add(new Completion(path)));
       return !completions.isEmpty();
     }
 
     getSiblings(existingData).stream().filter(string -> string.startsWith(existingData))
-        .forEach(path -> {
-          completions.add(new Completion(path));
-        });
+        .forEach(path -> completions.add(new Completion(path)));
 
     return !completions.isEmpty();
   }

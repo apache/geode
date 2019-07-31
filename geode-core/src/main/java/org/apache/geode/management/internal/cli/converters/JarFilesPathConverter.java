@@ -16,7 +16,6 @@ package org.apache.geode.management.internal.cli.converters;
 
 import static org.apache.geode.management.internal.cli.converters.JarDirPathConverter.isDirWithDirsOrDirWithJars;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -66,7 +65,6 @@ public class JarFilesPathConverter implements Converter<String[]> {
   }
 
   private static boolean isDirOrJar(String file) {
-    File f = new File(file);
     return isDirWithDirsOrDirWithJars(file) || file.endsWith(".jar");
   }
 
