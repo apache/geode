@@ -619,14 +619,19 @@ public class InternalResourceManager implements ResourceManager {
     startupTasks.add(startupTask);
   }
 
-  public void runWhenStartupTasksComplete(Runnable runnable, Consumer<Throwable> exceptionAction) {
-    CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0]))
-        .thenRun(runnable)
-        .exceptionally((throwable) -> {
-          exceptionAction.accept(throwable);
-          return null;
-        });
+  // TODO Aaron rename and remove parameters
+  public CompletableFuture<Void> runWhenStartupTasksComplete(Runnable runnable,
+      Consumer<Throwable> exceptionAction) {
+    CompletableFuture<Void> startupTasksCompleted =
+        CompletableFuture.allOf(startupTasks.toArray(new CompletableFuture[0]))
+            .thenRun(runnable)
+            .exceptionally((throwable) -> {
+              exceptionAction.accept(throwable);
+              return null;
+            });
 
     startupTasks.clear();
+
+    return startupTasksCompleted;
   }
 }

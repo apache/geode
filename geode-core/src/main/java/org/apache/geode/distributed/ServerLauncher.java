@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -86,6 +87,7 @@ import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
 import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.FileAlreadyExistsException;
+import org.apache.geode.internal.process.FileControllableProcess;
 import org.apache.geode.internal.process.MBeanInvocationFailedException;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessController;
@@ -337,6 +339,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
       }
     };
     serverLauncherCacheProvider = builder.getServerLauncherCacheProvider();
+    process = builder.getControllableProcess();
 
     Integer serverPort =
         builder.isServerPortSetByUser() && this.serverPort != null ? this.serverPort : null;
@@ -785,8 +788,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       try {
-        process = new ControllableProcess(controlHandler, new File(getWorkingDirectory()),
-            ProcessType.SERVER, isForcing());
+        // TODO Aaron redo with factory
+        if (process == null) {
+          process = new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
+              ProcessType.SERVER, isForcing());
+        }
 
         if (!isDisableDefaultServer()) {
           assertPortAvailable(getServerBindAddress(), getServerPort());
@@ -821,13 +827,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
 
           cache.setIsServer(true);
-          startCacheServer(cache, startTime);
+          startCacheServer(cache);
 
           assignBuckets(cache);
           rebalance(cache);
         } finally {
           ProcessLauncherContext.remove();
         }
+
+        awaitStartupTasks(cache, startTime);
 
         debug("Running Server on (%1$s) in (%2$s) as (%3$s)...", getId(), getWorkingDirectory(),
             getMember());
@@ -984,11 +992,9 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Thread on the specified bind address and port.
    *
    * @param cache the Cache to which the server will be added.
-   * @param startTime the system clock time at which the start method was called
    * @throws IOException if the Cache server fails to start due to IO error.
    */
-  @VisibleForTesting
-  void startCacheServer(final Cache cache, long startTime) throws IOException {
+  private void startCacheServer(final Cache cache) throws IOException {
     if (isDefaultServerEnabled(cache)) {
       final String serverBindAddress =
           getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress();
@@ -1025,15 +1031,20 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       cacheServer.start();
     }
+  }
 
+  private void awaitStartupTasks(Cache cache, long startTime) {
     Runnable afterStartup = startupCompletionAction == null
         ? () -> logStartCompleted(startTime) : startupCompletionAction;
 
     Consumer<Throwable> exceptionAction = startupExceptionAction == null
         ? (throwable) -> logStartCompletedWithError(startTime, throwable) : startupExceptionAction;
 
-    ((InternalResourceManager) cache.getResourceManager())
-        .runWhenStartupTasksComplete(afterStartup, exceptionAction);
+    CompletableFuture<Void> startupTasks =
+        ((InternalResourceManager) cache.getResourceManager())
+            .runWhenStartupTasksComplete(afterStartup, exceptionAction);
+
+    startupTasks.join();
   }
 
   private void logStartCompleted(long startTime) {
@@ -1458,8 +1469,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer maxThreads;
     private Runnable startupCompletionAction;
     private Consumer<Throwable> startupExceptionAction;
-
     private ServerLauncherCacheProvider serverLauncherCacheProvider;
+    private ControllableProcess controllableProcess;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2544,7 +2555,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return the action to run
      */
     Consumer<Throwable> getStartupExceptionAction() {
-      return this.startupExceptionAction;
+      return startupExceptionAction;
     }
 
     /**
@@ -2565,7 +2576,27 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return the cache provider
      */
     ServerLauncherCacheProvider getServerLauncherCacheProvider() {
-      return this.serverLauncherCacheProvider;
+      return serverLauncherCacheProvider;
+    }
+
+    /**
+     * Sets the {@code ControllableProcess} to use when starting the server.
+     *
+     * @param controllableProcess the controllable process to use
+     * @return this builder
+     */
+    Builder setControllableProcess(ControllableProcess controllableProcess) {
+      this.controllableProcess = controllableProcess;
+      return this;
+    }
+
+    /**
+     * Gets the {@code ControllableProcess} used when starting the server.
+     *
+     * @return the controllable process
+     */
+    ControllableProcess getControllableProcess() {
+      return controllableProcess;
     }
   }
 

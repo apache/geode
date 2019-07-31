@@ -40,22 +40,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.CacheFactory;
-import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.management.OSMetrics;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
 
-/**
- * Integration tests for querying of {@link MemberMXBean} as used in MBeanProcessController to
- * manage a {@link ControllableProcess}.
- *
- * <p>
- * This test is an experiment in using given/when/then custom methods for better BDD readability.
- *
- * @since GemFire 8.0
- */
 public class LauncherMemberMXBeanIntegrationTest extends LauncherIntegrationTestCase {
 
   private ObjectName pattern;

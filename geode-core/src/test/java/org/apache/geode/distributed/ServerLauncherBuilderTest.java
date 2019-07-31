@@ -33,6 +33,7 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.ServerLauncher.Command;
 import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.internal.process.ControllableProcess;
 
 /**
  * Unit tests for {@link ServerLauncher.Builder}. Extracted from {@link ServerLauncherTest}.
@@ -945,5 +946,27 @@ public class ServerLauncherBuilderTest {
     builder.setServerLauncherCacheProvider(value);
 
     assertThat(builder.getServerLauncherCacheProvider()).isSameAs(value);
+  }
+
+  @Test
+  public void getControllableProcessReturnsNullByDefault() {
+    assertThat(new Builder().getControllableProcess()).isNull();
+  }
+
+  @Test
+  public void setControllableProcessReturnsBuilderInstance() {
+    Builder builder = new Builder();
+
+    assertThat(builder.setControllableProcess(null)).isSameAs(builder);
+  }
+
+  @Test
+  public void setControllableProcessUsesValue() {
+    Builder builder = new Builder();
+
+    ControllableProcess controllableProcess = mock(ControllableProcess.class);
+    builder.setControllableProcess(controllableProcess);
+
+    assertThat(builder.getControllableProcess()).isSameAs(controllableProcess);
   }
 }
