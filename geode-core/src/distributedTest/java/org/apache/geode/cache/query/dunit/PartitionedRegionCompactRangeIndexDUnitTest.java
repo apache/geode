@@ -39,10 +39,8 @@ import org.apache.geode.cache.query.Query;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.SelectResults;
 import org.apache.geode.cache.query.data.Portfolio;
-import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.SerializableRunnable;
-import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
@@ -151,62 +149,6 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
       verifyAllEntries("select key, value from /" + regionName + " where ID = ",
           () -> IntStream.range(0, numEntries), 8, 1);
     });
-  }
-
-  @Test
-  public void giiWithPersistenceAndCheckNoNPE()
-      throws Exception {
-    // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
-    int numEntries = 1000;
-    Map<String, Portfolio> entries = new HashMap<>();
-    IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
-
-    AsyncInvocation ai1 = null;
-
-    ai1 = server3.invokeAsync(() -> {
-      int cnt = 0;
-      while (cnt < 10) {
-        populateRegion(regionName, entries);
-        destroyFromRegion(regionName, entries.keySet());
-        cnt++;
-      }
-    });
-
-    clusterStartupRule.stop(1, false);
-    clusterStartupRule.stop(2, false);
-
-    int numexcept = 0;
-
-    try {
-      clusterStartupRule.startServerVM(1, props, locator.getPort());
-    } catch (Exception e) {
-      numexcept++;
-    }
-    try {
-      clusterStartupRule.startServerVM(2, props, locator.getPort());
-    } catch (Exception e) {
-      numexcept++;
-    }
-
-    clusterStartupRule.stop(1, false);
-    clusterStartupRule.stop(2, false);
-
-    try {
-      clusterStartupRule.startServerVM(1, props, locator.getPort());
-    } catch (Exception e) {
-      numexcept++;
-    }
-    try {
-      clusterStartupRule.startServerVM(2, props, locator.getPort());
-    } catch (Exception e) {
-      numexcept++;
-    }
-
-    ThreadUtils.join(ai1, 60 * 1000);
-
-    assertEquals(numexcept, 0);
-
   }
 
   @Test
