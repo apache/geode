@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -212,7 +213,7 @@ public class GfshParserConverterTest {
     String command = "deploy --jar=";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isGreaterThan(0);
-    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+    assertCandidateEndsWithFirstRoot(commandCandidate.getCandidate(0), command);
   }
 
   @Test
@@ -220,7 +221,7 @@ public class GfshParserConverterTest {
     String command = "deploy --jar=foo.jar,";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isGreaterThan(0);
-    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+    assertCandidateEndsWithFirstRoot(commandCandidate.getCandidate(0), command);
   }
 
   @Test
@@ -228,6 +229,11 @@ public class GfshParserConverterTest {
     String command = "deploy --dir=";
     commandCandidate = parser.complete(command);
     assertThat(commandCandidate.size()).isGreaterThan(0);
-    assertThat(commandCandidate.getCandidate(0)).isEqualTo(command + "/");
+    assertCandidateEndsWithFirstRoot(commandCandidate.getCandidate(0), command);
+  }
+
+  private void assertCandidateEndsWithFirstRoot(String candidate, String command) {
+    File[] roots = File.listRoots();
+    assertThat(candidate).isEqualTo(command + roots[0]);
   }
 }
