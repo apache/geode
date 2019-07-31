@@ -45,5 +45,6 @@ public interface ConverterHint {
   String INDEX_TYPE = "geode.converter.index.type" + DISABLE_ENUM_CONVERTER;
   String GATEWAY_SENDER_ID = "geode.converter.gateway.senderid" + DISABLE_STRING_CONVERTER;
   String LOG_LEVEL = "geode.converter.log.levels" + DISABLE_STRING_CONVERTER;
-
+  String JARFILES = "geode.converter.jarfiles" + DISABLE_STRING_CONVERTER;
+  String JARDIR = "geode.converter.jardir" + DISABLE_STRING_CONVERTER;
 }
