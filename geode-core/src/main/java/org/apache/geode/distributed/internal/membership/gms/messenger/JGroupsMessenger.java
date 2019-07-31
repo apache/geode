@@ -412,7 +412,7 @@ public class JGroupsMessenger implements Messenger {
 
   @Override
   public void started() {
-    if (queuedMessagesFromReconnect != null) {
+    if (queuedMessagesFromReconnect != null && !services.getConfig().isUDPSecurityEnabled()) {
       logger.info("Delivering {} messages queued by quorum checker",
           queuedMessagesFromReconnect.size());
       for (Message message : queuedMessagesFromReconnect) {
@@ -1196,6 +1196,8 @@ public class JGroupsMessenger implements Messenger {
             this.myChannel.getProtocolStack().getTopProtocol()
                 .down(new Event(Event.MERGE_DIGEST, digest));
             jrsp.setMessengerData(null);
+            digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
+                .down(Event.GET_DIGEST_EVT);
           } catch (Exception e) {
             logger.fatal("Unable to read JGroups messaging digest", e);
           }

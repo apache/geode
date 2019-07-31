@@ -174,5 +174,4 @@ public class JoinResponseMessage extends HighPriorityDistributionMessage {
     return true;
   }
 
-
 }

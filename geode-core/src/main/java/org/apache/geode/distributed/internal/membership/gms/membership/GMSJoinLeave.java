@@ -732,13 +732,14 @@ public class GMSJoinLeave implements JoinLeave {
       synchronized (viewRequests) {
         if (request instanceof JoinRequestMessage) {
           if (isCoordinator
-              && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
+              && services.getConfig().isUDPSecurityEnabled()) {
             services.getMessenger().initClusterKey();
             JoinRequestMessage jreq = (JoinRequestMessage) request;
             // this will inform about cluster-secret key, as we have authenticated at this point
             JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
                 services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
             services.getMessenger().send(response);
+            jreq.setResponseSent();
           }
         }
         logger.debug("Recording the request to be processed in the next membership view");
@@ -753,17 +754,20 @@ public class GMSJoinLeave implements JoinLeave {
 
   private void sendDHKeys() {
     if (isCoordinator
-        && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
+        && services.getConfig().isUDPSecurityEnabled()) {
       synchronized (viewRequests) {
         for (DistributionMessage request : viewRequests) {
           if (request instanceof JoinRequestMessage) {
 
             services.getMessenger().initClusterKey();
             JoinRequestMessage jreq = (JoinRequestMessage) request;
-            // this will inform about cluster-secret key, as we have authenticated at this point
-            JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
-                services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
-            services.getMessenger().send(response);
+            if (!jreq.isResponseSent()) {
+              // this will inform about cluster-secret key, as we have authenticated at this point
+              JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
+                  services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
+              services.getMessenger().send(response);
+              jreq.setResponseSent();
+            }
           }
         }
       }
@@ -2459,6 +2463,14 @@ public class GMSJoinLeave implements JoinLeave {
               } else {
                 joinReqs.add(mbr);
                 joinPorts.put(mbr, port);
+                if (!jmsg.isResponseSent()
+                    && services.getConfig().getTransport().isMcastEnabled()) {
+                  // send a join response so the new member can get the multicast messaging digest.
+                  JoinResponseMessage response = new JoinResponseMessage(jmsg.getSender(),
+                      services.getMessenger().getClusterSecretKey(), jmsg.getRequestId());
+                  services.getMessenger().send(response);
+                  jmsg.setResponseSent();
+                }
               }
             }
             break;

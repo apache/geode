@@ -85,6 +85,10 @@ public class ServiceConfig {
     return networkPartitionDetectionEnabled;
   }
 
+  public boolean isUDPSecurityEnabled() {
+    return !dconfig.getSecurityUDPDHAlgo().isEmpty();
+  }
+
   public boolean areLocatorsPreferredAsCoordinators() {
     boolean locatorsAreCoordinators;
 
