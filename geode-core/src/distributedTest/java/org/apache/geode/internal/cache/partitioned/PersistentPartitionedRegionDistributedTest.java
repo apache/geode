@@ -1629,6 +1629,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   private boolean thrownByAsyncFlusherThreadDueToConflictingPersistentDataException(
       Throwable expectedException) {
+    if (expectedException == null) {
+      return false;
+    }
+
     Throwable rootExceptionCause = expectedException.getCause();
     Throwable nestedExceptionCause = rootExceptionCause.getCause();
 
