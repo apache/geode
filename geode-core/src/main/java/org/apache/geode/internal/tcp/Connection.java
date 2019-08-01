@@ -3152,6 +3152,7 @@ public class Connection implements Runnable {
         // now, so don't let this thread continue.
         throw err;
       } catch (Throwable t) {
+        logger.fatal("Error deserializing message", t);
         // Whenever you catch Error or Throwable, you must also
         // catch VirtualMachineError (see above). However, there is
         // _still_ a possibility that you are dealing with a cascading
@@ -3171,7 +3172,6 @@ public class Connection implements Runnable {
             throw (CancelException) t;
           }
         }
-        logger.fatal("Error deserializing message", t);
       } finally {
         ReplyProcessor21.clearMessageRPId();
       }
