@@ -77,7 +77,8 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(
-            jsonPath("$.statusMessage", Matchers.containsString("Operation id = abc not found")));
+            jsonPath("$.statusMessage",
+                Matchers.containsString("Operation 'abc' does not exist.")));
   }
 
   @Test
