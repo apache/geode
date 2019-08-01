@@ -171,7 +171,7 @@ public class PeerTypeRegistration implements TypeRegistration {
         // update a local map with the pdxtypes registered
         Object value = event.getNewValue();
         if (value instanceof PdxType) {
-          updateClassToTypeMap((PdxType) value);
+          updateLocalMaps((PdxType) value);
         }
       }
     });
@@ -367,7 +367,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     lock();
     try {
       if (typeToId.isEmpty()) {
-        buildTypeToIdFromRegion();
+        buildTypeToIdFromIdToType();
       }
       // double check if my type is in region in case the typeToId map has been updated while
       // waiting to obtain a lock
@@ -545,7 +545,7 @@ public class PeerTypeRegistration implements TypeRegistration {
     }
   }
 
-  private void buildTypeToIdFromRegion() {
+  private void buildTypeToIdFromIdToType() {
     int totalPdxTypeIdInDS = 0;
     TXStateProxy currentState = suspendTX();
     try {
@@ -717,7 +717,7 @@ public class PeerTypeRegistration implements TypeRegistration {
   /**
    * adds a PdxType for a field to a {@code className => Set<PdxType>} map
    */
-  private void updateClassToTypeMap(PdxType type) {
+  private void updateLocalMaps(PdxType type) {
     if (type != null) {
       synchronized (classToType) {
         typeToId.put(type, type.getTypeId());
