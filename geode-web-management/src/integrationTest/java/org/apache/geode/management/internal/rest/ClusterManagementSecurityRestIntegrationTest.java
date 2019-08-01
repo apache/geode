@@ -155,7 +155,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Successfully updated config for cluster")));
+            is("Successfully updated configuration for cluster.")));
   }
 
   private static class TestContext {

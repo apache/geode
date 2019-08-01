@@ -37,16 +37,8 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
   /**
    * for internal use only
    */
-  public ClusterManagementRealizationResult(boolean success, String message) {
-    super(success, message);
-  }
-
-  /**
-   * for internal use only
-   */
-  public void addMemberStatus(String member, boolean success, String message) {
-    addMemberStatus(new RealizationResult().setMemberName(member)
-        .setSuccess(success).setMessage(message));
+  public ClusterManagementRealizationResult(StatusCode statusCode, String message) {
+    super(statusCode, message);
   }
 
   /**

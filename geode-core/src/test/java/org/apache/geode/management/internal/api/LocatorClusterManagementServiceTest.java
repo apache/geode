@@ -163,7 +163,7 @@ public class LocatorClusterManagementServiceTest {
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");
     assertThatThrownBy(() -> service.create(regionConfig))
-        .hasMessageContaining("Failed to apply the update on all members");
+        .hasMessageContaining("Failed to create on all members");
   }
 
   @Test
@@ -193,7 +193,7 @@ public class LocatorClusterManagementServiceTest {
   public void create_non_supportedConfigObject() {
     MemberConfig config = new MemberConfig();
     assertThatThrownBy(() -> service.create(config)).isInstanceOf(ClusterManagementException.class)
-        .hasMessageContaining("ILLEGAL_ARGUMENT: Configuration type MemberConfig is not supported");
+        .hasMessageContaining("ILLEGAL_ARGUMENT: MemberConfig is not supported.");
   }
 
   @Test
@@ -239,7 +239,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessage("ENTITY_NOT_FOUND: Cache element 'unknown' does not exist");
+        .hasMessage("ENTITY_NOT_FOUND: RegionConfig 'unknown' does not exist.");
   }
 
   @Test
@@ -249,7 +249,7 @@ public class LocatorClusterManagementServiceTest {
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessage("ILLEGAL_ARGUMENT: group is an invalid option when deleting region.");
+        .hasMessage("ILLEGAL_ARGUMENT: Group is an invalid option when deleting region.");
   }
 
   @Test
@@ -274,7 +274,7 @@ public class LocatorClusterManagementServiceTest {
     result = service.delete(regionConfig);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
-        .contains("Failed to apply the update on all members");
+        .contains("Failed to delete on all members.");
 
     assertThat(config.getRegions()).hasSize(1);
   }
@@ -321,7 +321,8 @@ public class LocatorClusterManagementServiceTest {
     verify(regionManager).delete(eq(regionConfig), any());
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getMemberStatuses()).hasSize(0);
-    assertThat(result.getStatusMessage()).contains("Successfully removed config for [cluster]");
+    assertThat(result.getStatusMessage())
+        .contains("Successfully removed configuration for [cluster]");
   }
 
   @Test
@@ -334,7 +335,7 @@ public class LocatorClusterManagementServiceTest {
     ClusterManagementOperationResult<?> result = service.start(operation);
     assertThat(result.getUri()).isEqualTo("/management/experimental" + URI + "/42");
     assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.ACCEPTED);
-    assertThat(result.getStatusMessage()).contains("async operation started");
+    assertThat(result.getStatusMessage()).contains("Operation started");
   }
 
   @Test

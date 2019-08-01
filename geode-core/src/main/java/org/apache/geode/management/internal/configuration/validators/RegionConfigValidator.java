@@ -54,13 +54,13 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   private void validateDelete(CacheElement config) {
     if (StringUtils.isNotBlank(config.getGroup())) {
       throw new IllegalArgumentException(
-          "group is an invalid option when deleting region.");
+          "Group is an invalid option when deleting region.");
     }
   }
 
   private void validateCreate(RegionConfig config) {
     if (config.getType() == null) {
-      throw new IllegalArgumentException("Type of the region has to be specified.");
+      throw new IllegalArgumentException("Region type is required.");
     }
 
     // validate if the type is a valid RegionType. Only types defined in RegionType are supported
@@ -69,7 +69,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
       RegionType.valueOf(config.getType());
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException(
-          String.format("Type %s is not supported in Management V2 API.", config.getType()));
+          String.format("Region type '%s' is not supported.", config.getType()));
     }
 
     RegionNameValidation.validate(config.getName());
@@ -223,7 +223,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
         break;
       }
       default:
-        throw new IllegalArgumentException("invalid type " + type);
+        throw new IllegalArgumentException("Invalid type " + type + ".");
     }
   }
 
@@ -235,7 +235,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     }
     String existing = regionAttributes.getPartitionAttributes().getLocalMaxMemory();
     if (!existing.equals(maxMemory)) {
-      throw new IllegalArgumentException("Invalid local max memory: " + existing);
+      throw new IllegalArgumentException("Invalid local max memory: " + existing + ".");
     }
   }
 
@@ -250,7 +250,8 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     EnumActionDestroyOverflow existing =
         regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction();
     if (existing != evictionAction) {
-      throw new IllegalArgumentException("Conflicting eviction action " + existing.toString());
+      throw new IllegalArgumentException(
+          "Conflicting eviction action " + existing.toString() + ".");
     }
   }
 
@@ -260,7 +261,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     if (existing == null) {
       regionAttributes.setScope(scope);
     } else if (existing != scope) {
-      throw new IllegalArgumentException("Conflicting scope " + existing.toString());
+      throw new IllegalArgumentException("Conflicting scope " + existing.toString() + ".");
     }
   }
 
@@ -271,7 +272,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
       regionAttributes.setDataPolicy(policy);
     } else if (existing != policy) {
       throw new IllegalArgumentException("Conflicting data policy "
-          + existing.toString());
+          + existing.toString() + ".");
     }
   }
 
@@ -286,7 +287,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
         regionAttributes.getPartitionAttributes();
     if ("0".equals(partitionAttributes.getRedundantCopies())) {
       throw new IllegalArgumentException(
-          "Conflicting redundant copy when region type is REDUNDANT");
+          "Conflicting redundant copy when region type is REDUNDANT.");
     }
   }
 }

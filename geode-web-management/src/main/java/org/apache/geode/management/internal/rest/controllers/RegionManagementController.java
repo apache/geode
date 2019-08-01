@@ -151,13 +151,13 @@ public class RegionManagementController extends AbstractManagementController {
     List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
-      throw new ClusterManagementException(
-          new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND, "Index " + id + " not found."));
+      throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,
+          "Index '" + id + "' does not exist in region '" + regionName + "'."));
     }
 
     if (indexList.size() > 1) {
       throw new ClusterManagementException(
-          new ClusterManagementResult(StatusCode.ERROR, "More than one entity found."));
+          new ClusterManagementResult(StatusCode.ERROR, "More than one index found."));
     }
 
     result.setResult(indexList);

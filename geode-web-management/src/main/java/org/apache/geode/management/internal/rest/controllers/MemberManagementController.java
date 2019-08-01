@@ -48,7 +48,7 @@ public class MemberManagementController extends AbstractManagementController {
         clusterManagementService.list(config);
     if (result.getRuntimeResult().size() == 0) {
       throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,
-          "Member with id = " + config.getId() + " not found."));
+          "Member '" + config.getId() + "' does not exist."));
     }
 
     return new ResponseEntity<>(result,

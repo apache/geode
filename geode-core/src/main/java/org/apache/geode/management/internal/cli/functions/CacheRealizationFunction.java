@@ -109,29 +109,31 @@ public class CacheRealizationFunction implements InternalFunction<List> {
     result.setMemberName(context.getMemberName());
 
     if (realizer == null) {
-      return result.setMessage(
-          "Server needs to be restarted for this configuration change to be realized.");
+      return result.setMessage("Server '" + context.getMemberName()
+          + "' needs to be restarted for this configuration change to be realized.");
     }
 
     switch (operation) {
       case CREATE:
         if (realizer.exists(cacheElement, cache)) {
-          return result.setMessage(
-              "Element with id=" + cacheElement.getId() + " already exists. Skipp creation.");
+          return result.setMessage(cacheElement.getClass().getSimpleName() + " '"
+              + cacheElement.getId() + "' already exists. Skipped creation.");
         }
         result = realizer.create(cacheElement, cache);
         break;
       case DELETE:
         if (!realizer.exists(cacheElement, cache)) {
           return result.setMessage(
-              "Element with id=" + cacheElement.getId() + " does not exist.");
+              cacheElement.getClass().getSimpleName() + " '" + cacheElement.getId()
+                  + "' does not exist.");
         }
         result = realizer.delete(cacheElement, cache);
         break;
       case UPDATE:
         if (!realizer.exists(cacheElement, cache)) {
           return result.setSuccess(false).setMessage(
-              "Element with id=" + cacheElement.getId() + " does not exist.");
+              cacheElement.getClass().getSimpleName() + " '" + cacheElement.getId()
+                  + "' does not exist.");
         }
         result = realizer.update(cacheElement, cache);
         break;

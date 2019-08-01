@@ -37,7 +37,7 @@ public class RealizationResultTest {
   public void defaultConstructor() {
     assertThat(result.isSuccess()).isTrue();
     assertThat(result.getMemberName()).isNull();
-    assertThat(result.getMessage()).isEqualTo("success");
+    assertThat(result.getMessage()).isEqualTo("Success.");
   }
 
   @Test

@@ -68,7 +68,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup("group1");
     List<RealizationResult> results =
         assertManagementResult(cms.create(receiver)).isSuccessful()
-            .containsStatusMessage("Successfully updated config for group1")
+            .containsStatusMessage("Successfully updated configuration for group1.")
             .getMemberStatus();
     assertThat(results).hasSize(1);
     assertThat(results.get(0).isSuccess()).isTrue();
@@ -78,20 +78,22 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setStartPort("5001");
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
-        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-1 already has this element created");
+        .hasMessageContaining(
+            "ENTITY_EXISTS: GatewayReceiverConfig 'group1' already exists on member(s) server-1.");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort("5002");
     receiver.setGroup("group2");
     assertManagementResult(cms.create(receiver)).isSuccessful()
-        .containsStatusMessage("Successfully updated config for group2")
+        .containsStatusMessage("Successfully updated configuration for group2.")
         .hasMemberStatus().hasSize(0);
 
     // try create another GWR on another group but has a common member in another group
     receiver.setStartPort("5003");
     receiver.setGroup(null);
     assertThatThrownBy(() -> cms.create(receiver))
-        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-1 already has this element created");
+        .hasMessageContaining(
+            "ENTITY_EXISTS: GatewayReceiverConfig 'cluster' already exists on member(s) server-1.");
 
     ClusterManagementListResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
         assertManagementListResult(cms.list(new GatewayReceiverConfig())).isSuccessful();

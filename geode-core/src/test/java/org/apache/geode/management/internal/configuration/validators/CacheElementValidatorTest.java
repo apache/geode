@@ -39,12 +39,12 @@ public class CacheElementValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "id cannot be null or blank");
+            "identifier is required.");
 
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.DELETE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "id cannot be null or blank");
+            "identifier is required.");
   }
 
   @Test
@@ -75,6 +75,6 @@ public class CacheElementValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "Can only create element in one group at a time");
+            "Can only create RegionConfig in one group at a time.");
   }
 }

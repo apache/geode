@@ -28,7 +28,8 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
   public void validate(CacheElementOperation operation, CacheElement config)
       throws IllegalArgumentException {
     if (StringUtils.isBlank(config.getId())) {
-      throw new IllegalArgumentException("id cannot be null or blank");
+      throw new IllegalArgumentException(
+          config.getClass().getSimpleName() + " identifier is required.");
     }
 
     switch (operation) {
@@ -44,7 +45,8 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
 
   private void validateCreate(CacheElement config) {
     if (config.getGroups().size() > 1) {
-      throw new IllegalArgumentException("Can only create element in one group at a time.");
+      throw new IllegalArgumentException(
+          "Can only create " + config.getClass().getSimpleName() + " in one group at a time.");
     }
 
     String group = config.getGroup();
@@ -58,7 +60,7 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
     }
     String id = config.getId();
     if (id.contains("/")) {
-      throw new IllegalArgumentException("Id should not contain slash.");
+      throw new IllegalArgumentException("Identifier should not contain slash.");
     }
   }
 

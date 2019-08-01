@@ -146,7 +146,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void noNameInConfig() throws Exception {
-    IgnoredException.addIgnoredException("Name of the region has to be specified");
+    IgnoredException.addIgnoredException("Region name is required.");
     String json = "{\"type\": \"REPLICATE\"}";
 
     ClusterManagementResult result =
@@ -197,11 +197,11 @@ public class RegionManagementDunitTest {
     assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
         .hasMessageContaining("server-2")
         .hasMessageContaining("server-3")
-        .hasMessageContaining("already has this element created");
+        .hasMessageContaining("already exists on member(s)");
 
     regionConfig.setGroup("group3");
     assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
-        .hasMessageContaining("Member(s) server-3 already has this element created");
+        .hasMessageContaining("already exists on member(s) server-3.");
   }
 
   @Test

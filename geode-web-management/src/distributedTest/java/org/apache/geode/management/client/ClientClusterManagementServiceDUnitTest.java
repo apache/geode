@@ -151,7 +151,8 @@ public class ClientClusterManagementServiceDUnitTest {
     // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
     assertThatThrownBy(() -> client.create(region))
-        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-3 already has this element created");
+        .hasMessageContaining(
+            "ENTITY_EXISTS: RegionConfig 'test' already exists on member(s) server-3.");
   }
 
   @Test
@@ -198,7 +199,7 @@ public class ClientClusterManagementServiceDUnitTest {
         .containsExactlyInAnyOrder("server-1", "server-3");
 
     assertThatThrownBy(() -> client.delete(region))
-        .hasMessageContaining("ILLEGAL_ARGUMENT: group is an invalid option when deleting region");
+        .hasMessageContaining("ILLEGAL_ARGUMENT: Group is an invalid option when deleting region");
   }
 
   @Test
