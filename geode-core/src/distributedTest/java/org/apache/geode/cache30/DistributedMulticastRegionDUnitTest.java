@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,6 +54,7 @@ import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxWriter;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
@@ -109,17 +111,9 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
-    // 1. start locator with mcast port
+
     vm0.invoke(create);
     vm1.invoke(create);
-    // There is possibility that you may get this packet from other tests
-    /*
-     * SerializableRunnable validateMulticastBeforeRegionOps = new
-     * CacheSerializableRunnable("validateMulticast before region ops") { public void run2() throws
-     * CacheException { validateMulticastOpsBeforeRegionOps(); } };
-     *
-     * vm0.invoke(validateMulticastBeforeRegionOps); vm1.invoke(validateMulticastBeforeRegionOps);
-     */
 
     SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
       @Override
@@ -150,19 +144,11 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     locatorPort = startLocator();
     Host host = Host.getHost(0);
+
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
-    // 1. start locator with mcast port
     vm0.invoke(create);
     vm1.invoke(create);
-    // There is possibility that you may get this packet from other tests
-    /*
-     * SerializableRunnable validateMulticastBeforeRegionOps = new
-     * CacheSerializableRunnable("validateMulticast before region ops") { public void run2() throws
-     * CacheException { validateMulticastOpsBeforeRegionOps(); } };
-     *
-     * vm0.invoke(validateMulticastBeforeRegionOps); vm1.invoke(validateMulticastBeforeRegionOps);
-     */
 
     SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
       @Override
@@ -184,13 +170,22 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
       cache = (InternalCache) basicGetCache().getReconnectedCache();
       system = cache.getInternalDistributedSystem();
     });
-    vm0.invoke(doPuts);
-    vm0.invoke(() -> {
+
+    // after vm1 reconnects it should have the correct multicast digest and operations
+    // on the cache region should be acknowledged.
+    AsyncInvocation<Object> asyncInvocation = vm0.invokeAsync(doPuts);
+    GeodeAwaitility.await().until(asyncInvocation::isDone);
+    Assertions.assertThat(asyncInvocation.getException()).isNull();
+
+    // after vm1 reconnects it should respond to multicast destroy-region messages
+    asyncInvocation = vm0.invokeAsync(() -> {
       GeodeAwaitility.await().until(() -> {
         getCache().close();
         return true;
       });
     });
+    GeodeAwaitility.await().until(asyncInvocation::isDone);
+    Assertions.assertThat(asyncInvocation.getException()).isNull();
 
     vm1.invoke(() -> validateMulticastOpsAfterRegionOps());
 
