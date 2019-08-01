@@ -14,6 +14,7 @@ commons-validator-1.6.jar
 fastutil-8.2.2.jar
 geo-0.7.1.jar
 geode-common-0.0.0.jar
+geode-unsafe-0.0.0.jar
 geode-connectors-0.0.0.jar
 geode-core-0.0.0.jar
 geode-cq-0.0.0.jar
