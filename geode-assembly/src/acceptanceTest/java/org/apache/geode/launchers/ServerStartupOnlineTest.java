@@ -23,6 +23,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
+import javax.management.JMX;
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
+import javax.management.remote.JMXServiceURL;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,6 +43,7 @@ import org.junit.rules.TestName;
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.launchers.startuptasks.WaitForFileToExist;
+import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
 import org.apache.geode.test.junit.rules.gfsh.GfshRule;
@@ -57,6 +68,7 @@ public class ServerStartupOnlineTest {
   private Path serverFolder;
   private String serverName;
   private String startServerCommand;
+  private int jmxRmiPort;
 
   @Before
   public void setup() {
@@ -69,7 +81,7 @@ public class ServerStartupOnlineTest {
     int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
 
     int jmxHttpPort = ports[0];
-    int jmxRmiPort = ports[1];
+    jmxRmiPort = ports[1];
 
     startServerCommand = String.join(" ",
         "start server",
@@ -90,8 +102,7 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void startServerReturnsAfterStartupTaskCompletes() throws IOException,
-      InterruptedException {
+  public void startServerReturnsAfterStartupTaskCompletes() throws Exception {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
@@ -105,15 +116,14 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void statusServerReportsStartingUntilStartupTaskCompletes() throws IOException,
-      InterruptedException {
+  public void statusServerReportsStartingUntilStartupTaskCompletes() throws Exception {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
     waitForStartServerCommandToHang();
 
     await().untilAsserted(() -> {
-      String startingStatus = getServerStatus();
+      String startingStatus = getServerStatusFromGfsh();
       assertThat(startingStatus)
           .as("Status server command output")
           .contains("Starting Server");
@@ -123,7 +133,7 @@ public class ServerStartupOnlineTest {
 
     await().untilAsserted(() -> {
       assertThat(startServerTask).isDone();
-      String onlineStatus = getServerStatus();
+      String onlineStatus = getServerStatusFromGfsh();
       assertThat(onlineStatus)
           .as("Status server command output")
           .contains("is currently online");
@@ -131,31 +141,55 @@ public class ServerStartupOnlineTest {
   }
 
   @Test
-  public void memberMXBeanStatusReportsStartingUntilStartupTaskCompletes() throws IOException,
-      InterruptedException {
+  public void memberMXBeanStatusReportsStartingUntilStartupTaskCompletes() throws Exception {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
     waitForStartServerCommandToHang();
 
-    await().untilAsserted(() -> {
+    await().ignoreExceptions().untilAsserted(() -> {
       // Get memberMXBean status
-
+      String startingStatus = getServerStatusFromJmx();
+      assertThat(startingStatus)
+          .as("MemberMXBean status while starting")
+          .isEqualTo("starting");
     });
 
     completeRemoteStartupTask();
 
-    await().untilAsserted(() -> {
+    await().ignoreExceptions().untilAsserted(() -> {
       assertThat(startServerTask).isDone();
-      String onlineStatus = getServerStatus();
+      String onlineStatus = getServerStatusFromJmx();
       assertThat(onlineStatus)
-          .as("Status server command output")
-          .contains("is currently online");
+          .as("MemberMXBean status while online")
+          .isEqualTo("online");
     });
   }
 
+  private String getServerStatusFromJmx() throws MalformedObjectNameException,
+      IOException {
+    ObjectName objectName = ObjectName.getInstance("GemFire:type=Member,member=" + serverName);
+    JMXServiceURL url =
+        new JMXServiceURL("service:jmx:rmi:///jndi/rmi://localhost:" + jmxRmiPort + "/jmxrmi");
+    JMXConnector jmxConnector = JMXConnectorFactory.connect(url, null);
+    try {
+      MBeanServerConnection mbeanServer = jmxConnector.getMBeanServerConnection();
+      MemberMXBean memberMXBean =
+          JMX.newMXBeanProxy(mbeanServer, objectName, MemberMXBean.class, false);
+      String json = memberMXBean.status();
+      return parseStatusFromJson(json);
+    } finally {
+      jmxConnector.close();
+    }
+  }
 
-  private String getServerStatus() {
+  private String parseStatusFromJson(String json) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode jsonNode = mapper.readTree(json);
+    return jsonNode.get("status").textValue();
+  }
+
+  private String getServerStatusFromGfsh() {
     String statusServerCommand = "status server --dir=" + serverFolder;
     return gfshRule.execute(statusServerCommand).getOutputText();
   }
