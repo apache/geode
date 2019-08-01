@@ -133,7 +133,7 @@ public class MemberValidatorTest {
     assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
         .isInstanceOf(EntityExistsException.class)
         .hasMessageContaining("member4").hasMessageContaining("member2")
-        .hasMessageContaining("already has this element created");
+        .hasMessageContaining("already exists on member(s)");
   }
 
   @Test
@@ -144,7 +144,7 @@ public class MemberValidatorTest {
     regionConfig.setGroup("group2");
     assertThatThrownBy(() -> validator.validateCreate(regionConfig, regionManager))
         .isInstanceOf(EntityExistsException.class)
-        .hasMessageContaining("Member(s) member4 already has this element created");
+        .hasMessageContaining("already exists on member(s) member4.");
   }
 
   @Test

@@ -83,7 +83,7 @@ public class RegionConfigValidatorTest {
     config.setType("LOCAL");
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("Type LOCAL is not supported in Management V2 API.");
+        .hasMessage("Region type 'LOCAL' is not supported.");
   }
 
   @Test
@@ -111,7 +111,7 @@ public class RegionConfigValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "Type of the region has to be specified");
+            "Region type is required.");
   }
 
   @Test

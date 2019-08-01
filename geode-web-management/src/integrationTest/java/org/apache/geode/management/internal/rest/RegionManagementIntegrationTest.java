@@ -79,7 +79,7 @@ public class RegionManagementIntegrationTest {
 
     assertThatThrownBy(() -> client.create(regionConfig))
         .hasMessageContaining(
-            "ILLEGAL_ARGUMENT: Type LOCAL is not supported in Management V2 API.");
+            "ILLEGAL_ARGUMENT: Region type 'LOCAL' is not supported.");
   }
 
   @Test

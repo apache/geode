@@ -74,22 +74,24 @@ public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
 
     // one has to be the proxy of the other's main type
     if (!incoming.getType().contains("PROXY") && !existing.getType().contains("PROXY")) {
-      throw new IllegalArgumentException(getDescription(incoming) + " is not compatible with "
-          + group + "'s existing regionConfig "
-          + getDescription(existing));
+      raiseIncompatibilityError(incoming, group, existing);
     }
 
     // the beginning part of the type has to be the same
     String incomingType = incoming.getType().split("_")[0];
     String existingType = existing.getType().split("_")[0];
     if (!incomingType.equals(existingType)) {
-      throw new IllegalArgumentException(
-          getDescription(incoming) + " is not compatible with " + group + "'s existing "
-              + getDescription(existing));
+      raiseIncompatibilityError(incoming, group, existing);
     }
   }
 
+  private void raiseIncompatibilityError(RegionConfig incoming, String group,
+      RegionConfig existing) {
+    throw new IllegalArgumentException(getDescription(incoming) + " is not compatible with " + group
+        + "'s existing " + getDescription(existing) + ".");
+  }
+
   private String getDescription(RegionConfig regionConfig) {
-    return "Region " + regionConfig.getName() + " of type " + regionConfig.getType();
+    return "Region '" + regionConfig.getName() + "' of type '" + regionConfig.getType() + "'";
   }
 }

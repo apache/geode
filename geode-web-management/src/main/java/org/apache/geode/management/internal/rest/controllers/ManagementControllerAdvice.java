@@ -85,23 +85,20 @@ public class ManagementControllerAdvice {
   @ExceptionHandler({AuthenticationFailedException.class, AuthenticationException.class})
   public ResponseEntity<ClusterManagementResult> unauthorized(Exception e) {
     return new ResponseEntity<>(
-        new ClusterManagementResult(StatusCode.UNAUTHENTICATED,
-            e.getMessage()),
+        new ClusterManagementResult(StatusCode.UNAUTHENTICATED, e.getMessage()),
         HttpStatus.UNAUTHORIZED);
   }
 
   @ExceptionHandler({NotAuthorizedException.class, SecurityException.class})
   public ResponseEntity<ClusterManagementResult> forbidden(Exception e) {
-    return new ResponseEntity<>(new ClusterManagementResult(
-        StatusCode.UNAUTHORIZED, e.getMessage()),
-        HttpStatus.FORBIDDEN);
+    return new ResponseEntity<>(
+        new ClusterManagementResult(StatusCode.UNAUTHORIZED, e.getMessage()), HttpStatus.FORBIDDEN);
   }
 
   @ExceptionHandler({IllegalArgumentException.class, HttpMessageNotReadableException.class})
   public ResponseEntity<ClusterManagementResult> badRequest(final Exception e) {
     return new ResponseEntity<>(
-        new ClusterManagementResult(StatusCode.ILLEGAL_ARGUMENT,
-            e.getMessage()),
+        new ClusterManagementResult(StatusCode.ILLEGAL_ARGUMENT, e.getMessage()),
         HttpStatus.BAD_REQUEST);
   }
 

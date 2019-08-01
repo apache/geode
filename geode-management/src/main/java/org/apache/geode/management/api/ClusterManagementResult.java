@@ -73,13 +73,6 @@ public class ClusterManagementResult {
   /**
    * for internal use only
    */
-  public ClusterManagementResult(boolean success, String message) {
-    setStatus(success, message);
-  }
-
-  /**
-   * for internal use only
-   */
   public ClusterManagementResult(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
     this.statusMessage = message;
@@ -92,16 +85,6 @@ public class ClusterManagementResult {
     this.statusCode = copyFrom.statusCode;
     this.statusMessage = copyFrom.statusMessage;
     this.uri = copyFrom.uri;
-  }
-
-  /**
-   * for internal use only
-   */
-  public void setStatus(boolean success, String message) {
-    if (!success) {
-      statusCode = StatusCode.ERROR;
-    }
-    this.statusMessage = message;
   }
 
   /**

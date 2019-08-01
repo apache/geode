@@ -91,8 +91,8 @@ public class OperationManagerTest {
   public void submitRogueOperation() {
     TestOperation operation = mock(TestOperation.class);
     assertThatThrownBy(() -> executorManager.submit(operation))
-        .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Operation type")
-        .hasMessageContaining(" not supported");
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining(" is not supported.");
   }
 
   static class TestOperation implements ClusterManagementOperation<TestOperationResult> {

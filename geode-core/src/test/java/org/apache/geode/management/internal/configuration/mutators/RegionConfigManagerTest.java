@@ -86,7 +86,7 @@ public class RegionConfigManagerTest {
     assertThatThrownBy(() -> manager.checkCompatibility(config1, "group", config2))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(
-            "Region test of type PARTITION_PROXY is not compatible with group's existing Region test of type REPLICATE");
+            "Region 'test' of type 'PARTITION_PROXY' is not compatible with group's existing Region 'test' of type 'REPLICATE'");
   }
 
   @Test
@@ -96,7 +96,7 @@ public class RegionConfigManagerTest {
     assertThatThrownBy(() -> manager.checkCompatibility(config1, "group", config2))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(
-            "Region test of type PARTITION is not compatible with group's existing regionConfig Region test of type REPLICATE");
+            "Region 'test' of type 'PARTITION' is not compatible with group's existing Region 'test' of type 'REPLICATE'");
   }
 
   @Test
@@ -106,6 +106,6 @@ public class RegionConfigManagerTest {
     assertThatThrownBy(() -> manager.checkCompatibility(config1, "group", config2))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining(
-            "Region test of type PARTITION is not compatible with group's existing regionConfig Region test of type PARTITION_PERSISTEN");
+            "Region 'test' of type 'PARTITION' is not compatible with group's existing Region 'test' of type 'PARTITION_PERSISTENT'");
   }
 }

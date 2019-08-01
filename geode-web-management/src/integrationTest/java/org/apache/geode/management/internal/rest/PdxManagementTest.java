@@ -63,7 +63,8 @@ public class PdxManagementTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.memberStatuses").doesNotExist())
         .andExpect(
-            jsonPath("$.statusMessage", containsString("Successfully updated config for cluster")))
+            jsonPath("$.statusMessage",
+                containsString("Successfully updated configuration for cluster.")))
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.uri", is("/management/experimental/configurations/pdx")));
   }

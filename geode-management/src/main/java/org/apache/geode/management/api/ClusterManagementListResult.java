@@ -43,8 +43,8 @@ public class ClusterManagementListResult<T extends CacheElement & CorrespondWith
   /**
    * for internal use only
    */
-  public ClusterManagementListResult(boolean success, String message) {
-    super(success, message);
+  public ClusterManagementListResult(StatusCode statusCode, String message) {
+    super(statusCode, message);
   }
 
   // Override the mapper setting so that we always show result

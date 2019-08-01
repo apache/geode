@@ -68,7 +68,7 @@ public class RebalanceIntegrationTest {
         .andExpect(
             jsonPath("$.uri",
                 Matchers.containsString("/management/experimental/operations/rebalance/")))
-        .andExpect(jsonPath("$.statusMessage", Matchers.containsString("async operation started")));
+        .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
 
   @Test
