@@ -90,7 +90,7 @@ public class ConfigurePDXDUnitTest {
 
     RealizationResult status = result.getMemberStatuses().get(0);
     assertThat(status.getMemberName()).isEqualTo("server-1");
-    assertThat(status.getMessage())
-        .contains("Server needs to be restarted for this configuration change to be realized");
+    assertThat(status.getMessage()).contains(
+        "Server 'server-1' needs to be restarted for this configuration change to be realized.");
   }
 }
