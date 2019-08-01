@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -58,7 +59,7 @@ public class RegionManagementIntegrationTest {
 
   @Test
   @WithMockUser
-  public void sanityCheck() throws Exception {
+  public void sanityCheck() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
@@ -71,27 +72,24 @@ public class RegionManagementIntegrationTest {
 
   @Test
   @WithMockUser
-  public void invalidType() throws Exception {
+  public void invalidType() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setType("LOCAL");
 
-    assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("Type LOCAL is not supported in Management V2 API.");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .hasMessageContaining(
+            "ILLEGAL_ARGUMENT: Type LOCAL is not supported in Management V2 API.");
   }
 
   @Test
-  public void invalidGroup() throws Exception {
+  public void invalidGroup() {
     RegionConfig regionConfig = new RegionConfig();
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");
 
-    assertManagementResult(client.create(regionConfig))
-        .failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("'cluster' is a reserved group name");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .hasMessageContaining("ILLEGAL_ARGUMENT: 'cluster' is a reserved group name");
   }
 
   @Test

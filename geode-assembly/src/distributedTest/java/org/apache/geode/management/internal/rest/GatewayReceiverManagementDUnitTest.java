@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -27,7 +28,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
@@ -77,9 +77,8 @@ public class GatewayReceiverManagementDUnitTest {
     // try create another GWR on the same group
     receiver.setStartPort("5001");
     receiver.setGroup("group1");
-    assertManagementResult(cms.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-        .containsStatusMessage("Member(s) server-1 already has this element created");
+    assertThatThrownBy(() -> cms.create(receiver))
+        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-1 already has this element created");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort("5002");
@@ -91,9 +90,8 @@ public class GatewayReceiverManagementDUnitTest {
     // try create another GWR on another group but has a common member in another group
     receiver.setStartPort("5003");
     receiver.setGroup(null);
-    assertManagementResult(cms.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-        .containsStatusMessage("Member(s) server-1 already has this element created");
+    assertThatThrownBy(() -> cms.create(receiver))
+        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-1 already has this element created");
 
     ClusterManagementListResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
         assertManagementListResult(cms.list(new GatewayReceiverConfig())).isSuccessful();

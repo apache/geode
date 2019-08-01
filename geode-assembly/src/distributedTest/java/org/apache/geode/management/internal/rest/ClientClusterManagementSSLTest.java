@@ -91,7 +91,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_Successful() throws Exception {
+  public void createRegion_Successful() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -115,7 +115,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_NoSsl() throws Exception {
+  public void createRegion_NoSsl() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -132,7 +132,7 @@ public class ClientClusterManagementSSLTest {
   }
 
   @Test
-  public void createRegion_WrongPassword() throws Exception {
+  public void createRegion_WrongPassword() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -147,15 +147,12 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", "wrongPassword").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
   @Test
-  public void createRegion_NoUser() throws Exception {
+  public void createRegion_NoUser() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -171,15 +168,12 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
   @Test
-  public void createRegion_NoPassword() throws Exception {
+  public void createRegion_NoPassword() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -194,15 +188,12 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataManage", null).build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode())
-          .isEqualTo(ClusterManagementResult.StatusCode.UNAUTHENTICATED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHENTICATED");
     });
   }
 
   @Test
-  public void createRegion_NoPrivilege() throws Exception {
+  public void createRegion_NoPrivilege() {
     RegionConfig region = new RegionConfig();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
@@ -217,14 +208,12 @@ public class ClientClusterManagementSSLTest {
           .setHostnameVerifier(hostnameVerifier)
           .setCredentials("dataRead", "dataRead").build();
 
-      ClusterManagementResult result = cmsClient.create(region);
-      assertThat(result.isSuccessful()).isFalse();
-      assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
+      assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("UNAUTHORIZED");
     });
   }
 
   @Test
-  public void invokeFromServer() throws Exception {
+  public void invokeFromServer() {
     server.invoke(() -> {
       // when getting the service from the server, we don't need to provide the host information
       ClusterManagementService cmsClient = buildWithCache()

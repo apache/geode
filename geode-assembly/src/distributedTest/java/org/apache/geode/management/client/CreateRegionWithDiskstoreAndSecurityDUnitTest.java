@@ -16,6 +16,7 @@
 package org.apache.geode.management.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 
@@ -84,10 +85,8 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("user", "user").build();
-    ClusterManagementResult result = client.create(regionConfig);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
-    assertThat(result.getStatusMessage()).isEqualTo("user not authorized for DATA:MANAGE");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .hasMessageContaining("UNAUTHORIZED: user not authorized for DATA:MANAGE");
   }
 
   @Test
@@ -109,10 +108,8 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
         ClusterManagementServiceBuilder.buildWithHostAddress()
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data", "data").build();
-    ClusterManagementResult result = client.create(regionConfig);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusCode()).isEqualTo(ClusterManagementResult.StatusCode.UNAUTHORIZED);
-    assertThat(result.getStatusMessage()).isEqualTo("data not authorized for CLUSTER:WRITE:DISK");
+    assertThatThrownBy(() -> client.create(regionConfig))
+        .hasMessageContaining("UNAUTHORIZED: data not authorized for CLUSTER:WRITE:DISK");
   }
 
   @Test

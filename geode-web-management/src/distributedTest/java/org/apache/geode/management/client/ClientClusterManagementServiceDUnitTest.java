@@ -18,6 +18,7 @@ package org.apache.geode.management.client;
 import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 
@@ -149,9 +150,8 @@ public class ClientClusterManagementServiceDUnitTest {
 
     // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
-    assertManagementResult(client.create(region)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-        .containsStatusMessage("Member(s) server-3 already has this element created");
+    assertThatThrownBy(() -> client.create(region))
+        .hasMessageContaining("ENTITY_EXISTS: Member(s) server-3 already has this element created");
   }
 
   @Test
@@ -170,8 +170,7 @@ public class ClientClusterManagementServiceDUnitTest {
 
     // creating the same region on group2 will not be successful because they have a common member
     region.setGroup("group2");
-    assertManagementResult(client.create(region)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ENTITY_EXISTS);
+    assertThatThrownBy(() -> client.create(region)).hasMessageContaining("ENTITY_EXISTS");
 
     region.setGroup(null);
     ClusterManagementRealizationResult deleteResult = client.delete(region);
@@ -198,9 +197,8 @@ public class ClientClusterManagementServiceDUnitTest {
         .extracting(RealizationResult::getMemberName)
         .containsExactlyInAnyOrder("server-1", "server-3");
 
-    assertManagementResult(client.delete(region)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("group is an invalid option when deleting region");
+    assertThatThrownBy(() -> client.delete(region))
+        .hasMessageContaining("ILLEGAL_ARGUMENT: group is an invalid option when deleting region");
   }
 
   @Test
@@ -209,9 +207,7 @@ public class ClientClusterManagementServiceDUnitTest {
     RegionConfig region = new RegionConfig();
     region.setName("unknown");
 
-    ClusterManagementRealizationResult result = client.delete(region);
-    assertManagementResult(result).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+    assertThatThrownBy(() -> client.delete(region)).hasMessageContaining("ENTITY_NOT_FOUND");
   }
 
   @Test
