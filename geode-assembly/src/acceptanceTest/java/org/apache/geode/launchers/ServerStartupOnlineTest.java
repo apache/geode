@@ -31,6 +31,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.distributed.ServerLauncherCacheProvider;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.launchers.startuptasks.WaitForFileToExist;
 import org.apache.geode.rules.ServiceJarRule;
 import org.apache.geode.test.junit.rules.ExecutorServiceRule;
@@ -65,12 +66,21 @@ public class ServerStartupOnlineTest {
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
     serverName = testName.getMethodName();
 
+    int[] ports = AvailablePortHelper.getRandomAvailableTCPPorts(2);
+
+    int jmxHttpPort = ports[0];
+    int jmxRmiPort = ports[1];
+
     startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + serverFolder,
         "--classpath=" + serviceJarPath,
-        "--disable-default-server");
+        "--disable-default-server",
+        "--J=-Dgemfire.jmx-manager=true",
+        "--J=-Dgemfire.jmx-manager-start=true",
+        "--J=-Dgemfire.jmx-manager-http-port=" + jmxHttpPort,
+        "--J=-Dgemfire.jmx-manager-port=" + jmxRmiPort);
   }
 
   @After
@@ -120,7 +130,30 @@ public class ServerStartupOnlineTest {
     });
   }
 
-  // TODO: Aaron: test state of MemberMXBean in server JVM
+  @Test
+  public void memberMXBeanStatusReportsStartingUntilStartupTaskCompletes() throws IOException,
+      InterruptedException {
+    CompletableFuture<Void> startServerTask =
+        executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
+
+    waitForStartServerCommandToHang();
+
+    await().untilAsserted(() -> {
+      // Get memberMXBean status
+
+    });
+
+    completeRemoteStartupTask();
+
+    await().untilAsserted(() -> {
+      assertThat(startServerTask).isDone();
+      String onlineStatus = getServerStatus();
+      assertThat(onlineStatus)
+          .as("Status server command output")
+          .contains("is currently online");
+    });
+  }
+
 
   private String getServerStatus() {
     String statusServerCommand = "status server --dir=" + serverFolder;
