@@ -21,3 +21,23 @@ apply from: "${project.projectDir}/../gradle/publish.gradle"
 dependencies {
   compile(platform(project(':boms:geode-all-bom')))
 }
+
+ext.findJavac = { ->
+  def javac = new File(System.getProperty('java.home') + '/bin/javac')
+  if (javac.isFile() && javac.canExecute()) {
+    return javac.toString()
+  }
+
+  javac = new File(System.getProperty('java.home') + '/../bin/javac')
+  if (javac.isFile() && javac.canExecute()) {
+    return javac.toString()
+  }
+
+  return 'javac'
+}
+
+compileJava {
+  options.fork = true
+  options.forkOptions.executable = project.findJavac()
+  options.compilerArgs << '-XDignore.symbol.file'
+}
