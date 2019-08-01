@@ -1161,7 +1161,7 @@ public class JGroupsMessenger implements Messenger {
         JoinResponseMessage jrsp = (JoinResponseMessage) m;
 
         if (jrsp.getRejectionMessage() == null
-            && services.getConfig().getTransport().isMcastEnabled()) {
+            && services.getConfig().isMulticastEnabled()) {
           // get the multicast message digest and pass it with the join response
           Digest digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
               .down(Event.GET_DIGEST_EVT);
@@ -1185,7 +1185,7 @@ public class JGroupsMessenger implements Messenger {
         JoinResponseMessage jrsp = (JoinResponseMessage) m;
 
         if (jrsp.getRejectionMessage() == null
-            && services.getConfig().getTransport().isMcastEnabled()) {
+            && services.getConfig().isMulticastEnabled()) {
           byte[] serializedDigest = jrsp.getMessengerData();
           ByteArrayInputStream bis = new ByteArrayInputStream(serializedDigest);
           DataInputStream dis = new DataInputStream(bis);

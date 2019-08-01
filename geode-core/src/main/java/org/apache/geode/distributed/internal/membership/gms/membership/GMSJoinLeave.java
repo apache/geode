@@ -2464,7 +2464,7 @@ public class GMSJoinLeave implements JoinLeave {
                 joinReqs.add(mbr);
                 joinPorts.put(mbr, port);
                 if (!jmsg.isResponseSent()
-                    && services.getConfig().getTransport().isMcastEnabled()) {
+                    && services.getConfig().isMulticastEnabled()) {
                   // send a join response so the new member can get the multicast messaging digest.
                   JoinResponseMessage response = new JoinResponseMessage(jmsg.getSender(),
                       services.getMessenger().getClusterSecretKey(), jmsg.getRequestId());
