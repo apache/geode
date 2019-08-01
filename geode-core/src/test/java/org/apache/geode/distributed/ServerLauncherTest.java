@@ -416,6 +416,7 @@ public class ServerLauncherTest {
 
     ServerLauncher serverLauncher = new Builder()
         .setServerLauncherCacheProvider(serverLauncherCacheProvider)
+        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
     CompletableFuture<Void> startupTasks = spy(new CompletableFuture<>());
