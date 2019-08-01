@@ -30,7 +30,6 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
-  private transient boolean responseSent;
 
   public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
       Object credentials, int fdPort, int requestId) {
@@ -133,13 +132,5 @@ public class JoinRequestMessage extends HighPriorityDistributionMessage {
     if (requestId != other.requestId)
       return false;
     return true;
-  }
-
-  public void setResponseSent() {
-    responseSent = true;
-  }
-
-  public boolean isResponseSent() {
-    return responseSent;
   }
 }
