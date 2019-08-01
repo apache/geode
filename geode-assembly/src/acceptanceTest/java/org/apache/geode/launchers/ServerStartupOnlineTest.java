@@ -23,6 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -51,46 +53,88 @@ public class ServerStartupOnlineTest {
   @Rule
   public ExecutorServiceRule executorServiceRule = new ExecutorServiceRule();
 
-  @Test
-  public void startServerReturnsAfterStartupTaskCompletes() throws IOException,
-      InterruptedException {
+  private Path serverFolder;
+  private String serverName;
+  private String startServerCommand;
 
+  @Before
+  public void setup() {
     String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, WaitForFileToExist.class);
 
-    Path serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
-    String serverName = testName.getMethodName();
+    serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
+    serverName = testName.getMethodName();
 
-    String startServerCommand = String.join(" ",
+    startServerCommand = String.join(" ",
         "start server",
         "--name=" + serverName,
         "--dir=" + serverFolder,
         "--classpath=" + serviceJarPath,
         "--disable-default-server");
+  }
 
+  @After
+  public void stopServer() {
+    String stopServerCommand = "stop server --dir=" + serverFolder;
+    gfshRule.execute(stopServerCommand);
+  }
+
+  @Test
+  public void startServerReturnsAfterStartupTaskCompletes() throws IOException,
+      InterruptedException {
     CompletableFuture<Void> startServerTask =
         executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
 
-    waitForStartServerCommandToHang(serverFolder, serverName);
+    waitForStartServerCommandToHang();
 
     assertThat(startServerTask).isNotDone();
 
-    completeRemoteStartupTask(serverFolder);
+    completeRemoteStartupTask();
 
     await().untilAsserted(() -> assertThat(startServerTask).isDone());
   }
 
-  // TODO: Aaron: test output of GFSH "status server" command
+  @Test
+  public void statusServerReportsStartingUntilStartupTaskCompletes() throws IOException,
+      InterruptedException {
+    CompletableFuture<Void> startServerTask =
+        executorServiceRule.runAsync(() -> gfshRule.execute(startServerCommand));
+
+    waitForStartServerCommandToHang();
+
+    await().untilAsserted(() -> {
+      String startingStatus = getServerStatus();
+      assertThat(startingStatus)
+          .as("Status server command output")
+          .contains("Starting Server");
+    });
+
+    completeRemoteStartupTask();
+
+    await().untilAsserted(() -> {
+      assertThat(startServerTask).isDone();
+      String onlineStatus = getServerStatus();
+      assertThat(onlineStatus)
+          .as("Status server command output")
+          .contains("is currently online");
+    });
+  }
 
   // TODO: Aaron: test state of MemberMXBean in server JVM
 
-  private void waitForStartServerCommandToHang(Path serverFolder, String serverName)
-      throws InterruptedException {
-    await().untilAsserted(() -> assertThat(serverFolder.resolve(serverName + ".log")).exists());
-    Thread.sleep(5000);
+  private String getServerStatus() {
+    String statusServerCommand = "status server --dir=" + serverFolder;
+    return gfshRule.execute(statusServerCommand).getOutputText();
   }
 
-  private void completeRemoteStartupTask(Path serverFolder) throws IOException {
+  private void waitForStartServerCommandToHang()
+      throws InterruptedException {
+    await().untilAsserted(() -> assertThat(serverFolder.resolve(serverName + ".log")).exists());
+    // Without sleeping, this test can pass when it shouldn't.
+    Thread.sleep(10_000);
+  }
+
+  private void completeRemoteStartupTask() throws IOException {
     Files.createFile(serverFolder.resolve(WaitForFileToExist.WAITING_FILE_NAME));
   }
 }
