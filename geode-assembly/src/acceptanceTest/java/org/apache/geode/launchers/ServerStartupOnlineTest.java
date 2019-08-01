@@ -72,7 +72,7 @@ public class ServerStartupOnlineTest {
 
   @Before
   public void setup() {
-    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+    Path serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, WaitForFileToExist.class);
 
     serverFolder = temporaryFolder.getRoot().toPath().toAbsolutePath();
