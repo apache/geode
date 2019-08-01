@@ -24,6 +24,8 @@
 
 {% macro plan_resource_gets(test) %}
 - get: geode-ci
+  passed:
+  - Build
 - aggregate:
   - get: geode
     trigger: true
@@ -83,17 +85,11 @@ GRADLE_GLOBAL_ARGS: ((gradle-global-args))
 {%- endmacro %}
 
 {% macro all_gating_jobs() %}
-{%- for test in (tests) if not test.name=="StressNew" -%}
+  {%- for test in (tests) if not test.name=="StressNew" -%}
   {%- for java_test_version in (java_test_versions) %}
 - {{test.name}}Test{{java_test_version.name}}
   {%- endfor -%}
-{%- endfor -%}
-{% endmacro %}
-
-{% macro all_gating_jobs_for_benchmark() %}
-{%- for test in (tests) if not test.name=="StressNew" and test.PLATFORM=="linux"%}
-- {{test.name}}TestOpenJDK8
-{%- endfor -%}
+  {%- endfor -%}
 {% endmacro %}
 
 groups:
@@ -105,6 +101,7 @@ groups:
   {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
   - PublishArtifacts
   {%- endif %}
+  - Benchmark
 - name: complete
   jobs:
   - {{ build_test.name }}
@@ -355,7 +352,7 @@ jobs:
 {%- if repository.upstream_fork != "apache" or repository.branch == "develop" %}
       - PublishArtifacts
 {% else %}
-      {{ all_gating_jobs() | indent(6) }}
+      - Benchmark
 {% endif %}
       trigger: true
     - get: geode-build-version
@@ -402,15 +399,17 @@ jobs:
   public: true
   plan:
   - get: geode-ci
+    passed:
+    {{ all_gating_jobs() | indent(4) }}
   - aggregate:
     - get: geode
       passed:
-      {{ all_gating_jobs_for_benchmark() | indent(6) }}
+      {{ all_gating_jobs() | indent(6) }}
       trigger: true
     - get: geode-benchmarks
     - get: geode-build-version
       passed:
-      {{ all_gating_jobs_for_benchmark() | indent(6) }}
+      {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
   - task: run_benchmarks
     {{- alpine_tools_config()|indent(4) }}
@@ -458,14 +457,16 @@ jobs:
   public: true
   plan:
   - get: geode-ci
+    passed:
+    - Benchmark
   - aggregate:
     - get: geode
       passed:
-      {{ all_gating_jobs() | indent(6) }}
+      - Benchmark
       trigger: true
     - get: geode-build-version
       passed:
-      {{ all_gating_jobs() | indent(6) }}
+      - Benchmark
     - do:
       - put: concourse-metadata-resource
       {{ init_retry()|indent(6) }}
