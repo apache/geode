@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.api;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.annotations.Experimental;
@@ -146,5 +148,17 @@ public class ClusterManagementResult {
    */
   public StatusCode getStatusCode() {
     return statusCode;
+  }
+
+  /**
+   * Returns the status code and message
+   */
+  @Override
+  public String toString() {
+    if (isBlank(getStatusMessage())) {
+      return getStatusCode().toString();
+    } else {
+      return getStatusCode() + ": " + getStatusMessage();
+    }
   }
 }

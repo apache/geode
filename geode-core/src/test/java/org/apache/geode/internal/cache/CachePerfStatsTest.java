@@ -26,6 +26,7 @@ import static org.apache.geode.internal.cache.CachePerfStats.deltaUpdatesId;
 import static org.apache.geode.internal.cache.CachePerfStats.deltasPreparedId;
 import static org.apache.geode.internal.cache.CachePerfStats.deltasSentId;
 import static org.apache.geode.internal.cache.CachePerfStats.destroysId;
+import static org.apache.geode.internal.cache.CachePerfStats.entryCountId;
 import static org.apache.geode.internal.cache.CachePerfStats.evictorJobsCompletedId;
 import static org.apache.geode.internal.cache.CachePerfStats.evictorJobsStartedId;
 import static org.apache.geode.internal.cache.CachePerfStats.getInitialImagesCompletedId;
@@ -53,7 +54,6 @@ import static org.apache.geode.internal.cache.CachePerfStats.updatesId;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import org.junit.After;
@@ -84,13 +84,13 @@ public class CachePerfStatsTest {
     StatisticsManager statisticsManager = mock(StatisticsManager.class);
     StatisticsFactory statisticsFactory = mock(StatisticsFactory.class);
 
-    statistics = spy(new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager));
+    statistics = new StripedStatisticsImpl(statisticsType, TEXT_ID, 1, 1, statisticsManager);
 
     when(statisticsFactory.createAtomicStatistics(eq(statisticsType), eq(TEXT_ID)))
         .thenReturn(statistics);
 
     CachePerfStats.enableClockStats = true;
-    cachePerfStats = new CachePerfStats(statisticsFactory, TEXT_ID, () -> CLOCK_TIME);
+    cachePerfStats = new CachePerfStats(statisticsFactory, () -> CLOCK_TIME);
   }
 
   @After
@@ -1124,5 +1124,19 @@ public class CachePerfStatsTest {
     cachePerfStats.incDeltaFullValuesRequested();
 
     assertThat(cachePerfStats.getDeltaFullValuesRequested()).isNegative();
+  }
+
+  @Test
+  public void incEntryCount_whenDeltaIsPositive_increasesTheEntryCountStat() {
+    cachePerfStats.incEntryCount(2);
+
+    assertThat(statistics.getLong(entryCountId)).isEqualTo(2);
+  }
+
+  @Test
+  public void incEntryCount_whenDeltaIsNegative_decreasesTheEntryCountStat() {
+    cachePerfStats.incEntryCount(-2);
+
+    assertThat(statistics.getLong(entryCountId)).isEqualTo(-2);
   }
 }

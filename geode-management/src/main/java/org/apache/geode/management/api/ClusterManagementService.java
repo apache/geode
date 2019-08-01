@@ -35,6 +35,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param config this holds the configuration attributes of the element to be created on the
    *        cluster, as well as the group this config belongs to
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the creation
+   * @throws ClusterManagementRealizationException if unsuccessful
    * @see CacheElement
    */
   <T extends CacheElement> ClusterManagementRealizationResult create(T config);
@@ -46,7 +47,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param config this holds the configuration attributes of the element to be deleted on the
    *        cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
-   * @throws IllegalArgumentException, NoMemberException, EntityExistsException
+   * @throws ClusterManagementRealizationException if unsuccessful
    * @see CacheElement
    */
   <T extends CacheElement> ClusterManagementRealizationResult delete(T config);
@@ -58,7 +59,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param config this holds the configuration attributes of the element to be updated on the
    *        cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
-   * @throws IllegalArgumentException, NoMemberException, EntityExistsException
+   * @throws ClusterManagementRealizationException if unsuccessful
    * @see CacheElement
    */
   <T extends CacheElement> ClusterManagementRealizationResult update(T config);
@@ -71,6 +72,7 @@ public interface ClusterManagementService extends AutoCloseable {
    *        for individual element types to see if they support filtering by addition attributes)
    * @return a {@link ClusterManagementListResult} holding a list of matching instances in
    *         {@link ClusterManagementListResult#getResult()}
+   * @throws ClusterManagementException if unsuccessful
    * @see CacheElement
    */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
@@ -84,7 +86,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *        supplying the name (id) of the desired config element
    * @return a {@link ClusterManagementListResult} holding a single element in
    *         {@link ClusterManagementListResult#getResult()}
-   * @throws RuntimeException if no matching element is found or multiple matches are found
+   * @throws ClusterManagementException if unsuccesful or, no matching element is found, or multiple
+   *         matches are found
    * @see CacheElement
    */
   <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
@@ -98,6 +101,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param <V> the return type of the operation
    * @return a {@link ClusterManagementOperationResult} holding a {@link CompletableFuture} (if the
    *         operation was launched successfully) or an error code otherwise.
+   * @throws ClusterManagementException if unsuccessful
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementOperationResult<V> start(
       A op);
@@ -110,6 +114,7 @@ public interface ClusterManagementService extends AutoCloseable {
    * @param <V> the return type of the operation
    * @param opType the operation type to list
    * @return a list of {@link ClusterManagementOperationResult}
+   * @throws ClusterManagementException if unsuccessful
    */
   <A extends ClusterManagementOperation<V>, V extends OperationResult> ClusterManagementListOperationsResult<V> list(
       A opType);

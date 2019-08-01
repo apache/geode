@@ -16,7 +16,7 @@
 package org.apache.geode.management.internal.rest;
 
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.List;
@@ -33,7 +33,6 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementListResult;
-import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
@@ -110,16 +109,12 @@ public class GatewayManagementIntegrationTest {
   @Test
   public void createWithBindAddress() throws Exception {
     receiver.setBindAddress("test-mbpro");
-    assertManagementResult(client.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("");
+    assertThatThrownBy(() -> client.create(receiver)).hasMessageContaining("ILLEGAL_ARGUMENT");
   }
 
   @Test
   public void createWithHostName() throws Exception {
     receiver.setHostnameForSenders("test-mbpro");
-    assertManagementResult(client.create(receiver)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT)
-        .containsStatusMessage("");
+    assertThatThrownBy(() -> client.create(receiver)).hasMessageContaining("ILLEGAL_ARGUMENT");
   }
 }

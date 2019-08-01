@@ -4838,7 +4838,7 @@ public class PartitionedRegion extends LocalRegion
   /**
    * Test Method: Get the number of entries in the local data store.
    */
-  public long getLocalSize() {
+  public long getLocalSizeForTest() {
     if (this.dataStore == null) {
       return 0L;
     }
@@ -6598,6 +6598,13 @@ public class PartitionedRegion extends LocalRegion
   @Override
   public int getRegionSize() {
     return entryCount(null);
+  }
+
+  @Override
+  public int getLocalSize() {
+    return dataStore.getLocalBucket2RegionMap().values().stream()
+        .mapToInt(BucketRegion::getLocalSize)
+        .sum();
   }
 
   public int entryCount(boolean localOnly) {

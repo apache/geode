@@ -69,7 +69,7 @@ public class StatisticsImplTest {
     IntSupplier intSupplier = mock(IntSupplier.class);
     when(intSupplier.getAsInt()).thenReturn(23);
     statistics.setIntSupplier(4, intSupplier);
-    assertThat(statistics.invokeSuppliers()).isEqualTo(0);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(0);
 
     verify(intSupplier).getAsInt();
     assertThat(statistics.getInt(4)).isEqualTo(23);
@@ -80,7 +80,7 @@ public class StatisticsImplTest {
     LongSupplier longSupplier = mock(LongSupplier.class);
     when(longSupplier.getAsLong()).thenReturn(23L);
     statistics.setLongSupplier(4, longSupplier);
-    assertThat(statistics.invokeSuppliers()).isEqualTo(0);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(0);
 
     verify(longSupplier).getAsLong();
     assertThat(statistics.getLong(4)).isEqualTo(23L);
@@ -91,7 +91,7 @@ public class StatisticsImplTest {
     DoubleSupplier doubleSupplier = mock(DoubleSupplier.class);
     when(doubleSupplier.getAsDouble()).thenReturn(23.3);
     statistics.setDoubleSupplier(4, doubleSupplier);
-    assertThat(statistics.invokeSuppliers()).isEqualTo(0);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(0);
 
     verify(doubleSupplier).getAsDouble();
     assertThat(statistics.getDouble(4)).isEqualTo(23.3);
@@ -109,7 +109,7 @@ public class StatisticsImplTest {
     IntSupplier throwingSupplier = mock(IntSupplier.class);
     when(throwingSupplier.getAsInt()).thenThrow(NullPointerException.class);
     statistics.setIntSupplier(4, throwingSupplier);
-    assertThat(statistics.invokeSuppliers()).isEqualTo(1);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(1);
 
     verify(throwingSupplier).getAsInt();
   }
@@ -123,13 +123,13 @@ public class StatisticsImplTest {
     IntSupplier throwingSupplier = mock(IntSupplier.class);
     when(throwingSupplier.getAsInt()).thenThrow(NullPointerException.class);
     statistics.setIntSupplier(4, throwingSupplier);
-    assertThat(statistics.invokeSuppliers()).isEqualTo(1);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(1);
 
     // String message, Object p0, Object p1, Object p2
     verify(statisticsLogger).logWarning(anyString(), isNull(), anyInt(),
         isA(NullPointerException.class));
 
-    assertThat(statistics.invokeSuppliers()).isEqualTo(1);
+    assertThat(statistics.updateSuppliedValues()).isEqualTo(1);
 
     // Make sure the logger isn't invoked again
     verify(statisticsLogger).logWarning(anyString(), isNull(), anyInt(),

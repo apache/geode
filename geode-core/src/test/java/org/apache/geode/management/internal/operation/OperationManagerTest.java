@@ -35,8 +35,7 @@ public class OperationManagerTest {
 
   @Before
   public void setUp() throws Exception {
-    executorManager =
-        new OperationManager(null, new OperationHistoryManager(500, TimeUnit.MILLISECONDS));
+    executorManager = new OperationManager(null, new OperationHistoryManager(1, TimeUnit.MINUTES));
     executorManager.registerOperation(TestOperation.class, OperationManagerTest::perform);
   }
 

@@ -258,8 +258,9 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // We had to deserialized the results from the other data nodes when we iterated through
           // the results as well as our own
           GeodeAwaitility.await()
-              .untilAsserted(verifyPortfolioCount((int) ((PartitionedRegion) region).getLocalSize()
-                  + numExpectedResults + numPortfoliosPerVM));
+              .untilAsserted(
+                  verifyPortfolioCount((int) ((PartitionedRegion) region).getLocalSizeForTest()
+                      + numExpectedResults + numPortfoliosPerVM));
         }
         return null;
       }
@@ -273,11 +274,11 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // After vm0 executed the query, we already had the values deserialized in our cache
           // So it's the same total as before
           GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
-              (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM));
+              (int) ((PartitionedRegion) region).getLocalSizeForTest() + numPortfoliosPerVM));
         } else {
           // After vm0 executed the query, we had to deserialize the values in our vm
           GeodeAwaitility.await().untilAsserted(verifyPortfolioCount(
-              (int) ((PartitionedRegion) region).getLocalSize() + numPortfoliosPerVM));
+              (int) ((PartitionedRegion) region).getLocalSizeForTest() + numPortfoliosPerVM));
         }
         return null;
       }
@@ -320,9 +321,10 @@ public class CopyOnReadIndexDUnitTest extends JUnit4CacheTestCase {
           // Because we have no index, we have to again deserialize all the values that this vm is
           // hosting
           GeodeAwaitility.await()
-              .untilAsserted(verifyPortfolioCount((int) (((PartitionedRegion) region).getLocalSize()
-                  + ((PartitionedRegion) region).getLocalSize() + numExpectedResults
-                  + numExpectedResults + numPortfoliosPerVM)));
+              .untilAsserted(
+                  verifyPortfolioCount((int) (((PartitionedRegion) region).getLocalSizeForTest()
+                      + ((PartitionedRegion) region).getLocalSizeForTest() + numExpectedResults
+                      + numExpectedResults + numPortfoliosPerVM)));
         }
         return null;
       }

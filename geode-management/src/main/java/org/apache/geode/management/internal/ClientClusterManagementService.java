@@ -27,6 +27,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementOperation;
@@ -72,9 +73,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends CacheElement> ClusterManagementRealizationResult create(T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
-    return restTemplate
+    return assertSuccessful(restTemplate
         .postForEntity(endPoint, config, ClusterManagementRealizationResult.class)
-        .getBody();
+        .getBody());
   }
 
   @Override
@@ -82,13 +83,13 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends CacheElement> ClusterManagementRealizationResult delete(
       T config) {
     String uri = getIdentityEndPoint(config);
-    return restTemplate
+    return assertSuccessful(restTemplate
         .exchange(uri + "?group={group}",
             HttpMethod.DELETE,
             null,
             ClusterManagementRealizationResult.class,
             config.getGroup())
-        .getBody();
+        .getBody());
   }
 
   @Override
@@ -102,19 +103,19 @@ public class ClientClusterManagementService implements ClusterManagementService 
   public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
     String endPoint = getEndpoint(config);
-    return restTemplate
+    return assertSuccessful(restTemplate
         .getForEntity(endPoint + "/?id={id}&group={group}",
             ClusterManagementListResult.class, config.getId(), config.getGroup())
-        .getBody();
+        .getBody());
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
-    return restTemplate
+    return assertSuccessful(restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementListResult.class)
-        .getBody();
+        .getBody());
   }
 
   @Override
@@ -124,8 +125,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
     final ClusterManagementOperationResult result;
 
     // make the REST call to start the operation
-    result = restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(), op,
-        ClusterManagementOperationResult.class).getBody();
+    result =
+        assertSuccessful(restTemplate.postForEntity(RestfulEndpoint.URI_VERSION + op.getEndpoint(),
+            op, ClusterManagementOperationResult.class).getBody());
 
     // our restTemplate requires the url to be modified to start from "/experimental"
     return reAnimate(result);
@@ -152,8 +154,9 @@ public class ClientClusterManagementService implements ClusterManagementService 
     final ClusterManagementListOperationsResult<V> result;
 
     // make the REST call to list in-progress operations
-    result = restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + opType.getEndpoint(),
-        ClusterManagementListOperationsResult.class).getBody();
+    result = assertSuccessful(
+        restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + opType.getEndpoint(),
+            ClusterManagementListOperationsResult.class).getBody());
 
     return new ClusterManagementListOperationsResult<>(
         result.getResult().stream().map(this::reAnimate).collect(Collectors.toList()));
@@ -194,9 +197,20 @@ public class ClientClusterManagementService implements ClusterManagementService 
     }
   }
 
+  private <T extends ClusterManagementResult> T assertSuccessful(T result) {
+    if (!result.isSuccessful()) {
+      throw new ClusterManagementException(result);
+    }
+    return result;
+  }
+
   public boolean isConnected() {
-    return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
-        .getBody().equals("pong");
+    try {
+      return restTemplate.getForEntity(RestfulEndpoint.URI_VERSION + "/ping", String.class)
+          .getBody().equals("pong");
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   @Override

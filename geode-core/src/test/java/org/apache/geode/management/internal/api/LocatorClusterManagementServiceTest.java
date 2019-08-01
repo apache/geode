@@ -53,6 +53,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
+import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementOperation;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -68,7 +69,6 @@ import org.apache.geode.management.internal.configuration.validators.CacheElemen
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.internal.exceptions.EntityNotFoundException;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
 import org.apache.geode.management.runtime.OperationResult;
@@ -119,16 +119,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void create_persistenceIsNull() throws Exception {
+  public void create_persistenceIsNull() {
     service = new LocatorClusterManagementService(cache, null);
-    result = service.create(regionConfig);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusMessage())
-        .contains("Cluster configuration service needs to be enabled");
+    assertThatThrownBy(() -> service.create(regionConfig))
+        .hasMessageContaining("Cluster configuration service needs to be enabled");
   }
 
   @Test
-  public void create_validatorIsCalledCorrectly() throws Exception {
+  public void create_validatorIsCalledCorrectly() {
     doReturn(Collections.emptySet()).when(memberValidator).findServers(anyString());
     doNothing().when(persistenceService).updateCacheConfig(any(), any());
     service.create(regionConfig);
@@ -138,7 +136,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void delete_validatorIsCalledCorrectly() throws Exception {
+  public void delete_validatorIsCalledCorrectly() {
     doReturn(Collections.emptySet()).when(memberValidator).findServers(anyString());
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(
         regionConfig.getId(),
@@ -152,7 +150,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void create_partialFailureOnMembers() throws Exception {
+  public void create_partialFailureOnMembers() {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
@@ -164,14 +162,12 @@ public class LocatorClusterManagementServiceTest {
 
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(new CacheConfig());
     regionConfig.setName("test");
-    result = service.create(regionConfig);
-    assertThat(result.isSuccessful()).isFalse();
-    assertThat(result.getStatusMessage())
-        .contains("Failed to apply the update on all members");
+    assertThatThrownBy(() -> service.create(regionConfig))
+        .hasMessageContaining("Failed to apply the update on all members");
   }
 
   @Test
-  public void create_succeedsOnAllMembers() throws Exception {
+  public void create_succeedsOnAllMembers() {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
@@ -194,14 +190,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void create_non_supportedConfigObject() throws Exception {
+  public void create_non_supportedConfigObject() {
     MemberConfig config = new MemberConfig();
-    assertThatThrownBy(() -> service.create(config)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Configuration type MemberConfig is not supported");
+    assertThatThrownBy(() -> service.create(config)).isInstanceOf(ClusterManagementException.class)
+        .hasMessageContaining("ILLEGAL_ARGUMENT: Configuration type MemberConfig is not supported");
   }
 
   @Test
-  public void list_oneGroup() throws Exception {
+  public void list_oneGroup() {
     regionConfig.setGroup("cluster");
     doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
 
@@ -213,7 +209,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void list_aRegionInClusterAndGroup1() throws Exception {
+  public void list_aRegionInClusterAndGroup1() {
     doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
     RegionConfig region1 = new RegionConfig();
     region1.setName("region1");
@@ -242,8 +238,8 @@ public class LocatorClusterManagementServiceTest {
     config.setName("unknown");
     doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage("Cache element 'unknown' does not exist");
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessage("ENTITY_NOT_FOUND: Cache element 'unknown' does not exist");
   }
 
   @Test
@@ -252,12 +248,12 @@ public class LocatorClusterManagementServiceTest {
     config.setName("test");
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessage("group is an invalid option when deleting region.");
+        .isInstanceOf(ClusterManagementException.class)
+        .hasMessage("ILLEGAL_ARGUMENT: group is an invalid option when deleting region.");
   }
 
   @Test
-  public void delete_partialFailureOnMembers() throws Exception {
+  public void delete_partialFailureOnMembers() {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(
@@ -284,7 +280,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void delete_succeedsOnAllMembers() throws Exception {
+  public void delete_succeedsOnAllMembers() {
     List<RealizationResult> functionResults = new ArrayList<>();
     functionResults.add(new RealizationResult().setMemberName("member1"));
     functionResults.add(new RealizationResult().setMemberName("member2"));
@@ -311,7 +307,7 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void deleteWithNoMember() throws Exception {
+  public void deleteWithNoMember() {
     // region exists in cluster configuration
     doReturn(new String[] {"cluster"}).when(memberValidator).findGroupsWithThisElement(any(),
         any());
@@ -344,7 +340,7 @@ public class LocatorClusterManagementServiceTest {
   @Test
   public void checkStatusForNotFound() {
     assertThatThrownBy(() -> service.checkStatus("123"))
-        .isInstanceOf(EntityNotFoundException.class);
+        .isInstanceOf(ClusterManagementException.class);
   }
 
   @Test

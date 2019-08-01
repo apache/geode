@@ -40,12 +40,12 @@ import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
  *
  * @since GemFire 3.0
  */
-public abstract class StatisticsImpl implements Statistics {
+public abstract class StatisticsImpl implements SuppliableStatistics {
 
   private static final Logger logger = LogService.getLogger();
 
   /** The type of this statistics instance */
-  protected final StatisticsTypeImpl type;
+  protected final ValidatingStatisticsType type;
 
   /** The display name of this statistics instance */
   private final String textId;
@@ -127,7 +127,7 @@ public abstract class StatisticsImpl implements Statistics {
    */
   StatisticsImpl(StatisticsType type, String textId, long numericId, long uniqueId,
       int osStatFlags, StatisticsManager statisticsManager, StatisticsLogger statisticsLogger) {
-    this.type = (StatisticsTypeImpl) type;
+    this.type = (ValidatingStatisticsType) type;
     this.textId = StringUtils.isEmpty(textId) ? statisticsManager.getName() : textId;
     this.numericId = numericId == 0 ? statisticsManager.getPid() : numericId;
     this.uniqueId = uniqueId;
@@ -504,13 +504,8 @@ public abstract class StatisticsImpl implements Statistics {
     // nothing needed in this impl.
   }
 
-  /**
-   * Invoke sample suppliers to retrieve the current value for the suppler controlled sets and
-   * update the stats to reflect the supplied values.
-   *
-   * @return the number of callback errors that occurred while sampling stats
-   */
-  int invokeSuppliers() {
+  @Override
+  public int updateSuppliedValues() {
     int errors = 0;
     for (Map.Entry<Integer, IntSupplier> entry : intSuppliers.entrySet()) {
       try {

@@ -87,7 +87,7 @@ public class ServerStartupNotificationTest {
 
   @Test
   public void startupWithFailingAsyncTask() {
-    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+    Path serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, Failing.class);
 
     String startServerCommand = String.join(" ",
@@ -115,7 +115,7 @@ public class ServerStartupNotificationTest {
 
   @Test
   public void startupWithMultipleFailingAsyncTasks() {
-    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+    Path serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, MultipleFailing.class);
 
     String startServerCommand = String.join(" ",
@@ -143,7 +143,7 @@ public class ServerStartupNotificationTest {
 
   @Test
   public void startupWithCompletingAndFailingAsyncTasks() {
-    String serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
+    Path serviceJarPath = serviceJarRule.createJarFor("ServerLauncherCacheProvider.jar",
         ServerLauncherCacheProvider.class, CompletingAndFailing.class);
 
     String startServerCommand = String.join(" ",

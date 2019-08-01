@@ -264,7 +264,8 @@ public class PartitionedRegionStatsDUnitTest extends CacheTestCase {
     CachePerfStats cachePerfStats = region.getCachePerfStats();
 
     assertThat(stats.getDataStoreEntryCount()).isEqualTo(expectedCount);
-    assertThat(cachePerfStats.getEntries()).isEqualTo(expectedCount);
+    long actualCount = cachePerfStats.stats.getLong(CachePerfStats.entryCountId);
+    assertThat(actualCount).isEqualTo(expectedCount);
   }
 
   private void validateTotalNumBucketsCount(final String regionName, final int expectedCount) {

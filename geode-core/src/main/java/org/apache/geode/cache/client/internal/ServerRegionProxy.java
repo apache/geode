@@ -15,8 +15,9 @@
 
 package org.apache.geode.cache.client.internal;
 
+import static java.util.Collections.emptySet;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -686,7 +687,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
                 (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                     .get(),
-                false, Collections.EMPTY_SET);
+                false, emptySet());
 
             cms.scheduleGetPRMetaData(region, false);
 
@@ -695,7 +696,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
-                    hasResult, Collections.EMPTY_SET, true, timeoutMs);
+                    hasResult, emptySet(), true, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region, serverRegionExecutor,
                 resultCollector, serverToBuckets, retryAttempts, function.isHA(),
@@ -712,7 +713,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
                 (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                     .get(),
-                false, Collections.EMPTY_SET);
+                false, emptySet());
 
             cms.scheduleGetPRMetaData(region, false);
 
@@ -721,7 +722,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), function, executor, resultCollector,
-                    hasResult, Collections.EMPTY_SET, isBucketFilter, timeoutMs);
+                    hasResult, emptySet(), isBucketFilter, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
@@ -734,14 +735,14 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
         ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, function.isHA(),
             (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                 .get(),
-            false, Collections.EMPTY_SET);
+            false, emptySet());
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool,
           resultCollector, retryAttempts, function.isHA(),
           (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
               .get(),
-          false, Collections.EMPTY_SET);
+          false, emptySet());
     }
   }
 
@@ -775,14 +776,14 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, isHA,
                 (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                     .get(),
-                false, Collections.EMPTY_SET);
+                false, emptySet());
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
             final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor1 -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor1, resultCollector, hasResult,
-                    Collections.EMPTY_SET, true, isHA, optimizeForWrite, timeoutMs);
+                    emptySet(), true, isHA, optimizeForWrite, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToBuckets, retryAttempts, isHA,
@@ -798,7 +799,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             ExecuteRegionFunctionOp.execute(pool, resultCollector, retryAttempts, isHA,
                 (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                     .get(),
-                false, Collections.EMPTY_SET);
+                false, emptySet());
 
             cms.scheduleGetPRMetaData(region, false);
           } else {
@@ -806,7 +807,7 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             final java.util.function.Function<ServerRegionFunctionExecutor, AbstractOp> regionFunctionSingleHopOpFunction =
                 executor -> new ExecuteRegionFunctionSingleHopOp.ExecuteRegionFunctionSingleHopOpImpl(
                     region.getFullPath(), functionId, executor, resultCollector, hasResult,
-                    Collections.EMPTY_SET, false, isHA, optimizeForWrite, timeoutMs);
+                    emptySet(), isBucketsAsFilter, isHA, optimizeForWrite, timeoutMs);
 
             ExecuteRegionFunctionSingleHopOp.execute(pool, region,
                 serverRegionExecutor, resultCollector, serverToFilterMap, retryAttempts,
@@ -819,14 +820,14 @@ public class ServerRegionProxy extends ServerProxy implements ServerRegionDataAc
             resultCollector, retryAttempts, isHA,
             (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
                 .get(),
-            false, Collections.EMPTY_SET);
+            false, emptySet());
       }
     } else {
       ExecuteRegionFunctionOp.execute(pool,
           resultCollector, retryAttempts, isHA,
           (ExecuteRegionFunctionOp.ExecuteRegionFunctionOpImpl) executeRegionFunctionOpSupplier
               .get(),
-          false, Collections.EMPTY_SET);
+          false, emptySet());
     }
   }
 

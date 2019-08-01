@@ -194,16 +194,14 @@ public class RegionManagementDunitTest {
     regionConfig.setType(RegionType.REPLICATE);
     assertManagementResult(cms.create(regionConfig)).isSuccessful();
 
-    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-        .containsStatusMessage("server-2")
-        .containsStatusMessage("server-3")
-        .containsStatusMessage("already has this element created");
+    assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
+        .hasMessageContaining("server-2")
+        .hasMessageContaining("server-3")
+        .hasMessageContaining("already has this element created");
 
     regionConfig.setGroup("group3");
-    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ENTITY_EXISTS)
-        .containsStatusMessage("Member(s) server-3 already has this element created");
+    assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ENTITY_EXISTS")
+        .hasMessageContaining("Member(s) server-3 already has this element created");
   }
 
   @Test
@@ -217,8 +215,7 @@ public class RegionManagementDunitTest {
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group5");
     regionConfig.setType(RegionType.PARTITION);
-    assertManagementResult(cms.create(regionConfig)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT);
+    assertThatThrownBy(() -> cms.create(regionConfig)).hasMessageContaining("ILLEGAL_ARGUMENT");
 
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group5");

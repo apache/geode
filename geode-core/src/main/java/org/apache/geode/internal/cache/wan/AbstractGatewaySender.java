@@ -1256,7 +1256,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
       final HasCachePerfStats statsHolder = new HasCachePerfStats() {
         @Override
         public CachePerfStats getCachePerfStats() {
-          return new CachePerfStats(cache.getDistributedSystem(), META_DATA_REGION_NAME);
+          return new CachePerfStats(cache.getDistributedSystem(),
+              "RegionStats-" + META_DATA_REGION_NAME);
         }
       };
 

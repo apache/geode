@@ -82,4 +82,35 @@ public class StartupMessageJUnitTest {
         .isInstanceOf(ReplyException.class)
         .hasCauseInstanceOf(IllegalStateException.class);
   }
+
+  @Test
+  public void startupMessageGetProcessorTypeIsWaitingPool() {
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+
+    InternalDistributedMember id = mock(InternalDistributedMember.class);
+    when(distributionManager.getId()).thenReturn(id);
+
+    StartupMessage startupMessage = new StartupMessage();
+    startupMessage.setSender(id);
+    startupMessage.process(distributionManager);
+
+    assertThat(
+        startupMessage.getProcessorType() == ClusterDistributionManager.WAITING_POOL_EXECUTOR);
+  }
+
+  @Test
+  public void startupResponseMessageGetProcessorTypeIsWaitingPool() {
+    ClusterDistributionManager distributionManager = mock(ClusterDistributionManager.class);
+
+    InternalDistributedMember id = mock(InternalDistributedMember.class);
+    when(distributionManager.getId()).thenReturn(id);
+
+    StartupResponseMessage startupResponseMessage = new StartupResponseMessage();
+    startupResponseMessage.setSender(id);
+    startupResponseMessage.process(distributionManager);
+
+    assertThat(
+        startupResponseMessage
+            .getProcessorType() == ClusterDistributionManager.WAITING_POOL_EXECUTOR);
+  }
 }

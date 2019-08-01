@@ -245,7 +245,22 @@ public class ReplyProcessor21 implements MembershipListener {
    * @param initMembers the Set of members this processor wants replies from
    */
   public ReplyProcessor21(DistributionManager dm, Collection initMembers) {
-    this(dm, dm.getSystem(), initMembers, null);
+    this(dm, initMembers, null);
+  }
+
+  /**
+   * Creates a new <code>ReplyProcessor</code> that wants replies from some number of members of a
+   * distributed system. Call this method with
+   * {@link ClusterDistributionManager#getDistributionManagerIds} if you want replies from all DMs
+   * including the one hosted in this VM.
+   *
+   * @param dm the DistributionManager to use for messaging and membership
+   * @param initMembers the Set of members this processor wants replies from
+   * @param cancelCriterion optional CancelCriterion to use; will use the dm if null
+   */
+  public ReplyProcessor21(DistributionManager dm, Collection initMembers,
+      CancelCriterion cancelCriterion) {
+    this(dm, dm.getSystem(), initMembers, cancelCriterion);
   }
 
   /**

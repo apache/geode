@@ -39,6 +39,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DistributedRegion;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
@@ -69,7 +70,8 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
 
   public static void send(Set<InternalDistributedMember> members, DistributionManager dm,
       String regionPath, PersistentMemberID oldId, PersistentMemberID newId) throws ReplyException {
-    ReplyProcessor21 processor = new ReplyProcessor21(dm, members);
+    InternalCache cache = dm.getExistingCache();
+    ReplyProcessor21 processor = new ReplyProcessor21(dm, members, cache.getCancelCriterion());
     PrepareNewPersistentMemberMessage msg =
         new PrepareNewPersistentMemberMessage(regionPath, oldId, newId, processor.getProcessorId());
     msg.setRecipients(members);
@@ -84,12 +86,13 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
     PersistentMemberState state = null;
     PersistentMemberID myId = null;
     ReplyException exception = null;
+    boolean sendReply = true;
     try {
       // get the region from the path, but do NOT wait on initialization,
       // otherwise we could have a distributed deadlock
 
       Cache cache = dm.getExistingCache();
-      Region region = cache.getRegion(this.regionPath);
+      Region region = cache.getRegion(getRegionPath());
       PersistenceAdvisor persistenceAdvisor = null;
       if (region instanceof DistributedRegion) {
         persistenceAdvisor = ((DistributedRegion) region).getPersistenceAdvisor();
@@ -106,9 +109,14 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       }
 
     } catch (RegionDestroyedException e) {
-      logger.debug("<RegionDestroyed> {}", this);
+      if (logger.isDebugEnabled()) {
+        logger.debug("<RegionDestroyed> {}", this);
+      }
     } catch (CancelException e) {
-      logger.debug("<CancelException> {}", this);
+      if (logger.isDebugEnabled()) {
+        logger.debug("<CancelException> {}", this);
+      }
+      sendReply = false;
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
@@ -117,14 +125,24 @@ public class PrepareNewPersistentMemberMessage extends HighPriorityDistributionM
       exception = new ReplyException(t);
     } finally {
       LocalRegion.setThreadInitLevelRequirement(oldLevel);
-      ReplyMessage replyMsg = new ReplyMessage();
+      ReplyMessage replyMsg = createReplyMessage();
       replyMsg.setRecipient(getSender());
       replyMsg.setProcessorId(processorId);
       if (exception != null) {
         replyMsg.setException(exception);
       }
-      dm.putOutgoing(replyMsg);
+      if (sendReply) {
+        dm.putOutgoing(replyMsg);
+      }
     }
+  }
+
+  ReplyMessage createReplyMessage() {
+    return new ReplyMessage();
+  }
+
+  String getRegionPath() {
+    return regionPath;
   }
 
   @Override

@@ -55,7 +55,7 @@ public class SingleHopGetAllPutAllDUnitTest extends PRClientServerTestBase {
   @Before
   public void createScenario() {
     ArrayList commonAttributes =
-        createCommonServerAttributes("TestPartitionedRegion", null, 2, 13, null);
+        createCommonServerAttributes("TestPartitionedRegion", null, 2, null);
     createClientServerScenarioSingleHop(commonAttributes, 20, 20, 20);
   }
 

@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.rest;
 
-import static org.apache.geode.test.junit.assertions.ClusterManagementListResultAssert.assertManagementListResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -29,7 +28,6 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
-import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.runtime.RuntimeInfo;
@@ -99,8 +97,7 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void getNonExistRegion() {
     regionConfig.setName("notExist");
-    assertManagementListResult(cms.get(regionConfig)).failed().hasStatusCode(
-        ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+    assertThatThrownBy(() -> cms.get(regionConfig)).hasMessageContaining("ENTITY_NOT_FOUND");
   }
 
   @Test
@@ -163,8 +160,7 @@ public class ListIndexManagementDUnitTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setRegionName("region1");
     index.setName("index333");
-    assertManagementListResult(cms.get(index)).failed()
-        .hasStatusCode(ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND);
+    assertThatThrownBy(() -> cms.get(index)).hasMessageContaining("ENTITY_NOT_FOUND");
   }
 
   @Test

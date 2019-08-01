@@ -312,7 +312,9 @@ public class SSLSocketIntegrationTest {
     ByteBufferInputStream bbis = new ByteBufferInputStream(unwrapped);
     DataInputStream dis = new DataInputStream(bbis);
     String welcome = dis.readUTF();
-    engine.doneReading(unwrapped);
+    if (unwrapped.position() >= unwrapped.limit()) {
+      unwrapped.position(0).limit(unwrapped.capacity());
+    }
     assertThat(welcome).isEqualTo("Hello world");
     System.out.println("server read Hello World message from client");
   }

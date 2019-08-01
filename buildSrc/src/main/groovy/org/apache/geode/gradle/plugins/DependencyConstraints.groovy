@@ -147,6 +147,7 @@ class DependencyConstraints implements Plugin<Project> {
         api(group: 'org.jgroups', name: 'jgroups', version: get('jgroups.version'))
         api(group: 'org.mockito', name: 'mockito-core', version: '2.23.0')
         api(group: 'org.mortbay.jetty', name: 'servlet-api', version: '3.0.20100224')
+        api(group: 'org.openjdk.jmh', name: 'jmh-core', version: '1.21')
         api(group: 'org.postgresql', name: 'postgresql', version: '42.2.2')
         api(group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0')
         api(group: 'org.slf4j', name: 'slf4j-api', version: get('slf4j-api.version'))
