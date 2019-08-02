@@ -74,8 +74,7 @@ public class ClusterManagementResult {
    * for internal use only
    */
   public ClusterManagementResult(StatusCode statusCode, String message) {
-    this.statusCode = statusCode;
-    this.statusMessage = message;
+    setStatus(statusCode, message);
   }
 
   /**
@@ -90,9 +89,35 @@ public class ClusterManagementResult {
   /**
    * for internal use only
    */
-  public void setStatus(StatusCode code, String message) {
-    this.statusCode = code;
-    this.statusMessage = message;
+  public void setStatus(StatusCode statusCode, String message) {
+    this.statusCode = statusCode;
+    this.statusMessage = formatErrorMessage(message);
+  }
+
+  /**
+   * Capitalized the first letter and adds a period, if needed.
+   * This helps the CMS API give a consistent format to error messages, even when they sometimes
+   * come from parts of the system beyond our control.
+   */
+  private static String formatErrorMessage(String message) {
+    if (isBlank(message)) {
+      return message;
+    }
+    message = message.trim();
+
+    // capitalize the first letter
+    char firstChar = message.charAt(0);
+    char newFirstChar = Character.toUpperCase(firstChar);
+    if (newFirstChar != firstChar) {
+      message = newFirstChar + message.substring(1);
+    }
+
+    // add a period if the sentence is not already punctuated
+    if (!message.endsWith(".") && !message.endsWith("!") && !message.endsWith("?")) {
+      message += ".";
+    }
+
+    return message;
   }
 
   /**

@@ -19,11 +19,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RebalanceResultImpl implements RebalanceResult {
   private List<RebalanceRegionResult> rebalanceSummary = new ArrayList<>();
+
+  private String statusMessage;
 
   public RebalanceResultImpl() {}
 
@@ -34,6 +37,16 @@ public class RebalanceResultImpl implements RebalanceResult {
 
   public void setRebalanceSummary(List<RebalanceRegionResult> rebalanceSummary) {
     this.rebalanceSummary = rebalanceSummary;
+  }
+
+  @Override
+  public String getStatusMessage() {
+    return statusMessage;
+  }
+
+  public void setStatusMessage(String statusMessage) {
+    // capitalize and punctuate properly since this can be accessed directly
+    this.statusMessage = new ClusterManagementResult(null, statusMessage).getStatusMessage();
   }
 
   @Override

@@ -29,4 +29,10 @@ public interface RebalanceResult extends OperationResult {
    * Return summary of work performed for each region
    */
   List<RebalanceRegionResult> getRebalanceRegionResults();
+
+  /**
+   * May contain additional information special cases, for example when the rebalance operation
+   * "succeeds" only because there are no partitioned regions or only one server.
+   */
+  String getStatusMessage();
 }

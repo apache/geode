@@ -17,6 +17,7 @@
 
 package org.apache.geode.management.internal.api;
 
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -398,7 +399,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED, "Operation started.  Use the uri to check its status.");
+        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
 
     return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
   }
@@ -417,7 +418,15 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static <V extends OperationResult> ClusterManagementResult getStatus(
       CompletableFuture<V> future) {
     if (future.isCompletedExceptionally()) {
-      return new ClusterManagementResult(StatusCode.ERROR, "Operation failed.");
+      String error = "Operation failed.";
+      try {
+        future.get();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        error = e.getMessage();
+      }
+      return new ClusterManagementResult(StatusCode.ERROR, error);
     } else if (future.isDone()) {
       return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
     } else {
@@ -459,21 +468,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
     final CompletableFuture<V> status = operationInstance.getFutureResult();
     ClusterManagementOperationStatusResult<V> result =
-        new ClusterManagementOperationStatusResult<>();
+        new ClusterManagementOperationStatusResult<>(getStatus(status));
     result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
-    if (!status.isDone()) {
-      result.setStatus(StatusCode.IN_PROGRESS, "Operation in progress.");
-    } else {
+    if (status.isDone() && !status.isCompletedExceptionally()) {
       try {
         result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
         result.setResult(status.get());
-        result.setStatus(StatusCode.OK, "Operation finished successfully.");
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
-      } catch (ExecutionException e) {
-        throw new RuntimeException(e);
+      } catch (ExecutionException ignore) {
       }
     }
     return result;

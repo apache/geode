@@ -40,7 +40,7 @@ public class ClusterManagementOperationResultTest {
     CompletableFuture<TestOperationResult> operationResult =
         new CompletableFuture<>();
     ClusterManagementResult result1 = new ClusterManagementResult();
-    result1.setStatus(StatusCode.OK, "success!!");
+    result1.setStatus(StatusCode.OK, "Success!!");
     ClusterManagementOperationResult<TestOperationResult> result =
         new ClusterManagementOperationResult<>(result1, operationResult, new Date(),
             new CompletableFuture<>(), "operator");
@@ -48,7 +48,7 @@ public class ClusterManagementOperationResultTest {
     System.out.println(json);
     ClusterManagementOperationResult value =
         mapper.readValue(json, ClusterManagementOperationResult.class);
-    assertThat(value.getStatusMessage()).isEqualTo("success!!");
+    assertThat(value.getStatusMessage()).isEqualTo("Success!!");
   }
 
   static class TestOperationResult implements OperationResult {
