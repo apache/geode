@@ -88,7 +88,7 @@ public class RebalanceIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
-        .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalance/")))
+        .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalances/")))
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }
 
@@ -112,6 +112,6 @@ public class RebalanceIntegrationTest {
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
     assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
         "ERROR", "OK");
-    assertThat(listResult.getResult().get(0).getUri()).contains("rebalance/");
+    assertThat(listResult.getResult().get(0).getUri()).contains("rebalances/");
   }
 }
