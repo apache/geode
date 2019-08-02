@@ -17,6 +17,6 @@
 
 source "https://rubygems.org"
 
-gem 'bookbindery'
+gem 'bookbindery', '10.1.14'
 
 gem 'libv8'

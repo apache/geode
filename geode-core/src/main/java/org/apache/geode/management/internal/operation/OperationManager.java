@@ -64,7 +64,7 @@ public class OperationManager implements AutoCloseable {
 
     BiFunction<Cache, A, V> performer = getPerformer(op);
     if (performer == null) {
-      throw new IllegalArgumentException(String.format("Operation type %s is not supported",
+      throw new IllegalArgumentException(String.format("%s is not supported.",
           op.getClass().getSimpleName()));
     }
 

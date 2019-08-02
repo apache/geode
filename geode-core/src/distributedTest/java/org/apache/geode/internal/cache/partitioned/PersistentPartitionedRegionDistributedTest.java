@@ -35,6 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
 import java.net.Inet4Address;
@@ -50,6 +51,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
@@ -86,6 +88,7 @@ import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.cache.CacheClosingDistributionMessageObserver;
 import org.apache.geode.internal.cache.DiskRegion;
 import org.apache.geode.internal.cache.InitialImageOperation.RequestImageMessage;
 import org.apache.geode.internal.cache.InternalCache;
@@ -1312,6 +1315,64 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
     missingMembers = getMissingPersistentMembers(vm3);
     assertThat(missingMembers).isEmpty();
+  }
+
+  /**
+   * The purpose of this test is to ensure no data loss occurs when a secondary fails to get
+   * updated bucket images due to failed GII. We want to ensure the secondary's disk region
+   * is not unintentially deleted when the GII fails.
+   *
+   * Tests the following scenario to ensure data is not lost:
+   * 1. Create a persistent partitioned region on server 1 with redundancy 1
+   * (Redundancy will not be satisfied initially)
+   * 2. Add data to the region
+   * 3. Create the region on server 2 which will cause creation of secondary buckets
+   * 4. Close the cache on server 2.
+   * 5. Install a DistributedMessageObserver which forces a cache close
+   * during a bucket move from server 1 to server 2.
+   * 6. Restart server 2. The listener installed in step 2 will cause
+   * server 1 to crash when server 2 requests the new bucket images.
+   * 7. Revoke server 1's persistent membership
+   * 8. Perform gets on server 2 to ensure data consistency after it takes over as primary
+   */
+  @Test
+  public void testCacheCloseDuringBucketMoveDoesntCauseDataLoss()
+      throws ExecutionException, InterruptedException {
+    int redundantCopies = 1;
+    int recoveryDelay = -1;
+    int numBuckets = 6;
+    boolean diskSynchronous = true;
+
+    vm0.invoke(() -> {
+      createPartitionedRegion(redundantCopies, recoveryDelay, numBuckets, diskSynchronous);
+      createData(0, numBuckets, "a");
+    });
+
+    vm1.invoke(() -> {
+      createPartitionedRegion(redundantCopies, recoveryDelay, numBuckets, diskSynchronous);
+      getCache().close();
+    });
+
+    vm0.invoke(() -> {
+      DistributionMessageObserver
+          .setInstance(new CacheClosingDistributionMessageObserver(
+              "_B__" + partitionedRegionName + "_", getCache()));
+    });
+
+    // Need to invoke this async because vm1 will wait for vm0 to come back online
+    // unless we explicitly revoke it.
+    AsyncInvocation<Object> createRegionAsync = vm1.invokeAsync(() -> {
+      createPartitionedRegion(redundantCopies, recoveryDelay, numBuckets, diskSynchronous);
+    });
+
+    vm1.invoke(() -> {
+      revokeKnownMissingMembers(1);
+      for (int i = 0; i < numBuckets; ++i) {
+        assertEquals(getCache().getRegion(partitionedRegionName).get(i), "a");
+      }
+    });
+
+    createRegionAsync.get();
   }
 
   private void rebalance(VM vm) {

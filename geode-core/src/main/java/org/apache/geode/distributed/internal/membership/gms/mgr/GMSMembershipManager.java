@@ -2180,7 +2180,7 @@ public class GMSMembershipManager implements MembershipManager, Manager {
     }
     services.getMessenger().waitForMessageState((InternalDistributedMember) otherMember, state);
 
-    if (services.getConfig().getTransport().isMcastEnabled()
+    if (services.getConfig().isMulticastEnabled()
         && !services.getConfig().getDistributionConfig().getDisableTcp()) {
       // GEODE-2865: wait for scheduled multicast messages to be applied to the cache
       waitForSerialMessageProcessing((InternalDistributedMember) otherMember);

@@ -30,15 +30,12 @@ import org.apache.geode.annotations.Experimental;
 public class RealizationResult implements Serializable {
   private String memberName;
   private boolean success = true;
-  private String message = "success";
+  private String message = "Success.";
 
   /**
    * for internal use only
    */
-  public RealizationResult() {
-    setSuccess(true);
-    setMessage("success");
-  }
+  public RealizationResult() {}
 
   /**
    * returns optional information to supplement {@link #isSuccess()}

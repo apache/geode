@@ -730,17 +730,6 @@ public class GMSJoinLeave implements JoinLeave {
   private void recordViewRequest(DistributionMessage request) {
     try {
       synchronized (viewRequests) {
-        if (request instanceof JoinRequestMessage) {
-          if (isCoordinator
-              && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
-            services.getMessenger().initClusterKey();
-            JoinRequestMessage jreq = (JoinRequestMessage) request;
-            // this will inform about cluster-secret key, as we have authenticated at this point
-            JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
-                services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
-            services.getMessenger().send(response);
-          }
-        }
         logger.debug("Recording the request to be processed in the next membership view");
         viewRequests.add(request);
         viewRequests.notifyAll();
@@ -748,25 +737,6 @@ public class GMSJoinLeave implements JoinLeave {
     } catch (RuntimeException | Error t) {
       logger.warn("unable to record a membership view request due to this exception", t);
       throw t;
-    }
-  }
-
-  private void sendDHKeys() {
-    if (isCoordinator
-        && !services.getConfig().getDistributionConfig().getSecurityUDPDHAlgo().isEmpty()) {
-      synchronized (viewRequests) {
-        for (DistributionMessage request : viewRequests) {
-          if (request instanceof JoinRequestMessage) {
-
-            services.getMessenger().initClusterKey();
-            JoinRequestMessage jreq = (JoinRequestMessage) request;
-            // this will inform about cluster-secret key, as we have authenticated at this point
-            JoinResponseMessage response = new JoinResponseMessage(jreq.getSender(),
-                services.getMessenger().getClusterSecretKey(), jreq.getRequestId());
-            services.getMessenger().send(response);
-          }
-        }
-      }
     }
   }
 
@@ -820,7 +790,6 @@ public class GMSJoinLeave implements JoinLeave {
     if (locator != null) {
       locator.setIsCoordinator(true);
     }
-    sendDHKeys();
     if (currentView == null) {
       // create the initial membership view
       NetView newView = new NetView(this.localAddress);
@@ -2459,6 +2428,14 @@ public class GMSJoinLeave implements JoinLeave {
               } else {
                 joinReqs.add(mbr);
                 joinPorts.put(mbr, port);
+                if (services.getConfig().isUDPSecurityEnabled() ||
+                    services.getConfig().isMulticastEnabled()) {
+                  // send a join response so the new member can get the multicast messaging digest
+                  // and cluster key
+                  JoinResponseMessage response = new JoinResponseMessage(jmsg.getSender(),
+                      services.getMessenger().getClusterSecretKey(), jmsg.getRequestId());
+                  services.getMessenger().send(response);
+                }
               }
             }
             break;

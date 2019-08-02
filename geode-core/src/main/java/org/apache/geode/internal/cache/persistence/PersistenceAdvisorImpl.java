@@ -838,8 +838,9 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
   /**
    * @param previouslyOnlineMembers the members we have persisted online in our persistence files
    * @param offlineMembers This method will populate this set with any members that we are waiting
-   *        for an are actually not running right now. This is different that the set of members we
-   *        need to wait for - this member may end up waiting on member that is actually running.
+   *        for which are actually not running right now. This is different from the set of members
+   *        we need to wait for - this member may end up waiting on a member that is actually
+   *        running.
    * @return the list of members that this member needs to wait for before it can initialize.
    */
   @Override
@@ -957,15 +958,35 @@ public class PersistenceAdvisorImpl implements InternalPersistenceAdvisor {
           removeNewerPersistentID(offlineMembers, initializingID);
         }
 
-        // If we were able to determine what disk store this member is in, and it doesn't have a
-        // persistent ID, but we think we should be waiting for it, stop waiting for it.
-        if (initializingID == null && persistentID == null & diskStoreID != null) {
-          removeByDiskStoreID(membersToWaitFor, diskStoreID, true);
-          removeByDiskStoreID(offlineMembers, diskStoreID, true);
-        }
+        handlePartiallyDestroyedRegion(offlineMembers, membersToWaitFor, persistentID,
+            initializingID,
+            diskStoreID);
       }
     }
     return membersToWaitFor;
+  }
+
+  /**
+   * In the event that the region was partially destroyed via DestroyDataStorage on the peer,
+   * we do not need to wait on that peer. Currently this state can be reached when a bucket region
+   * GII fails, which results in DestroyDataStorage on the region (as opposed to a DestroyRegion).
+   * See DiskRegion.destroyPartiallyInitializedRegion() which handles the failed GII on the image
+   * receiving side for more details.
+   */
+  private void handlePartiallyDestroyedRegion(final Set<PersistentMemberID> offlineMembers,
+      final Set<PersistentMemberID> membersToWaitFor,
+      final PersistentMemberID persistentID,
+      final PersistentMemberID initializingID,
+      final DiskStoreID diskStoreID) {
+    /*
+     * When DestroyDataStorage is invoked on a peer for this region, we expect that its
+     * initializing and persistent IDs will be null, but the disk store ID will be non-null
+     * because the region was not fully destroyed.
+     */
+    if (initializingID == null && persistentID == null & diskStoreID != null) {
+      removeByDiskStoreID(membersToWaitFor, diskStoreID, true);
+      removeByDiskStoreID(offlineMembers, diskStoreID, true);
+    }
   }
 
   /**

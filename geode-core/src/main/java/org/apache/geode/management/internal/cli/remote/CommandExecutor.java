@@ -193,7 +193,7 @@ public class CommandExecutor {
                 .addLine("Cluster configuration for group '" + group + "' is not updated.");
           }
         } catch (Exception e) {
-          String message = "Failed to update cluster config for " + group;
+          String message = "Failed to update cluster configuration for " + group + ".";
           logger.error(message, e);
           // for now, if one cc update failed, we will set this flag. Will change this when we can
           // add lines to the result returned by the command

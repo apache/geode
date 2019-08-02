@@ -17,10 +17,6 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ENTITY_EXISTS;
-import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ENTITY_NOT_FOUND;
-import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ERROR;
-import static org.apache.geode.management.api.ClusterManagementResult.StatusCode.ILLEGAL_ARGUMENT;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,8 +128,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return assertSuccessful(new ClusterManagementRealizationResult(false,
-          "Cluster configuration service needs to be enabled"));
+      return assertSuccessful(new ClusterManagementRealizationResult(StatusCode.ERROR,
+          "Cluster configuration service needs to be enabled."));
     }
 
     String group = config.getConfigGroup();
@@ -150,9 +146,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
       memberValidator.validateCreate(config, configurationManager);
       // execute function on all members
     } catch (EntityExistsException e) {
-      raise(ENTITY_EXISTS, e);
+      raise(StatusCode.ENTITY_EXISTS, e);
     } catch (IllegalArgumentException e) {
-      raise(ILLEGAL_ARGUMENT, e);
+      raise(StatusCode.ILLEGAL_ARGUMENT, e);
     }
 
     Set<DistributedMember> targetedMembers = memberValidator.findServers(group);
@@ -167,7 +163,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // if any false result is added to the member list
     if (result.getStatusCode() != StatusCode.OK) {
-      result.setStatus(false, "Failed to apply the update on all members");
+      result.setStatus(StatusCode.ERROR, "Failed to create on all members.");
       return assertSuccessful(result);
     }
 
@@ -176,10 +172,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
       try {
         configurationManager.add(config, cacheConfigForGroup);
-        result.setStatus(true,
-            "Successfully updated config for " + finalGroup);
+        result.setStatus(StatusCode.OK,
+            "Successfully updated configuration for " + finalGroup + ".");
       } catch (Exception e) {
-        String message = "Failed to update cluster config for " + finalGroup;
+        String message = "Failed to update cluster configuration for " + finalGroup + ".";
         logger.error(message, e);
         result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
         return null;
@@ -201,8 +197,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
     if (persistenceService == null) {
-      return assertSuccessful(new ClusterManagementRealizationResult(false,
-          "Cluster configuration service needs to be enabled"));
+      return assertSuccessful(new ClusterManagementRealizationResult(StatusCode.ERROR,
+          "Cluster configuration service needs to be enabled."));
     }
 
     try {
@@ -214,13 +210,14 @@ public class LocatorClusterManagementService implements ClusterManagementService
         validator.validate(CacheElementOperation.DELETE, config);
       }
     } catch (IllegalArgumentException e) {
-      raise(ILLEGAL_ARGUMENT, e);
+      raise(StatusCode.ILLEGAL_ARGUMENT, e);
     }
 
     String[] groupsWithThisElement =
         memberValidator.findGroupsWithThisElement(config.getId(), configurationManager);
     if (groupsWithThisElement.length == 0) {
-      raise(ENTITY_NOT_FOUND, "Cache element '" + config.getId() + "' does not exist");
+      raise(StatusCode.ENTITY_NOT_FOUND,
+          config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
 
     // execute function on all members
@@ -234,7 +231,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     // if any false result is added to the member list
     if (result.getStatusCode() != StatusCode.OK) {
-      result.setStatus(false, "Failed to apply the update on all members");
+      result.setStatus(StatusCode.ERROR, "Failed to delete on all members.");
       return result;
     }
 
@@ -247,7 +244,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
           configurationManager.delete(config, cacheConfigForGroup);
           updatedGroups.add(finalGroup);
         } catch (Exception e) {
-          logger.error("Failed to update cluster config for " + finalGroup, e);
+          logger.error("Failed to update cluster configuration for " + finalGroup + ".", e);
           failedGroups.add(finalGroup);
           return null;
         }
@@ -256,9 +253,10 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     if (failedGroups.isEmpty()) {
-      result.setStatus(true, "Successfully removed config for " + updatedGroups);
+      result.setStatus(StatusCode.OK,
+          "Successfully removed configuration for " + updatedGroups + ".");
     } else {
-      String message = "Failed to update cluster config for " + failedGroups;
+      String message = "Failed to update cluster configuration for " + failedGroups + ".";
       result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
     }
 
@@ -277,8 +275,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
     ClusterManagementListResult<T, R> result = new ClusterManagementListResult<>();
 
     if (persistenceService == null) {
-      return assertSuccessful(new ClusterManagementListResult<>(false,
-          "Cluster configuration service needs to be enabled"));
+      return assertSuccessful(new ClusterManagementListResult<>(StatusCode.ERROR,
+          "Cluster configuration service needs to be enabled."));
     }
 
     List<T> resultList = new ArrayList<>();
@@ -381,12 +379,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
     List<ConfigurationResult<T, R>> result = list.getResult();
 
     if (result.size() == 0) {
-      raise(ENTITY_NOT_FOUND,
-          config.getClass().getSimpleName() + " with id = " + config.getId() + " not found.");
+      raise(StatusCode.ENTITY_NOT_FOUND,
+          config.getClass().getSimpleName() + " '" + config.getId() + "' does not exist.");
     }
 
     if (result.size() > 1) {
-      raise(ERROR, "Expect only one matching " + config.getClass().getSimpleName());
+      raise(StatusCode.ERROR,
+          "Expect only one matching " + config.getClass().getSimpleName() + ".");
     }
     return assertSuccessful(list);
   }
@@ -400,8 +399,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED,
-        "async operation started (GET uri to check status)");
+        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
 
     return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
   }
@@ -420,11 +418,19 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static <V extends OperationResult> ClusterManagementResult getStatus(
       CompletableFuture<V> future) {
     if (future.isCompletedExceptionally()) {
-      return new ClusterManagementResult(StatusCode.ERROR, "failed");
+      String error = "Operation failed.";
+      try {
+        future.get();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        error = e.getMessage();
+      }
+      return new ClusterManagementResult(StatusCode.ERROR, error);
     } else if (future.isDone()) {
-      return new ClusterManagementResult(StatusCode.OK, "finished successfully");
+      return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
     } else {
-      return new ClusterManagementResult(StatusCode.IN_PROGRESS, "in progress");
+      return new ClusterManagementResult(StatusCode.IN_PROGRESS, "Operation in progress.");
     }
   }
 
@@ -458,25 +464,20 @@ public class LocatorClusterManagementService implements ClusterManagementService
       String opId) {
     final OperationInstance<?, V> operationInstance = operationManager.getOperationInstance(opId);
     if (operationInstance == null) {
-      raise(ENTITY_NOT_FOUND, "Operation id = " + opId + " not found");
+      raise(StatusCode.ENTITY_NOT_FOUND, "Operation '" + opId + "' does not exist.");
     }
     final CompletableFuture<V> status = operationInstance.getFutureResult();
     ClusterManagementOperationStatusResult<V> result =
-        new ClusterManagementOperationStatusResult<>();
+        new ClusterManagementOperationStatusResult<>(getStatus(status));
     result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
-    if (!status.isDone()) {
-      result.setStatus(StatusCode.IN_PROGRESS, "in progress");
-    } else {
+    if (status.isDone() && !status.isCompletedExceptionally()) {
       try {
         result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
         result.setResult(status.get());
-        result.setStatus(StatusCode.OK, "finished successfully");
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
-      } catch (ExecutionException e) {
-        throw new RuntimeException(e);
+      } catch (ExecutionException ignore) {
       }
     }
     return result;
@@ -516,7 +517,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
     if (configurationManager == null) {
-      raise(ILLEGAL_ARGUMENT, String.format("Configuration type %s is not supported",
+      raise(StatusCode.ILLEGAL_ARGUMENT, String.format("%s is not supported.",
           config.getClass().getSimpleName()));
     }
 

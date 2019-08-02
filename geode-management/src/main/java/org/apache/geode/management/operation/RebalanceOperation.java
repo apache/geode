@@ -31,7 +31,7 @@ public class RebalanceOperation implements ClusterManagementOperation<RebalanceR
   /**
    * see {@link #getEndpoint()}
    */
-  public static final String REBALANCE_ENDPOINT = "/operations/rebalance";
+  public static final String REBALANCE_ENDPOINT = "/operations/rebalances";
   private List<String> includeRegions = new ArrayList<>();
   private List<String> excludeRegions = new ArrayList<>();
   private boolean simulate;

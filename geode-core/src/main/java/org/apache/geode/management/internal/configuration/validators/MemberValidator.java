@@ -61,7 +61,8 @@ public class MemberValidator {
       String members =
           intersection.stream().map(DistributedMember::getName).collect(Collectors.joining(", "));
       throw new EntityExistsException(
-          "Member(s) " + members + " already has this element created.");
+          config.getClass().getSimpleName() + " '" + config.getId()
+              + "' already exists on member(s) " + members + ".");
     }
 
     // if there is no common member, we still need to verify if the new config is compatible with

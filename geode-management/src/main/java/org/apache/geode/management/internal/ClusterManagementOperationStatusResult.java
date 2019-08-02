@@ -27,6 +27,10 @@ public class ClusterManagementOperationStatusResult<V extends OperationResult>
     extends ClusterManagementResult {
   public ClusterManagementOperationStatusResult() {}
 
+  public ClusterManagementOperationStatusResult(ClusterManagementResult status) {
+    super(status);
+  }
+
   private V operationResult;
   private String operator;
 

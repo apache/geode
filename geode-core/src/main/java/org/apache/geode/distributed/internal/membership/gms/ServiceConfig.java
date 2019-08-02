@@ -81,8 +81,16 @@ public class ServiceConfig {
     return memberWeight;
   }
 
+  public boolean isMulticastEnabled() {
+    return transport.isMcastEnabled();
+  }
+
   public boolean isNetworkPartitionDetectionEnabled() {
     return networkPartitionDetectionEnabled;
+  }
+
+  public boolean isUDPSecurityEnabled() {
+    return !dconfig.getSecurityUDPDHAlgo().isEmpty();
   }
 
   public boolean areLocatorsPreferredAsCoordinators() {

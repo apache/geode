@@ -14,21 +14,27 @@
  */
 package org.apache.geode.cache30;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_TIME_STATISTICS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_LEVEL;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_TTL;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_ARCHIVE_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.STATISTIC_SAMPLING_ENABLED;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -40,11 +46,16 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
+import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.pdx.PdxReader;
 import org.apache.geode.pdx.PdxSerializable;
 import org.apache.geode.pdx.PdxSerializationException;
 import org.apache.geode.pdx.PdxWriter;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
+import org.apache.geode.test.dunit.AsyncInvocation;
+import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.SerializableCallable;
@@ -55,11 +66,16 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 
 public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
-  static int locatorVM = 3;
-  static String mcastport = "42786";
-  static String mcastttl = "0";
+  int locatorVM = 3;
+  String mcastport = "0";
+  String mcastttl = "0";
 
   private int locatorPort;
+
+  @Before
+  public void setup() {
+    mcastport = String.valueOf(AvailablePortHelper.getRandomAvailableUDPPort());
+  }
 
   @Override
   public final void preSetUp() throws Exception {
@@ -95,23 +111,50 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     Host host = Host.getHost(0);
     final VM vm0 = host.getVM(0);
     final VM vm1 = host.getVM(1);
-    // 1. start locator with mcast port
+
     vm0.invoke(create);
     vm1.invoke(create);
-    // There is possibility that you may get this packet from other tests
-    /*
-     * SerializableRunnable validateMulticastBeforeRegionOps = new
-     * CacheSerializableRunnable("validateMulticast before region ops") { public void run2() throws
-     * CacheException { validateMulticastOpsBeforeRegionOps(); } };
-     *
-     * vm0.invoke(validateMulticastBeforeRegionOps); vm1.invoke(validateMulticastBeforeRegionOps);
-     */
 
     SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
       @Override
       public void run2() throws CacheException {
         final Region region = getRootRegion().getSubregion(name);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 50; i++) {
+          region.put(i, i);
+        }
+      }
+    };
+
+    vm0.invoke(doPuts);
+    vm0.invoke(() -> validateMulticastOpsAfterRegionOps());
+    vm1.invoke(() -> validateMulticastOpsAfterRegionOps());
+
+    closeLocator();
+  }
+
+  @Test
+  public void testMulticastAfterReconnect() {
+    final String name = "mcastRegion";
+    SerializableRunnable create = new CacheSerializableRunnable("Create Region") {
+      @Override
+      public void run2() throws CacheException {
+        createRegion(name, getRegionAttributes());
+      }
+    };
+
+    locatorPort = startLocator();
+    Host host = Host.getHost(0);
+
+    final VM vm0 = host.getVM(0);
+    final VM vm1 = host.getVM(1);
+    vm0.invoke(create);
+    vm1.invoke(create);
+
+    SerializableRunnable doPuts = new CacheSerializableRunnable("do put") {
+      @Override
+      public void run2() throws CacheException {
+        final Region region = getRootRegion().getSubregion(name);
+        for (int i = 0; i < 50; i++) {
           region.put(i, i);
         }
       }
@@ -119,16 +162,32 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     vm0.invoke(doPuts);
 
-    SerializableRunnable validateMulticastAfterRegionOps =
-        new CacheSerializableRunnable("validateMulticast after region ops") {
-          @Override
-          public void run2() throws CacheException {
-            validateMulticastOpsAfterRegionOps();
-          }
-        };
+    DistributedTestUtils.crashDistributedSystem(vm1);
+    vm0.invoke(doPuts);
+    vm1.invoke(() -> {
+      basicGetCache().waitUntilReconnected(30, TimeUnit.SECONDS);
+      assertNotNull(basicGetCache().getReconnectedCache());
+      cache = (InternalCache) basicGetCache().getReconnectedCache();
+      system = cache.getInternalDistributedSystem();
+    });
 
-    vm0.invoke(validateMulticastAfterRegionOps);
-    vm1.invoke(validateMulticastAfterRegionOps);
+    // after vm1 reconnects it should have the correct multicast digest and operations
+    // on the cache region should be acknowledged.
+    AsyncInvocation<Object> asyncInvocation = vm0.invokeAsync(doPuts);
+    GeodeAwaitility.await().until(asyncInvocation::isDone);
+    Assertions.assertThat(asyncInvocation.getException()).isNull();
+
+    // after vm1 reconnects it should respond to multicast destroy-region messages
+    asyncInvocation = vm0.invokeAsync(() -> {
+      GeodeAwaitility.await().until(() -> {
+        getCache().close();
+        return true;
+      });
+    });
+    GeodeAwaitility.await().until(asyncInvocation::isDone);
+    Assertions.assertThat(asyncInvocation.getException()).isNull();
+
+    vm1.invoke(() -> validateMulticastOpsAfterRegionOps());
 
     closeLocator();
   }
@@ -220,8 +279,10 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
+    p.put(DISABLE_AUTO_RECONNECT, "false");
+    p.put(MAX_WAIT_TIME_RECONNECT, "20");
     p.put(STATISTIC_SAMPLING_ENABLED, "true");
-    p.put(STATISTIC_ARCHIVE_FILE, "multicast");
+    p.put(STATISTIC_ARCHIVE_FILE, "multicast" + OSProcess.getId());
     p.put(ENABLE_TIME_STATISTICS, "true");
     p.put(MCAST_PORT, mcastport);
     p.put(MCAST_TTL, mcastttl);

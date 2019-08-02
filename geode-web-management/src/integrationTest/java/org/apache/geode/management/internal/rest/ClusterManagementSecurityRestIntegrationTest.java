@@ -98,9 +98,10 @@ public class ClusterManagementSecurityRestIntegrationTest {
     testContexts.add(new TestContext(post("/experimental/configurations/pdx"), "CLUSTER:MANAGE")
         .setContent(mapper.writeValueAsString(new PdxType())));
 
-    testContexts.add(new TestContext(post("/experimental/operations/rebalance"), "DATA:MANAGE")
+    testContexts.add(new TestContext(post("/experimental/operations/rebalances"), "DATA:MANAGE")
         .setContent(mapper.writeValueAsString(new RebalanceOperation())));
-    testContexts.add(new TestContext(get("/experimental/operations/rebalance/123"), "DATA:MANAGE"));
+    testContexts
+        .add(new TestContext(get("/experimental/operations/rebalances/123"), "DATA:MANAGE"));
   }
 
   @Before
@@ -121,8 +122,13 @@ public class ClusterManagementSecurityRestIntegrationTest {
           .andExpect(status().isForbidden())
           .andExpect(jsonPath("$.statusCode", is("UNAUTHORIZED")))
           .andExpect(jsonPath("$.statusMessage",
-              is(testContext.username + " not authorized for " + testContext.permission)));
+              is(sentenceCase(testContext.username) + " not authorized for "
+                  + testContext.permission + ".")));
     }
+  }
+
+  private static String sentenceCase(String s) {
+    return s.substring(0, 1).toUpperCase() + s.substring(1);
   }
 
   @Test
@@ -131,7 +137,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Full authentication is required to access this resource")));
+            is("Full authentication is required to access this resource.")));
   }
 
   @Test
@@ -155,7 +161,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.statusCode", is("OK")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Successfully updated config for cluster")));
+            is("Successfully updated configuration for cluster.")));
   }
 
   private static class TestContext {

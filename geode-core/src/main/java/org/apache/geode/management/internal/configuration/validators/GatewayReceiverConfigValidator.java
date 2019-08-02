@@ -46,7 +46,7 @@ public class GatewayReceiverConfigValidator
 
       if (Integer.parseInt(config.getStartPort()) > Integer.parseInt(config.getEndPort())) {
         throw new IllegalArgumentException("Start port " + config.getStartPort()
-            + " must be less than the end port " + config.getEndPort());
+            + " must be less than the end port " + config.getEndPort() + ".");
       }
     }
   }

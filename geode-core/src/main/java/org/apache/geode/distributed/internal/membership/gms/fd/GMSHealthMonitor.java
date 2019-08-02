@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -282,6 +283,8 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
 
         if (nextNeighborTS == null) {
+          logger.debug("timestamp for {} was found null - setting current time as timestamp",
+              neighbour);
           TimeStamp customTS = new TimeStamp(currentTime);
           memberTimeStamps.put(neighbour, customTS);
           return;
@@ -1379,7 +1382,7 @@ public class GMSHealthMonitor implements HealthMonitor {
         } else {
           logger.info(
               "Availability check failed but detected recent message traffic for suspect member "
-                  + mbr);
+                  + mbr + " at time " + new Date(ts.getTime()));
           failed = false;
         }
       }
