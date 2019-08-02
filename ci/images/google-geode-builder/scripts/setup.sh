@@ -87,6 +87,6 @@ ln -fs /opt/selenium/chromedriver-${CHROME_DRIVER_VERSION} /usr/bin/chromedriver
 adduser --disabled-password --gecos "" --uid ${LOCAL_UID} ${LOCAL_USER}
 usermod -G docker,google-sudoers -a ${LOCAL_USER}
 echo "export PATH=/google-cloud-sdk/bin:${PATH}" > /etc/profile.d/google_sdk_path.sh
-
+apt-get remove -y unattended-upgrades && apt-get -y autoremove
 apt-get clean
 rm -rf /var/lib/apt/lists/*
