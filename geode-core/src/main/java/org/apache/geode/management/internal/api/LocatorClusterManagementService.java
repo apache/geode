@@ -75,6 +75,7 @@ import org.apache.geode.management.internal.configuration.validators.GatewayRece
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
+import org.apache.geode.management.internal.operation.InfoResult;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
@@ -398,7 +399,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     ClusterManagementResult result = new ClusterManagementResult(
-        StatusCode.ACCEPTED, "Operation started.  Use the uri to check its status.");
+        StatusCode.ACCEPTED, "Operation started.  Use the URI to check its status.");
 
     return assertSuccessful(toClusterManagementListOperationsResult(result, operationInstance));
   }
@@ -419,7 +420,17 @@ public class LocatorClusterManagementService implements ClusterManagementService
     if (future.isCompletedExceptionally()) {
       return new ClusterManagementResult(StatusCode.ERROR, "Operation failed.");
     } else if (future.isDone()) {
-      return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
+      String info = "Operation finished successfully.";
+      try {
+        V result = future.get();
+        if (result instanceof InfoResult) {
+          info = ((InfoResult) result).getStatusMessage();
+        }
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException ignore) {
+      }
+      return new ClusterManagementResult(StatusCode.OK, info);
     } else {
       return new ClusterManagementResult(StatusCode.IN_PROGRESS, "Operation in progress.");
     }
@@ -459,21 +470,16 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
     final CompletableFuture<V> status = operationInstance.getFutureResult();
     ClusterManagementOperationStatusResult<V> result =
-        new ClusterManagementOperationStatusResult<>();
+        new ClusterManagementOperationStatusResult<>(getStatus(status));
     result.setOperator(operationInstance.getOperator());
     result.setOperationStart(operationInstance.getOperationStart());
-    if (!status.isDone()) {
-      result.setStatus(StatusCode.IN_PROGRESS, "Operation in progress.");
-    } else {
+    if (status.isDone() && !status.isCompletedExceptionally()) {
       try {
         result.setOperationEnded(operationInstance.getFutureOperationEnded().get());
         result.setResult(status.get());
-        result.setStatus(StatusCode.OK, "Operation finished successfully.");
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw new RuntimeException(e);
-      } catch (ExecutionException e) {
-        throw new RuntimeException(e);
+      } catch (ExecutionException ignore) {
       }
     }
     return result;

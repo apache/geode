@@ -19,11 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
-public class RebalanceResultImpl implements RebalanceResult {
+public class RebalanceResultImpl implements RebalanceResult, InfoResult {
   private List<RebalanceRegionResult> rebalanceSummary = new ArrayList<>();
+
+  @JsonIgnore
+  private String statusMessage;
 
   public RebalanceResultImpl() {}
 
@@ -34,6 +39,15 @@ public class RebalanceResultImpl implements RebalanceResult {
 
   public void setRebalanceSummary(List<RebalanceRegionResult> rebalanceSummary) {
     this.rebalanceSummary = rebalanceSummary;
+  }
+
+  @Override
+  public String getStatusMessage() {
+    return statusMessage;
+  }
+
+  public void setStatusMessage(String statusMessage) {
+    this.statusMessage = statusMessage;
   }
 
   @Override

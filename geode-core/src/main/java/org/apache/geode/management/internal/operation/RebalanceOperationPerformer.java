@@ -56,9 +56,9 @@ public class RebalanceOperationPerformer {
 
       if (tableSections.size() == 0) {
         InfoResultModel info = result.getInfoSection("info");
-        if (info != null)
-          throw new RuntimeException(
-              "rebalance returned info: " + String.join("\n", info.getContent()));
+        if (info != null) {
+          rebalanceResult.setStatusMessage(String.join("\n", info.getContent()));
+        }
       }
 
       return rebalanceResult;
