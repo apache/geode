@@ -135,7 +135,10 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
   @After
   public void tearDown() {
     for (VM vm : toArray(getAllVMs(), getController())) {
-      vm.invoke(() -> InternalResourceManager.setResourceObserver(null));
+      vm.invoke(() -> {
+        InternalResourceManager.setResourceObserver(null);
+        DistributionMessageObserver.setInstance(null);
+      });
     }
   }
 
