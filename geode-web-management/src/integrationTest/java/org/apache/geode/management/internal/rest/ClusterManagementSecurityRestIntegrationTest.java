@@ -121,8 +121,13 @@ public class ClusterManagementSecurityRestIntegrationTest {
           .andExpect(status().isForbidden())
           .andExpect(jsonPath("$.statusCode", is("UNAUTHORIZED")))
           .andExpect(jsonPath("$.statusMessage",
-              is(testContext.username + " not authorized for " + testContext.permission)));
+              is(sentenceCase(testContext.username) + " not authorized for "
+                  + testContext.permission + ".")));
     }
+  }
+
+  private static String sentenceCase(String s) {
+    return s.substring(0, 1).toUpperCase() + s.substring(1);
   }
 
   @Test
@@ -131,7 +136,7 @@ public class ClusterManagementSecurityRestIntegrationTest {
         .andExpect(status().isUnauthorized())
         .andExpect(jsonPath("$.statusCode", is("UNAUTHENTICATED")))
         .andExpect(jsonPath("$.statusMessage",
-            is("Full authentication is required to access this resource")));
+            is("Full authentication is required to access this resource.")));
   }
 
   @Test

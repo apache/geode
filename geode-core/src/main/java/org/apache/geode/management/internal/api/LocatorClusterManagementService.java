@@ -17,6 +17,8 @@
 
 package org.apache.geode.management.internal.api;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -418,13 +420,24 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private static <V extends OperationResult> ClusterManagementResult getStatus(
       CompletableFuture<V> future) {
     if (future.isCompletedExceptionally()) {
-      return new ClusterManagementResult(StatusCode.ERROR, "Operation failed.");
+      String error = "Operation failed.";
+      try {
+        future.get();
+      } catch (InterruptedException ignore) {
+        Thread.currentThread().interrupt();
+      } catch (ExecutionException e) {
+        error = e.getMessage();
+      }
+      return new ClusterManagementResult(StatusCode.ERROR, error);
     } else if (future.isDone()) {
       String info = "Operation finished successfully.";
       try {
         V result = future.get();
         if (result instanceof InfoResult) {
-          info = ((InfoResult) result).getStatusMessage();
+          String better = ((InfoResult) result).getStatusMessage();
+          if (!isBlank(better)) {
+            info = better;
+          }
         }
       } catch (InterruptedException ignore) {
         Thread.currentThread().interrupt();

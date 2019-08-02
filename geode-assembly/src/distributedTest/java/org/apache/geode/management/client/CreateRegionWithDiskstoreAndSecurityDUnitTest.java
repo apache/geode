@@ -86,7 +86,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("user", "user").build();
     assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessageContaining("UNAUTHORIZED: user not authorized for DATA:MANAGE");
+        .hasMessageContaining("UNAUTHORIZED: User not authorized for DATA:MANAGE");
   }
 
   @Test
@@ -109,7 +109,7 @@ public class CreateRegionWithDiskstoreAndSecurityDUnitTest {
             .setHostAddress("localhost", locator.getHttpPort())
             .setCredentials("data", "data").build();
     assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessageContaining("UNAUTHORIZED: data not authorized for CLUSTER:WRITE:DISK");
+        .hasMessageContaining("UNAUTHORIZED: Data not authorized for CLUSTER:WRITE:DISK");
   }
 
   @Test

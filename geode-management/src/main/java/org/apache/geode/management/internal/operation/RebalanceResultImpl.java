@@ -19,15 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
 public class RebalanceResultImpl implements RebalanceResult, InfoResult {
   private List<RebalanceRegionResult> rebalanceSummary = new ArrayList<>();
 
-  @JsonIgnore
   private String statusMessage;
 
   public RebalanceResultImpl() {}
@@ -47,7 +45,8 @@ public class RebalanceResultImpl implements RebalanceResult, InfoResult {
   }
 
   public void setStatusMessage(String statusMessage) {
-    this.statusMessage = statusMessage;
+    // capitalize and punctuate properly since this can be accessed directly
+    this.statusMessage = new ClusterManagementResult(null, statusMessage).getStatusMessage();
   }
 
   @Override

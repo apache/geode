@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.rest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -87,19 +86,21 @@ public class RebalanceIntegrationTest {
     context.perform(post("/experimental/operations/rebalance").content(json));
     context.perform(get("/experimental/operations/rebalance"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR")))
+        .andExpect(
+            jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
         .andExpect(jsonPath("$.result[0].uri", Matchers.containsString("rebalance/")))
         .andExpect(jsonPath("$.statusCode", Matchers.is("OK")));
   }
 
   @Test
-  public void doOperation() {
+  public void doOperation() throws Exception {
     RebalanceOperation rebalance = new RebalanceOperation();
     ClusterManagementOperationResult<RebalanceResult> result = client.start(rebalance);
-    // note: the "java.lang.RuntimeException: " prefix is appended by CompletableFuture itself when
-    // you call get() and it had completed exceptionally.
-    assertThatThrownBy(result.getFutureResult()::get).hasMessage(
-        "java.lang.RuntimeException: ERROR: rebalance returned info: Distributed system has no regions that can be rebalanced");
+    assertThat(result.isSuccessful()).isTrue();
+    assertThat(result.getStatusMessage())
+        .isEqualTo("Operation started.  Use the URI to check its status.");
+    assertThat(result.getResult().getStatusMessage())
+        .isEqualTo("Distributed system has no regions that can be rebalanced.");
   }
 
   @Test
@@ -110,7 +111,7 @@ public class RebalanceIntegrationTest {
     assertThat(listResult.getResult().size()).isGreaterThanOrEqualTo(1);
     assertThat(listResult.getResult().get(0).getOperationStart()).isNotNull();
     assertThat(listResult.getResult().get(0).getStatusCode().toString()).isIn("IN_PROGRESS",
-        "ERROR");
+        "ERROR", "OK");
     assertThat(listResult.getResult().get(0).getUri()).contains("rebalance/");
   }
 }
