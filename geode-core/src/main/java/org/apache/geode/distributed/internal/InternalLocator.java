@@ -1111,6 +1111,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalDistributedSystem newSystem =
           (InternalDistributedSystem) system.getReconnectedSystem();
       if (newSystem != null) {
+        setLocator(this);
         if (!tcpServerStarted) {
           if (locatorListener != null) {
             locatorListener.clearLocatorInfo();
@@ -1125,7 +1126,6 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           return false;
         }
 
-        setLocator(this);
         restarted = true;
       }
     }

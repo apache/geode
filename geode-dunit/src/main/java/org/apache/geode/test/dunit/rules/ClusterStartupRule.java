@@ -211,16 +211,21 @@ public class ClusterStartupRule implements SerializableTestRule {
         x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
   }
 
+  public MemberVM startLocatorVM(int index, int port, Properties properties, int... locatorPort) {
+    return startLocatorVM(index, port, VersionManager.CURRENT_VERSION,
+        x -> x.withProperties(properties).withConnectionToLocator(locatorPort));
+  }
+
   public MemberVM startLocatorVM(int index, String version) {
-    return startLocatorVM(index, version, x -> x);
+    return startLocatorVM(index, 0, version, x -> x);
   }
 
   public MemberVM startLocatorVM(int index,
       SerializableFunction<LocatorStarterRule> ruleOperator) {
-    return startLocatorVM(index, VersionManager.CURRENT_VERSION, ruleOperator);
+    return startLocatorVM(index, 0, VersionManager.CURRENT_VERSION, ruleOperator);
   }
 
-  public MemberVM startLocatorVM(int index, String version,
+  public MemberVM startLocatorVM(int index, int port, String version,
       SerializableFunction<LocatorStarterRule> ruleOperator) {
     final String defaultName = "locator-" + index;
     VM locatorVM = getVM(index, version);
@@ -233,6 +238,9 @@ public class ClusterStartupRule implements SerializableTestRule {
       ruleOperator.apply(locatorStarter);
       locatorStarter.withName(defaultName);
       locatorStarter.withAutoStart();
+      if (port != 0) {
+        locatorStarter.withPort(port);
+      }
       locatorStarter.before();
       return locatorStarter;
     });
