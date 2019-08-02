@@ -41,8 +41,7 @@ public class RebalanceOperationPerformer {
               toArray(parameters.getExcludeRegions()), parameters.isSimulate()).call();
 
       if (result.getStatus().equals(Result.Status.ERROR)) {
-        throw new RuntimeException("rebalance returned error: "
-            + String.join("\n", result.getInfoSection("error").getContent()));
+        throw new RuntimeException(String.join("\n", result.getInfoSection("error").getContent()));
       }
       RebalanceResultImpl rebalanceResult = new RebalanceResultImpl();
 
