@@ -53,7 +53,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 
-public class LocalRegionTest {
+public class LocalRegionPartialMockTest {
   private LocalRegion region;
   private EntryEventImpl event;
   private ServerRegionProxy serverRegionProxy;
