@@ -91,7 +91,7 @@ public class ClusterManagementResult {
    */
   public void setStatus(StatusCode statusCode, String message) {
     this.statusCode = statusCode;
-    this.statusMessage = proper(message);
+    this.statusMessage = formatErrorMessage(message);
   }
 
   /**
@@ -99,7 +99,7 @@ public class ClusterManagementResult {
    * This helps the CMS API give a consistent format to error messages, even when they sometimes
    * come from parts of the system beyond our control.
    */
-  private static String proper(String message) {
+  private static String formatErrorMessage(String message) {
     if (isBlank(message)) {
       return message;
     }
