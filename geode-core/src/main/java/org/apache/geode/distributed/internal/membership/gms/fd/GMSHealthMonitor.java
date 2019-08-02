@@ -283,6 +283,8 @@ public class GMSHealthMonitor implements HealthMonitor {
         }
 
         if (nextNeighborTS == null) {
+          logger.debug("timestamp for {} was found null - setting current time as timestamp",
+              neighbour);
           TimeStamp customTS = new TimeStamp(currentTime);
           memberTimeStamps.put(neighbour, customTS);
           return;
