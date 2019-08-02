@@ -20,6 +20,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Set;
+import java.util.function.Function;
 
 import org.junit.Test;
 
@@ -113,8 +114,11 @@ public class AbstractRegionJUnitTest {
     DiskWriteAttributes diskWriteAttributes = mock(DiskWriteAttributes.class);
     when(regionAttributes.getDiskWriteAttributes()).thenReturn(diskWriteAttributes);
     RegionMapConstructor regionMapConstructor = mock(RegionMapConstructor.class);
+    Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory =
+        (localRegion) -> mock(RegionPerfStats.class);
     AbstractRegion region = new LocalRegion("regionName", regionAttributes, null, Fakes.cache(),
-        new InternalRegionArguments(), null, regionMapConstructor, null, null, null);
+        new InternalRegionArguments(), null, regionMapConstructor, null, null, null,
+        regionPerfStatsFactory);
     return region;
   }
 }
