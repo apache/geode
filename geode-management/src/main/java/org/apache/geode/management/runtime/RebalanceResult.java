@@ -18,14 +18,13 @@ package org.apache.geode.management.runtime;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.internal.operation.InfoResult;
 import org.apache.geode.management.operation.RebalanceOperation;
 
 /**
  * the final results of a {@link RebalanceOperation}
  */
 @Experimental
-public interface RebalanceResult extends OperationResult, InfoResult {
+public interface RebalanceResult extends OperationResult {
   /**
    * Return summary of work performed for each region
    */
@@ -35,6 +34,5 @@ public interface RebalanceResult extends OperationResult, InfoResult {
    * May contain additional information special cases, for example when the rebalance operation
    * "succeeds" only because there are no partitioned regions or only one server.
    */
-  @Override
   String getStatusMessage();
 }

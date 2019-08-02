@@ -23,7 +23,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
 
-public class RebalanceResultImpl implements RebalanceResult, InfoResult {
+public class RebalanceResultImpl implements RebalanceResult {
   private List<RebalanceRegionResult> rebalanceSummary = new ArrayList<>();
 
   private String statusMessage;

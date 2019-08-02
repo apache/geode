@@ -17,7 +17,6 @@
 
 package org.apache.geode.management.internal.api;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,7 +76,6 @@ import org.apache.geode.management.internal.configuration.validators.GatewayRece
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
-import org.apache.geode.management.internal.operation.InfoResult;
 import org.apache.geode.management.internal.operation.OperationHistoryManager;
 import org.apache.geode.management.internal.operation.OperationHistoryManager.OperationInstance;
 import org.apache.geode.management.internal.operation.OperationManager;
@@ -430,20 +428,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
       return new ClusterManagementResult(StatusCode.ERROR, error);
     } else if (future.isDone()) {
-      String info = "Operation finished successfully.";
-      try {
-        V result = future.get();
-        if (result instanceof InfoResult) {
-          String better = ((InfoResult) result).getStatusMessage();
-          if (!isBlank(better)) {
-            info = better;
-          }
-        }
-      } catch (InterruptedException ignore) {
-        Thread.currentThread().interrupt();
-      } catch (ExecutionException ignore) {
-      }
-      return new ClusterManagementResult(StatusCode.OK, info);
+      return new ClusterManagementResult(StatusCode.OK, "Operation finished successfully.");
     } else {
       return new ClusterManagementResult(StatusCode.IN_PROGRESS, "Operation in progress.");
     }
