@@ -214,49 +214,55 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       region.put("KEY-2", "VALUE-2");
     });
 
-    vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(
-          new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
-              getBlackboard()));
-    });
+    try {
+      vm0.invoke(() -> {
+        DistributionMessageObserver.setInstance(
+            new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
+                getBlackboard()));
+      });
 
-    AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
+      AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
 
-    logger.info("##### After async create region in vm1");
+      logger.info("##### After async create region in vm1");
 
-    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
+      SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
 
-    logger.info("##### After wait for cache close in vm0");
+      logger.info("##### After wait for cache close in vm0");
 
-    vm1.bounceForcibly();
+      vm1.bounceForcibly();
 
-    logger.info("##### After bounce in vm1");
+      logger.info("##### After bounce in vm1");
 
-    asyncVM1.join();
+      asyncVM1.join();
 
-    logger.info("##### After asyncvm1 join");
+      logger.info("##### After asyncvm1 join");
 
-    asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
+      asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
 
-    logger.info("##### After create region in vm1");
+      logger.info("##### After create region in vm1");
 
-    vm0.invoke(() -> createAsyncDiskRegion());
+      vm0.invoke(() -> createAsyncDiskRegion());
 
-    asyncVM1.join();
+      asyncVM1.join();
 
-    logger.info("##### After create region in vm0");
+      logger.info("##### After create region in vm0");
 
-    vm0.invoke(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
-      assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
-    });
+      vm0.invoke(() -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
+        assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
+      });
 
-    vm1.invoke(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
-      assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
-    });
+      vm1.invoke(() -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
+        assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
+      });
+    } finally {
+      vm0.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
   }
 
   @Test
@@ -272,49 +278,55 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
       region.put("KEY-2", "VALUE-2");
     });
 
-    vm0.invoke(() -> {
-      DistributionMessageObserver.setInstance(
-          new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
-              getBlackboard()));
-    });
+    try {
+      vm0.invoke(() -> {
+        DistributionMessageObserver.setInstance(
+            new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
+                getBlackboard()));
+      });
 
-    AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
+      AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
 
-    logger.info("##### After async create region in vm1");
+      logger.info("##### After async create region in vm1");
 
-    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
+      SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
 
-    logger.info("##### After wait for cache close in vm0");
+      logger.info("##### After wait for cache close in vm0");
 
-    vm1.bounceForcibly();
+      vm1.bounceForcibly();
 
-    logger.info("##### After bounce in vm1");
+      logger.info("##### After bounce in vm1");
 
-    asyncVM1.join();
+      asyncVM1.join();
 
-    logger.info("##### After asyncvm1 join");
+      logger.info("##### After asyncvm1 join");
 
-    asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
+      asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
 
-    logger.info("##### After create region in vm1");
+      logger.info("##### After create region in vm1");
 
-    vm0.invoke(() -> createSyncDiskRegion());
+      vm0.invoke(() -> createSyncDiskRegion());
 
-    asyncVM1.join();
+      asyncVM1.join();
 
-    logger.info("##### After create region in vm0");
+      logger.info("##### After create region in vm0");
 
-    vm0.invoke(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
-      assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
-    });
+      vm0.invoke(() -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
+        assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
+      });
 
-    vm1.invoke(() -> {
-      Region<String, String> region = cacheRule.getCache().getRegion(regionName);
-      assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
-      assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
-    });
+      vm1.invoke(() -> {
+        Region<String, String> region = cacheRule.getCache().getRegion(regionName);
+        assertThat(region.get("KEY-1")).isEqualTo("VALUE-1");
+        assertThat(region.get("KEY-2")).isEqualTo("VALUE-2");
+      });
+    } finally {
+      vm0.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
   }
 
   @Test

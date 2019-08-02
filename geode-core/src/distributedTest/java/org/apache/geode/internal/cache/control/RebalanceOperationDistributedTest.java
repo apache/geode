@@ -2292,31 +2292,37 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
           redundantCopies);
     });
 
-    server1.invokeAsync(() -> {
-      InternalResourceManager manager = getCache().getInternalResourceManager();
+    try {
+      server1.invokeAsync(() -> {
+        InternalResourceManager manager = getCache().getInternalResourceManager();
 
-      // This will signal a bounce of the VM upon receving the request for any bucket GII for the
-      // test partitioned region
-      DistributionMessageObserver
-          .setInstance(new SignalBounceOnRequestImageMessageObserver("_B__" + regionName + "_",
-              getCache(), getBlackboard()));
+        // This will signal a bounce of the VM upon receiving the request for any bucket GII for
+        // the test partitioned region
+        DistributionMessageObserver
+            .setInstance(new SignalBounceOnRequestImageMessageObserver("_B__" + regionName + "_",
+                getCache(), getBlackboard()));
 
-      doRebalance(false, manager);
-    });
+        doRebalance(false, manager);
+      });
 
-    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), server1);
+      SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), server1);
 
-    server1.invoke(() -> {
-      // Rebuild the cache and retry the rebalance. We expect it to succeed because the
-      // SignalBounceOnRequestImageMessageObserver has been uninstalled.
-      createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
-          redundantCopies);
-      InternalResourceManager manager = getCache().getInternalResourceManager();
-      RebalanceResults results = doRebalance(false, getCache().getInternalResourceManager());
+      server1.invoke(() -> {
+        // Rebuild the cache and retry the rebalance. We expect it to succeed because the
+        // SignalBounceOnRequestImageMessageObserver has been uninstalled.
+        createPersistentPartitionedRegion(regionName, getUniqueName(), getDiskDirs(),
+            redundantCopies);
+        InternalResourceManager manager = getCache().getInternalResourceManager();
+        RebalanceResults results = doRebalance(false, getCache().getInternalResourceManager());
 
-      // The rebalance should have done some work since the buckets were imbalanced
-      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
-    });
+        // The rebalance should have done some work since the buckets were imbalanced
+        assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
+      });
+    } finally {
+      server1.invokeAsync(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
   }
 
   private void createPartitionedRegion(String regionName, EvictionAttributes evictionAttributes) {

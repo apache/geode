@@ -1353,26 +1353,32 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
       getCache().close();
     });
 
-    vm0.invoke(() -> {
-      DistributionMessageObserver
-          .setInstance(new CacheClosingDistributionMessageObserver(
-              "_B__" + partitionedRegionName + "_", getCache()));
-    });
+    try {
+      vm0.invoke(() -> {
+        DistributionMessageObserver
+            .setInstance(new CacheClosingDistributionMessageObserver(
+                "_B__" + partitionedRegionName + "_", getCache()));
+      });
 
-    // Need to invoke this async because vm1 will wait for vm0 to come back online
-    // unless we explicitly revoke it.
-    AsyncInvocation<Object> createRegionAsync = vm1.invokeAsync(() -> {
-      createPartitionedRegion(redundantCopies, recoveryDelay, numBuckets, diskSynchronous);
-    });
+      // Need to invoke this async because vm1 will wait for vm0 to come back online
+      // unless we explicitly revoke it.
+      AsyncInvocation<Object> createRegionAsync = vm1.invokeAsync(() -> {
+        createPartitionedRegion(redundantCopies, recoveryDelay, numBuckets, diskSynchronous);
+      });
 
-    vm1.invoke(() -> {
-      revokeKnownMissingMembers(1);
-      for (int i = 0; i < numBuckets; ++i) {
-        assertEquals(getCache().getRegion(partitionedRegionName).get(i), "a");
-      }
-    });
+      vm1.invoke(() -> {
+        revokeKnownMissingMembers(1);
+        for (int i = 0; i < numBuckets; ++i) {
+          assertEquals(getCache().getRegion(partitionedRegionName).get(i), "a");
+        }
+      });
 
-    createRegionAsync.get();
+      createRegionAsync.get();
+    } finally {
+      vm0.invoke(() -> {
+        DistributionMessageObserver.setInstance(null);
+      });
+    }
   }
 
   private void rebalance(VM vm) {
