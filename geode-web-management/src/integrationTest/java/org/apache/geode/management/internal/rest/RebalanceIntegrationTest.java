@@ -62,17 +62,17 @@ public class RebalanceIntegrationTest {
   @Test
   public void start() throws Exception {
     String json = "{}";
-    context.perform(post("/experimental/operations/rebalance").content(json))
+    context.perform(post("/experimental/operations/rebalances").content(json))
         .andExpect(status().isAccepted())
         .andExpect(
             jsonPath("$.uri",
-                Matchers.containsString("/management/experimental/operations/rebalance/")))
+                Matchers.containsString("/management/experimental/operations/rebalances/")))
         .andExpect(jsonPath("$.statusMessage", Matchers.containsString("Operation started")));
   }
 
   @Test
   public void checkStatus() throws Exception {
-    context.perform(get("/experimental/operations/rebalance/abc"))
+    context.perform(get("/experimental/operations/rebalances/abc"))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.statusCode", Matchers.is("ENTITY_NOT_FOUND")))
         .andExpect(
@@ -83,8 +83,8 @@ public class RebalanceIntegrationTest {
   @Test
   public void list() throws Exception {
     String json = "{}";
-    context.perform(post("/experimental/operations/rebalance").content(json));
-    context.perform(get("/experimental/operations/rebalance"))
+    context.perform(post("/experimental/operations/rebalances").content(json));
+    context.perform(get("/experimental/operations/rebalances"))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.result[0].statusCode", Matchers.isOneOf("IN_PROGRESS", "ERROR", "OK")))
