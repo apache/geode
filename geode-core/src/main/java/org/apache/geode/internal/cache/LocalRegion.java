@@ -540,7 +540,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       InternalDataView internalDataView) throws DiskAccessException {
     this(regionName, attrs, parentRegion, cache, internalRegionArgs, internalDataView,
         RegionMapFactory::createVM, new DefaultServerRegionProxyConstructor(),
-        new DefaultEntryEventFactory(), poolName -> (PoolImpl) PoolManager.find(poolName));
+        new DefaultEntryEventFactory(), poolName -> (PoolImpl) PoolManager.find(poolName),
+        (LocalRegion region) -> new RegionPerfStats(
+            cache.getInternalDistributedSystem().getStatisticsManager(),
+            "RegionStats-" + regionName, cache.getCachePerfStats(),
+            region, cache.getMeterRegistry()));
   }
 
   @VisibleForTesting
@@ -548,7 +552,8 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
       InternalCache cache, InternalRegionArguments internalRegionArgs,
       InternalDataView internalDataView, RegionMapConstructor regionMapConstructor,
       ServerRegionProxyConstructor serverRegionProxyConstructor,
-      EntryEventFactory entryEventFactory, PoolFinder poolFinder)
+      EntryEventFactory entryEventFactory, PoolFinder poolFinder,
+      java.util.function.Function<LocalRegion, RegionPerfStats> regionPerfStatsFactory)
       throws DiskAccessException {
     super(cache, attrs, regionName, internalRegionArgs, poolFinder);
 
@@ -587,6 +592,11 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
     }
     initializingRegion.set(this);
 
+    diskStoreImpl = findDiskStore(attrs, internalRegionArgs);
+    diskRegion = createDiskRegion(internalRegionArgs);
+    entries = createRegionMap(internalRegionArgs);
+    subregions = new ConcurrentHashMap();
+
     if (internalRegionArgs.getCachePerfStatsHolder() != null) {
       hasOwnStats = false;
       cachePerfStats = internalRegionArgs.getCachePerfStatsHolder().getCachePerfStats();
@@ -597,17 +607,9 @@ public class LocalRegion extends AbstractRegion implements LoaderHelperFactory,
         cachePerfStats = cache.getCachePerfStats();
       } else {
         hasOwnStats = true;
-        cachePerfStats =
-            new RegionPerfStats(cache.getInternalDistributedSystem().getStatisticsManager(),
-                "RegionStats-" + regionName, cache.getCachePerfStats(),
-                this, cache.getMeterRegistry());
+        cachePerfStats = regionPerfStatsFactory.apply(this);
       }
     }
-
-    diskStoreImpl = findDiskStore(attrs, internalRegionArgs);
-    diskRegion = createDiskRegion(internalRegionArgs);
-    entries = createRegionMap(internalRegionArgs);
-    subregions = new ConcurrentHashMap();
 
     // we only need a destroy lock if this is a root
     if (parentRegion == null) {
