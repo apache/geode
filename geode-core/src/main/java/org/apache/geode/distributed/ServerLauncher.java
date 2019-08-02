@@ -848,6 +848,24 @@ public class ServerLauncher extends AbstractLauncher<String> {
       } catch (GemFireSecurityException e) {
         failOnStart(e);
         throw new GemFireSecurityException(e.getMessage());
+      } catch (IOException e) {
+        failOnStart(e);
+        throw new RuntimeException(
+            String.format("An IO error occurred while starting a %s in %s on %s: %s",
+                getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
+            e);
+      } catch (FileAlreadyExistsException e) {
+        failOnStart(e);
+        throw new RuntimeException(
+            String.format("A PID file already exists and a %s may be running in %s on %s.",
+                getServiceName(), getWorkingDirectory(), getId()),
+            e);
+      } catch (PidUnavailableException e) {
+        failOnStart(e);
+        throw new RuntimeException(
+            String.format("The process ID could not be determined while starting %s %s in %s: %s",
+                getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
+            e);
       } catch (RuntimeException | Error e) {
         failOnStart(e);
         throw e;
@@ -1345,33 +1363,12 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return overriddenDefaults;
   }
 
-  private ControllableProcess getControllableProcess() {
-    if (controllableProcessFactory != null) {
-      return controllableProcessFactory.get();
-    }
-
-    try {
-      return new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
-          ProcessType.SERVER, isForcing());
-    } catch (IOException e) {
-      failOnStart(e);
-      throw new RuntimeException(
-          String.format("An IO error occurred while starting a %s in %s on %s: %s",
-              getServiceName(), getWorkingDirectory(), getId(), e.getMessage()),
-          e);
-    } catch (FileAlreadyExistsException e) {
-      failOnStart(e);
-      throw new RuntimeException(
-          String.format("A PID file already exists and a %s may be running in %s on %s.",
-              getServiceName(), getWorkingDirectory(), getId()),
-          e);
-    } catch (PidUnavailableException e) {
-      failOnStart(e);
-      throw new RuntimeException(
-          String.format("The process ID could not be determined while starting %s %s in %s: %s",
-              getServiceName(), getId(), getWorkingDirectory(), e.getMessage()),
-          e);
-    }
+  private ControllableProcess getControllableProcess()
+      throws IOException, FileAlreadyExistsException, PidUnavailableException {
+    return controllableProcessFactory != null
+        ? controllableProcessFactory.get()
+        : new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
+            ProcessType.SERVER, isForcing());
   }
 
   private class ServerControllerParameters implements ProcessControllerParameters {
