@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.geode.cache.RegionShortcut.REPLICATE_PERSISTENT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getVM;
@@ -217,34 +216,15 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
 
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(
-          new DistributionMessageObserver() {
-            @Override
-            public void beforeProcessMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
-              logger.info("In DistributionMessageObserver message is: " + message);
-              if (message instanceof InitialImageOperation.RequestImageMessage) {
-                InitialImageOperation.RequestImageMessage rim =
-                    (InitialImageOperation.RequestImageMessage) message;
-                if (rim.regionPath.contains(regionName)) {
-                  logger.info("##### Before vm0 is bounced.");
-                  getBlackboard().signalGate("bounce");
-                  // vm0.bounceForcibly();
-                  await().until(() -> cacheRule.getCache().isClosed());
-                  logger.info("##### After vm0 is bounced.");
-                } else {
-                  logger.info("#### Region path: " + rim.regionPath);
-                }
-              }
-            }
-          });
+          new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
+              getBlackboard()));
     });
 
     AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createAsyncDiskRegion());
 
     logger.info("##### After async create region in vm1");
 
-    getBlackboard().waitForGate("bounce", 30, SECONDS);
-    vm0.bounceForcibly();
+    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
 
     logger.info("##### After wait for cache close in vm0");
 
@@ -294,34 +274,15 @@ public class PersistentRegionRecoveryDUnitTest extends JUnit4DistributedTestCase
 
     vm0.invoke(() -> {
       DistributionMessageObserver.setInstance(
-          new DistributionMessageObserver() {
-            @Override
-            public void beforeProcessMessage(ClusterDistributionManager dm,
-                DistributionMessage message) {
-              logger.info("In DistributionMessageObserver message is: " + message);
-              if (message instanceof InitialImageOperation.RequestImageMessage) {
-                InitialImageOperation.RequestImageMessage rim =
-                    (InitialImageOperation.RequestImageMessage) message;
-                if (rim.regionPath.contains(regionName)) {
-                  logger.info("##### Before vm0 is bounced.");
-                  getBlackboard().signalGate("bounce");
-                  // vm0.bounceForcibly();
-                  await().until(() -> cacheRule.getCache().isClosed());
-                  logger.info("##### After vm0 is bounced.");
-                } else {
-                  logger.info("#### Region path: " + rim.regionPath);
-                }
-              }
-            }
-          });
+          new SignalBounceOnRequestImageMessageObserver(regionName, cacheRule.getCache(),
+              getBlackboard()));
     });
 
     AsyncInvocation asyncVM1 = vm1.invokeAsync(() -> createSyncDiskRegion());
 
     logger.info("##### After async create region in vm1");
 
-    getBlackboard().waitForGate("bounce", 30, SECONDS);
-    vm0.bounceForcibly();
+    SignalBounceOnRequestImageMessageObserver.waitThenBounce(getBlackboard(), vm0);
 
     logger.info("##### After wait for cache close in vm0");
 
