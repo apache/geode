@@ -23,7 +23,7 @@ public class Signal {
   private static IdentityHashMap<sun.misc.SignalHandler, SignalHandler> sunToGeodeSignalHandlers =
       new IdentityHashMap<>(4);
 
-  private final sun.misc.Signal signal;
+  final sun.misc.Signal signal;
 
   public Signal(String name) {
     signal = new sun.misc.Signal(name);
@@ -63,7 +63,15 @@ public class Signal {
     return wrap(sun.misc.Signal.handle(unwrap(signal), wrap(signalHandler)));
   }
 
+  public static void raise(Signal signal) throws IllegalArgumentException {
+    sun.misc.Signal.raise(unwrap(signal));
+  }
+
   private static sun.misc.SignalHandler wrap(final SignalHandler signalHandler) {
+    if (null == signalHandler) {
+      return null;
+    }
+
     final sun.misc.SignalHandler wrappedSignalHandler =
         geodeToSunSignalHandlers.computeIfAbsent(signalHandler, GeodeSignalHandler::new);
     sunToGeodeSignalHandlers.putIfAbsent(wrappedSignalHandler, signalHandler);
@@ -78,7 +86,11 @@ public class Signal {
     return signal.signal;
   }
 
-  private static SignalHandler wrap(final sun.misc.SignalHandler signalHandler) {
+  static SignalHandler wrap(final sun.misc.SignalHandler signalHandler) {
+    if (null == signalHandler) {
+      return null;
+    }
+
     final SignalHandler wrappedSignalHandler =
         sunToGeodeSignalHandlers.computeIfAbsent(signalHandler, SunSignalHandler::new);
     geodeToSunSignalHandlers.putIfAbsent(wrappedSignalHandler, signalHandler);
@@ -98,8 +110,8 @@ public class Signal {
     }
   }
 
-  private static class SunSignalHandler implements SignalHandler {
-    private final sun.misc.SignalHandler signalHandler;
+  static class SunSignalHandler implements SignalHandler {
+    final sun.misc.SignalHandler signalHandler;
 
     SunSignalHandler(final sun.misc.SignalHandler signalHandler) {
       this.signalHandler = signalHandler;

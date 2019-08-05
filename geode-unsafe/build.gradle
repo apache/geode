@@ -15,11 +15,21 @@
  * limitations under the License.
  */
 
+plugins {
+  id 'java-library'
+}
+
 apply from: "${rootDir}/${scriptDir}/standard-subproject-configuration.gradle"
 apply from: "${project.projectDir}/../gradle/publish.gradle"
 
 dependencies {
-  compile(platform(project(':boms:geode-all-bom')))
+  implementation(platform(project(':boms:geode-all-bom')))
+
+  testImplementation('junit:junit')
+  testImplementation(project(':geode-junit'))
+  testImplementation('org.assertj:assertj-core')
+  testImplementation('org.mockito:mockito-core')
+  testImplementation('org.awaitility:awaitility')
 }
 
 ext.findJavac = { ->
@@ -37,6 +47,12 @@ ext.findJavac = { ->
 }
 
 compileJava {
+  options.fork = true
+  options.forkOptions.executable = project.findJavac()
+  options.compilerArgs << '-XDignore.symbol.file'
+}
+
+compileTestJava {
   options.fork = true
   options.forkOptions.executable = project.findJavac()
   options.compilerArgs << '-XDignore.symbol.file'

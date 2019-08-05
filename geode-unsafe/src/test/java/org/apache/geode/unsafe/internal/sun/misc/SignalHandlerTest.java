@@ -15,11 +15,18 @@
 
 package org.apache.geode.unsafe.internal.sun.misc;
 
-public interface SignalHandler {
+import static org.assertj.core.api.Assertions.assertThat;
 
-  SignalHandler SIG_DFL = Signal.wrap(sun.misc.SignalHandler.SIG_DFL);
+import org.junit.Test;
 
-  SignalHandler SIG_IGN = Signal.wrap(sun.misc.SignalHandler.SIG_IGN);
-
-  void handle(Signal signal);
+public class SignalHandlerTest {
+  @Test
+  public void defaultSignalHandlers() {
+    assertThat(SignalHandler.SIG_DFL).isNotNull().isInstanceOf(Signal.SunSignalHandler.class);
+    assertThat(((Signal.SunSignalHandler) SignalHandler.SIG_DFL).signalHandler)
+        .isSameAs(sun.misc.SignalHandler.SIG_DFL);
+    assertThat(SignalHandler.SIG_IGN).isNotNull().isInstanceOf(Signal.SunSignalHandler.class);
+    assertThat(((Signal.SunSignalHandler) SignalHandler.SIG_IGN).signalHandler)
+        .isSameAs(sun.misc.SignalHandler.SIG_IGN);
+  }
 }

@@ -1961,7 +1961,6 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     }
 
     @Immutable
-    // private static final Unsafe U = new Unsafe();
     private static final long LOCKSTATE;
     static {
       try {

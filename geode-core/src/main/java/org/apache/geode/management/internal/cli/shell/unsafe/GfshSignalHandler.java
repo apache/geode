@@ -83,9 +83,7 @@ public class GfshSignalHandler extends AbstractSignalNotificationHandler impleme
 
   private SignalHandler getOriginalSignalHandler(final Signal signal) {
     final SignalHandler handler = originalSignalHandlers.get(signal);
-    // return (handler == SignalHandler.SIG_DFL || handler == SignalHandler.SIG_IGN ? null :
-    // handler);
-    return handler;
+    return (handler == SignalHandler.SIG_DFL || handler == SignalHandler.SIG_IGN ? null : handler);
   }
 
 }
