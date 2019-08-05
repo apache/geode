@@ -35,6 +35,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.IndexNameConflictException;
@@ -47,15 +49,14 @@ import org.apache.geode.test.dunit.SerializableRunnable;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 @Category(OQLQueryTest.class)
 @RunWith(value = Parameterized.class)
 public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable {
-  @Parameterized.Parameters(name= "{index}: {0}")
+  @Parameterized.Parameters(name = "{index}: {0}")
   public static Collection<String> cacheXmlFiles() {
-    return Arrays.asList(new String[]{"PartitionedPersistentRegionWithIndex.xml", "ReplicatePersistentRegionWithIndex.xml"});
+    return Arrays.asList(new String[] {"PartitionedPersistentRegionWithIndex.xml",
+        "ReplicatePersistentRegionWithIndex.xml"});
   }
 
   @Rule
