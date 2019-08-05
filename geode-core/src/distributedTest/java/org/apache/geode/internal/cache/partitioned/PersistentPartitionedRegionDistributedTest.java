@@ -152,7 +152,10 @@ public class PersistentPartitionedRegionDistributedTest implements Serializable 
 
   @After
   public void tearDown() {
-    invokeInEveryVM(() -> InternalResourceManager.setResourceObserver(null));
+    invokeInEveryVM(() -> {
+      InternalResourceManager.setResourceObserver(null);
+      DistributionMessageObserver.setInstance(null);
+    });
   }
 
   private Properties getDistributedSystemProperties() {

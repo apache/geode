@@ -24,8 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENFORCE_UNIQU
 import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZONE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
-import static org.apache.geode.test.dunit.VM.getAllVMs;
-import static org.apache.geode.test.dunit.VM.getController;
 import static org.apache.geode.test.dunit.VM.getVM;
 import static org.apache.geode.test.dunit.VM.toArray;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,9 +132,10 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
 
   @After
   public void tearDown() {
-    for (VM vm : toArray(getAllVMs(), getController())) {
-      vm.invoke(() -> InternalResourceManager.setResourceObserver(null));
-    }
+    invokeInEveryVM(() -> {
+      InternalResourceManager.setResourceObserver(null);
+      DistributionMessageObserver.setInstance(null);
+    });
   }
 
   @Test
