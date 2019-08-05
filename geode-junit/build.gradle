@@ -43,6 +43,7 @@ dependencies {
   compile('org.awaitility:awaitility')
   compile('org.bouncycastle:bcpkix-jdk15on')
   compile('org.hamcrest:hamcrest-all')
+  compile('io.micrometer:micrometer-core')
   compile('org.mockito:mockito-core')
   compile('org.skyscreamer:jsonassert')
 
