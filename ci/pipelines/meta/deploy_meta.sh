@@ -261,6 +261,7 @@ echo "Successfully deployed ${CONCOURSE_URL}/teams/main/pipelines/${PIPELINE_PRE
 
 if [[ "$GEODE_FORK" == "${UPSTREAM_FORK}" ]]; then
   unpauseJobs set-metrics-pipeline
+  driveToGreen $META_PIPELINE set-metrics-pipeline
   exposePipelines ${PIPELINE_PREFIX}main ${PIPELINE_PREFIX}metrics ${PIPELINE_PREFIX}images
   if [[ "$GEODE_BRANCH" == "develop" ]]; then
     unpauseJobs set-pr-pipeline set-examples-pipeline

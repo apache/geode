@@ -204,7 +204,7 @@ resources:
   source:
     bucket: ((version-bucket))
     json_key: ((concourse-gcp-key))
-    regexp: ((geode-fork))/((geode-build-branch))/passing-build-tokens-(.*).json
+    regexp: ((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
 
 resource_types:
 - name: concourse-metadata-resource
