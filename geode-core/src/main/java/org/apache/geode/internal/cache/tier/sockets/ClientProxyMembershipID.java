@@ -457,10 +457,8 @@ public class ClientProxyMembershipID
    * Used to update the timeout when a durable client comes back to a server
    */
   public void updateDurableTimeout(int newValue) {
-    DurableClientAttributes dca = getDurableAttributes();
-    if (dca != null) {
-      dca.updateTimeout(newValue);
-    }
+    InternalDistributedMember member = (InternalDistributedMember) getDistributedMember();
+    member.getNetMember().setDurableTimeout(newValue);
   }
 
   /**

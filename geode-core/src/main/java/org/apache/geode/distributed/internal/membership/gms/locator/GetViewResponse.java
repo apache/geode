@@ -19,15 +19,15 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 
 public class GetViewResponse implements DataSerializableFixedID {
 
-  private NetView view;
+  private GMSMembershipView view;
 
-  public GetViewResponse(NetView view) {
+  public GetViewResponse(GMSMembershipView view) {
     this.view = view;
   }
 
@@ -35,7 +35,7 @@ public class GetViewResponse implements DataSerializableFixedID {
     // no-arg constructor for serialization
   }
 
-  public NetView getView() {
+  public GMSMembershipView getView() {
     return view;
   }
 

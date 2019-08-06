@@ -54,8 +54,4 @@ public interface QuorumChecker {
    */
   MembershipInformation getMembershipInfo();
 
-  /**
-   * Returns the membership view that is being used to establish a quorum
-   */
-  NetView getView();
 }

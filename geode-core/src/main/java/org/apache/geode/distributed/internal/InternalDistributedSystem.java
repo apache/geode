@@ -73,8 +73,8 @@ import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
-import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -773,14 +773,8 @@ public class InternalDistributedSystem extends DistributedSystem
       Assert.assertTrue(dm != null);
       Assert.assertTrue(dm.getSystem() == this);
 
-      try {
-        id = dm.getMembershipPort();
-      } catch (DistributedSystemDisconnectedException e) {
-        // bug #48144 - The dm's channel threw an NPE. It now throws this exception
-        // but during startup we should instead throw a SystemConnectException
-        throw new SystemConnectException(
-            "Distributed system has disconnected during startup.",
-            e);
+      if (dm != null && dm.getMembershipManager() != null) {
+        id = dm.getMembershipManager().getLocalMember().getPort();
       }
 
       synchronized (isConnectedMutex) {

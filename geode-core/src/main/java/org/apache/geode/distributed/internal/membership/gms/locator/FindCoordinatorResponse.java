@@ -23,22 +23,22 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
-public class FindCoordinatorResponse extends HighPriorityDistributionMessage
+public class FindCoordinatorResponse extends AbstractGMSMessage
     implements DataSerializableFixedID {
 
-  private InternalDistributedMember coordinator;
-  private InternalDistributedMember senderId;
+  private GMSMember coordinator;
+  private GMSMember senderId;
   private boolean fromView;
-  private NetView view;
-  private Set<InternalDistributedMember> registrants;
+  private GMSMembershipView view;
+  private Set<GMSMember> registrants;
   private boolean networkPartitionDetectionEnabled;
   private boolean usePreferredCoordinators;
   private boolean isShortForm;
@@ -47,9 +47,9 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
 
   private int requestId;
 
-  public FindCoordinatorResponse(InternalDistributedMember coordinator,
-      InternalDistributedMember senderId, boolean fromView, NetView view,
-      HashSet<InternalDistributedMember> registrants, boolean networkPartitionDectionEnabled,
+  public FindCoordinatorResponse(GMSMember coordinator,
+      GMSMember senderId, boolean fromView, GMSMembershipView view,
+      HashSet<GMSMember> registrants, boolean networkPartitionDectionEnabled,
       boolean usePreferredCoordinators, byte[] pk) {
     this.coordinator = coordinator;
     this.senderId = senderId;
@@ -62,8 +62,8 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     this.coordinatorPublicKey = pk;
   }
 
-  public FindCoordinatorResponse(InternalDistributedMember coordinator,
-      InternalDistributedMember senderId, byte[] pk, int requestId) {
+  public FindCoordinatorResponse(GMSMember coordinator,
+      GMSMember senderId, byte[] pk, int requestId) {
     this.coordinator = coordinator;
     this.senderId = senderId;
     this.isShortForm = true;
@@ -99,7 +99,7 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     return usePreferredCoordinators;
   }
 
-  public InternalDistributedMember getCoordinator() {
+  public GMSMember getCoordinator() {
     return coordinator;
   }
 
@@ -107,7 +107,7 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
    * When the response comes from a locator via TcpClient this will return the locators member ID.
    * If the locator hasn't yet joined this may be null.
    */
-  public InternalDistributedMember getSenderId() {
+  public GMSMember getSenderId() {
     return senderId;
   }
 
@@ -115,11 +115,11 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     return fromView;
   }
 
-  public NetView getView() {
+  public GMSMembershipView getView() {
     return view;
   }
 
-  public Set<InternalDistributedMember> getRegistrants() {
+  public Set<GMSMember> getRegistrants() {
     return registrants;
   }
 
@@ -132,7 +132,8 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
           + ", viewId=" + (view == null ? "null" : view.getViewId()) + ", registrants="
           + (registrants == null ? "none" : registrants) + ", senderId=" + senderId
           + ", network partition detection enabled=" + this.networkPartitionDetectionEnabled
-          + ", locators preferred as coordinators=" + this.usePreferredCoordinators + ")";
+          + ", locators preferred as coordinators=" + this.usePreferredCoordinators
+          + ", view=" + view + ")";
     }
   }
 
@@ -148,10 +149,12 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     return FIND_COORDINATOR_RESP;
   }
 
+  // TODO serialization not backward compatible with 1.9 - may need InternalDistributedMember, not
+  // GMSMember
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(coordinator, out);
-    DataSerializer.writeObject(senderId, out);
+    GMSUtil.writeMemberID(coordinator, out);
+    GMSUtil.writeMemberID(senderId, out);
     InternalDataSerializer.writeByteArray(coordinatorPublicKey, out);
     InternalDataSerializer.writeString(rejectionMessage, out);
     out.writeBoolean(isShortForm);
@@ -159,13 +162,13 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
     DataSerializer.writeObject(view, out);
-    InternalDataSerializer.writeSet(registrants, out);
+    GMSUtil.writeSetOfMemberIDs(registrants, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    coordinator = DataSerializer.readObject(in);
-    senderId = DataSerializer.readObject(in);
+    coordinator = GMSUtil.readMemberID(in);
+    senderId = GMSUtil.readMemberID(in);
     coordinatorPublicKey = InternalDataSerializer.readByteArray(in);
     rejectionMessage = InternalDataSerializer.readString(in);
     isShortForm = in.readBoolean();
@@ -174,13 +177,8 @@ public class FindCoordinatorResponse extends HighPriorityDistributionMessage
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
       view = DataSerializer.readObject(in);
-      registrants = InternalDataSerializer.readHashSet(in);
+      registrants = GMSUtil.readHashSetOfMemberIDs(in);
     }
-  }
-
-  @Override
-  protected void process(ClusterDistributionManager dm) {
-    throw new IllegalStateException("this message should not be executed");
   }
 
   @Override

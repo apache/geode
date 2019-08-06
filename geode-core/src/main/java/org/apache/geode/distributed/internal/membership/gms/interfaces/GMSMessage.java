@@ -12,41 +12,46 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership.gms.messages;
+package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.Version;
 
-public class NetworkPartitionMessage extends AbstractGMSMessage {
+public interface GMSMessage {
 
-  public NetworkPartitionMessage() {}
+  void setRecipient(GMSMember member);
 
-  public NetworkPartitionMessage(List<GMSMember> recipients) {
-    setRecipients(recipients);
+  void setRecipients(List<GMSMember> recipients);
+
+  /** is this a high priority message that should be sent out-of-band? */
+  boolean isHighPriority();
+
+
+  /** register any reply processor prior to transmission, if necessary */
+  void registerProcessor();
+
+  List<GMSMember> getRecipients();
+
+  /** from DataSerializableFixedID */
+  int getDSFID();
+
+  boolean forAll();
+
+  default boolean getMulticast() {
+    return false;
   }
 
-  @Override
-  public int getDSFID() {
-    return NETWORK_PARTITION_MESSAGE;
+  default void setMulticast(boolean useMulticast) {
+    // no-op by default
   }
 
-  @Override
-  public void toData(DataOutput out) throws IOException {
+  /** establishes the sender of a message on the receiving side of a communications channel */
+  void setSender(GMSMember sender);
 
-  }
+  GMSMember getSender();
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  void resetTimestamp();
 
-  }
-
-  @Override
-  public Version[] getSerializationVersions() {
-    return null;
-  }
+  void setBytesRead(int amount);
 }

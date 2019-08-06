@@ -33,37 +33,35 @@ import org.jgroups.Message;
 import org.jgroups.Receiver;
 import org.jgroups.View;
 
-import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.NetView;
-import org.apache.geode.distributed.internal.membership.QuorumChecker;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 
-public class GMSQuorumChecker implements QuorumChecker {
+public class GMSQuorumChecker {
   private static final Logger logger = LogService.getLogger();
-  private boolean isDebugEnabled = false;
-  private Map<SocketAddress, InternalDistributedMember> addressConversionMap;
+  private boolean isInfoEnabled = false;
+  private Map<SocketAddress, GMSMember> addressConversionMap;
   private GMSPingPonger pingPonger;
 
-  private Set<InternalDistributedMember> receivedAcks;
+  private Set<GMSMember> receivedAcks;
 
-  private final NetView lastView;
+  private final GMSMembershipView lastView;
 
   // guarded by this
   private boolean quorumAchieved = false;
   private final JChannel channel;
   private JGAddress myAddress;
   private final long partitionThreshold;
-  private Set<DistributedMember> oldDistributedMemberIdentifiers;
+  private Set<GMSMember> oldMemberIdentifiers;
   private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<>();
 
-  public GMSQuorumChecker(NetView jgView, int partitionThreshold, JChannel channel,
-      Set<DistributedMember> oldDistributedMemberIdentifiers) {
+  public GMSQuorumChecker(GMSMembershipView jgView, int partitionThreshold, JChannel channel,
+      Set<GMSMember> oldMemberIdentifiers) {
     this.lastView = jgView;
     this.partitionThreshold = partitionThreshold;
     this.channel = channel;
-    this.oldDistributedMemberIdentifiers = oldDistributedMemberIdentifiers;
+    this.oldMemberIdentifiers = oldMemberIdentifiers;
   }
 
   public void initialize() {
@@ -73,25 +71,25 @@ public class GMSQuorumChecker implements QuorumChecker {
     myAddress = (JGAddress) channel.down(new Event(Event.GET_LOCAL_ADDRESS));
 
     addressConversionMap = new ConcurrentHashMap<>(this.lastView.size());
-    List<InternalDistributedMember> members = this.lastView.getMembers();
-    for (InternalDistributedMember addr : members) {
+    List<GMSMember> members = this.lastView.getMembers();
+    for (GMSMember addr : members) {
       SocketAddress sockaddr =
-          new InetSocketAddress(addr.getNetMember().getInetAddress(), addr.getPort());
+          new InetSocketAddress(addr.getInetAddress(), addr.getPort());
       addressConversionMap.put(sockaddr, addr);
     }
 
-    isDebugEnabled = logger.isDebugEnabled();
+    isInfoEnabled = logger.isInfoEnabled();
     resume();
   }
 
-  @Override
+
   public synchronized boolean checkForQuorum(long timeout) throws InterruptedException {
     if (quorumAchieved) {
       return true;
     }
 
-    if (isDebugEnabled) {
-      logger.debug("beginning quorum check with {}", this);
+    if (isInfoEnabled) {
+      logger.info("beginning quorum check with {}", this);
     }
     sendPingMessages();
     quorumAchieved = waitForResponses(lastView.getMembers().size(), timeout);
@@ -102,32 +100,27 @@ public class GMSQuorumChecker implements QuorumChecker {
     return quorumAchieved;
   }
 
-  @Override
+
   public void suspend() {
     // NO-OP for this implementation
   }
 
-  @Override
+
   public void close() {
     if (channel != null && !channel.isClosed()) {
       channel.close();
     }
   }
 
-  @Override
+
   public void resume() {
     channel.setReceiver(null);
     channel.setReceiver(new QuorumCheckerReceiver());
   }
 
-  @Override
-  public NetView getView() {
-    return this.lastView;
-  }
 
-  @Override
   public MembershipInformation getMembershipInfo() {
-    return new MembershipInformation(channel, oldDistributedMemberIdentifiers, messageQueue);
+    return new MembershipInformation(channel, oldMemberIdentifiers, messageQueue);
   }
 
   private boolean calculateQuorum() {
@@ -135,8 +128,8 @@ public class GMSQuorumChecker implements QuorumChecker {
     int weight = getWeight(this.lastView.getMembers(), this.lastView.getLeadMember());
     int ackedWeight = getWeight(receivedAcks, this.lastView.getLeadMember());
     int lossThreshold = (int) Math.round((weight * this.partitionThreshold) / 100.0);
-    if (isDebugEnabled) {
-      logger.debug(
+    if (isInfoEnabled) {
+      logger.info(
           "quorum check: contacted {} processes with {} member weight units.  Threshold for a quorum is {}",
           receivedAcks.size(), ackedWeight, lossThreshold);
     }
@@ -149,21 +142,21 @@ public class GMSQuorumChecker implements QuorumChecker {
       long time = System.currentTimeMillis();
       long remaining = (endTime - time);
       if (remaining <= 0) {
-        if (isDebugEnabled) {
-          logger.debug("quorum check: timeout waiting for responses.  {} responses received",
+        if (isInfoEnabled) {
+          logger.info("quorum check: timeout waiting for responses.  {} responses received",
               receivedAcks.size());
         }
         break;
       }
-      if (isDebugEnabled) {
-        logger.debug("quorum check: waiting up to {}ms to receive a quorum of responses",
+      if (isInfoEnabled) {
+        logger.info("quorum check: waiting up to {}ms to receive a quorum of responses",
             remaining);
       }
       Thread.sleep(500);
       if (receivedAcks.size() == numMembers) {
         // we've heard from everyone now so we've got a quorum
-        if (isDebugEnabled) {
-          logger.debug(
+        if (isInfoEnabled) {
+          logger.info(
               "quorum check: received responses from all members that were in the old distributed system");
         }
         return true;
@@ -172,17 +165,17 @@ public class GMSQuorumChecker implements QuorumChecker {
     return false;
   }
 
-  private int getWeight(Collection<InternalDistributedMember> idms,
-      InternalDistributedMember leader) {
+  private int getWeight(Collection<GMSMember> idms,
+      GMSMember leader) {
     int weight = 0;
-    for (InternalDistributedMember mbr : idms) {
-      int thisWeight = mbr.getNetMember().getMemberWeight();
+    for (GMSMember mbr : idms) {
+      int thisWeight = mbr.getMemberWeight();
       if (mbr.getVmKind() == 10 /* NORMAL_DM_KIND */) {
         thisWeight += 10;
         if (leader != null && mbr.equals(leader)) {
           thisWeight += 5;
         }
-      } else if (mbr.getNetMember().preferredForCoordinator()) {
+      } else if (mbr.preferredForCoordinator()) {
         thisWeight += 3;
       }
       weight += thisWeight;
@@ -192,17 +185,17 @@ public class GMSQuorumChecker implements QuorumChecker {
 
   private void sendPingMessages() {
     // send a ping message to each member in the last view seen
-    List<InternalDistributedMember> members = this.lastView.getMembers();
-    for (InternalDistributedMember addr : members) {
+    List<GMSMember> members = this.lastView.getMembers();
+    for (GMSMember addr : members) {
       if (!receivedAcks.contains(addr)) {
         JGAddress dest = new JGAddress(addr);
-        if (isDebugEnabled) {
-          logger.debug("quorum check: sending request to {}", addr);
+        if (isInfoEnabled) {
+          logger.info("quorum check: sending request to {}", addr);
         }
         try {
           pingPonger.sendPingMessage(channel, myAddress, dest);
         } catch (Exception e) {
-          logger.debug("Failed sending Ping message to " + dest);
+          logger.info("Failed sending Ping message to " + dest);
         }
       }
     }
@@ -217,7 +210,7 @@ public class GMSQuorumChecker implements QuorumChecker {
         try {
           pingPonger.sendPongMessage(channel, myAddress, msg.getSrc());
         } catch (Exception e) {
-          logger.debug("Failed sending Pong message to " + msg.getSrc());
+          logger.info("Failed sending Pong message to " + msg.getSrc());
         }
       } else if (pingPonger.isPongMessage(msgBytes)) {
         pongReceived(msg.getSrc());
@@ -249,13 +242,13 @@ public class GMSQuorumChecker implements QuorumChecker {
     public void unblock() {}
 
     public void pongReceived(Address sender) {
-      logger.debug("received ping-pong response from {}", sender);
+      logger.info("received ping-pong response from {}", sender);
       JGAddress jgSender = (JGAddress) sender;
       SocketAddress sockaddr = new InetSocketAddress(jgSender.getInetAddress(), jgSender.getPort());
-      InternalDistributedMember memberAddr = addressConversionMap.get(sockaddr);
+      GMSMember memberAddr = addressConversionMap.get(sockaddr);
 
       if (memberAddr != null) {
-        logger.debug("quorum check: mapped address to member ID {}", memberAddr);
+        logger.info("quorum check: mapped address to member ID {}", memberAddr);
         receivedAcks.add(memberAddr);
       }
     }

@@ -16,7 +16,7 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.Properties;
 
-import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 
 public interface Authenticator {
 
@@ -28,7 +28,7 @@ public interface Authenticator {
    * @return null if authentication succeed (including no authenticator case), otherwise, return
    *         failure message
    */
-  String authenticate(InternalDistributedMember member, Properties credentials);
+  String authenticate(GMSMember member, Properties credentials);
 
   /**
    * Get credential object for the given GemFire distributed member.
@@ -36,5 +36,5 @@ public interface Authenticator {
    * @param member the target distributed member
    * @return the credentials
    */
-  Properties getCredentials(InternalDistributedMember member);
+  Properties getCredentials(GMSMember member);
 }

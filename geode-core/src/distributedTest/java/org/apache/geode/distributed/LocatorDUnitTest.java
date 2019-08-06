@@ -91,7 +91,7 @@ import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
@@ -312,7 +312,7 @@ public class LocatorDUnitTest implements Serializable {
 
     assertThat(MembershipManagerHelper.getCoordinator(system))
         .describedAs("should be the coordinator").isEqualTo(system.getDistributedMember());
-    NetView view = MembershipManagerHelper.getMembershipManager(system).getView();
+    MembershipView view = MembershipManagerHelper.getMembershipManager(system).getView();
     logger.info("view after becoming coordinator is " + view);
     assertThat(system.getDistributedMember())
         .describedAs("should not be the first member in the view (" + view + ")")
@@ -1133,7 +1133,7 @@ public class LocatorDUnitTest implements Serializable {
     return (InternalDistributedMember) MembershipManagerHelper.getCoordinator(system);
   }
 
-  private NetView getView() {
+  private MembershipView getView() {
     return system.getDistributionManager().getMembershipManager().getView();
   }
 
