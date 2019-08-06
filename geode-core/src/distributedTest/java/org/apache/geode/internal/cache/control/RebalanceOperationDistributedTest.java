@@ -2238,7 +2238,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       RebalanceResults results = doRebalance(false, manager);
 
       // The rebalance should have done some work since the buckets were imbalanced
-      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
+      assertThat(results.getTotalBucketTransfersCompleted() > 0).isTrue();
     });
   }
 
@@ -2314,7 +2314,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
       RebalanceResults results = doRebalance(false, getCache().getInternalResourceManager());
 
       // The rebalance should have done some work since the buckets were imbalanced
-      assertThat(results.getTotalPrimaryTransfersCompleted() > 0).isTrue();
+      assertThat(results.getTotalBucketTransfersCompleted() > 0).isTrue();
     });
   }
 
@@ -2435,7 +2435,7 @@ public class RebalanceOperationDistributedTest extends CacheTestCase {
     diskStoreFactory.setDiskDirs(diskDirs).create(diskStoreName);
 
     PartitionAttributesFactory partitionAttributesFactory = new PartitionAttributesFactory();
-    partitionAttributesFactory.setRedundantCopies(1);
+    partitionAttributesFactory.setRedundantCopies(redundantCopies);
     partitionAttributesFactory.setRecoveryDelay(-1);
     partitionAttributesFactory.setStartupRecoveryDelay(-1);
 
