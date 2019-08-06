@@ -82,7 +82,7 @@ public class Signal {
     return signal.signal;
   }
 
-  static SignalHandler wrap(final sun.misc.SignalHandler signalHandler) {
+  private static SignalHandler wrap(final sun.misc.SignalHandler signalHandler) {
     if (signalHandler == sun.misc.SignalHandler.SIG_DFL) {
       return SignalHandler.SIG_DFL;
     }
