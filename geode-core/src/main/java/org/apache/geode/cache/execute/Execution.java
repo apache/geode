@@ -96,6 +96,7 @@ public interface Execution<IN, OUT, AGG> {
    * {@link Function#execute(FunctionContext)} is called on the instance retrieved using
    * {@link FunctionService#getFunction(String)} on the executing member.
    *
+   * @param functionId id of the function to execute
    * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
    *         a low memory condition
    * @return ResultCollector to retrieve the results received. This is different object than the
@@ -105,6 +106,22 @@ public interface Execution<IN, OUT, AGG> {
    * @since GemFire 6.0
    */
   ResultCollector<OUT, AGG> execute(String functionId) throws FunctionException;
+
+  /**
+   * Executes the function using its {@linkplain Function#getId() id} with the specified timeout.
+   * <p>
+   * {@link Function#execute(FunctionContext)} is called on the instance retrieved using
+   * {@link FunctionService#getFunction(String)} on the executing member.
+   *
+   * @param functionId id of the function to execute
+   * @param timeoutMs milliseconds to wait for the operation to finish before timing out
+   * @return ResultCollector to retrieve the results received. This is different object than the
+   *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
+   *         to use this reference to retrieve results.
+   *
+   * @since GemFire 6.0
+   */
+  ResultCollector<OUT, AGG> execute(String functionId, int timeoutMs) throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -122,4 +139,23 @@ public interface Execution<IN, OUT, AGG> {
    * @since GemFire 6.0
    */
   ResultCollector<OUT, AGG> execute(Function function) throws FunctionException;
+
+  /**
+   * Executes the function instance provided.
+   * <p>
+   * {@link Function#execute(FunctionContext)} is called on the de-serialized instance on the
+   * executing member.
+   *
+   * @param function instance to execute
+   * @param timeoutMs milliseconds to wait for the operation to finish before timing out
+   * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
+   *         a low memory condition
+   * @return ResultCollector to retrieve the results received. This is different object than the
+   *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
+   *         to use this reference to retrieve results.
+   *
+   * @since GemFire 6.0
+   */
+  ResultCollector<OUT, AGG> execute(Function function, int timeoutMs) throws FunctionException;
+
 }

@@ -150,7 +150,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector execute(final String functionName) {
+  public ResultCollector execute(final String functionName, int timeoutMs) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -166,11 +166,16 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
-    return executeFunction(functionObject);
+    return executeFunction(functionObject, timeoutMs);
   }
 
   @Override
-  public ResultCollector execute(final Function function) {
+  public ResultCollector execute(final String functionName) {
+    return execute(functionName, getTimeoutMs());
+  }
+
+  @Override
+  public ResultCollector execute(final Function function, int timeoutMs) {
     if (function == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -190,11 +195,16 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           "The Function#getID() returned null");
     }
     this.isFnSerializationReqd = true;
-    return executeFunction(function);
+    return executeFunction(function, timeoutMs);
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function) {
+  public ResultCollector execute(final Function function) {
+    return execute(function, getTimeoutMs());
+  }
+
+  @Override
+  protected ResultCollector executeFunction(Function function, int timeoutMs) {
     if (function.hasResult()) { // have Results
       if (this.rc == null) { // Default Result Collector
         ResultCollector defaultCollector = new DefaultResultCollector();

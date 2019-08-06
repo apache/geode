@@ -176,7 +176,7 @@ public class MultiRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function) {
+  protected ResultCollector executeFunction(Function function, int timeoutMs) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;
       if (rc == null) {
