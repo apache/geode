@@ -118,14 +118,19 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
   }
 
   @Test
-  @Parameters({"SERVER,REPLICATE,0", "SERVER,REPLICATE,6000", "REGION,REPLICATE,0",
-      "REGION,REPLICATE,6000", "REGION,PARTITION,0", "REGION,PARTITION,6000"})
+  @Parameters({"SERVER,REPLICATE,0,0", "SERVER,REPLICATE,6000,0", "REGION,REPLICATE,0,0",
+      "REGION,REPLICATE,6000,0", "REGION,PARTITION,0,0", "REGION,PARTITION,6000,0",
+      "SERVER,REPLICATE,0,4000", "SERVER,REPLICATE,6000,4000",
+      "REGION,REPLICATE,0,4000", "REGION,REPLICATE,6000,4000",
+      "REGION,PARTITION,0,4000", "REGION,PARTITION,6000,4000",
+  })
   public void executeFunctionUsesClientTimeoutOnServer(final ExecutionTarget executionTarget,
-      final RegionType regionType, final int timeout) {
+      final RegionType regionType, final int propertyTimeout, final int executeTimeout) {
     int port = server.invoke(() -> createServerCache(regionType));
-    client.invoke(() -> createClientCache(client.getHost().getHostName(), port, timeout));
+    client.invoke(() -> createClientCache(client.getHost().getHostName(), port, propertyTimeout));
 
-    client.invoke(() -> executeFunctionToVerifyClientTimeoutOnServer(executionTarget, timeout));
+    client.invoke(() -> executeFunctionToVerifyClientTimeoutOnServer(executionTarget,
+        propertyTimeout, executeTimeout));
   }
 
   private void createClientCache(final String hostName, final int port, final int timeout) {
@@ -181,8 +186,16 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
   }
 
   private void executeFunctionToVerifyClientTimeoutOnServer(
-      final ExecutionTarget functionServiceTarget, final int timeout) {
+      final ExecutionTarget functionServiceTarget, final int propertyTimeout,
+      final int executeTimeout) {
     assertThat(functionServiceTarget).isNotNull();
+
+    int timeout;
+    if (executeTimeout > 0) {
+      timeout = executeTimeout;
+    } else {
+      timeout = propertyTimeout;
+    }
 
     Function<Integer> function = new CheckClientReadTimeout();
     FunctionService.registerFunction(function);
@@ -195,7 +208,12 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
       execution = FunctionService.onServer(clientCache.getDefaultPool()).setArguments(timeout);
     }
 
-    ResultCollector<Boolean, List<Boolean>> resultCollector = execution.execute(function);
+    ResultCollector<Boolean, List<Boolean>> resultCollector;
+    if (executeTimeout > 0) {
+      resultCollector = execution.execute(function, timeout);
+    } else {
+      resultCollector = execution.execute(function);
+    }
 
     String description = "Server did not read client_function_timeout from client.";
     assertThat(resultCollector.getResult().get(0)).as(description).isTrue();

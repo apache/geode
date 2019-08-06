@@ -209,7 +209,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector executeFunction(final Function function) {
+  public ResultCollector executeFunction(final Function function, int timeoutMs) {
     if (function.hasResult()) {
       if (this.rc == null) {
         return this.pr.executeFunction(function, this, new DefaultResultCollector(),

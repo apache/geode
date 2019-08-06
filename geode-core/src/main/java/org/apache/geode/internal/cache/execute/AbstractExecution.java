@@ -354,6 +354,11 @@ public abstract class AbstractExecution implements InternalExecution {
 
   @Override
   public ResultCollector execute(final String functionName) {
+    return execute(functionName, getTimeoutMs());
+  }
+
+  @Override
+  public ResultCollector execute(final String functionName, int timeoutMs) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -366,11 +371,11 @@ public abstract class AbstractExecution implements InternalExecution {
               functionName));
     }
 
-    return executeFunction(functionObject);
+    return executeFunction(functionObject, timeoutMs);
   }
 
   @Override
-  public ResultCollector execute(Function function) throws FunctionException {
+  public ResultCollector execute(Function function, int timeoutMs) throws FunctionException {
     if (function == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -386,7 +391,12 @@ public abstract class AbstractExecution implements InternalExecution {
           "The Function#getID() returned null");
     }
     isFnSerializationReqd = true;
-    return executeFunction(function);
+    return executeFunction(function, timeoutMs);
+  }
+
+  @Override
+  public ResultCollector execute(Function function) throws FunctionException {
+    return execute(function, getTimeoutMs());
   }
 
   @Override
@@ -420,7 +430,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector executeFunction(Function fn);
+  protected abstract ResultCollector executeFunction(Function fn, int timeoutMs);
 
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical
