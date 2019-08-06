@@ -70,17 +70,11 @@ public class SignalTest {
 
   @Test
   public void handleNullThrowsException() {
-    final Signal signal = new Signal("INT");
-    final SignalHandler originalHandler = Signal.handle(signal, s -> {
-    });
-    try {
-      assertThatThrownBy(() -> Signal.handle(signal, null))
-          .isInstanceOf(NullPointerException.class);
-    } finally {
-      // The above exception will leave the single handler mapping in a bad way causing failures
-      // later when it returns null handlers. Let's reset the state as best we can.
-      assertThat(Signal.handle(signal, originalHandler)).isNull();
-    }
+    assertThatThrownBy(() -> Signal.handle(new Signal("INT"), null))
+        .isInstanceOf(NullPointerException.class);
+    assertThatThrownBy(() -> Signal.handle(null, signal -> {
+    }))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -109,6 +103,11 @@ public class SignalTest {
     } finally {
       Signal.handle(geodeSignal, originalGeodeHandler);
     }
+  }
+
+  @Test
+  public void raiseNullThrowsException() {
+    assertThatThrownBy(() -> Signal.raise(null)).isInstanceOf(NullPointerException.class);
   }
 
 }

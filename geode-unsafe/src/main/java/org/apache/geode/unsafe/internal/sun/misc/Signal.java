@@ -15,6 +15,8 @@
 
 package org.apache.geode.unsafe.internal.sun.misc;
 
+import java.util.Objects;
+
 public class Signal {
 
   final sun.misc.Signal signal;
@@ -53,19 +55,18 @@ public class Signal {
   }
 
   public static synchronized SignalHandler handle(final Signal signal,
-      final SignalHandler signalHandler) {
+      final SignalHandler signalHandler) throws IllegalArgumentException {
+    Objects.requireNonNull(signal);
+    Objects.requireNonNull(signalHandler);
     return wrap(sun.misc.Signal.handle(unwrap(signal), wrap(signalHandler)));
   }
 
   public static void raise(Signal signal) throws IllegalArgumentException {
+    Objects.requireNonNull(signal);
     sun.misc.Signal.raise(unwrap(signal));
   }
 
   private static sun.misc.SignalHandler wrap(final SignalHandler signalHandler) {
-    if (null == signalHandler) {
-      return null;
-    }
-
     if (signalHandler instanceof SunSignalHandler) {
       return ((SunSignalHandler) signalHandler).signalHandler;
     }
@@ -82,10 +83,6 @@ public class Signal {
   }
 
   static SignalHandler wrap(final sun.misc.SignalHandler signalHandler) {
-    if (null == signalHandler) {
-      return null;
-    }
-
     if (signalHandler == sun.misc.SignalHandler.SIG_DFL) {
       return SignalHandler.SIG_DFL;
     }
