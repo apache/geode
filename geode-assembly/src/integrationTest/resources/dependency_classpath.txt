@@ -53,11 +53,11 @@ jgroups-3.6.14.Final.jar
 jline-2.12.jar
 jna-4.1.0.jar
 jopt-simple-5.0.4.jar
-log4j-api-2.11.1.jar
-log4j-core-2.11.1.jar
-log4j-jcl-2.11.1.jar
-log4j-jul-2.11.1.jar
-log4j-slf4j-impl-2.11.1.jar
+log4j-api-2.12.0.jar
+log4j-core-2.12.0.jar
+log4j-jcl-2.12.0.jar
+log4j-jul-2.12.0.jar
+log4j-slf4j-impl-2.12.0.jar
 lucene-analyzers-common-6.6.2.jar
 lucene-analyzers-phonetic-6.6.2.jar
 lucene-core-6.6.2.jar
