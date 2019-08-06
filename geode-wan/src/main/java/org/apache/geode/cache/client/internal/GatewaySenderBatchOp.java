@@ -22,7 +22,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.client.ServerOperationException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
@@ -51,18 +50,8 @@ public class GatewaySenderBatchOp {
    */
   public static void executeOn(Connection con, ExecutablePool pool, List events, int batchId,
       boolean removeFromQueueOnException, boolean isRetry) {
-    AbstractOp op = null;
-    // System.out.println("Version: "+con.getWanSiteVersion());
-    // Is this check even needed anymore? It looks like we just create the same exact op impl with
-    // the same parameters...
-    if (Version.GFE_651.compareTo(con.getWanSiteVersion()) >= 0) {
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
-          con.getDistributedSystemId(), isRetry);
-    } else {
-      // Default should create a batch of server version (ACCEPTOR.VERSION)
-      op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
-          con.getDistributedSystemId(), isRetry);
-    }
+    AbstractOp op = new GatewaySenderGFEBatchOpImpl(events, batchId, removeFromQueueOnException,
+        con.getDistributedSystemId(), isRetry);
     pool.executeOn(con, op, true/* timeoutFatal */);
   }
 
