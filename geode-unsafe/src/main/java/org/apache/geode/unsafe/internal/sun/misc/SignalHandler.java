@@ -17,9 +17,9 @@ package org.apache.geode.unsafe.internal.sun.misc;
 
 public interface SignalHandler {
 
-  SignalHandler SIG_DFL = Signal.wrap(sun.misc.SignalHandler.SIG_DFL);
+  SignalHandler SIG_DFL = new Signal.SunSignalHandler(sun.misc.SignalHandler.SIG_DFL);
 
-  SignalHandler SIG_IGN = Signal.wrap(sun.misc.SignalHandler.SIG_IGN);
+  SignalHandler SIG_IGN = new Signal.SunSignalHandler(sun.misc.SignalHandler.SIG_IGN);
 
   void handle(Signal signal);
 }

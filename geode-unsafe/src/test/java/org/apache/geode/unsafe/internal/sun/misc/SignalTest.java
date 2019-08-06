@@ -70,11 +70,17 @@ public class SignalTest {
 
   @Test
   public void handleNullThrowsException() {
-    assertThatThrownBy(() -> Signal.handle(new Signal("INT"), null))
-        .isInstanceOf(NullPointerException.class);
-    // The above exception will leave the single handler mapping in a bad way causing failures later
-    // when it returns null handlers. Let's reset the state as best we can.
-    assertThat(Signal.handle(new Signal("INT"), SignalHandler.SIG_DFL)).isNull();
+    final Signal signal = new Signal("INT");
+    final SignalHandler originalHandler = Signal.handle(signal, s -> {
+    });
+    try {
+      assertThatThrownBy(() -> Signal.handle(signal, null))
+          .isInstanceOf(NullPointerException.class);
+    } finally {
+      // The above exception will leave the single handler mapping in a bad way causing failures
+      // later when it returns null handlers. Let's reset the state as best we can.
+      assertThat(Signal.handle(signal, originalHandler)).isNull();
+    }
   }
 
   @Test

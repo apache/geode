@@ -15,13 +15,7 @@
 
 package org.apache.geode.unsafe.internal.sun.misc;
 
-import java.util.IdentityHashMap;
-
 public class Signal {
-  private static IdentityHashMap<SignalHandler, sun.misc.SignalHandler> geodeToSunSignalHandlers =
-      new IdentityHashMap<>(4);
-  private static IdentityHashMap<sun.misc.SignalHandler, SignalHandler> sunToGeodeSignalHandlers =
-      new IdentityHashMap<>(4);
 
   final sun.misc.Signal signal;
 
@@ -72,10 +66,11 @@ public class Signal {
       return null;
     }
 
-    final sun.misc.SignalHandler wrappedSignalHandler =
-        geodeToSunSignalHandlers.computeIfAbsent(signalHandler, GeodeSignalHandler::new);
-    sunToGeodeSignalHandlers.putIfAbsent(wrappedSignalHandler, signalHandler);
-    return wrappedSignalHandler;
+    if (signalHandler instanceof SunSignalHandler) {
+      return ((SunSignalHandler) signalHandler).signalHandler;
+    }
+
+    return new GeodeSignalHandler(signalHandler);
   }
 
   private static Signal wrap(final sun.misc.Signal signal) {
@@ -91,10 +86,19 @@ public class Signal {
       return null;
     }
 
-    final SignalHandler wrappedSignalHandler =
-        sunToGeodeSignalHandlers.computeIfAbsent(signalHandler, SunSignalHandler::new);
-    geodeToSunSignalHandlers.putIfAbsent(wrappedSignalHandler, signalHandler);
-    return wrappedSignalHandler;
+    if (signalHandler == sun.misc.SignalHandler.SIG_DFL) {
+      return SignalHandler.SIG_DFL;
+    }
+
+    if (signalHandler == sun.misc.SignalHandler.SIG_IGN) {
+      return SignalHandler.SIG_IGN;
+    }
+
+    if (signalHandler instanceof GeodeSignalHandler) {
+      return ((GeodeSignalHandler) signalHandler).signalHandler;
+    }
+
+    return new SunSignalHandler(signalHandler);
   }
 
   private static class GeodeSignalHandler implements sun.misc.SignalHandler {
