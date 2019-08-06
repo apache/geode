@@ -225,8 +225,6 @@ public class GMSJoinLeaveJUnitTest {
     mbrs.add(mockMembers[1]);
     mbrs.add(mockMembers[2]);
 
-    when(services.getMessenger()).thenReturn(messenger);
-
     // prepare the view
     GMSMembershipView netView = new GMSMembershipView(mockMembers[0], viewId, mbrs);
     SearchState state = gmsJoinLeave.searchState;
@@ -285,10 +283,8 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testProcessJoinMessageWithBadAuthentication() throws IOException {
     initMocks();
-    when(services.getAuthenticator()).thenReturn(authenticator);
     when(authenticator.authenticate(mockMembers[0], credentials))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
-    when(services.getMessenger()).thenReturn(messenger);
 
     gmsJoinLeave
         .processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], credentials, -1, 0));
@@ -300,10 +296,8 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testProcessJoinMessageWithAuthenticationButNullCredentials() throws IOException {
     initMocks();
-    when(services.getAuthenticator()).thenReturn(authenticator);
     when(authenticator.authenticate(mockMembers[0], null))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
-    when(services.getMessenger()).thenReturn(messenger);
 
     gmsJoinLeave
         .processMessage(new JoinRequestMessage(mockMembers[0], mockMembers[0], null, -1, 0));
@@ -316,10 +310,8 @@ public class GMSJoinLeaveJUnitTest {
   @Test
   public void testProcessJoinResponseIsRecorded() throws IOException {
     initMocks();
-    when(services.getAuthenticator()).thenReturn(authenticator);
     when(authenticator.authenticate(mockMembers[0], null))
         .thenThrow(new AuthenticationFailedException("we want to fail auth here"));
-    when(services.getMessenger()).thenReturn(messenger);
 
     JoinResponseMessage[] joinResponse = gmsJoinLeave.getJoinResponseMessage();
 
@@ -341,8 +333,6 @@ public class GMSJoinLeaveJUnitTest {
   private void prepareAndInstallView(GMSMember coordinator,
       List<GMSMember> members) throws IOException {
     int viewId = 1;
-
-    when(services.getMessenger()).thenReturn(messenger);
 
     // prepare the view
     GMSMembershipView netView = new GMSMembershipView(coordinator, viewId, members);
