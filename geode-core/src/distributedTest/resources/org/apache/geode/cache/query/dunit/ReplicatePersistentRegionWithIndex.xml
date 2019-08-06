@@ -21,21 +21,22 @@
 <cache>
 <disk-store name="diskStore">
         <disk-dirs>
-            <disk-dir>diskDir-PersistentPartitionWithIndexDiskStore</disk-dir>
+            <disk-dir>diskDir-PersistentRegionWithIndexDiskStore</disk-dir>
         </disk-dirs>
     </disk-store>
 
-    <region name="persistentTestRegion">
-        <region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore">
+
+    <region name="testRegion">
+        <region-attributes refid="REPLICATE_PERSISTENT" disk-store-name="diskStore">
         </region-attributes>
-        <index name="persistentTestRegion_ID" from-clause="/persistentTestRegion" expression="ID"
+        <index name="testRegion_ID" from-clause="/testRegion" expression="ID"
                type="range"/>
     </region>
 
-    <region name="persistentTestRegionWithEntrySetIndex">
-        <region-attributes refid="PARTITION_REDUNDANT_PERSISTENT" disk-store-name="diskStore">
+    <region name="testRegionWithEntrySetIndex">
+        <region-attributes refid="REPLICATE_PERSISTENT" disk-store-name="diskStore">
         </region-attributes>
-        <index name="persistentTestRegion_ID" from-clause="/persistentTestRegionWithEntrySetIndex.entrySet" expression="value.ID"
+        <index name="testRegion_ID" from-clause="/testRegionWithEntrySetIndex.entrySet" expression="value.ID"
                type="range"/>
     </region>
 </cache>

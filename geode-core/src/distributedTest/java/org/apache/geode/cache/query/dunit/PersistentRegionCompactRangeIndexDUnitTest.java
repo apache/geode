@@ -21,10 +21,13 @@ import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResourc
 import static org.junit.Assert.assertEquals;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -32,6 +35,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.query.IndexNameConflictException;
@@ -46,18 +51,31 @@ import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category(OQLQueryTest.class)
-public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable {
+@RunWith(value = Parameterized.class)
+public class PersistentRegionCompactRangeIndexDUnitTest implements Serializable {
+  @Parameterized.Parameters(name = "{index}: {0}")
+  public static Collection<String> cacheXmlFiles() {
+    return Arrays.asList(new String[] {"PartitionedPersistentRegionWithIndex.xml",
+        "ReplicatePersistentRegionWithIndex.xml"});
+  }
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   private MemberVM locator;
 
+  private String cacheXml;
+
   private Properties props;
 
   private MemberVM server1;
   private MemberVM server2;
   private MemberVM server3;
+
+
+  public PersistentRegionCompactRangeIndexDUnitTest(String cacheXml) {
+    this.cacheXml = cacheXml;
+  }
 
   private Properties getSystemProperties(String cacheXML) {
     Properties props = new Properties();
@@ -70,7 +88,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Before
   public void before() {
     locator = clusterStartupRule.startLocatorVM(0);
-    props = getSystemProperties("PersistentPartitionWithIndex.xml");
+    props = getSystemProperties(cacheXml);
 
     server1 = clusterStartupRule.startServerVM(1, props, locator.getPort());
     server2 = clusterStartupRule.startServerVM(2, props, locator.getPort());
@@ -83,7 +101,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   @Test
   public void testGIIUpdateWithIndexDoesNotDuplicateEntryInIndexWhenAlreadyRecoveredFromPersistence() {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegion";
+    String regionName = "testRegion";
     String idQuery = "select * from /" + regionName + " p where p.ID = 1";
     int idQueryExpectedSize = 1;
     int numEntries = 100;
@@ -110,7 +128,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToUpdatesShouldCorrectlyPopulateIndexes()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
+    String regionName = "testRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
@@ -152,10 +170,54 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   }
 
   @Test
+  public void giiWhereNewAndOldValueIsTombstoneShouldNotThrowNPE()
+      throws Exception {
+    // This test requires the oldKeyValuePair to be instantiated, to do so, we need the gii thread
+    // to gii some updates or removes on existing (non-tombstone) values before processing the
+    // scenario of tombstone to tombstone
+    String regionName = "testRegion";
+    int numEntries = 10;
+    Map<String, Portfolio> entries = new HashMap<>();
+    IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
+    Set halfEntries = new HashSet();
+    IntStream.range(0, numEntries).forEach(i -> {
+      if (i % 2 == 0) {
+        halfEntries.add("key-" + i);
+      }
+    });
+
+    server1.invoke(() -> populateRegion(regionName, entries));
+    server1.invoke(() -> destroyFromRegion(regionName, halfEntries));
+
+    clusterStartupRule.stop(2, false);
+
+
+    // update entries
+    server1.invoke(() -> populateRegion(regionName, entries));
+    server1.invoke(() -> destroyFromRegion(regionName, halfEntries));
+    clusterStartupRule.startServerVM(2, props, locator.getPort());
+
+    // invoke the query enough times to hopefully randomize bucket to server targeting enough to
+    // target both secondary/primary servers
+    server1.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
+    });
+    server2.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
+    });
+    server1.invoke(() -> {
+      verifyAllEntries("select key, value from /" + regionName + " where ID = ",
+          () -> IntStream.range(0, numEntries).filter(i -> i % 2 != 0), 8, 1);
+    });
+  }
+
+  @Test
   public void giiWithPersistenceAndStaleDataDueToSameUpdatesShouldCorrectlyPopulateIndexes()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
+    String regionName = "testRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -200,7 +262,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToUpdatesShouldCorrectlyPopulateIndexesWithEntrySet()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
+    String regionName = "testRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(10000 + i)));
@@ -246,7 +308,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldProvideCorrectResultsWithEntrySet()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
+    String regionName = "testRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -288,7 +350,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldHaveEmptyIndexesWithEntrySet()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegionWithEntrySetIndex";
+    String regionName = "testRegionWithEntrySetIndex";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -327,7 +389,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldProvideCorrectResultsWithIndexes()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegion";
+    String regionName = "testRegion";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
@@ -368,7 +430,7 @@ public class PartitionedRegionCompactRangeIndexDUnitTest implements Serializable
   public void giiWithPersistenceAndStaleDataDueToDeletesShouldHaveEmptyIndexes()
       throws Exception {
     // this region is created via cache.xml
-    String regionName = "persistentTestRegion";
+    String regionName = "testRegion";
     int numEntries = 100;
     Map<String, Portfolio> entries = new HashMap<>();
     IntStream.range(0, numEntries).forEach(i -> entries.put("key-" + i, new Portfolio(i)));
