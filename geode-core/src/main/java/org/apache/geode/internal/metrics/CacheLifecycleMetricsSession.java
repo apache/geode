@@ -127,7 +127,8 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
 
   public static class Builder {
 
-    private CollectingServiceLoader serviceLoader = new ListCollectingServiceLoader();
+    private CollectingServiceLoader<MetricsPublishingService> serviceLoader =
+        new ListCollectingServiceLoader<>();
     private CacheLifecycle cacheLifecycle = new CacheLifecycle() {};
 
     private Builder() {
@@ -141,7 +142,7 @@ public class CacheLifecycleMetricsSession implements MetricsSession, CacheLifecy
     }
 
     @VisibleForTesting
-    Builder setServiceLoader(CollectingServiceLoader serviceLoader) {
+    Builder setServiceLoader(CollectingServiceLoader<MetricsPublishingService> serviceLoader) {
       this.serviceLoader = serviceLoader;
       return this;
     }

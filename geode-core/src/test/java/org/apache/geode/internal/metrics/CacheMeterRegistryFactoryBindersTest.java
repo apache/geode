@@ -32,15 +32,15 @@ import org.junit.Test;
 
 public class CacheMeterRegistryFactoryBindersTest {
 
-  private static final String[] COMMON_TAG_KEYS = {"cluster", "member", "host"};
-
+  private static final String[] COMMON_TAG_KEYS =
+      {"cluster", "member", "host", "member.type"};
   private CompositeMeterRegistry registry;
 
   @Before
   public void before() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
 
-    registry = factory.create(42, "member-name", "host-name", false);
+    registry = factory.create(42, "member-name", "host-name", false, "member-type");
     registry.add(new SimpleMeterRegistry());
   }
 
@@ -99,7 +99,7 @@ public class CacheMeterRegistryFactoryBindersTest {
     assertThat(meters)
         .allMatch(type::isInstance, "instance of " + type);
 
-    meters.forEach(meter -> assertThatHasCommonTags(meter));
+    meters.forEach(CacheMeterRegistryFactoryBindersTest::assertThatHasCommonTags);
   }
 
   private static void assertThatHasCommonTags(Meter meter) {

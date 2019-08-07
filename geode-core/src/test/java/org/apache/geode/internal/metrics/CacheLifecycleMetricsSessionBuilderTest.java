@@ -74,7 +74,7 @@ public class CacheLifecycleMetricsSessionBuilderTest {
 
   @Test
   public void loadsMetricsPublishingServices() {
-    CollectingServiceLoader theMetricsPublishingServicesLoader =
+    CollectingServiceLoader<MetricsPublishingService> theMetricsPublishingServicesLoader =
         mock(CollectingServiceLoader.class);
 
     builder
@@ -86,7 +86,7 @@ public class CacheLifecycleMetricsSessionBuilderTest {
 
   @Test
   public void buildsCacheMetricsSession_withMetricsPublishingServices() {
-    CollectingServiceLoader theMetricsPublishingServicesLoader =
+    CollectingServiceLoader<MetricsPublishingService> theMetricsPublishingServicesLoader =
         mock(CollectingServiceLoader.class);
     Collection<MetricsPublishingService> theMetricsPublishingServices = Arrays.asList(
         metricsPublishingService("metricsPublishingService1"),

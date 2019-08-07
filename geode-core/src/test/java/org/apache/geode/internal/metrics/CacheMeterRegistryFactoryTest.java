@@ -15,15 +15,29 @@
 package org.apache.geode.internal.metrics;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.geode.test.micrometer.MicrometerAssertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Properties;
+import java.util.function.BooleanSupplier;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+
+import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class CacheMeterRegistryFactoryTest {
 
@@ -31,12 +45,29 @@ public class CacheMeterRegistryFactoryTest {
   private static final String MEMBER = "member-name";
   private static final String HOST = "host-name";
   private static final boolean IS_CLIENT = false;
+  private static final String MEMBER_TYPE = "Server";
+  @Mock(answer = RETURNS_DEEP_STUBS)
+  private InternalDistributedSystem system;
+  @Mock
+  private InternalDistributedMember member;
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  private CacheMeterRegistryFactory factory;
+
+  @Before
+  public void setup() {
+    when(system.getName()).thenReturn(MEMBER);
+    when(system.getDistributedMember()).thenReturn(member);
+    when(member.getHost()).thenReturn(HOST);
+  }
 
   @Test
   public void createsCompositeMeterRegistry() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
+    factory = new CacheMeterRegistryFactory();
 
-    assertThat(factory.create(CLUSTER, MEMBER, HOST, IS_CLIENT))
+    assertThat(factory.create(CLUSTER, MEMBER, HOST, IS_CLIENT, MEMBER_TYPE))
         .isInstanceOf(CompositeMeterRegistry.class);
   }
 
@@ -46,13 +77,12 @@ public class CacheMeterRegistryFactoryTest {
     String theMemberName = "the-member-name";
 
     CompositeMeterRegistry registry =
-        factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT);
+        factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT, MEMBER_TYPE);
 
     Meter meter = registry
         .counter("my.meter");
 
-    assertThat(meter.getId().getTags())
-        .contains(Tag.of("member", theMemberName));
+    assertThat(meter).hasTag("member", theMemberName);
   }
 
   @Test
@@ -61,7 +91,7 @@ public class CacheMeterRegistryFactoryTest {
     String theMemberName = "";
 
     CompositeMeterRegistry registry =
-        factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT);
+        factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT, MEMBER_TYPE);
 
     Meter meter = registry
         .counter("my.meter");
@@ -76,10 +106,10 @@ public class CacheMeterRegistryFactoryTest {
   public void addsClusterCommonTag_ifNotClient() {
     CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
     int theSystemId = 21;
-    boolean isClient = false;
+
 
     CompositeMeterRegistry registry =
-        factory.create(theSystemId, MEMBER, HOST, isClient);
+        factory.create(theSystemId, MEMBER, HOST, IS_CLIENT, MEMBER_TYPE);
 
     Meter meter = registry
         .counter("my.meter");
@@ -95,7 +125,7 @@ public class CacheMeterRegistryFactoryTest {
     boolean isClient = true;
 
     CompositeMeterRegistry registry =
-        factory.create(theSystemId, MEMBER, HOST, isClient);
+        factory.create(theSystemId, MEMBER, HOST, isClient, MEMBER_TYPE);
 
     Meter meter = registry
         .counter("my.meter");
@@ -112,7 +142,7 @@ public class CacheMeterRegistryFactoryTest {
     String theHostName = "the-host-name";
 
     CompositeMeterRegistry registry =
-        factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT);
+        factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT, MEMBER_TYPE);
 
     Meter meter = registry
         .counter("my.meter");
@@ -127,7 +157,7 @@ public class CacheMeterRegistryFactoryTest {
     String theMemberName = null;
 
     Throwable thrown =
-        catchThrowable(() -> factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT));
+        catchThrowable(() -> factory.create(CLUSTER, theMemberName, HOST, IS_CLIENT, MEMBER_TYPE));
 
     assertThat(thrown)
         .isInstanceOf(NullPointerException.class);
@@ -139,7 +169,7 @@ public class CacheMeterRegistryFactoryTest {
     String theHostName = null;
 
     Throwable thrown =
-        catchThrowable(() -> factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT));
+        catchThrowable(() -> factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT, MEMBER_TYPE));
 
     assertThat(thrown)
         .isInstanceOf(NullPointerException.class);
@@ -151,9 +181,138 @@ public class CacheMeterRegistryFactoryTest {
     String theHostName = "";
 
     Throwable thrown =
-        catchThrowable(() -> factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT));
+        catchThrowable(() -> factory.create(CLUSTER, MEMBER, theHostName, IS_CLIENT, MEMBER_TYPE));
 
     assertThat(thrown)
         .isInstanceOf(IllegalArgumentException.class);
   }
+
+  @Test
+  public void addsSystemName_asMemberCommonTag() {
+    String systemName = "the-member-name";
+    factory = new CacheMeterRegistryFactory();
+    when(system.getName()).thenReturn(systemName);
+
+    CompositeMeterRegistry registry =
+        factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member", systemName);
+  }
+
+  @Test
+  public void addsSystemClusterId_asClusterCommonTag() {
+    int systemId = 43;
+    factory = new CacheMeterRegistryFactory();
+    when(system.getConfig().getDistributedSystemId()).thenReturn(systemId);
+
+    CompositeMeterRegistry registry =
+        factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("cluster", String.valueOf(systemId));
+  }
+
+  @Test
+  public void addsSystemHost_asHostCommonTag() {
+    String systemHost = "system-host";
+    factory = new CacheMeterRegistryFactory();
+
+    when(system.getDistributedMember().getHost()).thenReturn(systemHost);
+
+    CompositeMeterRegistry registry =
+        factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("host", systemHost);
+  }
+
+  @Test
+  public void addsLocatorMemberType_ifStandaloneLocator() {
+    BooleanSupplier hasLocator = () -> true;
+    BooleanSupplier hasCacheServer = () -> false;
+
+    factory = new CacheMeterRegistryFactory(hasLocator, hasCacheServer);
+
+    CompositeMeterRegistry registry = factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "locator");
+  }
+
+  @Test
+  public void forServer_returnsServer() {
+    BooleanSupplier hasLocator = () -> false;
+    BooleanSupplier hasCacheServer = () -> true;
+
+    factory = new CacheMeterRegistryFactory(hasLocator, hasCacheServer);
+
+    CompositeMeterRegistry registry = factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "server");
+  }
+
+  @Test
+  public void forEmbeddedCache_returnsEmbeddedCache() {
+    BooleanSupplier hasLocator = () -> false;
+    BooleanSupplier hasCacheServer = () -> false;
+
+    factory = new CacheMeterRegistryFactory(hasLocator, hasCacheServer);
+
+    CompositeMeterRegistry registry = factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "embedded-cache");
+  }
+
+  @Test
+  public void forServerLocator_returnsServerLocator() {
+
+    BooleanSupplier hasLocator = () -> true;
+    BooleanSupplier hasCacheServer = () -> true;
+
+    factory = new CacheMeterRegistryFactory(hasLocator, hasCacheServer);
+
+    CompositeMeterRegistry registry = factory.create(system, false);
+
+    Meter meter = registry
+        .counter("my.meter");
+
+    assertThat(meter)
+        .hasTag("member.type", "server-locator");
+  }
+
+  @Test
+  public void startLocatorRequested_returnsTrue_whenStartLocatorSetInProperties() {
+    Properties properties = new Properties();
+    factory = new CacheMeterRegistryFactory();
+    properties.setProperty(DistributionConfig.START_LOCATOR_NAME, "127.0.0.1[10335]");
+    assertThat(factory.startLocatorRequested(properties)).isTrue();
+  }
+
+  @Test
+  public void startLocatorRequested_returnsFalse_whenStartLocatorPropertyDoesntExist() {
+    factory = new CacheMeterRegistryFactory();
+    assertThat(factory.startLocatorRequested(new Properties())).isFalse();
+  }
+
 }

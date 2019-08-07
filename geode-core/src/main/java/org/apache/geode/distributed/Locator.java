@@ -301,9 +301,11 @@ public abstract class Locator {
 
   /**
    * Returns true if a locator exists in this JVM.
+   * This is the case in a locator or server with an embedded locator
    *
    * @return true if a locator exists in this JVM.
    * @since GemFire 7.0
+   *
    */
   public static boolean hasLocator() {
     return InternalLocator.hasLocator();

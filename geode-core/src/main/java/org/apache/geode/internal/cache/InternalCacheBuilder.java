@@ -114,6 +114,7 @@ public class InternalCacheBuilder {
   }
 
   private InternalCacheBuilder(Properties configProperties, CacheConfig cacheConfig) {
+
     this(configProperties,
         cacheConfig,
         new CacheMeterRegistryFactory(),
@@ -121,10 +122,7 @@ public class InternalCacheBuilder {
         InternalDistributedSystem::getConnectedInstance,
         InternalDistributedSystem::connectInternal,
         GemFireCacheImpl::getInstance,
-        (isClient1, poolFactory1, internalDistributedSystem, cacheConfig1, useAsyncEventListeners1,
-            typeRegistry1, meterRegistry, addedMeterSubregistries) -> new GemFireCacheImpl(
-                isClient1, poolFactory1, internalDistributedSystem, cacheConfig1,
-                useAsyncEventListeners1, typeRegistry1, meterRegistry, addedMeterSubregistries));
+        GemFireCacheImpl::new);
   }
 
   @VisibleForTesting
@@ -147,45 +145,48 @@ public class InternalCacheBuilder {
   }
 
   /**
-   * @see CacheFactory#create()
-   *
-   * @throws CacheXmlException If a problem occurs while parsing the declarative caching XML file.
-   * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while initializing
-   *         the cache.
-   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while initializing the
-   *         cache.
-   * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
-   * @throws RegionExistsException If the declarative caching XML file describes a region that
-   *         already exists (including the root region).
-   * @throws IllegalStateException if cache already exists and is not compatible with the new
-   *         configuration.
+   * @throws CacheXmlException If a problem occurs while parsing the declarative
+   *         caching XML file.
+   * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while
+   *         initializing the cache.
+   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while
+   *         initializing the cache.
+   * @throws GatewayException If a {@code GatewayException} is thrown while
+   *         initializing the cache.
+   * @throws RegionExistsException If the declarative caching XML file describes a region
+   *         that already exists (including the root region).
+   * @throws IllegalStateException if cache already exists and is not compatible with the
+   *         new configuration.
    * @throws AuthenticationFailedException if authentication fails.
    * @throws AuthenticationRequiredException if the distributed system is in secure mode and this
-   *         new member is not configured with security credentials.
+   *         new member is not configured with security
+   *         credentials.
+   * @see CacheFactory#create()
    */
   public InternalCache create()
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
     synchronized (InternalCacheBuilder.class) {
       InternalDistributedSystem internalDistributedSystem = findInternalDistributedSystem()
-          .orElseGet(() -> createInternalDistributedSystem());
+          .orElseGet(this::createInternalDistributedSystem);
       return create(internalDistributedSystem);
     }
   }
 
   /**
-   * @see CacheFactory#create(DistributedSystem)
-   *
    * @throws IllegalArgumentException If {@code system} is not {@link DistributedSystem#isConnected
    *         connected}.
    * @throws CacheExistsException If an open cache already exists.
-   * @throws CacheXmlException If a problem occurs while parsing the declarative caching XML file.
-   * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while initializing
+   * @throws CacheXmlException If a problem occurs while parsing the declarative caching XML
+   *         file.
+   * @throws TimeoutException If a {@link Region#put(Object, Object)} times out while
+   *         initializing the cache.
+   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while initializing
    *         the cache.
-   * @throws CacheWriterException If a {@code CacheWriterException} is thrown while initializing the
+   * @throws GatewayException If a {@code GatewayException} is thrown while initializing the
    *         cache.
-   * @throws GatewayException If a {@code GatewayException} is thrown while initializing the cache.
    * @throws RegionExistsException If the declarative caching XML file describes a region that
    *         already exists (including the root region).
+   * @see CacheFactory#create(DistributedSystem)
    */
   public InternalCache create(InternalDistributedSystem internalDistributedSystem)
       throws TimeoutException, CacheWriterException, GatewayException, RegionExistsException {
@@ -197,12 +198,8 @@ public class InternalCacheBuilder {
               existingCache(internalDistributedSystem::getCache, singletonCacheSupplier);
           if (cache == null) {
 
-            int systemId = internalDistributedSystem.getConfig().getDistributedSystemId();
-            String memberName = internalDistributedSystem.getName();
-            String hostName = internalDistributedSystem.getDistributedMember().getHost();
-
             CompositeMeterRegistry compositeMeterRegistry = compositeMeterRegistryFactory
-                .create(systemId, memberName, hostName, isClient);
+                .create(internalDistributedSystem, isClient);
 
             for (MeterRegistry meterSubregistry : meterSubregistries) {
               compositeMeterRegistry.add(meterSubregistry);
@@ -322,8 +319,8 @@ public class InternalCacheBuilder {
   }
 
   /**
-   * @param useAsyncEventListeners default is specified by the system property
-   *        {@code gemfire.Cache.ASYNC_EVENT_LISTENERS}.
+   * @param useAsyncEventListeners default is specified by the system property {@code
+   *                               gemfire.Cache.ASYNC_EVENT_LISTENERS}.
    */
   public InternalCacheBuilder setUseAsyncEventListeners(boolean useAsyncEventListeners) {
     this.useAsyncEventListeners = useAsyncEventListeners;
@@ -387,9 +384,9 @@ public class InternalCacheBuilder {
 
   /**
    * Validates that isExistingOk is true and existing cache is compatible with cacheConfig.
-   *
-   * if instance exists and cacheConfig is incompatible
-   * if instance exists and isExistingOk is false
+   * <p>
+   * if instance exists and cacheConfig is incompatible if instance exists and isExistingOk is
+   * false
    */
   private boolean validateExistingCache(InternalCache existingCache) {
     if (existingCache == null || existingCache.isClosed()) {
@@ -433,8 +430,10 @@ public class InternalCacheBuilder {
   @VisibleForTesting
   interface InternalCacheConstructor {
     InternalCache construct(boolean isClient, PoolFactory poolFactory,
-        InternalDistributedSystem internalDistributedSystem, CacheConfig cacheConfig,
-        boolean useAsyncEventListeners, TypeRegistry typeRegistry, MeterRegistry meterRegistry,
+        InternalDistributedSystem internalDistributedSystem,
+        CacheConfig cacheConfig,
+        boolean useAsyncEventListeners, TypeRegistry typeRegistry,
+        MeterRegistry meterRegistry,
         Set<MeterRegistry> addedMeterSubregistries);
   }
 

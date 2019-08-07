@@ -55,6 +55,7 @@ import org.apache.geode.internal.metrics.CompositeMeterRegistryFactory;
  */
 public class InternalCacheBuilderAllowsMultipleSystemsTest {
 
+  private static final Supplier<String> MEMBER_TYPE_SUPPLIER = () -> "a-member-type";
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
 
@@ -101,8 +102,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         THROWING_SYSTEM_SUPPLIER, constructorOf(constructedSystem()),
         THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()));
 
-    Throwable thrown = catchThrowable(() -> internalCacheBuilder
-        .create());
+    Throwable thrown = catchThrowable(internalCacheBuilder::create);
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }
@@ -115,8 +115,7 @@ public class InternalCacheBuilderAllowsMultipleSystemsTest {
         THROWING_SYSTEM_SUPPLIER, constructorOf(constructedSystem()),
         THROWING_CACHE_SUPPLIER, constructorOf(constructedCache()));
 
-    Throwable thrown = catchThrowable(() -> internalCacheBuilder
-        .create());
+    Throwable thrown = catchThrowable(internalCacheBuilder::create);
 
     assertThat(thrown).isInstanceOf(NullPointerException.class);
   }

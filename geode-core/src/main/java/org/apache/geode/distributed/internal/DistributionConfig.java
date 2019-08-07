@@ -2633,7 +2633,7 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   /**
    * Returns the value of
-   * {@link ConfigurationProperties#SSECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
+   * {@link ConfigurationProperties#SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS} property
    */
   @ConfigAttributeGetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
   String[] getSecurityAuthTokenEnabledComponents();

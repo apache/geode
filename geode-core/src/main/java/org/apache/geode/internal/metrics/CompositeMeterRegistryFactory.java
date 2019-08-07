@@ -16,10 +16,16 @@ package org.apache.geode.internal.metrics;
 
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
+
 /**
  * Creates {@code CompositeMeterRegistry} and configures commonTags.
  */
 public interface CompositeMeterRegistryFactory {
 
-  CompositeMeterRegistry create(int systemId, String memberName, String hostName, boolean isClient);
+  CompositeMeterRegistry create(int systemId, String memberName, String hostName, boolean isClient,
+      String memberType);
+
+  CompositeMeterRegistry create(InternalDistributedSystem internalDistributedSystem,
+      boolean isClient);
 }
