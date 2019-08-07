@@ -215,7 +215,9 @@ dependencies {
   compile('net.sf.jopt-simple:jopt-simple')
 
   compile('org.apache.logging.log4j:log4j-api')
-  compile('org.apache.logging.log4j:log4j-core')
+  compile('org.apache.logging.log4j:log4j-core') {
+    ext.optional = true
+  }
 
   runtimeOnly('org.fusesource.jansi:jansi') {
     ext.optional = true

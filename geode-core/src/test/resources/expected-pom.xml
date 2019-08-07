@@ -199,6 +199,7 @@
       <groupId>org.apache.logging.log4j</groupId>
       <artifactId>log4j-core</artifactId>
       <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
