@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
@@ -210,7 +211,7 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
 
     ResultCollector<Boolean, List<Boolean>> resultCollector;
     if (executeTimeout > 0) {
-      resultCollector = execution.execute(function, timeout);
+      resultCollector = execution.execute(function, timeout, TimeUnit.MILLISECONDS);
     } else {
       resultCollector = execution.execute(function);
     }
