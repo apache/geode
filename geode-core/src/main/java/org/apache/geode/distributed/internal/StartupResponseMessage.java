@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
  */
-public class StartupResponseMessage extends DistributionMessage
+public class StartupResponseMessage extends HighPriorityDistributionMessage
     implements AdminMessageType {
   private static final Logger logger = LogService.getLogger();
 
@@ -118,11 +118,6 @@ public class StartupResponseMessage extends DistributionMessage
   @Override
   public boolean getInlineProcess() {
     return true;
-  }
-
-  @Override
-  public int getProcessorType() {
-    return ClusterDistributionManager.WAITING_POOL_EXECUTOR;
   }
 
   @Override
