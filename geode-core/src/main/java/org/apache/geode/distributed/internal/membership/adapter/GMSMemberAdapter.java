@@ -171,6 +171,11 @@ public class GMSMemberAdapter implements NetMember {
   }
 
   @Override
+  public boolean isPartial() {
+    return gmsMember.isPartial();
+  }
+
+  @Override
   public void setDurableClientAttributes(DurableClientAttributes attributes) {
     durableClientAttributes = attributes;
     if (attributes != null) {

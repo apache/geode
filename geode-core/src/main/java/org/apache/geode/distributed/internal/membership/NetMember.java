@@ -109,4 +109,7 @@ public interface NetMember extends Comparable<NetMember> {
   void setHostName(String hostName);
 
   String getHostName();
+
+  /** is this a partial ID created without full identifier information? */
+  boolean isPartial();
 }
