@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -132,6 +133,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     closeLocator();
   }
 
+  @Ignore
   @Test
   public void testMulticastAfterReconnect() {
     final String name = "mcastRegion";

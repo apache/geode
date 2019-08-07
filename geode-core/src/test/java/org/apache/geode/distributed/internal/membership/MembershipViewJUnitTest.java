@@ -38,7 +38,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
-public class NetViewJUnitTest {
+public class MembershipViewJUnitTest {
 
   private List<GMSMember> members;
 
