@@ -1947,14 +1947,14 @@ public class Connection implements Runnable {
   }
 
   private void sendFailureReply(int rpId, String exMsg, Throwable ex, boolean directAck) {
-    ReplySender dm = null;
+    ReplyException exception = new ReplyException(exMsg, ex);
     if (directAck) {
-      dm = new DirectReplySender(this);
+      ReplySender dm = new DirectReplySender(this);
+      ReplyMessage.send(getRemoteAddress(), rpId, exception, dm);
     } else if (rpId != 0) {
-      dm = this.owner.getDM();
-    }
-    if (dm != null) {
-      ReplyMessage.send(getRemoteAddress(), rpId, new ReplyException(exMsg, ex), dm);
+      DistributionManager dm = this.owner.getDM();
+      dm.getWaitingThreadPool()
+          .execute(() -> ReplyMessage.send(getRemoteAddress(), rpId, exception, dm));
     }
   }
 
