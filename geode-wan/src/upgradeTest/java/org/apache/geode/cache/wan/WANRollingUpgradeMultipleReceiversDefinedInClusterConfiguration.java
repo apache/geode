@@ -144,12 +144,13 @@ public class WANRollingUpgradeMultipleReceiversDefinedInClusterConfiguration
     VM locator = Host.getHost(0).getVM(oldVersion, 0);
     String hostName = NetworkUtils.getServerHostName();
     final int locatorPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPort);
     final String locators = hostName + "[" + locatorPort + "]";
-
     // Start old locator
-    locator.invoke(() -> startLocator(locatorPort, 0,
-        locators, null, true));
+    locator.invoke(() -> {
+      DistributedTestUtils.deleteLocatorStateFile(locatorPort);
+      startLocator(locatorPort, 0,
+          locators, null, true);
+    });
 
     // Wait for configuration configuration to be ready.
     locator.invoke(
