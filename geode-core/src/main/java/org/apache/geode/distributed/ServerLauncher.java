@@ -42,12 +42,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
@@ -88,7 +86,6 @@ import org.apache.geode.internal.process.ConnectionFailedException;
 import org.apache.geode.internal.process.ControlNotificationHandler;
 import org.apache.geode.internal.process.ControllableProcess;
 import org.apache.geode.internal.process.FileAlreadyExistsException;
-import org.apache.geode.internal.process.FileControllableProcess;
 import org.apache.geode.internal.process.MBeanInvocationFailedException;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessController;
@@ -243,8 +240,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
   private final ServerControllerParameters controllerParameters;
   private final Runnable startupCompletionAction;
   private final Consumer<Throwable> startupExceptionAction;
-  private final ServerLauncherCacheProvider serverLauncherCacheProvider;
-  private final Supplier<ControllableProcess> controllableProcessFactory;
 
   /**
    * Launches a GemFire Server from the command-line configured with the given arguments.
@@ -340,8 +335,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
         return statusInProcess();
       }
     };
-    serverLauncherCacheProvider = builder.getServerLauncherCacheProvider();
-    controllableProcessFactory = builder.getControllableProcessFactory();
 
     Integer serverPort =
         builder.isServerPortSetByUser() && this.serverPort != null ? this.serverPort : null;
@@ -790,7 +783,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
       INSTANCE.compareAndSet(null, this);
 
       try {
-        process = getControllableProcess();
+        process = new ControllableProcess(controlHandler, new File(getWorkingDirectory()),
+            ProcessType.SERVER, isForcing());
 
         if (!isDisableDefaultServer()) {
           assertPortAvailable(getServerBindAddress(), getServerPort());
@@ -825,15 +819,13 @@ public class ServerLauncher extends AbstractLauncher<String> {
           }
 
           cache.setIsServer(true);
-          startCacheServer(cache);
+          startCacheServer(cache, startTime);
 
           assignBuckets(cache);
           rebalance(cache);
         } finally {
           ProcessLauncherContext.remove();
         }
-
-        awaitStartupTasks(cache, startTime);
 
         debug("Running Server on (%1$s) in (%2$s) as (%3$s)...", getId(), getWorkingDirectory(),
             getMember());
@@ -883,7 +875,8 @@ public class ServerLauncher extends AbstractLauncher<String> {
   }
 
   Cache createCache(Properties gemfireProperties) {
-    Iterable<ServerLauncherCacheProvider> loader = getServerLauncherCacheProviders();
+    ServiceLoader<ServerLauncherCacheProvider> loader =
+        ServiceLoader.load(ServerLauncherCacheProvider.class);
     for (ServerLauncherCacheProvider provider : loader) {
       Cache cache = provider.createCache(gemfireProperties, this);
       if (cache != null) {
@@ -892,12 +885,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     }
 
     return DEFAULT_CACHE_PROVIDER.createCache(gemfireProperties, this);
-  }
-
-  private Iterable<ServerLauncherCacheProvider> getServerLauncherCacheProviders() {
-    return serverLauncherCacheProvider != null
-        ? Collections.singleton(serverLauncherCacheProvider)
-        : ServiceLoader.load(ServerLauncherCacheProvider.class);
   }
 
   /**
@@ -990,9 +977,11 @@ public class ServerLauncher extends AbstractLauncher<String> {
    * Thread on the specified bind address and port.
    *
    * @param cache the Cache to which the server will be added.
+   * @param startTime the system clock time at which the start method was called
    * @throws IOException if the Cache server fails to start due to IO error.
    */
-  private void startCacheServer(final Cache cache) throws IOException {
+  @VisibleForTesting
+  void startCacheServer(final Cache cache, long startTime) throws IOException {
     if (isDefaultServerEnabled(cache)) {
       final String serverBindAddress =
           getServerBindAddress() == null ? null : getServerBindAddress().getHostAddress();
@@ -1029,26 +1018,15 @@ public class ServerLauncher extends AbstractLauncher<String> {
 
       cacheServer.start();
     }
-  }
 
-  private void awaitStartupTasks(Cache cache, long startTime) {
     Runnable afterStartup = startupCompletionAction == null
         ? () -> logStartCompleted(startTime) : startupCompletionAction;
 
     Consumer<Throwable> exceptionAction = startupExceptionAction == null
         ? (throwable) -> logStartCompletedWithError(startTime, throwable) : startupExceptionAction;
 
-    CompletableFuture<Void> startupTasks =
-        ((InternalResourceManager) cache.getResourceManager())
-            .allOfStartupTasks();
-
-    startupTasks
-        .thenRun(afterStartup)
-        .exceptionally((throwable) -> {
-          exceptionAction.accept(throwable);
-          return null;
-        })
-        .join();
+    ((InternalResourceManager) cache.getResourceManager())
+        .runWhenStartupTasksComplete(afterStartup, exceptionAction);
   }
 
   private void logStartCompleted(long startTime) {
@@ -1363,14 +1341,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     return overriddenDefaults;
   }
 
-  private ControllableProcess getControllableProcess()
-      throws IOException, FileAlreadyExistsException, PidUnavailableException {
-    return controllableProcessFactory != null
-        ? controllableProcessFactory.get()
-        : new FileControllableProcess(controlHandler, new File(getWorkingDirectory()),
-            ProcessType.SERVER, isForcing());
-  }
-
   private class ServerControllerParameters implements ProcessControllerParameters {
     @Override
     public File getPidFile() {
@@ -1481,8 +1451,6 @@ public class ServerLauncher extends AbstractLauncher<String> {
     private Integer maxThreads;
     private Runnable startupCompletionAction;
     private Consumer<Throwable> startupExceptionAction;
-    private ServerLauncherCacheProvider serverLauncherCacheProvider;
-    private Supplier<ControllableProcess> controllableProcessFactory;
 
     /**
      * Default constructor used to create an instance of the Builder class for programmatical
@@ -2567,49 +2535,7 @@ public class ServerLauncher extends AbstractLauncher<String> {
      * @return the action to run
      */
     Consumer<Throwable> getStartupExceptionAction() {
-      return startupExceptionAction;
-    }
-
-    /**
-     * Sets the ServerLauncherCacheProvider to use when creating the cache.
-     *
-     * @param serverLauncherCacheProvider the cache provider to use
-     * @return this builder
-     */
-    Builder setServerLauncherCacheProvider(
-        ServerLauncherCacheProvider serverLauncherCacheProvider) {
-      this.serverLauncherCacheProvider = serverLauncherCacheProvider;
-      return this;
-    }
-
-    /**
-     * Gets the ServerLauncherCacheProvider to use when creating the cache.
-     *
-     * @return the cache provider
-     */
-    ServerLauncherCacheProvider getServerLauncherCacheProvider() {
-      return serverLauncherCacheProvider;
-    }
-
-    /**
-     * Sets the factory to use to get a {@code ControllableProcess} when starting the server.
-     *
-     * @param controllableProcessFactory the controllable process factory to use
-     * @return this builder
-     */
-    Builder setControllableProcessFactory(
-        Supplier<ControllableProcess> controllableProcessFactory) {
-      this.controllableProcessFactory = controllableProcessFactory;
-      return this;
-    }
-
-    /**
-     * Gets the factory used to get a {@code ControllableProcess} when starting the server.
-     *
-     * @return the controllable process factory
-     */
-    Supplier<ControllableProcess> getControllableProcessFactory() {
-      return controllableProcessFactory;
+      return this.startupExceptionAction;
     }
   }
 

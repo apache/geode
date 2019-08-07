@@ -14,22 +14,20 @@
  */
 package org.apache.geode.distributed;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.junit.Before;
@@ -39,9 +37,8 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.ServerLauncher.Builder;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.CacheConfig;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
-import org.apache.geode.internal.process.ControllableProcess;
 
 /**
  * Unit tests for {@link ServerLauncher}.
@@ -74,6 +71,29 @@ public class ServerLauncherTest {
     assertThat(ServerLauncherParameters.INSTANCE.getHostnameForClients())
         .isEqualTo("hostName4Clients");
     assertThat(ServerLauncherParameters.INSTANCE.isDisableDefaultServer()).isFalse();
+  }
+
+  @Test
+  public void canBeMocked() throws IOException {
+    ServerLauncher launcher = mock(ServerLauncher.class);
+    Cache cache = mock(Cache.class);
+    CacheConfig cacheConfig = mock(CacheConfig.class);
+
+    when(launcher.getCache()).thenReturn(cache);
+    when(launcher.getCacheConfig()).thenReturn(cacheConfig);
+    when(launcher.getId()).thenReturn("ID");
+    when(launcher.isWaiting(eq(cache))).thenReturn(true);
+    when(launcher.isHelping()).thenReturn(true);
+
+    launcher.startCacheServer(cache, 0L);
+
+    verify(launcher, times(1)).startCacheServer(cache, 0L);
+
+    assertThat(launcher.getCache()).isSameAs(cache);
+    assertThat(launcher.getCacheConfig()).isSameAs(cacheConfig);
+    assertThat(launcher.getId()).isSameAs("ID");
+    assertThat(launcher.isWaiting(cache)).isTrue();
+    assertThat(launcher.isHelping()).isTrue();
   }
 
   @Test
@@ -262,24 +282,18 @@ public class ServerLauncherTest {
 
   @Test
   public void startCacheServerStartsCacheServerWithBuilderValues() throws IOException {
-    Cache cache = createCache();
+    Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
     when(cache.addCacheServer()).thenReturn(cacheServer);
-    ServerLauncher launcher = new Builder()
-        .setServerBindAddress(null)
-        .setServerPort(11235)
-        .setMaxThreads(10)
-        .setMaxConnections(100)
-        .setMaxMessageCount(5)
-        .setMessageTimeToLive(10000)
-        .setSocketBufferSize(2048)
-        .setHostNameForClients("hostName4Clients")
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
+    ServerLauncher launcher = new Builder().setServerBindAddress(null).setServerPort(11235)
+        .setMaxThreads(10).setMaxConnections(100).setMaxMessageCount(5).setMessageTimeToLive(10000)
+        .setSocketBufferSize(2048).setHostNameForClients("hostName4Clients").build();
 
-    launcher.start();
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    launcher.startCacheServer(cache, 0L);
 
     verify(cacheServer).setBindAddress(null);
     verify(cacheServer).setPort(eq(11235));
@@ -294,164 +308,75 @@ public class ServerLauncherTest {
 
   @Test
   public void startCacheServerDoesNothingWhenDefaultServerDisabled() throws IOException {
-    Cache cache = createCache();
+    Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer = mock(CacheServer.class, "CacheServer");
     when(cache.getCacheServers()).thenReturn(Collections.emptyList());
     when(cache.addCacheServer()).thenReturn(cacheServer);
-    ServerLauncher launcher = new Builder()
-        .setDisableDefaultServer(true)
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
+    ServerLauncher launcher = new Builder().setDisableDefaultServer(true).build();
 
-    launcher.start();
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    launcher.startCacheServer(cache, 0L);
 
     verifyZeroInteractions(cacheServer);
   }
 
   @Test
   public void startCacheServerDoesNothingWhenCacheServerAlreadyExists() throws IOException {
-    Cache cache = createCache();
+    Cache cache = mock(Cache.class, "Cache");
     CacheServer cacheServer1 = mock(CacheServer.class, "CacheServer1");
     CacheServer cacheServer2 = mock(CacheServer.class, "CacheServer2");
     when(cache.getCacheServers()).thenReturn(Collections.singletonList(cacheServer1));
     when(cache.addCacheServer()).thenReturn(cacheServer1);
-    ServerLauncher launcher = new Builder()
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
+    ServerLauncher launcher = new Builder().build();
 
-    launcher.start();
+    final InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    launcher.startCacheServer(cache, 0L);
 
     verifyZeroInteractions(cacheServer2);
   }
 
   @Test
-  public void startRunsCompletionActionAfterStartupTasksComplete() {
+  public void startCacheServerPassesStartupCompletionActionToResourceManager() throws IOException {
     Runnable startupCompletionAction = mock(Runnable.class);
-    @SuppressWarnings("unchecked")
-    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
-    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-    Cache cache = createCache(internalResourceManager);
     ServerLauncher serverLauncher = new Builder()
         .setStartupCompletionAction(startupCompletionAction)
-        .setStartupExceptionAction(startupExceptionAction)
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
         .build();
 
-    when(internalResourceManager.allOfStartupTasks())
-        .thenReturn(CompletableFuture.completedFuture(null));
-
-    serverLauncher.start();
-
-    verify(startupCompletionAction).run();
-    verifyZeroInteractions(startupExceptionAction);
-  }
-
-  @Test
-  public void startRunsExceptionActionAfterStartupTasksError() {
-    Runnable startupCompletionAction = mock(Runnable.class);
-    @SuppressWarnings("unchecked")
-    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
-    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-    Cache cache = createCache(internalResourceManager);
-    ServerLauncher serverLauncher = new Builder()
-        .setStartupExceptionAction(startupExceptionAction)
-        .setServerLauncherCacheProvider((a, b) -> cache)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
-
-    when(internalResourceManager.allOfStartupTasks())
-        .thenReturn(completedExceptionallyFuture());
-
-    serverLauncher.start();
-
-    verify(startupExceptionAction).accept(any());
-    verifyZeroInteractions(startupCompletionAction);
-  }
-
-  @Test
-  public void startUsesCacheProviderFromBuilder() {
-    ServerLauncherCacheProvider serverLauncherCacheProvider =
-        mock(ServerLauncherCacheProvider.class);
-    Cache cacheFromBuilder = createCache();
-    when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
-
-    ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
-    serverLauncher.start();
-
-    assertThat(serverLauncher.getCache()).isSameAs(cacheFromBuilder);
-  }
-
-  @Test
-  public void startUsesControllableProcessFromBuilder() {
-    ServerLauncherCacheProvider serverLauncherCacheProvider =
-        mock(ServerLauncherCacheProvider.class);
-    ControllableProcess controllableProcess = mock(ControllableProcess.class);
-    Cache cacheFromBuilder = createCache();
-    when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
-
-    ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcessFactory(() -> controllableProcess)
-        .build();
-    serverLauncher.start();
-
-    serverLauncher.stop();
-
-    verify(controllableProcess).stop(anyBoolean());
-  }
-
-  @Test
-  public void startWaitsForStartupTasksToComplete() {
-    ServerLauncherCacheProvider serverLauncherCacheProvider =
-        mock(ServerLauncherCacheProvider.class);
-    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-    InternalCache cacheFromBuilder = createCache(internalResourceManager);
-    when(serverLauncherCacheProvider.createCache(any(), any())).thenReturn(cacheFromBuilder);
-
-    ServerLauncher serverLauncher = new Builder()
-        .setServerLauncherCacheProvider(serverLauncherCacheProvider)
-        .setControllableProcessFactory(() -> mock(ControllableProcess.class))
-        .build();
-
-    CompletableFuture<Void> startupTasks = spy(new CompletableFuture<>());
-    when(internalResourceManager.allOfStartupTasks())
-        .thenReturn(startupTasks);
-
-    CompletableFuture<Void> serverLauncherStart = CompletableFuture.runAsync(serverLauncher::start);
-
-    await().untilAsserted(() -> verify(startupTasks).thenRun(any()));
-    assertThat(serverLauncherStart).isNotDone();
-
-    startupTasks.complete(null);
-
-    await().untilAsserted(() -> assertThat(serverLauncherStart).isDone());
-  }
-
-  private CompletableFuture<Void> completedExceptionallyFuture() {
-    CompletableFuture<Void> completedExceptionallyFuture = new CompletableFuture<>();
-    completedExceptionallyFuture.completeExceptionally(new RuntimeException());
-    return completedExceptionallyFuture;
-  }
-
-  private InternalCache createCache() {
-    return createCache(mock(InternalResourceManager.class));
-  }
-
-  private InternalCache createCache(InternalResourceManager internalResourceManager) {
-    InternalCache cache = mock(InternalCache.class);
+    Cache cache = mock(Cache.class);
     CacheServer cacheServer = mock(CacheServer.class);
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
 
     when(cache.addCacheServer()).thenReturn(cacheServer);
     when(cache.getResourceManager()).thenReturn(internalResourceManager);
-    when(internalResourceManager.allOfStartupTasks())
-        .thenReturn(CompletableFuture.completedFuture(null));
 
-    return cache;
+    serverLauncher.startCacheServer(cache, 0L);
+
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(same(startupCompletionAction), any());
+  }
+
+  @Test
+  public void startCacheServerPassesStartupExceptionActionToResourceManager() throws IOException {
+    @SuppressWarnings("unchecked")
+    Consumer<Throwable> startupExceptionAction = mock(Consumer.class);
+    ServerLauncher serverLauncher = new Builder()
+        .setStartupExceptionAction(startupExceptionAction)
+        .build();
+
+    Cache cache = mock(Cache.class);
+    CacheServer cacheServer = mock(CacheServer.class);
+    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
+
+    when(cache.addCacheServer()).thenReturn(cacheServer);
+    when(cache.getResourceManager()).thenReturn(internalResourceManager);
+
+    serverLauncher.startCacheServer(cache, 0L);
+
+    verify(internalResourceManager)
+        .runWhenStartupTasksComplete(any(), same(startupExceptionAction));
   }
 }

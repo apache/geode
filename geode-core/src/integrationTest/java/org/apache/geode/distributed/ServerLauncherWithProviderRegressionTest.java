@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.geode.internal.process.ProcessType.PROPERTY_TEST_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -44,9 +43,7 @@ public class ServerLauncherWithProviderRegressionTest extends ServerLauncherInte
     System.setProperty(PROPERTY_TEST_PREFIX, getUniqueName() + "-");
 
     providerCache = mock(Cache.class);
-    InternalResourceManager internalResourceManager = mock(InternalResourceManager.class);
-    when(providerCache.getResourceManager()).thenReturn(internalResourceManager);
-    when(internalResourceManager.allOfStartupTasks()).thenReturn(completedFuture(null));
+    when(providerCache.getResourceManager()).thenReturn(mock(InternalResourceManager.class));
     TestServerLauncherCacheProvider.setCache(providerCache);
   }
 
