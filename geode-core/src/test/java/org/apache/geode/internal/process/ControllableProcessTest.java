@@ -15,7 +15,7 @@
 package org.apache.geode.internal.process;
 
 import static java.lang.System.lineSeparator;
-import static org.apache.geode.internal.process.ControllableProcess.fetchStatusWithValidation;
+import static org.apache.geode.internal.process.FileControllableProcess.fetchStatusWithValidation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.apache.geode.distributed.AbstractLauncher.ServiceState;
 
 /**
- * Unit tests for {@link ControllableProcess}.
+ * Unit tests for {@link FileControllableProcess}.
  */
 public class ControllableProcessTest {
 

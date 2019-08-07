@@ -70,7 +70,7 @@ public class ControllableProcessIntegrationTest {
     localProcessLauncher = new LocalProcessLauncher(pidFile, false);
 
     // act
-    ControllableProcess controllable = new ControllableProcess(directory, processType,
+    ControllableProcess controllable = new FileControllableProcess(directory, processType,
         localProcessLauncher, stopRequestFileWatchdog, statusRequestFileWatchdog);
 
     // assert
@@ -84,7 +84,8 @@ public class ControllableProcessIntegrationTest {
     File file = new EmptyFileWriter(statusRequestFile).createNewFile();
 
     // act
-    new ControllableProcess(directory, processType, localProcessLauncher, stopRequestFileWatchdog,
+    new FileControllableProcess(directory, processType, localProcessLauncher,
+        stopRequestFileWatchdog,
         statusRequestFileWatchdog);
 
     // assert
@@ -98,7 +99,8 @@ public class ControllableProcessIntegrationTest {
     File file = new EmptyFileWriter(statusFile).createNewFile();
 
     // act
-    new ControllableProcess(directory, processType, localProcessLauncher, stopRequestFileWatchdog,
+    new FileControllableProcess(directory, processType, localProcessLauncher,
+        stopRequestFileWatchdog,
         statusRequestFileWatchdog);
 
     // assert
@@ -112,7 +114,8 @@ public class ControllableProcessIntegrationTest {
     File file = new EmptyFileWriter(stopRequestFile).createNewFile();
 
     // act
-    new ControllableProcess(directory, processType, localProcessLauncher, stopRequestFileWatchdog,
+    new FileControllableProcess(directory, processType, localProcessLauncher,
+        stopRequestFileWatchdog,
         statusRequestFileWatchdog);
 
     // assert
@@ -125,7 +128,7 @@ public class ControllableProcessIntegrationTest {
     localProcessLauncher = new LocalProcessLauncher(pidFile, false);
 
     // act
-    ControllableProcess controllable = new ControllableProcess(directory, processType,
+    ControllableProcess controllable = new FileControllableProcess(directory, processType,
         localProcessLauncher, stopRequestFileWatchdog, statusRequestFileWatchdog);
 
     // assert
@@ -138,7 +141,7 @@ public class ControllableProcessIntegrationTest {
     localProcessLauncher = new LocalProcessLauncher(pidFile, false);
 
     // act
-    ControllableProcess controllable = new ControllableProcess(directory, processType,
+    ControllableProcess controllable = new FileControllableProcess(directory, processType,
         localProcessLauncher, stopRequestFileWatchdog, statusRequestFileWatchdog);
 
     // assert
@@ -158,7 +161,7 @@ public class ControllableProcessIntegrationTest {
 
     localProcessLauncher = new LocalProcessLauncher(pidFile, false);
 
-    ControllableProcess controllable = new ControllableProcess(directory, processType,
+    ControllableProcess controllable = new FileControllableProcess(directory, processType,
         localProcessLauncher, stopRequestFileWatchdog, statusRequestFileWatchdog);
 
     // act
@@ -179,7 +182,7 @@ public class ControllableProcessIntegrationTest {
     when(mockServiceState.toJson()).thenReturn("json");
     ControlNotificationHandler mockHandler = mock(ControlNotificationHandler.class);
     when(mockHandler.handleStatus()).thenReturn(mockServiceState);
-    new ControllableProcess(mockHandler, directory, processType, false);
+    new FileControllableProcess(mockHandler, directory, processType, false);
 
     // act
     boolean created = statusRequestFile.createNewFile();

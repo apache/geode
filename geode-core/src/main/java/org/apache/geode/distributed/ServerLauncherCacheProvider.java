@@ -24,6 +24,7 @@ import org.apache.geode.cache.Cache;
  *
  *
  */
+@FunctionalInterface
 public interface ServerLauncherCacheProvider {
 
   Cache createCache(Properties gemfireProperties, ServerLauncher serverLauncher);

@@ -31,7 +31,7 @@ import org.apache.geode.internal.process.ControlFileWatchdog.ControlRequestHandl
 import org.apache.geode.lang.AttachAPINotFoundException;
 
 /**
- * Controls a {@link ControllableProcess} using files to communicate between processes.
+ * Controls a process using files.
  *
  * @since GemFire 8.0
  */
