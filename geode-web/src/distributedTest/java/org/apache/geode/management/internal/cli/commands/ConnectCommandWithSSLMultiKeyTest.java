@@ -53,7 +53,6 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ConnectCommandWithSSLMultiKeyTest {
   private static MemberVM locator;
   private static Properties sslProperties;
-  private static Properties gfshSslProperties;
   private OutputStream out = null;
   private File sslConfigFile = null;
 
@@ -69,67 +68,39 @@ public class ConnectCommandWithSSLMultiKeyTest {
   @BeforeClass
   public static void beforeClass() {
     // The files were generated using the following commands.
-    // The final step import the certificates in the "wrong" order (SSL implementation uses by
-    // default the first one found, ignoring the alias).
-    //
-    // openssl genrsa -out ca.key 2048
-    // # It will be necessary to provide a keystore password and the CN for each.
-    // # Use "client" for the CN of the client keystore and "server" for the CN of the server key.
-    // keytool -genkeypair -alias client -keyalg RSA -keystore client.jks
-    // keytool -genkeypair -alias server -keyalg RSA -keystore server.jks
-    // # Export CSRs
-    // keytool -certreq -alias client -keystore client.jks -file client.csr
-    // keytool -certreq -alias server -keystore server.jks -file server.csr
-    // # Create a self-signed cert for the CA
-    // openssl req -new -x509 -key ca.key -out ca.crt
-    // # Sign them
-    // openssl x509 -req -in client.csr -CA ca.crt -CAkey ca.key -out client.crt -CAcreateserial
-    // openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -out server.crt -CAcreateserial
-    // # Import both of these leaf certs into a trust store but don't import CA
-    // keytool -importcert -keystore trusted.jks -file client.crt -alias client
-    // keytool -importcert -keystore trusted.jks -file server.crt -alias server
-    // # Import the CA cert and the signed csrs back into the server and client keystores
-    // keytool -importcert -file ca.crt -keystore server.jks -storepass passw0rd -alias ca
-    // keytool -importcert -file server.crt -keystore server.jks -storepass passw0rd -alias server
-    // keytool -importcert -file ca.crt -keystore client.jks -storepass passw0rd -alias ca
-    // keytool -importcert -file client.crt -keystore client.jks -storepass passw0rd -alias client
+    // echo "Add two certs to keystore to test using a specific alias."
+    // keytool -genkey -keyalg RSA -validity 3650 -keysize 2048 -alias server -keystore
+    // multiKeyStore.jks -storepass password -keypass password -dname "CN=127.0.0.1, O=Apache"
+    // keytool -genkey -keyalg RSA -validity 3650 -keysize 2048 -alias client -keystore
+    // multiKeyStore.jks -storepass password -keypass password -dname "CN=127.0.0.1, O=Apache"
+    // echo "Export public cert..."
+    // keytool -export -alias client -keystore multiKeyStore.jks -rfc -file client.cer -storepass
+    // password
+    // echo "Setup trustStore..."
+    // keytool -import -alias client -file client.cer -keystore truststore.jks -storepass password
+    // -noprompt
+    // echo "Remove exported certs..."
+    // rm client.cer
     String multiKeyTrustStore = createTempFileFromResource(ConnectCommandWithSSLMultiKeyTest.class,
-        "/org/apache/geode/management/internal/cli/commands/multiKeyTrustStore.jks")
+        "/org/apache/geode/management/internal/cli/commands/multiKey_TrustStore.jks")
             .getAbsolutePath();
-    String multiKeyClientKeyStore =
+    String multiKeyKeyStore =
         createTempFileFromResource(ConnectCommandWithSSLMultiKeyTest.class,
-            "/org/apache/geode/management/internal/cli/commands/multiKeyClientKeyStore.jks")
-                .getAbsolutePath();
-    String multiKeyServerKeyStore =
-        createTempFileFromResource(ConnectCommandWithSSLMultiKeyTest.class,
-            "/org/apache/geode/management/internal/cli/commands/multiKeyServerKeyStore.jks")
+            "/org/apache/geode/management/internal/cli/commands/multiKey_KeyStore.jks")
                 .getAbsolutePath();
 
     sslProperties = new Properties();
     sslProperties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
     sslProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "server");
-    sslProperties.setProperty(SSL_KEYSTORE, multiKeyServerKeyStore);
-    sslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "passw0rd");
+    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "client");
+    sslProperties.setProperty(SSL_KEYSTORE, multiKeyKeyStore);
+    sslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
     sslProperties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
     sslProperties.setProperty(SSL_CIPHERS, "any");
     sslProperties.setProperty(SSL_PROTOCOLS, "any");
     sslProperties.setProperty(SSL_TRUSTSTORE, multiKeyTrustStore);
-    sslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "passw0rd");
+    sslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
     sslProperties.setProperty(SSL_TRUSTSTORE_TYPE, "JKS");
-
-    gfshSslProperties = new Properties();
-    gfshSslProperties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
-    gfshSslProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    gfshSslProperties.setProperty(SSL_DEFAULT_ALIAS, "client");
-    gfshSslProperties.setProperty(SSL_KEYSTORE, multiKeyClientKeyStore);
-    gfshSslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "passw0rd");
-    gfshSslProperties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    gfshSslProperties.setProperty(SSL_CIPHERS, "any");
-    gfshSslProperties.setProperty(SSL_PROTOCOLS, "any");
-    gfshSslProperties.setProperty(SSL_TRUSTSTORE, multiKeyTrustStore);
-    gfshSslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "passw0rd");
-    gfshSslProperties.setProperty(SSL_TRUSTSTORE_TYPE, "JKS");
 
     final Properties serializableProperties = new Properties();
     sslProperties
@@ -173,7 +144,7 @@ public class ConnectCommandWithSSLMultiKeyTest {
 
   @Test
   public void connectWithSSLShouldSucceed() throws Exception {
-    gfshSslProperties.store(out, null);
+    sslProperties.store(out, null);
 
     connectWithSSLTo(locator.getPort(), GfshCommandRule.PortType.locator);
     gfsh.disconnect();
