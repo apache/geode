@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -369,11 +370,11 @@ public abstract class AbstractExecution implements InternalExecution {
 
   @Override
   public ResultCollector execute(final String functionName) {
-    return execute(functionName, getTimeoutMs());
+    return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector execute(final String functionName, int timeoutMs) {
+  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -386,11 +387,12 @@ public abstract class AbstractExecution implements InternalExecution {
               functionName));
     }
 
-    return executeFunction(functionObject, timeoutMs);
+    return executeFunction(functionObject, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
   }
 
   @Override
-  public ResultCollector execute(Function function, int timeoutMs) throws FunctionException {
+  public ResultCollector execute(Function function, long timeout, TimeUnit unit)
+      throws FunctionException {
     if (function == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -406,12 +408,12 @@ public abstract class AbstractExecution implements InternalExecution {
           "The Function#getID() returned null");
     }
     isFnSerializationReqd = true;
-    return executeFunction(function, timeoutMs);
+    return executeFunction(function, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
   }
 
   @Override
   public ResultCollector execute(Function function) throws FunctionException {
-    return execute(function, getTimeoutMs());
+    return execute(function, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override

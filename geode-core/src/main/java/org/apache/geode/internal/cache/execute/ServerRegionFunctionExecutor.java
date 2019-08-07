@@ -16,6 +16,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.Logger;
 
@@ -345,15 +346,16 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
 
   @Override
   public ResultCollector execute(final String functionName) {
-    return execute(functionName, getTimeoutMs());
+    return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector execute(final String functionName, int timeoutMs) {
+  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
     }
+    int timeoutInMs = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
     isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
     if (functionObject == null) {
@@ -381,9 +383,9 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       boolean isHA = functionAttributes[1] == 1;
       boolean hasResult = functionAttributes[0] == 1;
       boolean optimizeForWrite = functionAttributes[2] == 1;
-      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeoutMs);
+      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeoutInMs);
     } else {
-      return executeFunction(functionObject, timeoutMs);
+      return executeFunction(functionObject, timeoutInMs);
     }
   }
 

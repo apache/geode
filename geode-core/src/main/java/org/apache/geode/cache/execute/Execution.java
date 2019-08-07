@@ -15,6 +15,7 @@
 package org.apache.geode.cache.execute;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.LowMemoryException;
@@ -114,14 +115,16 @@ public interface Execution<IN, OUT, AGG> {
    * {@link FunctionService#getFunction(String)} on the executing member.
    *
    * @param functionId id of the function to execute
-   * @param timeoutMs milliseconds to wait for the operation to finish before timing out
+   * @param timeout time to wait for the operation to finish before timing out
+   * @param unit timeout unit
    * @return ResultCollector to retrieve the results received. This is different object than the
    *         ResultCollector provided in {@link Execution#withCollector(ResultCollector)}. User has
    *         to use this reference to retrieve results.
    *
    * @since GemFire 6.0
    */
-  ResultCollector<OUT, AGG> execute(String functionId, int timeoutMs) throws FunctionException;
+  ResultCollector<OUT, AGG> execute(String functionId, long timeout, TimeUnit unit)
+      throws FunctionException;
 
   /**
    * Executes the function instance provided.
@@ -147,7 +150,8 @@ public interface Execution<IN, OUT, AGG> {
    * executing member.
    *
    * @param function instance to execute
-   * @param timeoutMs milliseconds to wait for the operation to finish before timing out
+   * @param timeout time to wait for the operation to finish before timing out
+   * @param unit timeout unit
    * @throws LowMemoryException if the {@link Function#optimizeForWrite()} returns true and there is
    *         a low memory condition
    * @return ResultCollector to retrieve the results received. This is different object than the
@@ -156,6 +160,7 @@ public interface Execution<IN, OUT, AGG> {
    *
    * @since GemFire 6.0
    */
-  ResultCollector<OUT, AGG> execute(Function function, int timeoutMs) throws FunctionException;
+  ResultCollector<OUT, AGG> execute(Function function, long timeout, TimeUnit unit)
+      throws FunctionException;
 
 }

@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.LowMemoryException;
 import org.apache.geode.cache.Region;
@@ -150,7 +151,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector execute(final String functionName, int timeoutMs) {
+  public ResultCollector execute(final String functionName, long timeout, TimeUnit unit) {
     if (functionName == null) {
       throw new FunctionException(
           "The input function for the execute function request is null");
@@ -166,16 +167,16 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
-    return executeFunction(functionObject, timeoutMs);
+    return executeFunction(functionObject, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
   }
 
   @Override
   public ResultCollector execute(final String functionName) {
-    return execute(functionName, getTimeoutMs());
+    return execute(functionName, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
-  public ResultCollector execute(final Function function, int timeoutMs) {
+  public ResultCollector execute(final Function function, long timeout, TimeUnit unit) {
     if (function == null) {
       throw new FunctionException(
           String.format("The input %s for the execute function request is null",
@@ -195,12 +196,12 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           "The Function#getID() returned null");
     }
     this.isFnSerializationReqd = true;
-    return executeFunction(function, timeoutMs);
+    return executeFunction(function, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
   }
 
   @Override
   public ResultCollector execute(final Function function) {
-    return execute(function, getTimeoutMs());
+    return execute(function, getTimeoutMs(), TimeUnit.MILLISECONDS);
   }
 
   @Override
