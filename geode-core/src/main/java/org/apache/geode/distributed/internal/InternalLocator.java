@@ -1111,7 +1111,11 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       InternalDistributedSystem newSystem =
           (InternalDistributedSystem) system.getReconnectedSystem();
       if (newSystem != null) {
-        setLocator(this);
+        boolean noprevlocator = false;
+        if (!hasLocator()) {
+          setLocator(this);
+          noprevlocator = true;
+        }
         if (!tcpServerStarted) {
           if (locatorListener != null) {
             locatorListener.clearLocatorInfo();
@@ -1123,6 +1127,9 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           restartWithSystem(newSystem, GemFireCacheImpl.getInstance());
         } catch (CancelException e) {
           stoppedForReconnect = true;
+          if (noprevlocator) {
+            removeLocator(this);
+          }
           return false;
         }
 

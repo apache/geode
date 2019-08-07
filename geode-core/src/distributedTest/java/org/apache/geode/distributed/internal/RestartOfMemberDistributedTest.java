@@ -15,6 +15,8 @@
 package org.apache.geode.distributed.internal;
 
 
+import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -69,10 +71,12 @@ public class RestartOfMemberDistributedTest {
       int locator0port = locators.get(0).getPort();
       clusterStartupRule.crashVM(1);
       clusterStartupRule.crashVM(0);
-      clusterStartupRule.startLocatorVM(0, locator0port, properties, locator2port);
+      await().until(() -> {
+        clusterStartupRule.startLocatorVM(0, locator0port, properties, locator2port);
+        return true;
+      });
       clusterStartupRule.startServerVM(1, properties, locator2port);
       locators.get(1).waitTilFullyReconnected();
-
     } finally {
       exp1.remove();
       exp2.remove();
