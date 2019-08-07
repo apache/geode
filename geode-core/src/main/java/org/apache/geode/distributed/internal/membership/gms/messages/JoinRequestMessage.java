@@ -20,23 +20,21 @@ import java.io.IOException;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 
-public class JoinRequestMessage extends AbstractGMSMessage {
-  private GMSMember memberID;
+public class JoinRequestMessage extends HighPriorityDistributionMessage {
+  private InternalDistributedMember memberID;
   private Object credentials;
   private int failureDetectionPort = -1;
   private int requestId;
-  private boolean useMulticast;
 
-  public JoinRequestMessage(GMSMember coord, GMSMember id,
+  public JoinRequestMessage(InternalDistributedMember coord, InternalDistributedMember id,
       Object credentials, int fdPort, int requestId) {
     super();
-    if (coord != null) {
-      setRecipient(coord);
-    }
+    setRecipient(coord);
     this.memberID = id;
     this.credentials = credentials;
     this.failureDetectionPort = fdPort;
@@ -57,16 +55,11 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public boolean getMulticast() {
-    return useMulticast;
+  public void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
-  @Override
-  public void setMulticast(boolean useMulticast) {
-    this.useMulticast = useMulticast;
-  }
-
-  public GMSMember getMemberID() {
+  public InternalDistributedMember getMemberID() {
     return memberID;
   }
 
@@ -76,7 +69,7 @@ public class JoinRequestMessage extends AbstractGMSMessage {
 
   @Override
   public String toString() {
-    return getClass().getSimpleName() + "(" + memberID
+    return getShortClassName() + "(" + memberID
         + (credentials == null ? ")" : "; with credentials)") + " failureDetectionPort:"
         + failureDetectionPort;
   }
@@ -88,22 +81,21 @@ public class JoinRequestMessage extends AbstractGMSMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(memberID, out);
+    DataSerializer.writeObject(memberID, out);
     DataSerializer.writeObject(credentials, out);
     DataSerializer.writePrimitiveInt(failureDetectionPort, out);
     // preserve the multicast setting so the receiver can tell
     // if this is a mcast join request
-    out.writeBoolean(false);
+    out.writeBoolean(getMulticast());
     out.writeInt(requestId);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = GMSUtil.readMemberID(in);
+    memberID = DataSerializer.readObject(in);
     credentials = DataSerializer.readObject(in);
     failureDetectionPort = DataSerializer.readPrimitiveInt(in);
-    // setMulticast(in.readBoolean());
-    in.readBoolean();
+    setMulticast(in.readBoolean());
     requestId = in.readInt();
   }
 

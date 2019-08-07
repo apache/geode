@@ -42,6 +42,7 @@ import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
+import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.DataSerializableFixedID;
@@ -58,7 +59,11 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializableFixedID, ProfileId, VersionSource<DistributedMember> {
   private static final long serialVersionUID = -2785249969777296507L;
 
-  protected NetMember netMbr; // the underlying member object
+  /** whether to show NetMember components in toString() */
+  private static final boolean SHOW_NETMEMBER =
+      Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "show_netmembers");
+
+  protected NetMember netMbr; // the underlying member object, e.g. from JGroups
 
   /**
    * whether this is a partial member ID (without roles, durable attributes). We use partial IDs in
@@ -93,10 +98,6 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   /** product version bit flag */
   private static final int VERSION_BIT = 0x8;
 
-  public int getVmPid() {
-    return netMbr.getProcessId();
-  }
-
   @FunctionalInterface
   public interface HostnameResolver {
     InetAddress getInetAddress(ServerLocation location) throws UnknownHostException;
@@ -111,6 +112,11 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   private static HostnameResolver hostnameResolver =
       (location) -> InetAddress.getByName(location.getHostName());
 
+  /**
+   * Representing the host name of this member.
+   */
+  private String hostName = null;
+
   private transient Version versionObj = Version.CURRENT;
 
   /** The versions in which this message was modified */
@@ -121,9 +127,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     netMbr.setProcessId(OSProcess.getId());
     try {
       if (SocketCreator.resolve_dns) {
-        netMbr.setHostName(SocketCreator.getHostName(SocketCreator.getLocalHost()));
+        this.hostName = SocketCreator.getHostName(SocketCreator.getLocalHost());
       } else {
-        netMbr.setHostName(SocketCreator.getLocalHost().getHostAddress());
+        this.hostName = SocketCreator.getLocalHost().getHostAddress();
       }
     } catch (UnknownHostException ee) {
       throw new InternalGemFireError(ee);
@@ -151,11 +157,10 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   public InternalDistributedMember(InetAddress i, int p, boolean splitBrainEnabled,
       boolean canBeCoordinator, MemberAttributes attr) {
 
-    String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
+    this.netMbr = MemberFactory.newNetMember(i, p, splitBrainEnabled, canBeCoordinator,
+        Version.CURRENT_ORDINAL, attr);
 
-    this.netMbr = MemberFactory.newNetMember(i, hostName, p, splitBrainEnabled, canBeCoordinator,
-        Version.CURRENT_ORDINAL,
-        attr);
+    this.hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(i) : i.getHostAddress();
 
     short version = netMbr.getVersionOrdinal();
     try {
@@ -169,16 +174,16 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /**
    * Construct a InternalDistributedMember based on the given NetMember.
+   * <p>
+   * This is not the preferred way of creating an instance since the NetMember may not have all
+   * required information (e.g., a JGroups address without direct-port and other information).
    *
    */
   public InternalDistributedMember(NetMember m) {
     netMbr = m;
 
-    if (netMbr.getHostName() == null) {
-      String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(m.getInetAddress())
-          : m.getInetAddress().getHostAddress();
-      netMbr.setHostName(hostName);
-    }
+    this.hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(m.getInetAddress())
+        : m.getInetAddress().getHostAddress();
 
     short version = m.getVersionOrdinal();
     try {
@@ -187,7 +192,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
-    this.isPartial = false;
+    this.isPartial = true;
   }
 
   /**
@@ -215,7 +220,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    * @throws UnknownHostException if the given hostname cannot be resolved
    */
   public InternalDistributedMember(String i, int p) {
-    this(MemberFactory.newNetMember(i, p));
+    this(i, p, Version.CURRENT);
   }
 
   /**
@@ -226,6 +231,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
    */
 
   public InternalDistributedMember(ServerLocation location) {
+    this.hostName = location.getHostName();
     final InetAddress addr;
     try {
       addr = hostnameResolver.getInetAddress(location);
@@ -233,10 +239,44 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       throw new ServerConnectivityException("Unable to resolve server location " + location, e);
     }
 
-    netMbr =
-        MemberFactory.newNetMember(addr, location.getHostName(), location.getPort(), false, true,
-            Version.CURRENT_ORDINAL, MemberAttributes.DEFAULT);
+    netMbr = MemberFactory.newNetMember(addr, location.getPort());
+    netMbr.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
     versionObj = Version.CURRENT;
+    netMbr.setVersion(versionObj);
+  }
+
+  /**
+   * Create a InternalDistributedMember referring to the current host (as defined by the given
+   * string).
+   * <p>
+   *
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   *
+   *
+   * @param i the hostname, must be for the current host
+   * @param p the membership listening port
+   * @param version the version of this member
+   * @throws UnknownHostException if the given hostname cannot be resolved
+   */
+  public InternalDistributedMember(String i, int p, Version version) {
+    this(i, p, version, MemberFactory.newNetMember(i, p));
+  }
+
+  /**
+   * Create a InternalDistributedMember referring to the current host (as defined by the given
+   * string).
+   * <p>
+   *
+   * <b> THIS METHOD IS FOR TESTING ONLY. DO NOT USE IT TO CREATE IDs FOR USE IN THE PRODUCT. IT
+   * DOES NOT PROPERLY INITIALIZE ATTRIBUTES NEEDED FOR P2P FUNCTIONALITY. </b>
+   **/
+  public InternalDistributedMember(String i, int p, Version version, NetMember netMember) {
+    netMbr = netMember;
+    defaultToCurrentHost();
+    netMember.setVmKind(ClusterDistributionManager.NORMAL_DM_TYPE);
+    this.versionObj = version;
+    netMember.setVersion(version);
   }
 
   /**
@@ -264,13 +304,14 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     MemberAttributes mattr = new MemberAttributes(p, org.apache.geode.internal.OSProcess.getId(),
         vmKind, -1, n, groups, attr);
     InetAddress addr = SocketCreator.toInetAddress(host);
-    netMbr = MemberFactory.newNetMember(addr, host, p, false, true, Version.CURRENT_ORDINAL, mattr);
+    netMbr = MemberFactory.newNetMember(addr, p, false, true, Version.CURRENT_ORDINAL, mattr);
     defaultToCurrentHost();
     netMbr.setName(n);
     this.uniqueTag = u;
     netMbr.setVmKind(vmKind);
     netMbr.setDirectPort(p);
     netMbr.setDurableClientAttributes(attr);
+    this.hostName = host;
     netMbr.setGroups(groups);
   }
 
@@ -405,14 +446,41 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
   }
 
+  public void setVmKind(int p) {
+    netMbr.setVmKind(p);
+    cachedToString = null;
+  }
+
   public void setVmViewId(int p) {
     netMbr.setVmViewId(p);
     cachedToString = null;
   }
 
   /**
+   * [GemStone] Returns the process id of the VM that hosts the distribution manager with this
+   * address.
+   *
+   * @since GemFire 4.0
+   */
+  public int getVmPid() {
+    return netMbr.getProcessId();
+  }
+
+  /**
+   * [GemStone] Sets the process id of the VM that hosts the distribution manager with this address.
+   *
+   * @since GemFire 4.0
+   */
+  public void setVmPid(int p) {
+    netMbr.setProcessId(p);
+    cachedToString = null;
+  }
+
+  /**
    * Returns the name of this member's distributed system connection or null if no name was
    * specified.
+   *
+   * @see org.apache.geode.distributed.DistributedSystem#getName
    */
   @Override
   public String getName() {
@@ -461,7 +529,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       return 0;
     }
     // obligatory type check
-    if (!(o instanceof InternalDistributedMember))
+    if ((o == null) || !(o instanceof InternalDistributedMember))
       throw new ClassCastException(
           "InternalDistributedMember.compareTo(): comparison between different classes");
     InternalDistributedMember other = (InternalDistributedMember) o;
@@ -568,7 +636,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       return true;
     }
     // GemStone fix for 29125
-    if (!(obj instanceof InternalDistributedMember)) {
+    if ((obj == null) || !(obj instanceof InternalDistributedMember)) {
       return false;
     }
     InternalDistributedMember other = (InternalDistributedMember) obj;
@@ -654,6 +722,10 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         sb.append("(version:").append(Version.toString(version)).append(')');
       }
 
+      if (SHOW_NETMEMBER) {
+        sb.append("[[").append(this.netMbr).append("]]");
+      }
+
       // leave out Roles on purpose
 
       // if (netMbr instanceof GMSMember) {
@@ -675,8 +747,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     if (add.isMulticastAddress())
       host = add.getHostAddress();
     else {
-      String hostName = netMbr.getHostName();
-      host = SocketCreator.resolve_dns ? shortName(hostName) : hostName;
+      // host = shortName(add.getHostName());
+      host = SocketCreator.resolve_dns ? shortName(this.hostName) : this.hostName;
     }
 
     sb.append(host);
@@ -695,7 +767,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       }
 
       if (vmPid > 0)
-        sb.append(vmPid);
+        sb.append(Integer.toString(vmPid));
 
       String vmStr = "";
       switch (vmKind) {
@@ -773,7 +845,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     out.write(address);
     out.writeInt(getPort());
 
-    DataSerializer.writeString(netMbr.getHostName(), out);
+    DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
     if (netMbr.isNetworkPartitionDetectionEnabled())
@@ -816,7 +888,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     InetAddress inetAddr = InetAddress.getByAddress(addr);
     int port = in.readInt();
 
-    String hostName = DataSerializer.readString(in);
+    this.hostName = DataSerializer.readString(in);
 
     int flags = in.readUnsignedByte();
     boolean sbEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -838,7 +910,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = readVersion(flags, in);
 
-    netMbr = MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord, version,
+    netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version,
         new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups,
             durableClientAttributes));
     if (version >= Version.GFE_90.ordinal()) {
@@ -874,7 +946,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializer.writeInetAddress(getInetAddress(), out);
     out.writeInt(getPort());
 
-    DataSerializer.writeString(netMbr.getHostName(), out);
+    DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
     if (netMbr.isNetworkPartitionDetectionEnabled())
@@ -926,7 +998,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializer.writeInetAddress(getInetAddress(), out);
     out.writeInt(getPort());
 
-    DataSerializer.writeString(netMbr.getHostName(), out);
+    DataSerializer.writeString(this.hostName, out);
 
     int flags = 0;
     if (netMbr.isNetworkPartitionDetectionEnabled())
@@ -975,9 +1047,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName = DataSerializer.readString(in);
+    this.hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
+    this.hostName = SocketCreator.resolve_dns
         ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
@@ -1010,8 +1082,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     MemberAttributes attr = new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups,
         durableClientAttributes);
-    netMbr =
-        MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord, version, attr);
+    netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version, attr);
 
     Assert.assertTrue(netMbr.getVmKind() > 0);
     // Assert.assertTrue(getPort() > 0);
@@ -1021,9 +1092,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName = DataSerializer.readString(in);
+    this.hostName = DataSerializer.readString(in);
 
-    hostName = SocketCreator.resolve_dns
+    this.hostName = SocketCreator.resolve_dns
         ? SocketCreator.getCanonicalHostName(inetAddr, hostName) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
@@ -1056,8 +1127,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     MemberAttributes attr = new MemberAttributes(dcPort, vmPid, vmKind, vmViewId, name, groups,
         durableClientAttributes);
-    netMbr =
-        MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord, version, attr);
+    netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord, version, attr);
 
     Assert.assertTrue(netMbr.getVmKind() > 0);
   }
@@ -1075,7 +1145,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
-    String hostName =
+    this.hostName =
         SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr) : inetAddr.getHostAddress();
 
     int flags = in.readUnsignedByte();
@@ -1097,7 +1167,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     String name = DataSerializer.readString(in);
 
     MemberAttributes attr = new MemberAttributes(-1, -1, vmKind, vmViewId, name, null, null);
-    netMbr = MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord,
+    netMbr = MemberFactory.newNetMember(inetAddr, port, sbEnabled, elCoord,
         InternalDataSerializer.getVersionForDataStream(in).ordinal(), attr);
 
     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
@@ -1140,6 +1210,13 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   /**
+   * [GemStone] Set the direct channel port
+   */
+  public void setDirectChannelPort(int p) {
+    netMbr.setDirectPort(p);
+  }
+
+  /**
    * Set the membership port. This is done in loner systems using client/server connection
    * information to help form a unique ID
    */
@@ -1175,6 +1252,10 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       sb.append("(version:").append(Version.toString(version)).append(')');
     }
 
+    if (SHOW_NETMEMBER) {
+      sb.append("[[").append(netMbr.getUniqueId()).append("]]");
+    }
+
     return sb.toString();
   }
 
@@ -1198,8 +1279,35 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   @VisibleForTesting
-  public void setIsPartial(boolean value) {
+  void setIsPartial(boolean value) {
     isPartial = value;
   }
 
+  public static class InternalDistributedMemberWrapper {
+    InternalDistributedMember mbr;
+
+    public InternalDistributedMemberWrapper(InternalDistributedMember m) {
+      this.mbr = m;
+    }
+
+    public InternalDistributedMember getMbr() {
+      return mbr;
+    }
+
+    @Override
+    public int hashCode() {
+      return mbr.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      InternalDistributedMember other = ((InternalDistributedMemberWrapper) obj).mbr;
+      return mbr.compareTo(other, false, false) == 0;
+    }
+
+    @Override
+    public String toString() {
+      return "InternalDistributedMemberWrapper [mbr=" + mbr + "]";
+    }
+  }
 }

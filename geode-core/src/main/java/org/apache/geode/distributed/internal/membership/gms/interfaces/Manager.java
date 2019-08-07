@@ -14,23 +14,32 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
+import java.io.NotSerializableException;
 import java.util.Collection;
+import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.Services;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
 
 /**
  * Manager presents the GMS services to the outside world and handles startup/shutdown race
  * conditions. It is also the default MessageHandler
  */
-public interface Manager extends Service, MessageHandler<GMSMessage> {
+public interface Manager extends Service, MessageHandler<DistributionMessage> {
 
   /**
    * After all services have been started this is used to join the distributed system
    */
   void joinDistributedSystem();
+
+  /**
+   * Sends a message using a selected distribution channel (e.g. Messenger or DirectChannel)
+   *
+   * @return a set of recipients that did not receive the message
+   */
+  Set<InternalDistributedMember> send(DistributionMessage m) throws NotSerializableException;
 
   /**
    * initiates a Forced Disconnect, shutting down the distributed system and closing the cache
@@ -41,7 +50,36 @@ public interface Manager extends Service, MessageHandler<GMSMessage> {
   /**
    * notifies the manager that membership quorum has been lost
    */
-  void quorumLost(Collection<GMSMember> failures, GMSMembershipView view);
+  void quorumLost(Collection<InternalDistributedMember> failures, NetView view);
+
+  /**
+   * Notifies the manager that a member has contacted us who is not in the current membership view
+   *
+   */
+  void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
+
+  /**
+   * Tests to see if the given member has been put into "shunned" state, meaning that it has left
+   * the distributed system and we should no longer process requests from it. Shunned status
+   * eventually times out.
+   *
+   * @return true if the member is shunned
+   */
+  boolean isShunned(DistributedMember mbr);
+
+  /**
+   * returns the lead member from the current membership view. This is typically the oldest member
+   * that is not an Admin or Locator member.
+   *
+   * @return the ID of the lead member
+   */
+  DistributedMember getLeadMember();
+
+  /**
+   * returns the coordinator of the current membership view. This is who created and distributed the
+   * view. See NetView.
+   */
+  DistributedMember getCoordinator();
 
   /**
    * sometimes we cannot perform multicast messaging, such as during a rolling upgrade.
@@ -49,6 +87,11 @@ public interface Manager extends Service, MessageHandler<GMSMessage> {
    * @return true if multicast messaging can be performed
    */
   boolean isMulticastAllowed();
+
+  /**
+   * Returns the reason for a shutdown.
+   */
+  Throwable getShutdownCause();
 
   /**
    * Returns true if a shutdown is in progress or has been completed . When it returns true,
@@ -68,23 +111,9 @@ public interface Manager extends Service, MessageHandler<GMSMessage> {
   boolean isReconnectingDS();
 
   /**
-   * When Messenger receives a message from another node it may be in a form that
-   * Messenger can't deal with, depending on what payload was serialized. It may
-   * be a GMSMessage already or it may be a message wrapped in an adapter class
-   * that serializes a non-GMSMessage payload. (See GMSMessageAdapter, which
-   * wraps Geode DistributionMessages)
+   * If this.isReconnectingDS() then this method will inform whether the reconnect
+   * has completed
    */
-  GMSMessage wrapMessage(Object receivedMessage);
-
-  /**
-   * When Messenger is going to transmit a message it gets the actual payload to serialize
-   * from this method
-   */
-  DataSerializableFixedID unwrapMessage(GMSMessage messageToSend);
-
-  /**
-   * Return the Services object owning this Manager service
-   */
-  Services getServices();
+  boolean isReconnectCompleted();
 
 }

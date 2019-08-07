@@ -66,7 +66,7 @@ import org.apache.geode.distributed.internal.membership.DistributedMembershipLis
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Assert;
@@ -1107,7 +1107,7 @@ public class ClusterDistributionManager implements DistributionManager {
     try {
 
       // And the distinguished guests today are...
-      MembershipView v = membershipManager.getView();
+      NetView v = membershipManager.getView();
       logger.info("Initial (distribution manager) view, {}",
           String.valueOf(v));
 
@@ -1511,6 +1511,11 @@ public class ClusterDistributionManager implements DistributionManager {
   @Override
   public InternalDistributedMember getId() {
     return localAddress;
+  }
+
+  @Override
+  public long getMembershipPort() {
+    return localAddress.getPort();
   }
 
   @Override
@@ -2682,7 +2687,7 @@ public class ClusterDistributionManager implements DistributionManager {
     addMemberEvent(new MemberSuspectEvent(suspect, whoSuspected, reason));
   }
 
-  private void handleViewInstalled(MembershipView view) {
+  private void handleViewInstalled(NetView view) {
     addMemberEvent(new ViewInstalledEvent(view));
   }
 
@@ -3389,12 +3394,12 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void newMemberConnected(DistributedMember member) {
+    public void newMemberConnected(InternalDistributedMember member) {
       // Do not elect the elder here as surprise members invoke this callback
       // without holding the view lock. That can cause a race condition and
       // subsequent deadlock (#45566). Elder selection is now done when a view
       // is installed.
-      dm.addNewMember((InternalDistributedMember) member);
+      dm.addNewMember(member);
     }
 
     @Override
@@ -3425,7 +3430,7 @@ public class ClusterDistributionManager implements DistributionManager {
     }
 
     @Override
-    public void viewInstalled(MembershipView view) {
+    public void viewInstalled(NetView view) {
       dm.handleViewInstalled(view);
     }
 
@@ -3607,9 +3612,9 @@ public class ClusterDistributionManager implements DistributionManager {
   }
 
   private static class ViewInstalledEvent extends MemberEvent {
-    MembershipView view;
+    NetView view;
 
-    ViewInstalledEvent(MembershipView view) {
+    ViewInstalledEvent(NetView view) {
       super(null);
       this.view = view;
     }

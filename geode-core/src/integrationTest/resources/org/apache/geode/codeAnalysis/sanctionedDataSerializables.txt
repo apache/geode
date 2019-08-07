@@ -272,30 +272,26 @@ toData,16
 
 org/apache/geode/distributed/internal/membership/InternalDistributedMember,6
 fromData,38
-fromDataPre_GFE_7_1_0_0,277
-fromDataPre_GFE_9_0_0_0,277
+fromDataPre_GFE_7_1_0_0,281
+fromDataPre_GFE_9_0_0_0,281
 toData,34
-toDataPre_GFE_7_1_0_0,276
-toDataPre_GFE_9_0_0_0,271
+toDataPre_GFE_7_1_0_0,271
+toDataPre_GFE_9_0_0_0,266
 
-org/apache/geode/distributed/internal/membership/adapter/LocalViewMessage,2
-fromData,8
-toData,8
-
-org/apache/geode/distributed/internal/membership/gms/GMSMember,2
-fromData,196
-toData,213
-
-org/apache/geode/distributed/internal/membership/gms/GMSMembershipView,2
-fromData,106
+org/apache/geode/distributed/internal/membership/NetView,2
+fromData,109
 toData,60
 
+org/apache/geode/distributed/internal/membership/gms/GMSMember,2
+fromData,62
+toData,62
+
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorRequest,2
-fromData,91
+fromData,97
 toData,114
 
 org/apache/geode/distributed/internal/membership/gms/locator/FindCoordinatorResponse,2
-fromData,99
+fromData,105
 toData,89
 
 org/apache/geode/distributed/internal/membership/gms/locator/GetViewRequest,2
@@ -307,7 +303,7 @@ fromData,12
 toData,9
 
 org/apache/geode/distributed/internal/membership/gms/messages/FinalCheckPassedMessage,2
-fromData,9
+fromData,12
 toData,9
 
 org/apache/geode/distributed/internal/membership/gms/messages/HeartbeatMessage,2
@@ -315,40 +311,40 @@ fromData,11
 toData,11
 
 org/apache/geode/distributed/internal/membership/gms/messages/HeartbeatRequestMessage,2
-fromData,19
+fromData,22
 toData,19
 
 org/apache/geode/distributed/internal/membership/gms/messages/InstallViewMessage,2
-fromData,44
-toData,40
+fromData,49
+toData,45
 
 org/apache/geode/distributed/internal/membership/gms/messages/JoinRequestMessage,2
-fromData,42
-toData,42
+fromData,48
+toData,45
 
 org/apache/geode/distributed/internal/membership/gms/messages/JoinResponseMessage,2
-fromData,44
+fromData,47
 toData,41
 
 org/apache/geode/distributed/internal/membership/gms/messages/LeaveRequestMessage,2
-fromData,17
+fromData,20
 toData,17
 
-org/apache/geode/distributed/internal/membership/gms/messages/NetworkPartitionMessage,2
-fromData,1
-toData,1
-
 org/apache/geode/distributed/internal/membership/gms/messages/RemoveMemberMessage,2
-fromData,17
+fromData,20
 toData,17
 
 org/apache/geode/distributed/internal/membership/gms/messages/SuspectMembersMessage,2
-fromData,50
+fromData,53
 toData,81
 
 org/apache/geode/distributed/internal/membership/gms/messages/ViewAckMessage,2
-fromData,32
-toData,29
+fromData,37
+toData,34
+
+org/apache/geode/distributed/internal/membership/gms/mgr/LocalViewMessage,2
+fromData,8
+toData,8
 
 org/apache/geode/distributed/internal/streaming/StreamingOperation$RequestStreamingMessage,2
 fromData,16
@@ -500,11 +496,11 @@ toData,16
 
 org/apache/geode/internal/admin/remote/ClientHealthStats,6
 fromData,73
-fromDataPre_GEODE_1_9_0_0,14
 fromDataPre_GFE_8_0_0_0,68
+fromDataPre_GEODE_1_9_0_0,14
 toData,73
-toDataPre_GEODE_1_9_0_0,14
 toDataPre_GFE_8_0_0_0,68
+toDataPre_GEODE_1_9_0_0,14
 
 org/apache/geode/internal/admin/remote/CompactRequest,2
 fromData,6

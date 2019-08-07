@@ -108,6 +108,7 @@ public class ConfigurationChangeListener extends CacheListenerAdapter<String, Co
   private DistributedMember getDistributedMember(String memberName) {
     Set<DistributedMember> locators = new HashSet<>(
         cache.getDistributionManager().getAllHostedLocatorsWithSharedConfiguration().keySet());
+
     return locators.stream()
         .filter(x -> x.getId().equals(memberName))
         .findFirst()

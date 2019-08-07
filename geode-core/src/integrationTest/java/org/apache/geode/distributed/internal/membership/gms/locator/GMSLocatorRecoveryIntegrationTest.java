@@ -17,7 +17,7 @@ package org.apache.geode.distributed.internal.membership.gms.locator;
 import static org.apache.geode.distributed.ConfigurationProperties.BIND_ADDRESS;
 import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
-import static org.apache.geode.distributed.internal.membership.gms.GMSMember.NORMAL_DM_TYPE;
+import static org.apache.geode.distributed.internal.ClusterDistributionManager.NORMAL_DM_TYPE;
 import static org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator.LOCATOR_FILE_STAMP;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -50,9 +50,8 @@ import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.MemberFactory;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -101,7 +100,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   @Test
   public void testRecoverFromFileWithNormalFile() throws Exception {
-    GMSMembershipView view = new GMSMembershipView();
+    NetView view = new NetView();
     populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL, view);
 
     assertThat(gmsLocator.recoverFromFile(stateFile)).isTrue();
@@ -120,8 +119,10 @@ public class GMSLocatorRecoveryIntegrationTest {
     // add 1 to ordinal to make it wrong
     populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL + 1, 1);
 
-    boolean recovered = gmsLocator.recoverFromFile(stateFile);
-    assertThat(recovered).isFalse();
+    Throwable thrown = catchThrowable(() -> gmsLocator.recoverFromFile(stateFile));
+
+    assertThat(thrown)
+        .isInstanceOf(InternalGemFireException.class);
   }
 
   @Test
@@ -172,15 +173,12 @@ public class GMSLocatorRecoveryIntegrationTest {
     gmsLocator.setViewFile(new File(temporaryFolder.getRoot(), "locator2.dat"));
     gmsLocator.init(null);
 
-    assertThat(gmsLocator.getMembers())
-        .contains(
-            ((GMSMemberAdapter) membershipManager.getLocalMember().getNetMember()).getGmsMember());
+    assertThat(gmsLocator.getMembers()).contains(membershipManager.getLocalMember());
   }
 
   @Test
   public void testViewFileNotFound() throws Exception {
-    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL,
-        new GMSMembershipView());
+    populateStateFile(stateFile, LOCATOR_FILE_STAMP, Version.CURRENT_ORDINAL, new NetView());
     assertThat(stateFile).exists();
 
     File dir = temporaryFolder.newFolder(testName.getMethodName());

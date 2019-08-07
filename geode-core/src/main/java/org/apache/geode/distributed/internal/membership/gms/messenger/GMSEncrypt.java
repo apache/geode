@@ -31,8 +31,9 @@ import javax.crypto.spec.DHParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.locator.GMSLocator;
 import org.apache.geode.internal.util.JavaWorkarounds;
@@ -63,25 +64,25 @@ public final class GMSEncrypt {
 
   private Services services;
 
-  private GMSMembershipView view;
+  private NetView view;
 
   /**
    * it keeps PK for peers
    */
-  private final Map<GMSMember.GMSMemberWrapper, byte[]> memberToPublicKey =
+  private final Map<InternalDistributedMemberWrapper, byte[]> memberToPublicKey =
       new ConcurrentHashMap<>();
 
-  private final ConcurrentHashMap<GMSMember, GMSEncryptionCipherPool> peerEncryptors =
+  private final ConcurrentHashMap<InternalDistributedMember, GMSEncryptionCipherPool> peerEncryptors =
       new ConcurrentHashMap<>();
 
   private GMSEncryptionCipherPool clusterEncryptor;
 
-  protected void installView(GMSMembershipView view) {
+  protected void installView(NetView view) {
     this.view = view;
     this.view.setPublicKey(services.getJoinLeave().getMemberID(), getPublicKeyBytes());
   }
 
-  void overrideInstallViewForTest(GMSMembershipView view) {
+  void overrideInstallViewForTest(NetView view) {
     this.view = view;
   }
 
@@ -103,7 +104,7 @@ public final class GMSEncrypt {
     this.clusterEncryptor = new GMSEncryptionCipherPool(this, secretBytes);
   }
 
-  private byte[] getPublicKeyIfIAmLocator(GMSMember mbr) {
+  private byte[] getPublicKeyIfIAmLocator(InternalDistributedMember mbr) {
     GMSLocator locator = (GMSLocator) services.getLocator();
     if (locator != null) {
       return locator.getPublicKey(mbr);
@@ -134,11 +135,11 @@ public final class GMSEncrypt {
     }
   }
 
-  byte[] decryptData(byte[] data, GMSMember member) throws Exception {
+  byte[] decryptData(byte[] data, InternalDistributedMember member) throws Exception {
     return getPeerEncryptor(member).decryptBytes(data);
   }
 
-  byte[] encryptData(byte[] data, GMSMember member) throws Exception {
+  byte[] encryptData(byte[] data, InternalDistributedMember member) throws Exception {
     return getPeerEncryptor(member).encryptBytes(data);
   }
 
@@ -160,8 +161,8 @@ public final class GMSEncrypt {
     return dhPublicKey.getEncoded();
   }
 
-  private byte[] lookupKeyByMember(GMSMember member) {
-    byte[] pk = memberToPublicKey.get(new GMSMember.GMSMemberWrapper(member));
+  private byte[] lookupKeyByMember(InternalDistributedMember member) {
+    byte[] pk = memberToPublicKey.get(new InternalDistributedMemberWrapper(member));
     if (pk == null) {
       pk = getPublicKeyIfIAmLocator(member);
     }
@@ -174,9 +175,9 @@ public final class GMSEncrypt {
     return pk;
   }
 
-  protected byte[] getPublicKey(GMSMember member) {
+  protected byte[] getPublicKey(InternalDistributedMember member) {
     try {
-      GMSMember localMbr = services.getMessenger().getMemberID();
+      InternalDistributedMember localMbr = services.getMessenger().getMemberID();
       if (localMbr != null && localMbr.equals(member)) {
         return this.dhPublicKey.getEncoded();// local one
       }
@@ -186,16 +187,16 @@ public final class GMSEncrypt {
     }
   }
 
-  protected void setPublicKey(byte[] publickey, GMSMember mbr) {
+  protected void setPublicKey(byte[] publickey, InternalDistributedMember mbr) {
     try {
-      memberToPublicKey.put(new GMSMember.GMSMemberWrapper(mbr), publickey);
+      memberToPublicKey.put(new InternalDistributedMemberWrapper(mbr), publickey);
       peerEncryptors.replace(mbr, new GMSEncryptionCipherPool(this, generateSecret(publickey)));
     } catch (Exception e) {
       throw new RuntimeException("Unable to create peer encryptor " + mbr, e);
     }
   }
 
-  private GMSEncryptionCipherPool getPeerEncryptor(GMSMember member)
+  private GMSEncryptionCipherPool getPeerEncryptor(InternalDistributedMember member)
       throws Exception {
     return JavaWorkarounds.computeIfAbsent(peerEncryptors, member, (mbr) -> {
       try {

@@ -14,18 +14,18 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public class SuspectRequest {
-  final GMSMember suspectMember;
+  final InternalDistributedMember suspectMember;
   final String reason;
 
-  public SuspectRequest(GMSMember m, String r) {
+  public SuspectRequest(InternalDistributedMember m, String r) {
     suspectMember = m;
     reason = r;
   }
 
-  public GMSMember getSuspectMember() {
+  public InternalDistributedMember getSuspectMember() {
     return suspectMember;
   }
 

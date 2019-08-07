@@ -46,7 +46,7 @@ import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.LocatorLauncher;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRule;
@@ -127,8 +127,7 @@ public class MeterSubregistryReconnectDistributedTest implements Serializable {
 
     server2VM.invoke(() -> {
       GMSMembershipManager membershipManager = (GMSMembershipManager) getMembershipManager(system);
-      membershipManager.getGMSManager()
-          .forceDisconnect("Forcing disconnect in " + testName.getMethodName());
+      membershipManager.forceDisconnect("Forcing disconnect in " + testName.getMethodName());
 
       await().until(() -> system.isReconnecting());
       system.waitUntilReconnected(TIMEOUT, MILLISECONDS);

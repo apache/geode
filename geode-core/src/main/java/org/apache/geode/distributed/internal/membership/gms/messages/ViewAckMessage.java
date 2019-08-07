@@ -19,24 +19,25 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
 
-public class ViewAckMessage extends AbstractGMSMessage {
+public class ViewAckMessage extends HighPriorityDistributionMessage {
 
   int viewId;
   boolean preparing;
-  GMSMembershipView alternateView;
+  NetView alternateView;
 
-  public ViewAckMessage(GMSMember recipient, int viewId, boolean preparing) {
+  public ViewAckMessage(InternalDistributedMember recipient, int viewId, boolean preparing) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
     this.preparing = preparing;
   }
 
-  public ViewAckMessage(int viewId, GMSMember recipient, GMSMembershipView alternateView) {
+  public ViewAckMessage(int viewId, InternalDistributedMember recipient, NetView alternateView) {
     super();
     setRecipient(recipient);
     this.viewId = viewId;
@@ -52,7 +53,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
     return viewId;
   }
 
-  public GMSMembershipView getAlternateView() {
+  public NetView getAlternateView() {
     return this.alternateView;
   }
 
@@ -66,7 +67,18 @@ public class ViewAckMessage extends AbstractGMSMessage {
   }
 
   @Override
+  public int getProcessorType() {
+    return 0;
+  }
+
+  @Override
+  public void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
+  }
+
+  @Override
   public void toData(DataOutput out) throws IOException {
+    super.toData(out);
     out.writeInt(this.viewId);
     out.writeBoolean(this.preparing);
     DataSerializer.writeObject(this.alternateView, out);
@@ -74,6 +86,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    super.fromData(in);
     this.viewId = in.readInt();
     this.preparing = in.readBoolean();
     this.alternateView = DataSerializer.readObject(in);
@@ -81,13 +94,9 @@ public class ViewAckMessage extends AbstractGMSMessage {
 
   @Override
   public String toString() {
-    String s = getSender() == null ? getRecipients().toString() : "" + getSender();
+    String s = getSender() == null ? getRecipientsDescription() : "" + getSender();
     return "ViewAckMessage(" + s + "; " + this.viewId + "; preparing=" + preparing + "; altview="
         + this.alternateView + ")";
   }
 
-  @Override
-  public Version[] getSerializationVersions() {
-    return null;
-  }
 }

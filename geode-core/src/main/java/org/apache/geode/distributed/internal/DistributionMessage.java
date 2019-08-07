@@ -259,7 +259,6 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
     this.multicast = false;
   }
 
-
   /**
    * Returns the intended recipient(s) of this message. If the message is intended to delivered to
    * all distribution managers, then the array will contain ALL_RECIPIENTS. If the recipients have

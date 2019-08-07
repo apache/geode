@@ -34,6 +34,7 @@ import org.jgroups.util.UUID;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataInputStream;
@@ -159,6 +160,21 @@ public class GMSMemberJUnitTest {
     assertEquals(-1, member1.compareTo(member2));
   }
 
+  /**
+   * Makes sure a NPE is not thrown
+   */
+  @Test
+  public void testNoNPEWhenSetAttributesWithNull() {
+    GMSMember member = new GMSMember();
+    member.setAttributes(null);
+    MemberAttributes attrs = member.getAttributes();
+    MemberAttributes invalid = MemberAttributes.INVALID;
+    assertEquals(attrs.getVmKind(), invalid.getVmKind());
+    assertEquals(attrs.getPort(), invalid.getPort());
+    assertEquals(attrs.getVmViewId(), invalid.getVmViewId());
+    assertEquals(attrs.getName(), invalid.getName());
+  }
+
   @Test
   public void testGetUUIDReturnsNullWhenUUIDIs0() {
     GMSMember member = new GMSMember();
@@ -187,7 +203,9 @@ public class GMSMemberJUnitTest {
   @Test
   public void testGMSMemberBackwardCompatibility() throws Exception {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    MemberAttributes attributes = new MemberAttributes(10, 20, 1, 2, "member", null, null);
     GMSMember member = new GMSMember();
+    member.setAttributes(attributes);
     DataOutput dataOutput = new DataOutputStream(baos);
     member.writeEssentialData(dataOutput);
 
@@ -196,7 +214,7 @@ public class GMSMemberJUnitTest {
     DataInput dataInput = new DataInputStream(bais);
     GMSMember newMember = new GMSMember();
     newMember.readEssentialData(dataInput);
-    assertEquals(member.getVmKind(), newMember.getVmKind());
+    assertEquals(1, newMember.getVmKind());
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
     dataOutput = new HeapDataOutputStream(Version.GFE_90);

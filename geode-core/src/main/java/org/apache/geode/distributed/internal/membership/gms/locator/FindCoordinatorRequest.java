@@ -20,29 +20,30 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
-public class FindCoordinatorRequest extends AbstractGMSMessage
+public class FindCoordinatorRequest extends HighPriorityDistributionMessage
     implements PeerLocatorRequest {
 
-  private GMSMember memberID;
-  private Collection<GMSMember> rejectedCoordinators;
+  private InternalDistributedMember memberID;
+  private Collection<InternalDistributedMember> rejectedCoordinators;
   private int lastViewId;
   private byte[] myPublicKey;
   private int requestId;
   private String dhalgo;
 
-  public FindCoordinatorRequest(GMSMember myId) {
+  public FindCoordinatorRequest(InternalDistributedMember myId) {
     this.memberID = myId;
     this.dhalgo = "";
   }
 
-  public FindCoordinatorRequest(GMSMember myId,
-      Collection<GMSMember> rejectedCoordinators, int lastViewId, byte[] pk,
+  public FindCoordinatorRequest(InternalDistributedMember myId,
+      Collection<InternalDistributedMember> rejectedCoordinators, int lastViewId, byte[] pk,
       int requestId, String dhalgo) {
     this.memberID = myId;
     this.rejectedCoordinators = rejectedCoordinators;
@@ -56,7 +57,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     // no-arg constructor for serialization
   }
 
-  public GMSMember getMemberID() {
+  public InternalDistributedMember getMemberID() {
     return memberID;
   }
 
@@ -68,7 +69,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     return dhalgo;
   }
 
-  public Collection<GMSMember> getRejectedCoordinators() {
+  public Collection<InternalDistributedMember> getRejectedCoordinators() {
     return rejectedCoordinators;
   }
 
@@ -100,15 +101,13 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
     return requestId;
   }
 
-  // TODO serialization not backward compatible with 1.9 - may need InternalDistributedMember, not
-  // GMSMember
   @Override
   public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(memberID, out);
+    DataSerializer.writeObject(this.memberID, out);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
-      for (GMSMember mbr : this.rejectedCoordinators) {
-        GMSUtil.writeMemberID(mbr, out);
+      for (InternalDistributedMember mbr : this.rejectedCoordinators) {
+        DataSerializer.writeObject(mbr, out);
       }
     } else {
       out.writeInt(0);
@@ -121,16 +120,21 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.memberID = GMSUtil.readMemberID(in);
+    this.memberID = DataSerializer.readObject(in);
     int size = in.readInt();
-    this.rejectedCoordinators = new ArrayList<GMSMember>(size);
+    this.rejectedCoordinators = new ArrayList<InternalDistributedMember>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add(GMSUtil.readMemberID(in));
+      this.rejectedCoordinators.add((InternalDistributedMember) DataSerializer.readObject(in));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
     this.dhalgo = InternalDataSerializer.readString(in);
     this.myPublicKey = InternalDataSerializer.readByteArray(in);
+  }
+
+  @Override
+  protected void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message should not be executed");
   }
 
   @Override

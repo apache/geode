@@ -56,7 +56,6 @@ import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -346,7 +345,7 @@ public class ClientCacheFactoryJUnitTest {
     clientCache = new ClientCacheFactory().create();
     InternalDistributedMember memberID =
         (InternalDistributedMember) clientCache.getDistributedSystem().getDistributedMember();
-    GMSMember gmsID = ((GMSMemberAdapter) memberID.getNetMember()).getGmsMember();
+    GMSMember gmsID = (GMSMember) memberID.getNetMember();
     memberID.setVersionObjectForTest(Version.GFE_82);
     assertThat(memberID.getVersionObject()).isEqualTo(Version.GFE_82);
 
@@ -362,7 +361,7 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.GFE_82);
     assertThat(newID.getClientVersion()).isEqualTo(Version.GFE_82);
 
-    GMSMember newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
+    GMSMember newGmsID = (GMSMember) newMemberID.getNetMember();
     assertThat(newGmsID.getUuidLSBs()).isEqualTo(0);
     assertThat(newGmsID.getUuidMSBs()).isEqualTo(0);
 
@@ -378,7 +377,7 @@ public class ClientCacheFactoryJUnitTest {
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);
     assertThat(newID.getClientVersion()).isEqualTo(Version.CURRENT);
 
-    newGmsID = ((GMSMemberAdapter) newMemberID.getNetMember()).getGmsMember();
+    newGmsID = (GMSMember) newMemberID.getNetMember();
     assertThat(newGmsID.getUuidLSBs()).isEqualTo(gmsID.getUuidLSBs());
     assertThat(newGmsID.getUuidMSBs()).isEqualTo(gmsID.getUuidMSBs());
   }

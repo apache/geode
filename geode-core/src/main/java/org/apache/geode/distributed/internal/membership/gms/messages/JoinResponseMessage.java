@@ -21,9 +21,10 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.internal.Version;
 
 // TODO this class has been made unintelligible with different combinations of response values.
@@ -33,23 +34,23 @@ import org.apache.geode.internal.Version;
 // 2. a response indicating that the coordinator is now a different process
 // 3. a response containing the cluster encryption key
 
-public class JoinResponseMessage extends AbstractGMSMessage {
+public class JoinResponseMessage extends HighPriorityDistributionMessage {
 
-  private GMSMembershipView currentView;
+  private NetView currentView;
   private String rejectionMessage;
-  private GMSMember memberID;
+  private InternalDistributedMember memberID;
   private byte[] messengerData;
   private int requestId;
   private byte[] secretPk;
 
-  public JoinResponseMessage(GMSMember memberID, GMSMembershipView view, int requestId) {
+  public JoinResponseMessage(InternalDistributedMember memberID, NetView view, int requestId) {
     this.currentView = view;
     this.memberID = memberID;
     this.requestId = requestId;
     setRecipient(memberID);
   }
 
-  public JoinResponseMessage(GMSMember memberID, byte[] sPk, int requestId) {
+  public JoinResponseMessage(InternalDistributedMember memberID, byte[] sPk, int requestId) {
     this.memberID = memberID;
     this.requestId = requestId;
     this.secretPk = sPk;
@@ -73,11 +74,11 @@ public class JoinResponseMessage extends AbstractGMSMessage {
     return requestId;
   }
 
-  public GMSMembershipView getCurrentView() {
+  public NetView getCurrentView() {
     return currentView;
   }
 
-  public GMSMember getMemberID() {
+  public InternalDistributedMember getMemberID() {
     return memberID;
   }
 
@@ -91,6 +92,11 @@ public class JoinResponseMessage extends AbstractGMSMessage {
 
   public void setMessengerData(byte[] data) {
     this.messengerData = data;
+  }
+
+  @Override
+  public void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("JoinResponse is not intended to be executed");
   }
 
   @Override
@@ -113,7 +119,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   @Override
   public void toData(DataOutput out) throws IOException {
     DataSerializer.writeObject(currentView, out);
-    GMSUtil.writeMemberID(memberID, out);
+    DataSerializer.writeObject(memberID, out);
     DataSerializer.writeString(rejectionMessage, out);
     DataSerializer.writeByteArray(messengerData, out);
     DataSerializer.writeByteArray(secretPk, out);
@@ -122,7 +128,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     currentView = DataSerializer.readObject(in);
-    memberID = GMSUtil.readMemberID(in);
+    memberID = DataSerializer.readObject(in);
     rejectionMessage = DataSerializer.readString(in);
     messengerData = DataSerializer.readByteArray(in);
     secretPk = DataSerializer.readByteArray(in);

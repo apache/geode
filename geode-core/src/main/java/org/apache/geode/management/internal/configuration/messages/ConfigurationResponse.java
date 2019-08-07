@@ -144,6 +144,6 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   @Override
   public Version[] getSerializationVersions() {
-    return null;
+    return new Version[] {Version.CURRENT};
   }
 }

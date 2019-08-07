@@ -58,9 +58,8 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.InternalDistributedSystem.ConnectListener;
 import org.apache.geode.distributed.internal.membership.MemberFactory;
-import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
-import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.locator.PeerLocatorRequest;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
@@ -701,9 +700,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
           (InternalDistributedSystem) DistributedSystem.connect(distributedSystemProperties);
 
       if (peerLocator) {
-        netLocator.setServices(
-            ((GMSMembershipManager) internalDistributedSystem.getDM().getMembershipManager())
-                .getServices());
+        netLocator.setMembershipManager(internalDistributedSystem.getDM().getMembershipManager());
       }
 
       internalDistributedSystem.addDisconnectListener(sys -> stop(false, false, false));

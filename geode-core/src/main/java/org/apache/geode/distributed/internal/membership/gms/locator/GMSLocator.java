@@ -39,19 +39,29 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.cache.GemFireCache;
+import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember.InternalDistributedMemberWrapper;
+import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.membership.gms.NetLocator;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
+import org.apache.geode.distributed.internal.membership.gms.mgr.GMSMembershipManager;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
 
-public class GMSLocator implements Locator {
+public class GMSLocator implements Locator, NetLocator {
 
   static final int LOCATOR_FILE_STAMP = 0x7b8cf741;
 
@@ -63,22 +73,22 @@ public class GMSLocator implements Locator {
   private final String locatorString;
   private final List<HostAddress> locators;
   private final LocatorStats locatorStats;
-  private final Set<GMSMember> registrants = new HashSet<>();
-  private final Map<GMSMember.GMSMemberWrapper, byte[]> publicKeys =
+  private final Set<InternalDistributedMember> registrants = new HashSet<>();
+  private final Map<InternalDistributedMemberWrapper, byte[]> publicKeys =
       new ConcurrentHashMap<>();
   private final Path workingDirectory;
 
   private volatile boolean isCoordinator;
 
   private Services services;
-  private GMSMember localAddress;
+  private InternalDistributedMember localAddress;
 
   /**
    * The current membership view, or one recovered from disk. This is a copy-on-write variable.
    */
-  private GMSMembershipView view;
+  private NetView view;
 
-  private GMSMembershipView recoveredView;
+  private NetView recoveredView;
 
   private File viewFile;
 
@@ -107,15 +117,16 @@ public class GMSLocator implements Locator {
     this.workingDirectory = workingDirectory;
   }
 
-  public synchronized boolean setServices(Services pservices) {
+  @Override
+  public synchronized boolean setMembershipManager(MembershipManager mgr) {
     if (services == null || services.isStopped()) {
-      services = pservices;
+      services = ((GMSMembershipManager) mgr).getServices();
       localAddress = services.getMessenger().getMemberID();
       Objects.requireNonNull(localAddress, "member address should have been established");
       logger.info("Peer locator is connecting to local membership services with ID {}",
           localAddress);
       services.setLocator(this);
-      GMSMembershipView newView = services.getJoinLeave().getView();
+      NetView newView = services.getJoinLeave().getView();
       if (newView != null) {
         view = newView;
         recoveredView = null;
@@ -154,10 +165,10 @@ public class GMSLocator implements Locator {
     return viewFile;
   }
 
-  public void init(String persistentFileIdentifier) throws InternalGemFireException {
+  @Override
+  public void init(TcpServer server) throws InternalGemFireException {
     if (viewFile == null) {
-      viewFile =
-          workingDirectory.resolve("locator" + persistentFileIdentifier + "view.dat").toFile();
+      viewFile = workingDirectory.resolve("locator" + server.getPort() + "view.dat").toFile();
     }
     logger.info(
         "GemFire peer location service starting.  Other locators: {}  Locators preferred as coordinators: {}  Network partition detection enabled: {}  View persistence file: {}",
@@ -166,7 +177,7 @@ public class GMSLocator implements Locator {
   }
 
   @Override
-  public void installView(GMSMembershipView view) {
+  public void installView(NetView view) {
     synchronized (registrants) {
       registrants.clear();
     }
@@ -185,6 +196,7 @@ public class GMSLocator implements Locator {
     this.isCoordinator = isCoordinator;
   }
 
+  @Override
   public Object processRequest(Object request) {
     if (logger.isDebugEnabled()) {
       logger.debug("Peer locator processing {}", request);
@@ -218,7 +230,7 @@ public class GMSLocator implements Locator {
 
     if (services == null) {
       if (findRequest.getMyPublicKey() != null) {
-        publicKeys.put(new GMSMember.GMSMemberWrapper(findRequest.getMemberID()),
+        publicKeys.put(new InternalDistributedMemberWrapper(findRequest.getMemberID()),
             findRequest.getMyPublicKey());
       }
       logger.debug(
@@ -242,7 +254,7 @@ public class GMSLocator implements Locator {
       }
     }
 
-    GMSMembershipView responseView = view;
+    NetView responseView = view;
     if (responseView == null) {
       responseView = recoveredView;
     }
@@ -254,15 +266,15 @@ public class GMSLocator implements Locator {
       }
     }
 
-    GMSMember coordinator = null;
+    InternalDistributedMember coordinator = null;
     boolean fromView = false;
     if (responseView != null) {
       // if the ID of the requester matches an entry in the membership view then remove
       // that entry - it's obviously an old member since the ID has been reused
-      GMSMember requestingMemberID = findRequest.getMemberID();
-      for (GMSMember id : responseView.getMembers()) {
+      InternalDistributedMember requestingMemberID = findRequest.getMemberID();
+      for (InternalDistributedMember id : responseView.getMembers()) {
         if (requestingMemberID.compareTo(id, false) == 0) {
-          GMSMembershipView newView = new GMSMembershipView(responseView, responseView.getViewId());
+          NetView newView = new NetView(responseView, responseView.getViewId());
           newView.remove(id);
           responseView = newView;
           break;
@@ -281,17 +293,17 @@ public class GMSLocator implements Locator {
 
     if (coordinator == null) {
       // find the "oldest" registrant
-      Collection<GMSMember> rejections = findRequest.getRejectedCoordinators();
+      Collection<InternalDistributedMember> rejections = findRequest.getRejectedCoordinators();
       if (rejections == null) {
         rejections = Collections.emptyList();
       }
 
       synchronized (registrants) {
         coordinator = services.getJoinLeave().getMemberID();
-        for (GMSMember mbr : registrants) {
+        for (InternalDistributedMember mbr : registrants) {
           if (mbr != coordinator && (coordinator == null || mbr.compareTo(coordinator) < 0)) {
-            if (!rejections.contains(mbr) && (mbr.preferredForCoordinator()
-                || !mbr.isNetworkPartitionDetectionEnabled())) {
+            if (!rejections.contains(mbr) && (mbr.getNetMember().preferredForCoordinator()
+                || !mbr.getNetMember().isNetworkPartitionDetectionEnabled())) {
               coordinator = mbr;
             }
           }
@@ -324,7 +336,7 @@ public class GMSLocator implements Locator {
     }
   }
 
-  private void saveView(GMSMembershipView view) {
+  private void saveView(NetView view) {
     if (viewFile == null) {
       return;
     }
@@ -344,31 +356,40 @@ public class GMSLocator implements Locator {
     }
   }
 
+  @Override
   public void endRequest(Object request, long startTime) {
     locatorStats.endLocatorRequest(startTime);
   }
 
+  @Override
   public void endResponse(Object request, long startTime) {
     locatorStats.endLocatorResponse(startTime);
   }
 
-  public byte[] getPublicKey(GMSMember member) {
-    return publicKeys.get(new GMSMember.GMSMemberWrapper(member));
+  public byte[] getPublicKey(InternalDistributedMember member) {
+    return publicKeys.get(new InternalDistributedMemberWrapper(member));
   }
 
+  @Override
   public void shutDown() {
     // nothing to do for GMSLocator
     publicKeys.clear();
   }
 
   @VisibleForTesting
-  public List<GMSMember> getMembers() {
+  public List<InternalDistributedMember> getMembers() {
     if (view != null) {
       return new ArrayList<>(view.getMembers());
     }
     synchronized (registrants) {
       return new ArrayList<>(registrants);
     }
+  }
+
+  @Override
+  public void restarting(DistributedSystem ds, GemFireCache cache,
+      InternalConfigurationPersistenceService sharedConfig) {
+    setMembershipManager(((InternalDistributedSystem) ds).getDM().getMembershipManager());
   }
 
   private void recover() throws InternalGemFireException {
@@ -423,20 +444,17 @@ public class GMSLocator implements Locator {
       if (version != Version.CURRENT_ORDINAL) {
         Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
         logger.info("Peer locator found that persistent view was written with {}", geodeVersion);
-        if (version > Version.CURRENT_ORDINAL) {
-          return false;
-        }
         input = new VersionedObjectInput(input, geodeVersion);
       }
 
       recoveredView = DataSerializer.readObject(input);
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
-      List<GMSMember> members = new ArrayList<>(recoveredView.getMembers());
+      List<InternalDistributedMember> members = new ArrayList<>(recoveredView.getMembers());
       // Remove locators from the view. Since we couldn't recover from an existing
       // locator we know that all of the locators in the view are defunct
-      for (GMSMember member : members) {
-        if (member.getVmKind() == GMSMember.LOCATOR_DM_TYPE) {
+      for (InternalDistributedMember member : members) {
+        if (member.getVmKind() == ClusterDistributionManager.LOCATOR_DM_TYPE) {
           recoveredView.remove(member);
         }
       }

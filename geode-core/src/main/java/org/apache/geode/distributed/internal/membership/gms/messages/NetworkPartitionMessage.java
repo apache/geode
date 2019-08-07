@@ -14,19 +14,17 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.messages;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
-public class NetworkPartitionMessage extends AbstractGMSMessage {
+public class NetworkPartitionMessage extends HighPriorityDistributionMessage {
 
   public NetworkPartitionMessage() {}
 
-  public NetworkPartitionMessage(List<GMSMember> recipients) {
+  public NetworkPartitionMessage(Collection<InternalDistributedMember> recipients) {
     setRecipients(recipients);
   }
 
@@ -36,17 +34,8 @@ public class NetworkPartitionMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-
+  protected void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to be executed");
   }
 
-  @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-
-  }
-
-  @Override
-  public Version[] getSerializationVersions() {
-    return null;
-  }
 }

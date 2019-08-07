@@ -15,7 +15,6 @@
 package org.apache.geode;
 
 import static org.apache.geode.distributed.ConfigurationProperties.CONSERVE_SOCKETS;
-import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_TCP;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
@@ -76,10 +75,8 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.cache.DirectReplyMessage;
-import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.DistributedRestoreSystemProperties;
@@ -107,7 +104,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   private final String regionName = "clusterTestRegion";
 
-  private final boolean disableTcp;
   private boolean conserveSockets;
   private boolean useSSL;
 
@@ -130,7 +126,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   public ClusterCommunicationsDUnitTest(RunConfiguration runConfiguration) {
     useSSL = runConfiguration.useSSL;
     conserveSockets = runConfiguration.conserveSockets;
-    disableTcp = runConfiguration.disableTcp;
   }
 
   @Before
@@ -203,7 +198,7 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     // create a cluster with the previous version of Geode
     VM locatorVM = Host.getHost(0).getVM(testVersion, 0);
     VM server1VM = Host.getHost(0).getVM(testVersion, 1);
-    int locatorPort = createLocator(locatorVM, true);
+    int locatorPort = createLocator(locatorVM);
     createCacheAndRegion(server1VM, locatorPort);
     performCreate(getVM(1));
 
@@ -275,24 +270,12 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   private int createLocator(VM memberVM) {
-    return createLocator(memberVM, false);
-  }
-
-  private int createLocator(VM memberVM, boolean usingOldVersion) {
     return memberVM.invoke("create locator", () -> {
       // if you need to debug SSL communications use this property:
       // System.setProperty("javax.net.debug", "all");
       System.setProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY, "true");
-      Properties dsProperties = getDistributedSystemProperties();
       try {
-        int port = 0;
-        // for stress-tests make sure that an older-version locator doesn't try
-        // to read state persisted by another run's newer-version locator
-        if (usingOldVersion) {
-          port = AvailablePortHelper.getRandomAvailableTCPPort();
-          DistributedTestUtils.deleteLocatorStateFile(port);
-        }
-        return Locator.startLocatorAndDS(port, new File(""), getDistributedSystemProperties())
+        return Locator.startLocatorAndDS(0, new File(""), getDistributedSystemProperties())
             .getPort();
       } finally {
         System.clearProperty(GMSJoinLeave.BYPASS_DISCOVERY_PROPERTY);
@@ -314,7 +297,6 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     properties.setProperty(USE_CLUSTER_CONFIGURATION, "false");
     properties.setProperty(NAME, "vm" + VM.getCurrentVMNum());
     properties.setProperty(CONSERVE_SOCKETS, "" + conserveSockets);
-    properties.setProperty(DISABLE_TCP, "" + disableTcp);
     properties.setProperty(SOCKET_LEASE_TIME, "10000");
     properties.setProperty(SOCKET_BUFFER_SIZE, "" + SMALL_BUFFER_SIZE);
 
@@ -335,20 +317,17 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
   }
 
   enum RunConfiguration {
-    SHARED_CONNECTIONS(true, false, false),
-    SHARED_CONNECTIONS_WITH_SSL(true, true, false),
-    UNSHARED_CONNECTIONS(false, false, false),
-    UNSHARED_CONNECTIONS_WITH_SSL(false, true, false),
-    UDP_CONNECTIONS(true, false, true);
+    SHARED_CONNECTIONS(true, false),
+    SHARED_CONNECTIONS_WITH_SSL(true, true),
+    UNSHARED_CONNECTIONS(false, false),
+    UNSHARED_CONNECTIONS_WITH_SSL(false, true);
 
     boolean useSSL;
     boolean conserveSockets;
-    boolean disableTcp;
 
-    RunConfiguration(boolean conserveSockets, boolean useSSL, boolean disableTcp) {
+    RunConfiguration(boolean conserveSockets, boolean useSSL) {
       this.useSSL = useSSL;
       this.conserveSockets = conserveSockets;
-      this.disableTcp = disableTcp;
     }
   }
 

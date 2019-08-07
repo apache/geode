@@ -16,7 +16,8 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
 import java.util.Collection;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 
 public interface HealthMonitor extends Service {
 
@@ -24,13 +25,13 @@ public interface HealthMonitor extends Service {
    * Note that this member has been contacted by the given member
    *
    */
-  void contactedBy(GMSMember sender);
+  void contactedBy(InternalDistributedMember sender);
 
   /**
    * initiate, asynchronously, suspicion that the member is no longer available
    *
    */
-  void suspect(GMSMember mbr, String reason);
+  void suspect(InternalDistributedMember mbr, String reason);
 
   /**
    * Check on the health of the given member, initiating suspicion if it fails. Return true if the
@@ -39,13 +40,13 @@ public interface HealthMonitor extends Service {
    * @param reason the reason this check is being performed
    * @param initiateRemoval if the member should be removed if it is not available
    */
-  boolean checkIfAvailable(GMSMember mbr, String reason, boolean initiateRemoval);
+  boolean checkIfAvailable(InternalDistributedMember mbr, String reason, boolean initiateRemoval);
 
   /**
    * Invoked by the Manager, this notifies the HealthMonitor that a ShutdownMessage has been
    * received from the given member
    */
-  void memberShutdown(GMSMember mbr, String reason);
+  void memberShutdown(DistributedMember mbr, String reason);
 
   /**
    * Returns the failure detection port for this member, or -1 if there is no such port
@@ -55,6 +56,6 @@ public interface HealthMonitor extends Service {
   /**
    * Returns the set of members declared dead by the health monitor
    */
-  Collection<GMSMember> getMembersFailingAvailabilityCheck();
+  Collection<InternalDistributedMember> getMembersFailingAvailabilityCheck();
 
 }

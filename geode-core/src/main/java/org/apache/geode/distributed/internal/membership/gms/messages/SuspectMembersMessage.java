@@ -21,14 +21,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 
-public class SuspectMembersMessage extends AbstractGMSMessage {
+public class SuspectMembersMessage extends HighPriorityDistributionMessage {
   final List<SuspectRequest> suspectRequests;
 
-  public SuspectMembersMessage(List<GMSMember> recipients, List<SuspectRequest> s) {
+  public SuspectMembersMessage(List<InternalDistributedMember> recipients, List<SuspectRequest> s) {
     super();
     setRecipients(recipients);
     this.suspectRequests = s;
@@ -42,6 +43,11 @@ public class SuspectMembersMessage extends AbstractGMSMessage {
   @Override
   public int getDSFID() {
     return SUSPECT_MEMBERS_MESSAGE;
+  }
+
+  @Override
+  public void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   public List<SuspectRequest> getMembers() {
@@ -63,7 +69,7 @@ public class SuspectMembersMessage extends AbstractGMSMessage {
     if (suspectRequests != null) {
       out.writeInt(suspectRequests.size());
       for (SuspectRequest sr : suspectRequests) {
-        GMSUtil.writeMemberID(sr.getSuspectMember(), out);
+        DataSerializer.writeObject(sr.getSuspectMember(), out);
         DataSerializer.writeString(sr.getReason(), out);
       }
     } else {
@@ -76,7 +82,7 @@ public class SuspectMembersMessage extends AbstractGMSMessage {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest sr = new SuspectRequest(
-          GMSUtil.readMemberID(in), DataSerializer.readString(in));
+          (InternalDistributedMember) DataSerializer.readObject(in), DataSerializer.readString(in));
       suspectRequests.add(sr);
     }
   }

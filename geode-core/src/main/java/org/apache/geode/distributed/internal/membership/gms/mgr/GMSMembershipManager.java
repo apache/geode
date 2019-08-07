@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.distributed.internal.membership.adapter;
+package org.apache.geode.distributed.internal.membership.gms.mgr;
 
 import java.io.NotSerializableException;
 import java.util.ArrayList;
@@ -70,19 +70,15 @@ import org.apache.geode.distributed.internal.membership.DistributedMembershipLis
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
-import org.apache.geode.distributed.internal.membership.MembershipView;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -94,7 +90,7 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.internal.util.Breadcrumbs;
 
-public class GMSMembershipManager implements MembershipManager {
+public class GMSMembershipManager implements MembershipManager, Manager {
   private static final Logger logger = Services.getLogger();
 
   /** product version to use for multicast serialization */
@@ -126,12 +122,6 @@ public class GMSMembershipManager implements MembershipManager {
   private final ThreadLocal<Boolean> forceUseUDPMessaging =
       ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-
-  private final ManagerImpl gmsManager;
-
-  private long ackSevereAlertThreshold;
-  private long ackWaitThreshold;
-
   /**
    * Trick class to make the startup synch more visible in stack traces
    *
@@ -159,7 +149,7 @@ public class GMSMembershipManager implements MembershipManager {
     // Miscellaneous state depending on the kind of event
     InternalDistributedMember member;
     DistributionMessage dmsg;
-    MembershipView gmsView;
+    NetView gmsView;
 
     @Override
     public String toString() {
@@ -207,7 +197,7 @@ public class GMSMembershipManager implements MembershipManager {
      *
      * @param v the new view
      */
-    StartupEvent(MembershipView v) {
+    StartupEvent(NetView v) {
       this.kind = VIEW;
       this.gmsView = v;
     }
@@ -255,7 +245,7 @@ public class GMSMembershipManager implements MembershipManager {
    *
    * All accesses to this object are protected via {@link #latestViewLock}
    */
-  private MembershipView latestView = new MembershipView();
+  private NetView latestView = new NetView();
 
   /**
    * This is the lock for protecting access to latestView
@@ -408,8 +398,7 @@ public class GMSMembershipManager implements MembershipManager {
     @Override
     public void messageReceived(DistributionMessage msg) {
       // bug 36851 - notify failure detection that we've had contact from a member
-      services.getHealthMonitor()
-          .contactedBy(((GMSMemberAdapter) msg.getSender().getNetMember()).getGmsMember());
+      services.getHealthMonitor().contactedBy(msg.getSender());
       handleOrDeferMessage(msg);
     }
 
@@ -424,7 +413,7 @@ public class GMSMembershipManager implements MembershipManager {
   /**
    * Analyze a given view object, generate events as appropriate
    */
-  protected void processView(long newViewId, MembershipView newView) {
+  protected void processView(long newViewId, NetView newView) {
     // Sanity check...
     if (logger.isDebugEnabled()) {
       StringBuilder msg = new StringBuilder(200);
@@ -466,12 +455,12 @@ public class GMSMembershipManager implements MembershipManager {
       }
 
       // Save previous view, for delta analysis
-      MembershipView priorView = latestView;
+      NetView priorView = latestView;
 
       // update the view to reflect our changes, so that
       // callbacks will see the new (updated) view.
       latestViewId = newViewId;
-      latestView = new MembershipView(newView, newView.getViewId());
+      latestView = new NetView(newView, newView.getViewId());
 
       // look for additions
       for (int i = 0; i < newView.getMembers().size(); i++) { // additions
@@ -641,6 +630,11 @@ public class GMSMembershipManager implements MembershipManager {
   private boolean tcpDisabled;
 
 
+  @Override
+  public boolean isMulticastAllowed() {
+    return !disableMulticastForRollingUpgrade;
+  }
+
   /**
    * Joins the distributed system
    *
@@ -664,8 +658,8 @@ public class GMSMembershipManager implements MembershipManager {
               + "Operation either timed out, was stopped or Locator does not exist.");
         }
 
-        MembershipView initialView = createGeodeView(services.getJoinLeave().getView());
-        latestView = new MembershipView(initialView, initialView.getViewId());
+        NetView initialView = services.getJoinLeave().getView();
+        latestView = new NetView(initialView, initialView.getViewId());
         listener.viewInstalled(latestView);
 
       } catch (RuntimeException ex) {
@@ -685,73 +679,128 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
-  private MembershipView createGeodeView(GMSMembershipView view) {
-    return createGeodeView(view.getCreator(), view.getViewId(), view.getMembers(),
-        view.getShutdownMembers(),
-        view.getCrashedMembers());
-  }
-
-  private MembershipView createGeodeView(GMSMember gmsCreator, int viewId,
-      List<GMSMember> gmsMembers,
-      Set<GMSMember> gmsShutdowns, Set<GMSMember> gmsCrashes) {
-    InternalDistributedMember geodeCreator =
-        new InternalDistributedMember(new GMSMemberAdapter(gmsCreator));
-    List<InternalDistributedMember> geodeMembers = new ArrayList<>(gmsMembers.size());
-    for (GMSMember member : gmsMembers) {
-      geodeMembers.add(new InternalDistributedMember(new GMSMemberAdapter(member)));
-    }
-    Set<InternalDistributedMember> geodeShutdownMembers =
-        gmsMemberCollectionToInternalDistributedMemberSet(gmsShutdowns);
-    Set<InternalDistributedMember> geodeCrashedMembers =
-        gmsMemberCollectionToInternalDistributedMemberSet(gmsCrashes);
-    return new MembershipView(geodeCreator, viewId, geodeMembers, geodeShutdownMembers,
-        geodeCrashedMembers);
-  }
-
-  private Set<InternalDistributedMember> gmsMemberCollectionToInternalDistributedMemberSet(
-      Collection<GMSMember> gmsMembers) {
-    if (gmsMembers.size() == 0) {
-      return Collections.emptySet();
-    } else if (gmsMembers.size() == 1) {
-      return Collections.singleton(
-          new InternalDistributedMember(new GMSMemberAdapter(gmsMembers.iterator().next())));
-    } else {
-      Set<InternalDistributedMember> idmMembers = new HashSet<>(gmsMembers.size());
-      for (GMSMember member : gmsMembers) {
-        idmMembers.add(new InternalDistributedMember(new GMSMemberAdapter((member))));
-      }
-      return idmMembers;
-    }
-  }
-
-
-  private List<InternalDistributedMember> gmsMemberListToInternalDistributedMemberList(
-      List<GMSMember> gmsMembers) {
-    if (gmsMembers.size() == 0) {
-      return Collections.emptyList();
-    } else if (gmsMembers.size() == 1) {
-      return Collections
-          .singletonList(new InternalDistributedMember(new GMSMemberAdapter(gmsMembers.get(0))));
-    } else {
-      List<InternalDistributedMember> idmMembers = new ArrayList<>(gmsMembers.size());
-      for (GMSMember member : gmsMembers) {
-        idmMembers.add(new InternalDistributedMember(new GMSMemberAdapter((member))));
-      }
-      return idmMembers;
-    }
-  }
-
-
 
   public GMSMembershipManager(DistributedMembershipListener listener) {
     Assert.assertTrue(listener != null);
     this.listener = listener;
-    this.gmsManager = new ManagerImpl();
   }
 
-  public Manager getGMSManager() {
-    return this.gmsManager;
+  @Override
+  public void init(Services services) {
+    this.services = services;
+
+    Assert.assertTrue(services != null);
+
+    DistributionConfig config = services.getConfig().getDistributionConfig();
+    RemoteTransportConfig transport = services.getConfig().getTransport();
+
+    this.membershipCheckTimeout = config.getSecurityPeerMembershipTimeout();
+    this.wasReconnectingSystem = transport.getIsReconnectingDS();
+
+    // cache these settings for use in send()
+    this.mcastEnabled = transport.isMcastEnabled();
+    this.tcpDisabled = transport.isTcpDisabled();
+
+    if (!this.tcpDisabled) {
+      dcReceiver = new MyDCReceiver(listener);
+    }
+
+    surpriseMemberTimeout =
+        Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
+    surpriseMemberTimeout =
+        Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout",
+            surpriseMemberTimeout).intValue();
+
   }
+
+  @Override
+  public void start() {
+    DistributionConfig config = services.getConfig().getDistributionConfig();
+
+    int dcPort = 0;
+    if (!tcpDisabled) {
+      directChannel = new DirectChannel(this, dcReceiver, config);
+      dcPort = directChannel.getPort();
+    }
+
+
+    services.getMessenger().getMemberID().setDirectChannelPort(dcPort);
+
+  }
+
+
+  @Override
+  public void joinDistributedSystem() {
+    long startTime = System.currentTimeMillis();
+
+    try {
+      join();
+    } catch (RuntimeException e) {
+      if (directChannel != null) {
+        directChannel.disconnect(e);
+      }
+      throw e;
+    }
+
+    this.address = services.getMessenger().getMemberID();
+
+    if (directChannel != null) {
+      directChannel.setLocalAddr(address);
+    }
+
+    this.hasJoined = true;
+
+    // in order to debug startup issues we need to announce the membership
+    // ID as soon as we know it
+    logger.info("Finished joining (took {}ms).",
+        "" + (System.currentTimeMillis() - startTime));
+
+  }
+
+  @Override
+  public void started() {
+    startCleanupTimer();
+  }
+
+
+  /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
+  @Override
+  public void quorumLost(Collection<InternalDistributedMember> failures, NetView view) {
+    // notify of quorum loss if split-brain detection is enabled (meaning we'll shut down) or
+    // if the loss is more than one member
+
+    boolean notify = failures.size() > 1;
+    if (!notify) {
+      notify = services.getConfig().isNetworkPartitionDetectionEnabled();
+    }
+
+    if (notify) {
+      List<InternalDistributedMember> remaining = new ArrayList<>(view.getMembers());
+      remaining.removeAll(failures);
+
+      if (inhibitForceDisconnectLogging) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
+        }
+      }
+      logger.fatal("Possible loss of quorum due to the loss of {} cache processes: {}",
+          failures.size(), failures);
+      if (inhibitForceDisconnectLogging) {
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "<ExpectedException action=remove>Possible loss of quorum</ExpectedException>");
+        }
+      }
+
+
+      try {
+        this.listener.quorumLost(new HashSet<>(failures), remaining);
+      } catch (CancelException e) {
+        // safe to ignore - a forced disconnect probably occurred
+      }
+    }
+  }
+
 
   @Override
   public boolean testMulticast() {
@@ -896,7 +945,7 @@ public class GMSMembershipManager implements MembershipManager {
         // should ensure it is not chosen as an elder.
         // This will get corrected when the member finally shows up in the
         // view.
-        MembershipView newMembers = new MembershipView(latestView, latestView.getViewId());
+        NetView newMembers = new NetView(latestView, latestView.getViewId());
         newMembers.add(member);
         latestView = newMembers;
       }
@@ -992,6 +1041,11 @@ public class GMSMembershipManager implements MembershipManager {
     logger.warn("Membership: disregarding shunned member <{}>", m);
   }
 
+  @Override
+  public void processMessage(DistributionMessage msg) {
+    handleOrDeferMessage(msg);
+  }
+
   /**
    * Logic for processing a distribution message.
    * <p>
@@ -1003,6 +1057,12 @@ public class GMSMembershipManager implements MembershipManager {
   private void dispatchMessage(DistributionMessage msg) {
     InternalDistributedMember m = msg.getSender();
     boolean shunned = false;
+
+    // UDP messages received from surprise members will have partial IDs.
+    // Attempt to replace these with full IDs from the MembershipManager's view.
+    if (msg.getSender().isPartial()) {
+      replacePartialIdentifierInMessage(msg);
+    }
 
     // If this member is shunned or new, grab the latestViewWriteLock: update the appropriate data
     // structure.
@@ -1051,12 +1111,8 @@ public class GMSMembershipManager implements MembershipManager {
    */
   public void replacePartialIdentifierInMessage(DistributionMessage msg) {
     InternalDistributedMember sender = msg.getSender();
-    GMSMember oldID = ((GMSMemberAdapter) sender.getNetMember()).getGmsMember();
-    GMSMember newID = this.services.getJoinLeave().getMemberID(oldID);
-    if (newID != null && newID != oldID) {
-      sender.setNetMember(new GMSMemberAdapter(newID));
-      sender.setIsPartial(false);
-    } else {
+    sender = this.services.getJoinLeave().getMemberID(sender.getNetMember());
+    if (sender.isPartial()) {
       // the DM's view also has surprise members, so let's check it as well
       sender = this.dcReceiver.getDM().getCanonicalId(sender);
     }
@@ -1071,7 +1127,7 @@ public class GMSMembershipManager implements MembershipManager {
    *
    * @param viewArg the new view
    */
-  protected void handleOrDeferViewEvent(MembershipView viewArg) {
+  protected void handleOrDeferViewEvent(NetView viewArg) {
     if (this.isJoining) {
       // bug #44373 - queue all view messages while joining.
       // This is done under the latestViewLock, but we can't block here because
@@ -1100,8 +1156,11 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
-  private InternalDistributedMember gmsMemberToDMember(GMSMember gmsMember) {
-    return new InternalDistributedMember(new GMSMemberAdapter(gmsMember));
+  @Override
+  public void memberSuspected(InternalDistributedMember initiator,
+      InternalDistributedMember suspect, String reason) {
+    SuspectMember s = new SuspectMember(initiator, suspect, reason);
+    handleOrDeferSuspect(s);
   }
 
   /**
@@ -1117,8 +1176,8 @@ public class GMSMembershipManager implements MembershipManager {
           return;
         }
       }
-      InternalDistributedMember suspect = gmsMemberToDMember(suspectInfo.suspectedMember);
-      InternalDistributedMember who = gmsMemberToDMember(suspectInfo.whoSuspected);
+      InternalDistributedMember suspect = suspectInfo.suspectedMember;
+      InternalDistributedMember who = suspectInfo.whoSuspected;
       this.suspectedMembers.put(suspect, Long.valueOf(System.currentTimeMillis()));
       try {
         listener.memberSuspect(suspect, who, suspectInfo.reason);
@@ -1277,19 +1336,39 @@ public class GMSMembershipManager implements MembershipManager {
    * {@link DistributedMember}s)
    */
   @Override
-  public MembershipView getView() {
+  public NetView getView() {
     // Grab the latest view under a mutex...
-    MembershipView v;
+    NetView v;
 
     latestViewReadLock.lock();
     v = latestView;
     latestViewReadLock.unlock();
 
-    MembershipView result = new MembershipView(v, v.getViewId());
+    NetView result = new NetView(v, v.getViewId());
 
     v.getMembers().stream().filter(this::isShunned).forEachOrdered(result::remove);
 
     return result;
+  }
+
+  /**
+   * test hook
+   * <p>
+   * The lead member is the eldest member with partition detection enabled.
+   * <p>
+   * If no members have partition detection enabled, there will be no lead member and this method
+   * will return null.
+   *
+   * @return the lead member associated with the latest view
+   */
+  @Override
+  public DistributedMember getLeadMember() {
+    latestViewReadLock.lock();
+    try {
+      return latestView == null ? null : latestView.getLeadMember();
+    } finally {
+      latestViewReadLock.unlock();
+    }
   }
 
   private boolean isJoining() {
@@ -1314,7 +1393,7 @@ public class GMSMembershipManager implements MembershipManager {
   @Override
   public boolean memberExists(DistributedMember m) {
     latestViewReadLock.lock();
-    MembershipView v = latestView;
+    NetView v = latestView;
     latestViewReadLock.unlock();
     return v.contains(m);
   }
@@ -1393,17 +1472,14 @@ public class GMSMembershipManager implements MembershipManager {
    * not the same as a SHUNNED member.
    */
   @Override
-  public void shutdownMessageReceived(DistributedMember id, String reason) {
+  public void shutdownMessageReceived(InternalDistributedMember id, String reason) {
     if (logger.isDebugEnabled()) {
       logger.debug("Membership: recording shutdown status of {}", id);
     }
     synchronized (this.shutdownMembers) {
       this.shutdownMembers.put(id, id);
-      services.getHealthMonitor()
-          .memberShutdown(
-              ((GMSMemberAdapter) ((InternalDistributedMember) id).getNetMember()).getGmsMember(),
-              reason);
-      services.getJoinLeave().memberShutdown(getGMSMember((InternalDistributedMember) id), reason);
+      services.getHealthMonitor().memberShutdown(id, reason);
+      services.getJoinLeave().memberShutdown(id, reason);
     }
   }
 
@@ -1411,6 +1487,38 @@ public class GMSMembershipManager implements MembershipManager {
   public void shutdown() {
     setShutdown();
     services.stop();
+  }
+
+  @Override
+  public void stop() {
+
+    // [bruce] Do not null out the channel w/o adding appropriate synchronization
+
+    logger.debug("MembershipManager closing");
+
+    if (directChannel != null) {
+      directChannel.disconnect(null);
+
+      if (address != null) {
+        // Make sure that channel information is consistent
+        // Probably not important in this particular case, but just
+        // to be consistent...
+        latestViewWriteLock.lock();
+        try {
+          destroyMember(address, "orderly shutdown");
+        } finally {
+          latestViewWriteLock.unlock();
+        }
+      }
+    }
+
+    if (cleanupTimer != null) {
+      cleanupTimer.cancel();
+    }
+
+    if (logger.isDebugEnabled()) {
+      logger.debug("Membership: channel closed");
+    }
   }
 
   @Override
@@ -1462,7 +1570,7 @@ public class GMSMembershipManager implements MembershipManager {
     logger.warn("Membership: requesting removal of {}. Reason={}",
         new Object[] {mbr, reason});
     try {
-      services.getJoinLeave().remove(getGMSMember((InternalDistributedMember) mbr), reason);
+      services.getJoinLeave().remove((InternalDistributedMember) mbr, reason);
     } catch (RuntimeException e) {
       Throwable problem = e;
       if (services.getShutdownCause() != null) {
@@ -1492,14 +1600,14 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   @Override
-  public void suspectMembers(Set<DistributedMember> members, String reason) {
-    for (final DistributedMember member : members) {
+  public void suspectMembers(Set<InternalDistributedMember> members, String reason) {
+    for (final InternalDistributedMember member : members) {
       verifyMember(member, reason);
     }
   }
 
   @Override
-  public void suspectMember(DistributedMember mbr, String reason) {
+  public void suspectMember(InternalDistributedMember mbr, String reason) {
     if (!this.shutdownInProgress && !this.shutdownMembers.containsKey(mbr)) {
       verifyMember(mbr, reason);
     }
@@ -1517,10 +1625,9 @@ public class GMSMembershipManager implements MembershipManager {
    * @return true if the member checks out
    */
   @Override
-  public boolean verifyMember(DistributedMember mbr, String reason) {
+  public boolean verifyMember(InternalDistributedMember mbr, String reason) {
     return mbr != null && memberExists(mbr)
-        && this.services.getHealthMonitor()
-            .checkIfAvailable(getGMSMember((InternalDistributedMember) mbr), reason, false);
+        && this.services.getHealthMonitor().checkIfAvailable(mbr, reason, false);
   }
 
   /**
@@ -1554,8 +1661,9 @@ public class GMSMembershipManager implements MembershipManager {
 
     int sentBytes;
     try {
-      sentBytes =
-          directChannel.send(this, keys, content, ackWaitThreshold, ackSevereAlertThreshold);
+      sentBytes = directChannel.send(this, keys, content,
+          this.services.getConfig().getDistributionConfig().getAckWaitThreshold(),
+          this.services.getConfig().getDistributionConfig().getAckSevereAlertThreshold());
 
       if (theStats != null) {
         theStats.incSentBytes(sentBytes);
@@ -1594,7 +1702,7 @@ public class GMSMembershipManager implements MembershipManager {
       // of the view, we have a serious error (bug36202).
 
       // grab a recent view, excluding shunned members
-      GMSMembershipView view = services.getJoinLeave().getView();
+      NetView view = services.getJoinLeave().getView();
 
       // Iterate through members and causes in tandem :-(
       Iterator it_mem = members.iterator();
@@ -1603,7 +1711,7 @@ public class GMSMembershipManager implements MembershipManager {
         InternalDistributedMember member = (InternalDistributedMember) it_mem.next();
         Throwable th = (Throwable) it_causes.next();
 
-        if (!view.contains(getGMSMember(member)) || (th instanceof ShunnedMemberException)) {
+        if (!view.contains(member) || (th instanceof ShunnedMemberException)) {
           continue;
         }
         logger.fatal(String.format("Failed to send message <%s> to member <%s> view, %s",
@@ -1624,13 +1732,6 @@ public class GMSMembershipManager implements MembershipManager {
     return null;
   }
 
-  /**
-   * retrieve the GMS member ID held in a Geode InternalDistributedMember
-   */
-  private GMSMember getGMSMember(InternalDistributedMember member) {
-    return ((GMSMemberAdapter) member.getNetMember()).getGmsMember();
-  }
-
   /*
    * (non-Javadoc)
    *
@@ -1641,18 +1742,27 @@ public class GMSMembershipManager implements MembershipManager {
     return (this.hasJoined && !this.shutdownInProgress);
   }
 
+  /**
+   * Returns true if the distributed system is in the process of auto-reconnecting. Otherwise
+   * returns false.
+   */
+  @Override
+  public boolean isReconnectingDS() {
+    return this.wasReconnectingSystem && !this.reconnectCompleted;
+  }
+
   @Override
   public QuorumChecker getQuorumChecker() {
     if (!(services.isShutdownDueToForcedDisconnect())) {
       return null;
     }
-    if (quorumChecker != null) {
-      return quorumChecker;
+    if (this.quorumChecker != null) {
+      return this.quorumChecker;
     }
 
-    GMSQuorumChecker impl = services.getMessenger().getQuorumChecker();
-    quorumChecker = new GMSQuorumCheckerAdapter(impl);
-    return quorumChecker;
+    QuorumChecker impl = services.getMessenger().getQuorumChecker();
+    this.quorumChecker = impl;
+    return impl;
   }
 
   @Override
@@ -1730,11 +1840,7 @@ public class GMSMembershipManager implements MembershipManager {
 
     if (useMcast || tcpDisabled || sendViaMessenger) {
       checkAddressesForUUIDs(destinations);
-      Set<GMSMember> failures = services.getMessenger().send(new GMSMessageAdapter(msg));
-      if (failures == null || failures.size() == 0) {
-        return Collections.emptySet();
-      }
-      return gmsMemberCollectionToInternalDistributedMemberSet(failures);
+      result = services.getMessenger().send(msg);
     } else {
       result = directChannelSend(destinations, msg, theStats);
     }
@@ -1748,14 +1854,17 @@ public class GMSMembershipManager implements MembershipManager {
   }
 
   void checkAddressesForUUIDs(InternalDistributedMember[] addresses) {
-    GMSMembershipView view = services.getJoinLeave().getView();
     for (int i = 0; i < addresses.length; i++) {
       InternalDistributedMember m = addresses[i];
       if (m != null) {
-        GMSMemberAdapter adapter = (GMSMemberAdapter) m.getNetMember();
-        GMSMember id = adapter.getGmsMember();
+        GMSMember id = (GMSMember) m.getNetMember();
         if (!id.hasUUID()) {
-          adapter.setGmsMember(view.getCanonicalID(id));
+          latestViewReadLock.lock();
+          try {
+            addresses[i] = latestView.getCanonicalID(addresses[i]);
+          } finally {
+            latestViewReadLock.unlock();
+          }
         }
       }
     }
@@ -1784,6 +1893,15 @@ public class GMSMembershipManager implements MembershipManager {
     latestViewWriteLock.unlock();
   }
 
+  @Override
+  public boolean shutdownInProgress() {
+    // Impossible condition (bug36329): make sure that we check DM's
+    // view of shutdown here
+    ClusterDistributionManager dm = listener.getDM();
+    return shutdownInProgress || (dm != null && dm.shutdownInProgress());
+  }
+
+
   /**
    * Clean up and create consistent new view with member removed. No uplevel events are generated.
    *
@@ -1795,7 +1913,7 @@ public class GMSMembershipManager implements MembershipManager {
     latestViewWriteLock.lock();
     try {
       if (latestView.contains(member)) {
-        MembershipView newView = new MembershipView(latestView, latestView.getViewId());
+        NetView newView = new NetView(latestView, latestView.getViewId());
         newView.remove(member);
         latestView = newView;
       }
@@ -2030,6 +2148,11 @@ public class GMSMembershipManager implements MembershipManager {
     this.reconnectCompleted = reconnectCompleted;
   }
 
+  @Override
+  public boolean isReconnectCompleted() {
+    return reconnectCompleted;
+  }
+
 
   /*
    * non-thread-owned serial channels and high priority channels are not included
@@ -2041,8 +2164,7 @@ public class GMSMembershipManager implements MembershipManager {
     if (dc != null) {
       dc.getChannelStates(member, result);
     }
-    services.getMessenger().getMessageState(getGMSMember((InternalDistributedMember) member),
-        result,
+    services.getMessenger().getMessageState((InternalDistributedMember) member, result,
         includeMulticast);
     return result;
   }
@@ -2056,8 +2178,7 @@ public class GMSMembershipManager implements MembershipManager {
     if (dc != null) {
       dc.waitForChannelState(otherMember, state);
     }
-    services.getMessenger().waitForMessageState(
-        getGMSMember((InternalDistributedMember) otherMember), state);
+    services.getMessenger().waitForMessageState((InternalDistributedMember) otherMember, state);
 
     if (services.getConfig().isMulticastEnabled()
         && !services.getConfig().getDistributionConfig().getDisableTcp()) {
@@ -2173,18 +2294,10 @@ public class GMSMembershipManager implements MembershipManager {
     return result;
   }
 
-  @Override
-  public boolean shutdownInProgress() {
-    // Impossible condition (bug36329): make sure that we check DM's
-    // view of shutdown here
-    ClusterDistributionManager dm = listener.getDM();
-    return shutdownInProgress || (dm != null && dm.shutdownInProgress());
-  }
-
 
   // TODO GEODE-1752 rewrite this to get rid of the latches, which are currently a memory leak
   @Override
-  public boolean waitForNewMember(DistributedMember remoteId) {
+  public boolean waitForNewMember(InternalDistributedMember remoteId) {
     boolean foundRemoteId = false;
     CountDownLatch currentLatch = null;
     // ARB: preconditions
@@ -2362,6 +2475,72 @@ public class GMSMembershipManager implements MembershipManager {
     }
   }
 
+  @Override
+  public void stopped() {}
+
+  @Override
+  public void installView(NetView v) {
+    if (latestViewId < 0 && !isConnected()) {
+      latestViewId = v.getViewId();
+      latestView = v;
+      logger.debug("MembershipManager: initial view is {}", latestView);
+    } else {
+      handleOrDeferViewEvent(v);
+    }
+  }
+
+  @Override
+  public Set<InternalDistributedMember> send(DistributionMessage m)
+      throws NotSerializableException {
+    return send(m.getRecipients(), m, this.services.getStatistics());
+  }
+
+  @Override
+  public void forceDisconnect(final String reason) {
+    if (GMSMembershipManager.this.shutdownInProgress || isJoining()) {
+      return; // probably a race condition
+    }
+
+    setShutdown();
+
+    final Exception shutdownCause = new ForcedDisconnectException(reason);
+
+    // cache the exception so it can be appended to ShutdownExceptions
+    services.setShutdownCause(shutdownCause);
+    services.getCancelCriterion().cancel(reason);
+
+    AlertAppender.getInstance().stopSession();
+
+    if (!inhibitForceDisconnectLogging) {
+      logger.fatal(
+          String.format("Membership service failure: %s", reason),
+          shutdownCause);
+    }
+
+    if (this.isReconnectingDS()) {
+      logger.info("Reconnecting system failed to connect");
+      uncleanShutdown(reason,
+          new ForcedDisconnectException("reconnecting system failed to connect"));
+      return;
+    }
+
+    listener.saveConfig();
+
+    Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
+      // stop server locators immediately since they may not have correct
+      // information. This has caused client failures in bridge/wan
+      // network-down testing
+      InternalLocator loc = (InternalLocator) Locator.getLocator();
+      if (loc != null) {
+        loc.stop(true, !services.getConfig().getDistributionConfig().getDisableAutoReconnect(),
+            false);
+      }
+      uncleanShutdown(reason, shutdownCause);
+    });
+    reconnectThread.start();
+  }
+
+
   public void disableDisconnectOnQuorumLossForTesting() {
     services.getJoinLeave().disableDisconnectOnQuorumLossForTesting();
   }
@@ -2390,327 +2569,17 @@ public class GMSMembershipManager implements MembershipManager {
 
 
   @Override
+  public boolean isShutdownStarted() {
+    ClusterDistributionManager dm = listener.getDM();
+    return shutdownInProgress || (dm != null && dm.isCloseInProgress());
+  }
+
+  @Override
   public void disconnect(boolean beforeJoined) {
     if (beforeJoined) {
       uncleanShutdown("Failed to start distribution", null);
     } else {
       shutdown();
     }
-  }
-
-
-  class ManagerImpl implements Manager {
-
-    @Override
-    public Services getServices() {
-      return services;
-    }
-
-    @Override
-    /* Service interface */
-    public void init(Services services) {
-      GMSMembershipManager.this.services = services;
-
-      Assert.assertTrue(services != null);
-
-      DistributionConfig config = services.getConfig().getDistributionConfig();
-      RemoteTransportConfig transport = services.getConfig().getTransport();
-
-      membershipCheckTimeout = config.getSecurityPeerMembershipTimeout();
-      wasReconnectingSystem = transport.getIsReconnectingDS();
-
-      // cache these settings for use in send()
-      mcastEnabled = transport.isMcastEnabled();
-      tcpDisabled = transport.isTcpDisabled();
-      ackSevereAlertThreshold = config.getAckSevereAlertThreshold();
-      ackWaitThreshold = config.getAckWaitThreshold();
-
-      if (!tcpDisabled) {
-        dcReceiver = new MyDCReceiver(listener);
-      }
-
-      surpriseMemberTimeout =
-          Math.max(20 * DistributionConfig.DEFAULT_MEMBER_TIMEOUT, 20 * config.getMemberTimeout());
-      surpriseMemberTimeout =
-          Integer.getInteger(DistributionConfig.GEMFIRE_PREFIX + "surprise-member-timeout",
-              surpriseMemberTimeout).intValue();
-
-    }
-
-    /* Service interface */
-    @Override
-    public void start() {
-      DistributionConfig config = services.getConfig().getDistributionConfig();
-
-      int dcPort = 0;
-      if (!tcpDisabled) {
-        directChannel = new DirectChannel(GMSMembershipManager.this, dcReceiver, config);
-        dcPort = directChannel.getPort();
-      }
-      services.getMessenger().getMemberID().setDirectPort(dcPort);
-    }
-
-    /* Service interface */
-    @Override
-    public void started() {
-      startCleanupTimer();
-      // see if a locator was started and put it in GMS Services
-      InternalLocator l = (InternalLocator) org.apache.geode.distributed.Locator.getLocator();
-      if (l != null && l.getLocatorHandler() != null) {
-        if (l.getLocatorHandler().setServices(services)) {
-          services.setLocator(((GMSLocatorAdapter) l.getLocatorHandler()).getGMSLocator());
-        }
-      }
-    }
-
-    /* Service interface */
-    @Override
-    public void stop() {
-      // [bruce] Do not null out the channel w/o adding appropriate synchronization
-
-      logger.debug("MembershipManager closing");
-
-      if (directChannel != null) {
-        directChannel.disconnect(null);
-
-        if (address != null) {
-          // Make sure that channel information is consistent
-          // Probably not important in this particular case, but just
-          // to be consistent...
-          latestViewWriteLock.lock();
-          try {
-            destroyMember(address, "orderly shutdown");
-          } finally {
-            latestViewWriteLock.unlock();
-          }
-        }
-      }
-
-      if (cleanupTimer != null) {
-        cleanupTimer.cancel();
-      }
-
-      if (logger.isDebugEnabled()) {
-        logger.debug("Membership: channel closed");
-      }
-    }
-
-    /* Service interface */
-    @Override
-    public void stopped() {}
-
-    /* Service interface */
-    @Override
-    public void installView(GMSMembershipView v) {
-      if (latestViewId < 0 && !isConnected()) {
-        latestViewId = v.getViewId();
-        latestView = createGeodeView(v);
-        logger.debug("MembershipManager: initial view is {}", latestView);
-      } else {
-        handleOrDeferViewEvent(createGeodeView(v));
-      }
-    }
-
-    @Override
-    public void beSick() {
-      // no-op
-    }
-
-    @Override
-    public void playDead() {
-      // no-op
-    }
-
-    @Override
-    public void beHealthy() {
-      // no-op
-    }
-
-    @Override
-    public void emergencyClose() {
-      // no-op
-    }
-
-
-    @Override
-    public void joinDistributedSystem() {
-      long startTime = System.currentTimeMillis();
-
-      try {
-        join();
-      } catch (RuntimeException e) {
-        if (directChannel != null) {
-          directChannel.disconnect(e);
-        }
-        throw e;
-      }
-
-      GMSMembershipManager.this.address =
-          new InternalDistributedMember(
-              new GMSMemberAdapter(services.getMessenger().getMemberID()));
-
-      if (directChannel != null) {
-        directChannel.setLocalAddr(address);
-      }
-
-      GMSMembershipManager.this.hasJoined = true;
-
-      // in order to debug startup issues we need to announce the membership
-      // ID as soon as we know it
-      logger.info("Finished joining (took {}ms).",
-          "" + (System.currentTimeMillis() - startTime));
-
-    }
-
-    @Override
-    public void memberSuspected(GMSMember initiator,
-        GMSMember suspect, String reason) {
-      SuspectMember s = new SuspectMember(initiator, suspect, reason);
-      handleOrDeferSuspect(s);
-    }
-
-
-    @Override
-    public void forceDisconnect(final String reason) {
-      if (GMSMembershipManager.this.shutdownInProgress || isJoining()) {
-        return; // probably a race condition
-      }
-
-      setShutdown();
-
-      final Exception shutdownCause = new ForcedDisconnectException(reason);
-
-      // cache the exception so it can be appended to ShutdownExceptions
-      services.setShutdownCause(shutdownCause);
-      services.getCancelCriterion().cancel(reason);
-
-      AlertAppender.getInstance().stopSession();
-
-      if (!inhibitForceDisconnectLogging) {
-        logger.fatal(
-            String.format("Membership service failure: %s", reason),
-            shutdownCause);
-      }
-
-      if (this.isReconnectingDS()) {
-        logger.info("Reconnecting system failed to connect");
-        uncleanShutdown(reason,
-            new ForcedDisconnectException("reconnecting system failed to connect"));
-        return;
-      }
-
-      listener.saveConfig();
-
-      Thread reconnectThread = new LoggingThread("DisconnectThread", false, () -> {
-        // stop server locators immediately since they may not have correct
-        // information. This has caused client failures in bridge/wan
-        // network-down testing
-        InternalLocator loc = (InternalLocator) Locator.getLocator();
-        if (loc != null) {
-          loc.stop(true, !services.getConfig().getDistributionConfig().getDisableAutoReconnect(),
-              false);
-        }
-        uncleanShutdown(reason, shutdownCause);
-      });
-      reconnectThread.start();
-    }
-
-
-    /** this is invoked by JoinLeave when there is a loss of quorum in the membership system */
-    @Override
-    public void quorumLost(Collection<GMSMember> failures, GMSMembershipView view) {
-      // notify of quorum loss if split-brain detection is enabled (meaning we'll shut down) or
-      // if the loss is more than one member
-
-      boolean notify = failures.size() > 1;
-      if (!notify) {
-        notify = services.getConfig().isNetworkPartitionDetectionEnabled();
-      }
-
-      if (notify) {
-        List<InternalDistributedMember> remaining =
-            gmsMemberListToInternalDistributedMemberList(view.getMembers());
-        remaining.removeAll(failures);
-
-        if (inhibitForceDisconnectLogging) {
-          if (logger.isDebugEnabled()) {
-            logger
-                .debug("<ExpectedException action=add>Possible loss of quorum</ExpectedException>");
-          }
-        }
-        logger.fatal("Possible loss of quorum due to the loss of {} cache processes: {}",
-            failures.size(), failures);
-        if (inhibitForceDisconnectLogging) {
-          if (logger.isDebugEnabled()) {
-            logger.debug(
-                "<ExpectedException action=remove>Possible loss of quorum</ExpectedException>");
-          }
-        }
-
-
-        try {
-          listener.quorumLost(
-              gmsMemberCollectionToInternalDistributedMemberSet(failures),
-              remaining);
-        } catch (CancelException e) {
-          // safe to ignore - a forced disconnect probably occurred
-        }
-      }
-    }
-
-    @Override
-    public void processMessage(GMSMessage msg) {
-      DistributionMessage distributionMessage =
-          (DistributionMessage) ((GMSMessageAdapter) msg).getGeodeMessage();
-      // UDP messages received from surprise members will have partial IDs.
-      // Attempt to replace these with full IDs from the MembershipManager's view.
-      if (distributionMessage.getSender().isPartial()) {
-        replacePartialIdentifierInMessage(distributionMessage);
-      }
-
-      handleOrDeferMessage(distributionMessage);
-    }
-
-    @Override
-    public boolean isMulticastAllowed() {
-      return !disableMulticastForRollingUpgrade;
-    }
-
-    @Override
-    public boolean shutdownInProgress() {
-      // Impossible condition (bug36329): make sure that we check DM's
-      // view of shutdown here
-      ClusterDistributionManager dm = listener.getDM();
-      return shutdownInProgress || (dm != null && dm.shutdownInProgress());
-    }
-
-    @Override
-    public boolean isReconnectingDS() {
-      return wasReconnectingSystem && !reconnectCompleted;
-    }
-
-    @Override
-    public boolean isShutdownStarted() {
-      ClusterDistributionManager dm = listener.getDM();
-      return shutdownInProgress || (dm != null && dm.isCloseInProgress());
-    }
-
-    @Override
-    public GMSMessage wrapMessage(Object receivedMessage) {
-      if (receivedMessage instanceof GMSMessage) {
-        return (GMSMessage) receivedMessage;
-      }
-      // Geode's DistributionMessage class isn't known by GMS classes
-      return new GMSMessageAdapter((DistributionMessage) receivedMessage);
-    }
-
-    @Override
-    public DataSerializableFixedID unwrapMessage(GMSMessage messageToSend) {
-      if (messageToSend instanceof GMSMessageAdapter) {
-        return ((GMSMessageAdapter) messageToSend).getGeodeMessage();
-      }
-      return (DataSerializableFixedID) messageToSend;
-    }
-
   }
 }

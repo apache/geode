@@ -25,7 +25,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import org.apache.geode.distributed.internal.LocatorStats;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.NetView;
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 
 public class GMSLocatorIntegrationTest {
@@ -34,13 +34,13 @@ public class GMSLocatorIntegrationTest {
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   private TcpServer tcpServer;
-  private GMSMembershipView view;
+  private NetView view;
   private GMSLocator gmsLocator;
 
   @Before
   public void setUp() {
     tcpServer = mock(TcpServer.class);
-    view = new GMSMembershipView();
+    view = new NetView();
     gmsLocator =
         new GMSLocator(null, null, false, false, new LocatorStats(), "",
             temporaryFolder.getRoot().toPath());
@@ -53,14 +53,14 @@ public class GMSLocatorIntegrationTest {
 
   @Test
   public void initDefinesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(String.valueOf(tcpServer.getPort()));
+    gmsLocator.init(tcpServer);
 
     assertThat(gmsLocator.getViewFile()).isNotNull();
   }
 
   @Test
   public void installViewCreatesViewFileInSpecifiedDirectory() {
-    gmsLocator.init(String.valueOf(tcpServer.getPort()));
+    gmsLocator.init(tcpServer);
 
     gmsLocator.installView(view);
 

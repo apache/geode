@@ -18,18 +18,20 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.DataSerializer;
+import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 
-public class FinalCheckPassedMessage extends AbstractGMSMessage {
+public class FinalCheckPassedMessage extends HighPriorityDistributionMessage {
 
-  private GMSMember suspect;
+  private InternalDistributedMember suspect;
 
   public FinalCheckPassedMessage() {}
 
-  public FinalCheckPassedMessage(GMSMember recipient,
-      GMSMember suspect) {
+  public FinalCheckPassedMessage(InternalDistributedMember recipient,
+      InternalDistributedMember suspect) {
     super();
     setRecipient(recipient);
     this.suspect = suspect;
@@ -38,6 +40,11 @@ public class FinalCheckPassedMessage extends AbstractGMSMessage {
   @Override
   public int getDSFID() {
     return FINAL_CHECK_PASSED_MESSAGE;
+  }
+
+  @Override
+  public void process(ClusterDistributionManager dm) {
+    throw new IllegalStateException("this message is not intended to execute in a thread pool");
   }
 
   @Override
@@ -52,15 +59,15 @@ public class FinalCheckPassedMessage extends AbstractGMSMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(suspect, out);
+    DataSerializer.writeObject(suspect, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    suspect = GMSUtil.readMemberID(in);
+    suspect = (InternalDistributedMember) DataSerializer.readObject(in);
   }
 
-  public GMSMember getSuspect() {
+  public InternalDistributedMember getSuspect() {
     return suspect;
   }
 }

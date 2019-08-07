@@ -17,9 +17,11 @@ package org.apache.geode.distributed.internal.membership.gms.interfaces;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.messenger.GMSQuorumChecker;
+import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.distributed.internal.DistributionMessage;
+import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.NetView;
+import org.apache.geode.distributed.internal.membership.QuorumChecker;
 
 public interface Messenger extends Service {
   /**
@@ -31,34 +33,34 @@ public interface Messenger extends Service {
    * sends an asynchronous message when the membership view may not have been established. Returns
    * destinations that did not receive the message due to no longer being in the view
    */
-  Set<GMSMember> send(GMSMessage m, GMSMembershipView alternateView);
+  Set<InternalDistributedMember> send(DistributionMessage m, NetView alternateView);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view
    */
-  Set<GMSMember> send(GMSMessage m);
+  Set<InternalDistributedMember> send(DistributionMessage m);
 
   /**
    * sends an asynchronous message. Returns destinations that did not receive the message due to no
    * longer being in the view. Does not guarantee delivery of the message (no retransmissions)
    */
-  Set<GMSMember> sendUnreliably(GMSMessage m);
+  Set<InternalDistributedMember> sendUnreliably(DistributionMessage m);
 
   /**
    * returns the endpoint ID for this member
    */
-  GMSMember getMemberID();
+  InternalDistributedMember getMemberID();
 
   /**
    * check to see if a member ID has already been used
    */
-  boolean isOldMembershipIdentifier(GMSMember id);
+  boolean isOldMembershipIdentifier(DistributedMember id);
 
   /**
    * retrieves the quorum checker that is used during auto-reconnect attempts
    */
-  GMSQuorumChecker getQuorumChecker();
+  QuorumChecker getQuorumChecker();
 
   /**
    * test whether multicast is not only turned on but is working
@@ -76,7 +78,7 @@ public interface Messenger extends Service {
    * @param state messaging state is stored in this map
    * @param includeMulticast whether to record multicast state
    */
-  void getMessageState(GMSMember member, Map<String, Long> state,
+  void getMessageState(InternalDistributedMember member, Map<String, Long> state,
       boolean includeMulticast);
 
   /**
@@ -86,7 +88,7 @@ public interface Messenger extends Service {
    * @param member the member flushing operations to this member
    * @param state the state of that member's outgoing messaging to this member
    */
-  void waitForMessageState(GMSMember member, Map<String, Long> state)
+  void waitForMessageState(InternalDistributedMember member, Map<String, Long> state)
       throws InterruptedException;
 
   /**
@@ -94,14 +96,14 @@ public interface Messenger extends Service {
    *
    * @return byte[] public key for member
    */
-  byte[] getPublicKey(GMSMember mbr);
+  byte[] getPublicKey(InternalDistributedMember mbr);
 
   /**
    * Set public key of member.
    *
    */
 
-  void setPublicKey(byte[] publickey, GMSMember mbr);
+  void setPublicKey(byte[] publickey, InternalDistributedMember mbr);
 
   /**
    * Set cluster key in local member.Memebr calls when it gets cluster key in join response
