@@ -118,7 +118,7 @@ $PWD/bin/tomcat-juli.jar
 Start the locator and server using `gfsh`:
 
 ``` pre
-$ gfsh start locator --name=locator1
+$ gfsh start locator --name=locator1 --classpath=$CLASSPATH
 $ gfsh start server --name=server1 --locators=localhost[10334] --server-port=0 \
   --classpath=$CLASSPATH
 ```
