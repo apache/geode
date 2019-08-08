@@ -14,8 +14,6 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.logging.log4j.core.config.ConfigurationFactory.CONFIGURATION_FILE_PROPERTY;
-
 import java.io.File;
 import java.net.URL;
 import java.util.List;
@@ -36,13 +34,15 @@ import org.apache.geode.management.internal.cli.CliUtil;
 class DiskStoreCommandsUtils {
   private static final Logger logger = LogService.getLogger();
 
+  private static final String LOG4J_CONFIGURATION_FILE_PROPERTY = "log4j.configurationFile";
+
   static void configureLogging(final List<String> commandList) {
-    String configFilePropertyValue = System.getProperty(CONFIGURATION_FILE_PROPERTY);
+    String configFilePropertyValue = System.getProperty(LOG4J_CONFIGURATION_FILE_PROPERTY);
     if (StringUtils.isBlank(configFilePropertyValue)) {
       URL configUrl = LogService.class.getResource(Configuration.CLI_CONFIG);
       configFilePropertyValue = configUrl.toString();
     }
-    commandList.add("-D" + CONFIGURATION_FILE_PROPERTY + "=" + configFilePropertyValue);
+    commandList.add("-D" + LOG4J_CONFIGURATION_FILE_PROPERTY + "=" + configFilePropertyValue);
   }
 
   static String validatedDirectories(String[] diskDirs) {

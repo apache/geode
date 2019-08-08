@@ -15,6 +15,7 @@
 package org.apache.geode.internal.alerting;
 
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 

@@ -15,6 +15,8 @@
 package org.apache.geode.internal.alerting;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static org.apache.geode.alerting.AlertLevel.NONE;
+import static org.apache.geode.alerting.AlertLevel.SEVERE;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -22,8 +24,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.mbeanServer;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;

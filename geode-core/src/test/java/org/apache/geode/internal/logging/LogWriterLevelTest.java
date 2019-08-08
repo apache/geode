@@ -14,17 +14,17 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
-import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
-import static org.apache.geode.internal.logging.LogWriterLevel.ERROR;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINER;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
-import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
-import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
-import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
-import static org.apache.geode.internal.logging.LogWriterLevel.find;
+import static org.apache.geode.logging.LogWriterLevel.ALL;
+import static org.apache.geode.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.logging.LogWriterLevel.ERROR;
+import static org.apache.geode.logging.LogWriterLevel.FINE;
+import static org.apache.geode.logging.LogWriterLevel.FINER;
+import static org.apache.geode.logging.LogWriterLevel.FINEST;
+import static org.apache.geode.logging.LogWriterLevel.INFO;
+import static org.apache.geode.logging.LogWriterLevel.NONE;
+import static org.apache.geode.logging.LogWriterLevel.SEVERE;
+import static org.apache.geode.logging.LogWriterLevel.WARNING;
+import static org.apache.geode.logging.LogWriterLevel.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.Serializable;
@@ -33,6 +33,7 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.logging.LogWriterLevel;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

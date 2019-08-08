@@ -14,14 +14,6 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
-import static org.apache.geode.internal.logging.LogWriterLevel.ERROR;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINER;
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
-import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
-import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
-import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
 
 import java.util.logging.Handler;
 
@@ -39,8 +31,8 @@ import org.apache.geode.i18n.LogWriterI18n;
 import org.apache.geode.i18n.StringId;
 import org.apache.geode.internal.logging.GemFireHandler;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.logging.LogWriterLevel;
 
 /**
  * Implements GemFireLogger with custom levels while also bridging LogWriter and LogWriterI18n to
@@ -1698,21 +1690,21 @@ public class LogWriterLogger extends FastLogger implements InternalLogWriter, Ge
     final Level log4jLevel = logWrapper.getLevel();
 
     if (log4jLevel == Level.OFF) {
-      return NONE.intLevel();
+      return LogWriterLevel.NONE.intLevel();
     } else if (log4jLevel == Level.FATAL) {
-      return SEVERE.intLevel();
+      return LogWriterLevel.SEVERE.intLevel();
     } else if (log4jLevel == Level.ERROR) {
-      return ERROR.intLevel();
+      return LogWriterLevel.ERROR.intLevel();
     } else if (log4jLevel == Level.WARN) {
-      return WARNING.intLevel();
+      return LogWriterLevel.WARNING.intLevel();
     } else if (log4jLevel == Level.INFO) {
-      return INFO.intLevel();
+      return LogWriterLevel.INFO.intLevel();
     } else if (log4jLevel == Level.DEBUG) {
-      return FINE.intLevel();
+      return LogWriterLevel.FINE.intLevel();
     } else if (log4jLevel == Level.TRACE) {
-      return FINER.intLevel();
+      return LogWriterLevel.FINER.intLevel();
     } else if (log4jLevel == Level.ALL) {
-      return ALL.intLevel();
+      return LogWriterLevel.ALL.intLevel();
     }
 
     throw new IllegalStateException(

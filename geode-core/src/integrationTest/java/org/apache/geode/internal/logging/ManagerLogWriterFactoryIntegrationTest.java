@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
-import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
+import static org.apache.geode.logging.LogWriterLevel.FINE;
+import static org.apache.geode.logging.LogWriterLevel.WARNING;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

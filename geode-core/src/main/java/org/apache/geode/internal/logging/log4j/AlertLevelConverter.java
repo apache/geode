@@ -14,14 +14,15 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
-import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
+
+import static org.apache.geode.alerting.AlertLevel.ERROR;
+import static org.apache.geode.alerting.AlertLevel.NONE;
+import static org.apache.geode.alerting.AlertLevel.SEVERE;
+import static org.apache.geode.alerting.AlertLevel.WARNING;
 
 import org.apache.logging.log4j.Level;
 
-import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.alerting.AlertLevel;
 
 /**
  * Converts between {@link AlertLevel}s and Log4J2 {@code Level}s.

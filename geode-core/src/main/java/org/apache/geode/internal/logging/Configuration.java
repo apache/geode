@@ -16,10 +16,12 @@ package org.apache.geode.internal.logging;
 
 import static org.apache.geode.internal.lang.SystemPropertyHelper.GEODE_PREFIX;
 import static org.apache.geode.internal.logging.LogLevelUpdateOccurs.ONLY_WHEN_USING_DEFAULT_CONFIG;
-import static org.apache.geode.internal.logging.LogLevelUpdateScope.GEODE_LOGGERS;
+import static org.apache.geode.logging.LogLevelUpdateScope.GEODE_LOGGERS;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.Cache;
+import org.apache.geode.logging.LogLevelUpdateScope;
+import org.apache.geode.logging.LogWriterLevel;
 
 /**
  * Provides logging configuration by managing a {@link ProviderAgent} for the logging backend.

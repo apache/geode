@@ -17,6 +17,7 @@ geode-common-0.0.0.jar
 geode-connectors-0.0.0.jar
 geode-core-0.0.0.jar
 geode-cq-0.0.0.jar
+geode-log4j-0.0.0.jar
 geode-lucene-0.0.0.jar
 geode-redis-0.0.0.jar
 geode-memcached-0.0.0.jar

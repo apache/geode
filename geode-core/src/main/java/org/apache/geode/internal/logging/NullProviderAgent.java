@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.logging;
 
+import org.apache.geode.logging.LogLevelUpdateScope;
+
 /**
  * {@link ProviderAgent} that does nothing.
  */

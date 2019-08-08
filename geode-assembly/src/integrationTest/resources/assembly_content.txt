@@ -146,6 +146,10 @@ javadoc/org/apache/geode/admin/jmx/package-tree.html
 javadoc/org/apache/geode/admin/package-frame.html
 javadoc/org/apache/geode/admin/package-summary.html
 javadoc/org/apache/geode/admin/package-tree.html
+javadoc/org/apache/geode/alerting/AlertLevel.html
+javadoc/org/apache/geode/alerting/package-frame.html
+javadoc/org/apache/geode/alerting/package-summary.html
+javadoc/org/apache/geode/alerting/package-tree.html
 javadoc/org/apache/geode/annotations/Experimental.html
 javadoc/org/apache/geode/annotations/Immutable.html
 javadoc/org/apache/geode/annotations/VisibleForTesting.html
@@ -641,6 +645,11 @@ javadoc/org/apache/geode/lang/Identifiable.html
 javadoc/org/apache/geode/lang/package-frame.html
 javadoc/org/apache/geode/lang/package-summary.html
 javadoc/org/apache/geode/lang/package-tree.html
+javadoc/org/apache/geode/logging/LogLevelUpdateScope.html
+javadoc/org/apache/geode/logging/LogWriterLevel.html
+javadoc/org/apache/geode/logging/package-frame.html
+javadoc/org/apache/geode/logging/package-summary.html
+javadoc/org/apache/geode/logging/package-tree.html
 javadoc/org/apache/geode/management/AlreadyRunningException.html
 javadoc/org/apache/geode/management/AsyncEventQueueMXBean.html
 javadoc/org/apache/geode/management/BackupStatus.html
@@ -682,10 +691,10 @@ javadoc/org/apache/geode/management/api/ClusterManagementListOperationsResult.ht
 javadoc/org/apache/geode/management/api/ClusterManagementListResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperation.html
 javadoc/org/apache/geode/management/api/ClusterManagementOperationResult.html
-javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
-javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementRealizationException.html
 javadoc/org/apache/geode/management/api/ClusterManagementRealizationResult.html
+javadoc/org/apache/geode/management/api/ClusterManagementResult.StatusCode.html
+javadoc/org/apache/geode/management/api/ClusterManagementResult.html
 javadoc/org/apache/geode/management/api/ClusterManagementService.html
 javadoc/org/apache/geode/management/api/ConfigurationResult.html
 javadoc/org/apache/geode/management/api/CorrespondWith.html
@@ -941,6 +950,7 @@ lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
 lib/geode-dependencies.jar
 lib/geode-jca-0.0.0.rar
+lib/geode-log4j-0.0.0.jar
 lib/geode-lucene-0.0.0.jar
 lib/geode-management-0.0.0.jar
 lib/geode-memcached-0.0.0.jar

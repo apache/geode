@@ -14,10 +14,10 @@
  */
 package org.apache.geode.internal.alerting;
 
+import static org.apache.geode.alerting.AlertLevel.SEVERE;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 

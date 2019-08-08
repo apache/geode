@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.alerting;
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
 
 /**

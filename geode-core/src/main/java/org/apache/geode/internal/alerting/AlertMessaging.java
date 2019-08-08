@@ -18,6 +18,7 @@ import java.util.Date;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionManager;

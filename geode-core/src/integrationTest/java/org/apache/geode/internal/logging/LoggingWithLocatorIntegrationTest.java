@@ -18,8 +18,8 @@ import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTE
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+import static org.apache.geode.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.logging.LogWriterLevel.INFO;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 

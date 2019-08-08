@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Level;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.LogWriterLevel;
+import org.apache.geode.logging.LogWriterLevel;
 
 /**
  * Provides lookup of any string representation of a logging level to Log4J2 {@code Level} or

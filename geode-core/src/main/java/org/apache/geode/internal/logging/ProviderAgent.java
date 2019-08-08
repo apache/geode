@@ -15,6 +15,7 @@
 package org.apache.geode.internal.logging;
 
 import org.apache.geode.distributed.ConfigurationProperties;
+import org.apache.geode.logging.LogLevelUpdateScope;
 
 /**
  * Provides custom configuration of the logging backend for Geode Logging.

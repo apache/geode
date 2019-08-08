@@ -14,18 +14,21 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
-import static org.apache.geode.internal.logging.LogWriterLevel.ERROR;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINE;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
-import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
-import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
-import static org.apache.geode.internal.logging.LogWriterLevel.WARNING;
+
+import static org.apache.geode.logging.LogWriterLevel.ALL;
+import static org.apache.geode.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.logging.LogWriterLevel.ERROR;
+import static org.apache.geode.logging.LogWriterLevel.FINE;
+import static org.apache.geode.logging.LogWriterLevel.FINER;
+import static org.apache.geode.logging.LogWriterLevel.FINEST;
+import static org.apache.geode.logging.LogWriterLevel.INFO;
+import static org.apache.geode.logging.LogWriterLevel.NONE;
+import static org.apache.geode.logging.LogWriterLevel.SEVERE;
+import static org.apache.geode.logging.LogWriterLevel.WARNING;
 
 import org.apache.logging.log4j.Level;
 
-import org.apache.geode.internal.logging.LogWriterLevel;
+import org.apache.geode.logging.LogWriterLevel;
 
 /**
  * Converts between {@link LogWriterLevel}s and Log4J2 {@code Level}s.

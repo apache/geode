@@ -18,6 +18,7 @@ import static org.apache.geode.internal.admin.remote.AlertListenerMessage.create
 
 import java.util.Date;
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.remote.AlertListenerMessage;

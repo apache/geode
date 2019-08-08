@@ -14,11 +14,11 @@
  */
 package org.apache.geode.internal.alerting;
 
-import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
-import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
-import static org.apache.geode.internal.alerting.AlertLevel.find;
+import static org.apache.geode.alerting.AlertLevel.ERROR;
+import static org.apache.geode.alerting.AlertLevel.NONE;
+import static org.apache.geode.alerting.AlertLevel.SEVERE;
+import static org.apache.geode.alerting.AlertLevel.WARNING;
+import static org.apache.geode.alerting.AlertLevel.find;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,7 +28,8 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LogWriterLevel;
+import org.apache.geode.alerting.AlertLevel;
+import org.apache.geode.logging.LogWriterLevel;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
 /**

@@ -16,7 +16,7 @@ package org.apache.geode.internal.logging;
 
 import static org.apache.geode.internal.logging.Configuration.LOG_LEVEL_UPDATE_OCCURS_PROPERTY;
 import static org.apache.geode.internal.logging.Configuration.LOG_LEVEL_UPDATE_SCOPE_PROPERTY;
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+import static org.apache.geode.logging.LogWriterLevel.INFO;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.isA;
@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.RestoreSystemProperties;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.logging.LogLevelUpdateScope;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

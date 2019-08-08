@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.alerting.AlertLevel;
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.test.junit.categories.AlertingTest;
 import org.apache.geode.test.junit.categories.LoggingTest;
 

@@ -1,5 +1,6 @@
 org/apache/geode/GemFireCacheException
 org/apache/geode/admin/AlertLevel
+org/apache/geode/alerting/AlertLevel
 org/apache/geode/cache/operations/internal/UpdateOnlyMap
 org/apache/geode/cache/query/internal/index/CompactRangeIndex$1
 org/apache/geode/cache/query/internal/DefaultQuery$TestHook$SPOTS
@@ -19,7 +20,6 @@ org/apache/geode/internal/ExitCode
 org/apache/geode/internal/JarDeployer
 org/apache/geode/internal/ObjIdConcurrentMap
 org/apache/geode/internal/ObjIdConcurrentMap$Segment
-org/apache/geode/internal/alerting/AlertLevel
 org/apache/geode/internal/alerting/AlertingSession$State
 org/apache/geode/internal/cache/DiskStoreMonitor$DiskState
 org/apache/geode/internal/cache/InitialImageOperation$GIITestHook
@@ -44,9 +44,7 @@ org/apache/geode/internal/datasource/FacetsJCAConnectionManagerImpl
 org/apache/geode/internal/exception/InvalidExecutionContextException
 org/apache/geode/internal/logging/Banner$BannerHeader
 org/apache/geode/internal/logging/LogLevelUpdateOccurs
-org/apache/geode/internal/logging/LogLevelUpdateScope
 org/apache/geode/internal/logging/LogMessageRegex$Group
-org/apache/geode/internal/logging/LogWriterLevel
 org/apache/geode/internal/logging/SessionContext$State
 org/apache/geode/internal/logging/log4j/FastLogger
 org/apache/geode/internal/logging/log4j/LogWriterLogger
@@ -68,6 +66,8 @@ org/apache/geode/internal/shared/TCPSocketOptions
 org/apache/geode/internal/statistics/platform/LinuxProcFsStatistics$CPU
 org/apache/geode/internal/tcp/VersionedByteBufferInputStream
 org/apache/geode/internal/util/concurrent/StoppableReadWriteLock
+org/apache/geode/logging/LogLevelUpdateScope
+org/apache/geode/logging/LogWriterLevel
 org/apache/geode/management/api/ClusterManagementException
 org/apache/geode/management/api/ClusterManagementRealizationException
 org/apache/geode/management/internal/cli/commands/ShowMetricsCommand$Category

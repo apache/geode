@@ -14,15 +14,15 @@
  */
 package org.apache.geode.internal.alerting;
 
+import static org.apache.geode.alerting.AlertLevel.ERROR;
+import static org.apache.geode.alerting.AlertLevel.NONE;
+import static org.apache.geode.alerting.AlertLevel.SEVERE;
+import static org.apache.geode.alerting.AlertLevel.WARNING;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.addListener;
 import static org.apache.geode.internal.admin.remote.AlertListenerMessage.removeListener;
-import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
-import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.NetworkUtils.getServerHostName;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -21,6 +21,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.alerting.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.test.junit.categories.AlertingTest;
 
