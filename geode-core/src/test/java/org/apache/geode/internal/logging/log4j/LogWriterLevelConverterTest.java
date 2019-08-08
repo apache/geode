@@ -14,8 +14,8 @@
  */
 package org.apache.geode.internal.logging.log4j;
 
-import static org.apache.geode.internal.logging.log4j.LogWriterLevelConverter.fromLevel;
-import static org.apache.geode.internal.logging.log4j.LogWriterLevelConverter.toLevel;
+import static org.apache.geode.logging.internal.log4j.LogWriterLevelConverter.fromLevel;
+import static org.apache.geode.logging.internal.log4j.LogWriterLevelConverter.toLevel;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -23,7 +23,8 @@ import org.apache.logging.log4j.Level;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.logging.LogWriterLevel;
+import org.apache.geode.logging.internal.log4j.LogWriterLevelConverter;
+import org.apache.geode.logging.spi.LogWriterLevel;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
 /**

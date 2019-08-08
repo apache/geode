@@ -20,7 +20,7 @@ import java.util.logging.LogRecord;
 
 import org.apache.geode.GemFireException;
 import org.apache.geode.LogWriter;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 
 /**
  * Implementation of the standard JDK handler that publishes a log record to a LogWriterImpl. Note

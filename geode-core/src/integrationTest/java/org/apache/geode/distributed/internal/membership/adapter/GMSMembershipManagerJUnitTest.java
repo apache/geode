@@ -38,9 +38,9 @@ import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -218,7 +218,7 @@ public class GMSMembershipManagerJUnitTest {
   @Test
   public void testSendAdminMessageFailsDuringShutdown() throws Exception {
     AlertListenerMessage m = AlertListenerMessage.create(mockMembers[0], 1,
-        new Date(System.currentTimeMillis()), "thread", "", 1L, "", "");
+        Instant.now(), "thread", "", 1L, "", "");
     manager.getGMSManager().start();
     manager.getGMSManager().started();
     manager.getGMSManager().installView(createView(myMemberId, 1, members));

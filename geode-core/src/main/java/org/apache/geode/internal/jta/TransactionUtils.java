@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.jta;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.SEVERE;
+import static org.apache.geode.logging.spi.LogWriterLevel.SEVERE;
 
 import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MakeNotStatic;

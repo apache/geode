@@ -77,17 +77,16 @@ import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
-import org.apache.geode.internal.statistics.StatisticsConfig;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
+import org.apache.geode.logging.spi.LogConfig;
+import org.apache.geode.logging.spi.LogConfigListener;
+import org.apache.geode.logging.spi.LogConfigSupplier;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.internal.AgentUtil;
 import org.apache.geode.management.internal.JmxManagerLocator;
@@ -100,6 +99,7 @@ import org.apache.geode.management.internal.configuration.messages.ClusterManage
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusRequest;
 import org.apache.geode.management.internal.configuration.messages.SharedConfigurationStatusResponse;
 import org.apache.geode.security.AuthTokenEnabledComponents;
+import org.apache.geode.statistics.StatisticsConfig;
 
 /**
  * Provides the implementation of a distribution {@code Locator} as well as internal-only

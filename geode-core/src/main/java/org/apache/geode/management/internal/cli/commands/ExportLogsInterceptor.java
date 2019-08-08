@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.management.cli.Result;
 import org.apache.geode.management.internal.cli.AbstractCliAroundInterceptor;
 import org.apache.geode.management.internal.cli.GfshParseResult;

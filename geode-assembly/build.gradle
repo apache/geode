@@ -32,6 +32,7 @@ def dependentProjectNames = [
   ':geode-serialization',
   ':geode-core',
   ':geode-cq',
+  ':geode-log4j',
   ':geode-lucene',
   ':geode-memcached',
   ':geode-old-client-support',
@@ -39,7 +40,7 @@ def dependentProjectNames = [
   ':geode-protobuf-messages',
   ':geode-rebalancer',
   ':geode-redis',
-  ':geode-wan',
+  ':geode-wan'
 ]
 
 // These other dependencies are explicitly referenced throughout other copySpec
@@ -160,6 +161,7 @@ dependencies {
   geodeArchives project(':geode-connectors')
   geodeArchives project(':geode-core')
   geodeArchives project(':geode-cq')
+  geodeArchives project(':geode-log4j')
   geodeArchives project(':geode-lucene')
   geodeArchives project(':geode-management')
   geodeArchives project(':geode-memcached')
@@ -186,6 +188,9 @@ dependencies {
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  testCompile(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   testRuntime(project(':geode-old-versions'))
 
 
@@ -193,6 +198,9 @@ dependencies {
 
 
   integrationTestCompile(project(':geode-core'))
+  integrationTestCompile(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
@@ -209,6 +217,9 @@ dependencies {
 
   distributedTestImplementation(project(':geode-serialization'))
   distributedTestCompile(project(':geode-core'))
+  distributedTestCompile(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   distributedTestCompile(project(':geode-dunit')){
     exclude module: 'geode-core'
   }
@@ -517,7 +528,7 @@ distributions {
         into('config')
         from defaultCacheConfig
         from defaultDistributionConfig
-        from(project(':geode-core').sourceSets.main.resources.files.find {
+        from(project(':geode-log4j').sourceSets.main.resources.files.find {
           it.name == 'log4j2.xml'
         })
       }
