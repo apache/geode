@@ -15,14 +15,20 @@
 
 package org.apache.geode.management.internal;
 
+import static org.apache.geode.internal.net.SSLConfigurationFactory.GEODE_SSL_CONFIG_PROPERTIES;
+
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.net.Socket;
 import java.rmi.server.RMIClientSocketFactory;
+import java.util.Properties;
 
 import javax.rmi.ssl.SslRMIClientSocketFactory;
 
 import org.apache.geode.annotations.Immutable;
+import org.apache.geode.internal.admin.SSLConfig;
+import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -44,18 +50,26 @@ public class ContextAwareSSLRMIClientSocketFactory implements RMIClientSocketFac
   @Override
   public Socket createSocket(String host, int port) throws IOException {
     SocketCreator socketCreator;
+
     try {
       socketCreator =
           SocketCreatorFactory.getSocketCreatorForComponent(SecurableCommunicationChannel.JMX);
+      return socketCreator.connectForClient(host, port, 0);
     } catch (Exception exception) {
-      /*
-       * In the context of a gfsh VM the javax.net.ssl properties are used to configure SSL
-       * appropriately - see the constructor for JMXOperationInvoker.
-       */
-      return defaultFactory.createSocket(host, port);
+      try {
+        // In gfsh the ssl config is stored within the GEODE_SSL_CONFIG_PROPERTIES system property.
+        // See the constructor for JMXOperationInvoker.
+        Properties gfProperties = new Properties();
+        gfProperties.load(new StringReader(System.getProperty(GEODE_SSL_CONFIG_PROPERTIES)));
+        SSLConfig sslConfig = SSLConfigurationFactory
+            .getSSLConfigForComponent(gfProperties, SecurableCommunicationChannel.JMX);
+        socketCreator = new SocketCreator(sslConfig);
+        return socketCreator.connectForClient(host, port, 0);
+      } catch (Exception finalException) {
+        // Back off and use the default factory (javax.net.ssl properties are used to configure
+        // SSL).
+        return defaultFactory.createSocket(host, port);
+      }
     }
-
-    return socketCreator.connectForClient(host, port, 0);
   }
-
 }
