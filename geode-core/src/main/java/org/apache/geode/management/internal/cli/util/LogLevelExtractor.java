@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Level;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.LogLevel;
 
 /**
  * this will extract convert the deprecated InternalLogWriter's level into log4j level as well.

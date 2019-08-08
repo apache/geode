@@ -96,21 +96,26 @@ dependencies {
   providedCompile('commons-logging:commons-logging')
 
 
+  testCompile(project(':geode-core'))
   testCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  testCompile(project(':geode-core'))
+  testImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   testCompile('org.springframework:spring-test')
   testCompile('org.powermock:powermock-core')
   testCompile('org.powermock:powermock-module-junit4')
   testCompile('org.powermock:powermock-api-mockito2')
 
 
-
+  integrationTestCompile(project(':geode-core'))
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
-  integrationTestCompile(project(':geode-core'))
+  integrationTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-pulse:geode-pulse-test'))
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
@@ -118,13 +123,15 @@ dependencies {
   integrationTestCompile('org.springframework:spring-test')
 
 
+  uiTestRuntime(project(':geode-core'))
   uiTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  uiTestImplementation(project(':geode-log4j')) {
     exclude module: 'geode-core'
   }
   uiTestCompile(project(':geode-pulse:geode-pulse-test'))
   uiTestCompile('org.seleniumhq.selenium:selenium-remote-driver')
-
-  uiTestRuntime(project(':geode-core'))
 }
 
 def generatedResources = "$buildDir/generated-resources/main"

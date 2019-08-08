@@ -70,6 +70,7 @@ import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.alerting.internal.spi.AlertingAction;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -89,7 +90,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequest
 import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;

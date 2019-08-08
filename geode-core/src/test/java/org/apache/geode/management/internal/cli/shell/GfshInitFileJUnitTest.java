@@ -89,7 +89,7 @@ public class GfshInitFileJUnitTest {
       julLogger.removeHandler(handler);
     }
 
-    File log4j2XML = temporaryFolder_Config.newFile("log4j2.xml");
+    File log4j2XML = temporaryFolder_Config.newFile("log4j2-ignore.xml");
     FileUtils.writeStringToFile(log4j2XML, "<Configuration/>", APPEND);
     System.setProperty(ConfigurationFactory.CONFIGURATION_FILE_PROPERTY,
         log4j2XML.toURI().toString());

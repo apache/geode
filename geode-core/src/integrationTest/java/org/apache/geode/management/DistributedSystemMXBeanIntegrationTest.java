@@ -1,23 +1,23 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
+ * agreements. See the NOTICE file distributed with this work for additional information regarding
+ * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
+ * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import static javax.management.JMX.newMXBeanProxy;
+import static org.apache.geode.alerting.internal.spi.AlertLevel.NONE;
+import static org.apache.geode.alerting.internal.spi.AlertLevel.WARNING;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
@@ -25,8 +25,6 @@ import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_S
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.internal.AvailablePortHelper.getRandomAvailableTCPPort;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
 import static org.apache.geode.management.JMXNotificationType.SYSTEM_ALERT;
 import static org.apache.geode.management.internal.MBeanJMXAdapter.getDistributedSystemName;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
@@ -55,11 +53,11 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.alerting.internal.api.AlertingService;
+import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.junit.categories.AlertingTest;

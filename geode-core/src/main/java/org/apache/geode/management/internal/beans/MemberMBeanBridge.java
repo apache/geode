@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License, Version 2.0 (the
- * "License")); you may not use this file except in compliance with the License. You may obtain a
+ * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
@@ -67,7 +67,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -84,6 +83,7 @@ import org.apache.geode.internal.statistics.platform.LinuxSystemStats;
 import org.apache.geode.internal.statistics.platform.ProcessStats;
 import org.apache.geode.internal.stats50.VMStats50;
 import org.apache.geode.internal.tcp.ConnectionTable;
+import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.GemFireProperties;
 import org.apache.geode.management.JVMMetrics;
 import org.apache.geode.management.OSMetrics;

@@ -14,27 +14,26 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.CONFIG;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.CONFIG;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
+import java.io.OutputStream;
 import java.io.PrintStream;
 
-import org.apache.logging.log4j.core.util.NullOutputStream;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Unit tests for {@link ManagerLogWriter}.
- */
+/** Unit tests for {@link org.apache.geode.internal.logging.ManagerLogWriter}. */
 @Category(LoggingTest.class)
 public class ManagerLogWriterTest {
 
   @Test
   public void logWriterLevelIsPassedIntoConstructor() {
     ManagerLogWriter logWriter = new ManagerLogWriter(CONFIG.intLevel(),
-        new PrintStream(NullOutputStream.getInstance()), true);
+        new PrintStream(mock(OutputStream.class)), true);
 
     assertThat(logWriter.getLogWriterLevel()).isEqualTo(CONFIG.intLevel());
   }

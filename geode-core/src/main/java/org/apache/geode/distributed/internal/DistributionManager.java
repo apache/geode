@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.admin.GemFireHealthConfig;
+import org.apache.geode.alerting.internal.api.AlertingService;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.DistributedMember;
@@ -31,7 +32,6 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipManager;
-import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.monitoring.ThreadsMonitoring;
 import org.apache.geode.internal.serialization.Version;
