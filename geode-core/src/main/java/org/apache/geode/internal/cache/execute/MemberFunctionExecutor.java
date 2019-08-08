@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.TransactionDataNotColocatedException;
 import org.apache.geode.cache.TransactionException;
@@ -184,7 +185,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function, int timeoutMs) {
+  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
     if (function.hasResult()) {
       ResultCollector rc = this.rc;
       if (rc == null) {

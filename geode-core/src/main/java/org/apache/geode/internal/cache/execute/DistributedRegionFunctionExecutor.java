@@ -167,7 +167,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
       throw new FunctionException(
           "Function execution on region with DataPolicy.NORMAL is not supported");
     }
-    return executeFunction(functionObject, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
+    return executeFunction(functionObject, timeout, unit);
   }
 
   @Override
@@ -196,7 +196,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
           "The Function#getID() returned null");
     }
     this.isFnSerializationReqd = true;
-    return executeFunction(function, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
+    return executeFunction(function, timeout, unit);
   }
 
   @Override
@@ -205,7 +205,7 @@ public class DistributedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(Function function, int timeoutMs) {
+  protected ResultCollector executeFunction(Function function, long timeout, TimeUnit unit) {
     if (function.hasResult()) { // have Results
       if (this.rc == null) { // Default Result Collector
         ResultCollector defaultCollector = new DefaultResultCollector();

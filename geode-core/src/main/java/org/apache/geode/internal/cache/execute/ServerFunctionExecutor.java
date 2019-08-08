@@ -84,7 +84,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   }
 
   protected ResultCollector executeFunction(final String functionId, boolean result, boolean isHA,
-      boolean optimizeForWrite, int timeoutMs) {
+      boolean optimizeForWrite, long timeout, TimeUnit unit) {
     try {
       if (proxyCache != null) {
         if (proxyCache.isClosed()) {
@@ -93,6 +93,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
         UserAttributes.userAttributes.set(proxyCache.getUserAttributes());
       }
 
+      final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
       byte hasResult = 0;
       if (result) {
         hasResult = 1;
@@ -113,7 +114,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(final Function function, int timeoutMs) {
+  protected ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -125,6 +126,8 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
       if (function.hasResult()) {
         hasResult = 1;
+        final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
+
         if (rc == null) {
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(function, defaultCollector, hasResult, timeoutMs);
@@ -341,7 +344,6 @@ public class ServerFunctionExecutor extends AbstractExecution {
     }
     isFnSerializationReqd = false;
     Function functionObject = FunctionService.getFunction(functionName);
-    int timeoutInMs = (int) TimeUnit.MILLISECONDS.convert(timeout, unit);
     if (functionObject == null) {
       byte[] functionAttributes = getFunctionAttributes(functionName);
       if (functionAttributes == null) {
@@ -365,9 +367,9 @@ public class ServerFunctionExecutor extends AbstractExecution {
       boolean isHA = functionAttributes[1] == 1;
       boolean hasResult = functionAttributes[0] == 1;
       boolean optimizeForWrite = functionAttributes[2] == 1;
-      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeoutInMs);
+      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeout, unit);
     } else {
-      return executeFunction(functionObject, timeoutInMs);
+      return executeFunction(functionObject, timeout, unit);
     }
 
   }
