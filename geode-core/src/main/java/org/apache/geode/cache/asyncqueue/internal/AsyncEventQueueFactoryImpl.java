@@ -204,7 +204,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       if (cache instanceof CacheCreation) {
         sender = new ParallelAsyncEventQueueCreation(cache, gatewaySenderAttributes);
       } else {
-        sender = new ParallelAsyncEventQueueImpl(cache, gatewaySenderAttributes);
+        sender = new ParallelAsyncEventQueueImpl(cache,
+            cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
+            gatewaySenderAttributes);
       }
       cache.addGatewaySender(sender);
 
@@ -217,7 +219,9 @@ public class AsyncEventQueueFactoryImpl implements AsyncEventQueueFactory {
       if (cache instanceof CacheCreation) {
         sender = new SerialAsyncEventQueueCreation(cache, gatewaySenderAttributes);
       } else {
-        sender = new SerialAsyncEventQueueImpl(cache, gatewaySenderAttributes);
+        sender = new SerialAsyncEventQueueImpl(cache,
+            cache.getInternalDistributedSystem().getStatisticsManager(), cache.getStatisticsClock(),
+            gatewaySenderAttributes);
       }
       cache.addGatewaySender(sender);
     }

@@ -14,6 +14,8 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -95,6 +97,7 @@ import org.apache.geode.internal.cache.wan.AbstractGatewaySenderEventProcessor;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.cache.wan.parallel.ConcurrentParallelGatewaySenderQueue;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableReadLock;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantReadWriteLock.StoppableWriteLock;
@@ -162,6 +165,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   private final Object keysOfInterestLock = new Object();
 
+  private final StatisticsClock statisticsClock;
+
   /**
    * Update an entry's last access time if a client is interested in the entry.
    */
@@ -171,6 +176,7 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
 
   // Only for testing
   PartitionedRegionDataStore() {
+    statisticsClock = disabledClock();
     this.bucketCreationLock = null;
     bucketStats = null;
     partitionedRegion = null;
@@ -185,7 +191,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    *
    * @param pr PartitionedRegion associated with this DataStore.
    */
-  PartitionedRegionDataStore(final PartitionedRegion pr) {
+  PartitionedRegionDataStore(final PartitionedRegion pr, StatisticsClock statisticsClock) {
+    this.statisticsClock = statisticsClock;
     final int bucketCount = pr.getTotalNumberOfBuckets();
     this.localBucket2RegionMap = new ConcurrentHashMap<Integer, BucketRegion>(bucketCount);
     this.partitionedRegion = pr;
@@ -204,9 +211,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
     // this.bucketStats = new CachePerfStats(pr.getSystem(), "partition-" + pr.getName());
     this.bucketStats =
         new RegionPerfStats(pr.getCache().getInternalDistributedSystem().getStatisticsManager(),
-            "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(),
-            pr,
-            pr.getCache().getMeterRegistry());
+            "RegionStats-partition-" + pr.getName(), pr.getCachePerfStats(), pr,
+            pr.getCache().getMeterRegistry(), statisticsClock);
     this.keysOfInterest = new ConcurrentHashMap();
   }
 
@@ -216,9 +222,8 @@ public class PartitionedRegionDataStore implements HasCachePerfStats {
    * @return @throws PartitionedRegionException
    */
   static PartitionedRegionDataStore createDataStore(Cache cache, PartitionedRegion pr,
-      PartitionAttributes pa) throws PartitionedRegionException {
-    PartitionedRegionDataStore prd = new PartitionedRegionDataStore(pr);
-    return prd;
+      PartitionAttributes pa, StatisticsClock statisticsClock) throws PartitionedRegionException {
+    return new PartitionedRegionDataStore(pr, statisticsClock);
   }
 
   ConcurrentMap<Integer, BucketRegion> getLocalBucket2RegionMap() {

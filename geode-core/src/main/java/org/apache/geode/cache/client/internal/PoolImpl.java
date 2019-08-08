@@ -149,7 +149,7 @@ public class PoolImpl implements InternalPool {
 
   public static final int PRIMARY_QUEUE_NOT_AVAILABLE = -2;
   public static final int PRIMARY_QUEUE_TIMED_OUT = -1;
-  private AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
+  private final AtomicInteger primaryQueueSize = new AtomicInteger(PRIMARY_QUEUE_NOT_AVAILABLE);
 
   private final ThreadsMonitoring threadMonitoring;
 
@@ -216,7 +216,8 @@ public class PoolImpl implements InternalPool {
     subscriptionAckInterval = attributes.getSubscriptionAckInterval();
     subscriptionTimeoutMultiplier = attributes.getSubscriptionTimeoutMultiplier();
     if (subscriptionTimeoutMultiplier < 0) {
-      throw new IllegalArgumentException("The subscription timeout multipler must not be negative");
+      throw new IllegalArgumentException(
+          "The subscription timeout multiplier must not be negative");
     }
     serverGroup = attributes.getServerGroup();
     multiuserSecureModeEnabled = attributes.getMultiuserAuthentication();

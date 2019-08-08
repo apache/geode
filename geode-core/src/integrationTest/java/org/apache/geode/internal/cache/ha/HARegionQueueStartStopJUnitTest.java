@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.ha;
 
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class HARegionQueueStartStopJUnitTest {
   private RegionQueue createHARegionQueue(String name, InternalCache cache)
       throws IOException, ClassNotFoundException, CacheException, InterruptedException {
     RegionQueue regionqueue = HARegionQueue.getHARegionQueueInstance(name, cache,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     return regionqueue;
   }
 

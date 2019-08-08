@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
 import static org.junit.Assert.assertEquals;
@@ -124,7 +125,7 @@ public class HABug36738DUnitTest extends JUnit4DistributedTestCase {
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
     haRegion = HARegion.getInstance(HAREGION_NAME, (GemFireCacheImpl) cache, harq,
-        factory.createRegionAttributes());
+        factory.createRegionAttributes(), disabledClock());
   }
 
   private void checkRegionQueueSize() {

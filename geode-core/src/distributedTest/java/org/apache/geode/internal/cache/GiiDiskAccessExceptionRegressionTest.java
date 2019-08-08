@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.apache.geode.test.dunit.Host.getHost;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.Invoke.invokeInEveryVM;
@@ -43,12 +44,9 @@ import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
  * Tests that if a node doing GII experiences DiskAccessException, it should also not try to recover
  * from the disk
  *
- * GiiDiskAccessExceptionRegressionTest
- *
  * <p>
- * TRAC #39079: Regions with persistence remain in use after IOException have occurred
+ * Bug: Regions with persistence remain in use after IOException have occurred
  */
-
 public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
 
   private String uniqueName;
@@ -133,7 +131,8 @@ public class GiiDiskAccessExceptionRegressionTest extends CacheTestCase {
 
     DistributedRegion distributedRegion = new DistributedRegion(uniqueName, factory.create(), null,
         getCache(), new InternalRegionArguments().setDestroyLockFlag(true).setRecreateFlag(false)
-            .setSnapshotInputStream(null).setImageTarget(null));
+            .setSnapshotInputStream(null).setImageTarget(null),
+        disabledClock());
 
     distributedRegion.entries.setEntryFactory(new DiskRegionEntryThrowsFactory());
 

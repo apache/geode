@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import static org.apache.geode.internal.cache.LocalRegion.InitializationLevel.ANY_INIT;
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -94,6 +95,7 @@ import org.apache.geode.internal.cache.extension.ExtensionPoint;
 import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.ArrayUtils;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 
@@ -274,10 +276,14 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   private final PoolFinder poolFinder;
 
+  private final StatisticsClock statisticsClock;
+
   /** Creates a new instance of AbstractRegion */
   protected AbstractRegion(InternalCache cache, RegionAttributes<?, ?> attrs, String regionName,
-      InternalRegionArguments internalRegionArgs, PoolFinder poolFinder) {
+      InternalRegionArguments internalRegionArgs, PoolFinder poolFinder,
+      StatisticsClock statisticsClock) {
     this.poolFinder = poolFinder;
+    this.statisticsClock = statisticsClock;
 
     this.cache = cache;
     serialNumber = DistributionAdvisor.createSerialNumber();
@@ -387,6 +393,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @VisibleForTesting
   AbstractRegion() {
+    statisticsClock = disabledClock();
     cache = null;
     serialNumber = 0;
     isPdxTypesRegion = false;
@@ -1865,6 +1872,17 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
   @Override
   public void incRecentlyUsed() {
     // nothing
+  }
+
+  /**
+   * Only subclasses of {@code AbstractRegion} should use this supplier to acquire the
+   * {@code StatisticsClock}.
+   *
+   * <p>
+   * Please do not use this accessor from any class other than a Region.
+   */
+  protected StatisticsClock getStatisticsClock() {
+    return statisticsClock;
   }
 
   protected interface PoolFinder {

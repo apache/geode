@@ -32,6 +32,7 @@ import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.PoolFactoryImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.statistics.StatisticsClock;
 
 public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender {
   private static final Logger logger = LogService.getLogger();
@@ -39,8 +40,9 @@ public abstract class AbstractRemoteGatewaySender extends AbstractGatewaySender 
   /** used to reduce warning logs in case remote locator is down (#47634) */
   protected int proxyFailureTries = 0;
 
-  public AbstractRemoteGatewaySender(InternalCache cache, GatewaySenderAttributes attrs) {
-    super(cache, attrs);
+  public AbstractRemoteGatewaySender(InternalCache cache, StatisticsClock statisticsClock,
+      GatewaySenderAttributes attrs) {
+    super(cache, statisticsClock, attrs);
   }
 
   @Override

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.ha;
 
+import static org.apache.geode.internal.statistics.StatisticsClockFactory.disabledClock;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -224,7 +225,8 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
     when(harq.updateHAEventWrapper(any(), any(), any()))
         .thenAnswer(AdditionalAnswers.returnsSecondArg());
 
-    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, harq, factory.create());
+    HARegion.getInstance(REGION_NAME, (GemFireCacheImpl) cache, harq, factory.create(),
+        disabledClock());
   }
 
   private static HARegionQueue hrq = null;
@@ -239,7 +241,7 @@ public class HARegionDUnitTest extends JUnit4DistributedTestCase {
      * factory.setDataPolicy(DataPolicy.REPLICATE);
      */
     hrq = HARegionQueue.getHARegionQueueInstance(REGION_NAME, cache,
-        HARegionQueue.NON_BLOCKING_HA_QUEUE, false);
+        HARegionQueue.NON_BLOCKING_HA_QUEUE, false, disabledClock());
     EventID id1 = new EventID(new byte[] {1}, 1, 1);
     EventID id2 = new EventID(new byte[] {1}, 1, 2);
     ConflatableObject c1 = new ConflatableObject("1", "1", id1, false, REGION_NAME);

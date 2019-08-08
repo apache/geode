@@ -1831,7 +1831,7 @@ public class EntryEventImpl implements InternalEntryEvent, InternalCacheEvent,
       }
       boolean deltaBytesApplied = false;
       try {
-        long start = CachePerfStats.getStatTime();
+        long start = getRegion().getCachePerfStats().getTime();
         ((org.apache.geode.Delta) value)
             .fromDelta(new ByteArrayDataInput(getDeltaBytes()));
         getRegion().getCachePerfStats().endDeltaUpdate(start);
