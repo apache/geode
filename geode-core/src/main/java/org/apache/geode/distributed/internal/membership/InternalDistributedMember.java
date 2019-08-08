@@ -174,7 +174,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   public InternalDistributedMember(NetMember m) {
     netMbr = m;
 
-    if (netMbr.getHostName() == null) {
+    if (netMbr.getHostName() == null || netMbr.isPartial()) {
       String hostName = SocketCreator.resolve_dns ? SocketCreator.getHostName(m.getInetAddress())
           : m.getInetAddress().getHostAddress();
       netMbr.setHostName(hostName);
@@ -187,7 +187,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
-    this.isPartial = false;
+    this.isPartial = m.isPartial();
   }
 
   /**

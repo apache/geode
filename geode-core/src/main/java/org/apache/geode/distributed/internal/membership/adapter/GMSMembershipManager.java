@@ -1151,6 +1151,7 @@ public class GMSMembershipManager implements MembershipManager {
 
     if (o.isDistributionMessage()) { // normal message
       try {
+        o.dmsg.setSender(latestView.getCanonicalID(o.dmsg.getSender()));
         dispatchMessage(o.dmsg);
       } catch (MemberShunnedException e) {
         // message from non-member - ignore

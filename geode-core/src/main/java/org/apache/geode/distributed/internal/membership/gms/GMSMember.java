@@ -64,6 +64,11 @@ public class GMSMember implements DataSerializableFixedID {
   private String durableId;
   private int durableTimeout;
 
+  private boolean isPartial; // transient state - created with readEssentialData
+
+  public boolean isPartial() {
+    return isPartial;
+  }
 
   // Used only by Externalization
   public GMSMember() {}
@@ -340,10 +345,11 @@ public class GMSMember implements DataSerializableFixedID {
     StringBuilder sb = new StringBuilder(100);
     String uuid = formatUUID();
 
-    sb.append("GMSMember[addr=").append(inetAddr).append(";port=").append(udpPort)
-        .append(";kind=").append(vmKind).append(";processId=").append(";viewId=").append(vmViewId)
-        .append(processId).append(";v").append(versionOrdinal).append(";name=")
-        .append(name).append(uuid).append(";weight=").append(memberWeight)
+    sb.append("GMSMember[name=").append(name)
+        .append(";addr=").append(inetAddr).append(";port=").append(udpPort)
+        .append(";kind=").append(vmKind).append(";processId=").append(processId)
+        .append(";viewId=").append(vmViewId)
+        .append(";version=").append(versionOrdinal).append(uuid)
         .append("]");
     return sb.toString();
   }
@@ -620,6 +626,7 @@ public class GMSMember implements DataSerializableFixedID {
     if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_2_0) >= 0) {
       this.vmKind = in.readByte();
     }
+    this.isPartial = true;
   }
 
 

@@ -148,6 +148,24 @@ public class MembershipView {
     return null;
   }
 
+
+  /**
+   * Returns the ID from this view that is equal to the argument. If no such ID exists the argument
+   * is returned.
+   */
+  public synchronized InternalDistributedMember getCanonicalID(InternalDistributedMember id) {
+    if (hashedMembers.contains(id)) {
+      for (InternalDistributedMember m : this.members) {
+        if (id.equals(m)) {
+          return m;
+        }
+      }
+    }
+    return id;
+  }
+
+
+
   public InternalDistributedMember getCoordinator() {
     for (InternalDistributedMember addr : members) {
       if (addr.getNetMember().preferredForCoordinator()) {

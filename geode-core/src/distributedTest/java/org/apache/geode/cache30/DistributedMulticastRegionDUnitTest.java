@@ -35,7 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -133,7 +132,6 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
     closeLocator();
   }
 
-  @Ignore
   @Test
   public void testMulticastAfterReconnect() {
     final String name = "mcastRegion";
@@ -166,7 +164,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
 
     DistributedTestUtils.crashDistributedSystem(vm1);
     vm0.invoke(doPuts);
-    vm1.invoke(() -> {
+    vm1.invoke("wait for vm1 to reconnect", () -> {
       basicGetCache().waitUntilReconnected(30, TimeUnit.SECONDS);
       assertNotNull(basicGetCache().getReconnectedCache());
       cache = (InternalCache) basicGetCache().getReconnectedCache();
@@ -281,6 +279,7 @@ public class DistributedMulticastRegionDUnitTest extends JUnit4CacheTestCase {
   @Override
   public Properties getDistributedSystemProperties() {
     Properties p = new Properties();
+    p.put(NAME, "vm" + VM.getCurrentVMNum());
     p.put(DISABLE_AUTO_RECONNECT, "false");
     p.put(MAX_WAIT_TIME_RECONNECT, "20");
     p.put(STATISTIC_SAMPLING_ENABLED, "true");

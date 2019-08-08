@@ -1170,7 +1170,7 @@ public class JGroupsMessenger implements Messenger {
           try {
             Digest digest = new Digest();
             digest.readFrom(dis);
-            logger.trace("installing JGroups message digest {}", digest);
+            logger.trace("installing JGroups message digest {} from {}", digest, m);
             this.myChannel.getProtocolStack().getTopProtocol()
                 .down(new Event(Event.MERGE_DIGEST, digest));
             jrsp.setMessengerData(null);
