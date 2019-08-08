@@ -52,7 +52,7 @@ public class DefaultProviderCheckerTest {
   @Test
   public void isAvailableReturnsFalseIfNotUsingLog4jProvider() {
     DefaultProviderChecker checker = new DefaultProviderChecker(
-        () -> mock(LoggerContextFactory.class).getClass(), (a) -> false, mock(Logger.class));
+        () -> mock(LoggerContextFactory.class).getClass(), (a) -> true, mock(Logger.class));
 
     boolean value = checker.isAvailable();
 
