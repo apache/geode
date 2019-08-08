@@ -83,7 +83,7 @@ public class GemFireCacheImplTest {
   public void checkPurgeCCPTimer() {
     SystemTimer cacheClientProxyTimer = mock(SystemTimer.class);
 
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     gemFireCacheImpl.setCCPTimer(cacheClientProxyTimer);
     for (int i = 1; i < GemFireCacheImpl.PURGE_INTERVAL; i++) {
@@ -105,7 +105,7 @@ public class GemFireCacheImplTest {
     HeapEvictor heapEvictor = mock(HeapEvictor.class);
     OffHeapEvictor offHeapEvictor = mock(OffHeapEvictor.class);
 
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     gemFireCacheImpl.setHeapEvictor(heapEvictor);
     gemFireCacheImpl.setOffHeapEvictor(offHeapEvictor);
@@ -117,7 +117,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceNotSerializable() {
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData(new Object()))
         .isInstanceOf(SerializationException.class).hasMessage("Serialization failed")
@@ -126,7 +126,7 @@ public class GemFireCacheImplTest {
 
   @Test
   public void registerPdxMetaDataThrowsIfInstanceIsNotPDX() {
-    gemFireCacheImpl = createGemFireCacheWithTypeRegistry();
+    gemFireCacheImpl = createGemFireCacheImpl();
 
     assertThatThrownBy(() -> gemFireCacheImpl.registerPdxMetaData("string"))
         .isInstanceOf(SerializationException.class)
@@ -149,7 +149,7 @@ public class GemFireCacheImplTest {
         threadLatch.countDown();
         try {
           threadLatch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
       });
     }
@@ -563,7 +563,9 @@ public class GemFireCacheImplTest {
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {
-    return (GemFireCacheImpl) new InternalCacheBuilder().create(Fakes.distributedSystem());
+    return (GemFireCacheImpl) new InternalCacheBuilder()
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(Fakes.distributedSystem());
   }
 
   private static GemFireCacheImpl createGemFireCacheWithTypeRegistry() {
