@@ -26,7 +26,7 @@ public interface StatisticsConfig {
   /**
    * Returns the value of the {@link ConfigurationProperties#STATISTIC_ARCHIVE_FILE} property.
    *
-   * @return <code>null</code> if no file was specified
+   * @return {@code null} if no file was specified
    */
   File getStatisticArchiveFile();
 

@@ -28,7 +28,7 @@ import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 
 /** Set view of entries */
-public class EntriesSet extends AbstractSet {
+public class EntriesSet extends AbstractSet implements EntriesCollection {
 
   final LocalRegion topRegion;
 

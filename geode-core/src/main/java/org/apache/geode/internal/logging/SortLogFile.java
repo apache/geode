@@ -38,7 +38,6 @@ import org.apache.geode.internal.ExitCode;
  *
  * @see MergeLogFiles
  * @see LogFileParser
- *
  * @since GemFire 3.0
  */
 public class SortLogFile {

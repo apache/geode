@@ -17,6 +17,7 @@ package org.apache.geode.internal.admin.remote;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,13 +57,14 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   private String message;
   private String exceptionText;
 
-  public static AlertListenerMessage create(DistributedMember recipient, int alertLevel, Date date,
+  public static AlertListenerMessage create(DistributedMember recipient, int alertLevel,
+      Instant timestamp,
       String connectionName, String threadName, long threadId, String message,
       String exceptionText) {
     AlertListenerMessage alertListenerMessage = new AlertListenerMessage();
     alertListenerMessage.setRecipient((InternalDistributedMember) recipient);
     alertListenerMessage.alertLevel = alertLevel;
-    alertListenerMessage.date = date;
+    alertListenerMessage.date = new Date(timestamp.toEpochMilli());
     alertListenerMessage.connectionName = connectionName;
     if (alertListenerMessage.connectionName == null) {
       alertListenerMessage.connectionName = "";

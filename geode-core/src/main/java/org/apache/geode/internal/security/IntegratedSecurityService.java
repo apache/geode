@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.security;
 
-import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import java.io.IOException;
 import java.security.AccessController;

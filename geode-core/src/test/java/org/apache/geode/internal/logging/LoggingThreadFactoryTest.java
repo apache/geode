@@ -31,9 +31,7 @@ import org.apache.geode.internal.logging.LoggingThreadFactory.CommandWrapper;
 import org.apache.geode.internal.logging.LoggingThreadFactory.ThreadInitializer;
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Unit tests for {@link LoggingThreadFactory}.
- */
+/** Unit tests for {@link org.apache.geode.internal.logging.LoggingThreadFactory}. */
 @Category(LoggingTest.class)
 public class LoggingThreadFactoryTest {
 

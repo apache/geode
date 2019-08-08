@@ -19,6 +19,7 @@ import java.util.Locale;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.i18n.AbstractStringIdResourceBundle;
+import org.apache.geode.internal.logging.LogWriterImpl;
 
 /**
  * This class forms the basis of the i18n strategy. Its primary function is to be used as a key to
@@ -36,7 +37,7 @@ public class StringId {
    * A unique identifier that is written when this StringId is logged to allow for reverse
    * translation.
    *
-   * @see org.apache.geode.internal.logging.LogWriterImpl
+   * @see LogWriterImpl
    */
   public final int id;
   /** the English translation of text */
