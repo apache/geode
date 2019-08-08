@@ -73,12 +73,15 @@ public class PeerTypeRegistration implements TypeRegistration {
   @VisibleForTesting
   public static final int PLACE_HOLDER_FOR_TYPE_ID = 0xFFFFFF;
   private static final int PLACE_HOLDER_FOR_DS_ID = 0xFF000000;
+  private static final int MAX_TYPE_ID = 0xFFFFFF;
 
-  private int distributedSystemId;
-  private final int maxTypeId;
-  private volatile DistributedLockService dls;
+  private final TypeRegistrationStatistics statistics;
+
+  private final int typeIdPrefix;
   private final Object dlsLock = new Object();
-  private InternalCache cache;
+  private final InternalCache cache;
+
+  private volatile DistributedLockService dls;
 
   /**
    * The region where the PDX metadata is stored. Because this region is transactional for our
@@ -92,24 +95,32 @@ public class PeerTypeRegistration implements TypeRegistration {
    * that type in the region. And, if a type is present in this map, that means we read the type
    * while holding the dlock, which means the type was distributed to all members.
    */
-  private Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
+  private final Map<PdxType, Integer> typeToId = Collections.synchronizedMap(new HashMap<>());
 
-  private Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
+  private final Map<EnumInfo, EnumId> enumToId = Collections.synchronizedMap(new HashMap<>());
 
   private final Map<String, CopyOnWriteHashSet<PdxType>> classToType = new CopyOnWriteHashMap<>();
 
   private volatile boolean typeRegistryInUse = false;
 
-  public PeerTypeRegistration(InternalCache cache) {
+  public PeerTypeRegistration(final InternalCache cache) {
     this.cache = cache;
 
-    int distributedSystemId =
-        cache.getInternalDistributedSystem().getDistributionManager().getDistributedSystemId();
+    final InternalDistributedSystem internalDistributedSystem =
+        cache.getInternalDistributedSystem();
+    typeIdPrefix = getDistributedSystemId(internalDistributedSystem) << 24;
+    statistics =
+        new TypeRegistrationStatistics(internalDistributedSystem.getStatisticsManager(), this);
+  }
+
+  private static int getDistributedSystemId(
+      final InternalDistributedSystem internalDistributedSystem) {
+    final int distributedSystemId =
+        internalDistributedSystem.getDistributionManager().getDistributedSystemId();
     if (distributedSystemId == -1) {
-      distributedSystemId = 0;
+      return 0;
     }
-    this.distributedSystemId = distributedSystemId << 24;
-    maxTypeId = 0xFFFFFF;
+    return distributedSystemId;
   }
 
   private Region<Object/* Integer or EnumCode */, Object/* PdxType or enum info */> getIdToType() {
@@ -238,24 +249,24 @@ public class PeerTypeRegistration implements TypeRegistration {
     Region<Object, Object> r = getIdToType();
 
     int id = newType.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
-    int newTypeId = id | distributedSystemId;
+    int newTypeId = id | typeIdPrefix;
 
     try {
-      int maxTry = maxTypeId;
+      int maxTry = MAX_TYPE_ID;
       while (r.get(newTypeId) != null) {
         maxTry--;
         if (maxTry == 0) {
           throw new InternalGemFireError(
               "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                  + maxTypeId);
+                  + MAX_TYPE_ID);
         }
 
         // Find the next available type id.
         id++;
-        if (id > maxTypeId) {
+        if (id > MAX_TYPE_ID) {
           id = 1;
         }
-        newTypeId = id | distributedSystemId;
+        newTypeId = id | typeIdPrefix;
       }
 
       return newTypeId;
@@ -269,24 +280,24 @@ public class PeerTypeRegistration implements TypeRegistration {
     Region<Object, Object> r = getIdToType();
 
     int id = ei.hashCode() & PLACE_HOLDER_FOR_TYPE_ID;
-    int newEnumId = id | distributedSystemId;
+    int newEnumId = id | typeIdPrefix;
     try {
-      int maxTry = maxTypeId;
+      int maxTry = MAX_TYPE_ID;
       // Find the next available type id.
       while (r.get(new EnumId(newEnumId)) != null) {
         maxTry--;
         if (maxTry == 0) {
           throw new InternalGemFireError(
               "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                  + maxTypeId);
+                  + MAX_TYPE_ID);
         }
 
         // Find the next available type id.
         id++;
-        if (id > maxTypeId) {
+        if (id > MAX_TYPE_ID) {
           id = 1;
         }
-        newEnumId = id | distributedSystemId;
+        newEnumId = id | typeIdPrefix;
       }
 
       return new EnumId(newEnumId);
@@ -344,6 +355,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int defineType(PdxType newType) {
+    statistics.typeDefined();
     verifyConfiguration();
     Integer existingId = typeToId.get(newType);
     if (existingId != null) {
@@ -371,10 +383,12 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   private void updateIdToTypeRegion(PdxType newType) {
     updateRegion(newType.getTypeId(), newType);
+    statistics.typeCreated();
   }
 
   private void updateIdToEnumRegion(EnumId id, EnumInfo ei) {
     updateRegion(id, ei);
+    statistics.enumCreated();
   }
 
   private void updateRegion(Object k, Object v) {
@@ -544,7 +558,7 @@ public class PeerTypeRegistration implements TypeRegistration {
           PdxType foundType = (PdxType) v;
           Integer id = (Integer) k;
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
-          if (tmpDsId == distributedSystemId) {
+          if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
           }
 
@@ -554,10 +568,10 @@ public class PeerTypeRegistration implements TypeRegistration {
           }
         }
       }
-      if (totalPdxTypeIdInDS == maxTypeId) {
+      if (totalPdxTypeIdInDS == MAX_TYPE_ID) {
         throw new InternalGemFireError(
             "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                + maxTypeId);
+                + MAX_TYPE_ID);
       }
       return result;
     } finally {
@@ -579,7 +593,7 @@ public class PeerTypeRegistration implements TypeRegistration {
           EnumInfo info = (EnumInfo) v;
           enumToId.put(info, id);
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id.intValue();
-          if (tmpDsId == distributedSystemId) {
+          if (tmpDsId == typeIdPrefix) {
             totalEnumIdInDS++;
           }
           if (ei.equals(info)) {
@@ -590,10 +604,10 @@ public class PeerTypeRegistration implements TypeRegistration {
         }
       }
 
-      if (totalEnumIdInDS == maxTypeId) {
+      if (totalEnumIdInDS == MAX_TYPE_ID) {
         throw new InternalGemFireError(
             "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
-                + maxTypeId);
+                + MAX_TYPE_ID);
       }
       return result;
     } finally {
@@ -617,29 +631,7 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getEnumId(Enum<?> v) {
-    verifyConfiguration();
-    EnumInfo ei = new EnumInfo(v);
-    EnumId existingId = enumToId.get(ei);
-    if (existingId != null) {
-      return existingId.intValue();
-    }
-    lock();
-    try {
-      EnumId id = getExistingIdForEnum(ei);
-      if (id != null) {
-        return id.intValue();
-      }
-
-      id = allocateEnumId(ei);
-
-      updateIdToEnumRegion(id, ei);
-
-      enumToId.put(ei, id);
-
-      return id.intValue();
-    } finally {
-      unlock();
-    }
+    return defineEnum(new EnumInfo(v));
   }
 
   @Override
@@ -666,9 +658,10 @@ public class PeerTypeRegistration implements TypeRegistration {
   }
 
   @Override
-  public int defineEnum(EnumInfo newInfo) {
+  public int defineEnum(final EnumInfo newInfo) {
+    statistics.enumDefined();
     verifyConfiguration();
-    EnumId existingId = enumToId.get(newInfo);
+    final EnumId existingId = enumToId.get(newInfo);
     if (existingId != null) {
       return existingId.intValue();
     }
