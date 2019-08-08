@@ -64,8 +64,8 @@ public class InvalidateOp {
       if (server != null) {
         try {
           PoolImpl poolImpl = (PoolImpl) pool;
-          boolean onlyUseExistingCnx = ((poolImpl.getMaxConnections() != -1
-              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections()) ? true : false);
+          boolean onlyUseExistingCnx = (poolImpl.getMaxConnections() != -1
+              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections());
           op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
           return pool.executeOn(new ServerLocation(server.getHostName(), server.getPort()), op,
               true, onlyUseExistingCnx);
