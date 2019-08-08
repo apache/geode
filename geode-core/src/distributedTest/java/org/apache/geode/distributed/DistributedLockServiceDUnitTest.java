@@ -17,7 +17,6 @@ package org.apache.geode.distributed;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Long.MAX_VALUE;
 import static java.lang.System.out;
-import static java.lang.Thread.sleep;
 import static org.apache.geode.distributed.DistributedLockService.getServiceNamed;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.ThreadUtils.dumpAllStacks;
@@ -1480,24 +1479,25 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     // Get lock from other VM. Since same thread needs to lock and unlock,
     // invoke asynchronously, get lock, wait to be notified, then unlock.
     VM vm1 = getVM(1);
-    vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
-      @Override
-      public void run() {
-        DistributedLockService service2 = getServiceNamed(name);
-        assertThat(service2.lock("lock", -1, -1)).isTrue();
-        synchronized (monitor) {
-          try {
-            monitor.wait();
-          } catch (InterruptedException ex) {
-            out.println("Unexpected InterruptedException");
-            fail("interrupted");
+    AsyncInvocation asyncInvocation =
+        vm1.invokeAsync(new SerializableRunnable("Lock & unlock in vm1") {
+          @Override
+          public void run() {
+            DistributedLockService service2 = getServiceNamed(name);
+            assertThat(service2.lock("lock", -1, -1)).isTrue();
+            synchronized (monitor) {
+              try {
+                monitor.wait();
+              } catch (InterruptedException ex) {
+                out.println("Unexpected InterruptedException");
+                fail("interrupted");
+              }
+            }
+            service2.unlock("lock");
           }
-        }
-        service2.unlock("lock");
-      }
-    });
+        });
     // Let vm1's thread get the lock and go into wait()
-    sleep(100);
+    await().untilAsserted(() -> assertThat(asyncInvocation.isAlive()).isTrue());
 
     Thread thread = new Thread(new Runnable() {
       @Override
@@ -1512,7 +1512,7 @@ public final class DistributedLockServiceDUnitTest extends JUnit4DistributedTest
     thread.start();
 
     // Let thread start, make sure it's blocked in suspendLocking
-    sleep(100);
+    await().untilAsserted(() -> assertThat(thread.isAlive()).isTrue());
     assertThat(getGot() || getDone())
         .withFailMessage("Before release, got: " + getGot() + ", done: " + getDone()).isFalse();
 
