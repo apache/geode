@@ -32,7 +32,7 @@ import static org.apache.geode.test.dunit.Assert.assertNull;
 import static org.apache.geode.test.dunit.Assert.assertTrue;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.dunit.DistributedTestUtils.getDUnitLocatorPort;
-import static org.apache.geode.test.dunit.LogWriterUtils.getLogWriter;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
 import static org.apache.geode.test.dunit.NetworkUtils.getIPLiteral;
 
 import java.io.File;
@@ -58,6 +58,9 @@ import javax.net.ssl.SSLContextSpi;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
@@ -106,6 +109,7 @@ import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
  */
 @Deprecated
 public class SecurityTestUtils {
+  private static final Logger logger = LogManager.getLogger();
 
   private final JUnit4DistributedTestCase distributedTestCase = new JUnit4DistributedTestCase() {};
 
@@ -142,30 +146,6 @@ public class SecurityTestUtils {
   private static ProxyCache[] proxyCaches = new ProxyCache[NUMBER_OF_USERS];
 
   private static Region regionRef = null;
-
-  /**
-   * @deprecated Please use {@link org.apache.geode.test.dunit.IgnoredException} instead
-   */
-  private static void addIgnoredExceptions(final String[] expectedExceptions) { // TODO: delete
-    if (expectedExceptions != null) {
-      for (int index = 0; index < expectedExceptions.length; index++) {
-        getLogWriter().info(
-            "<ExpectedException action=add>" + expectedExceptions[index] + "</ExpectedException>");
-      }
-    }
-  }
-
-  /**
-   * @deprecated Please use {@link org.apache.geode.test.dunit.IgnoredException} instead
-   */
-  private static void removeExpectedExceptions(final String[] expectedExceptions) { // TODO: delete
-    if (expectedExceptions != null) {
-      for (int index = 0; index < expectedExceptions.length; index++) {
-        getLogWriter().info("<ExpectedException action=remove>" + expectedExceptions[index]
-            + "</ExpectedException>");
-      }
-    }
-  }
 
   protected static void setJavaProps(final Properties javaProps) {
     removeJavaProperties(currentJavaProps);
@@ -215,15 +195,15 @@ public class SecurityTestUtils {
     authProps.setProperty(LOCATORS, "localhost[" + getDUnitLocatorPort() + "]");
     authProps.setProperty(SECURITY_LOG_LEVEL, "finest");
 
-    getLogWriter().info("Set the server properties to: " + authProps);
-    getLogWriter().info("Set the java properties to: " + javaProps);
+    logger.info("Set the server properties to: " + authProps);
+    logger.info("Set the java properties to: " + javaProps);
 
     SecurityTestUtils tmpInstance = new SecurityTestUtils();
     try {
       tmpInstance.createSystem(authProps, javaProps);
     } catch (AuthenticationRequiredException ex) {
       if (expectedResult == AUTHREQ_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting peer: " + ex);
+        logger.info("Got expected exception when starting peer: " + ex);
         return 0;
       } else {
         fail("Got unexpected exception when starting peer", ex);
@@ -231,7 +211,7 @@ public class SecurityTestUtils {
 
     } catch (AuthenticationFailedException ex) {
       if (expectedResult == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting peer: " + ex);
+        logger.info("Got expected exception when starting peer: " + ex);
         return 0;
       } else {
         fail("Got unexpected exception when starting peer", ex);
@@ -264,7 +244,7 @@ public class SecurityTestUtils {
       server1.start();
     } catch (AuthenticationRequiredException ex) {
       if (expectedResult == AUTHREQ_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting server: " + ex);
+        logger.info("Got expected exception when starting server: " + ex);
         return 0;
       } else {
         fail("Got unexpected exception when starting server", ex);
@@ -370,7 +350,7 @@ public class SecurityTestUtils {
 
       tmpInstance.openCache();
       try {
-        getLogWriter().info("multi-user mode " + multiUserAuthMode);
+        logger.info("multi-user mode " + multiUserAuthMode);
         proxyCaches[0] = (ProxyCache) ((PoolImpl) pool).createAuthenticatedCacheView(authProps);
         if (!multiUserAuthMode) {
           fail("Expected a UnsupportedOperationException but got none in single-user mode");
@@ -378,7 +358,7 @@ public class SecurityTestUtils {
 
       } catch (UnsupportedOperationException uoe) {
         if (!multiUserAuthMode) {
-          getLogWriter().info("Got expected UnsupportedOperationException in single-user mode");
+          logger.info("Got expected UnsupportedOperationException in single-user mode");
         } else {
           fail("Got unexpected exception in multi-user mode ", uoe);
         }
@@ -401,28 +381,28 @@ public class SecurityTestUtils {
 
     } catch (AuthenticationRequiredException ex) {
       if (expectedResult == AUTHREQ_EXCEPTION || expectedResult == NOFORCE_AUTHREQ_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
 
     } catch (AuthenticationFailedException ex) {
       if (expectedResult == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
 
     } catch (ServerRefusedConnectionException ex) {
       if (expectedResult == CONNREFUSED_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
 
     } catch (GemFireSecurityException ex) {
       if (expectedResult == SECURITY_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
@@ -523,21 +503,21 @@ public class SecurityTestUtils {
 
     } catch (AuthenticationRequiredException ex) {
       if (expectedResult == AUTHREQ_EXCEPTION || expectedResult == NOFORCE_AUTHREQ_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
 
     } catch (AuthenticationFailedException ex) {
       if (expectedResult == AUTHFAIL_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
 
     } catch (ServerRefusedConnectionException ex) {
       if (expectedResult == CONNREFUSED_EXCEPTION) {
-        getLogWriter().info("Got expected exception when starting client: " + ex);
+        logger.info("Got expected exception when starting client: " + ex);
       } else {
         fail("Got unexpected exception when starting client", ex);
       }
@@ -574,7 +554,11 @@ public class SecurityTestUtils {
       File logFile = new File(name + "-locator" + port + ".log");
       FileOutputStream logOut = new FileOutputStream(logFile);
       PrintStream logStream = new PrintStream(logOut);
-      addIgnoredExceptions(expectedExceptions);
+      if (ignoredExceptions != null) {
+        for (String expectedException : expectedExceptions) {
+          addIgnoredException(expectedException);
+        }
+      }
       logStream.flush();
 
       locator = Locator.startLocatorAndDS(port, logFile, null, authProps);
@@ -587,7 +571,6 @@ public class SecurityTestUtils {
   protected static void stopLocator(final int port, final String[] expectedExceptions) {
     try {
       locator.stop();
-      removeExpectedExceptions(expectedExceptions);
 
     } catch (Exception ex) {
       fail("While stopping locator on port " + port, ex);
@@ -651,7 +634,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("PUT: MultiUser# " + i);
+      logger.info("PUT: MultiUser# " + i);
       doPutsP(num, i, expectedResults[i], false);
     }
   }
@@ -676,7 +659,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("GET_ALL" + (useTX ? " in TX" : "") + ": MultiUser# " + i);
+      logger.info("GET_ALL" + (useTX ? " in TX" : "") + ": MultiUser# " + i);
       doGetAllP(i, expectedResults[i], useTX);
     }
   }
@@ -689,7 +672,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("GET: MultiUser# " + i);
+      logger.info("GET: MultiUser# " + i);
       doGetsP(num, i, expectedResults[i], false);
     }
   }
@@ -702,7 +685,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = numOfUsers - 1; i >= 0; i--) {
-      getLogWriter().info("DESTROY: MultiUser# " + i);
+      logger.info("DESTROY: MultiUser# " + i);
       doRegionDestroysP(i, expectedResults[i]);
     }
   }
@@ -715,7 +698,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("DESTROY: MultiUser# " + i);
+      logger.info("DESTROY: MultiUser# " + i);
       doDestroysP(num, i, expectedResults[i]);
     }
   }
@@ -728,7 +711,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("INVALIDATE: MultiUser# " + i);
+      logger.info("INVALIDATE: MultiUser# " + i);
       doInvalidatesP(num, i, expectedResults[i]);
     }
   }
@@ -746,7 +729,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("CONTAINS_KEY: MultiUser# " + i);
+      logger.info("CONTAINS_KEY: MultiUser# " + i);
       doContainsKeysP(num, i, expectedResults[i], results[i]);
     }
   }
@@ -759,7 +742,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("QUERY: MultiUser# " + i);
+      logger.info("QUERY: MultiUser# " + i);
       doQueriesP(i, expectedResults[i], valueSize);
     }
   }
@@ -772,18 +755,18 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("FunctionExecute:onRegion MultiUser# " + i);
+      logger.info("FunctionExecute:onRegion MultiUser# " + i);
       doFunctionExecuteP(i, function, expectedResults[i], "region");
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("FunctionExecute:onServer MultiUser# " + i);
+      logger.info("FunctionExecute:onServer MultiUser# " + i);
       doFunctionExecuteP(i, function, expectedResults[i], "server");
     }
 
     if (!isFailOverCase) {
       for (int i = 0; i < numOfUsers; i++) {
-        getLogWriter().info("FunctionExecute:onServers MultiUser# " + i);
+        logger.info("FunctionExecute:onServers MultiUser# " + i);
         doFunctionExecuteP(i, function, expectedResults[i], "servers");
       }
     }
@@ -797,7 +780,7 @@ public class SecurityTestUtils {
     }
 
     for (int i = 0; i < numOfUsers; i++) {
-      getLogWriter().info("QueryExecute: MultiUser# " + i);
+      logger.info("QueryExecute: MultiUser# " + i);
       doQueryExecuteP(i, expectedResults[i], result);
     }
   }
@@ -839,7 +822,7 @@ public class SecurityTestUtils {
           fail("Expected " + expectedResult + " but found " + e.getClass().getSimpleName()
               + " in doSimpleGet()");
         } else {
-          getLogWriter().fine("Got expected " + e.getClass().getSimpleName() + " in doSimpleGet()");
+          logger.debug("Got expected " + e.getClass().getSimpleName() + " in doSimpleGet()");
         }
       }
     }
@@ -858,7 +841,7 @@ public class SecurityTestUtils {
           fail("Expected " + expectedResult + " but found " + e.getClass().getSimpleName()
               + " in doSimplePut()", e);
         } else {
-          getLogWriter().fine("Got expected " + e.getClass().getSimpleName() + " in doSimplePut()");
+          logger.debug("Got expected " + e.getClass().getSimpleName() + " in doSimplePut()");
         }
       }
     }
@@ -903,8 +886,6 @@ public class SecurityTestUtils {
   }
 
   protected static void closeCache() {
-    removeExpectedExceptions(ignoredExceptions);
-
     if (cache != null && !cache.isClosed()) {
       DistributedSystem sys = cache.getDistributedSystem();
       cache.close();
@@ -916,8 +897,6 @@ public class SecurityTestUtils {
   }
 
   protected static void closeCache(final Boolean keepAlive) {
-    removeExpectedExceptions(ignoredExceptions);
-
     if (cache != null && !cache.isClosed()) {
       DistributedSystem sys = cache.getDistributedSystem();
       cache.close(keepAlive);
@@ -1007,7 +986,7 @@ public class SecurityTestUtils {
 
       } catch (NoAvailableServersException ex) {
         if (expectedResult == NO_AVAILABLE_SERVERS) {
-          getLogWriter().info("Got expected NoAvailableServers when doing puts: " + ex.getCause());
+          logger.info("Got expected NoAvailableServers when doing puts: " + ex.getCause());
           continue;
         } else {
           fail("Got unexpected exception when doing puts", ex);
@@ -1016,32 +995,32 @@ public class SecurityTestUtils {
       } catch (ServerConnectivityException ex) {
         if ((expectedResult == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter()
+          logger
               .info("Got expected NotAuthorizedException when doing puts: " + ex.getCause());
           continue;
         }
 
         if ((expectedResult == AUTHREQ_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationRequiredException)) {
-          getLogWriter().info(
+          logger.info(
               "Got expected AuthenticationRequiredException when doing puts: " + ex.getCause());
           continue;
         }
 
         if ((expectedResult == AUTHFAIL_EXCEPTION)
             && (ex.getCause() instanceof AuthenticationFailedException)) {
-          getLogWriter()
+          logger
               .info("Got expected AuthenticationFailedException when doing puts: " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          logger.info("Got expected exception when doing puts: " + ex);
         } else {
           fail("Got unexpected exception when doing puts", ex);
         }
 
       } catch (Exception ex) {
         if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing puts: " + ex);
+          logger.info("Got expected exception when doing puts: " + ex);
         } else {
           fail("Got unexpected exception when doing puts", ex);
         }
@@ -1062,7 +1041,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception during getRegion: " + ex);
+        logger.info("Got expected exception during getRegion: " + ex);
       } else {
         fail("Got unexpected exception during getRegion", ex);
       }
@@ -1093,7 +1072,7 @@ public class SecurityTestUtils {
         }
 
       } catch (IllegalAccessException ex) {
-        getLogWriter().warning("Exception while getting SSL fields.", ex);
+        logger.warn("Exception while getting SSL fields.", ex);
       }
     }
     return resultFields;
@@ -1113,7 +1092,7 @@ public class SecurityTestUtils {
         assertNull(field.get(obj));
 
       } catch (IllegalAccessException ex) {
-        getLogWriter().warning("Exception while clearing SSL fields.", ex);
+        logger.warn("Exception while clearing SSL fields.", ex);
       }
     }
   }
@@ -1140,9 +1119,9 @@ public class SecurityTestUtils {
         }
 
       } catch (IllegalAccessException ex) {
-        getLogWriter().warning("Exception while clearing static SSL field.", ex);
+        logger.warn("Exception while clearing static SSL field.", ex);
       } catch (ClassCastException ex) {
-        getLogWriter().warning("Exception while clearing static SSL field.", ex);
+        logger.warn("Exception while clearing static SSL field.", ex);
       }
     }
   }
@@ -1160,7 +1139,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing query: " + ex);
+        logger.info("Got expected exception when executing query: " + ex);
       } else {
         fail("Got unexpected exception when executing query", ex);
       }
@@ -1184,7 +1163,7 @@ public class SecurityTestUtils {
 
     } catch (NoAvailableServersException ex) {
       if (expectedResult == NO_AVAILABLE_SERVERS) {
-        getLogWriter()
+        logger
             .info("Got expected NoAvailableServers when executing query: " + ex.getCause());
       } else {
         fail("Got unexpected exception when executing query", ex);
@@ -1193,17 +1172,17 @@ public class SecurityTestUtils {
     } catch (ServerConnectivityException ex) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when executing query: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing query: " + ex);
+        logger.info("Got expected exception when executing query: " + ex);
       } else {
         fail("Got unexpected exception when executing query", ex);
       }
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing query: " + ex);
+        logger.info("Got expected exception when executing query: " + ex);
       } else {
         fail("Got unexpected exception when executing query", ex);
       }
@@ -1223,7 +1202,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing function: " + ex);
+        logger.info("Got expected exception when executing function: " + ex);
       } else {
         fail("Got unexpected exception when executing function", ex);
       }
@@ -1258,7 +1237,7 @@ public class SecurityTestUtils {
 
     } catch (NoAvailableServersException ex) {
       if (expectedResult == NO_AVAILABLE_SERVERS) {
-        getLogWriter()
+        logger
             .info("Got expected NoAvailableServers when executing function: " + ex.getCause());
       } else {
         fail("Got unexpected exception when executing function", ex);
@@ -1267,10 +1246,10 @@ public class SecurityTestUtils {
     } catch (ServerConnectivityException ex) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when executing function: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing function: " + ex);
+        logger.info("Got expected exception when executing function: " + ex);
       } else {
         fail("Got unexpected exception when executing function", ex);
       }
@@ -1281,17 +1260,17 @@ public class SecurityTestUtils {
       if (expectedResult == NOTAUTHZ_EXCEPTION && (ex.getCause() instanceof NotAuthorizedException
           || (ex.getCause() instanceof ServerOperationException
               && ex.getCause().getCause() instanceof NotAuthorizedException))) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when executing function: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing function: " + ex);
+        logger.info("Got expected exception when executing function: " + ex);
       } else {
         fail("Got unexpected exception when executing function", ex);
       }
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when executing function: " + ex);
+        logger.info("Got expected exception when executing function: " + ex);
       } else {
         fail("Got unexpected exception when executing function", ex);
       }
@@ -1311,7 +1290,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        logger.info("Got expected exception when doing queries: " + ex);
       } else {
         fail("Got unexpected exception when doing queries", ex);
       }
@@ -1328,7 +1307,7 @@ public class SecurityTestUtils {
 
     } catch (NoAvailableServersException ex) {
       if (expectedResult == NO_AVAILABLE_SERVERS) {
-        getLogWriter().info("Got expected NoAvailableServers when doing queries: " + ex.getCause());
+        logger.info("Got expected NoAvailableServers when doing queries: " + ex.getCause());
       } else {
         fail("Got unexpected exception when doing queries", ex);
       }
@@ -1336,10 +1315,10 @@ public class SecurityTestUtils {
     } catch (ServerConnectivityException ex) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when doing queries: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        logger.info("Got expected exception when doing queries: " + ex);
       } else {
         fail("Got unexpected exception when doing queries", ex);
       }
@@ -1347,17 +1326,17 @@ public class SecurityTestUtils {
     } catch (QueryInvocationTargetException qite) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (qite.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when doing queries: " + qite.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + qite);
+        logger.info("Got expected exception when doing queries: " + qite);
       } else {
         fail("Got unexpected exception when doing queries", qite);
       }
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing queries: " + ex);
+        logger.info("Got expected exception when doing queries: " + ex);
       } else {
         fail("Got unexpected exception when doing queries", ex);
       }
@@ -1379,7 +1358,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+        logger.info("Got expected exception when doing containsKey: " + ex);
       } else {
         fail("Got unexpected exception when doing containsKey", ex);
       }
@@ -1396,7 +1375,7 @@ public class SecurityTestUtils {
 
       } catch (NoAvailableServersException ex) {
         if (expectedResult == NO_AVAILABLE_SERVERS) {
-          getLogWriter()
+          logger
               .info("Got expected NoAvailableServers when doing containsKey: " + ex.getCause());
           continue;
         } else {
@@ -1406,18 +1385,18 @@ public class SecurityTestUtils {
       } catch (ServerConnectivityException ex) {
         if ((expectedResult == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter()
+          logger
               .info("Got expected NotAuthorizedException when doing containsKey: " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+          logger.info("Got expected exception when doing containsKey: " + ex);
         } else {
           fail("Got unexpected exception when doing containsKey", ex);
         }
 
       } catch (Exception ex) {
         if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing containsKey: " + ex);
+          logger.info("Got expected exception when doing containsKey: " + ex);
         } else {
           fail("Got unexpected exception when doing containsKey", ex);
         }
@@ -1442,7 +1421,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+        logger.info("Got expected exception when doing invalidates: " + ex);
       } else {
         fail("Got unexpected exception when doing invalidates", ex);
       }
@@ -1457,7 +1436,7 @@ public class SecurityTestUtils {
 
       } catch (NoAvailableServersException ex) {
         if (expectedResult == NO_AVAILABLE_SERVERS) {
-          getLogWriter()
+          logger
               .info("Got expected NoAvailableServers when doing invalidates: " + ex.getCause());
           continue;
         } else {
@@ -1467,18 +1446,18 @@ public class SecurityTestUtils {
       } catch (ServerConnectivityException ex) {
         if ((expectedResult == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter()
+          logger
               .info("Got expected NotAuthorizedException when doing invalidates: " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+          logger.info("Got expected exception when doing invalidates: " + ex);
         } else {
           fail("Got unexpected exception when doing invalidates", ex);
         }
 
       } catch (Exception ex) {
         if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing invalidates: " + ex);
+          logger.info("Got expected exception when doing invalidates: " + ex);
         } else {
           fail("Got unexpected exception when doing invalidates", ex);
         }
@@ -1501,7 +1480,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing destroys: " + ex);
+        logger.info("Got expected exception when doing destroys: " + ex);
       } else {
         fail("Got unexpected exception when doing destroys", ex);
       }
@@ -1516,7 +1495,7 @@ public class SecurityTestUtils {
 
       } catch (NoAvailableServersException ex) {
         if (expectedResult == NO_AVAILABLE_SERVERS) {
-          getLogWriter()
+          logger
               .info("Got expected NoAvailableServers when doing destroys: " + ex.getCause());
           continue;
         } else {
@@ -1526,18 +1505,18 @@ public class SecurityTestUtils {
       } catch (ServerConnectivityException ex) {
         if ((expectedResult == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter()
+          logger
               .info("Got expected NotAuthorizedException when doing destroys: " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing destroys: " + ex);
+          logger.info("Got expected exception when doing destroys: " + ex);
         } else {
           fail("Got unexpected exception when doing destroys", ex);
         }
 
       } catch (Exception ex) {
         if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing destroys: " + ex);
+          logger.info("Got expected exception when doing destroys: " + ex);
         } else {
           fail("Got unexpected exception when doing destroys", ex);
         }
@@ -1557,7 +1536,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing region destroy: " + ex);
+        logger.info("Got expected exception when doing region destroy: " + ex);
       } else {
         fail("Got unexpected exception when doing region destroy", ex);
       }
@@ -1578,7 +1557,7 @@ public class SecurityTestUtils {
 
     } catch (NoAvailableServersException ex) {
       if (expectedResult == NO_AVAILABLE_SERVERS) {
-        getLogWriter()
+        logger
             .info("Got expected NoAvailableServers when doing region destroy: " + ex.getCause());
       } else {
         fail("Got unexpected exception when doing region destroy", ex);
@@ -1587,17 +1566,17 @@ public class SecurityTestUtils {
     } catch (ServerConnectivityException ex) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter().info(
+        logger.info(
             "Got expected NotAuthorizedException when doing region destroy: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing region destroy: " + ex);
+        logger.info("Got expected exception when doing region destroy: " + ex);
       } else {
         fail("Got unexpected exception when doing region destroy", ex);
       }
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing region destroy: " + ex);
+        logger.info("Got expected exception when doing region destroy: " + ex);
       } else {
         fail("Got unexpected exception when doing region destroy", ex);
       }
@@ -1642,7 +1621,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        logger.info("Got expected exception when doing getAll: " + ex);
       } else {
         fail("Got unexpected exception when doing getAll", ex);
       }
@@ -1678,7 +1657,7 @@ public class SecurityTestUtils {
 
     } catch (NoAvailableServersException ex) {
       if (expectedResult == NO_AVAILABLE_SERVERS) {
-        getLogWriter().info("Got expected NoAvailableServers when doing getAll: " + ex.getCause());
+        logger.info("Got expected NoAvailableServers when doing getAll: " + ex.getCause());
       } else {
         fail("Got unexpected exception when doing getAll", ex);
       }
@@ -1686,17 +1665,17 @@ public class SecurityTestUtils {
     } catch (ServerConnectivityException ex) {
       if ((expectedResult == NOTAUTHZ_EXCEPTION)
           && (ex.getCause() instanceof NotAuthorizedException)) {
-        getLogWriter()
+        logger
             .info("Got expected NotAuthorizedException when doing getAll: " + ex.getCause());
       } else if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        logger.info("Got expected exception when doing getAll: " + ex);
       } else {
         fail("Got unexpected exception when doing getAll", ex);
       }
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing getAll: " + ex);
+        logger.info("Got expected exception when doing getAll: " + ex);
       } else {
         fail("Got unexpected exception when doing getAll", ex);
       }
@@ -1722,7 +1701,7 @@ public class SecurityTestUtils {
 
     } catch (Exception ex) {
       if (expectedResult == OTHER_EXCEPTION) {
-        getLogWriter().info("Got expected exception when doing gets: " + ex);
+        logger.info("Got expected exception when doing gets: " + ex);
       } else {
         fail("Got unexpected exception when doing gets", ex);
       }
@@ -1744,7 +1723,7 @@ public class SecurityTestUtils {
 
       } catch (NoAvailableServersException ex) {
         if (expectedResult == NO_AVAILABLE_SERVERS) {
-          getLogWriter().info("Got expected NoAvailableServers when doing gets: " + ex.getCause());
+          logger.info("Got expected NoAvailableServers when doing gets: " + ex.getCause());
           continue;
         } else {
           fail("Got unexpected exception when doing gets", ex);
@@ -1753,18 +1732,18 @@ public class SecurityTestUtils {
       } catch (ServerConnectivityException ex) {
         if ((expectedResult == NOTAUTHZ_EXCEPTION)
             && (ex.getCause() instanceof NotAuthorizedException)) {
-          getLogWriter()
+          logger
               .info("Got expected NotAuthorizedException when doing gets: " + ex.getCause());
           continue;
         } else if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          logger.info("Got expected exception when doing gets: " + ex);
         } else {
           fail("Got unexpected exception when doing gets", ex);
         }
 
       } catch (Exception ex) {
         if (expectedResult == OTHER_EXCEPTION) {
-          getLogWriter().info("Got expected exception when doing gets: " + ex);
+          logger.info("Got expected exception when doing gets: " + ex);
         } else {
           fail("Got unexpected exception when doing gets", ex);
         }
@@ -1789,7 +1768,11 @@ public class SecurityTestUtils {
 
     DistributedSystem dsys = distributedTestCase.getSystem(sysProps);
     assertNotNull(dsys);
-    addIgnoredExceptions(ignoredExceptions);
+    if (ignoredExceptions != null) {
+      for (String ignoredException : ignoredExceptions) {
+        addIgnoredException(ignoredException);
+      }
+    }
     return dsys;
   }
 

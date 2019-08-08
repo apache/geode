@@ -27,6 +27,7 @@ include 'geode-unsafe'
 include 'geode-junit'
 include 'geode-dunit'
 include 'geode-core'
+include 'geode-log4j'
 include 'geode-web'
 include 'geode-web-api'
 include 'geode-web-management'
@@ -61,6 +62,7 @@ include 'geode-concurrency-test'
 include 'boms:geode-client-bom'
 include 'boms:geode-all-bom'
 include 'static-analysis:pmd-rules'
+
 
 ['1.0.0-incubating',
  '1.1.0',

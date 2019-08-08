@@ -29,6 +29,9 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
+import org.junit.runners.Parameterized.UseParametersRunnerFactory;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -53,7 +56,6 @@ import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.Invoke;
-import org.apache.geode.test.dunit.LogWriterUtils;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.internal.JUnit4DistributedTestCase;
@@ -77,28 +79,28 @@ import org.apache.geode.test.version.VersionManager;
  */
 
 @RunWith(Parameterized.class)
-@Parameterized.UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
+@UseParametersRunnerFactory(CategoryWithParameterizedRunnerFactory.class)
 public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase {
-  @Parameterized.Parameters(name = "from_v{0}")
+
+  @Parameters(name = "from_v{0}")
   public static Collection<String> data() {
     List<String> result = VersionManager.getInstance().getVersionsWithoutCurrent();
     if (result.size() < 1) {
       throw new RuntimeException("No older versions of Geode were found to test against");
-    } else {
-      System.out.println("running against these versions: " + result);
     }
+    System.out.println("running against these versions: " + result);
     return result;
   }
 
-  private File[] testingDirs = new File[2];
+  private final File[] testingDirs = new File[2];
 
-  private static String diskDir = "RollingUpgradeDUnitTest";
+  private static final String diskDir = "RollingUpgradeDUnitTest";
 
   // Each vm will have a cache object
   private static Cache cache;
 
   // the old version of Geode we're testing against
-  @Parameterized.Parameter
+  @Parameter
   public String oldVersion;
 
   private void deleteVMFiles() {
@@ -706,7 +708,6 @@ public abstract class RollingUpgradeDUnitTest extends JUnit4DistributedTestCase 
       throws Exception {
     props.setProperty(DistributionConfig.MCAST_PORT_NAME, "0");
     props.setProperty(DistributionConfig.LOCATORS_NAME, locatorsString);
-    props.setProperty(DistributionConfig.LOG_LEVEL_NAME, LogWriterUtils.getDUnitLogLevel());
     props.setProperty(DistributionConfig.NAME_NAME, "vm" + VM.getCurrentVMNum());
 
     InetAddress bindAddr = null;

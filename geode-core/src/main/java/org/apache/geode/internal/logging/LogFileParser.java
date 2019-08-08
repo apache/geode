@@ -15,7 +15,7 @@
 package org.apache.geode.internal.logging;
 
 import static org.apache.commons.lang3.SystemUtils.LINE_SEPARATOR;
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.logging.spi.LogWriterLevel.ALL;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

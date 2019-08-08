@@ -25,9 +25,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.test.junit.categories.LoggingTest;
 
-/**
- * Unit tests for {@link LoggingThread}.
- */
+/** Unit tests for {@link org.apache.geode.internal.logging.LoggingThread}. */
 @Category(LoggingTest.class)
 public class LoggingThreadTest {
 

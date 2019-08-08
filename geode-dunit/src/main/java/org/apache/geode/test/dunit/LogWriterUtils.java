@@ -27,7 +27,7 @@ import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
 import org.apache.geode.internal.logging.ManagerLogWriter;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
+import org.apache.geode.logging.internal.log4j.LogWriterLogger;
 
 /**
  * <code>LogWriterUtils</code> provides static utility methods to access a <code>LogWriter</code>

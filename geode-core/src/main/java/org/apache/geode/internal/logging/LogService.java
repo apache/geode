@@ -18,36 +18,18 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.StackLocator;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.internal.cache.EntriesSet;
-import org.apache.geode.internal.logging.log4j.FastLogger;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessage;
-import org.apache.geode.internal.logging.log4j.message.GemFireParameterizedMessageFactory;
+import org.apache.geode.annotations.Immutable;
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.logging.internal.LoggingProviderLoader;
+import org.apache.geode.logging.spi.LoggingProvider;
 
 /**
  * Provides Log4J2 Loggers with customized optimizations for Geode:
- *
- * <p>
- * Returned Logger is wrapped inside an instance of {@link FastLogger} which skips expensive
- * filtering, debug and trace handling with a volatile boolean. This optimization is turned on only
- * when using the default Geode {@code log4j2.xml} by checking for the existence of this property:
- *
- * <pre>
- * &lt;Property name="geode-default"&gt;true&lt;/Property&gt;
- * </pre>
- *
- * <p>
- * Returned Logger uses {@link GemFireParameterizedMessageFactory} to create
- * {@link GemFireParameterizedMessage} which excludes {@link Region}s from being handled as a
- * {@code Map} and {@link EntriesSet} from being handled as a {@code Collection}. Without this
- * change, using a {@code Region} or {@code EntriesSet} in a log statement can result in an
- * expensive operation or even a hang in the case of a {@code PartitionedRegion}.
- *
- * <p>
- * {@code LogService} only uses Log4J2 API so that any logging backend may be used.
  */
 public class LogService extends LogManager {
+
+  @Immutable
+  private static final LoggingProvider loggingProvider = new LoggingProviderLoader().load();
 
   private LogService() {
     // do not instantiate
@@ -60,26 +42,15 @@ public class LogService extends LogManager {
    */
   public static Logger getLogger() {
     String name = StackLocator.getInstance().getCallerClass(2).getName();
-    return new FastLogger(
-        LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
+    return loggingProvider.getLogger(name);
   }
 
-  public static Logger getLogger(final String name) {
-    return new FastLogger(LogManager.getLogger(name, GemFireParameterizedMessageFactory.INSTANCE));
+  public static Logger getLogger(String name) {
+    return loggingProvider.getLogger(name);
   }
 
-  /**
-   * Returns a LogWriterLogger that is decorated with the LogWriter and LogWriterI18n methods.
-   *
-   * <p>
-   * This is the bridge to LogWriter and LogWriterI18n that we need to eventually stop using in
-   * phase 1. We will switch over from a shared LogWriterLogger instance to having every GemFire
-   * class own its own private static GemFireLogger
-   *
-   * @return The LogWriterLogger for the calling class.
-   */
-  public static LogWriterLogger createLogWriterLogger(final String name,
-      final String connectionName, final boolean isSecure) {
-    return LogWriterLogger.create(name, connectionName, isSecure);
+  @VisibleForTesting
+  static LoggingProvider getLoggingProvider() {
+    return loggingProvider;
   }
 }

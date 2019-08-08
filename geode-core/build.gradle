@@ -259,29 +259,13 @@ dependencies {
   implementation('net.sf.jopt-simple:jopt-simple')
 
   //Log4j is used everywhere
-  implementation('org.apache.logging.log4j:log4j-api')
-  implementation('org.apache.logging.log4j:log4j-core') {
-    ext.optional = true
-  }
+  api('org.apache.logging.log4j:log4j-api')
 
   //Jansi is used by the CLI (maybe? it is a runtime dependency)
   runtimeOnly('org.fusesource.jansi:jansi') {
     ext.optional = true
   }
 
-  //This routes slf4j logs to log4j. Shiro and micrometer use slf4j
-  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
-    exclude module: 'slf4j-api'
-    ext.optional = true
-  }
-  //This routes commons logging logs to log4j. Several apache commons dependencies use commons logging
-  runtimeOnly('org.apache.logging.log4j:log4j-jcl') {
-    ext.optional = true
-  }
-  //This routes jdk logs to log4j. Several dependencies use JDK logs (jackson, jaxb, ...)
-  runtimeOnly('org.apache.logging.log4j:log4j-jul') {
-    ext.optional = true
-  }
   runtimeOnly('io.swagger:swagger-annotations') {
     ext.optional = true
   }
@@ -337,7 +321,6 @@ dependencies {
   //copied into it, so it is an API dependency
   api(project(':geode-management'))
 
-  jcaAnnotationProcessor 'org.apache.logging.log4j:log4j-core'
 
   jcaCompile(sourceSets.main.output)
 
@@ -370,10 +353,11 @@ dependencies {
   integrationTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  integrationTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   integrationTestCompile(project(':geode-concurrency-test'))
   integrationTestCompile('org.apache.bcel:bcel')
-  integrationTestCompile('org.apache.logging.log4j:log4j-core::tests')
-  integrationTestCompile('org.apache.logging.log4j:log4j-core::test-sources')
   integrationTestCompile('org.powermock:powermock-core')
   integrationTestCompile('org.powermock:powermock-module-junit4')
   integrationTestCompile('org.powermock:powermock-api-mockito2')
@@ -390,6 +374,9 @@ dependencies {
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
   }
+  distributedTestImplementation(project(':geode-log4j')) {
+    exclude module: 'geode-core'
+  }
   distributedTestCompile('pl.pragmatists:JUnitParams')
   distributedTestCompile('com.jayway.jsonpath:json-path-assert')
   distributedTestCompile('net.openhft:compiler')
@@ -403,11 +390,13 @@ dependencies {
   }
 
   upgradeTestRuntime(project(':geode-old-versions'))
+  upgradeTestRuntime(project(':geode-log4j'))
 
 
   performanceTestCompile(project(':geode-junit')) {
     exclude module: 'geode-core'
   }
+  performanceTestImplementation(project(':geode-log4j'))
 }
 
 jmh {

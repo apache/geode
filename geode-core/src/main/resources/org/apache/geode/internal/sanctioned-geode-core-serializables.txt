@@ -431,6 +431,7 @@ org/apache/geode/internal/util/concurrent/ReentrantSemaphore,false,holdCount:jav
 org/apache/geode/internal/util/concurrent/StoppableCondition,true,-7091681525970431937,condition:java/util/concurrent/locks/Condition,stopper:org/apache/geode/CancelCriterion
 org/apache/geode/internal/util/concurrent/StoppableReentrantReadWriteLock,true,-1185707921434766946
 org/apache/geode/lang/AttachAPINotFoundException,true,-5953162090462085551
+org/apache/geode/logging/internal/InternalSessionContext$State,false
 org/apache/geode/management/AlreadyRunningException,true,8947734854770335071
 org/apache/geode/management/DependenciesNotFoundException,true,9082304929238159814
 org/apache/geode/management/JVMMetrics,false,committedMemory:long,gcCount:long,gcTimeMillis:long,initMemory:long,maxMemory:long,totalThreads:int,usedMemory:long

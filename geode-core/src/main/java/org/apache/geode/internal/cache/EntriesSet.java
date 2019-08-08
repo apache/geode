@@ -22,13 +22,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.geode.cache.EntriesCollection;
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.cache.LocalRegion.IteratorType;
 import org.apache.geode.internal.cache.entries.AbstractRegionEntry;
 
 /** Set view of entries */
-public class EntriesSet extends AbstractSet {
+public class EntriesSet extends AbstractSet implements EntriesCollection {
 
   final LocalRegion topRegion;
 

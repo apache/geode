@@ -14,7 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.internal.logging.Configuration.STARTUP_CONFIGURATION;
+import static org.apache.geode.logging.internal.Configuration.STARTUP_CONFIGURATION;
 
 import java.io.File;
 

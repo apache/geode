@@ -17,6 +17,7 @@ package org.apache.geode.internal.cache;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.distributed.ConfigurationProperties.ENABLE_NETWORK_PARTITION_DETECTION;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
+import static org.apache.geode.distributed.ConfigurationProperties.LOG_FILE;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.dunit.VM.getHostName;
@@ -79,6 +80,10 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   private int locatorPort;
   private File locatorLog;
   private Host host;
+  private File server1Log;
+  private File server2Log;
+  private File server3Log;
+  private File server4Log;
 
   @Rule
   public DistributedRule distributedRule = new DistributedRule(VM_COUNT);
@@ -97,6 +102,11 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
   @Before
   public void setup() throws Exception {
+    server1Log = temporaryFolder.getRoot().toPath().resolve("server1.log").toFile();
+    server2Log = temporaryFolder.getRoot().toPath().resolve("server2.log").toFile();
+    server3Log = temporaryFolder.getRoot().toPath().resolve("server3.log").toFile();
+    server4Log = temporaryFolder.getRoot().toPath().resolve("server4.log").toFile();
+
     host = Host.getHost(0);
     String startingVersion = "160";
     server1 = host.getVM(startingVersion, 0);
@@ -152,17 +162,17 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
 
   private void setupPartiallyRolledVersion() throws Exception {
     locatorPort = locator.invoke(() -> startLocator());
-    server1.invoke(() -> createCacheServer());
-    server2.invoke(() -> createCacheServer());
-    server3.invoke(() -> createCacheServer());
-    server4.invoke(() -> createCacheServer());
+    server1.invoke(() -> createCacheServer(server1Log));
+    server2.invoke(() -> createCacheServer(server2Log));
+    server3.invoke(() -> createCacheServer(server3Log));
+    server4.invoke(() -> createCacheServer(server4Log));
     client.invoke(() -> createClientCache());
 
     // roll locator
     locator = rollLocatorToCurrent(locator);
     // roll server1
-    server1 = rollServerToCurrent(server1);
-    server2 = rollServerToCurrent(server2);
+    server1 = rollServerToCurrent(server1, server1Log);
+    server2 = rollServerToCurrent(server2, server2Log);
   }
 
   private int startLocator() throws IOException {
@@ -180,17 +190,18 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     return config;
   }
 
-  private void createCacheServer() throws Exception {
-    cacheRule.createCache(createServerConfig());
+  private void createCacheServer(File logFile) throws Exception {
+    cacheRule.createCache(createServerConfig(logFile));
 
     CacheServer server = cacheRule.getCache().addCacheServer();
     server.setPort(0);
     server.start();
   }
 
-  private Properties createServerConfig() {
+  private Properties createServerConfig(File logFile) {
     Properties config = createLocatorConfig();
     config.setProperty(LOCATORS, hostName + "[" + locatorPort + "]");
+    config.setProperty(LOG_FILE, logFile.getAbsolutePath());
     return config;
   }
 
@@ -210,11 +221,11 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     Locator.getLocator().stop();
   }
 
-  private VM rollServerToCurrent(VM oldServer) {
+  private VM rollServerToCurrent(VM oldServer, File logFile) {
     // Roll the server
     oldServer.invoke(() -> cacheRule.getCache().close());
     VM rollServer = host.getVM(VersionManager.CURRENT_VERSION, oldServer.getId());
-    rollServer.invoke(() -> createCacheServer());
+    rollServer.invoke(() -> createCacheServer(logFile));
     return rollServer;
   }
 

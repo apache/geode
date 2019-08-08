@@ -17,7 +17,7 @@ package org.apache.geode.internal.statistics;
 import java.io.File;
 import java.util.Optional;
 
-import org.apache.geode.internal.logging.LogFile;
+import org.apache.geode.logging.spi.LogFile;
 
 /**
  * Defines the contract enabling the {@link StatArchiveHandler} to retrieve configuration details

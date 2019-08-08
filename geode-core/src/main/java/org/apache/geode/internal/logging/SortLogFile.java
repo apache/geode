@@ -36,9 +36,8 @@ import org.apache.geode.internal.ExitCode;
  * This program sorts the entries in a GemFire log file (one written using a {@link LogWriter}) by
  * their timestamps. Note that in order to do so, we have to read the entire file into memory.
  *
- * @see MergeLogFiles
- * @see LogFileParser
- *
+ * @see org.apache.geode.internal.logging.MergeLogFiles
+ * @see org.apache.geode.internal.logging.LogFileParser
  * @since GemFire 3.0
  */
 public class SortLogFile {
