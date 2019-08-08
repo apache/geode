@@ -136,7 +136,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  protected ResultCollector executeFunction(final Function function, int timeoutMs) {
+  protected ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
     byte hasResult = 0;
     try {
       if (proxyCache != null) {
@@ -147,6 +147,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       }
 
       if (function.hasResult()) { // have Results
+        final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         hasResult = 1;
         if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
@@ -164,7 +165,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
   }
 
   protected ResultCollector executeFunction(final String functionId, boolean resultReq,
-      boolean isHA, boolean optimizeForWrite, int timeoutMs) {
+      boolean isHA, boolean optimizeForWrite, long timeout, TimeUnit unit) {
     try {
       if (proxyCache != null) {
         if (proxyCache.isClosed()) {
@@ -175,6 +176,7 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       byte hasResult = 0;
       if (resultReq) { // have Results
         hasResult = 1;
+        final int timeoutMs = TimeoutHelper.toMillis(timeout, unit);
         if (rc == null) { // Default Result Collector
           ResultCollector defaultCollector = new DefaultResultCollector();
           return executeOnServer(functionId, defaultCollector, hasResult, isHA, optimizeForWrite,
@@ -383,9 +385,9 @@ public class ServerRegionFunctionExecutor extends AbstractExecution {
       boolean isHA = functionAttributes[1] == 1;
       boolean hasResult = functionAttributes[0] == 1;
       boolean optimizeForWrite = functionAttributes[2] == 1;
-      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeoutInMs);
+      return executeFunction(functionName, hasResult, isHA, optimizeForWrite, timeout, unit);
     } else {
-      return executeFunction(functionObject, timeoutInMs);
+      return executeFunction(functionObject, timeout, unit);
     }
   }
 

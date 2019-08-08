@@ -372,7 +372,7 @@ public abstract class AbstractExecution implements InternalExecution {
               functionName));
     }
 
-    return executeFunction(functionObject, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
+    return executeFunction(functionObject, timeout, unit);
   }
 
   @Override
@@ -393,7 +393,7 @@ public abstract class AbstractExecution implements InternalExecution {
           "The Function#getID() returned null");
     }
     isFnSerializationReqd = true;
-    return executeFunction(function, (int) TimeUnit.MILLISECONDS.convert(timeout, unit));
+    return executeFunction(function, timeout, unit);
   }
 
   @Override
@@ -432,7 +432,7 @@ public abstract class AbstractExecution implements InternalExecution {
     return ignoreDepartedMembers;
   }
 
-  protected abstract ResultCollector executeFunction(Function fn, int timeoutMs);
+  protected abstract ResultCollector executeFunction(Function fn, long timeout, TimeUnit unit);
 
   /**
    * validates whether a function should execute in presence of transaction and HeapCritical

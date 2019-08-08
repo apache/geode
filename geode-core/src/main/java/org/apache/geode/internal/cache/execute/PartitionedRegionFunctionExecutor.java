@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache.execute;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.TransactionDataRebalancedException;
@@ -209,7 +210,7 @@ public class PartitionedRegionFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public ResultCollector executeFunction(final Function function, int timeoutMs) {
+  public ResultCollector executeFunction(final Function function, long timeout, TimeUnit unit) {
     if (function.hasResult()) {
       if (this.rc == null) {
         return this.pr.executeFunction(function, this, new DefaultResultCollector(),
