@@ -18,10 +18,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.geode.alerting.spi.AlertLevel;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.Alert;
-import org.apache.geode.internal.alerting.AlertLevel;
 
 /**
  * A message that is sent to a particular distribution manager to let it know that the sender is an

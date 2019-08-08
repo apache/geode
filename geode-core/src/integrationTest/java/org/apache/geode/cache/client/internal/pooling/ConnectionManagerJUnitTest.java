@@ -17,7 +17,7 @@ package org.apache.geode.cache.client.internal.pooling;
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
-import static org.apache.geode.internal.logging.LogWriterLevel.FINEST;
+import static org.apache.geode.logging.spi.LogWriterLevel.FINEST;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;

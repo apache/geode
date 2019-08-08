@@ -39,13 +39,13 @@ import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.DiskStoreStats;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.execute.FunctionServiceStats;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
 import org.apache.geode.internal.statistics.StatSamplerStats;
-import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
+import org.apache.geode.logging.spi.LogFile;
 import org.apache.geode.management.internal.beans.MemberMBeanBridge;
+import org.apache.geode.statistics.StatisticsConfig;
 import org.apache.geode.test.junit.categories.JMXTest;
 import org.apache.geode.test.junit.categories.StatisticsTest;
 

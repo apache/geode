@@ -16,6 +16,8 @@ package org.apache.geode.internal.logging;
 
 import java.io.PrintStream;
 
+import org.apache.geode.logging.spi.LogConfig;
+
 /**
  * A log writer for security related logs. This will prefix all messages with "security-" in the
  * level part of log-line for easy recognition and filtering if required. Intended usage is in all
