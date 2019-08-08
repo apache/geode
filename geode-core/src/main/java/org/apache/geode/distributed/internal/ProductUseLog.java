@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.INFO;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.INFO;
 
 import java.io.File;
 import java.io.FileNotFoundException;

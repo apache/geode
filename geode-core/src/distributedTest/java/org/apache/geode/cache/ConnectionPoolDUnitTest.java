@@ -15,7 +15,7 @@
 package org.apache.geode.cache;
 
 import static org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier.getInstance;
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.apache.geode.test.dunit.Assert.assertEquals;
 import static org.apache.geode.test.dunit.Assert.assertFalse;
 import static org.apache.geode.test.dunit.Assert.assertNotNull;

@@ -27,10 +27,12 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
 import org.apache.geode.internal.io.RollingFileHandler;
 import org.apache.geode.internal.util.LogFileUtils;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogFileDetails;
 
 /**
- * Implementation of {@link LogWriter} for distributed system members. It's just like
- * {@link LocalLogWriter} except it has support for rolling and alerts.
+ * Implementation of {@link LogWriter} for distributed system members. It's just like {@link
+ * org.apache.geode.internal.logging.LocalLogWriter} except it has support for rolling and alerts.
  *
  * @since Geode 1.0
  */

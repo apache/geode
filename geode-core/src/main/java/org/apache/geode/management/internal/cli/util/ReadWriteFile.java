@@ -28,7 +28,7 @@ import java.util.List;
 
 import org.apache.geode.cache.execute.FunctionException;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.LogLevel;
 import org.apache.geode.management.internal.cli.GfshParser;
 
 /**

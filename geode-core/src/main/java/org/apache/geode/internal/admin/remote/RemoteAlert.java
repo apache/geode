@@ -26,7 +26,7 @@ import org.apache.geode.internal.admin.Alert;
 import org.apache.geode.internal.admin.GemFireVM;
 import org.apache.geode.internal.logging.DateFormatter;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.log4j.LogLevel;
+import org.apache.geode.logging.internal.log4j.LogLevel;
 
 /**
  * Implementation of the Alert interface.

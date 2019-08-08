@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.security.shiro;
 
-import static org.apache.geode.internal.logging.Configuration.SECURITY_LOGGER_NAME;
+import static org.apache.geode.logging.internal.spi.LoggingProvider.SECURITY_LOGGER_NAME;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.shiro.SecurityUtils;

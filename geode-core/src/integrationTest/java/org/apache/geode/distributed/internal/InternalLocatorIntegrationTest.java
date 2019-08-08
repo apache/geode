@@ -37,7 +37,7 @@ import org.mockito.junit.MockitoRule;
 import org.mockito.quality.Strictness;
 
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LoggingSession;
+import org.apache.geode.logging.internal.LoggingSession;
 
 public class InternalLocatorIntegrationTest {
 

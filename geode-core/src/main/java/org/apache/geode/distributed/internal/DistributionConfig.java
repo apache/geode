@@ -203,12 +203,12 @@ import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.Config;
 import org.apache.geode.internal.ConfigSource;
-import org.apache.geode.internal.logging.LogConfig;
 import org.apache.geode.internal.logging.LogWriterImpl;
-import org.apache.geode.internal.logging.LogWriterLevel;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.tcp.Connection;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogWriterLevel;
 
 /**
  * Provides accessor (and in some cases mutator) methods for the various GemFire distribution

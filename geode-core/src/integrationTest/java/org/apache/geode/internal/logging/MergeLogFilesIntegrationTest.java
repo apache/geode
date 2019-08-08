@@ -14,7 +14,7 @@
  */
 package org.apache.geode.internal.logging;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.ALL;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.ALL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;

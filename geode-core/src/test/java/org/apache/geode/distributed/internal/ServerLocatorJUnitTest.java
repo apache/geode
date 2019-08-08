@@ -14,7 +14,7 @@
  */
 package org.apache.geode.distributed.internal;
 
-import static org.apache.geode.internal.logging.LogWriterLevel.NONE;
+import static org.apache.geode.logging.internal.spi.LogWriterLevel.NONE;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;

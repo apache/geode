@@ -31,6 +31,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.process.ProcessLauncherContext;
 import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.util.LogFileUtils;
+import org.apache.geode.logging.internal.spi.LogConfig;
 
 /**
  * Factory for creating a {@link ManagerLogWriter}.

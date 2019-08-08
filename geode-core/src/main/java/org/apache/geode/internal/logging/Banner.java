@@ -46,6 +46,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.VersionDescription;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArgumentRedactor;
+import org.apache.geode.logging.internal.ConfigurationInfo;
 
 /**
  * Utility class to print banner information at manager startup.

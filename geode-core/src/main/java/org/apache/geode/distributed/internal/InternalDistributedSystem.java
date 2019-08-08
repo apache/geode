@@ -59,6 +59,12 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.alerting.internal.AlertingSession;
+import org.apache.geode.alerting.internal.ClusterAlertMessaging;
+import org.apache.geode.alerting.internal.InternalAlertingService;
+import org.apache.geode.alerting.internal.InternalAlertingServiceFactory;
+import org.apache.geode.alerting.internal.NullAlertMessaging;
+import org.apache.geode.alerting.internal.spi.AlertLevel;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -80,10 +86,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertMessaging;
-import org.apache.geode.internal.alerting.AlertingService;
-import org.apache.geode.internal.alerting.AlertingSession;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -96,15 +98,9 @@ import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -119,6 +115,12 @@ import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
+import org.apache.geode.logging.internal.spi.LogConfig;
+import org.apache.geode.logging.internal.spi.LogConfigListener;
+import org.apache.geode.logging.internal.spi.LogConfigSupplier;
+import org.apache.geode.logging.internal.spi.LogFile;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
@@ -180,6 +182,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /** services provided by other modules */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
+
+  private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
+      new AtomicReference<>();
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -399,7 +404,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private boolean deltaEnabledOnServer = true;
 
   private final AlertingSession alertingSession;
-  private final AlertingService alertingService;
+  private final InternalAlertingService alertingService;
 
   private final LoggingSession loggingSession;
   private final Set<LogConfigListener> logConfigListeners = new HashSet<>();
@@ -531,7 +536,7 @@ public class InternalDistributedSystem extends DistributedSystem
   private InternalDistributedSystem(ConnectionConfig config,
       StatisticsManagerFactory statisticsManagerFactory) {
     alertingSession = AlertingSession.create();
-    alertingService = new AlertingService();
+    alertingService = new InternalAlertingServiceFactory().create();
     loggingSession = LoggingSession.create();
     originalConfig = config.distributionConfig();
     isReconnectingDS = config.isReconnecting();
@@ -788,7 +793,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
       startSampler();
 
-      alertingSession.createSession(new AlertMessaging(this));
+      clusterAlertMessaging.set(new ClusterAlertMessaging(this));
+      alertingService.useAlertMessaging(clusterAlertMessaging.get());
+      alertingSession.createSession(alertingService);
       alertingSession.startSession();
 
       // Log any instantiators that were registered before the log writer
@@ -1608,6 +1615,8 @@ public class InternalDistributedSystem extends DistributedSystem
           if (!attemptingToReconnect) {
             loggingSession.shutdown();
           }
+          alertingService.useAlertMessaging(new NullAlertMessaging());
+          clusterAlertMessaging.get().close();
           alertingSession.shutdown();
           // Close the config object
           config.close();
@@ -1744,7 +1753,7 @@ public class InternalDistributedSystem extends DistributedSystem
     return config;
   }
 
-  public AlertingService getAlertingService() {
+  public InternalAlertingService getAlertingService() {
     return alertingService;
   }
 
