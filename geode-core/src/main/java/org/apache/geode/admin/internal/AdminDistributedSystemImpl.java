@@ -94,10 +94,10 @@ import org.apache.geode.internal.logging.Banner;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
-import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.util.concurrent.FutureResult;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
 
 /**
  * Represents a GemFire distributed system for remote administration/management.

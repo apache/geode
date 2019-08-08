@@ -27,8 +27,8 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.logging.spi.LogFile;
 
 public class TailLogResponse extends AdminResponse {
   private static final Logger logger = LogService.getLogger();

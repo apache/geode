@@ -29,7 +29,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.NanoTimer;
 import org.apache.geode.internal.io.MainWithChildrenRollingFileHandler;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -37,6 +36,7 @@ import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.process.UncheckedPidUnavailableException;
 import org.apache.geode.internal.statistics.platform.OsStatisticsFactory;
 import org.apache.geode.internal.util.concurrent.StoppableCountDownLatch;
+import org.apache.geode.logging.spi.LogFile;
 
 /**
  * HostStatSampler implements a thread which will monitor, sample, and archive statistics. It only

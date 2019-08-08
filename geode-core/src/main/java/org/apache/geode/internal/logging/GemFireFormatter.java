@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+
 /**
  * Implementation of the standard JDK formatter that formats a message in GemFire's log format.
  */

@@ -15,15 +15,15 @@
 package org.apache.geode.management;
 
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
+import static org.apache.geode.alerting.spi.AlertLevel.ERROR;
+import static org.apache.geode.alerting.spi.AlertLevel.NONE;
+import static org.apache.geode.alerting.spi.AlertLevel.SEVERE;
+import static org.apache.geode.alerting.spi.AlertLevel.WARNING;
 import static org.apache.geode.distributed.ConfigurationProperties.HTTP_SERVICE_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_PORT;
 import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_START;
 import static org.apache.geode.distributed.ConfigurationProperties.NAME;
-import static org.apache.geode.internal.alerting.AlertLevel.ERROR;
-import static org.apache.geode.internal.alerting.AlertLevel.NONE;
-import static org.apache.geode.internal.alerting.AlertLevel.SEVERE;
-import static org.apache.geode.internal.alerting.AlertLevel.WARNING;
 import static org.apache.geode.management.JMXNotificationType.SYSTEM_ALERT;
 import static org.apache.geode.management.JMXNotificationUserData.ALERT_LEVEL;
 import static org.apache.geode.management.ManagementService.getManagementService;
@@ -62,10 +62,10 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.ArgumentCaptor;
 
+import org.apache.geode.alerting.AlertingService;
+import org.apache.geode.alerting.spi.AlertLevel;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.IgnoredException;

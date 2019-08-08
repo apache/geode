@@ -59,6 +59,10 @@ import org.apache.geode.Statistics;
 import org.apache.geode.StatisticsType;
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.alerting.AlertingService;
+import org.apache.geode.alerting.internal.ClusterAlertMessaging;
+import org.apache.geode.alerting.spi.AlertLevel;
+import org.apache.geode.alerting.spi.AlertingSession;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
@@ -81,10 +85,6 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
-import org.apache.geode.internal.alerting.AlertLevel;
-import org.apache.geode.internal.alerting.AlertMessaging;
-import org.apache.geode.internal.alerting.AlertingService;
-import org.apache.geode.internal.alerting.AlertingSession;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
@@ -97,15 +97,9 @@ import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.xmlcache.CacheServerCreation;
 import org.apache.geode.internal.config.ClusterConfigurationNotAvailableException;
 import org.apache.geode.internal.logging.InternalLogWriter;
-import org.apache.geode.internal.logging.LogConfig;
-import org.apache.geode.internal.logging.LogConfigListener;
-import org.apache.geode.internal.logging.LogConfigSupplier;
-import org.apache.geode.internal.logging.LogFile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LogWriterFactory;
-import org.apache.geode.internal.logging.LoggingSession;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.NullLoggingSession;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.offheap.MemoryAllocator;
 import org.apache.geode.internal.offheap.OffHeapStorage;
@@ -113,18 +107,24 @@ import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
 import org.apache.geode.internal.statistics.DummyStatisticsRegistry;
 import org.apache.geode.internal.statistics.GemFireStatSampler;
-import org.apache.geode.internal.statistics.StatisticsConfig;
 import org.apache.geode.internal.statistics.StatisticsManager;
 import org.apache.geode.internal.statistics.StatisticsManagerFactory;
 import org.apache.geode.internal.statistics.StatisticsRegistry;
 import org.apache.geode.internal.statistics.platform.LinuxProcFsStatistics;
 import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.util.JavaWorkarounds;
+import org.apache.geode.logging.internal.LoggingSession;
+import org.apache.geode.logging.internal.NullLoggingSession;
+import org.apache.geode.logging.spi.LogConfig;
+import org.apache.geode.logging.spi.LogConfigListener;
+import org.apache.geode.logging.spi.LogConfigSupplier;
+import org.apache.geode.logging.spi.LogFile;
 import org.apache.geode.management.ManagementException;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.security.GemFireSecurityException;
 import org.apache.geode.security.PostProcessor;
 import org.apache.geode.security.SecurityManager;
+import org.apache.geode.statistics.StatisticsConfig;
 
 /**
  * The concrete implementation of {@link DistributedSystem} that provides internal-only
@@ -795,7 +795,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
       startSampler();
 
-      alertingSession.createSession(new AlertMessaging(this));
+      alertingService.useAlertMessaging(new ClusterAlertMessaging(this));
+      alertingSession.createSession(alertingService);
       alertingSession.startSession();
 
       // Log any instantiators that were registered before the log writer

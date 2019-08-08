@@ -60,7 +60,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.geode.CancelException;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.cache.entries.OffHeapRegionEntry;
-import org.apache.geode.internal.cache.tier.sockets.command.KeySet;
 import org.apache.geode.internal.cache.wan.GatewaySenderEventImpl;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.OffHeapRegionEntryHelper;

@@ -12,68 +12,64 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.nio.file.Path;
 
-import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.Logger;
-import org.apache.logging.log4j.test.appender.ListAppender;
-import org.junit.ClassRule;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.management.internal.cli.remote.CommandExecutor;
+import org.apache.geode.distributed.LocatorLauncher;
+import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.junit.categories.GfshTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
-import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-@Category({GfshTest.class})
+@Category(GfshTest.class)
 public class GfshCommandIntegrationTest {
-  @ClassRule
-  public static LocatorStarterRule locator = new LocatorStarterRule().withAutoStart();
+
+  private static final String LOCATOR_NAME = "locator";
+
+  private int locatorPort;
+  private LocatorLauncher locatorLauncher;
 
   @Rule
-  public GfshCommandRule gfsh = new GfshCommandRule();
+  public GfshCommandRule gfshCommandRule = new GfshCommandRule();
+
+  @Rule
+  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Before
+  public void setUp() throws Exception {
+    Path locatorFolder = temporaryFolder.newFolder(LOCATOR_NAME).toPath().toAbsolutePath();
+    locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
+
+    locatorLauncher = new LocatorLauncher.Builder()
+        .setMemberName(LOCATOR_NAME)
+        .setWorkingDirectory(locatorFolder.toString())
+        .setPort(locatorPort)
+        .build();
+    locatorLauncher.start();
+  }
+
+  @After
+  public void tearDown() {
+    locatorLauncher.stop();
+  }
 
   @Test
-  public void invalidCommandWhenNotConnected() throws Exception {
-    gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
+  public void invalidCommandWhenNotConnected() {
+    gfshCommandRule.executeAndAssertThat("abc").statusIsError()
+        .containsOutput("Command 'abc' not found");
   }
 
   @Test
   public void invalidCommandWhenConnected() throws Exception {
-    gfsh.connectAndVerify(locator);
-    gfsh.executeAndAssertThat("abc").statusIsError().containsOutput("Command 'abc' not found");
-  }
-
-  @Test
-  public void commandsAreLoggedAndRedacted() {
-    Logger logger = (Logger) LogManager.getLogger(CommandExecutor.class);
-    ListAppender listAppender = new ListAppender("ListAppender");
-    logger.addAppender(listAppender);
-    listAppender.start();
-
-    gfsh.executeAndAssertThat(
-        "start locator --properties-file=unknown --J=-Dgemfire.security-password=bob")
-        .statusIsError();
-    gfsh.executeAndAssertThat("connect --jmx-manager=localhost[999] --password=secret")
-        .statusIsError();
-
-    List<LogEvent> logEvents = listAppender.getEvents();
-    assertThat(logEvents.size()).as("There should be exactly 2 log events").isEqualTo(2);
-
-    String logMessage = logEvents.get(0).getMessage().getFormattedMessage();
-    assertThat(logEvents.get(0).getMessage().getFormattedMessage()).isEqualTo(
-        "Executing command: start locator --properties-file=unknown --J=-Dgemfire.security-password=********");
-    assertThat(logEvents.get(1).getMessage().getFormattedMessage())
-        .isEqualTo("Executing command: connect --jmx-manager=localhost[999] --password=********");
-
-    logger.removeAppender(listAppender);
+    gfshCommandRule.connectAndVerify(locatorPort, GfshCommandRule.PortType.locator);
+    gfshCommandRule.executeAndAssertThat("abc").statusIsError()
+        .containsOutput("Command 'abc' not found");
   }
 }
