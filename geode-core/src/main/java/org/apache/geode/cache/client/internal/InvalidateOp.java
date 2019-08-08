@@ -16,10 +16,18 @@ package org.apache.geode.cache.client.internal;
 
 import org.apache.logging.log4j.Logger;
 
+import org.apache.geode.cache.CacheClosedException;
+import org.apache.geode.cache.Operation;
+import org.apache.geode.cache.client.AllConnectionsInUseException;
+import org.apache.geode.cache.client.ServerConnectivityException;
+import org.apache.geode.cache.client.ServerOperationException;
+import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.EntryEventImpl;
+import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.Message;
+import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 
@@ -39,11 +47,38 @@ public class InvalidateOp {
    * the server.
    *
    * @param pool the pool to use to communicate with the server.
-   * @param region the name of the region to do the entry keySet on
+   * @param regionName the name of the region to do the entry invalidate on.
+   * @param region the region to do the entry invalidate on.
+   * @param event the event for this invalidate operation
    */
-  public static void execute(ExecutablePool pool, String region, EntryEventImpl event) {
-    AbstractOp op = new InvalidateOpImpl(region, event);
-    pool.execute(op);
+  public static Object execute(ExecutablePool pool, String regionName, EntryEventImpl event,
+      boolean prSingleHopEnabled,
+      LocalRegion region) {
+    AbstractOp op = new InvalidateOpImpl(regionName, event, prSingleHopEnabled, region);
+
+    if (prSingleHopEnabled) {
+      ClientMetadataService cms = region.getCache().getClientMetadataService();
+      ServerLocation server =
+          cms.getBucketServerLocation(region, Operation.INVALIDATE, event.getKey(), null,
+              event.getCallbackArgument());
+      if (server != null) {
+        try {
+          PoolImpl poolImpl = (PoolImpl) pool;
+          boolean onlyUseExistingCnx = (poolImpl.getMaxConnections() != -1
+              && poolImpl.getConnectionCount() >= poolImpl.getMaxConnections());
+          op.setAllowDuplicateMetadataRefresh(!onlyUseExistingCnx);
+          return pool.executeOn(new ServerLocation(server.getHostName(), server.getPort()), op,
+              true, onlyUseExistingCnx);
+        } catch (AllConnectionsInUseException e) {
+        } catch (ServerConnectivityException e) {
+          if (e instanceof ServerOperationException) {
+            throw e; // fixed 44656
+          }
+          cms.removeBucketServerLocation(server);
+        }
+      }
+    }
+    return pool.execute(op);
   }
 
   private InvalidateOp() {
@@ -53,19 +88,28 @@ public class InvalidateOp {
   private static class InvalidateOpImpl extends AbstractOp {
     private EntryEventImpl event;
 
+    private boolean prSingleHopEnabled = false;
+
+    private LocalRegion region = null;
+
     /**
      * @throws org.apache.geode.SerializationException if serialization fails
      */
-    public InvalidateOpImpl(String region, EntryEventImpl event) {
+    public InvalidateOpImpl(String regionName, EntryEventImpl event, boolean prSingleHopEnabled,
+        LocalRegion region) {
       super(MessageType.INVALIDATE, event.getCallbackArgument() != null ? 4 : 3);
       Object callbackArg = event.getCallbackArgument();
       this.event = event;
-      getMessage().addStringPart(region, true);
+      this.prSingleHopEnabled = prSingleHopEnabled;
+      this.region = region;
+
+      getMessage().addStringPart(regionName, true);
       getMessage().addStringOrObjPart(event.getKeyInfo().getKey());
       getMessage().addBytesPart(event.getEventId().calcBytes());
       if (callbackArg != null) {
         getMessage().addObjPart(callbackArg);
       }
+
     }
 
     @Override
@@ -93,6 +137,26 @@ public class InvalidateOp {
         } else {
           if (logger.isDebugEnabled()) {
             logger.debug("received Invalidate response");
+          }
+        }
+      }
+      if (prSingleHopEnabled) {
+        Part part = msg.getPart(partIdx++);
+        byte[] bytesReceived = part.getSerializedForm();
+        if (bytesReceived[0] != ClientMetadataService.INITIAL_VERSION
+            && bytesReceived.length == ClientMetadataService.SIZE_BYTES_ARRAY_RECEIVED) {
+          if (this.region != null) {
+            try {
+              ClientMetadataService cms = region.getCache().getClientMetadataService();
+              int myVersion =
+                  cms.getMetaDataVersion(region, Operation.UPDATE, event.getKey(), null,
+                      event.getCallbackArgument());
+              if (myVersion != bytesReceived[0] || isAllowDuplicateMetadataRefresh()) {
+                cms.scheduleGetPRMetaData(region, false, bytesReceived[1]);
+              }
+            } catch (CacheClosedException e) {
+              return null;
+            }
           }
         }
       }
