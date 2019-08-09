@@ -159,13 +159,11 @@ public class ClientServerHostNameVerificationDistributedTest {
     clientStore.withCertificate(clientCertificate);
 
     Properties locatorSSLProps = locatorStore
-        .trustSelf()
         .trust(clientStore.alias(), clientStore.certificate())
         .trust(serverStore.alias(), serverStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerficiationForLocator);
 
     Properties serverSSLProps = serverStore
-        .trustSelf()
         .trust(locatorStore.alias(), locatorStore.certificate())
         .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerificationForServer);

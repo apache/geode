@@ -194,13 +194,11 @@ public class CustomSSLProviderDistributedTest {
     clientStore.withCertificate(clientCertificate);
 
     Properties locatorSSLProps = locatorStore
-        .trustSelf()
         .trust(serverStore.alias(), serverStore.certificate())
         .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(ALL, false, enableHostNameVerficationForLocator);
 
     Properties serverSSLProps = serverStore
-        .trustSelf()
         .trust(locatorStore.alias(), locatorStore.certificate())
         .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(ALL, true, enableHostNameVerificationForServer);

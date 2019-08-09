@@ -70,7 +70,6 @@ public class GfshHostNameVerificationDistributedTest {
     gfshStore.withCertificate(gfshCertificate);
 
     locatorStore
-        .trustSelf()
         .trust(gfshStore.alias(), gfshStore.certificate());
 
     gfshStore
@@ -128,7 +127,7 @@ public class GfshHostNameVerificationDistributedTest {
     lstore.withCertificate(locatorCertificate);
     gstore.withCertificate(gfshCertificate);
 
-    lstore.trustSelf().trust(gstore.alias(), gstore.certificate());
+    lstore.trust(gstore.alias(), gstore.certificate());
 
     gstore.trust(lstore.alias(), lstore.certificate());
 

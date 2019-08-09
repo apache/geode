@@ -113,7 +113,6 @@ public class SSLSocketHostNameVerificationIntegrationTest {
 
     CertStores certStores = CertStores.locatorStore();
     certStores.withCertificate(certBuilder);
-    certStores.trustSelf();
 
     this.distributionConfig =
         new DistributionConfigImpl(

@@ -75,7 +75,6 @@ public class TCPClientSSLIntegrationTest {
     clientStore.withCertificate(clientCertificate);
 
     Properties serverProperties = serverStore
-        .trustSelf()
         .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(LOCATOR, true, enableHostNameValidation);
 

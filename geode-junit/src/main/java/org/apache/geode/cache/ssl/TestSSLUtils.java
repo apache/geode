@@ -31,8 +31,9 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -44,15 +45,20 @@ import java.util.Map;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
 import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
@@ -63,7 +69,7 @@ public class TestSSLUtils {
 
   public static KeyPair generateKeyPair(String algorithm) throws NoSuchAlgorithmException {
     KeyPairGenerator keyGen = KeyPairGenerator.getInstance(algorithm);
-    keyGen.initialize(1024);
+    keyGen.initialize(2048);
     return keyGen.genKeyPair();
   }
 
@@ -75,16 +81,24 @@ public class TestSSLUtils {
 
   public static void createKeyStore(String filename,
       String password, String alias,
-      Key privateKey, Certificate cert) throws GeneralSecurityException, IOException {
+      Key privateKey, Certificate cert, Certificate issuer)
+      throws GeneralSecurityException, IOException {
     KeyStore ks = createEmptyKeyStore();
-    ks.setKeyEntry(alias, privateKey, password.toCharArray(), new Certificate[] {cert});
+
+    List<Certificate> chain = new ArrayList<>();
+    chain.add(cert);
+    if (issuer != null) {
+      chain.add(issuer);
+    }
+
+    ks.setKeyEntry(alias, privateKey, password.toCharArray(), chain.toArray(new Certificate[] {}));
     try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
       ks.store(out, password.toCharArray());
     }
   }
 
-  public static <T extends Certificate> void createTrustStore(
-      String filename, String password, Map<String, T> certs)
+  public static void createTrustStore(String filename, String password,
+      Map<String, X509Certificate> certs)
       throws GeneralSecurityException, IOException {
     KeyStore ks = KeyStore.getInstance("JKS");
     try (InputStream in = Files.newInputStream(Paths.get(filename))) {
@@ -92,7 +106,7 @@ public class TestSSLUtils {
     } catch (EOFException e) {
       ks = createEmptyKeyStore();
     }
-    for (Map.Entry<String, T> cert : certs.entrySet()) {
+    for (Map.Entry<String, X509Certificate> cert : certs.entrySet()) {
       ks.setCertificateEntry(cert.getKey(), cert.getValue());
     }
     try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
@@ -103,12 +117,14 @@ public class TestSSLUtils {
   public static class CertificateBuilder {
     private final int days;
     private final String algorithm;
-    private String name;
+    private X500Name name;
     private List<String> dnsNames;
     private List<InetAddress> ipAddresses;
+    private boolean isCA;
+    private X509Certificate issuer;
 
     public CertificateBuilder() {
-      this(30, "SHA1withRSA");
+      this(30, "SHA256withRSA");
     }
 
     public CertificateBuilder(int days, String algorithm) {
@@ -128,7 +144,7 @@ public class TestSSLUtils {
     }
 
     public CertificateBuilder commonName(String cn) {
-      this.name = "CN=" + cn + ", O=Geode";
+      this.name = new X500Name("CN=" + cn + ", O=Geode");
       return this;
     }
 
@@ -139,6 +155,16 @@ public class TestSSLUtils {
 
     public CertificateBuilder sanIpAddress(InetAddress hostAddress) {
       this.ipAddresses.add(hostAddress);
+      return this;
+    }
+
+    public CertificateBuilder isCA() {
+      this.isCA = true;
+      return this;
+    }
+
+    public CertificateBuilder issuedBy(X509Certificate issuer) {
+      this.issuer = issuer;
       return this;
     }
 
@@ -155,35 +181,56 @@ public class TestSSLUtils {
           : new GeneralNames(names.toArray(new GeneralName[] {})).getEncoded();
     }
 
-    public X509Certificate generate(KeyPair keyPair) throws CertificateException {
-      return this.generate(this.name, keyPair);
-    }
-
-    public X509Certificate generate(String dn, KeyPair keyPair) throws CertificateException {
+    public X509Certificate generate(PublicKey publicKey, PrivateKey privateKey)
+        throws CertificateException {
       try {
-        Security.addProvider(new BouncyCastleProvider());
         AlgorithmIdentifier sigAlgId =
             new DefaultSignatureAlgorithmIdentifierFinder().find(algorithm);
         AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
+        AsymmetricKeyParameter publicKeyAsymKeyParam =
+            PublicKeyFactory.createKey(publicKey.getEncoded());
         AsymmetricKeyParameter privateKeyAsymKeyParam =
-            PrivateKeyFactory.createKey(keyPair.getPrivate().getEncoded());
+            PrivateKeyFactory.createKey(privateKey.getEncoded());
         SubjectPublicKeyInfo subPubKeyInfo =
-            SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
+            SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());
+
         ContentSigner sigGen =
             new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(privateKeyAsymKeyParam);
-        X500Name name = new X500Name(dn);
+
         Date from = new Date();
         Date to = new Date(from.getTime() + days * 86400000L);
         BigInteger sn = new BigInteger(64, new SecureRandom());
-        X509v3CertificateBuilder v3CertGen =
-            new X509v3CertificateBuilder(name, sn, from, to, name, subPubKeyInfo);
+
+        X509v3CertificateBuilder v3CertGen;
+        if (issuer == null) {
+          // This is a self-signed certificate
+          v3CertGen = new X509v3CertificateBuilder(name, sn, from, to, name, subPubKeyInfo);
+        } else {
+          v3CertGen = new X509v3CertificateBuilder(new X500Name(issuer.getIssuerDN().getName()),
+              sn, from, to, name, subPubKeyInfo);
+        }
 
         byte[] subjectAltName = san();
         if (subjectAltName != null) {
           v3CertGen.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
         }
+
+        if (isCA) {
+          v3CertGen.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.keyCertSign));
+          v3CertGen.addExtension(Extension.basicConstraints, true, new BasicConstraints(0));
+        }
+
+        // Not strictly necessary, but this makes the certs look like those generated
+        // by `keytool`.
+        SubjectKeyIdentifier subjectKeyIdentifier =
+            new SubjectKeyIdentifier(
+                SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo(publicKeyAsymKeyParam)
+                    .getEncoded());
+        v3CertGen.addExtension(Extension.subjectKeyIdentifier, false, subjectKeyIdentifier);
+
         X509CertificateHolder certificateHolder = v3CertGen.build(sigGen);
-        return new JcaX509CertificateConverter().setProvider("BC")
+        return new JcaX509CertificateConverter()
+            .setProvider(new BouncyCastleProvider())
             .getCertificate(certificateHolder);
       } catch (CertificateException ce) {
         throw ce;

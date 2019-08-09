@@ -91,14 +91,12 @@ public class WANHostNameVerificationDistributedTest {
       throws GeneralSecurityException, IOException {
 
     Properties locatorSSLProps = locator_ln_store
-        .trustSelf()
         .trust(server_ln_store.alias(), server_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
         .propertiesWith(ALL, true, true);
 
     Properties serverSSLProps = server_ln_store
-        .trustSelf()
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
@@ -125,7 +123,6 @@ public class WANHostNameVerificationDistributedTest {
       throws GeneralSecurityException, IOException {
 
     Properties locator_ny_props = locator_ny_store
-        .trustSelf()
         .trust(server_ln_store.alias(), server_ln_store.certificate())
         .trust(server_ny_store.alias(), server_ny_store.certificate())
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
@@ -136,7 +133,6 @@ public class WANHostNameVerificationDistributedTest {
     locator_ny_props.setProperty(REMOTE_LOCATORS, "localhost[" + site1Port + "]");
 
     Properties server_ny_props = server_ny_store
-        .trustSelf()
         .trust(locator_ln_store.alias(), locator_ln_store.certificate())
         .trust(locator_ny_store.alias(), locator_ny_store.certificate())
         .trust(server_ln_store.alias(), server_ln_store.certificate())
@@ -252,12 +248,10 @@ public class WANHostNameVerificationDistributedTest {
     gwReceiver.withCertificate(gwReceiverCertificate);
 
     Properties ln_SSLProps = gwSender
-        .trustSelf()
         .trust(gwReceiver.alias(), gwReceiver.certificate())
         .propertiesWith(GATEWAY, true, true);
 
     Properties ny_SSLProps = gwReceiver
-        .trustSelf()
         .trust(gwSender.alias(), gwSender.certificate())
         .propertiesWith(GATEWAY, true, true);
 

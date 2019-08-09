@@ -33,11 +33,17 @@ import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.KeyPair;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * The {@code CertStores} class encapsulates the key and trust stores typically used by various
+ * components in a Geode cluster. It currently supports certificate collections for servers,
+ * locators and clients. All certificates are signed by a single Root Certificate Authority.
+ */
 public class CertStores {
   private final String alias;
   private final String storePrefix;
@@ -50,6 +56,10 @@ public class CertStores {
   private String keyStorePassword = "password";
 
   private X509Certificate cert;
+
+  private final X509Certificate caCertificate;
+
+  private final KeyPair rootCAKeyPair;
 
   public static CertStores locatorStore() {
     return new CertStores("locator", "locator");
@@ -66,6 +76,20 @@ public class CertStores {
   public CertStores(String alias, String storePrefix) {
     this.alias = alias;
     this.storePrefix = storePrefix;
+    try {
+      this.rootCAKeyPair = TestSSLUtils.generateKeyPair("RSA");
+      caCertificate = createCACertificate(rootCAKeyPair);
+      trustedCerts.put("ca", caCertificate);
+    } catch (Exception ex) {
+      throw new RuntimeException("Unable to create default root CA", ex);
+    }
+  }
+
+  private X509Certificate createCACertificate(KeyPair caKeyPair) throws CertificateException {
+    return new TestSSLUtils.CertificateBuilder()
+        .isCA()
+        .commonName("Test CA")
+        .generate(caKeyPair.getPublic(), caKeyPair.getPrivate());
   }
 
   public String alias() {
@@ -78,21 +102,18 @@ public class CertStores {
 
   public CertStores withCertificate(TestSSLUtils.CertificateBuilder certificateBuilder)
       throws GeneralSecurityException, IOException {
-    keyStoreFile = File.createTempFile(storePrefix + "KS", ".jks");
+    keyStoreFile = File.createTempFile(storePrefix + "-KS-", ".jks");
     withCertificate(certificateBuilder, keyStoreFile);
     return this;
   }
 
   private void withCertificate(TestSSLUtils.CertificateBuilder certificateBuilder,
       File keyStoreFile) throws GeneralSecurityException, IOException {
+    certificateBuilder.issuedBy(caCertificate);
     KeyPair keyPair = generateKeyPair("RSA");
-    cert = certificateBuilder.generate(keyPair);
-    createKeyStore(keyStoreFile.getPath(), keyStorePassword, alias, keyPair.getPrivate(), cert);
-  }
-
-  public CertStores trustSelf() {
-    this.trustedCerts.put(alias, cert);
-    return this;
+    cert = certificateBuilder.generate(keyPair.getPublic(), rootCAKeyPair.getPrivate());
+    createKeyStore(keyStoreFile.getPath(), keyStorePassword, alias, keyPair.getPrivate(), cert,
+        caCertificate);
   }
 
   public CertStores trust(String alias, X509Certificate certificate) {
@@ -114,7 +135,7 @@ public class CertStores {
   public Properties propertiesWith(String components, String protocols,
       String ciphers, boolean requireAuth, boolean endPointIdentification)
       throws GeneralSecurityException, IOException {
-    File trustStoreFile = File.createTempFile(storePrefix + "TS", ".jks");
+    File trustStoreFile = File.createTempFile(storePrefix + "-TS-", ".jks");
     trustStoreFile.deleteOnExit();
 
     createTrustStore(trustStoreFile.getPath(), trustStorePassword, trustedCerts);
