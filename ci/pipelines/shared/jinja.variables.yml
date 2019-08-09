@@ -70,10 +70,10 @@ tests:
   CPUS: "8"
   RAM: "16"
   ARTIFACT_SLUG: unittestfiles
-  CALL_STACK_TIMEOUT: "1800"
+  CALL_STACK_TIMEOUT: "1200"
   DUNIT_PARALLEL_FORKS: "0"
   GRADLE_TASK: test
-  execute_test_timeout: 10m
+  execute_test_timeout: 30m
   PARALLEL_DUNIT: "false"
   PARALLEL_GRADLE: "true"
 - name: "Acceptance"
