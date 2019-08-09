@@ -88,7 +88,6 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.cache.partitioned.PartitionMessageWithDirectReply;
 import org.apache.geode.internal.logging.LoggingThread;
-import org.apache.geode.internal.logging.log4j.AlertAppender;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.MemberShunnedException;
@@ -2584,8 +2583,6 @@ public class GMSMembershipManager implements MembershipManager {
       // cache the exception so it can be appended to ShutdownExceptions
       services.setShutdownCause(shutdownCause);
       services.getCancelCriterion().cancel(reason);
-
-      AlertAppender.stopSessionIfRunning();
 
       if (!inhibitForceDisconnectLogging) {
         logger.fatal(
