@@ -21,18 +21,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.GatewayReceiver;
 
 
 public class GatewayReceiverConfigTest {
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
 
   @Before
-  public void before() throws Exception {
-    receiver = new GatewayReceiverConfig();
+  public void before() {
+    receiver = new GatewayReceiver();
   }
 
   @Test
-  public void getId() throws Exception {
+  public void getId() {
     assertThat(receiver.getId()).isEqualTo("cluster");
 
     receiver.setGroup("group");
@@ -40,7 +41,7 @@ public class GatewayReceiverConfigTest {
   }
 
   @Test
-  public void getUri() throws Exception {
+  public void getUri() {
     assertThat(receiver.getUri())
         .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/gateways/receivers/cluster");
 

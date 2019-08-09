@@ -15,33 +15,25 @@
 
 package org.apache.geode.management.internal.configuration.validators;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
-import org.apache.geode.cache.wan.GatewayReceiver;
+import static org.apache.geode.cache.wan.GatewayReceiver.DEFAULT_END_PORT;
+import static org.apache.geode.cache.wan.GatewayReceiver.DEFAULT_START_PORT;
+
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 public class GatewayReceiverConfigValidator
-    implements ConfigurationValidator<GatewayReceiverConfig> {
+    implements ConfigurationValidator<GatewayReceiver> {
   @Override
-  public void validate(CacheElementOperation operation, GatewayReceiverConfig config)
+  public void validate(CacheElementOperation operation, GatewayReceiver config)
       throws IllegalArgumentException {
 
     if (operation == CacheElementOperation.CREATE) {
-      if (config.getBindAddress() != null) {
-        throw new IllegalArgumentException(
-            "Cannot set bindAddress when configuring gateway receiver for cluster/group.");
-      }
-
-      if (config.getHostnameForSenders() != null) {
-        throw new IllegalArgumentException(
-            "Cannot set hostname when configuring gateway receiver for cluster/group.");
-      }
-
       if (config.getStartPort() == null) {
-        config.setStartPort(GatewayReceiver.DEFAULT_START_PORT + "");
+        config.setStartPort(DEFAULT_START_PORT + "");
       }
 
       if (config.getEndPort() == null) {
-        config.setEndPort(GatewayReceiver.DEFAULT_END_PORT + "");
+        config.setEndPort(DEFAULT_END_PORT + "");
       }
 
       if (Integer.parseInt(config.getStartPort()) > Integer.parseInt(config.getEndPort())) {

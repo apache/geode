@@ -100,7 +100,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager());
     managers.put(Pdx.class, new PdxManager());
-    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
+    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
 
     // initialize the list of validators
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
