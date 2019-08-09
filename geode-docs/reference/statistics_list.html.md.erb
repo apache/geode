@@ -254,27 +254,19 @@ Statistics in a client that pertain to server-to-client data pushed from the ser
 | `messagesBeingReceived`     | Current number of message being received off the network or being processed after reception. |
 | `messageBytesBeingReceived` | Current number of bytes consumed by messages being received or processed.                    |
 
-## <a id="section_04B7D7387E584712B7710B5ED1E876BB" class="no-quick-link"></a>Client-to-Server Messaging Performance (ClientStats)
+## <a id="section_04B7D7387E584712B7710B5ED1E876BB" class="no-quick-link"></a>Client-to-Server Messaging Performance (ClientStats & ClientSendStats)
 
-These statistics are in a client and they describe all the messages sent from the client to a specific server. The primary statistics are:
+These statistics are in a client and they describe all the messages sent from the client to a specific server. The primary statistics of ClientStats are:
 
 | Statistic                              | Description                                                                                   |
 |----------------------------------------|-----------------------------------------------------------------------------------------------|
 | `clearFailures`                        | Total number of clear attempts that have failed.                                              |
 | `clears`                               | Total number of clears completed successfully.                                                |
-| `clearSendFailures`                    | Total number of clearSends that have failed.                                                  |
-| `clearSends`                           | Total number of clearSends that have completed successfully.                                  |
-| `clearSendsInProgress`                 | Current number of clearSends being executed.                                                  |
-| `clearSendTime`                        | Total amount of time, in nanoseconds, spent doing clearSends.                                 |
 | `clearsInProgress`                     | Current number of clears being executed.                                                      |
 | `clearTime`                            | Total amount of time, in nanoseconds, spent doing clears.                                     |
 | `clearTimeouts`                        | Total number of clear attempts that have timed out.                                           |
 | `closeConFailures`                     | Total number of closeCon attempts that have failed.                                           |
 | `closeCons`                            | Total number of closeCons that have completed successfully.                                   |
-| `closeConSendFailures`                 | Total number of closeConSends that have failed.                                               |
-| `closeConSends`                        | Total number of closeConSends that have completed successfully.                               |
-| `closeConSendsInProgress`              | Current number of closeConSends being executed.                                               |
-| `closeConSendTime`                     | Total amount of time, in nanoseconds, spent doing closeConSends.                              |
 | `closeConsInProgress`                  | Current number of closeCons being executed.                                                   |
 | `closeConTime`                         | Total amount of time, in nanoseconds, spent doing closeCons.                                  |
 | `closeConTimeouts`                     | Total number of closeCon attempts that have timed out.                                        |
@@ -282,74 +274,42 @@ These statistics are in a client and they describe all the messages sent from th
 | `connects`                             | Total number of times a connection has been created.                                          |
 | `containsKeyFailures`                  | Total number of containsKey attempts that have failed.                                        |
 | `containsKeys`                         | Total number of containsKeys that completed successfully.                                     |
-| `containsKeySendFailures`              | Total number of containsKeySends that have failed.                                            |
-| `containsKeySends`                     | Total number of containsKeySends that have completed successfully.                            |
-| `containsKeySendsInProgress`           | Current number of containsKeySends being executed.                                            |
-| `containsKeySendTime`                  | Total amount of time, in nanoseconds, spent doing containsKeyends.                            |
 | `containsKeysInProgress`               | Current number of containsKeys being executed.                                                |
 | `containsKeyTime`                      | Total amount of time, in nanoseconds, spent doing containsKeys.                               |
 | `containsKeyTimeouts`                  | Total number of containsKey attempts that have timed out.                                     |
 | `destroyFailures`                      | Total number of destroy attempts that have failed.                                            |
 | `destroyRegionFailures`                | Total number of destroyRegion attempts that have failed.                                      |
 | `destroyRegions`                       | Total number of destroyRegions that have completed successfully.                              |
-| `destroyRegionSendFailures`            | Total number of destroyRegionSends that have failed.                                          |
-| `destroyRegionSends`                   | Total number of destroyRegionSends that have completed successfully.                          |
-| `destroyRegionSendsInProgress`         | Current number of destroyRegionSends being executed.                                          |
-| `destroyRegionSendTime`                | Total amount of time, in nanoseconds, spent doing destroyRegionSends.                         |
 | `destroyRegionsInProgress`             | Current number of destroyRegions being executed.                                              |
 | `destroyRegionTime`                    | Total amount of time, in nanoseconds, spent doing destroyRegions.                             |
 | `destroyRegionTimeouts`                | Total number of destroyRegion attempts that have timed out.                                   |
 | `destroys`                             | Total number of destroys that have completed successfully.                                    |
-| `destroySendFailures`                  | Total number of destroySends that have failed.                                                |
-| `destroySends`                         | Total number of destroySends that have completed successfully.                                |
-| `destroySendsInProgress`               | Current number of destroySends being executed.                                                |
-| `destroySendTime`                      | Total amount of time, in nanoseconds, spent doing destroySends.                               |
 | `destroysInProgress`                   | Current number of destroys being executed.                                                    |
 | `destroyTime`                          | Total amount of time, in nanoseconds, spent doing destroys.                                   |
 | `destroyTimeouts`                      | Total number of destroy attempts that have timed out.                                         |
 | `disconnects`                          | Total number of times a connection has been destroyed.                                        |
 | `gatewayBatchFailures`                 | Total number of gatewayBatch attempts that have failed.                                       |
 | `gatewayBatchs`                        | Total number of gatewayBatchs completed successfully.                                         |
-| `gatewayBatchSendFailures`             | Total number of gatewayBatchSends that have failed.                                           |
-| `gatewayBatchSends`                    | Total number of gatewayBatchSends that have completed successfully.                           |
-| `gatewayBatchSendsInProgress`          | Current number of gatewayBatchSends being executed.                                           |
-| `gatewayBatchSendTime`                 | Total amount of time, in nanoseconds, spent doing gatewayBatchSends.                          |
 | `gatewayBatchsInProgress`              | Current number of gatewayBatchs being executed.                                               |
 | `gatewayBatchTime`                     | Total amount of time, in nanoseconds, spent doing gatewayBatchs.                              |
 | `gatewayBatchTimeouts`                 | Total number of gatewayBatch attempts that have timed out.                                    |
 | `getAllFailures`                       | Total number of getAll attempts that have failed.                                             |
 | `getAlls`                              | Total number of getAlls that have completed successfully.                                     |
-| `getAllSendFailures`                   | Total number of getAllSends that have failed.                                                 |
-| `getAllSends`                          | Total number of getAllSends that have completed successfully.                                 |
-| `getAllSendsInProgress`                | Current number of getAllSends being executed.                                                 |
-| `getAllSendTime`                       | Total amount of time, in nanoseconds, spent doing getAllSends.                                |
 | `getAllsInProgress`                    | Current number of getAlls being executed.                                                     |
 | `getAllTime`                           | Total amount of time, in nanoseconds, spent doing getAlls.                                    |
 | `getAllTimeouts`                       | Total number of getAll attempts that have timed out.                                          |
 | `getFailures`                          | Total number of get attempts that have failed.                                                |
 | `gets`                                 | Total number of gets that have completed successfully.                                        |
-| `getSendFailures`                      | Total number of getSends that have failed.                                                    |
-| `getSends`                             | Total number of getSends that have completed successfully.                                    |
-| `getSendsInProgress`                   | Current number of getSends being executed.                                                    |
-| `getSendTime`                          | Total amount of time, in nanoseconds, spent doing getSends.                                   |
 | `getsInProgress`                       | Current number of gets being executed.                                                        |
 | `getTime`                              | Total amount of time, in nanoseconds, spent doing gets.                                       |
 | `getTimeouts`                          | Total number of get attempts that have timed out.                                             |
 | `keySetFailures`                       | Total number of keySet attempts that have failed.                                             |
 | `keySets`                              | Total number of keySets that have completed successfully.                                     |
-| `keySetSendFailures`                   | Total number of keySetSends that have failed.                                                 |
-| `keySetSends`                          | Total number of keySetSends that have completed successfully.                                 |
-| `keySetSendsInProgress`                | Current number of keySetSends being executed.                                                 |
-| `keySetSendTime`                       | Total amount of time, in nanoseconds, spent doing keySetSends.                                |
 | `keySetsInProgress`                    | Current number of keySets being executed.                                                     |
 | `keySetTime`                           | Total amount of time, in nanoseconds, spent doing keySets.                                    |
 | `keySetTimeouts`                       | Total number of keySet attempts that have timed out.                                          |
 | `makePrimaryFailures`                  | Total number of makePrimary attempts that have failed.                                        |
 | `makePrimarys`                         | Total number of makePrimarys that have completed successfully.                                |
-| `makePrimarySendFailures`              | Total number of makePrimarySends that have failed.                                            |
-| `makePrimarySends`                     | Total number of makePrimarySends that have completed successfully.                            |
-| `makePrimarySendsInProgress`           | Current number of makePrimarySends being executed.                                            |
-| `makePrimarySendTime`                  | Total amount of time, in nanoseconds, spent doing makePrimarySends.                           |
 | `makePrimarysInProgress`               | Current number of makePrimarys being executed.                                                |
 | `makePrimaryTime`                      | Total amount of time, in nanoseconds, spent doing makePrimarys.                               |
 | `makePrimaryTimeouts`                  | Total number of makePrimary attempts that have timed out.                                     |
@@ -357,95 +317,213 @@ These statistics are in a client and they describe all the messages sent from th
 | `messagesBeingReceived`                | Current number of messages being received off the network or being processed after reception. |
 | `opFailures`                           | Total number of op attempts that have failed.                                                 |
 | `ops`                                  | Total number of ops that have completed successfully.                                         |
-| `opSendFailures`                       | Total number of opSends that have failed.                                                     |
-| `opSends`                              | Total number of opSends that have completed successfully.                                     |
-| `opSendsInProgress`                    | Current number of opSends being executed.                                                     |
-| `opSendTime`                           | Total amount of time, in nanoseconds, spent doing opSends.                                    |
 | `opsInProgress`                        | Current number of ops being executed.                                                         |
 | `opTime`                               | Total amount of time, in nanoseconds, spent doing ops.                                        |
 | `opTimeouts`                           | Total number of op attempts that have timed out.                                              |
 | `pingFailures`                         | Total number of ping attempts that have failed.                                               |
 | `pings`                                | Total number of pings that have completed successfully.                                       |
-| `pingSendFailures`                     | Total number of pingSends that have failed.                                                   |
-| `pingSends`                            | Total number of pingSends that have completed successfully.                                   |
-| `pingSendsInProgress`                  | Current number of pingSends being executed.                                                   |
-| `pingSendTime`                         | Total amount of time, in nanoseconds, spent doing pingSends.                                  |
 | `pingsInProgress`                      | Current number of pings being executed.                                                       |
 | `pingTime`                             | Total amount of time, in nanoseconds, spent doing pings.                                      |
 | `pingTimeouts`                         | Total number of ping attempts that have timed out.                                            |
 | `primaryAckFailures`                   | Total number of primaryAck attempts that have failed.                                         |
 | `primaryAcks`                          | Total number of primaryAcks that have completed successfully.                                 |
-| `primaryAckSendFailures`               | Total number of primaryAckSends that have failed.                                             |
-| `primaryAckSends`                      | Total number of primaryAckSends that have completed successfully.                             |
-| `primaryAckSendTime`                   | Total amount of time, in nanoseconds, spent doing primaryAckSends.                            |
-| `primaryAcksInProgress`                | Current number of primaryAcks being executed.                                                 |
 | `primaryAckTime`                       | Total amount of time, in nanoseconds, spent doing primaryAcks.                                |
 | `primaryAckTimeouts`                   | Total number of primaryAck attempts that have timed out.                                      |
 | `putAllFailures`                       | Total number of putAll attempts that have failed.                                             |
 | `putAlls`                              | Total number of putAlls that have completed successfully.                                     |
-| `putAllSendFailures`                   | Total number of putAllSends that have failed.                                                 |
-| `putAllSends`                          | Total number of putAllSends that have completed successfully.                                 |
-| `putAllSendsInProgress`                | Current number of putAllSends being executed.                                                 |
-| `putAllSendTime`                       | Total amount of time, in nanoseconds, spent doing putAllSends.                                |
 | `putAllsInProgress`                    | Current number of putAlls being executed.                                                     |
 | `putAllTime`                           | Total amount of time, in nanoseconds, spent doing putAlls.                                    |
 | `putAllTimeouts`                       | Total number of putAll attempts that have timed out.                                          |
 | `putFailures`                          | Total number of put attempts that have failed.                                                |
 | `puts`                                 | Total number of puts that have completed successfully.                                        |
-| `putSendFailures`                      | Total number of putSends that have failed.                                                    |
-| `putSends`                             | Total number of putSends that have completed successfully.                                    |
-| `putSendsInProgress`                   | Current number of putSends being executed.                                                    |
-| `putSendTime`                          | Total amount of time, in nanoseconds, spent doing putSends.                                   |
 | `putsInProgress`                       | Current number of puts being executed.                                                        |
 | `putTime`                              | Total amount of time, in nanoseconds, spent doing puts.                                       |
 | `putTimeouts`                          | Total number of put attempts that have timed out.                                             |
 | `queryFailures`                        | Total number of query attempts that have failed.                                              |
 | `querys`                               | Total number of querys completed successfully.                                                |
-| `querySendFailures`                    | Total number of querySends that have failed.                                                  |
-| `querySends`                           | Total number of querySends that have completed successfully.                                  |
-| `querySendsInProgress`                 | Current number of querySends being executed.                                                  |
-| `querySendTime`                        | Total amount of time, in nanoseconds, spent doing querySends.                                 |
 | `querysInProgress`                     | Current number of querys being executed.                                                      |
 | `queryTime`                            | Total amount of time, in nanoseconds. spent doing querys.                                     |
 | `queryTimeouts`                        | Total number of query attempts that have timed out.                                           |
 | `readyForEvents`                       | Total number of readyForEventss that have completed successfully.                             |
 | `readyForEventsFailures`               | Total number of readyForEvents attempts that have failed.                                     |
 | `readyForEventsInProgress`             | Current number of readyForEventss being executed                                              |
-| `readyForEventsSendFailures`           | Total number of readyForEventsSends that have failed.                                         |
-| `readyForEventsSends`                  | Total number of readyForEventsSends that have completed successfully.                         |
-| `readyForEventsSendsInProgress`        | Current number of readyForEventsSends being executed.                                         |
-| `readyForEventsSendTime`               | Total amount of time, in nanoseconds, spent doing readyForEventsSends.                        |
 | `readyForEventsTime`                   | Total amount of time, in nanoseconds, spent doing readyForEvents.                             |
 | `readyForEventsTimeouts`               | Total number of readyForEvents attempts that have timed out.                                  |
 | `receivedBytes`                        | Total number of bytes received from the server.                                               |
 | `registerInstantiators`                | Total number of registerInstantiators completed successfully                                  |
 | `registerInstantiatorsFailures`        | Total number of registerInstantiators attempts that have failed.                              |
-| `registerInstantiatorsSendFailures`    | Total number of registerInstantiators sends that have failed                                  |
-| `registerInstantiatorsSends`           | Total number of registerInstantiators sends that have completed successfully                  |
-| `registerInstantiatorsSendsInProgress` | Current number of registerInstantiators sends being executed                                  |
-| `registerInstantiatorsSendTime`        | Total amount of time, in nanoseconds, spent doing registerInstantiatorsSends.                 |
 | `registerInstantiatorssInProgress`     | Current number of registerInstantiators being executed                                        |
 | `registerInstantiatorsTime`            | Total amount of time, in nanoseconds, spent doing registerInstantiators.                      |
 | `registerInstantiatorsTimeouts`        | Total number of registerInstantiators attempts that have timed out.                           |
 | `registerInterestFailures`             | Total number of registerInterest attempts that have failed.                                   |
 | `registerInterests`                    | Total number of registerInterests that have completed successfully.                           |
-| `registerInterestSendFailures`         | Total number of registerInterestSends that have failed.                                       |
-| `registerInterestSends`                | Total number of registerInterestSends that have completed successfully.                       |
-| `registerInterestSendsInProgress`      | Current number of registerInterestSends being executed.                                       |
-| `registerInterestSendTime`             | Total amount of time, in nanoseconds, spent doing registerInterestSends.                      |
 | `registerInterestsInProgress`          | Current number of registerInterests being executed.                                           |
 | `registerInterestTime`                 | Total amount of time, in nanoseconds, spent doing registerInterests.                          |
 | `registerInterestTimeouts`             | Total number of registerInterest attempts that have timed out.                                |
 | `sentBytes`                            | Total number of bytes sent to the server.                                                     |
 | `unregisterInterestFailures`           | Total number of unregisterInterest attempts that have failed.                                 |
 | `unregisterInterests`                  | Total number of unregisterInterests that have completed successfully                          |
-| `unregisterInterestSendFailures`       | Total number of unregisterInterestSends that have failed.                                     |
-| `unregisterInterestSends`              | Total number of unregisterInterestSends that have completed successfully.                     |
-| `unregisterInterestSendsInProgress`    | Current number of unregisterInterestSends being executed.                                     |
-| `unregisterInterestSendTime`           | Total amount of time, in nanoseconds, spent doing unregisterInterestSends.                    |
 | `unregisterInterestsInProgress`        | Current number of unregisterInterests being executed.                                         |
 | `unregisterInterestTime`               | Total amount of time, in nanoseconds, spent doing unregisterInterests.                        |
 | `unregisterInterestTimeouts`           | Total number of unregisterInterest attempts that have timed out.                              |
+
+The primary statistics of ClientSendStats are:
+
+| Statistic                                     | Description                                                                                                                                                         |
+|-----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `addPdxTypeSendFailures`                      | Total number of addPdxType operation's request messages not sent successfully from the client to server.                                                            |
+| `addPdxTypeSendsSuccessful`                   | Total number of addPdxType operation's request messages sent successfully from the client to server.                                                                |
+| `addPdxTypeSendsInProgress`                   | Current number of addPdxType operation's request messages being send from the client to server.                                                                     |
+| `addPdxTypeSendTime`                          | Total amount of time, in nanoseconds spent sending addPdxType operation's request messages successfully/unsuccessfully from the client to server.                   |
+| `clearSendFailures`                           | Total number of clearSends that have failed.                                                                                                                        |
+| `clearSends`                                  | Total number of clearSends that have completed successfully.                                                                                                        |
+| `clearSendsInProgress`                        | Current number of clearSends being executed.                                                                                                                        |
+| `clearSendTime`                               | Total amount of time, in nanoseconds, spent doing clearSends.                                                                                                       |
+| `closeConSendFailures`                        | Total number of closeConSends that have failed.                                                                                                                     |
+| `closeConSends`                               | Total number of closeConSends that have completed successfully.                                                                                                     |
+| `closeConSendsInProgress`                     | Current number of closeConSends being executed.                                                                                                                     |
+| `closeConSendTime`                            | Total amount of time, in nanoseconds, spent doing closeConSends.                                                                                                    |
+| `closeCQSendFailures`                         | Total number of closeCQ sends that have failed.                                                                                                                     |
+| `closeCQSends`                                | Total number of closeCQ sends that have completed successfully.                                                                                                     |
+| `closeCQSendsInProgress`                      | Current number of closeCQ sends being executed.                                                                                                                     |
+| `closeCQSendTime`                             | Total amount of time, in nanoseconds spent doing closeCQ sends.                                                                                                     |
+| `createCQSendFailures`                        | Total number of createCQ sends that have failed.                                                                                                                    |
+| `createCQSends`                               | Total number of createCQ sends that have completed successfully.                                                                                                    |
+| `createCQSendsInProgress`                     | Current number of createCQ sends being executed.                                                                                                                    |
+| `createCQSendTime`                            | Total amount of time, in nanoseconds spent doing createCQ sends.                                                                                                    |
+| `commitSendFailures`                          | Total number of commit sends that have failed.                                                                                                                      |
+| `commitSends`                                 | Total number of commit sends that have completed successfully.                                                                                                      |
+| `commitSendsInProgress`                       | Current number of commit sends being executed.                                                                                                                      |
+| `commitSendTime`                              | Total amount of time, in nanoseconds spent doing commits.                                                                                                           |
+| `containsKeySendFailures`                     | Total number of containsKeySends that have failed.                                                                                                                  |
+| `containsKeySends`                            | Total number of containsKeySends that have completed successfully.                                                                                                  |
+| `containsKeySendsInProgress`                  | Current number of containsKeySends being executed.                                                                                                                  |
+| `containsKeySendTime`                         | Total amount of time, in nanoseconds, spent doing containsKeyends.                                                                                                  |
+| `destroyRegionSendFailures`                   | Total number of destroyRegionSends that have failed.                                                                                                                |
+| `destroyRegionSends`                          | Total number of destroyRegionSends that have completed successfully.                                                                                                |
+| `destroyRegionSendsInProgress`                | Current number of destroyRegionSends being executed.                                                                                                                |
+| `destroyRegionSendTime`                       | Total amount of time, in nanoseconds, spent doing destroyRegionSends.                                                                                               |
+| `destroySendFailures`                         | Total number of destroySends that have failed.                                                                                                                      |
+| `destroySends`                                | Total number of destroySends that have completed successfully.                                                                                                      |
+| `destroySendsInProgress`                      | Current number of destroySends being executed.                                                                                                                      |
+| `destroySendTime`                             | Total amount of time, in nanoseconds, spent doing destroySends.                                                                                                     |
+| `executeFunctionSendFailures`                 | Total number of Function sends that have failed.                                                                                                                    |
+| `executeFunctionSends`                        | Total number of Function sends that have completed successfully.                                                                                                    |
+| `executeFunctionSendsInProgress`              | Current number of Function sends being executed.                                                                                                                    |
+| `executeFunctionSendTime`                     | Total amount of time, in nanoseconds spent doing Function sends.                                                                                                    |
+| `gatewayBatchSendFailures`                    | Total number of gatewayBatchSends that have failed.                                                                                                                 |
+| `gatewayBatchSends`                           | Total number of gatewayBatchSends that have completed successfully.                                                                                                 |
+| `gatewayBatchSendsInProgress`                 | Current number of gatewayBatchSends being executed.                                                                                                                 |
+| `gatewayBatchSendTime`                        | Total amount of time, in nanoseconds, spent doing gatewayBatchSends.                                                                                                |
+| `getAllSendFailures`                          | Total number of getAllSends that have failed.                                                                                                                       |
+| `getAllSends`                                 | Total number of getAllSends that have completed successfully.                                                                                                       |
+| `getAllSendsInProgress`                       | Current number of getAllSends being executed.                                                                                                                       |
+| `getAllSendTime`                              | Total amount of time, in nanoseconds, spent doing getAllSends.                                                                                                      |
+| `getClientPartitionAttributesSendFailures`    | Total number of getClientPartitionAttributes operation's request messages not sent successfully from the client to server.                                          |
+| `getClientPartitionAttributesSendsInProgress` | Current number of getClientPartitionAttributes operation's request messages being send from the client to server.                                                   |
+| `getClientPartitionAttributesSendsSuccessful` | Total number of getClientPartitionAttributes operation's request messages sent successfully from the client to server.                                              |
+| `getClientPartitionAttributesSendTime`        | Total amount of time, in nanoseconds spent sending getClientPartitionAttributes operation's request messages successfully/unsuccessfully from the client to server. |
+| `getClientPRMetadataSendFailures`             | Total number of getClientPRMetadata operation's request messages not sent successfully from the client to server.                                                   |
+| `getClientPRMetadataSendsInProgress`          | Current number of getClientPRMetadata operation's request messages being send from the client to server.                                                            |
+| `getClientPRMetadataSendsSuccessful`          | Total number of getClientPRMetadata operation's request messages sent successfully from the client to server.                                                       |
+| `getClientPRMetadataSendTime`                 | Total amount of time, in nanoseconds spent sending getClientPRMetadata operation's request messages successfully/unsuccessfully from the client to server.          |
+| `getPDXIdForTypeSendFailures`                 | Total number of getPDXIdForType operation's request messages not sent successfully from the client to server.                                                       |
+| `getPDXIdForTypeSendsInProgress`              | Current number of getPDXIdForType operation's request messages being send from the client to server.                                                                |
+| `getPDXIdForTypeSendsSuccessful`              | Total number of getPDXIdForType operation's request messages sent successfully from the client to server.                                                           |
+| `getPDXIdForTypeSendTime`                     | Total amount of time, in nanoseconds spent sending getPDXIdForType operation's request messages successfully/unsuccessfully from the client to server.              |
+| `getPDXTypeByIdSendFailures`                  | Total number of getPDXTypeById operation's request messages not sent successfully from the client to server.                                                        |
+| `getPDXTypeByIdSendsInProgress`               | Current number of getPDXTypeById operation's request messages being send from the client to server.                                                                 |
+| `getPDXTypeByIdSendsSuccessful`               | Total number of getPDXTypeById operation's request messages sent successfully from the client to server.                                                            |
+| `getPDXTypeByIdSendTime`                      | Total amount of time, in nanoseconds spent sending getPDXTypeById operation's request messages successfully/unsuccessfully from the client to server.               |
+| `getEntrySendFailures`                        | Total number of getEntry sends that have failed.                                                                                                                    |
+| `getEntrySends`                               | Total number of getEntry sends that have completed successfully.                                                                                                    |
+| `getEntrySendsInProgress`                     | Current number of getEntry sends being executed.                                                                                                                    |
+| `getEntrySendTime`                            | Total amount of time, in nanoseconds spent sending getEntry messages.                                                                                               |
+| `getDurableCQsSendFailures`                   | Total number of getDurableCQs sends that have failed.                                                                                                               |
+| `getDurableCQsSends`                          | Total number of getDurableCQs sends that have completed successfully.                                                                                               |
+| `getDurableCQsSendsInProgress`                | Current number of getDurableCQs sends being executed.                                                                                                               |
+| `getDurableCQsSendTime`                       | Total amount of time, in nanoseconds spent doing getDurableCQs sends.                                                                                               |
+| `getSendFailures`                             | Total number of getSends that have failed.                                                                                                                          |
+| `getSends`                                    | Total number of getSends that have completed successfully.                                                                                                          |
+| `getSendsInProgress`                          | Current number of getSends being executed.                                                                                                                          |
+| `getSendTime`                                 | Total amount of time, in nanoseconds, spent doing getSends.                                                                                                         |
+| `invalidateSendFailures`                      | Total number of invalidate sends that have failed.                                                                                                                  |
+| `invalidateSends`                             | Total number of invalidate sends that have completed successfully.                                                                                                  |
+| `invalidateSendsInProgress`                   | Current number of invalidate sends being executed.                                                                                                                  |
+| `invalidateSendTime`                          | Total amount of time, in nanoseconds spent doing invalidates.                                                                                                       |
+| `jtaSynchronizationSendFailures`              | Total number of jtaSynchronization sends that have failed.                                                                                                          |
+| `jtaSynchronizationSends`                     | Total number of jtaSynchronization sends that have completed successfully.                                                                                          |
+| `jtaSynchronizationSendsInProgress`           | Current number of jtaSynchronization sends being executed.                                                                                                          |
+| `jtaSynchronizationSendTime`                  | Total amount of time, in nanoseconds spent doing jtaSynchronizations.                                                                                               |
+| `keySetSendFailures`                          | Total number of keySetSends that have failed.                                                                                                                       |
+| `keySetSends`                                 | Total number of keySetSends that have completed successfully.                                                                                                       |
+| `keySetSendsInProgress`                       | Current number of keySetSends being executed.                                                                                                                       |
+| `keySetSendTime`                              | Total amount of time, in nanoseconds, spent doing keySetSends.                                                                                                      |
+| `makePrimarySendFailures`                     | Total number of makePrimarySends that have failed.                                                                                                                  |
+| `makePrimarySends`                            | Total number of makePrimarySends that have completed successfully.                                                                                                  |
+| `makePrimarySendsInProgress`                  | Current number of makePrimarySends being executed.                                                                                                                  |
+| `makePrimarySendTime`                         | Total amount of time, in nanoseconds, spent doing makePrimarySends.                                                                                                 |
+| `pingSendFailures`                            | Total number of pingSends that have failed.                                                                                                                         |
+| `pingSends`                                   | Total number of pingSends that have completed successfully.                                                                                                         |
+| `pingSendsInProgress`                         | Current number of pingSends being executed.                                                                                                                         |
+| `pingSendTime`                                | Total amount of time, in nanoseconds, spent doing pingSends.                                                                                                        |
+| `primaryAckSendFailures`                      | Total number of primaryAckSends that have failed.                                                                                                                   |
+| `primaryAckSends`                             | Total number of primaryAckSends that have completed successfully.                                                                                                   |
+| `primaryAckSendTime`                          | Total amount of time, in nanoseconds, spent doing primaryAckSends.                                                                                                  |
+| `primaryAcksInProgress`                       | Current number of primaryAcks being executed.                                                                                                                       |
+| `putAllSendFailures`                          | Total number of putAllSends that have failed.                                                                                                                       |
+| `putAllSends`                                 | Total number of putAllSends that have completed successfully.                                                                                                       |
+| `putAllSendsInProgress`                       | Current number of putAllSends being executed.                                                                                                                       |
+| `putAllSendTime`                              | Total amount of time, in nanoseconds, spent doing putAllSends.                                                                                                      |
+| `putSendFailures`                             | Total number of putSends that have failed.                                                                                                                          |
+| `putSends`                                    | Total number of putSends that have completed successfully.                                                                                                          |
+| `putSendsInProgress`                          | Current number of putSends being executed.                                                                                                                          |
+| `putSendTime`                                 | Total amount of time, in nanoseconds, spent doing putSends.                                                                                                         |
+| `querySendFailures`                           | Total number of querySends that have failed.                                                                                                                        |
+| `querySends`                                  | Total number of querySends that have completed successfully.                                                                                                        |
+| `querySendsInProgress`                        | Current number of querySends being executed.                                                                                                                        |
+| `querySendTime`                               | Total amount of time, in nanoseconds, spent doing querySends.                                                                                                       |
+| `readyForEventsSendFailures`                  | Total number of readyForEventsSends that have failed.                                                                                                               |
+| `readyForEventsSends`                         | Total number of readyForEventsSends that have completed successfully.                                                                                               |
+| `readyForEventsSendsInProgress`               | Current number of readyForEventsSends being executed.                                                                                                               |
+| `readyForEventsSendTime`                      | Total amount of time, in nanoseconds, spent doing readyForEventsSends.                                                                                              |
+| `registerDataSerializersSendFailures`         | Total number of registerDataSerializers sends that have failed.                                                                                                     |
+| `registerDataSerializersSends`                | Total number of registerDataSerializers sends that have completed successfully.                                                                                     |
+| `registerDataSerializersSendInProgress`       | Current number of registerDataSerializers sends being executed.                                                                                                     |
+| `registerDataSerializersSendTime`             | Total amount of time, in nanoseconds spent doing registerDataSerializers sends.                                                                                     |
+| `registerInstantiatorsSendFailures`           | Total number of registerInstantiators sends that have failed                                                                                                        |
+| `registerInstantiatorsSends`                  | Total number of registerInstantiators sends that have completed successfully                                                                                        |
+| `registerInstantiatorsSendsInProgress`        | Current number of registerInstantiators sends being executed                                                                                                        |
+| `registerInstantiatorsSendTime`               | Total amount of time, in nanoseconds, spent doing registerInstantiatorsSends.                                                                                       |
+| `registerInterestSendFailures`                | Total number of registerInterestSends that have failed.                                                                                                             |
+| `registerInterestSends`                       | Total number of registerInterestSends that have completed successfully.                                                                                             |
+| `registerInterestSendsInProgress`             | Current number of registerInterestSends being executed.                                                                                                             |
+| `registerInterestSendTime`                    | Total amount of time, in nanoseconds, spent doing registerInterestSends.                                                                                            |
+| `removeAllSendFailures`                       | Total number of removeAll sends that have failed.                                                                                                                   |
+| `removeAllSends`                              | Total number of removeAll sends that have completed successfully.                                                                                                   |
+| `removeAllSendsInProgress`                    | Current number of removeAll sends being executed.                                                                                                                   |
+| `removeAllSendTime`                           | Total amount of time, in nanoseconds spent doing removeAll sends.                                                                                                   |
+| `rollbackSendFailures`                        | Total number of rollback sends that have failed.                                                                                                                    |
+| `rollbackSends`                               | Total number of rollback sends that have completed successfully.                                                                                                    |
+| `rollbackSendsInProgress`                     | Current number of rollback sends being executed.                                                                                                                    |
+| `rollbackSendTime`                            | Total amount of time, in nanoseconds spent doing rollbacks.                                                                                                         |
+| `sizeSendFailures`                            | Total number of size sends that have failed.                                                                                                                        |
+| `sizeSends`                                   | Total number of size sends that have completed successfully.                                                                                                        |
+| `sizeSendsInProgress`                         | Current number of size sends being executed.                                                                                                                        |
+| `sizeSendTime`                                | Total amount of time, in nanoseconds spent doing sizes.                                                                                                             |
+| `stopCQSendFailures`                          | Total number of stopCQ sends that have failed.                                                                                                                      |
+| `stopCQSends`                                 | Total number of stopCQ sends that have completed successfully.                                                                                                      |
+| `stopCQSendsInProgress`                       | Current number of stopCQ sends being executed.                                                                                                                      |
+| `stopCQSendTime`                              | Total amount of time, in nanoseconds spent doing stopCQ sends.                                                                                                      |
+| `txFailoverSendFailures`                      | Total number of txFailover sends that have failed.                                                                                                                  |
+| `txFailoverSends`                             | Total number of txFailover sends that have completed successfully.                                                                                                  |
+| `txFailoverSendsInProgress`                   | Current number of txFailover sends being executed.                                                                                                                  |
+| `txFailoverSendTime`                          | Total amount of time, in nanoseconds spent doing txFailovers.                                                                                                       |
+| `unregisterInterestSendFailures`              | Total number of unregisterInterestSends that have failed.                                                                                                           |
+| `unregisterInterestSends`                     | Total number of unregisterInterestSends that have completed successfully.                                                                                           |
+| `unregisterInterestSendsInProgress`           | Current number of unregisterInterestSends being executed.                                                                                                           |
+| `unregisterInterestSendTime`                  | Total amount of time, in nanoseconds, spent doing unregisterInterestSends.                                                                                          |
+
 
 ## <a id="section_6C247F61DB834C079A16BE92789D4692" class="no-quick-link"></a>Client Connection Pool (PoolStats)
 
