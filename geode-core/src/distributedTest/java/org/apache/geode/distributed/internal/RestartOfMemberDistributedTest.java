@@ -58,7 +58,7 @@ public class RestartOfMemberDistributedTest {
   }
 
   @Test
-  public void restartofmembers() {
+  public void exCoordinatorJoiningQuorumDoesNotThrowNullPointerException() {
     IgnoredException exp1 =
         IgnoredException.addIgnoredException(ForcedDisconnectException.class.getName());
     IgnoredException exp2 =
