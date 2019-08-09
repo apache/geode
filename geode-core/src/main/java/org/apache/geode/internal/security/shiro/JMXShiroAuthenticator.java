@@ -32,7 +32,6 @@ import javax.security.auth.Subject;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.internal.security.ResourceConstants;
 import org.apache.geode.security.AuthenticationFailedException;
-import org.apache.geode.security.ResourcePermission;
 
 /**
  * this will make JMX authentication to use Shiro for Authentication

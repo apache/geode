@@ -18,16 +18,7 @@ package org.apache.geode.management.internal.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
-
-import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,7 +27,6 @@ import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.management.MemberMXBean;
 import org.apache.geode.security.NotAuthorizedException;
 import org.apache.geode.test.junit.categories.SecurityTest;
-import org.apache.geode.test.junit.rules.ConnectionConfiguration;
 import org.apache.geode.test.junit.rules.MBeanServerConnectionRule;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
@@ -66,7 +56,8 @@ public class JmxMultipleConnectionsTest {
     System.out.println("using con1");
     assertThat(bean1.processCommand("locate entry --key=k1 --region=region1")).isNotNull();
 
-    // this is supposed to log out user "dataReadRegion2", but it logs out "dataReadRegion1" because that's the user on the thread
+    // this is supposed to log out user "dataReadRegion2", but it logs out "dataReadRegion1" because
+    // that's the user on the thread
     System.out.println("logging out con2");
     con2.disconnect();
 
