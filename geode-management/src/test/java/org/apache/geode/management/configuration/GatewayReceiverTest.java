@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.cache.configuration;
+package org.apache.geode.management.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,10 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.configuration.GatewayReceiver;
 
 
-public class GatewayReceiverConfigTest {
+public class GatewayReceiverTest {
   private GatewayReceiver receiver;
 
   @Before

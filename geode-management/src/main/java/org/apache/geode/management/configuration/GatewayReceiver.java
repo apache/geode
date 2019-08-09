@@ -28,8 +28,9 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 
 /**
- * As a configuration object, user should not be able to set bind address and
- * hostname for clients on it.
+ * Use this to configure the gateway receiver in the cluster
+ *
+ * setting the bindAddress and hostname for clients are not supported by this api.
  */
 
 public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
@@ -40,6 +41,9 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return getConfigGroup();
   }
 
+  /**
+   * the url end points to retrieve the gateway receivers
+   */
   public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
 
   @Override
@@ -47,13 +51,16 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return GATEWAY_RECEIVERS_ENDPOINTS;
   }
 
-  protected List<DeclarableType> gatewayTransportFilters = new ArrayList<>();
-  protected String startPort;
-  protected String endPort;
-  protected String maximumTimeBetweenPings;
-  protected String socketBufferSize;
-  protected boolean manualStart = false;
+  private final List<DeclarableType> gatewayTransportFilters = new ArrayList<>();
+  private String startPort;
+  private String endPort;
+  private String maximumTimeBetweenPings;
+  private String socketBufferSize;
+  private boolean manualStart = false;
 
+  /**
+   * if you modify the returned list, you will be modifying the list owned by this config object.
+   */
   public List<DeclarableType> getGatewayTransportFilters() {
     return gatewayTransportFilters;
   }

@@ -26,7 +26,7 @@ import org.apache.geode.management.internal.configuration.converters.GatewayRece
 public class GatewayReceiverConfigManager
     implements ConfigurationManager<GatewayReceiver> {
 
-  private GatewayReceiverConverter converter = new GatewayReceiverConverter();
+  private final GatewayReceiverConverter converter = new GatewayReceiverConverter();
 
   @Override
   public void add(GatewayReceiver config, CacheConfig existing) {
