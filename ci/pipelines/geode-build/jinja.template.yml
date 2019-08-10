@@ -299,6 +299,7 @@ jobs:
       outputs:
       - name: built-geode
       - name: results
+    timeout: {{build_test.EXECUTE_TEST_TIMEOUT}}
     ensure:
       do:
       - task: rsync_code_down
