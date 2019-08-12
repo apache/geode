@@ -3926,7 +3926,9 @@ public class DiskStoreImpl implements DiskStore {
             for (Map.Entry<Object, RecoveredEntry> re : entries.entrySet()) {
               Object key = re.getKey();
               Object value = re.getValue().getValue();
-              writer.snapshotEntry(new SnapshotRecord(key, value));
+              if (!Token.isRemoved(value)) {
+                writer.snapshotEntry(new SnapshotRecord(key, value));
+              }
             }
           }
 
