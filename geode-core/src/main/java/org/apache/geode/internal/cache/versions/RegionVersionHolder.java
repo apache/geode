@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MutableForTesting;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -134,6 +135,10 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
 
   public long getBitSetVersionForTesting() {
     return this.bitSetVersion;
+  }
+
+  public BitSet getBitSetForTesting() {
+    return this.bitSet;
   }
 
   private synchronized List<RVVException> getExceptions() {
@@ -245,6 +250,10 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     int length = BIT_SET_WIDTH;
     int bitCountToFlush = length * 3 / 4;
 
+    // We can only flush up to the last set bit because
+    // the exceptions list includes a "next version" that indicates a received version.
+    bitCountToFlush = bitSet.previousSetBit(bitCountToFlush);
+
     if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
       logger.trace(LogMarker.RVV_VERBOSE, "flushing RVV bitset bitSetVersion={}; bits={}",
           this.bitSetVersion, this.bitSet);
@@ -253,11 +262,11 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     // be kept in the bitset and later filled without having to create real exception objects
     if (version >= this.bitSetVersion + length + bitCountToFlush) {
       // nope - flush the whole bitset
-      addBitSetExceptions(length, version);
+      addBitSetExceptions(version);
     } else {
       // yes - flush the lower part. We can only flush up to the last set bit because
       // the exceptions list includes a "next version" that indicates a received version.
-      addBitSetExceptions(bitCountToFlush, this.bitSetVersion + bitCountToFlush);
+      addBitSetExceptions(this.bitSetVersion + bitCountToFlush);
     }
     if (logger.isTraceEnabled(LogMarker.RVV_VERBOSE)) {
       logger.trace(LogMarker.RVV_VERBOSE, "After flushing bitSetVersion={}; bits={}",
@@ -269,7 +278,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /** merge bit-set exceptions into the regular exceptions list */
   private synchronized void mergeBitSet() {
     if (this.bitSet != null && this.bitSetVersion < this.version) {
-      addBitSetExceptions((int) (this.version - this.bitSetVersion), this.version);
+      addBitSetExceptions(this.version);
     }
   }
 
@@ -280,63 +289,37 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    * adjusted and a new bitSetVersion is established.
    *
    * @param newVersion the desired new bitSetVersion, which may be > the max representable in the
-   *        bitset
-   * @param numBits the desired number of bits to flush from the bitset
+   *        bitset. This should *always* be a version that has been received, because this
+   *        method may need to create an exception up to this version, and the existance of an
+   *        exception implies that the final version was received.
+   *
+   *
    */
-  private void addBitSetExceptions(int numBits, long newVersion) {
-    final boolean isDebugEnabled_RVV = logger.isTraceEnabled(LogMarker.RVV_VERBOSE);
-    int lastSetIndex = -1;
+  private void addBitSetExceptions(long newVersion) {
 
-    if (isDebugEnabled_RVV) {
-      logger.trace(LogMarker.RVV_VERBOSE, "addBitSetExceptions({},{})", numBits, newVersion);
+    if (newVersion <= bitSetVersion) {
+      return;
     }
 
-    for (int idx = 0; idx < numBits;) {
-      int nextMissingIndex = this.bitSet.nextClearBit(idx);
-      if (nextMissingIndex < 0) {
-        break;
-      }
-
-      lastSetIndex = nextMissingIndex - 1;
-
-      int nextReceivedIndex = this.bitSet.nextSetBit(nextMissingIndex + 1);
-      long nextReceivedVersion = -1;
-      if (nextReceivedIndex > 0) {
-        lastSetIndex = nextReceivedIndex;
-        nextReceivedVersion = (long) (nextReceivedIndex) + this.bitSetVersion;
-        idx = nextReceivedIndex + 1;
-        if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV_VERBOSE,
-              "found gap in bitSet: missing bit at index={}; next set index={}", nextMissingIndex,
-              nextReceivedIndex);
-        }
-      } else {
-        // We can't flush any more bits from the bit set because there
-        // are no more received versions
-        if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV_VERBOSE,
-              "terminating flush at bit {} because of missing entries", lastSetIndex);
-        }
-        this.bitSetVersion += lastSetIndex;
-        this.bitSet.clear();
-        if (lastSetIndex != -1) {
-          this.bitSet.set(0);
-        }
-        return;
-      }
-      long nextMissingVersion = Math.max(1, nextMissingIndex + this.bitSetVersion);
-      if (nextReceivedVersion > nextMissingVersion) {
-        addException(nextMissingVersion - 1, nextReceivedVersion);
-        if (isDebugEnabled_RVV) {
-          logger.trace(LogMarker.RVV_VERBOSE, "Added rvv exception e<rv{} - rv{}>",
-              (nextMissingVersion - 1), nextReceivedVersion);
-        }
-      }
+    // Add all of the exceptions that should be flushed from the bitset as real exceptions
+    Iterator<RVVException> exceptionIterator =
+        new BitSetExceptionIterator(bitSet, bitSetVersion, newVersion);
+    while (exceptionIterator.hasNext()) {
+      addException(exceptionIterator.next());
     }
-    this.bitSet = this.bitSet.get(lastSetIndex, Math.max(lastSetIndex + 1, bitSet.size()));
-    if (lastSetIndex > 0) {
-      this.bitSetVersion = this.bitSetVersion + (long) lastSetIndex;
+
+    // Move the data in the bitset forward to reflect the new version
+    if (newVersion > bitSetVersion + bitSet.size()) {
+      // Optimization - if the new version is past the end of the bitset, just clear the bitset
+      bitSet.clear();
+    } else {
+      // Otherwise slide the bitset over to the new offset
+      int offsetIncrease = (int) (newVersion - bitSetVersion);
+      bitSet = bitSet.get(offsetIncrease, bitSet.size());
     }
+
+    // Move the bitset version
+    bitSetVersion = newVersion;
   }
 
   synchronized void recordVersion(long version) {
@@ -384,7 +367,11 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
 
   private void setVersionInBitSet(long version) {
-    this.bitSet.set((int) (version - this.bitSetVersion));
+    long bitToSet = version - this.bitSetVersion;
+    if (bitToSet > BIT_SET_WIDTH) {
+      Assert.fail("Trying to set a bit larger than the size of the bitset " + bitToSet);
+    }
+    this.bitSet.set((int) bitToSet);
   }
 
   private void logRecordVersion(long version) {
@@ -398,20 +385,25 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   /**
    * Add an exception that is older than this.bitSetVersion.
    */
-  synchronized void addException(long previousVersion, long nextVersion) {
+  synchronized void addException(final long previousVersion, final long nextVersion) {
+    RVVException newException = RVVException.createException(previousVersion, nextVersion);
+    addException(newException);
+  }
+
+  private void addException(RVVException newException) {
     if (this.exceptions == null) {
       this.exceptions = new LinkedList<RVVException>();
     }
     int i = 0;
     for (Iterator<RVVException> it = this.exceptions.iterator(); it.hasNext(); i++) {
       RVVException e = it.next();
-      if (previousVersion >= e.nextVersion) {
-        RVVException except = RVVException.createException(previousVersion, nextVersion);
+      if (newException.previousVersion >= e.nextVersion) {
+        RVVException except = newException;
         this.exceptions.add(i, except);
         return;
       }
     }
-    this.exceptions.add(RVVException.createException(previousVersion, nextVersion));
+    this.exceptions.add(newException);
   }
 
   synchronized void removeExceptionsOlderThan(long v) {

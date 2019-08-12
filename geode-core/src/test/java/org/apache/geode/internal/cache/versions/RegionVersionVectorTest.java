@@ -675,6 +675,17 @@ public class RegionVersionVectorTest {
     assertFalse(holder1.contains(4));
   }
 
+
+  @Test
+  public void recordLargeGCVersionShouldRecordSuccessfully() {
+    DiskStoreID id0 = new DiskStoreID(0, 0);
+    DiskStoreID id1 = new DiskStoreID(0, 1);
+
+    DiskRegionVersionVector rvv0 = new DiskRegionVersionVector(id0);
+
+    rvv0.recordGCVersion(id1, ((long) Integer.MAX_VALUE) - 10L);
+  }
+
   @Test
   public void testRemoveOldVersions() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
