@@ -18,9 +18,9 @@ import static org.apache.geode.management.internal.security.ResourceConstants.MI
 
 import java.security.Principal;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
 import javax.management.NotificationListener;
@@ -39,7 +39,8 @@ import org.apache.geode.security.AuthenticationFailedException;
 public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationListener {
 
   private final SecurityService securityService;
-  private Map<String, org.apache.shiro.subject.Subject> connectedUsers = new HashMap<>();
+  private final Map<String, org.apache.shiro.subject.Subject> connectedUsers =
+      new ConcurrentHashMap<>();
 
   public JMXShiroAuthenticator(SecurityService securityService) {
     this.securityService = securityService;
@@ -80,16 +81,12 @@ public class JMXShiroAuthenticator implements JMXAuthenticator, NotificationList
       JMXConnectionNotification cxNotification = (JMXConnectionNotification) notification;
       String type = cxNotification.getType();
       String connectionId = cxNotification.getConnectionId();
-      synchronized (connectedUsers) {
-        if (JMXConnectionNotification.OPENED.equals(type)) {
-          if (!connectedUsers.containsKey(connectionId)) {
-            connectedUsers.put(connectionId, securityService.getSubject());
-          }
-        } else if (JMXConnectionNotification.CLOSED.equals(type)) {
-          org.apache.shiro.subject.Subject subject = connectedUsers.remove(connectionId);
-          securityService.bindSubject(subject);
-          securityService.logout();
-        }
+      if (JMXConnectionNotification.OPENED.equals(type)) {
+        connectedUsers.put(connectionId, securityService.getSubject());
+      } else if (JMXConnectionNotification.CLOSED.equals(type)) {
+        org.apache.shiro.subject.Subject subject = connectedUsers.remove(connectionId);
+        securityService.bindSubject(subject);
+        securityService.logout();
       }
     }
   }
