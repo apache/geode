@@ -18,6 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.cache.configuration.GatewayReceiverConfig.GATEWAY_RECEIVERS_ENDPOINTS;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +35,11 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
+
 @Controller("gatewayManagement")
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class GatewayManagementController extends AbstractManagementController {
-
+  @ApiOperation(value = "list gateway-receivers")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = GATEWAY_RECEIVERS_ENDPOINTS)
   @ResponseBody
@@ -50,6 +52,7 @@ public class GatewayManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "create gateway-receiver")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'MANAGE')")
   @RequestMapping(method = RequestMethod.POST, value = GATEWAY_RECEIVERS_ENDPOINTS)
   public ResponseEntity<ClusterManagementResult> createGatewayReceiver(
