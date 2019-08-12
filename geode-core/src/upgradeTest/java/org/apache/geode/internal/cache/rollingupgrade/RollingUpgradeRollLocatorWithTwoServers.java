@@ -46,7 +46,7 @@ public class RollingUpgradeRollLocatorWithTwoServers extends RollingUpgrade2DUni
     RegionShortcut shortcut = RegionShortcut.REPLICATE;
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(2);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     String hostName = NetworkUtils.getServerHostName();
     String locatorString = getLocatorString(locatorPorts);

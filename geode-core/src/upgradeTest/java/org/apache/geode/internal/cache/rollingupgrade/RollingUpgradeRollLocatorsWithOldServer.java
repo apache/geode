@@ -40,7 +40,8 @@ public class RollingUpgradeRollLocatorsWithOldServer extends RollingUpgrade2DUni
     VM server4 = host.getVM(oldVersion, 3);
 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(3);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
+    locator2.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     String hostName = NetworkUtils.getServerHostName();
     String locatorString = getLocatorString(locatorPorts);

@@ -60,7 +60,7 @@ public class RollingUpgradeQueryReturnsCorrectResultsAfterClientAndServersAreRol
     int[] locatorPorts = new int[] {ports[0]};
     int[] csPorts = new int[] {ports[1], ports[2]};
 
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     String hostName = NetworkUtils.getServerHostName(host);
     String[] hostNames = new String[] {hostName};

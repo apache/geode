@@ -156,7 +156,7 @@ public class GFSnapshotDUnitTest extends JUnit4DistributedTestCase {
 
   private void configureAndStartLocator(final int locatorPort, final String serverHostName,
       final Properties properties) throws IOException {
-    DistributedTestUtils.deleteLocatorStateFile();
+    DistributedTestUtils.deleteLocatorStateFile(locatorPort);
 
     final String memberName = getUniqueName() + "-locator";
     final File workingDirectory = temporaryFolder.newFolder(memberName);

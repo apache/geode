@@ -60,7 +60,7 @@ public class RollingUpgradeOplogMagicSeqBackwardCompactibility
     String hostName = NetworkUtils.getServerHostName();
     String locatorsString = getLocatorString(locatorPorts);
 
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    locator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     try {
       locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),

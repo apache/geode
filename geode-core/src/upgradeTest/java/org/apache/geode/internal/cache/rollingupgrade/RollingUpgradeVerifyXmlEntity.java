@@ -45,7 +45,7 @@ public class RollingUpgradeVerifyXmlEntity extends RollingUpgrade2DUnitTestBase 
     int[] locatorPorts = AvailablePortHelper.getRandomAvailableTCPPorts(1);
     String hostName = NetworkUtils.getServerHostName();
     String locatorsString = getLocatorString(locatorPorts);
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    oldLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     try {
       // Start locator

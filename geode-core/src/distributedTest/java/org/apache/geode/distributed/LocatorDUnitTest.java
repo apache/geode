@@ -102,6 +102,7 @@ import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DUnitBlackboard;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.IgnoredException;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.RMIException;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -162,7 +163,7 @@ public class LocatorDUnitTest implements Serializable {
     port2 = ports[1];
     port3 = ports[2];
     port4 = ports[3];
-    deleteLocatorStateFile(port1, port2, port3, port4);
+    Invoke.invokeInEveryVM(() -> deleteLocatorStateFile(port1, port2, port3, port4));
   }
 
   @After
@@ -178,11 +179,13 @@ public class LocatorDUnitTest implements Serializable {
     }
 
     // delete locator state files so they don't accidentally get used by other tests
-    for (int port : new int[] {port1, port2, port3, port4}) {
-      if (port > 0) {
-        deleteLocatorStateFile(port);
+    Invoke.invokeInEveryVM(() -> {
+      for (int port : new int[] {port1, port2, port3, port4}) {
+        if (port > 0) {
+          deleteLocatorStateFile(port);
+        }
       }
-    }
+    });
   }
 
   private static DUnitBlackboard getBlackboard() {
