@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,7 @@ import org.apache.geode.annotations.Experimental;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
 @Experimental
-public class GatewayReceiverConfig {
+public class GatewayReceiverConfig implements Serializable {
   @XmlElement(name = "gateway-transport-filter",
       namespace = "http://geode.apache.org/schema/cache")
   protected List<DeclarableType> gatewayTransportFilters;

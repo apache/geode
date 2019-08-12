@@ -79,7 +79,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'group1' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'group1' already exists on member(s) server-1.");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort("5002");
@@ -93,7 +93,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup(null);
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'cluster' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'cluster' already exists on member(s) server-1.");
 
     ClusterManagementListResultAssert<GatewayReceiver, GatewayReceiverInfo> listAssert =
         assertManagementListResult(cms.list(new GatewayReceiver())).isSuccessful();
