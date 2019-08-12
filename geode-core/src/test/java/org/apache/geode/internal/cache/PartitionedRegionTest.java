@@ -16,6 +16,7 @@ package org.apache.geode.internal.cache;
 
 import static org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl.getSenderIdFromAsyncEventQueueId;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,6 +43,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
@@ -59,7 +61,8 @@ import org.apache.geode.test.fake.Fakes;
 public class PartitionedRegionTest {
   private InternalCache internalCache;
   private PartitionedRegion partitionedRegion;
-  private Properties gemfireProperties = new Properties();
+  @SuppressWarnings("deprecation")
+  private AttributesFactory attributesFactory;
 
   @Before
   public void setup() {
@@ -68,15 +71,16 @@ public class PartitionedRegionTest {
     InternalResourceManager resourceManager =
         mock(InternalResourceManager.class, RETURNS_DEEP_STUBS);
     when(internalCache.getInternalResourceManager()).thenReturn(resourceManager);
-    @SuppressWarnings("deprecation")
-    AttributesFactory attributesFactory = new AttributesFactory();
+    attributesFactory = new AttributesFactory();
     attributesFactory.setPartitionAttributes(
         new PartitionAttributesFactory().setTotalNumBuckets(1).setRedundantCopies(1).create());
     partitionedRegion = new PartitionedRegion("prTestRegion", attributesFactory.create(), null,
         internalCache, mock(InternalRegionArguments.class));
     DistributedSystem mockDistributedSystem = mock(DistributedSystem.class);
     when(internalCache.getDistributedSystem()).thenReturn(mockDistributedSystem);
-    when(mockDistributedSystem.getProperties()).thenReturn(gemfireProperties);
+    when(mockDistributedSystem.getProperties()).thenReturn(new Properties());
+    when(mockDistributedSystem.createAtomicStatistics(any(), any()))
+        .thenReturn(mock(Statistics.class));
   }
 
   @SuppressWarnings("unused")
@@ -301,5 +305,13 @@ public class PartitionedRegionTest {
     assertThat(partitionedRegion.filterOutNonParallelAsyncEventQueues(
         Stream.of("parallel", "serial", "anotherParallel").collect(Collectors.toSet())))
             .isNotEmpty().containsExactly("parallel", "anotherParallel");
+  }
+
+  @Test
+  public void getLocalSizeDoesNotThrowIfRegionUninitialized() {
+    partitionedRegion = new PartitionedRegion("region", attributesFactory.create(), null,
+        internalCache, mock(InternalRegionArguments.class));
+
+    assertThatCode(partitionedRegion::getLocalSize).doesNotThrowAnyException();
   }
 }
