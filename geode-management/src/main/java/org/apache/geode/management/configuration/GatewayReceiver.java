@@ -51,7 +51,7 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return GATEWAY_RECEIVERS_ENDPOINTS;
   }
 
-  private final List<DeclarableType> gatewayTransportFilters = new ArrayList<>();
+  private List<DeclarableType> gatewayTransportFilters = new ArrayList<>();
   private String startPort;
   private String endPort;
   private String maximumTimeBetweenPings;
@@ -65,8 +65,9 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return gatewayTransportFilters;
   }
 
-  public void addGatewayTransportFilter(DeclarableType gatewayTransportFilter) {
-    this.gatewayTransportFilters.add(gatewayTransportFilter);
+  public void setGatewayTransportFilters(
+      List<DeclarableType> gatewayTransportFilters) {
+    this.gatewayTransportFilters = gatewayTransportFilters;
   }
 
   public String getStartPort() {
