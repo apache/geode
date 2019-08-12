@@ -57,3 +57,12 @@ compileTestJava {
   options.forkOptions.executable = project.findJavac()
   options.compilerArgs << '-XDignore.symbol.file'
 }
+
+ext.moduleName = group + '.unsafe'
+
+jar {
+  inputs.property("moduleName", moduleName)
+  manifest {
+    attributes('Automatic-Module-Name': moduleName)
+  }
+}
