@@ -53,7 +53,7 @@ import org.apache.geode.security.ResourcePermission.Resource;
 @RequestMapping(MANAGEMENT_API_VERSION)
 public class RegionManagementController extends AbstractManagementController {
 
-  @ApiOperation(value = "create regions")
+  @ApiOperation(value = "create region")
   @ApiResponses({@ApiResponse(code = 200, message = "OK."),
       @ApiResponse(code = 401, message = "Invalid Username or Password."),
       @ApiResponse(code = 403, message = "Insufficient privileges for operation."),
@@ -69,6 +69,7 @@ public class RegionManagementController extends AbstractManagementController {
         result.isSuccessful() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
+  @ApiOperation(value = "list regions")
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ')")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT)
   @ResponseBody
@@ -85,6 +86,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.list(filter);
   }
 
+  @ApiOperation(value = "get region")
   @RequestMapping(method = RequestMethod.GET, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
   public ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> getRegion(
@@ -95,6 +97,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.get(config);
   }
 
+  @ApiOperation(value = "delete region")
   @PreAuthorize("@securityService.authorize('DATA', 'MANAGE')")
   @RequestMapping(method = RequestMethod.DELETE, value = REGION_CONFIG_ENDPOINT + "/{id}")
   @ResponseBody
@@ -109,6 +112,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.delete(config);
   }
 
+  @ApiOperation(value = "list indexes")
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
@@ -140,6 +144,7 @@ public class RegionManagementController extends AbstractManagementController {
     return result;
   }
 
+  @ApiOperation(value = "get index")
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
