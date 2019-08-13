@@ -170,8 +170,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   public ClientUpdateMessageImpl(EnumListenerEvent operation, LocalRegion region,
       Object keyOfInterest, Object value, byte[] delta, byte valueIsObject, Object callbackArgument,
       ClientProxyMembershipID memberId, EventID eventIdentifier, VersionTag versionTag) {
-    // this._clientInterestList = new HashSet();
-    // this._clientInterestListInv = new HashSet();
     this._operation = operation;
     this._regionName = region.getFullPath();
     this._keyOfInterest = keyOfInterest;
@@ -195,8 +193,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    */
   protected ClientUpdateMessageImpl(EnumListenerEvent operation, ClientProxyMembershipID memberId,
       EventID eventIdentifier) {
-    // this._clientInterestList = new HashSet();
-    // this._clientInterestListInv = new HashSet();
     this._operation = operation;
     this._membershipId = memberId;
     this._eventIdentifier = eventIdentifier;
@@ -207,7 +203,6 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    *
    */
   public ClientUpdateMessageImpl() {
-
   }
 
   @Override
