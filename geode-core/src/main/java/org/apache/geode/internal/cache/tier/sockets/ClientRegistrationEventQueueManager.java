@@ -15,10 +15,8 @@
 
 package org.apache.geode.internal.cache.tier.sockets;
 
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.logging.log4j.Logger;
@@ -29,6 +27,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.LocalRegion;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 
 /**
@@ -38,8 +37,8 @@ import org.apache.geode.internal.logging.LogService;
  */
 class ClientRegistrationEventQueueManager {
   private static final Logger logger = LogService.getLogger();
-  private final List<ClientRegistrationEventQueue> registeringProxyEventQueues =
-      new CopyOnWriteArrayList<>();
+  private final Set<ClientRegistrationEventQueue> registeringProxyEventQueues =
+      new ConcurrentHashSet<>();
 
   void add(final InternalCacheEvent event,
       final Conflatable conflatable,
