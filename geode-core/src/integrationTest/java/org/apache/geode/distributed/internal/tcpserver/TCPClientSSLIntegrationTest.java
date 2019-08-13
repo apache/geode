@@ -36,7 +36,8 @@ import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.PoolStatHelper;
@@ -55,6 +56,7 @@ public class TCPClientSSLIntegrationTest {
   private int port;
   private FakeTcpServer server;
   private TcpClient client;
+  private CertificateMaterial ca;
 
   @Rule
   public RestoreSystemProperties restoreSystemProperties = new RestoreSystemProperties();
@@ -62,24 +64,29 @@ public class TCPClientSSLIntegrationTest {
   @Before
   public void setup() {
     SocketCreatorFactory.setDistributionConfig(new DistributionConfigImpl(new Properties()));
+
+    ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
   }
 
-  private void startServerAndClient(CertificateBuilder serverCertificate,
-      CertificateBuilder clientCertificate, boolean enableHostNameValidation)
+  private void startServerAndClient(CertificateMaterial serverCertificate,
+      CertificateMaterial clientCertificate, boolean enableHostNameValidation)
       throws GeneralSecurityException, IOException {
 
     CertStores serverStore = CertStores.locatorStore();
-    serverStore.withCertificate(serverCertificate);
+    serverStore.withCertificate("server", serverCertificate);
+    serverStore.trust("ca", ca);
 
     CertStores clientStore = CertStores.clientStore();
-    clientStore.withCertificate(clientCertificate);
+    clientStore.withCertificate("client", clientCertificate);
+    clientStore.trust("ca", ca);
 
     Properties serverProperties = serverStore
-        .trust(clientStore.alias(), clientStore.certificate())
         .propertiesWith(LOCATOR, true, enableHostNameValidation);
 
     Properties clientProperties = clientStore
-        .trust(serverStore.alias(), serverStore.certificate())
         .propertiesWith(LOCATOR, true, enableHostNameValidation);
 
     startTcpServer(serverProperties);
@@ -107,12 +114,16 @@ public class TCPClientSSLIntegrationTest {
 
   @Test
   public void clientConnectsIfServerCertificateHasHostname() throws Exception {
-    CertificateBuilder serverCertificate = new CertificateBuilder()
+    CertificateMaterial serverCertificate = new CertificateBuilder()
         .commonName("tcp-server")
-        .sanDnsName(InetAddress.getLocalHost().getHostName());
+        .issuedBy(ca)
+        .sanDnsName(InetAddress.getLocalHost().getHostName())
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("tcp-client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("tcp-client")
+        .issuedBy(ca)
+        .generate();
 
     startServerAndClient(serverCertificate, clientCertificate, true);
     String response =
@@ -123,11 +134,15 @@ public class TCPClientSSLIntegrationTest {
   @Test
   public void clientChooseToDisableHasHostnameValidation() throws Exception {
     // no host name in server cert
-    CertificateBuilder serverCertificate = new CertificateBuilder()
-        .commonName("tcp-server");
+    CertificateMaterial serverCertificate = new CertificateBuilder()
+        .commonName("tcp-server")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("tcp-client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("tcp-client")
+        .issuedBy(ca)
+        .generate();
 
     startServerAndClient(serverCertificate, clientCertificate, false);
     String response =
@@ -137,11 +152,15 @@ public class TCPClientSSLIntegrationTest {
 
   @Test
   public void clientFailsToConnectIfServerCertificateNoHostname() throws Exception {
-    CertificateBuilder serverCertificate = new CertificateBuilder()
-        .commonName("tcp-server");
+    CertificateMaterial serverCertificate = new CertificateBuilder()
+        .commonName("tcp-server")
+        .issuedBy(ca)
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("tcp-client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("tcp-client")
+        .issuedBy(ca)
+        .generate();
 
     startServerAndClient(serverCertificate, clientCertificate, true);
 
@@ -153,12 +172,16 @@ public class TCPClientSSLIntegrationTest {
 
   @Test
   public void clientFailsToConnectIfServerCertificateWrongHostname() throws Exception {
-    CertificateBuilder serverCertificate = new CertificateBuilder()
+    CertificateMaterial serverCertificate = new CertificateBuilder()
         .commonName("tcp-server")
-        .sanDnsName("example.com");
+        .issuedBy(ca)
+        .sanDnsName("example.com")
+        .generate();
 
-    CertificateBuilder clientCertificate = new CertificateBuilder()
-        .commonName("tcp-client");
+    CertificateMaterial clientCertificate = new CertificateBuilder()
+        .commonName("tcp-client")
+        .issuedBy(ca)
+        .generate();
 
     startServerAndClient(serverCertificate, clientCertificate, true);
 

@@ -14,9 +14,6 @@
  */
 package org.apache.geode.cache.ssl;
 
-import static org.apache.geode.cache.ssl.TestSSLUtils.createKeyStore;
-import static org.apache.geode.cache.ssl.TestSSLUtils.createTrustStore;
-import static org.apache.geode.cache.ssl.TestSSLUtils.generateKeyPair;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENDPOINT_IDENTIFICATION_ENABLED;
@@ -29,13 +26,19 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTOR
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -45,79 +48,40 @@ import java.util.Properties;
  * locators and clients. All certificates are signed by a single Root Certificate Authority.
  */
 public class CertStores {
-  private final String alias;
   private final String storePrefix;
 
-  private Map<String, X509Certificate> trustedCerts = new HashMap<>();
+  // Contents of keystore
+  private Map<String, CertificateMaterial> keyStoreEntries = new HashMap<>();
 
-  private File keyStoreFile;
+  // Contents of truststore
+  private Map<String, CertificateMaterial> trustedCerts = new HashMap<>();
 
   private String trustStorePassword = "password";
   private String keyStorePassword = "password";
 
-  private X509Certificate cert;
-
-  private final X509Certificate caCertificate;
-
-  private final KeyPair rootCAKeyPair;
-
   public static CertStores locatorStore() {
-    return new CertStores("locator", "locator");
+    return new CertStores("locator");
   }
 
   public static CertStores serverStore() {
-    return new CertStores("server", "server");
+    return new CertStores("server");
   }
 
   public static CertStores clientStore() {
-    return new CertStores("client", "client");
+    return new CertStores("client");
   }
 
-  public CertStores(String alias, String storePrefix) {
-    this.alias = alias;
+  public CertStores(String storePrefix) {
     this.storePrefix = storePrefix;
-    try {
-      this.rootCAKeyPair = TestSSLUtils.generateKeyPair("RSA");
-      caCertificate = createCACertificate(rootCAKeyPair);
-      trustedCerts.put("ca", caCertificate);
-    } catch (Exception ex) {
-      throw new RuntimeException("Unable to create default root CA", ex);
-    }
   }
 
-  private X509Certificate createCACertificate(KeyPair caKeyPair) throws CertificateException {
-    return new TestSSLUtils.CertificateBuilder()
-        .isCA()
-        .commonName("Test CA")
-        .generate(caKeyPair.getPublic(), caKeyPair.getPrivate());
-  }
-
-  public String alias() {
-    return alias;
-  }
-
-  public X509Certificate certificate() {
-    return cert;
-  }
-
-  public CertStores withCertificate(TestSSLUtils.CertificateBuilder certificateBuilder)
-      throws GeneralSecurityException, IOException {
-    keyStoreFile = File.createTempFile(storePrefix + "-KS-", ".jks");
-    withCertificate(certificateBuilder, keyStoreFile);
+  public CertStores withCertificate(String alias, CertificateMaterial material) {
+    keyStoreEntries.put(alias, material);
     return this;
   }
 
-  private void withCertificate(TestSSLUtils.CertificateBuilder certificateBuilder,
-      File keyStoreFile) throws GeneralSecurityException, IOException {
-    certificateBuilder.issuedBy(caCertificate);
-    KeyPair keyPair = generateKeyPair("RSA");
-    cert = certificateBuilder.generate(keyPair.getPublic(), rootCAKeyPair.getPrivate());
-    createKeyStore(keyStoreFile.getPath(), keyStorePassword, alias, keyPair.getPrivate(), cert,
-        caCertificate);
-  }
-
-  public CertStores trust(String alias, X509Certificate certificate) {
-    this.trustedCerts.put(alias, certificate);
+  public CertStores trust(String alias, CertificateMaterial material) {
+    this.trustedCerts.put(alias, material);
     return this;
   }
 
@@ -137,8 +101,11 @@ public class CertStores {
       throws GeneralSecurityException, IOException {
     File trustStoreFile = File.createTempFile(storePrefix + "-TS-", ".jks");
     trustStoreFile.deleteOnExit();
+    createTrustStore(trustStoreFile.getPath(), trustStorePassword);
 
-    createTrustStore(trustStoreFile.getPath(), trustStorePassword, trustedCerts);
+    File keyStoreFile = File.createTempFile(storePrefix + "-KS-", ".jks");
+    keyStoreFile.deleteOnExit();
+    createKeyStore(keyStoreFile.getPath(), keyStorePassword);
 
     return propertiesWith(components, protocols, ciphers, trustStoreFile, keyStoreFile, requireAuth,
         endPointIdentification);
@@ -163,4 +130,49 @@ public class CertStores {
 
     return sslConfigs;
   }
+
+  private void createTrustStore(String filename, String password)
+      throws GeneralSecurityException, IOException {
+    KeyStore ks = KeyStore.getInstance("JKS");
+    try (InputStream in = Files.newInputStream(Paths.get(filename))) {
+      ks.load(in, password.toCharArray());
+    } catch (EOFException e) {
+      ks = createEmptyKeyStore();
+    }
+    for (Map.Entry<String, CertificateMaterial> cert : trustedCerts.entrySet()) {
+      ks.setCertificateEntry(cert.getKey(), cert.getValue().getCertificate());
+    }
+
+    try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
+      ks.store(out, password.toCharArray());
+    }
+  }
+
+  private void createKeyStore(String filename, String password)
+      throws GeneralSecurityException, IOException {
+    KeyStore ks = createEmptyKeyStore();
+
+    for (Map.Entry<String, CertificateMaterial> entry : keyStoreEntries.entrySet()) {
+      CertificateMaterial cert = entry.getValue();
+
+      List<Certificate> chain = new ArrayList<>();
+      chain.add(cert.getCertificate());
+
+      cert.getIssuer().ifPresent(chain::add);
+
+      ks.setKeyEntry(entry.getKey(), cert.getPrivateKey(), password.toCharArray(),
+          chain.toArray(new Certificate[] {}));
+    }
+    try (OutputStream out = Files.newOutputStream(Paths.get(filename))) {
+      ks.store(out, password.toCharArray());
+    }
+  }
+
+
+  private KeyStore createEmptyKeyStore() throws GeneralSecurityException, IOException {
+    KeyStore ks = KeyStore.getInstance("JKS");
+    ks.load(null, null); // initialize
+    return ks;
+  }
+
 }

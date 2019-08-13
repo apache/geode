@@ -30,7 +30,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.ssl.CertStores;
-import org.apache.geode.cache.ssl.TestSSLUtils.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
@@ -41,6 +42,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 @Category({GfshTest.class})
 public class GfshHostNameVerificationDistributedTest {
   private static MemberVM locator;
+  private CertificateMaterial ca;
 
   @Rule
   public ClusterStartupRule cluster = new ClusterStartupRule();
@@ -53,27 +55,32 @@ public class GfshHostNameVerificationDistributedTest {
 
   @Before
   public void setupCluster() throws Exception {
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
+    ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
+
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
+        .issuedBy(ca)
         .sanDnsName(InetAddress.getLoopbackAddress().getHostName())
         .sanDnsName(InetAddress.getLocalHost().getHostName())
         .sanIpAddress(InetAddress.getLocalHost())
-        .sanIpAddress(InetAddress.getByName("0.0.0.0")); // to pass on windows
+        .sanIpAddress(InetAddress.getByName("0.0.0.0")) // to pass on windows
+        .generate();
 
-    CertificateBuilder gfshCertificate = new CertificateBuilder()
-        .commonName("gfsh");
+    CertificateMaterial gfshCertificate = new CertificateBuilder()
+        .commonName("gfsh")
+        .issuedBy(ca)
+        .generate();
 
     locatorStore = CertStores.locatorStore();
+    locatorStore.withCertificate("locator", locatorCertificate);
+    locatorStore.trust("ca", ca);
+
     gfshStore = CertStores.clientStore();
-
-    locatorStore.withCertificate(locatorCertificate);
-    gfshStore.withCertificate(gfshCertificate);
-
-    locatorStore
-        .trust(gfshStore.alias(), gfshStore.certificate());
-
-    gfshStore
-        .trust(locatorStore.alias(), locatorStore.certificate());
+    gfshStore.withCertificate("gfsh", gfshCertificate);
+    gfshStore.trust("ca", ca);
   }
 
   private File gfshSecurityProperties(Properties clientSSLProps) throws IOException {
@@ -102,34 +109,39 @@ public class GfshHostNameVerificationDistributedTest {
 
   @Test
   public void expectConnectionFailureWhenNoHostNameInLocatorKey() throws Exception {
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
-        .commonName("locator");
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
+        .commonName("locator")
+        .issuedBy(ca)
+        .generate();
 
     validateGfshConnection(locatorCertificate);
   }
 
   @Test
   public void expectConnectionFailureWhenWrongHostNameInLocatorKey() throws Exception {
-    CertificateBuilder locatorCertificate = new CertificateBuilder()
+    CertificateMaterial locatorCertificate = new CertificateBuilder()
         .commonName("locator")
-        .sanDnsName("example.com");
+        .issuedBy(ca)
+        .sanDnsName("example.com")
+        .generate();
 
     validateGfshConnection(locatorCertificate);
   }
 
-  private void validateGfshConnection(CertificateBuilder locatorCertificate)
+  private void validateGfshConnection(CertificateMaterial locatorCertificate)
       throws Exception {
-    CertificateBuilder gfshCertificate = new CertificateBuilder().commonName("gfsh");
+    CertificateMaterial gfshCertificate = new CertificateBuilder()
+        .commonName("gfsh")
+        .issuedBy(ca)
+        .generate();
 
     CertStores lstore = CertStores.locatorStore();
+    lstore.withCertificate("locator", locatorCertificate);
+    lstore.trust("ca", ca);
+
     CertStores gstore = CertStores.clientStore();
-
-    lstore.withCertificate(locatorCertificate);
-    gstore.withCertificate(gfshCertificate);
-
-    lstore.trust(gstore.alias(), gstore.certificate());
-
-    gstore.trust(lstore.alias(), lstore.certificate());
+    gstore.withCertificate("gfsh", gfshCertificate);
+    gstore.trust("ca", ca);
 
     Properties locatorSSLProps = lstore.propertiesWith(ALL, false, false);
 
