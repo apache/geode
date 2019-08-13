@@ -67,6 +67,7 @@ public class AssemblyContentsIntegrationTest {
         .containsExactlyElementsOf(expectedAssemblyContent);
   }
 
+
   /**
    * Find all of the jars bundled with the project. Key is the name of the jar, value is the path.
    */

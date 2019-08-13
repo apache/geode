@@ -18,10 +18,7 @@ package org.apache.geode.management.internal.rest.controllers;
 import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -44,6 +41,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
+import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission.Operation;
@@ -117,31 +115,16 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> listIndex(
+  public ClusterManagementListResult<Index, RuntimeInfo> listIndex(
       @PathVariable String regionName,
-      @RequestParam(required = false) String id) {
+      @RequestParam(required = false, name = "id") String indexName) {
 
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result0 = getRegion(regionName);
-    RegionConfig regionConfig = result0.getResult().get(0).getConfig();
-
-    // only send the index information back
-    List<RegionConfig.Index> indexList = regionConfig.getIndexes().stream().map(e -> {
-      if (StringUtils.isNotBlank(id) && !e.getId().equals(id)) {
-        return null;
-      }
-      e.setRegionName(regionName);
-      return e;
-    }).filter(Objects::nonNull).collect(Collectors.toList());
-
-    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> responses = new ArrayList<>();
-    for (RegionConfig.Index index : indexList) {
-      responses.add(new ConfigurationResult<>(index));
+    Index filter = new Index();
+    filter.setRegionName(regionName);
+    if (StringUtils.isNotBlank(indexName)) {
+      filter.setName(indexName);
     }
-
-    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result =
-        new ClusterManagementListResult<>();
-    result.setResult(responses);
-    return result;
+    return clusterManagementService.list(filter);
   }
 
   @ApiOperation(value = "get index")
@@ -149,11 +132,11 @@ public class RegionManagementController extends AbstractManagementController {
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes/{id}")
   @ResponseBody
   @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
-  public ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> getIndex(
+  public ClusterManagementListResult<Index, RuntimeInfo> getIndex(
       @PathVariable String regionName,
       @PathVariable String id) {
-    ClusterManagementListResult<RegionConfig.Index, RuntimeInfo> result = listIndex(regionName, id);
-    List<ConfigurationResult<RegionConfig.Index, RuntimeInfo>> indexList = result.getResult();
+    ClusterManagementListResult<Index, RuntimeInfo> result = listIndex(regionName, id);
+    List<ConfigurationResult<Index, RuntimeInfo>> indexList = result.getResult();
 
     if (indexList.size() == 0) {
       throw new ClusterManagementException(new ClusterManagementResult(StatusCode.ENTITY_NOT_FOUND,

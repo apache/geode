@@ -32,7 +32,6 @@ import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -155,37 +154,6 @@ public class RegionConfigTest {
   }
 
   @Test
-  public void invalidRegionName() throws Exception {
-    RegionConfig.Index index = new RegionConfig.Index();
-    index.setExpression("id");
-    index.setName("index1");
-    index.setFromClause("/regionA");
-
-    assertThatThrownBy(() -> index.setRegionName("regionB"))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  public void fromClauseInferredByRegionName() throws Exception {
-    RegionConfig.Index index = new RegionConfig.Index();
-    index.setExpression("id");
-    index.setName("index1");
-    index.setRegionName("regionA");
-
-    assertThat(index.getFromClause()).isEqualTo("/regionA");
-
-    CacheConfig cacheConfig = new CacheConfig();
-    regionConfig.getIndexes().clear();
-    regionConfig.getIndexes().add(index);
-    cacheConfig.getRegions().add(regionConfig);
-
-    // the end xml should not have "type" attribute in index definition
-    String newXml = service.marshall(cacheConfig);
-    System.out.println(newXml);
-    assertThat(newXml).contains("from-clause=");
-  }
-
-  @Test
   public void diskDirTypeInXml() throws Exception {
     CacheConfig cacheConfig = new CacheConfig();
     DiskStoreType diskStore = new DiskStoreType();
@@ -276,12 +244,5 @@ public class RegionConfigTest {
     RegionConfig config = new RegionConfig();
     assertThat(config.getRuntimeClass()).isEqualTo(RuntimeRegionInfo.class);
     assertThat(config.hasRuntimeInfo()).isTrue();
-  }
-
-  @Test
-  public void getIndexRuntimeClass() throws Exception {
-    RegionConfig.Index index = new RegionConfig.Index();
-    assertThat(index.getRuntimeClass()).isEqualTo(RuntimeInfo.class);
-    assertThat(index.hasRuntimeInfo()).isFalse();
   }
 }

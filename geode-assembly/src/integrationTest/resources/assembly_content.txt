@@ -726,6 +726,7 @@ javadoc/org/apache/geode/management/client/package-summary.html
 javadoc/org/apache/geode/management/client/package-tree.html
 javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
+javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
 javadoc/org/apache/geode/management/configuration/package-frame.html
