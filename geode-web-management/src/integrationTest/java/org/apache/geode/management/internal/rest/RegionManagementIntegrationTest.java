@@ -30,11 +30,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -60,7 +60,7 @@ public class RegionManagementIntegrationTest {
   @Test
   @WithMockUser
   public void sanityCheck() {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.REPLICATE);
 
@@ -71,20 +71,8 @@ public class RegionManagementIntegrationTest {
   }
 
   @Test
-  @WithMockUser
-  public void invalidType() {
-    RegionConfig regionConfig = new RegionConfig();
-    regionConfig.setName("customers");
-    regionConfig.setType("LOCAL");
-
-    assertThatThrownBy(() -> client.create(regionConfig))
-        .hasMessageContaining(
-            "ILLEGAL_ARGUMENT: Region type 'LOCAL' is not supported.");
-  }
-
-  @Test
   public void invalidGroup() {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("customers");
     regionConfig.setGroup("cluster");
 

@@ -27,9 +27,9 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
@@ -50,9 +50,9 @@ public class RegionConfigRealizerTest {
 
   @Test
   public void createsPartitionedInCache() {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("regionName");
-    config.setType(RegionShortcut.PARTITION.name());
+    config.setType(RegionType.PARTITION);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 
@@ -65,9 +65,9 @@ public class RegionConfigRealizerTest {
 
   @Test
   public void createsReplicateInCache() {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("regionName");
-    config.setType(RegionShortcut.REPLICATE.name());
+    config.setType(RegionType.REPLICATE);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 

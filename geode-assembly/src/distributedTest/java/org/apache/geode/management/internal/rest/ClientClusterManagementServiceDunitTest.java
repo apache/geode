@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -18,6 +17,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.dunit.rules.ClientVM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -58,7 +58,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegion() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
 
@@ -74,7 +74,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithNullGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("orders");
     region.setType(RegionType.PARTITION);
 
@@ -89,7 +89,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithInvalidName() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("__test");
 
     assertThatThrownBy(() -> cmsClient.create(region)).hasMessageContaining("ILLEGAL_ARGUMENT");
@@ -97,7 +97,7 @@ public class ClientClusterManagementServiceDunitTest {
 
   @Test
   public void createRegionWithGroup() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("company");
     region.setType(RegionType.PARTITION);
     region.setGroup(groupA);

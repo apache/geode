@@ -20,18 +20,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 public class CacheElementValidatorTest {
 
   private CacheElementValidator validator;
-  private RegionConfig config;
+  private Region config;
 
   @Before
   public void before() throws Exception {
     validator = new CacheElementValidator();
-    config = new RegionConfig();
+    config = new Region();
   }
 
   @Test

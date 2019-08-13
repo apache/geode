@@ -15,89 +15,23 @@
 package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-
-import java.io.File;
-import java.net.URL;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.config.JAXBService;
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.internal.CacheElementOperation;
-import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
-import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class RegionConfigTest {
 
   private JAXBService service;
-  private CacheConfig master;
-  private RegionConfig regionConfig;
-  private URL xmlResource;
 
   @Before
   public void before() throws Exception {
     service = new JAXBService(CacheConfig.class);
-    regionConfig = new RegionConfig();
-    xmlResource = RegionConfigTest.class.getResource("RegionConfigTest.xml");
-    assertThat(xmlResource).isNotNull();
-    master =
-        service.unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
   }
 
-  @Test
-  public void regionNameSwallowsSlash() {
-    regionConfig.setName("/regionA");
-    assertThat(regionConfig.getName()).isEqualTo("regionA");
-  }
-
-  @Test
-  public void subRegionsUnsupported() {
-    regionConfig = new RegionConfig();
-    assertThatThrownBy(() -> regionConfig.setName("/Parent/Child"))
-        .isInstanceOf(IllegalArgumentException.class);
-    assertThatThrownBy(() -> regionConfig.setName("Parent/Child"))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  public void checkDefaultRegionAttributesForShortcuts() {
-    RegionShortcut[] shortcuts = RegionShortcut.values();
-    for (RegionShortcut shortcut : shortcuts) {
-      RegionConfig config = new RegionConfig();
-      config.setType(shortcut.name());
-      config.setName(shortcut.name());
-      RegionConfigValidator.setShortcutAttributes(config);
-      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
-      assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
-    }
-  }
-
-
-  @Test
-  public void correctJsonAndXml() throws Exception {
-    String json = "{\"name\":\"test\", \"type\":\"REPLICATE\"}";
-    ObjectMapper mapper = GeodeJsonMapper.getMapper();
-    regionConfig = mapper.readValue(json, RegionConfig.class);
-    assertThat(regionConfig.getName()).isEqualTo("test");
-    assertThat(regionConfig.getType()).isEqualTo("REPLICATE");
-
-    String json2 = mapper.writeValueAsString(regionConfig);
-    assertThat(json2).contains("\"type\":\"REPLICATE\"");
-    assertThat(json2).contains("\"name\":\"test\"");
-
-    CacheConfig cacheConfig = new CacheConfig();
-    cacheConfig.getRegions().add(regionConfig);
-    String xml = service.marshall(cacheConfig);
-    assertThat(xml).contains("<region name=\"test\" refid=\"REPLICATE\"");
-  }
 
   @Test
   public void indexType() throws Exception {
@@ -213,36 +147,5 @@ public class RegionConfigTest {
     DiskStoreType newDiskStore = mapper.readValue(json, DiskStoreType.class);
     assertThat(newDiskStore.getDiskDirs()).hasSize(2);
 
-  }
-
-  @Test
-  public void setAttributesAndType() {
-    RegionConfig config = new RegionConfig();
-    config.setType("REPLICATE");
-    RegionAttributesType attributes = new RegionAttributesType();
-    attributes.setKeyConstraint("java.lang.Boolean");
-    attributes.setValueConstraint("java.lang.Integer");
-    attributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-    config.setRegionAttributes(attributes);
-
-    RegionConfigValidator validator = new RegionConfigValidator(mock(InternalCache.class));
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  public void getUri() {
-    regionConfig.setName("regionA");
-    assertThat(regionConfig.getEndpoint()).isEqualTo("/regions");
-
-    assertThat(regionConfig.getUri())
-        .isEqualTo(RestfulEndpoint.URI_CONTEXT + "/experimental/regions/regionA");
-  }
-
-  @Test
-  public void getRuntimeClass() throws Exception {
-    RegionConfig config = new RegionConfig();
-    assertThat(config.getRuntimeClass()).isEqualTo(RuntimeRegionInfo.class);
-    assertThat(config.hasRuntimeInfo()).isTrue();
   }
 }

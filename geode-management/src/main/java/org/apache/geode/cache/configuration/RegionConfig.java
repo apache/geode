@@ -35,9 +35,6 @@ import io.swagger.annotations.ApiModelProperty;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
 
 /**
@@ -157,8 +154,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
-public class RegionConfig extends CacheElement implements RestfulEndpoint,
-    CorrespondWith<RuntimeRegionInfo> {
+public class RegionConfig implements Identifiable<String> {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -189,28 +185,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
   public RegionConfig(String name, String refid) {
     this.name = name;
     this.type = refid;
-  }
-
-  public RegionConfig(RegionConfig config) {
-    this.regionAttributes = config.getRegionAttributes();
-    this.type = config.getType();
-    this.entries = config.getEntries();
-    this.indexes = config.getIndexes();
-    this.name = config.getName();
-    this.regionElements = config.getCustomRegionElements();
-    this.regions = config.getRegions();
-    this.setGroup(config.getGroup());
-  }
-
-  @Override
-  public boolean isGlobalRuntime() {
-    return true;
-  }
-
-  @Override
-  @JsonIgnore
-  public String getEndpoint() {
-    return REGION_CONFIG_ENDPOINT;
   }
 
   public RegionAttributesType getRegionAttributes() {
@@ -306,21 +280,8 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
    * {@link String }
    *
    */
-  public void setName(String value) throws IllegalArgumentException {
-    if (value == null) {
-      return;
-    }
-
-    boolean regionPrefixedWithSlash = value.startsWith("/");
-    String[] regionSplit = value.split("/");
-
-    boolean hasSubRegions =
-        regionPrefixedWithSlash ? regionSplit.length > 2 : regionSplit.length > 1;
-    if (hasSubRegions) {
-      throw new IllegalArgumentException("Sub-regions are unsupported");
-    }
-
-    this.name = regionPrefixedWithSlash ? regionSplit[1] : value;
+  public void setName(String value) {
+    this.name = value;
   }
 
   /**
@@ -354,12 +315,6 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
   }
 
   @Override
-  @JsonIgnore
-  public String getId() {
-    return getName();
-  }
-
-  @Override
   public boolean equals(Object that) {
     if (this == that) {
       return true;
@@ -370,6 +325,12 @@ public class RegionConfig extends CacheElement implements RestfulEndpoint,
     RegionConfig config = (RegionConfig) that;
     return Objects.equals(getName(), config.getName()) &&
         Objects.equals(getType(), config.getType());
+  }
+
+  @Override
+  @JsonIgnore
+  public String getId() {
+    return getName();
   }
 
   /**

@@ -27,11 +27,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementOperationResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.management.runtime.RebalanceRegionResult;
 import org.apache.geode.management.runtime.RebalanceResult;
@@ -63,13 +63,13 @@ public class RebalanceManagementDunitTest {
     gfsh.connect(locator);
 
     // create regions
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("customers1");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 2);
 
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);

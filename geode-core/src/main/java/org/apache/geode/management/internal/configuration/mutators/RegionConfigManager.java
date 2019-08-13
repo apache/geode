@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -26,72 +27,70 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.internal.configuration.converters.RegionConverter;
 
-public class RegionConfigManager implements ConfigurationManager<RegionConfig> {
+public class RegionConfigManager implements ConfigurationManager<Region> {
 
-  public RegionConfigManager() {}
+  private final RegionConverter converter = new RegionConverter();
 
   @Override
-  public void add(RegionConfig configElement, CacheConfig existingConfig) {
-    existingConfig.getRegions().add(configElement);
+  public void add(Region configElement, CacheConfig existingConfig) {
+    existingConfig.getRegions().add(converter.fromConfigObject(configElement));
   }
 
   @Override
-  public void update(RegionConfig config, CacheConfig existing) {
+  public void update(Region config, CacheConfig existing) {
     throw new NotImplementedException("Not implemented yet");
   }
 
   @Override
-  public void delete(RegionConfig config, CacheConfig existing) {
+  public void delete(Region config, CacheConfig existing) {
     existing.getRegions().removeIf(i -> i.getId().equals(config.getId()));
   }
 
   @Override
-  public List<RegionConfig> list(RegionConfig filter, CacheConfig existing) {
-    List<RegionConfig> regionConfigs;
-    if (StringUtils.isBlank(filter.getName())) {
-      regionConfigs = existing.getRegions();
-    } else {
-      regionConfigs =
-          existing.getRegions().stream().filter(r -> filter.getName().equals(r.getName())).collect(
-              Collectors.toList());
+  public List<Region> list(Region filter, CacheConfig existing) {
+    Stream<RegionConfig> stream = existing.getRegions().stream();
+    if (StringUtils.isNotBlank(filter.getName())) {
+      stream = stream.filter(r -> filter.getName().equals(r.getName()));
     }
-
-    return regionConfigs;
+    return stream.map(converter::fromXmlObject).collect(Collectors.toList());
   }
 
   @Override
-  public RegionConfig get(String id, CacheConfig existing) {
-    return CacheElement.findElement(existing.getRegions(), id);
+  public Region get(String id, CacheConfig existing) {
+    return converter.fromXmlObject(CacheElement.findElement(existing.getRegions(), id));
   }
 
   @Override
-  public void checkCompatibility(RegionConfig incoming, String group, RegionConfig existing) {
+  public void checkCompatibility(Region incoming, String group, Region existing) {
     // if their types are the same, then they are compatible
     if (incoming.getType().equals(existing.getType())) {
       return;
     }
 
     // one has to be the proxy of the other's main type
-    if (!incoming.getType().contains("PROXY") && !existing.getType().contains("PROXY")) {
+    if (!incoming.getType().name().contains("PROXY")
+        && !existing.getType().name().contains("PROXY")) {
       raiseIncompatibilityError(incoming, group, existing);
     }
 
     // the beginning part of the type has to be the same
-    String incomingType = incoming.getType().split("_")[0];
-    String existingType = existing.getType().split("_")[0];
+    String incomingType = incoming.getType().name().split("_")[0];
+    String existingType = existing.getType().name().split("_")[0];
     if (!incomingType.equals(existingType)) {
       raiseIncompatibilityError(incoming, group, existing);
     }
   }
 
-  private void raiseIncompatibilityError(RegionConfig incoming, String group,
-      RegionConfig existing) {
+  private void raiseIncompatibilityError(Region incoming, String group,
+      Region existing) {
     throw new IllegalArgumentException(getDescription(incoming) + " is not compatible with " + group
         + "'s existing " + getDescription(existing) + ".");
   }
 
-  private String getDescription(RegionConfig regionConfig) {
+  private String getDescription(Region regionConfig) {
     return "Region '" + regionConfig.getName() + "' of type '" + regionConfig.getType() + "'";
   }
 }

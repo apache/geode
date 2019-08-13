@@ -26,13 +26,13 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -50,7 +50,7 @@ public class ListRegionManagementDunitTest {
   @ClassRule
   public static GfshCommandRule gfsh = new GfshCommandRule();
 
-  private static RegionConfig filter;
+  private static Region filter;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -65,7 +65,7 @@ public class ListRegionManagementDunitTest {
     gfsh.connect(locator);
 
     // create regions
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("customers1");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.PARTITION);
@@ -73,27 +73,27 @@ public class ListRegionManagementDunitTest {
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers1", 1);
 
     // create a region that has different type on different group
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.PARTITION_PROXY);
     client.create(regionConfig);
 
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("customers2");
     regionConfig.setGroup("group2");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers2", 2);
 
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("customers");
     regionConfig.setType(RegionType.PARTITION);
     client.create(regionConfig);
     locator.waitUntilRegionIsReadyOnExactlyThisManyServers("/customers", 2);
 
     // create a region that belongs to multiple groups
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("customers3");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.PARTITION);
@@ -105,21 +105,21 @@ public class ListRegionManagementDunitTest {
 
   @Before
   public void before() {
-    filter = new RegionConfig();
+    filter = new Region();
   }
 
   @Test
   public void listAll() {
     // list all
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(5);
-    RegionConfig element = CacheElement.findElement(regions, "customers");
+    Region element = CacheElement.findElement(regions, "customers");
     assertThat(element.getGroup()).isNull();
 
     element = CacheElement.findElement(regions, "customers1");
     assertThat(element.getGroup()).isEqualTo("group1");
 
-    RegionConfig region = CacheElement.findElement(regions, "customers2");
+    Region region = CacheElement.findElement(regions, "customers2");
     assertThat(region.getGroup()).isIn("group1", "group2");
     assertThat(region.getType()).isIn("PARTITION", "PARTITION_PROXY");
 
@@ -131,7 +131,7 @@ public class ListRegionManagementDunitTest {
   public void listClusterLevel() {
     // list cluster level only
     filter.setGroup("cluster");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers");
     assertThat(regions.get(0).getGroup()).isNull();
@@ -140,7 +140,8 @@ public class ListRegionManagementDunitTest {
   @Test
   public void testEntryCount() {
     server1.invoke(() -> {
-      Region<String, String> region = ClusterStartupRule.getCache().getRegion("/customers");
+      org.apache.geode.cache.Region<String, String> region =
+          ClusterStartupRule.getCache().getRegion("/customers");
       region.put("k1", "v1");
       region.put("k2", "v2");
     });
@@ -153,10 +154,10 @@ public class ListRegionManagementDunitTest {
     });
 
     filter.setName("customers");
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result = client.list(filter);
-    List<RegionConfig> regions = result.getConfigResult();
+    ClusterManagementListResult<Region, RuntimeRegionInfo> result = client.list(filter);
+    List<Region> regions = result.getConfigResult();
     assertThat(regions).hasSize(1);
-    RegionConfig regionConfig = regions.get(0);
+    Region regionConfig = regions.get(0);
     assertThat(regionConfig.getName()).isEqualTo("customers");
 
     List<RuntimeRegionInfo> runtimeRegionInfos = result.getRuntimeResult();
@@ -168,10 +169,10 @@ public class ListRegionManagementDunitTest {
   public void listGroup1() {
     // list group1
     filter.setGroup("group1");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(3);
     // when filtering by group, the returned list should not have group info
-    RegionConfig region = CacheElement.findElement(regions, "customers1");
+    Region region = CacheElement.findElement(regions, "customers1");
     assertThat(region.getGroup()).isEqualTo("group1");
 
     region = CacheElement.findElement(regions, "customers2");
@@ -185,10 +186,10 @@ public class ListRegionManagementDunitTest {
   public void listGroup2() {
     // list group1
     filter.setGroup("group2");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(2);
 
-    RegionConfig region = CacheElement.findElement(regions, "customers2");
+    Region region = CacheElement.findElement(regions, "customers2");
     assertThat(region.getGroup()).isEqualTo("group2");
 
     region = CacheElement.findElement(regions, "customers3");
@@ -199,14 +200,14 @@ public class ListRegionManagementDunitTest {
   public void listNonExistentGroup() {
     // list non-existent group
     filter.setGroup("group3");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(0);
   }
 
   @Test
   public void listRegionByName() {
     filter.setName("customers");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers");
     assertThat(regions.get(0).getGroup()).isNull();
@@ -215,7 +216,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName1() {
     filter.setName("customers1");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers1");
     assertThat(regions.get(0).getGroup()).isEqualTo("group1");
@@ -224,7 +225,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName2() {
     filter.setName("customers2");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(2);
     assertThat(
         regions.stream().map(CacheElement::getGroup).collect(Collectors.toList()))
@@ -238,7 +239,7 @@ public class ListRegionManagementDunitTest {
   @Test
   public void listRegionByName3() {
     filter.setName("customers3");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(1);
     assertThat(regions.get(0).getId()).isEqualTo("customers3");
     assertThat(regions.get(0).getGroups()).containsExactlyInAnyOrder("group1", "group2");
@@ -248,7 +249,7 @@ public class ListRegionManagementDunitTest {
   public void listNonExistentRegion() {
     // list non-existent region
     filter.setName("customer4");
-    List<RegionConfig> regions = client.list(filter).getConfigResult();
+    List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(0);
   }
 }
