@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.isA;
@@ -47,6 +48,7 @@ import org.apache.geode.internal.cache.FilterProfile;
 import org.apache.geode.internal.cache.FilterRoutingInfo;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheEvent;
+import org.apache.geode.internal.cache.RegionQueueException;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
@@ -138,6 +140,35 @@ public class CacheClientNotifierTest {
     }
 
     verify(cacheClientProxy, times(1)).deliverMessage(isA(HAEventWrapper.class));
+  }
+
+  @Test
+  public void clientRegistrationFailsQueueStillDrained()
+      throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
+      IllegalAccessException, IOException {
+    InternalCache internalCache = Fakes.cache();
+    CacheServerStats cacheServerStats = mock(CacheServerStats.class);
+    Socket socket = mock(Socket.class);
+    ConnectionListener connectionListener = mock(ConnectionListener.class);
+    ClientRegistrationMetadata clientRegistrationMetadata = mock(ClientRegistrationMetadata.class);
+    StatisticsClock statisticsClock = mock(StatisticsClock.class);
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    when(clientRegistrationMetadata.getClientProxyMembershipID()).thenReturn(
+        clientProxyMembershipID);
+
+    CacheClientNotifier cacheClientNotifier = CacheClientNotifier.getInstance(internalCache,
+        statisticsClock, cacheServerStats, 0, 0, connectionListener, null, false);
+    CacheClientNotifier cacheClientNotifierSpy = spy(cacheClientNotifier);
+
+    doAnswer((i) -> {
+      throw new RegionQueueException();
+    }).when(cacheClientNotifierSpy).registerClientInternal(clientRegistrationMetadata, socket,
+        false, 0, true);
+
+    assertThatThrownBy(() -> cacheClientNotifierSpy.registerClient(clientRegistrationMetadata,
+        socket, false, 0, true))
+            .isInstanceOf(IOException.class);
   }
 
   private InternalCacheEvent createMockInternalCacheEvent(
