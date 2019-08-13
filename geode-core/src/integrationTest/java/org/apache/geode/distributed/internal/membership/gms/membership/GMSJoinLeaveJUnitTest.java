@@ -707,7 +707,7 @@ public class GMSJoinLeaveJUnitTest {
         D = mockMembers[2],
         E = mockMembers[3];
     prepareAndInstallView(C, createMemberList(A, B, C, D, E));
-    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
+    when(healthMonitor.getSuspectedMembers()).thenReturn(Collections.singleton(A));
     LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");
     msg.setSender(C);
     gmsJoinLeave.processMessage(msg);
@@ -730,7 +730,7 @@ public class GMSJoinLeaveJUnitTest {
         D = mockMembers[2],
         E = mockMembers[3];
     prepareAndInstallView(C, createMemberList(A, B, C, D));
-    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
+    when(healthMonitor.getSuspectedMembers()).thenReturn(Collections.singleton(A));
     E.setVmViewId(1);
     gmsJoinLeave.processMessage(new JoinRequestMessage(B, E, null, 1, 1));
     LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");

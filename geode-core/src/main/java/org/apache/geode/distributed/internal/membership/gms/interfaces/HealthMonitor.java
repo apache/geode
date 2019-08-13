@@ -53,8 +53,8 @@ public interface HealthMonitor extends Service {
   int getFailureDetectionPort();
 
   /**
-   * Returns the set of members declared dead by the health monitor
+   * Returns the set of members under suspicion by the health monitor
    */
-  Collection<GMSMember> getMembersFailingAvailabilityCheck();
+  Collection<GMSMember> getSuspectedMembers();
 
 }

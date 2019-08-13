@@ -621,7 +621,7 @@ public class GMSJoinLeave implements JoinLeave {
         check.removeAll(leftMembers);
       }
       Collection<GMSMember> suspectMembers =
-          services.getHealthMonitor().getMembersFailingAvailabilityCheck();
+          services.getHealthMonitor().getSuspectedMembers();
       check.removeAll(suspectMembers);
       logger.info("View with removed and left members removed is {}", check);
       if (check.getCoordinator().equals(localAddress)) {

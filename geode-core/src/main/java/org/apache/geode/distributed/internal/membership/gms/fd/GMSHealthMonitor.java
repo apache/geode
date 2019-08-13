@@ -1414,7 +1414,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   @Override
-  public Collection<GMSMember> getMembersFailingAvailabilityCheck() {
+  public Collection<GMSMember> getSuspectedMembers() {
     return Collections.unmodifiableCollection(this.suspectedMemberIds.keySet());
   }
 
@@ -1436,8 +1436,9 @@ public class GMSHealthMonitor implements HealthMonitor {
       recipients = currentView.getMembers();
     }
 
-    logger.trace("Sending suspect messages to {}", recipients);
+    logger.debug("Sending suspect messages to {}", recipients);
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
+    smm.setSender(localAddress);
     Set<GMSMember> failedRecipients;
     try {
       failedRecipients = services.getMessenger().send(smm);
@@ -1447,8 +1448,10 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
 
     if (failedRecipients != null && failedRecipients.size() > 0) {
-      logger.trace("Unable to send suspect message to {}", failedRecipients);
+      logger.debug("Unable to send suspect message to {}", failedRecipients);
     }
+    logger.debug("Processing suspect message locally");
+    processMessage(smm);
   }
 
   private static class ConnectTimeoutTask extends TimerTask implements ConnectionWatcher {
