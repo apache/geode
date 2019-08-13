@@ -325,7 +325,7 @@ public class SerialWANConflationDUnitTest extends WANTestBase {
 
       // Recover the queue from disk, reduce batch thresholds so processing starts right away.
       createSender("ln", 2, false, 100, 5, true, true, null, DEFAULT_BATCH_TIME_INTERVAL);
-      waitForEventQueueSize(5);
+      waitForSenderToBecomePrimary("ln");
 
       // Wait for the processors to start.
       await().until(() -> {
