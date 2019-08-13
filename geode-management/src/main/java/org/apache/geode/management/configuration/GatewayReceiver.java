@@ -59,53 +59,89 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
   private boolean manualStart = false;
 
   /**
+   * get the list of transport filters
    * if you modify the returned list, you will be modifying the list owned by this config object.
    */
   public List<DeclarableType> getGatewayTransportFilters() {
     return gatewayTransportFilters;
   }
 
+  /**
+   * set the gateway transport filters
+   */
   public void setGatewayTransportFilters(
       List<DeclarableType> gatewayTransportFilters) {
     this.gatewayTransportFilters = gatewayTransportFilters;
   }
 
+  /**
+   * get the starting port
+   */
   public String getStartPort() {
     return startPort;
   }
 
+  /**
+   * set the starting port
+   */
   public void setStartPort(String startPort) {
     this.startPort = startPort;
   }
 
+  /**
+   * get the end port
+   */
   public String getEndPort() {
     return endPort;
   }
 
+  /**
+   * set the end port
+   */
   public void setEndPort(String endPort) {
     this.endPort = endPort;
   }
 
+  /**
+   * get the maximum time between pings in milliseconds, the default is
+   * CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000
+   */
   public String getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
   }
 
+  /**
+   * set the maximum time between pings in milliseconds
+   */
   public void setMaximumTimeBetweenPings(String maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
   }
 
+  /**
+   * get the socket buffer size for socket buffers from the receiver to the sender.
+   * CacheServer.DEFAULT_SOCKET_BUFFER_SIZE = 32768;
+   */
   public String getSocketBufferSize() {
     return socketBufferSize;
   }
 
+  /**
+   * set the socket buffer size for socket buffers from the receiver to the sender.
+   */
   public void setSocketBufferSize(String socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
   }
 
+  /**
+   * is this gateway receiver manually started
+   */
   public boolean isManualStart() {
     return manualStart;
   }
 
+  /**
+   * set the manualStart
+   */
   public void setManualStart(boolean manualStart) {
     this.manualStart = manualStart;
   }
