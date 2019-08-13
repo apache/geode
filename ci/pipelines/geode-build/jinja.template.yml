@@ -171,7 +171,7 @@ resources:
 - name: geode-benchmarks
   type: git
   source:
-    branch: {{benchmarks.branch}}
+    branch: {{benchmarks.benchmark_branch}}
     depth: 1
     uri: https://github.com/apache/geode-benchmarks.git
 - name: geode-build-version
@@ -414,47 +414,52 @@ jobs:
       passed:
       {{ all_gating_jobs() | indent(6) }}
     - put: concourse-metadata-resource
-  - task: run_benchmarks
-    {{- alpine_tools_config()|indent(4) }}
-      params:
-        AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
-        AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
-        AWS_DEFAULT_REGION: us-west-2
-        AWS_REGION: us-west-2
-        ARTIFACT_BUCKET: ((artifact-bucket))
-        BENCHMARKS_BRANCH: {{benchmarks.branch}}
-        BASELINE_BRANCH: {{benchmarks.baseline_branch}}
-        BASELINE_VERSION: {{benchmarks.baseline_version}}
-      run:
-        path: geode-ci/ci/scripts/run_benchmarks.sh
-      inputs:
-      - name: geode
-      - name: geode-ci
-      - name: geode-benchmarks
-      - name: concourse-metadata-resource
-      outputs:
-      - name: results
-    timeout: 4h
-    ensure:
-      do:
-      - task: cleanup_benchmarks
-        {{- alpine_tools_config()|indent(8) }}
-          params:
-            AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
-            AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
-            AWS_DEFAULT_REGION: us-west-2
-            AWS_REGION: us-west-2
-            ARTIFACT_BUCKET: ((artifact-bucket))
-            BASELINE_BRANCH: {{benchmarks.baseline_branch}}
-            BASELINE_VERSION: {{benchmarks.baseline_version}}
-          run:
-            path: geode-ci/ci/scripts/cleanup_benchmarks.sh
-          inputs:
-          - name: geode
-          - name: geode-ci
-          - name: geode-benchmarks
-          - name: concourse-metadata-resource
-          - name: results
+  - aggregate:
+    {% for ssl_var in [{'title': '_without_ssl', 'flag':''}, {'title': '_with_ssl', 'flag': '-PwithSsl'}] %}
+    - task: run_benchmarks{{ ssl_var.title }}
+      {{- alpine_tools_config()|indent(6) }}
+        params:
+          AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+          AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+          AWS_DEFAULT_REGION: us-west-2
+          AWS_REGION: us-west-2
+          ARTIFACT_BUCKET: ((artifact-bucket))
+          BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
+          BASELINE_BRANCH: {{benchmarks.baseline_branch}}
+          BASELINE_VERSION: {{benchmarks.baseline_version}}
+          WITH_SSL: {{ ssl_var.flag }}
+        run:
+          path: geode-ci/ci/scripts/run_benchmarks.sh
+        inputs:
+        - name: geode
+        - name: geode-ci
+        - name: geode-benchmarks
+        - name: concourse-metadata-resource
+        outputs:
+        - name: results
+      timeout: 4h
+      ensure:
+        do:
+        - task: cleanup_benchmarks
+          {{- alpine_tools_config()|indent(10) }}
+            params:
+              AWS_ACCESS_KEY_ID: ((benchmarks-access-key-id))
+              AWS_SECRET_ACCESS_KEY: ((benchmarks-secret-access-key))
+              AWS_DEFAULT_REGION: us-west-2
+              AWS_REGION: us-west-2
+              ARTIFACT_BUCKET: ((artifact-bucket))
+              BASELINE_BRANCH: {{benchmarks.baseline_branch}}
+              BASELINE_VERSION: {{benchmarks.baseline_version}}
+              WITH_SSL: {{ ssl_var.flag }}
+            run:
+              path: geode-ci/ci/scripts/cleanup_benchmarks.sh
+            inputs:
+            - name: geode
+            - name: geode-ci
+            - name: geode-benchmarks
+            - name: concourse-metadata-resource
+            - name: results
+    {% endfor %}
 {% if repository.upstream_fork != "apache" or repository.branch == "develop" %}
 - name: PublishArtifacts
   public: true
