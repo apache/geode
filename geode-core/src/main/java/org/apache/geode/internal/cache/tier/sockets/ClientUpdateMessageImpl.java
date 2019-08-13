@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
@@ -33,6 +32,7 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
@@ -46,7 +46,6 @@ import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.size.Sizeable;
 
@@ -123,12 +122,12 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
   /**
    * Client list satisfying the interestList who want values
    */
-  private volatile Set<ClientProxyMembershipID> _clientInterestList;
+  private volatile CopyOnWriteHashSet<ClientProxyMembershipID> _clientInterestList;
 
   /**
    * Client list satisfying the interestList who want invalidations
    */
-  private volatile Set<ClientProxyMembershipID> _clientInterestListInv;
+  private volatile CopyOnWriteHashSet<ClientProxyMembershipID> _clientInterestListInv;
 
   /**
    * To determine if the message is result of netLoad. If its net load the message is not delivered
@@ -202,8 +201,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * default constructor
    *
    */
-  public ClientUpdateMessageImpl() {
-  }
+  public ClientUpdateMessageImpl() {}
 
   @Override
   public String getRegionName() {
@@ -1157,7 +1155,8 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    * // Read CQ Op. cqs.put(cqName, Integer.valueOf(cqOp)); } this._clientCqs.put(proxyId, cqs); } }
    */
 
-  public void addClientInterestList(Set clientIds, boolean receiveValues) {
+  public void addClientInterestList(CopyOnWriteHashSet<ClientProxyMembershipID> clientIds,
+      boolean receiveValues) {
     if (receiveValues) {
       if (this._clientInterestList == null) {
         this._clientInterestList = clientIds;
@@ -1175,10 +1174,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   public void addClientInterestList(ClientProxyMembershipID clientId, boolean receiveValues) {
     // This happens under synchronization on HAContainer.
-    Set<ClientProxyMembershipID> newInterests;
+    CopyOnWriteHashSet<ClientProxyMembershipID> newInterests;
     if (receiveValues) {
       if (this._clientInterestList == null) {
-        newInterests = new ConcurrentHashSet<>();
+        newInterests = new CopyOnWriteHashSet<>();
       } else {
         newInterests = this._clientInterestList;
       }
@@ -1186,7 +1185,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       this._clientInterestList = newInterests;
     } else {
       if (this._clientInterestListInv == null) {
-        newInterests = new ConcurrentHashSet<>();
+        newInterests = new CopyOnWriteHashSet<>();
       } else {
         newInterests = this._clientInterestListInv;
       }
@@ -1262,12 +1261,14 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     DataSerializer.writeByteArray(this.deltaBytes, out);
     out.writeBoolean(_hasCqs);
     DataSerializer.writeObject(_callbackArgument, out);
-    Set<ClientProxyMembershipID> clientInterestListSnapshot =
-        new HashSet<>(this._clientInterestList);
-    Set<ClientProxyMembershipID> clientInterestListInvSnapshot =
-        new HashSet<>(this._clientInterestListInv);
-    DataSerializer.writeHashSet((HashSet) clientInterestListSnapshot, out);
-    DataSerializer.writeHashSet((HashSet) clientInterestListInvSnapshot, out);
+    HashSet clientInterestListToSerialize = this._clientInterestList != null
+        ? new HashSet<>(this._clientInterestList.getSnapshot())
+        : null;
+    DataSerializer.writeHashSet(clientInterestListToSerialize, out);
+    HashSet clientInterestListInvToSerialize = this._clientInterestListInv != null
+        ? new HashSet<>(this._clientInterestListInv.getSnapshot())
+        : null;
+    DataSerializer.writeHashSet(clientInterestListInvToSerialize, out);
     DataSerializer.writeObject(this.versionTag, out);
   }
 
@@ -1287,20 +1288,20 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
 
-    HashSet ids = DataSerializer.readHashSet(in);
+    HashSet clientInterestList = DataSerializer.readHashSet(in);
 
-    if (ccn != null && ids != null) { // use canonical IDs in servers
-      ids = (HashSet) ccn.getProxyIDs(ids);
-    }
-    this._clientInterestList = ids;
+    this._clientInterestList = ccn != null && clientInterestList != null // use canonical IDs in
+                                                                         // servers
+        ? ccn.getProxyIDs(clientInterestList)
+        : null;
 
-    ids = DataSerializer.readHashSet(in);
-    if (ccn != null && ids != null) {
-      ids = (HashSet) ccn.getProxyIDs(ids);
-    }
-    this._clientInterestListInv = ids;
+    HashSet clientInterestListInv = DataSerializer.readHashSet(in);
 
-    this.versionTag = (VersionTag) DataSerializer.readObject(in);
+    this._clientInterestListInv = ccn != null && clientInterestListInv != null
+        ? ccn.getProxyIDs(clientInterestListInv)
+        : null;
+
+    this.versionTag = DataSerializer.readObject(in);
   }
 
   private Object getOriginalCallbackArgument() {

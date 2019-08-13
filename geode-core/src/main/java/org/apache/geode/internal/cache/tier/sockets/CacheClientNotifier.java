@@ -74,6 +74,7 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.ClassLoadUtil;
+import org.apache.geode.internal.CopyOnWriteHashSet;
 import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheClientStatus;
@@ -103,7 +104,6 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
-import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCloser;
@@ -742,7 +742,7 @@ public class CacheClientNotifier {
     }
     if (filterInfo.getInterestedClients() != null) {
       Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
-      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
+      CopyOnWriteHashSet<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
       incMessagesNotQueuedOriginatorStat(event, ids);
       if (!ids.isEmpty()) {
         if (logger.isTraceEnabled()) {
@@ -907,8 +907,8 @@ public class CacheClientNotifier {
    * processes the given collection of durable and non-durable client identifiers, returning a
    * collection of non-durable identifiers of clients connected to this VM
    */
-  Set<ClientProxyMembershipID> getProxyIDs(Set mixedDurableAndNonDurableIDs) {
-    Set<ClientProxyMembershipID> result = new ConcurrentHashSet<>();
+  CopyOnWriteHashSet<ClientProxyMembershipID> getProxyIDs(Set mixedDurableAndNonDurableIDs) {
+    CopyOnWriteHashSet<ClientProxyMembershipID> result = new CopyOnWriteHashSet<>();
     for (Object id : mixedDurableAndNonDurableIDs) {
       if (id instanceof String) {
         CacheClientProxy clientProxy = getClientProxy((String) id, true);
