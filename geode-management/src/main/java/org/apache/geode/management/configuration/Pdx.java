@@ -32,10 +32,10 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
   public static final String PDX_ID = "PDX";
   public static final String PDX_ENDPOINT = "/configurations/pdx";
 
-  private boolean readSerialized;
+  private Boolean readSerialized;
   private ClassName pdxSerializer;
-  private boolean ignoreUnreadFields;
-  private boolean persistent;
+  private Boolean ignoreUnreadFields;
+  private Boolean persistent;
   private String diskStoreName;
 
   @Override
@@ -60,11 +60,11 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     }
   }
 
-  public boolean isReadSerialized() {
+  public Boolean isReadSerialized() {
     return readSerialized;
   }
 
-  public void setReadSerialized(boolean readSerialized) {
+  public void setReadSerialized(Boolean readSerialized) {
     this.readSerialized = readSerialized;
   }
 
@@ -76,19 +76,19 @@ public class Pdx extends CacheElement implements RestfulEndpoint, CorrespondWith
     this.pdxSerializer = pdxSerializer;
   }
 
-  public boolean isIgnoreUnreadFields() {
+  public Boolean isIgnoreUnreadFields() {
     return ignoreUnreadFields;
   }
 
-  public void setIgnoreUnreadFields(boolean ignoreUnreadFields) {
+  public void setIgnoreUnreadFields(Boolean ignoreUnreadFields) {
     this.ignoreUnreadFields = ignoreUnreadFields;
   }
 
-  public boolean isPersistent() {
+  public Boolean isPersistent() {
     return persistent;
   }
 
-  public void setPersistent(boolean persistent) {
+  public void setPersistent(Boolean persistent) {
     this.persistent = persistent;
   }
 

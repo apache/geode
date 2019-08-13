@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.configuration;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -51,12 +50,12 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return GATEWAY_RECEIVERS_ENDPOINTS;
   }
 
-  private List<DeclarableType> gatewayTransportFilters = new ArrayList<>();
-  private String startPort;
-  private String endPort;
-  private String maximumTimeBetweenPings;
-  private String socketBufferSize;
-  private boolean manualStart = false;
+  private List<DeclarableType> gatewayTransportFilters;
+  private Integer startPort;
+  private Integer endPort;
+  private Integer maximumTimeBetweenPings;
+  private Integer socketBufferSize;
+  private Boolean manualStart;
 
   /**
    * get the list of transport filters
@@ -77,28 +76,28 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
   /**
    * get the starting port
    */
-  public String getStartPort() {
+  public Integer getStartPort() {
     return startPort;
   }
 
   /**
    * set the starting port
    */
-  public void setStartPort(String startPort) {
+  public void setStartPort(Integer startPort) {
     this.startPort = startPort;
   }
 
   /**
    * get the end port
    */
-  public String getEndPort() {
+  public Integer getEndPort() {
     return endPort;
   }
 
   /**
    * set the end port
    */
-  public void setEndPort(String endPort) {
+  public void setEndPort(Integer endPort) {
     this.endPort = endPort;
   }
 
@@ -106,14 +105,14 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
    * get the maximum time between pings in milliseconds, the default is
    * CacheServer.DEFAULT_MAXIMUM_TIME_BETWEEN_PINGS = 60000
    */
-  public String getMaximumTimeBetweenPings() {
+  public Integer getMaximumTimeBetweenPings() {
     return maximumTimeBetweenPings;
   }
 
   /**
    * set the maximum time between pings in milliseconds
    */
-  public void setMaximumTimeBetweenPings(String maximumTimeBetweenPings) {
+  public void setMaximumTimeBetweenPings(Integer maximumTimeBetweenPings) {
     this.maximumTimeBetweenPings = maximumTimeBetweenPings;
   }
 
@@ -121,28 +120,28 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
    * get the socket buffer size for socket buffers from the receiver to the sender.
    * CacheServer.DEFAULT_SOCKET_BUFFER_SIZE = 32768;
    */
-  public String getSocketBufferSize() {
+  public Integer getSocketBufferSize() {
     return socketBufferSize;
   }
 
   /**
    * set the socket buffer size for socket buffers from the receiver to the sender.
    */
-  public void setSocketBufferSize(String socketBufferSize) {
+  public void setSocketBufferSize(Integer socketBufferSize) {
     this.socketBufferSize = socketBufferSize;
   }
 
   /**
    * is this gateway receiver manually started
    */
-  public boolean isManualStart() {
+  public Boolean isManualStart() {
     return manualStart;
   }
 
   /**
    * set the manualStart
    */
-  public void setManualStart(boolean manualStart) {
+  public void setManualStart(Boolean manualStart) {
     this.manualStart = manualStart;
   }
 }
