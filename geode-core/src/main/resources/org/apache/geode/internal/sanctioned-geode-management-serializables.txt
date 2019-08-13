@@ -33,6 +33,7 @@ org/apache/geode/cache/configuration/RegionType,false
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
 org/apache/geode/management/configuration/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
+org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lang/String,gatewayTransportFilters:java/util/List,manualStart:boolean,maximumTimeBetweenPings:java/lang/String,socketBufferSize:java/lang/String,startPort:java/lang/String
 org/apache/geode/management/configuration/MemberConfig,false,id:java/lang/String
 org/apache/geode/management/configuration/Pdx,false,diskStoreName:java/lang/String,ignoreUnreadFields:boolean,pdxSerializer:org/apache/geode/management/configuration/ClassName,persistent:boolean,readSerialized:boolean
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int

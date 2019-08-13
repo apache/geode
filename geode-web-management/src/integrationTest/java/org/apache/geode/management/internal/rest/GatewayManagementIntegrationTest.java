@@ -16,7 +16,6 @@
 package org.apache.geode.management.internal.rest;
 
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.util.List;
@@ -36,6 +35,7 @@ import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
@@ -53,19 +53,19 @@ public class GatewayManagementIntegrationTest {
 
   private ClusterManagementService client;
 
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
 
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
     client = ClusterManagementServiceBuilder.buildWithRequestFactory()
         .setRequestFactory(context.getRequestFactory()).build();
-    receiver = new GatewayReceiverConfig();
+    receiver = new GatewayReceiver();
   }
 
   @Test
   public void listEmptyGatewayReceivers() {
-    ClusterManagementListResult<GatewayReceiverConfig, GatewayReceiverInfo> result =
+    ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> result =
         client.list(receiver);
     assertThat(result.isSuccessful()).isTrue();
     assertThat(result.getResult().size()).isEqualTo(0);
@@ -88,14 +88,13 @@ public class GatewayManagementIntegrationTest {
       return cacheConfig;
     });
 
-    ClusterManagementListResult<GatewayReceiverConfig, GatewayReceiverInfo> results =
+    ClusterManagementListResult<GatewayReceiver, GatewayReceiverInfo> results =
         client.list(receiver);
     assertThat(results.isSuccessful()).isTrue();
-    List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> receivers =
+    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> receivers =
         results.getResult();
     assertThat(receivers.size()).isEqualTo(1);
-    GatewayReceiverConfig result = receivers.get(0).getConfig();
-    assertThat(result.getBindAddress()).isEqualTo("localhost");
+    GatewayReceiver result = receivers.get(0).getConfig();
     assertThat(result.isManualStart()).isFalse();
     assertThat(result.getStartPort()).isEqualTo("5000");
 
@@ -104,17 +103,5 @@ public class GatewayManagementIntegrationTest {
       cacheConfig.setGatewayReceiver(null);
       return cacheConfig;
     });
-  }
-
-  @Test
-  public void createWithBindAddress() throws Exception {
-    receiver.setBindAddress("test-mbpro");
-    assertThatThrownBy(() -> client.create(receiver)).hasMessageContaining("ILLEGAL_ARGUMENT");
-  }
-
-  @Test
-  public void createWithHostName() throws Exception {
-    receiver.setHostnameForSenders("test-mbpro");
-    assertThatThrownBy(() -> client.create(receiver)).hasMessageContaining("ILLEGAL_ARGUMENT");
   }
 }

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.configuration;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,15 +22,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.management.api.CorrespondWith;
-import org.apache.geode.management.api.RestfulEndpoint;
-import org.apache.geode.management.runtime.GatewayReceiverInfo;
 
 /**
  * <p>
@@ -62,9 +57,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"gatewayTransportFilters"})
 @Experimental
-public class GatewayReceiverConfig extends CacheElement
-    implements RestfulEndpoint, CorrespondWith<GatewayReceiverInfo> {
-
+public class GatewayReceiverConfig implements Serializable {
   @XmlElement(name = "gateway-transport-filter",
       namespace = "http://geode.apache.org/schema/cache")
   protected List<DeclarableType> gatewayTransportFilters;
@@ -265,22 +258,5 @@ public class GatewayReceiverConfig extends CacheElement
    */
   public void setManualStart(Boolean value) {
     this.manualStart = value;
-  }
-
-
-  @Override
-  @XmlTransient
-  @JsonIgnore
-  public String getId() {
-    return getConfigGroup();
-  }
-
-  public static final String GATEWAY_RECEIVERS_ENDPOINTS = "/gateways/receivers";
-
-  @Override
-  @XmlTransient
-  @JsonIgnore
-  public String getEndpoint() {
-    return GATEWAY_RECEIVERS_ENDPOINTS;
   }
 }

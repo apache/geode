@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
@@ -61,6 +60,7 @@ import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.Pdx;
 import org.apache.geode.management.internal.CacheElementOperation;
@@ -100,11 +100,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
     // initialize the list of managers
     managers.put(RegionConfig.class, new RegionConfigManager());
     managers.put(Pdx.class, new PdxManager());
-    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
+    managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager());
 
     // initialize the list of validators
     validators.put(RegionConfig.class, new RegionConfigValidator(cache));
-    validators.put(GatewayReceiverConfig.class, new GatewayReceiverConfigValidator());
+    validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
   }
 
   @VisibleForTesting

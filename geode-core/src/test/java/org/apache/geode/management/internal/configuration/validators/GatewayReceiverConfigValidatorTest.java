@@ -20,34 +20,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 public class GatewayReceiverConfigValidatorTest {
 
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
   private GatewayReceiverConfigValidator validator;
 
   @Before
   public void before() throws Exception {
-    receiver = new GatewayReceiverConfig();
+    receiver = new GatewayReceiver();
     validator = new GatewayReceiverConfigValidator();
-  }
-
-  @Test
-  public void bindAddress() throws Exception {
-    receiver.setBindAddress("mbpro");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot set bindAddress");
-  }
-
-  @Test
-  public void hostName() throws Exception {
-    receiver.setHostnameForSenders("mbpro");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, receiver))
-        .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Cannot set hostname");
   }
 
   @Test

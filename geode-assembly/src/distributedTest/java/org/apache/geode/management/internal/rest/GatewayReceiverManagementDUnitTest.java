@@ -27,11 +27,11 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -43,7 +43,7 @@ public class GatewayReceiverManagementDUnitTest {
   public static ClusterStartupRule cluster = new ClusterStartupRule();
 
   private static MemberVM locator;
-  private GatewayReceiverConfig receiver;
+  private GatewayReceiver receiver;
 
   @BeforeClass
   public static void beforeClass() {
@@ -55,7 +55,7 @@ public class GatewayReceiverManagementDUnitTest {
 
   @Before
   public void before() {
-    receiver = new GatewayReceiverConfig();
+    receiver = new GatewayReceiver();
   }
 
   @Test
@@ -79,7 +79,7 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'group1' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'group1' already exists on member(s) server-1.");
 
     // try create another GWR on another group but has no server
     receiver.setStartPort("5002");
@@ -93,17 +93,17 @@ public class GatewayReceiverManagementDUnitTest {
     receiver.setGroup(null);
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
-            "ENTITY_EXISTS: GatewayReceiverConfig 'cluster' already exists on member(s) server-1.");
+            "ENTITY_EXISTS: GatewayReceiver 'cluster' already exists on member(s) server-1.");
 
-    ClusterManagementListResultAssert<GatewayReceiverConfig, GatewayReceiverInfo> listAssert =
-        assertManagementListResult(cms.list(new GatewayReceiverConfig())).isSuccessful();
-    List<ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo>> listResult =
+    ClusterManagementListResultAssert<GatewayReceiver, GatewayReceiverInfo> listAssert =
+        assertManagementListResult(cms.list(new GatewayReceiver())).isSuccessful();
+    List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> listResult =
         listAssert.getResult();
 
     assertThat(listResult).hasSize(2);
 
     // verify that we have two configurations, but only group1 config has a running gwr
-    for (ConfigurationResult<GatewayReceiverConfig, GatewayReceiverInfo> result : listResult) {
+    for (ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> result : listResult) {
       if (result.getConfig().getGroup().equals("group1")) {
         assertThat(result.getRuntimeInfo()).hasSize(1);
         assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);

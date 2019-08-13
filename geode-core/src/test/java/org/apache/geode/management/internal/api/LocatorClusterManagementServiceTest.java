@@ -97,7 +97,7 @@ public class LocatorClusterManagementServiceTest {
     cacheElementValidator = spy(CacheElementValidator.class);
     validators.put(RegionConfig.class, regionValidator);
     managers.put(RegionConfig.class, regionManager);
-    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager(cache));
+    managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
 
     memberValidator = mock(MemberValidator.class);
 
