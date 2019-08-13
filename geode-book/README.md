@@ -53,7 +53,12 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
     $ bundle install
     ```
 
-   Note: You will not have to run `bundle install` on subsequent builds.
+   Note: You will not have to run `bundle install` on subsequent builds. If you see errors during this step regarding the inability to install libv8 try running the command:
+    ```
+    $ gem install libv8 -v '3.16.14.15' --  --with-system-v8
+    ```
+   This can help you avoid errors with the default GCC compilter provided by xcode.
+
 
 4. To start a local website of the Apache Geode User Guide, enter:
 

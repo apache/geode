@@ -503,7 +503,10 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             }
           }
           if (events.isEmpty()) {
+            System.out.println("BR: empty events");
             continue; // nothing to do!
+          } else {
+            System.out.println("BR: events found");
           }
 
           beforeExecute();
@@ -634,7 +637,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             // no-ack case), then multiple events for the same key may end up in
             // the batch.
             List conflatedEventsToBeDispatched = conflate(eventsToBeDispatched);
-
+            System.out.println("BR: events conflated");
             if (isDebugEnabled) {
               logBatchFine("During normal processing, dispatching the following ",
                   conflatedEventsToBeDispatched);
@@ -663,6 +666,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
             // If the batch is successfully processed, remove it from the queue.
             if (success) {
+              System.out.println("BR: Batch successful");
               if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
                 handleSuccessfulBatchDispatch(conflatedEventsToBeDispatched, events);
               } else {
@@ -678,6 +682,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
               increaseNumEventsDispatched(conflatedEventsToBeDispatched.size());
             } // successful batch
             else { // The batch was unsuccessful.
+              System.out.println("BR: Batch unsuccessful");
               if (this.dispatcher instanceof GatewaySenderEventCallbackDispatcher) {
                 handleUnSuccessfulBatchDispatch(events);
                 this.resetLastPeekedEvents = true;
