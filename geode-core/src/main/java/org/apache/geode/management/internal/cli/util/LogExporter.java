@@ -26,6 +26,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -47,6 +49,7 @@ public class LogExporter {
   private final LogFilter logFilter;
   private final File baseLogFile;
   private final File baseStatsFile;
+  private static final String GCLOGJVMSETTING = "-Xloggc";
 
   /**
    * @param logFilter the filter that's used to check if we need to accept the file or the logLine
@@ -61,18 +64,16 @@ public class LogExporter {
   }
 
   /**
-   *
    * @return Path to the zip file that has all the filtered files, null if no files are selected to
    *         export.
    */
   public Path export() throws IOException {
     Path tempDirectory = Files.createTempDirectory("exportLogs");
+    List<Path> filesToExport = getFilesToExport();
 
-    if (baseLogFile != null) {
-      for (Path logFile : findLogFiles(baseLogFile.toPath().getParent())) {
-        Path filteredLogFile = tempDirectory.resolve(logFile.getFileName());
-        writeFilteredLogFile(logFile, filteredLogFile);
-      }
+    for (Path logFile : filesToExport) {
+      Path filteredLogFile = tempDirectory.resolve(logFile.getFileName());
+      writeFilteredLogFile(logFile, filteredLogFile);
     }
 
     if (baseStatsFile != null) {
@@ -130,10 +131,10 @@ public class LogExporter {
    */
   public long estimateFilteredSize() throws IOException {
     long filteredSize = 0;
-    if (baseLogFile != null) {
-      for (Path logFile : findLogFiles(baseLogFile.toPath().getParent())) {
-        filteredSize += filterAndSize(logFile);
-      }
+    // feature/geode-6706
+    List<Path> filesToExport = getFilesToExport();
+    for (Path logFile : filesToExport) {
+      filteredSize += filterAndSize(logFile);
     }
 
     if (baseStatsFile != null) {
@@ -188,5 +189,21 @@ public class LogExporter {
     selectedFiles = Files.list(workingDir).filter(fileSelector).filter(this.logFilter::acceptsFile);
 
     return selectedFiles.collect(toList());
+  }
+
+  // Geode-6706
+  private List<Path> getFilesToExport() throws IOException {
+    String gcLogJVMSetting = System.getProperty(GCLOGJVMSETTING, new String());
+    List<Path> filesToExport = new ArrayList<>();
+
+    if (baseLogFile != null) {
+      if ((baseLogFile.toPath().getParent()).equals(Paths.get(gcLogJVMSetting))) {
+        filesToExport = findLogFiles(baseLogFile.toPath().getParent());
+      } else {
+        filesToExport.addAll(findLogFiles(baseLogFile.toPath().getParent()));
+        filesToExport.addAll(findLogFiles(Paths.get(gcLogJVMSetting)));
+      }
+    }
+    return filesToExport;
   }
 }

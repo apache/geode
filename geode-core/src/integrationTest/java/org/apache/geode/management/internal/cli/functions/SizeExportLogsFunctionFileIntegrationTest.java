@@ -122,6 +122,31 @@ public class SizeExportLogsFunctionFileIntegrationTest {
             .isEqualTo(0);
   }
 
+
+  @Test
+  public void AllFilesIncludingGCLogFiles_returnsCombinedSize() throws Exception {
+    System.setProperty("-Xloggc", dir.getAbsolutePath());
+    List<File> logFiles =
+        createLogFiles(new File(dir.getName(), testName.getMethodName()), 1, 1, FileUtils.ONE_KB);
+    File logFile = logFiles.get(0);
+    long logFileSize = FileUtils.sizeOf(logFiles.get(0));
+
+    List<File> statFiles =
+        createStatFiles(new File(dir.getName(), testName.getMethodName()), 1, 1, FileUtils.ONE_KB);
+    File statArchive = statFiles.get(0);
+    long statFileSize = FileUtils.sizeOf(statArchive);
+
+    List<File> gcLogFiles =
+        createLogFiles(new File(dir.getName(), testName.getMethodName()), 2, 1, FileUtils.ONE_KB);
+    File gcLogFile = gcLogFiles.get(0);
+    long gcLogFileSize = FileUtils.sizeOf(gcLogFiles.get(0));
+
+    SizeExportLogsFunction function = new SizeExportLogsFunction();
+    assertThat(function.estimateLogFileSize(member, logFile, statArchive, nonFilteringArgs))
+        .isEqualTo(logFileSize + statFileSize + gcLogFileSize);
+  }
+
+
   private List<File> createLogFiles(File logFile, int mainId, int numberOfFiles, long sizeOfFile)
       throws IOException {
     List<File> files = new ArrayList<>();

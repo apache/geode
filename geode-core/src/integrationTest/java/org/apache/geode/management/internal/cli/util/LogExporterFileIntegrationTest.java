@@ -148,4 +148,40 @@ public class LogExporterFileIntegrationTest {
     assertThat(logExporter.findLogFiles(workingDir.toPath()))
         .contains(gcRolledOverLogFile.toPath());
   }
+
+  // GEODE-6706
+
+  @Test
+  public void findLogsWhichContainsEmptyConfiguredGCDir() throws Exception {
+    System.setProperty("-Xloggc", "");
+
+    File gcLogFile = new File(workingDir.getAbsolutePath(), "gc.log");
+    FileUtils.writeStringToFile(gcLogFile, "some gc log line");
+
+    File gcRolledOverLogFile = new File(workingDir.getAbsolutePath(), "gc.log.1");
+    FileUtils.writeStringToFile(gcRolledOverLogFile, "some gc log line");
+
+    assertThat(logExporter.findLogFiles((new File(workingDir.getAbsolutePath()).toPath()))
+        .contains(gcLogFile.toPath()));
+    assertThat(logExporter.findLogFiles((new File(workingDir.getAbsolutePath()).toPath()))
+        .contains(gcRolledOverLogFile.toPath()));
+  }
+
+  @Test
+  public void findLogsWhichContainsGCLogFromConfiguredGCDir() throws Exception {
+    System.setProperty("-Xloggc", workingDir.getAbsolutePath());
+
+    File gcLogFile = new File(System.getProperty("-Xloggc"), "gc.log");
+    FileUtils.writeStringToFile(gcLogFile, "some gc log line");
+
+    File gcRolledOverLogFile = new File(System.getProperty("-Xloggc"), "gc.log.1");
+    FileUtils.writeStringToFile(gcRolledOverLogFile, "some gc log line");
+
+    assertThat(logExporter.findLogFiles((new File(System.getProperty("-Xloggc")).toPath()))
+        .contains(gcLogFile.toPath()));
+    assertThat(logExporter.findLogFiles((new File(System.getProperty("-Xloggc")).toPath()))
+        .contains(gcRolledOverLogFile.toPath()));
+  }
+
+
 }
