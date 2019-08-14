@@ -43,7 +43,7 @@ public class RegionVersionHolderBitSetJUnitTest {
   }
 
   @Test
-  public void recordVersionLessThanBitSetWidthShouldNotMoveBItSet() {
+  public void recordVersionLessThanBitSetWidthShouldNotMoveBitSet() {
     RegionVersionHolder h = createHolder(true);
     int version = BIT_SET_WIDTH - 10;
     h.recordVersion(version);
