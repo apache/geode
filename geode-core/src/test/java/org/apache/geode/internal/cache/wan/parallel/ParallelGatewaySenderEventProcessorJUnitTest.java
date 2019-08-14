@@ -15,7 +15,9 @@
 package org.apache.geode.internal.cache.wan.parallel;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.wan.AbstractGatewaySender;
@@ -104,6 +107,42 @@ public class ParallelGatewaySenderEventProcessorJUnitTest {
     assertThat(gsei2.getDeserializedValue()).isEqualTo(lastUpdateValue);
     assertThat(gsei2.getEventId().getSequenceID()).isEqualTo(lastUpdateSequenceId);
     assertThat(gsei2.getShadowKey()).isEqualTo(lastUpdateShadowKey);
+  }
+
+
+  // See GEODE-7079: a NullPointerException was thrown whenever the queue was recovered from disk
+  // and the processor started dispatching events before the actual region was available.
+  @Test
+  public void verifyBatchConflationWithNullEventRegionDoesNowThrowException()
+      throws Exception {
+    AbstractGatewaySenderEventProcessor processor =
+        ParallelGatewaySenderHelper.createParallelGatewaySenderEventProcessor(this.sender);
+
+    List<GatewaySenderEventImpl> events = new ArrayList<GatewaySenderEventImpl>();
+
+    LocalRegion lr = mock(LocalRegion.class);
+    when(lr.getFullPath()).thenReturn("/dataStoreRegion");
+    when(lr.getCache()).thenReturn(this.cache);
+
+    //Create two events for the same key, so that conflation will be needed. Mock the getRegion() value to return as null so we will hit the NPE if
+    //it is referenced.
+    GatewaySenderEventImpl gsei1 = spy(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.CREATE,
+        "Object_13964", "Object_13964_1", 100, 27709));
+    doReturn(null).when(gsei1).getRegion();
+
+    GatewaySenderEventImpl gsei2 = spy(ParallelGatewaySenderHelper.createGatewaySenderEvent(lr, Operation.UPDATE,
+        "Object_13964", "Object_13964_2", 101, 27822));
+    doReturn(null).when(gsei2).getRegion();
+
+    events.add(gsei1);
+    events.add(gsei2);
+    try {
+      processor.conflate(events);
+    } catch(NullPointerException npe) {
+      System.out.println("NPE thrown: ");
+      npe.printStackTrace();
+      Assert.fail("Null pointer exception thrown during conflation -- getRegion() may be referenced when region value could be null.");
+    }
   }
 
   @Test
