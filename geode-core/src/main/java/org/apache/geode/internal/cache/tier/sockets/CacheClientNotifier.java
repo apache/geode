@@ -730,7 +730,7 @@ public class CacheClientNotifier {
     // Add interestList info.
     if (filterInfo.getInterestedClientsInv() != null) {
       Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClientsInv());
-      Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
+      CopyOnWriteHashSet<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
       incMessagesNotQueuedOriginatorStat(event, ids);
       if (!ids.isEmpty()) {
         if (logger.isTraceEnabled()) {
