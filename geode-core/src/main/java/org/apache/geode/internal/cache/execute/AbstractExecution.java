@@ -16,7 +16,6 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,6 +36,7 @@ import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.query.QueryInvalidException;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionManager;
@@ -67,8 +67,6 @@ public abstract class AbstractExecution implements InternalExecution {
   protected ResultCollector rc;
 
   protected Set filter = new HashSet();
-
-  protected boolean hasRoutingObjects;
 
   protected volatile boolean isReExecute = false;
 
@@ -189,10 +187,6 @@ public abstract class AbstractExecution implements InternalExecution {
     this.isReExecute = isReExecute;
   }
 
-  public boolean isMemberMappedArgument() {
-    return isMemberMappedArgument;
-  }
-
   public Object getArgumentsForMember(String memberId) {
     if (!isMemberMappedArgument) {
       return args;
@@ -247,15 +241,6 @@ public abstract class AbstractExecution implements InternalExecution {
 
   public boolean isFnSerializationReqd() {
     return isFnSerializationReqd;
-  }
-
-  public Collection<InternalDistributedMember> getExecutionNodes() {
-    return executionNodes;
-  }
-
-  public void setRequireExecutionNodes(ExecutionNodesListener listener) {
-    executionNodes = Collections.emptySet();
-    executionNodesListener = listener;
   }
 
   public void setExecutionNodes(Set<InternalDistributedMember> nodes) {
@@ -348,7 +333,7 @@ public abstract class AbstractExecution implements InternalExecution {
       } else {
         functionException = new FunctionException(fite);
       }
-      handleException(functionException, fn, cx, sender, dm);
+      handleException(functionException, fn, sender, dm);
     } catch (BucketMovedException bme) {
       FunctionException functionException;
       if (fn.isHA()) {
@@ -357,13 +342,13 @@ public abstract class AbstractExecution implements InternalExecution {
       } else {
         functionException = new FunctionException(bme);
       }
-      handleException(functionException, fn, cx, sender, dm);
+      handleException(functionException, fn, sender, dm);
     } catch (VirtualMachineError e) {
       SystemFailure.initiateFailure(e);
       throw e;
     } catch (Throwable t) {
       SystemFailure.checkFailure();
-      handleException(t, fn, cx, sender, dm);
+      handleException(t, fn, sender, dm);
     }
   }
 
@@ -446,7 +431,8 @@ public abstract class AbstractExecution implements InternalExecution {
    * @throws TransactionException if more than one nodes are targeted within a transaction
    * @throws LowMemoryException if the set contains a heap critical member
    */
-  public abstract void validateExecution(Function function, Set targetMembers);
+  public abstract void validateExecution(Function function,
+      Set<? extends DistributedMember> targetMembers);
 
   public LocalResultCollector<?, ?> getLocalResultCollector(Function function,
       final ResultCollector<?, ?> rc) {
@@ -482,7 +468,7 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   private void handleException(Throwable functionException, final Function fn,
-      final FunctionContext cx, final ResultSender sender, DistributionManager dm) {
+      final ResultSender sender, DistributionManager dm) {
     FunctionStats stats = FunctionStats.getFunctionStats(fn.getId(), dm.getSystem());
 
     if (logger.isDebugEnabled()) {
@@ -515,7 +501,7 @@ public abstract class AbstractExecution implements InternalExecution {
    *
    * @return timeout in milliseconds.
    */
-  protected int getTimeoutMs() {
+  int getTimeoutMs() {
     return timeoutMs;
   }
 }

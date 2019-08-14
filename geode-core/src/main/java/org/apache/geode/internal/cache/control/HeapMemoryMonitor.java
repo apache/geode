@@ -675,7 +675,8 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     });
   }
 
-  protected Set<DistributedMember> getHeapCriticalMembersFrom(Set<DistributedMember> members) {
+  protected Set<DistributedMember> getHeapCriticalMembersFrom(
+      Set<? extends DistributedMember> members) {
     Set<DistributedMember> criticalMembers = getCriticalMembers();
     criticalMembers.retainAll(members);
     return criticalMembers;
@@ -694,7 +695,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
     checkForLowMemory(function, targetMembers);
   }
 
-  public void checkForLowMemory(Function function, Set<DistributedMember> dest) {
+  public void checkForLowMemory(Function function, Set<? extends DistributedMember> dest) {
     LowMemoryException exception = createLowMemoryIfNeeded(function, dest);
     if (exception != null) {
       throw exception;
@@ -708,7 +709,7 @@ public class HeapMemoryMonitor implements NotificationListener, MemoryMonitor {
   }
 
   public LowMemoryException createLowMemoryIfNeeded(Function function,
-      Set<DistributedMember> memberSet) {
+      Set<? extends DistributedMember> memberSet) {
     if (function.optimizeForWrite()
         && !MemoryThresholds.isLowMemoryExceptionDisabled()) {
       Set<DistributedMember> criticalMembersFrom = getHeapCriticalMembersFrom(memberSet);
