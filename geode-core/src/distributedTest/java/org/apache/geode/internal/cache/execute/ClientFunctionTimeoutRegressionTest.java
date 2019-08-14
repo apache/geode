@@ -112,6 +112,9 @@ public class ClientFunctionTimeoutRegressionTest implements Serializable {
       clientCache = null;
       serverCache = null;
     });
+
+    // This test modifies system properties, which are statically cached
+    client.bounce();
   }
 
   @Test

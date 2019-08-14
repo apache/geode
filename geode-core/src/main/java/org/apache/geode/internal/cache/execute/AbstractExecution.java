@@ -51,12 +51,13 @@ import org.apache.geode.internal.logging.LogService;
  *
  */
 public abstract class AbstractExecution implements InternalExecution {
+  private static final Logger logger = LogService.getLogger();
 
   public static final int DEFAULT_CLIENT_FUNCTION_TIMEOUT = 0;
   private static final String CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY =
       DistributionConfig.GEMFIRE_PREFIX + "CLIENT_FUNCTION_TIMEOUT";
-
-  private static final Logger logger = LogService.getLogger();
+  private static final Integer timeoutMsSystemProperty =
+      Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY, DEFAULT_CLIENT_FUNCTION_TIMEOUT);
 
   boolean isMemberMappedArgument;
 
@@ -158,9 +159,8 @@ public abstract class AbstractExecution implements InternalExecution {
   }
 
   protected AbstractExecution() {
-    final int timeoutMs = Integer.getInteger(CLIENT_FUNCTION_TIMEOUT_SYSTEM_PROPERTY,
-        DEFAULT_CLIENT_FUNCTION_TIMEOUT);
-    this.timeoutMs = timeoutMs >= 0 ? timeoutMs : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
+    timeoutMs =
+        timeoutMsSystemProperty >= 0 ? timeoutMsSystemProperty : DEFAULT_CLIENT_FUNCTION_TIMEOUT;
   }
 
   protected AbstractExecution(AbstractExecution ae) {
