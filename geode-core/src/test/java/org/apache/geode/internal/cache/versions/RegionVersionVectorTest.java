@@ -843,7 +843,8 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(lostMember);
-    regionVersionHolder.setVersion(2);
+    regionVersionHolder.recordVersion(1);
+    regionVersionHolder.recordVersion(2);
     memberToRegionVersionHolder.put(lostMember, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
@@ -865,7 +866,6 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(lostMember);
-    regionVersionHolder.setVersion(0);
     memberToRegionVersionHolder.put(lostMember, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(lostMember, memberToRegionVersionHolder,
@@ -887,7 +887,6 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(0);
     // memberToRegionVersionHolder.put(provider, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
@@ -909,7 +908,6 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(0);
     memberToRegionVersionHolder.put(provider, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
@@ -933,7 +931,8 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
+    regionVersionHolder.recordVersion(1);
+    regionVersionHolder.recordVersion(2);
     memberToRegionVersionHolder.put(provider, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
@@ -956,7 +955,8 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
+    regionVersionHolder.recordVersion(1);
+    regionVersionHolder.recordVersion(2);
     memberToRegionVersionHolder.put(provider, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,
@@ -974,7 +974,10 @@ public class RegionVersionVectorTest {
         new ConcurrentHashMap<>();
     memberToGcVersion.put(requester, new Long(3));
     RegionVersionHolder pRegionVersionHolder = new RegionVersionHolder(provider);
-    pRegionVersionHolder.setVersion(4);
+    pRegionVersionHolder.recordVersion(1);
+    pRegionVersionHolder.recordVersion(2);
+    pRegionVersionHolder.recordVersion(3);
+    pRegionVersionHolder.recordVersion(4);
 
     RegionVersionVector providerRvv = new VMRegionVersionVector(provider, null,
         1, memberToGcVersion, 1, false, pRegionVersionHolder);
@@ -982,7 +985,8 @@ public class RegionVersionVectorTest {
     ConcurrentHashMap<InternalDistributedMember, RegionVersionHolder<InternalDistributedMember>> memberToRegionVersionHolder =
         new ConcurrentHashMap<>();
     RegionVersionHolder regionVersionHolder = new RegionVersionHolder(provider);
-    regionVersionHolder.setVersion(2);
+    regionVersionHolder.recordVersion(1);
+    regionVersionHolder.recordVersion(2);
     memberToRegionVersionHolder.put(provider, regionVersionHolder);
     RegionVersionVector requesterRvv =
         new VMRegionVersionVector(requester, memberToRegionVersionHolder,

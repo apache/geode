@@ -162,7 +162,10 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     return getExceptions().toString();
   }
 
-  public void setVersion(long ver) {
+  /**
+   * Should only be called as part of cloning a RegionVersionHolder
+   */
+  void setVersion(long ver) {
     this.version = ver;
   }
 
