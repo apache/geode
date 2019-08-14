@@ -1413,11 +1413,6 @@ public class GMSHealthMonitor implements HealthMonitor {
     return this.socketPort;
   }
 
-  @Override
-  public Collection<GMSMember> getSuspectedMembers() {
-    return Collections.unmodifiableCollection(this.suspectedMemberIds.keySet());
-  }
-
   private void sendSuspectRequest(final List<SuspectRequest> requests) {
     logger.debug("Sending suspect request for members {}", requests);
     List<GMSMember> recipients;
@@ -1436,7 +1431,7 @@ public class GMSHealthMonitor implements HealthMonitor {
       recipients = currentView.getMembers();
     }
 
-    logger.debug("Sending suspect messages to {}", recipients);
+    logger.trace("Sending suspect messages to {}", recipients);
     SuspectMembersMessage smm = new SuspectMembersMessage(recipients, requests);
     smm.setSender(localAddress);
     Set<GMSMember> failedRecipients;
@@ -1448,9 +1443,9 @@ public class GMSHealthMonitor implements HealthMonitor {
     }
 
     if (failedRecipients != null && failedRecipients.size() > 0) {
-      logger.debug("Unable to send suspect message to {}", failedRecipients);
+      logger.trace("Unable to send suspect message to {}", failedRecipients);
     }
-    logger.debug("Processing suspect message locally");
+    logger.trace("Processing suspect message locally");
     processMessage(smm);
   }
 

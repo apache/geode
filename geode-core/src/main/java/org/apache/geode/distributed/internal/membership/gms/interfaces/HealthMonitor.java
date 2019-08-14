@@ -14,7 +14,6 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.interfaces;
 
-import java.util.Collection;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 
@@ -51,10 +50,5 @@ public interface HealthMonitor extends Service {
    * Returns the failure detection port for this member, or -1 if there is no such port
    */
   int getFailureDetectionPort();
-
-  /**
-   * Returns the set of members under suspicion by the health monitor
-   */
-  Collection<GMSMember> getSuspectedMembers();
 
 }
