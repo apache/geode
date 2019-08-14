@@ -80,7 +80,7 @@ public class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>, Seri
 
   @Override
   public boolean remove(Object o) {
-    return map.remove(o) == PRESENT;
+    return o != null && map.remove(o) == PRESENT;
   }
 
 
