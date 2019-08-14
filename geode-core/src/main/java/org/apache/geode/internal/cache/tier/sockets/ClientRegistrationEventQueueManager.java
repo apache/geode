@@ -102,11 +102,11 @@ class ClientRegistrationEventQueueManager {
 
   void drain(final ClientRegistrationEventQueue clientRegistrationEventQueue,
       final CacheClientNotifier cacheClientNotifier) {
-    CacheClientProxy cacheClientProxy =
-        cacheClientNotifier
-            .getClientProxy(clientRegistrationEventQueue.getClientProxyMembershipID());
-
     try {
+      CacheClientProxy cacheClientProxy =
+          cacheClientNotifier
+              .getClientProxy(clientRegistrationEventQueue.getClientProxyMembershipID());
+
       // If the cache client proxy is null, the registration was not successful and the proxy
       // was never added to the initialized proxy collection managed by the cache client notifier.
       // If that is the case, we can just remove the queue and it will be recreated on subsequent
