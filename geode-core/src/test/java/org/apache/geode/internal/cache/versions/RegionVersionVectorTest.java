@@ -687,6 +687,23 @@ public class RegionVersionVectorTest {
   }
 
   @Test
+  public void incrementingTheLocalVersionShouldNotCreateExceptions() {
+    DiskStoreID id0 = new DiskStoreID(0, 0);
+    DiskStoreID id1 = new DiskStoreID(0, 1);
+
+    DiskRegionVersionVector rvv0 = new DiskRegionVersionVector(id0);
+
+    // Increment the version a couple of times
+    rvv0.getNextVersion();
+    rvv0.getNextVersion();
+
+    RegionVersionVector<DiskStoreID> clone = rvv0.getCloneForTransmission();
+
+    assertThat(clone.getHolderForMember(id0).getExceptionForTest()).isEmpty();
+    assertThat(rvv0.getHolderForMember(id0).getExceptionForTest()).isEmpty();
+  }
+
+  @Test
   public void testRemoveOldVersions() {
     DiskStoreID id0 = new DiskStoreID(0, 0);
     DiskStoreID id1 = new DiskStoreID(0, 1);
