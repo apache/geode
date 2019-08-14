@@ -137,6 +137,11 @@ public class RegionNameValidationTest {
   }
 
   @Test
+  public void nameWithDot() throws Exception {
+    validate("valid.valid");
+  }
+
+  @Test
   public void endingWithDoubleHyphenIsOk() {
     validate("validRegionName--");
   }

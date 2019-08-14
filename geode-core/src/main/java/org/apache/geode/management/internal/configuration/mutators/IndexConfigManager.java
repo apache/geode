@@ -56,7 +56,6 @@ public class IndexConfigManager implements ConfigurationManager<Index> {
           continue;
         }
         Index matchingIndex = converter.fromXmlObject(index);
-        matchingIndex.setRegionName(region.getName());
         result.add(matchingIndex);
       }
     }

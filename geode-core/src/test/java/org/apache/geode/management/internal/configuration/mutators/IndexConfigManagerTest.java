@@ -58,7 +58,7 @@ public class IndexConfigManagerTest {
   @Test
   public void listWithRegionName() throws Exception {
     setupCacheConfig();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
     List<Index> list = manager.list(index, cacheConfig);
     assertThat(list).hasSize(1);
     assertThat(list.get(0).getName()).isEqualTo("index1");
@@ -79,7 +79,7 @@ public class IndexConfigManagerTest {
   public void listWithUnMatchingFilter() throws Exception {
     setupCacheConfig();
     index.setName("index1");
-    index.setRegionName("region2");
+    index.setRegionPath("region2");
     List<Index> list = manager.list(index, cacheConfig);
     assertThat(list).hasSize(0);
   }
@@ -88,7 +88,7 @@ public class IndexConfigManagerTest {
   public void listWithRegionNameAndIndexName() throws Exception {
     setupCacheConfig();
     index.setName("index2");
-    index.setRegionName("region2");
+    index.setRegionPath("region2");
     List<Index> list = manager.list(index, cacheConfig);
     assertThat(list).hasSize(1);
     assertThat(list.get(0).getName()).isEqualTo("index2");

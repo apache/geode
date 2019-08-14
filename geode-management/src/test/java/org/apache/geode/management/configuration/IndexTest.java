@@ -17,15 +17,60 @@ package org.apache.geode.management.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 public class IndexTest {
+  private Index index;
+
+  @Before
+  public void before() throws Exception {
+    index = new Index();
+  }
+
   @Test
   public void getIndexRuntimeClass() throws Exception {
-    Index index = new Index();
     assertThat(index.getRuntimeClass()).isEqualTo(RuntimeInfo.class);
     assertThat(index.hasRuntimeInfo()).isFalse();
+  }
+
+  @Test
+  public void getRegionName() throws Exception {
+    index.setRegionPath(null);
+    assertThat(index.getRegionName()).isNull();
+
+    index.setRegionPath("regionA");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("   regionA   ");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA.method()");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA.method() a");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA.fieled.method() a");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA a");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+
+    index.setRegionPath("/regionA a, a.foo");
+    assertThat(index.getRegionName()).isEqualTo("regionA");
+  }
+
+  @Test
+  public void getEndPoint() throws Exception {
+    assertThat(index.getEndpoint()).isEqualTo("/indexes");
+
+    index.setRegionPath("/regionA");
+    assertThat(index.getEndpoint()).isEqualTo("/regions/regionA/indexes");
   }
 }

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.configuration;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,9 +30,8 @@ public class Index extends CacheElement
 
   private String name;
   private String expression;
-  private String fromClause;
+  private String regionPath;
   private Boolean keyIndex;
-  private String regionName;
 
   public String getName() {
     return name;
@@ -49,12 +49,20 @@ public class Index extends CacheElement
     this.expression = expression;
   }
 
-  public String getFromClause() {
-    return fromClause;
+  public String getRegionPath() {
+    return regionPath;
   }
 
-  public void setFromClause(String fromClause) {
-    this.fromClause = fromClause;
+  /**
+   * the regionPath can be in any of these forms, e.g.:
+   * 1. regionName
+   * 2. /regionName
+   * 3. /regionName alias
+   * 4. /regionName.entrySet()
+   * 5. /regionName.fieldName.entrySet() alias
+   */
+  public void setRegionPath(String regionPath) {
+    this.regionPath = regionPath;
   }
 
   public Boolean getKeyIndex() {
@@ -65,12 +73,23 @@ public class Index extends CacheElement
     this.keyIndex = keyIndex;
   }
 
+  /**
+   * @return the regionName specified in the regionPath.
+   *         Note this method assumes the regionName should not contain "."
+   */
+  @JsonIgnore
   public String getRegionName() {
-    return regionName;
-  }
+    if (regionPath == null) {
+      return null;
+    }
 
-  public void setRegionName(String regionName) {
-    this.regionName = regionName;
+    String regionName = regionPath.trim().split(" ")[0];
+    regionName = StringUtils.removeStart(regionName, "/");
+    if (regionName.contains(".")) {
+      regionName = regionName.substring(0, regionName.indexOf('.'));
+    }
+
+    return regionName;
   }
 
   @Override
@@ -81,8 +100,9 @@ public class Index extends CacheElement
 
   @Override
   public String getEndpoint() {
+    String regionName = getRegionName();
     if (StringUtils.isBlank(regionName)) {
-      return null;
+      return "/indexes";
     }
     return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
   }

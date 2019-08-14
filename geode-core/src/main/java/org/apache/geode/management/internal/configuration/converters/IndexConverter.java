@@ -24,7 +24,7 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
     Index index = new Index();
     index.setName(xmlObject.getName());
     index.setExpression(xmlObject.getExpression());
-    index.setFromClause(xmlObject.getFromClause());
+    index.setRegionPath(xmlObject.getFromClause());
     index.setKeyIndex(xmlObject.isKeyIndex());
     return index;
   }
@@ -33,7 +33,7 @@ public class IndexConverter extends ConfigurationConverter<Index, RegionConfig.I
   protected RegionConfig.Index fromNonNullConfigObject(Index configObject) {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName(configObject.getName());
-    index.setFromClause(configObject.getFromClause());
+    index.setFromClause(configObject.getRegionPath());
     index.setExpression(configObject.getExpression());
     index.setKeyIndex(configObject.getKeyIndex());
     return index;

@@ -110,7 +110,7 @@ public class RegionManagementController extends AbstractManagementController {
     return clusterManagementService.delete(config);
   }
 
-  @ApiOperation(value = "list indexes")
+  @ApiOperation(value = "list region indexes")
   @RequestMapping(method = RequestMethod.GET,
       value = REGION_CONFIG_ENDPOINT + "/{regionName}/indexes")
   @ResponseBody
@@ -120,7 +120,20 @@ public class RegionManagementController extends AbstractManagementController {
       @RequestParam(required = false, name = "id") String indexName) {
 
     Index filter = new Index();
-    filter.setRegionName(regionName);
+    filter.setRegionPath(regionName);
+    if (StringUtils.isNotBlank(indexName)) {
+      filter.setName(indexName);
+    }
+    return clusterManagementService.list(filter);
+  }
+
+  @ApiOperation(value = "list indexes")
+  @RequestMapping(method = RequestMethod.GET, value = "/indexes")
+  @ResponseBody
+  @PreAuthorize("@securityService.authorize('CLUSTER', 'READ', 'QUERY')")
+  public ClusterManagementListResult<Index, RuntimeInfo> listAllIndex(
+      @RequestParam(required = false, name = "id") String indexName) {
+    Index filter = new Index();
     if (StringUtils.isNotBlank(indexName)) {
       filter.setName(indexName);
     }

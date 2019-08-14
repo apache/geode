@@ -104,7 +104,15 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void listIndexForOneRegion() {
     Index index = new Index();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
+    ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
+    List<Index> result = list.getConfigResult();
+    assertThat(result).hasSize(2);
+  }
+
+  @Test
+  public void listAllIndex() throws Exception {
+    Index index = new Index();
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
     List<Index> result = list.getConfigResult();
     assertThat(result).hasSize(2);
@@ -113,7 +121,7 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void getIndex() {
     Index index = new Index();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
     index.setName("index1");
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.get(index);
     List<Index> result = list.getConfigResult();
@@ -121,14 +129,21 @@ public class ListIndexManagementDUnitTest {
     Index runtimeIndex = result.get(0);
     assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
-    assertThat(runtimeIndex.getFromClause()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
   }
 
   @Test
   public void getIndexWithoutIndexId() {
     Index index = new Index();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
+    assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("unable to construct the uri ");
+  }
+
+  @Test
+  public void getIndexWithoutRegionNameAndIndexId() {
+    Index index = new Index();
     assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("unable to construct the uri ");
   }
@@ -137,14 +152,19 @@ public class ListIndexManagementDUnitTest {
   public void getIndexWithoutRegionName() {
     Index index = new Index();
     index.setName("index1");
-    assertThatThrownBy(() -> cms.get(index)).isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("unable to construct the uri ");
+    ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
+    List<Index> result = list.getConfigResult();
+    assertThat(result).hasSize(1);
+    Index runtimeIndex = result.get(0);
+    assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
+    assertThat(runtimeIndex.getName()).isEqualTo("index1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getExpression()).isEqualTo("id");
   }
 
   @Test
-  public void listIndexesWithIdFilter() {
+  public void listIndexWithoutRegionName() {
     Index index = new Index();
-    index.setRegionName("region1");
     index.setName("index1");
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
     List<Index> result = list.getConfigResult();
@@ -152,14 +172,29 @@ public class ListIndexManagementDUnitTest {
     Index runtimeIndex = result.get(0);
     assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
     assertThat(runtimeIndex.getName()).isEqualTo("index1");
-    assertThat(runtimeIndex.getFromClause()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
+    assertThat(runtimeIndex.getExpression()).isEqualTo("id");
+  }
+
+  @Test
+  public void listIndexesWithIdFilter() {
+    Index index = new Index();
+    index.setRegionPath("region1");
+    index.setName("index1");
+    ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
+    List<Index> result = list.getConfigResult();
+    assertThat(result).hasSize(1);
+    Index runtimeIndex = result.get(0);
+    assertThat(runtimeIndex.getRegionName()).isEqualTo("region1");
+    assertThat(runtimeIndex.getName()).isEqualTo("index1");
+    assertThat(runtimeIndex.getRegionPath()).isEqualTo("/region1");
     assertThat(runtimeIndex.getExpression()).isEqualTo("id");
   }
 
   @Test
   public void getNonExistingIndex() {
     Index index = new Index();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
     index.setName("index333");
     assertThatThrownBy(() -> cms.get(index)).hasMessageContaining("ENTITY_NOT_FOUND");
   }
@@ -167,7 +202,7 @@ public class ListIndexManagementDUnitTest {
   @Test
   public void listNonExistingIndexesWithIdFilter() {
     Index index = new Index();
-    index.setRegionName("region1");
+    index.setRegionPath("region1");
     index.setName("index333");
     ClusterManagementListResult<Index, RuntimeInfo> list = cms.list(index);
     List<Index> result = list.getConfigResult();
