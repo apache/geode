@@ -57,4 +57,10 @@ public class DeployCommandTest {
   public void missingDirOrJar() {
     gfsh.executeAndAssertThat(command, "deploy").statusIsError().containsOutput("is required");
   }
+
+  @Test
+  public void convertShorthandToPathJar() {
+    gfsh.executeAndAssertThat(command, "deploy --jar=~/abc.jar").statusIsError()
+        .containsOutput(System.getProperty("user.home"));
+  }
 }

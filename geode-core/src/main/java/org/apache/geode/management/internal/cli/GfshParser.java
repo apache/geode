@@ -203,6 +203,8 @@ public class GfshParser extends SimpleParser {
 
     // this tells the simpleParser not to interpret backslash as escaping character
     rawInput = rawInput.replace("\\", "\\\\");
+    // this allows the usage of home shorthand across platforms
+    rawInput = rawInput.replace("~", System.getProperty("user.home"));
     // User SimpleParser to parse the input
     ParseResult result = super.parse(rawInput);
 
