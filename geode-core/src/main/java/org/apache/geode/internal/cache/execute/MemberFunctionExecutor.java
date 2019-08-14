@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.execute;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.geode.cache.TransactionDataNotColocatedException;
@@ -38,67 +37,66 @@ import org.apache.geode.internal.cache.InternalCache;
 
 public class MemberFunctionExecutor extends AbstractExecution {
 
-  protected InternalDistributedSystem ds;
+  protected InternalDistributedSystem distributedSystem;
 
-  protected Set members;
+  protected Set<InternalDistributedMember> members;
 
   private ServerToClientFunctionResultSender sender;
 
-  public MemberFunctionExecutor(DistributedSystem s) {
-    this.ds = (InternalDistributedSystem) s;
-    this.members = this.ds.getDistributionManager().getNormalDistributionManagerIds();
+  MemberFunctionExecutor(DistributedSystem distributedSystem) {
+    this(distributedSystem, ((InternalDistributedSystem) distributedSystem).getDistributionManager()
+        .getNormalDistributionManagerIds());
   }
 
-  public MemberFunctionExecutor(DistributedSystem s, DistributedMember m) {
-    this.ds = (InternalDistributedSystem) s;
-    this.members = Collections.singleton(m);
+  MemberFunctionExecutor(DistributedSystem distributedSystem, DistributedMember distributedMember) {
+    this(distributedSystem, Collections.singleton((InternalDistributedMember) distributedMember));
   }
 
-  public MemberFunctionExecutor(DistributedSystem s, Set m) {
-    this.ds = (InternalDistributedSystem) s;
-    this.members = m;
+  MemberFunctionExecutor(DistributedSystem distributedSystem,
+      Set<? extends DistributedMember> members) {
+    this.distributedSystem = (InternalDistributedSystem) distributedSystem;
+    this.members = (Set<InternalDistributedMember>) members;
   }
 
-  public MemberFunctionExecutor(DistributedSystem s, Set m,
+  public MemberFunctionExecutor(DistributedSystem distributedSystem,
+      Set<? extends DistributedMember> members,
       ServerToClientFunctionResultSender sender) {
-    this(s, m);
+    this(distributedSystem, members);
     this.sender = sender;
   }
 
   private MemberFunctionExecutor(MemberFunctionExecutor memFunctionExecutor) {
     super(memFunctionExecutor);
-    this.ds = memFunctionExecutor.ds;
-    this.members = new HashSet();
-    this.members.addAll(memFunctionExecutor.members);
-    this.sender = memFunctionExecutor.sender;
+    distributedSystem = memFunctionExecutor.distributedSystem;
+    members = new HashSet<>(memFunctionExecutor.members);
+    sender = memFunctionExecutor.sender;
   }
 
   private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor,
       MemberMappedArgument argument) {
     this(memberFunctionExecutor);
 
-    this.memberMappedArg = argument;
-    this.isMemberMappedArgument = true;
+    memberMappedArg = argument;
+    isMemberMappedArgument = true;
   }
 
   private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor,
       ResultCollector rs) {
     this(memberFunctionExecutor);
 
-    this.rc = rs;
+    rc = rs;
   }
 
   private MemberFunctionExecutor(MemberFunctionExecutor memberFunctionExecutor, Object arguments) {
     this(memberFunctionExecutor);
 
-    this.args = arguments;
+    args = arguments;
   }
 
-  @SuppressWarnings("unchecked")
   private ResultCollector executeFunction(final Function function,
       ResultCollector resultCollector) {
-    final DistributionManager dm = this.ds.getDistributionManager();
-    final Set dest = new HashSet(this.members);
+    final DistributionManager dm = distributedSystem.getDistributionManager();
+    final Set<InternalDistributedMember> dest = new HashSet<>(members);
     if (dest.isEmpty()) {
       throw new FunctionException(
           String.format("No member found for executing function : %s.",
@@ -108,7 +106,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
     setExecutionNodes(dest);
 
     final InternalDistributedMember localVM =
-        this.ds.getDistributionManager().getDistributionManagerId();
+        distributedSystem.getDistributionManager().getDistributionManagerId();
     final LocalResultCollector<?, ?> localRC = getLocalResultCollector(function, resultCollector);
     boolean remoteOnly = false;
     boolean localOnly = false;
@@ -129,7 +127,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
       boolean isTx = false;
       InternalCache cache = GemFireCacheImpl.getInstance();
       if (cache != null) {
-        isTx = cache.getTxManager().getTXState() == null ? false : true;
+        isTx = cache.getTxManager().getTXState() != null;
       }
       final FunctionContext context = new FunctionContextImpl(cache, function.getId(),
           getArgumentsForMember(localVM.getId()), resultSender);
@@ -137,25 +135,23 @@ public class MemberFunctionExecutor extends AbstractExecution {
     }
 
     if (!dest.isEmpty()) {
-      HashMap<InternalDistributedMember, Object> memberArgs =
-          new HashMap<InternalDistributedMember, Object>();
-      Iterator<DistributedMember> iter = dest.iterator();
-      while (iter.hasNext()) {
-        InternalDistributedMember recip = (InternalDistributedMember) iter.next();
-        memberArgs.put(recip, getArgumentsForMember(recip.getId()));
+      HashMap<InternalDistributedMember, Object> memberArgs = new HashMap<>();
+      for (InternalDistributedMember distributedMember : dest) {
+        memberArgs.put(distributedMember, getArgumentsForMember(distributedMember.getId()));
       }
       Assert.assertTrue(memberArgs.size() == dest.size());
-      MemberFunctionResultWaiter resultReceiver = new MemberFunctionResultWaiter(this.ds, localRC,
-          function, memberArgs, dest, resultSender);
+      MemberFunctionResultWaiter resultReceiver =
+          new MemberFunctionResultWaiter(distributedSystem, localRC,
+              function, memberArgs, dest, resultSender);
 
-      ResultCollector reply = resultReceiver.getFunctionResultFrom(dest, function, this);
-      return reply;
+      return resultReceiver.getFunctionResultFrom(dest, function, this);
     }
     return localRC;
   }
 
   @Override
-  public void validateExecution(final Function function, final Set dest) {
+  public void validateExecution(final Function function,
+      final Set<? extends DistributedMember> dest) {
     final InternalCache cache = GemFireCacheImpl.getInstance();
     if (cache == null) {
       return;
@@ -170,7 +166,7 @@ public class MemberFunctionExecutor extends AbstractExecution {
           throw new UnsupportedOperationException(
               "Client function execution on members is not supported with transaction");
         }
-        DistributedMember funcTarget = (DistributedMember) dest.iterator().next();
+        DistributedMember funcTarget = dest.iterator().next();
         DistributedMember target = cache.getTxManager().getTXState().getTarget();
         if (target == null) {
           cache.getTxManager().getTXState().setTarget(funcTarget);
@@ -249,25 +245,20 @@ public class MemberFunctionExecutor extends AbstractExecution {
   }
 
   @Override
-  public boolean isMemberMappedArgument() {
-    return this.isMemberMappedArgument;
-  }
-
-  @Override
   public Object getArgumentsForMember(String memberId) {
     if (!isMemberMappedArgument) {
-      return this.args;
+      return args;
     } else {
-      return this.memberMappedArg.getArgumentsForMember(memberId);
+      return memberMappedArg.getArgumentsForMember(memberId);
     }
   }
 
   @Override
   public MemberMappedArgument getMemberMappedArgument() {
-    return this.memberMappedArg;
+    return memberMappedArg;
   }
 
   public ServerToClientFunctionResultSender getServerResultSender() {
-    return this.sender;
+    return sender;
   }
 }
