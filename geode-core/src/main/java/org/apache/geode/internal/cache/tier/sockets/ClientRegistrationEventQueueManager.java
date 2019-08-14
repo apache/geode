@@ -112,6 +112,12 @@ class ClientRegistrationEventQueueManager {
       // If that is the case, we can just remove the queue and it will be recreated on subsequent
       // registration attempts.
       if (cacheClientProxy != null) {
+        if (logger.isDebugEnabled()) {
+          logger.debug("Draining events from registration queue for client proxy "
+              + clientRegistrationEventQueue.getClientProxyMembershipID()
+              + " without synchronization");
+        }
+
         drainEventsReceivedWhileRegisteringClient(
             cacheClientProxy,
             clientRegistrationEventQueue,
