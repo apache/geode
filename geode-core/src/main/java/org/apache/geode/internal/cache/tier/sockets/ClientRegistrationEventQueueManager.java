@@ -85,13 +85,131 @@ class ClientRegistrationEventQueueManager {
           // this event and potentially deliver the conflatable to handle the edge case where
           // the original client filter IDs generated in the "normal" put processing path did
           // not include the registering client because the filter info was not yet available.
-          processEventAndDeliverConflatable(clientProxyMembershipID, cacheClientNotifier, event,
-              conflatable, originalFilterClientIDs);
+          // We only want to do this if the client successfully registered and the cache client
+          // proxy is non-null.
+          CacheClientProxy cacheClientProxy =
+              cacheClientNotifier.getClientProxy(clientProxyMembershipID);
+          if (cacheClientProxy != null) {
+            processEventAndDeliverConflatable(cacheClientProxy, cacheClientNotifier, event,
+                conflatable, originalFilterClientIDs);
+          }
         }
       } finally {
         registrationEventQueue.unlockForPutting();
       }
     }
+  }
+
+  void drain(final ClientRegistrationEventQueue clientRegistrationEventQueue,
+      final CacheClientNotifier cacheClientNotifier) {
+    CacheClientProxy cacheClientProxy =
+        cacheClientNotifier
+            .getClientProxy(clientRegistrationEventQueue.getClientProxyMembershipID());
+
+    try {
+      // If the cache client proxy is null, the registration was not successful and the proxy
+      // was never added to the initialized proxy collection managed by the cache client notifier.
+      // If that is the case, we can just remove the queue and it will be recreated on subsequent
+      // registration attempts.
+      if (cacheClientProxy != null) {
+        drainEventsReceivedWhileRegisteringClient(
+            cacheClientProxy,
+            clientRegistrationEventQueue,
+            cacheClientNotifier);
+
+        // Prevents additional events from being added to the queue while we process and remove it
+        clientRegistrationEventQueue.lockForDraining();
+        try {
+          if (logger.isDebugEnabled()) {
+            logger.debug("Draining remaining events from registration queue for client proxy "
+                + clientRegistrationEventQueue.getClientProxyMembershipID()
+                + " with synchronization");
+          }
+
+          drainEventsReceivedWhileRegisteringClient(
+              cacheClientProxy,
+              clientRegistrationEventQueue,
+              cacheClientNotifier);
+        } finally {
+          clientRegistrationEventQueue.unlockForDraining();
+        }
+      }
+    } finally {
+      registeringProxyEventQueues.remove(clientRegistrationEventQueue);
+    }
+  }
+
+  public ClientRegistrationEventQueue create(
+      final ClientProxyMembershipID clientProxyMembershipID,
+      final Queue<ClientRegistrationEvent> eventQueue,
+      final ReadWriteLock eventAddDrainLock) {
+    final ClientRegistrationEventQueue clientRegistrationEventQueue =
+        new ClientRegistrationEventQueue(clientProxyMembershipID, eventQueue,
+            eventAddDrainLock);
+    registeringProxyEventQueues.add(clientRegistrationEventQueue);
+    return clientRegistrationEventQueue;
+  }
+
+  private void processEventAndDeliverConflatable(final CacheClientProxy cacheClientProxy,
+      final CacheClientNotifier cacheClientNotifier,
+      final InternalCacheEvent internalCacheEvent,
+      final Conflatable conflatable,
+      final Set<ClientProxyMembershipID> originalFilterClientIDs) {
+    // The first step is to repopulate the filter info for the event to determine if
+    // the client which was registering has a matching CQ or has registered interest
+    // in the key for this event. We need to get the filter profile, filter routing info,
+    // and local filter info in order to do so. If any of these are null, then there is
+    // no need to proceed as the client is not interested.
+    FilterProfile filterProfile =
+        ((LocalRegion) internalCacheEvent.getRegion()).getFilterProfile();
+
+    if (filterProfile != null) {
+      FilterRoutingInfo filterRoutingInfo =
+          filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent);
+
+      if (filterRoutingInfo != null) {
+        FilterRoutingInfo.FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
+
+        if (filterInfo != null) {
+          ClientUpdateMessageImpl clientUpdateMessage = conflatable instanceof HAEventWrapper
+              ? (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage()
+              : (ClientUpdateMessageImpl) conflatable;
+
+          internalCacheEvent.setLocalFilterInfo(filterInfo);
+
+          Set<ClientProxyMembershipID> newFilterClientIDs =
+              cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile,
+                  filterInfo,
+                  clientUpdateMessage);
+
+          ClientProxyMembershipID proxyID = cacheClientProxy.getProxyID();
+          if (eventNotInOriginalFilterClientIDs(proxyID, newFilterClientIDs,
+              originalFilterClientIDs) && newFilterClientIDs.contains(proxyID)) {
+            cacheClientProxy.deliverMessage(conflatable);
+          }
+        }
+      }
+    }
+
+    // Once we have processed the conflatable, if it is an HAEventWrapper we can
+    // decrement the PutInProgress counter, allowing the ClientUpdateMessage to be
+    // set to null. See decrementPutInProgressCounter() for more details.
+    if (conflatable instanceof HAEventWrapper) {
+      ((HAEventWrapper) conflatable).decrementPutInProgressCounter();
+    }
+  }
+
+  /*
+   * This is to handle the edge case where the original filter client IDs
+   * calculated by "normal" put processing did not include the registering client
+   * because the filter info had not been received yet, but we now found that the client
+   * is interested in the event so we should deliver it.
+   */
+  private boolean eventNotInOriginalFilterClientIDs(final ClientProxyMembershipID proxyID,
+      final Set<ClientProxyMembershipID> newFilterClientIDs,
+      final Set<ClientProxyMembershipID> originalFilterClientIDs) {
+    return originalFilterClientIDs == null
+        || (!originalFilterClientIDs.contains(proxyID) && newFilterClientIDs.contains(proxyID));
   }
 
   /**
@@ -108,51 +226,37 @@ class ClientRegistrationEventQueueManager {
     }
   }
 
-  void drain(final ClientRegistrationEventQueue clientRegistrationEventQueue,
-      final CacheClientNotifier cacheClientNotifier) {
-    drainEventsReceivedWhileRegisteringClient(
-        clientRegistrationEventQueue,
-        cacheClientNotifier);
-
-    // Prevents additional events from being added to the queue while we process and remove it
-    clientRegistrationEventQueue.lockForDraining();
-    try {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Draining remaining events from registration queue for client proxy "
-            + clientRegistrationEventQueue.getClientProxyMembershipID() + " with synchronization");
-      }
-
-      drainEventsReceivedWhileRegisteringClient(
-          clientRegistrationEventQueue,
-          cacheClientNotifier);
-
-      registeringProxyEventQueues.remove(clientRegistrationEventQueue);
-    } finally {
-      clientRegistrationEventQueue.unlockForDraining();
-    }
-  }
-
   private void drainEventsReceivedWhileRegisteringClient(
+      final CacheClientProxy cacheClientProxy,
       final ClientRegistrationEventQueue registrationEventQueue,
       final CacheClientNotifier cacheClientNotifier) {
     ClientRegistrationEvent queuedEvent;
     while ((queuedEvent = registrationEventQueue.poll()) != null) {
       InternalCacheEvent internalCacheEvent = queuedEvent.internalCacheEvent;
       Conflatable conflatable = queuedEvent.conflatable;
-      processEventAndDeliverConflatable(registrationEventQueue.getClientProxyMembershipID(),
+      processEventAndDeliverConflatable(cacheClientProxy,
           cacheClientNotifier, internalCacheEvent, conflatable, null);
     }
   }
 
-  public ClientRegistrationEventQueue create(
-      final ClientProxyMembershipID clientProxyMembershipID,
-      final Queue<ClientRegistrationEvent> eventQueue,
-      final ReadWriteLock eventAddDrainLock) {
-    final ClientRegistrationEventQueue clientRegistrationEventQueue =
-        new ClientRegistrationEventQueue(clientProxyMembershipID, eventQueue,
-            eventAddDrainLock);
-    registeringProxyEventQueues.add(clientRegistrationEventQueue);
-    return clientRegistrationEventQueue;
+
+  /**
+   * Represents a conflatable and event processed while a client was registering.
+   * This needs to be queued and processed after registration is complete. The conflatable
+   * is what we will actually be delivering to the MessageDispatcher (and thereby adding
+   * to the HARegionQueue). The internal cache event is required to rehydrate the filter
+   * info and determine if the client which was registering does have a CQ that matches or
+   * has registered interest in the key.
+   */
+  private class ClientRegistrationEvent {
+    private final Conflatable conflatable;
+    private final InternalCacheEvent internalCacheEvent;
+
+    ClientRegistrationEvent(final InternalCacheEvent internalCacheEvent,
+        final Conflatable conflatable) {
+      this.conflatable = conflatable;
+      this.internalCacheEvent = internalCacheEvent;
+    }
   }
 
   class ClientRegistrationEventQueue {
@@ -199,96 +303,6 @@ class ClientRegistrationEventQueueManager {
 
     private void unlockForPutting() {
       eventAddDrainLock.readLock().unlock();
-    }
-  }
-
-  private void processEventAndDeliverConflatable(final ClientProxyMembershipID proxyID,
-      final CacheClientNotifier cacheClientNotifier,
-      final InternalCacheEvent internalCacheEvent,
-      final Conflatable conflatable,
-      final Set<ClientProxyMembershipID> originalFilterClientIDs) {
-    // The first step is to repopulate the filter info for the event to determine if
-    // the client which was registering has a matching CQ or has registered interest
-    // in the key for this event. We need to get the filter profile, filter routing info,
-    // and local filter info in order to do so. If any of these are null, then there is
-    // no need to proceed as the client is not interested.
-    FilterProfile filterProfile =
-        ((LocalRegion) internalCacheEvent.getRegion()).getFilterProfile();
-
-    if (filterProfile != null) {
-      FilterRoutingInfo filterRoutingInfo =
-          filterProfile.getFilterRoutingInfoPart2(null, internalCacheEvent);
-
-      if (filterRoutingInfo != null) {
-        FilterRoutingInfo.FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
-
-        if (filterInfo != null) {
-          ClientUpdateMessageImpl clientUpdateMessage = conflatable instanceof HAEventWrapper
-              ? (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage()
-              : (ClientUpdateMessageImpl) conflatable;
-
-          internalCacheEvent.setLocalFilterInfo(filterInfo);
-
-          Set<ClientProxyMembershipID> newFilterClientIDs =
-              cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile,
-                  filterInfo,
-                  clientUpdateMessage);
-
-          if (eventNotInOriginalFilterClientIDs(proxyID, newFilterClientIDs,
-              originalFilterClientIDs)) {
-            CacheClientProxy cacheClientProxy = cacheClientNotifier.getClientProxy(proxyID);
-
-            if (eventShouldBeDelivered(proxyID, newFilterClientIDs, cacheClientProxy)) {
-              cacheClientProxy.deliverMessage(conflatable);
-            }
-          }
-        }
-      }
-    }
-
-    // Once we have processed the conflatable, if it is an HAEventWrapper we can
-    // decrement the PutInProgress counter, allowing the ClientUpdateMessage to be
-    // set to null. See decrementPutInProgressCounter() for more details.
-    if (conflatable instanceof HAEventWrapper) {
-      ((HAEventWrapper) conflatable).decrementPutInProgressCounter();
-    }
-  }
-
-  private boolean eventShouldBeDelivered(final ClientProxyMembershipID proxyID,
-      final Set<ClientProxyMembershipID> filterClientIDs,
-      final CacheClientProxy cacheClientProxy) {
-    return filterClientIDs.contains(proxyID) && cacheClientProxy != null;
-  }
-
-  /*
-   * This is to handle the edge case where the original filter client IDs
-   * calculated by "normal" put processing did not include the registering client
-   * because the filter info had not been received yet, but we now found that the client
-   * is interested in the event so we should deliver it.
-   */
-  private boolean eventNotInOriginalFilterClientIDs(final ClientProxyMembershipID proxyID,
-      final Set<ClientProxyMembershipID> newFilterClientIDs,
-      final Set<ClientProxyMembershipID> originalFilterClientIDs) {
-    return originalFilterClientIDs == null
-        || (!originalFilterClientIDs.contains(proxyID) && newFilterClientIDs.contains(proxyID));
-  }
-
-  /**
-   * Represents a conflatable and event processed while a client was registering.
-   * This needs to be queued and processed after registration is complete. The conflatable
-   * is what we will actually be delivering to the MessageDispatcher (and thereby adding
-   * to the HARegionQueue). The internal cache event is required to rehydrate the filter
-   * info and determine if the client which was registering does have a CQ that matches or
-   * has registered interest in the key.
-   */
-  private class ClientRegistrationEvent {
-    private final Conflatable conflatable;
-    private final InternalCacheEvent internalCacheEvent;
-
-    ClientRegistrationEvent(final InternalCacheEvent internalCacheEvent,
-        final Conflatable conflatable) {
-      this.conflatable = conflatable;
-      this.internalCacheEvent = internalCacheEvent;
     }
   }
 }
