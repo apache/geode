@@ -64,7 +64,7 @@ public class GatewayReceiverManagementDUnitTest {
         .setHostAddress("localhost", locator.getHttpPort())
         .setCredentials("cluster", "cluster").build();
 
-    receiver.setStartPort("5000");
+    receiver.setStartPort(5000);
     receiver.setGroup("group1");
     List<RealizationResult> results =
         assertManagementResult(cms.create(receiver)).isSuccessful()
@@ -75,21 +75,21 @@ public class GatewayReceiverManagementDUnitTest {
     assertThat(results.get(0).getMemberName()).isEqualTo("server-1");
 
     // try create another GWR on the same group
-    receiver.setStartPort("5001");
+    receiver.setStartPort(5001);
     receiver.setGroup("group1");
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(
             "ENTITY_EXISTS: GatewayReceiver 'group1' already exists on member(s) server-1.");
 
     // try create another GWR on another group but has no server
-    receiver.setStartPort("5002");
+    receiver.setStartPort(5002);
     receiver.setGroup("group2");
     assertManagementResult(cms.create(receiver)).isSuccessful()
         .containsStatusMessage("Successfully updated configuration for group2.")
         .hasMemberStatus().hasSize(0);
 
     // try create another GWR on another group but has a common member in another group
-    receiver.setStartPort("5003");
+    receiver.setStartPort(5003);
     receiver.setGroup(null);
     assertThatThrownBy(() -> cms.create(receiver))
         .hasMessageContaining(

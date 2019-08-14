@@ -96,7 +96,7 @@ public class GatewayManagementIntegrationTest {
     assertThat(receivers.size()).isEqualTo(1);
     GatewayReceiver result = receivers.get(0).getConfig();
     assertThat(result.isManualStart()).isFalse();
-    assertThat(result.getStartPort()).isEqualTo("5000");
+    assertThat(result.getStartPort()).isEqualTo(5000);
 
     // manually removing the GWR so that it won't pollute other tests
     cps.updateCacheConfig("cluster", cacheConfig -> {

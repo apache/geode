@@ -26,7 +26,7 @@ public class PdxConverterTest {
   private PdxConverter converter = new PdxConverter();
 
   @Test
-  public void fromConfig() throws Exception {
+  public void fromConfig() {
     Pdx pdx = new Pdx();
     pdx.setReadSerialized(true);
     pdx.setPersistent(true);
@@ -36,13 +36,13 @@ public class PdxConverterTest {
   }
 
   @Test
-  public void fromXmlObject() throws Exception {
+  public void fromXmlObject() {
     PdxType pdxType = new PdxType();
     pdxType.setDiskStoreName("test");
     pdxType.setIgnoreUnreadFields(false);
     Pdx pdxConfig = converter.fromXmlObject(pdxType);
     assertThat(pdxConfig.getDiskStoreName()).isEqualTo("test");
     assertThat(pdxConfig.isIgnoreUnreadFields()).isEqualTo(false);
-    assertThat(pdxConfig.isPersistent()).isFalse();
+    assertThat(pdxConfig.isPersistent()).isNull();
   }
 }

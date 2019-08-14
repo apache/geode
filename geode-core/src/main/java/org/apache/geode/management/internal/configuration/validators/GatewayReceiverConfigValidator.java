@@ -29,14 +29,14 @@ public class GatewayReceiverConfigValidator
 
     if (operation == CacheElementOperation.CREATE) {
       if (config.getStartPort() == null) {
-        config.setStartPort(DEFAULT_START_PORT + "");
+        config.setStartPort(DEFAULT_START_PORT);
       }
 
       if (config.getEndPort() == null) {
-        config.setEndPort(DEFAULT_END_PORT + "");
+        config.setEndPort(DEFAULT_END_PORT);
       }
 
-      if (Integer.parseInt(config.getStartPort()) > Integer.parseInt(config.getEndPort())) {
+      if (config.getStartPort() > config.getEndPort()) {
         throw new IllegalArgumentException("Start port " + config.getStartPort()
             + " must be less than the end port " + config.getEndPort() + ".");
       }
