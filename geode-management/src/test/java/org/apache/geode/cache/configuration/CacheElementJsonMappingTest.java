@@ -140,7 +140,6 @@ public class CacheElementJsonMappingTest {
     RegionConfig.Index index = new RegionConfig.Index();
     index.setName("index1");
     index.setFromClause("/region1 r");
-    index.setRegionName("region1");
     index.setExpression("id");
     config.getIndexes().add(index);
     String json = mapper.writeValueAsString(config);
@@ -150,7 +149,6 @@ public class CacheElementJsonMappingTest {
     assertThat(config1.getGroups()).containsExactly("group1");
     List<RegionConfig.Index> indexes = config1.getIndexes();
     assertThat(indexes).hasSize(1);
-    assertThat(indexes.get(0).getRegionName()).isEqualTo("region1");
   }
 
   @Test

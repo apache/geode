@@ -28,12 +28,13 @@ org/apache/geode/cache/configuration/RegionAttributesType$PartitionAttributes,fa
 org/apache/geode/cache/configuration/RegionAttributesType$SubscriptionAttributes,false,interestPolicy:java/lang/String
 org/apache/geode/cache/configuration/RegionConfig,false,entries:java/util/List,indexes:java/util/List,name:java/lang/String,regionAttributes:org/apache/geode/cache/configuration/RegionAttributesType,regionElements:java/util/List,regions:java/util/List,type:java/lang/String
 org/apache/geode/cache/configuration/RegionConfig$Entry,false,key:org/apache/geode/cache/configuration/ObjectType,value:org/apache/geode/cache/configuration/ObjectType
-org/apache/geode/cache/configuration/RegionConfig$Index,false,expression:java/lang/String,fromClause:java/lang/String,imports:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,regionName:java/lang/String,type:java/lang/String
+org/apache/geode/cache/configuration/RegionConfig$Index,false,expression:java/lang/String,fromClause:java/lang/String,imports:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,type:java/lang/String
 org/apache/geode/cache/configuration/RegionType,false
 org/apache/geode/management/api/ClusterManagementResult$StatusCode,false
 org/apache/geode/management/api/RealizationResult,false,memberName:java/lang/String,message:java/lang/String,success:boolean
 org/apache/geode/management/configuration/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
 org/apache/geode/management/configuration/GatewayReceiver,false,endPort:java/lang/Integer,gatewayTransportFilters:java/util/List,manualStart:java/lang/Boolean,maximumTimeBetweenPings:java/lang/Integer,socketBufferSize:java/lang/Integer,startPort:java/lang/Integer
+org/apache/geode/management/configuration/Index,false,expression:java/lang/String,keyIndex:java/lang/Boolean,name:java/lang/String,regionPath:java/lang/String
 org/apache/geode/management/configuration/MemberConfig,false,id:java/lang/String
 org/apache/geode/management/configuration/Pdx,false,diskStoreName:java/lang/String,ignoreUnreadFields:java/lang/Boolean,pdxSerializer:org/apache/geode/management/configuration/ClassName,persistent:java/lang/Boolean,readSerialized:java/lang/Boolean
 org/apache/geode/management/runtime/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,maxConnections:int,maxThreads:int,port:int
