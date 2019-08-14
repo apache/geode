@@ -250,8 +250,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       return; // it fits in this bitset
     }
 
-    int length = BIT_SET_WIDTH;
-    int bitCountToFlush = length * 3 / 4;
+    int bitCountToFlush = BIT_SET_WIDTH * 3 / 4;
 
     // We can only flush up to the last set bit because
     // the exceptions list includes a "next version" that indicates a received version.
@@ -263,7 +262,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     }
     // see if we can shift part of the bits so that exceptions in the recent bits can
     // be kept in the bitset and later filled without having to create real exception objects
-    if (version >= this.bitSetVersion + length + bitCountToFlush) {
+    if (bitCountToFlush == -1 || version >= this.bitSetVersion + BIT_SET_WIDTH + bitCountToFlush) {
       // nope - flush the whole bitset
       addBitSetExceptions(version);
     } else {
@@ -299,7 +298,6 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
    *
    */
   private void addBitSetExceptions(long newVersion) {
-
     if (newVersion <= bitSetVersion) {
       return;
     }
@@ -374,7 +372,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     if (bitToSet > BIT_SET_WIDTH) {
       Assert.fail("Trying to set a bit larger than the size of the bitset " + bitToSet);
     }
-    this.bitSet.set((int) bitToSet);
+    this.bitSet.set(Math.toIntExact(bitToSet));
   }
 
   private void logRecordVersion(long version) {

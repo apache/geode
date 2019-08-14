@@ -17,24 +17,47 @@ package org.apache.geode.internal.cache.versions;
 import java.util.BitSet;
 import java.util.Iterator;
 
+/**
+ * An iterator on a bit set that produces {@link RVVException} for gaps
+ * in the set bits in the bitset.
+ */
 public class BitSetExceptionIterator implements Iterator<RVVException> {
   private final BitSet bitSet;
   private long bitSetVersion;
-  private final long newVersion;
+  private final long maximumVersion;
   private long nextClearBit;
 
-  public BitSetExceptionIterator(BitSet bitSet, long bitSetVersion, long newVersion) {
+  /**
+   * Create a new bitset iterator
+   *
+   * @param bitSet The bitset to iterate on
+   * @param bitSetVersion An offset of the bitset. If this iterator generates a RVVException,
+   *        the previous and next values will include this base value.
+   * @param maximumVersion The value to stop creating exceptions at. This should be greater than
+   *        bitSetVersion. This may be within the bitSetVersion+bitSet.size, or it could be much
+   *        large.
+   *        If this value falls within the bitset, gaps past this value will not be returned as
+   *        RVVExceptions
+   *        by this iterator.
+   */
+  public BitSetExceptionIterator(BitSet bitSet, long bitSetVersion, long maximumVersion) {
     this.bitSet = bitSet;
     this.bitSetVersion = bitSetVersion;
-    this.newVersion = newVersion;
+    this.maximumVersion = maximumVersion;
     this.nextClearBit = findNextClearBit(bitSet, 0);
   }
 
+  /**
+   * Find the next clear bit from a given index in the bitset, that is less than or
+   * equal to our maximum version for this iterator.
+   *
+   * @return the next clear bit, or -1 if there is no next clear bit within the range.
+   */
   private int findNextClearBit(BitSet bitSet, int fromIndex) {
     int nextClearBit = bitSet.nextClearBit(fromIndex);
 
-    long lastSetBit = newVersion - bitSetVersion;
-    if (nextClearBit >= lastSetBit) {
+    long maxmimumClearBit = maximumVersion - bitSetVersion;
+    if (nextClearBit >= maxmimumClearBit) {
       // We found empty bits, but past the offset we are interested in
       // Ignore these
       return -1;
@@ -55,7 +78,8 @@ public class BitSetExceptionIterator implements Iterator<RVVException> {
     }
 
     int nextSetBit = bitSet.nextSetBit((int) Math.min(Integer.MAX_VALUE, nextClearBit));
-    long nextSetVersion = nextSetBit == -1 ? newVersion : nextSetBit + bitSetVersion;
+
+    long nextSetVersion = nextSetBit == -1 ? maximumVersion : nextSetBit + bitSetVersion;
 
     RVVException exception =
         RVVException.createException(nextClearBit + bitSetVersion - 1, nextSetVersion);
