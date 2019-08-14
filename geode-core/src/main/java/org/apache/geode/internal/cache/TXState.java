@@ -139,7 +139,7 @@ public class TXState implements TXStateInterface {
   protected final TXStateProxy proxy;
   protected boolean firedWriter = false;
   protected final boolean onBehalfOfRemoteStub;
-  protected boolean gotBucketLocks = false;
+  private boolean gotBucketLocks = false;
   protected TXCommitMessage commitMessage = null;
   ClientProxyMembershipID bridgeContext = null;
   /** keeps track of events, so as not to re-apply events */
@@ -906,7 +906,7 @@ public class TXState implements TXStateInterface {
         /*
          * Need to unlock the primary lock for rebalancing so that rebalancing can resume.
          */
-        if (gotBucketLocks) {
+        if (isBucketLocks()) {
           if (r instanceof BucketRegion && (((BucketRegion) r).getBucketAdvisor().isPrimary())) {
             try {
               ((BucketRegion) r).doUnlockForPrimary();
@@ -932,11 +932,17 @@ public class TXState implements TXStateInterface {
       synchronized (this.completionGuard) {
         this.completionGuard.notifyAll();
       }
-
+      if (isBucketLocks()) {
+        gotBucketLocks = false;
+      }
       if (exception != null && !this.proxy.getCache().isClosed()) {
         throw exception;
       }
     }
+  }
+
+  boolean isBucketLocks() {
+    return gotBucketLocks;
   }
 
   /*
