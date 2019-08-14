@@ -99,11 +99,13 @@ public class IndexConfigManagerTest {
     RegionConfig region1 = new RegionConfig("region1", "REPLICATE");
     RegionConfig.Index index1 = new RegionConfig.Index();
     index1.setName("index1");
+    index1.setFromClause("/region1");
     region1.getIndexes().add(index1);
 
     RegionConfig region2 = new RegionConfig("region2", "REPLICATE");
     RegionConfig.Index index2 = new RegionConfig.Index();
     index2.setName("index2");
+    index2.setFromClause("/region2");
     region2.getIndexes().add(index2);
     cacheConfig.getRegions().add(region1);
     cacheConfig.getRegions().add(region2);
