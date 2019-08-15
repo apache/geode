@@ -36,17 +36,17 @@ public class NullAlertingService extends AlertingService {
   }
 
   @Override
-  public void addAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
+  public synchronized void addAlertListener(DistributedMember member, AlertLevel alertLevel) {
     // nothing
   }
 
   @Override
-  public boolean removeAlertListener(final DistributedMember member) {
+  public synchronized boolean removeAlertListener(DistributedMember member) {
     return false;
   }
 
   @Override
-  public boolean hasAlertListener(final DistributedMember member, final AlertLevel alertLevel) {
+  public synchronized boolean hasAlertListener(DistributedMember member, AlertLevel alertLevel) {
     return false;
   }
 }
