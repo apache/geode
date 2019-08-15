@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
+import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
@@ -54,12 +57,162 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     region.setName(configObject.getName());
     region.setType(configObject.getType().name());
 
-    RegionAttributesType attributesType = new RegionAttributesType();
+
+    RegionAttributesType attributesType = createRegionAttributesByType(configObject.getType().name());
 
     attributesType.setDiskStoreName(configObject.getDiskStoreName());
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
     region.setRegionAttributes(attributesType);
     return region;
+  }
+
+  public RegionAttributesType createRegionAttributesByType(String type) {
+    RegionAttributesType regionAttributes = new RegionAttributesType();
+    switch (type) {
+      case "PARTITION": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        break;
+      }
+      case "REPLICATE": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        break;
+      }
+      case "PARTITION_REDUNDANT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setRedundantCopy("1");
+        break;
+      }
+      case "PARTITION_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+        break;
+      }
+      case "PARTITION_REDUNDANT_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+        regionAttributes.setRedundantCopy("1");
+        break;
+      }
+      case "PARTITION_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "PARTITION_REDUNDANT_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setRedundantCopy("1");
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "PARTITION_PERSISTENT_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+        regionAttributes.setRedundantCopy("1");
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "PARTITION_HEAP_LRU": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+        break;
+
+      }
+      case "PARTITION_REDUNDANT_HEAP_LRU": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setRedundantCopy("1");
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+        break;
+      }
+
+      case "REPLICATE_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        break;
+      }
+      case "REPLICATE_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+
+      }
+      case "REPLICATE_PERSISTENT_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "REPLICATE_HEAP_LRU": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        regionAttributes.setInterestPolicy("all");
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+        break;
+      }
+      case "LOCAL": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
+        regionAttributes.setScope(RegionAttributesScope.LOCAL);
+        break;
+      }
+      case "LOCAL_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.LOCAL);
+        break;
+      }
+      case "LOCAL_HEAP_LRU": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
+        regionAttributes.setScope(RegionAttributesScope.LOCAL);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
+        break;
+      }
+      case "LOCAL_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
+        regionAttributes.setScope(RegionAttributesScope.LOCAL);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "LOCAL_PERSISTENT_OVERFLOW": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.LOCAL);
+        regionAttributes
+            .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
+        break;
+      }
+      case "PARTITION_PROXY": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setLocalMaxMemory("0");
+        break;
+      }
+      case "PARTITION_PROXY_REDUNDANT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setLocalMaxMemory("0");
+        regionAttributes.setRedundantCopy("1");
+        break;
+      }
+      case "REPLICATE_PROXY": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        break;
+      }
+      default:
+        throw new IllegalArgumentException("invalid type " + type);
+    }
+
+    return regionAttributes;
   }
 }

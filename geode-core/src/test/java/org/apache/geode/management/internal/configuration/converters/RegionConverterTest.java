@@ -17,12 +17,20 @@ package org.apache.geode.management.internal.configuration.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.File;
+import java.net.URL;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.cache.configuration.CacheConfig;
+import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.configuration.Region;
 
 public class RegionConverterTest {
@@ -94,5 +102,23 @@ public class RegionConverterTest {
     assertThat(regionAttributes.getKeyConstraint()).isEqualTo("bar");
     assertThat(regionAttributes.getValueConstraint()).isEqualTo("foo");
     assertThat(regionAttributes.getDiskStoreName()).isEqualTo("diskstore");
+  }
+
+  @Test
+  public void checkDefaultRegionAttributesForShortcuts() throws Exception {
+    URL xmlResource = RegionConverterTest.class.getResource("RegionConverterTest.xml");
+    assertThat(xmlResource).isNotNull();
+    CacheConfig master =
+        new JAXBService(CacheConfig.class)
+            .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
+    RegionShortcut[] shortcuts = RegionShortcut.values();
+    for (RegionShortcut shortcut : shortcuts) {
+      RegionConfig config = new RegionConfig();
+      config.setType(shortcut.name());
+      config.setName(shortcut.name());
+      config.setRegionAttributes(converter.createRegionAttributesByType(shortcut.name()));
+      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
+      assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
+    }
   }
 }

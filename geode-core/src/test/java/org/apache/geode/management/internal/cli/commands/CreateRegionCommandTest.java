@@ -23,25 +23,17 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.DistributedRegionMXBean;
 import org.apache.geode.management.DistributedSystemMXBean;
 import org.apache.geode.management.ManagementService;
@@ -340,25 +332,5 @@ public class CreateRegionCommandTest {
         .containsOutput("Region /region already exists on the cluster");
     parser.executeAndAssertThat(command, COMMAND + " --if-not-exists").statusIsSuccess()
         .containsOutput("Skipping: Region /region already exists on the cluster");
-  }
-
-  private CacheConfig master;
-
-  @Test
-  public void checkDefaultRegionAttributesForShortcuts() throws Exception {
-    URL xmlResource = CreateRegionCommandTest.class.getResource("CreateRegionCommandTest.xml");
-    assertThat(xmlResource).isNotNull();
-    master =
-        new JAXBService(CacheConfig.class)
-            .unMarshall(FileUtils.readFileToString(new File(xmlResource.getFile()), "UTF-8"));
-    RegionShortcut[] shortcuts = RegionShortcut.values();
-    for (RegionShortcut shortcut : shortcuts) {
-      RegionConfig config = new RegionConfig();
-      config.setType(shortcut.name());
-      config.setName(shortcut.name());
-      config.setRegionAttributes(command.createRegionAttributesByType(shortcut.name()));
-      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
-      assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
-    }
   }
 }
