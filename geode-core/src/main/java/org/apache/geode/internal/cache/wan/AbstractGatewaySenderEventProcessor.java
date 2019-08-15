@@ -634,7 +634,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
             // no-ack case), then multiple events for the same key may end up in
             // the batch.
             List conflatedEventsToBeDispatched = conflate(eventsToBeDispatched);
-            
+
             if (isDebugEnabled) {
               logBatchFine("During normal processing, dispatching the following ",
                   conflatedEventsToBeDispatched);
