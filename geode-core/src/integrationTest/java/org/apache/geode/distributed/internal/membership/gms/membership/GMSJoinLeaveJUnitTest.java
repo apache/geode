@@ -733,11 +733,6 @@ public class GMSJoinLeaveJUnitTest {
 
     prepareAndInstallView(C, createMemberList(A, B, C, D));
 
-    gmsJoinLeave.recordViewRequest(new LeaveRequestMessage(B, A, "removing for test"));
-
-    E.setVmViewId(2);
-    gmsJoinLeave.processMessage(new JoinRequestMessage(B, E, null, 1, 1));
-
     // have the Messenger acknowledge all membership view messages so no-one is kicked out for
     // failure to respond
     when(messenger.send(isA(InstallViewMessage.class), isA(GMSMembershipView.class)))
@@ -753,8 +748,14 @@ public class GMSJoinLeaveJUnitTest {
           return null;
         });
 
+    E.setVmViewId(2);
+
+    gmsJoinLeave.recordViewRequest(new LeaveRequestMessage(B, C, "removing for test"));
+
+    gmsJoinLeave.processMessage(new JoinRequestMessage(B, E, null, 1, 1));
+
     RemoveMemberMessage msg = new RemoveMemberMessage(B, A, "crashed for test");
-    msg.setSender(C);
+    msg.setSender(D);
     gmsJoinLeave.processMessage(msg);
 
     await().until(() -> gmsJoinLeave.isCoordinator() && gmsJoinLeave.getViewRequests().isEmpty());
