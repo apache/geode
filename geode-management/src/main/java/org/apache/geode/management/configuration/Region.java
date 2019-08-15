@@ -113,6 +113,9 @@ public class Region extends CacheElement implements RestfulEndpoint,
     this.diskStoreName = diskStoreName;
   }
 
+  /**
+   * two regions are equal if name and type are equal.
+   */
   @Override
   public boolean equals(Object that) {
     if (this == that) {
@@ -126,4 +129,9 @@ public class Region extends CacheElement implements RestfulEndpoint,
         Objects.equals(getType(), config.getType());
   }
 
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getName());
+  }
 }

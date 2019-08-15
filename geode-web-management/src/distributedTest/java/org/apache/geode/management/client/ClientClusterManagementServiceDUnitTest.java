@@ -152,7 +152,7 @@ public class ClientClusterManagementServiceDUnitTest {
     region.setGroup("group2");
     assertThatThrownBy(() -> client.create(region))
         .hasMessageContaining(
-            "ENTITY_EXISTS: RegionConfig 'test' already exists on member(s) server-3.");
+            "ENTITY_EXISTS: Region 'test' already exists on member(s) server-3.");
   }
 
   @Test

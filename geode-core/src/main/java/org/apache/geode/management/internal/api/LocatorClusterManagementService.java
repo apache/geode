@@ -305,8 +305,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
         return result;
       }
 
-      // right now the list contains [{regionA, group1}, {regionA, group2}...], if the elements are
-      // MultiGroupCacheElement, we need to consolidate the list into [{regionA, [group1, group2]}
+      // right now the list contains [{regionA, group1}, {regionA, group2}...], we need to
+      // consolidate the list into [{regionA, [group1, group2]}
       List<T> consolidatedResultList = new ArrayList<>();
       for (T element : resultList) {
         int index = consolidatedResultList.indexOf(element);

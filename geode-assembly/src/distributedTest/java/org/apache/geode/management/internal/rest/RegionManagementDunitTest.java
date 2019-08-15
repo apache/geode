@@ -100,7 +100,7 @@ public class RegionManagementDunitTest {
 
     assertThat(result).hasSize(1);
     Region config1 = result.get(0);
-    assertThat(config1.getType()).isEqualTo("PARTITION");
+    assertThat(config1.getType()).isEqualTo(RegionType.PARTITION);
     assertThat(config1.getValueConstraint()).isEqualTo("java.lang.Integer");
     assertThat(config1.getKeyConstraint()).isEqualTo("java.lang.Boolean");
 

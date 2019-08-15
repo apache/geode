@@ -52,7 +52,7 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    Region config = mapper.readValue(json, Region.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -64,7 +64,7 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    Region config = mapper.readValue(json, Region.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 

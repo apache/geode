@@ -27,7 +27,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
@@ -121,7 +120,7 @@ public class ListRegionManagementDunitTest {
 
     Region region = CacheElement.findElement(regions, "customers2");
     assertThat(region.getGroup()).isIn("group1", "group2");
-    assertThat(region.getType()).isIn("PARTITION", "PARTITION_PROXY");
+    assertThat(region.getType()).isIn(RegionType.PARTITION, RegionType.PARTITION_PROXY);
 
     element = CacheElement.findElement(regions, "customers3");
     assertThat(element.getGroups()).containsExactlyInAnyOrder("group1", "group2");
@@ -230,10 +229,10 @@ public class ListRegionManagementDunitTest {
     assertThat(
         regions.stream().map(CacheElement::getGroup).collect(Collectors.toList()))
             .containsExactlyInAnyOrder("group1", "group2");
-    assertThat(regions.stream().map(RegionConfig.class::cast)
-        .map(RegionConfig::getType)
+    assertThat(regions.stream().map(Region.class::cast)
+        .map(Region::getType)
         .collect(Collectors.toList()))
-            .containsExactlyInAnyOrder("PARTITION", "PARTITION_PROXY");
+            .containsExactlyInAnyOrder(RegionType.PARTITION, RegionType.PARTITION_PROXY);
   }
 
   @Test

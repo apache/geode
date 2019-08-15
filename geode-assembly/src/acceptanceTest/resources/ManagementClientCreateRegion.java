@@ -15,11 +15,11 @@
 
 import javax.net.ssl.SSLContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 
 public class ManagementClientCreateRegion {
   public static void main(String[] args) throws Exception {
@@ -42,7 +42,7 @@ public class ManagementClientCreateRegion {
     }
 
     // create region
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName(regionName);
     config.setType(RegionType.REPLICATE);
 
@@ -53,7 +53,7 @@ public class ManagementClientCreateRegion {
           "Failure creating region: " + result.getStatusMessage());
     }
 
-    ClusterManagementResult listResult = cms.list(new RegionConfig());
+    ClusterManagementResult listResult = cms.list(new Region());
     if (!listResult.isSuccessful()) {
       throw new RuntimeException("failed " + listResult.getStatusMessage());
     }
