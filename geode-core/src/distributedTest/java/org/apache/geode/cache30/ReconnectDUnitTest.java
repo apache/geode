@@ -188,7 +188,7 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
       dsProperties.put(ENABLE_CLUSTER_CONFIGURATION, "false");
       dsProperties.put(LOCATORS, "localHost[" + locatorPort + "]");
       dsProperties.put(MCAST_PORT, "0");
-      dsProperties.put(MEMBER_TIMEOUT, "1000");
+      dsProperties.put(MEMBER_TIMEOUT, "2000");
       dsProperties.put(LOG_LEVEL, "info");
       dsProperties.put(SECURITY_MANAGER, SimpleSecurityManager.class.getName());
       dsProperties.put("security-username", "clusterManage");
