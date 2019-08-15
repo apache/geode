@@ -66,7 +66,9 @@ org/apache/geode/cache/EntryExistsException,true,2925082493103537925,oldValue:ja
 org/apache/geode/cache/EntryNotFoundException,true,-2404101631744605659
 org/apache/geode/cache/EvictionAction,true,-98840597493242980
 org/apache/geode/cache/EvictionAlgorithm,true,5778669432033106789
+org/apache/geode/cache/EvictionAttributes,false
 org/apache/geode/cache/ExpirationAction,true,658925707882047900,ordinal:int
+org/apache/geode/cache/ExpirationAttributes,false
 org/apache/geode/cache/FailedSynchronizationException,true,-6225053492344591496
 org/apache/geode/cache/GatewayConfigurationException,true,3112317608711263007
 org/apache/geode/cache/GatewayException,true,8090143153569084886
@@ -74,6 +76,7 @@ org/apache/geode/cache/IncompatibleVersionException,true,668812986092856749
 org/apache/geode/cache/InterestPolicy,true,1567179436331385968,ordinal:byte
 org/apache/geode/cache/LossAction,true,-832035480397447797,ordinal:byte
 org/apache/geode/cache/LowMemoryException,true,6585765466722883168,critMems:java/util/Set
+org/apache/geode/cache/MembershipAttributes,false
 org/apache/geode/cache/MirrorType,true,-6632651349646672540,ordinal:int
 org/apache/geode/cache/NoQueueServersAvailableException,true,8484086019155762365
 org/apache/geode/cache/NoSubscriptionServersAvailableException,true,8484086019155762365
@@ -93,6 +96,7 @@ org/apache/geode/cache/ResumptionAction,true,6632254151314915610,ordinal:byte
 org/apache/geode/cache/RoleException,true,-7521056108445887394
 org/apache/geode/cache/Scope,true,5534399159504301602,ordinal:int
 org/apache/geode/cache/StatisticsDisabledException,true,-2987721454129719551
+org/apache/geode/cache/SubscriptionAttributes,false
 org/apache/geode/cache/SynchronizationCommitConflictException,true,2619806460255259492
 org/apache/geode/cache/TimeoutException,true,-6260761691185737442
 org/apache/geode/cache/TransactionDataNodeHasDepartedException,true,-2217135580436381984
@@ -255,6 +259,7 @@ org/apache/geode/internal/cache/DistTXPrecommitMessage$DistTxPrecommitExceptionC
 org/apache/geode/internal/cache/DistTXRollbackMessage$DistTxRollbackExceptionCollectingException,true,-2681117727592137893,cacheExceptions:java/util/Set,fatalExceptions:java/util/Map,id:org/apache/geode/internal/cache/TXId,regionExceptions:java/util/Map
 org/apache/geode/internal/cache/DistributedClearOperation$OperationType,false
 org/apache/geode/internal/cache/DistributedTombstoneOperation$TOperation,false
+org/apache/geode/internal/cache/EvictionAttributesImpl,false
 org/apache/geode/internal/cache/FilterProfile$interestType,false
 org/apache/geode/internal/cache/FilterProfile$operationType,false
 org/apache/geode/internal/cache/ForceReattemptException,true,-595988965679204903,hasHash:boolean,keyHash:int
@@ -268,6 +273,7 @@ org/apache/geode/internal/cache/LocalRegion$IteratorType,false
 org/apache/geode/internal/cache/Oplog$OkToSkipResult,false
 org/apache/geode/internal/cache/PRContainsValueFunction,false
 org/apache/geode/internal/cache/PRHARedundancyProvider$ArrayListWithClearState,true,1,wasCleared:boolean
+org/apache/geode/internal/cache/PartitionAttributesImpl,false
 org/apache/geode/internal/cache/PartitionedRegion$PRIdMap,true,3667357372967498179,cleared:boolean
 org/apache/geode/internal/cache/PartitionedRegion$SizeEntry,false,isPrimary:boolean,size:int
 org/apache/geode/internal/cache/PartitionedRegionDataStore$CreateBucketResult,false,nowExists:boolean
@@ -509,6 +515,7 @@ org/apache/geode/management/internal/cli/functions/ShutDownFunction,true,1
 org/apache/geode/management/internal/cli/functions/SizeExportLogsFunction,true,1
 org/apache/geode/management/internal/cli/functions/UndeployFunction,true,1
 org/apache/geode/management/internal/cli/functions/UnregisterFunction,true,1
+org/apache/geode/management/internal/cli/functions/CacheRealizationFunction,false
 org/apache/geode/management/internal/cli/functions/UserFunctionExecution,true,1
 org/apache/geode/management/internal/cli/result/CommandResultException,true,1,result:org/apache/geode/management/cli/Result
 org/apache/geode/management/internal/cli/result/TableBuilder$Align,false
