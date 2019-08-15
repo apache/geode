@@ -27,6 +27,7 @@ import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
+import org.apache.geode.test.dunit.Invoke;
 import org.apache.geode.test.dunit.NetworkUtils;
 import org.apache.geode.test.dunit.ThreadUtils;
 import org.apache.geode.test.dunit.VM;
@@ -54,7 +55,7 @@ public class RollingUpgradeConcurrentPutsReplicated extends RollingUpgrade2DUnit
     String hostName = NetworkUtils.getServerHostName();
     String locatorString = getLocatorString(locatorPorts);
 
-    DistributedTestUtils.deleteLocatorStateFile(locatorPorts);
+    Invoke.invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPorts));
 
     try {
       locator.invoke(invokeStartLocator(hostName, locatorPorts[0], getTestMethodName(),

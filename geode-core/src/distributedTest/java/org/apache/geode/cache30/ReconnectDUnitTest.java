@@ -320,7 +320,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     final int locPort = locatorPort;
     final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
 
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
@@ -473,8 +474,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     forceDisconnect(vm1);
     newdm = waitForReconnect(vm1);
     assertNotSame("expected a reconnect to occur in member", evenNewerdm, newdm);
-    DistributedTestUtils.deleteLocatorStateFile(locPort);
-    DistributedTestUtils.deleteLocatorStateFile(secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
   }
 
   private DistributedMember getDMID(VM vm) {
@@ -553,7 +554,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
     final int locPort = locatorPort;
     final int secondLocPort = AvailablePortHelper.getRandomAvailableTCPPort();
 
-    DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort);
+    Invoke
+        .invokeInEveryVM(() -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
 
     final String xmlFileLoc = (new File(".")).getAbsolutePath();
 
@@ -638,8 +640,8 @@ public class ReconnectDUnitTest extends JUnit4CacheTestCase {
           gfshThread = null;
         }
       });
-      DistributedTestUtils.deleteLocatorStateFile(locPort);
-      DistributedTestUtils.deleteLocatorStateFile(secondLocPort);
+      Invoke.invokeInEveryVM(
+          () -> DistributedTestUtils.deleteLocatorStateFile(locPort, secondLocPort));
     }
   }
 

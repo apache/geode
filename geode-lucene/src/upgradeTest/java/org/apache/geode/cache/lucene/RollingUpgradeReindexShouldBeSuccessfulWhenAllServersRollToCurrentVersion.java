@@ -43,7 +43,7 @@ public class RollingUpgradeReindexShouldBeSuccessfulWhenAllServersRollToCurrentV
     RegionShortcut shortcut = RegionShortcut.PARTITION_REDUNDANT;
 
     int locatorPort = AvailablePortHelper.getRandomAvailableTCPPort();
-    DistributedTestUtils.deleteLocatorStateFile(locatorPort);
+    locator1.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(locatorPort));
 
     String hostName = NetworkUtils.getServerHostName(host);
     String locatorString = getLocatorString(locatorPort);

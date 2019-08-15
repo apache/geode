@@ -249,7 +249,7 @@ public abstract class RollingUpgrade2DUnitTestBase extends JUnit4DistributedTest
 
     String serverHostName = NetworkUtils.getServerHostName();
     int port = AvailablePortHelper.getRandomAvailableTCPPort();
-    DistributedTestUtils.deleteLocatorStateFile(port);
+    oldServerAndLocator.invoke(() -> DistributedTestUtils.deleteLocatorStateFile(port));
     try {
       Properties props = getSystemProperties();
       props.remove(DistributionConfig.LOCATORS_NAME);
