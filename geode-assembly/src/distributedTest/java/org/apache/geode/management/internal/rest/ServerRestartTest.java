@@ -21,12 +21,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.Rule;
 import org.junit.Test;
 
-import org.apache.geode.cache.Region;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 
@@ -47,7 +46,7 @@ public class ServerRestartTest {
             .setHostAddress("localhost", locator.getHttpPort())
             .build();
 
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("Foo");
     region.setType(RegionType.REPLICATE);
     assertManagementResult(cmService.create(region)).hasStatusCode(
@@ -59,7 +58,7 @@ public class ServerRestartTest {
     server2.waitTilFullyReconnected();
 
     server2.invoke(() -> {
-      Region foo = ClusterStartupRule.getCache().getRegion("Foo");
+      org.apache.geode.cache.Region foo = ClusterStartupRule.getCache().getRegion("Foo");
       assertThat(foo).isNotNull();
     });
   }

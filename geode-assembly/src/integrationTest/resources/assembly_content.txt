@@ -729,6 +729,7 @@ javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
+javadoc/org/apache/geode/management/configuration/Region.html
 javadoc/org/apache/geode/management/configuration/package-frame.html
 javadoc/org/apache/geode/management/configuration/package-summary.html
 javadoc/org/apache/geode/management/configuration/package-tree.html

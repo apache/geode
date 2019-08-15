@@ -17,12 +17,11 @@ package org.apache.geode.cache.configuration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.List;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.MemberInformation;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
@@ -31,7 +30,7 @@ public class CacheElementJsonMappingTest {
   private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   private static MemberInformation member;
-  private static RegionConfig region;
+  private static Region region;
   private static RuntimeRegionInfo runtimeRegionInfo;
 
   @BeforeClass
@@ -40,7 +39,7 @@ public class CacheElementJsonMappingTest {
     member.setId("server");
     member.setProcessId(123);
 
-    region = new RegionConfig();
+    region = new Region();
     region.setName("test");
 
     runtimeRegionInfo = new RuntimeRegionInfo();
@@ -53,19 +52,19 @@ public class CacheElementJsonMappingTest {
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    Region config = mapper.readValue(json, Region.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
   @Test
   public void serializeRegion() throws Exception {
-    RegionConfig value = new RegionConfig();
+    Region value = new Region();
     value.setName("test");
     String json = mapper.writeValueAsString(value);
     System.out.println(json);
     assertThat(json).contains("class").contains("\"name\":\"test\"");
 
-    RegionConfig config = mapper.readValue(json, RegionConfig.class);
+    Region config = mapper.readValue(json, Region.class);
     assertThat(config.getName()).isEqualTo(region.getName());
   }
 
@@ -98,20 +97,20 @@ public class CacheElementJsonMappingTest {
   @Test
   public void group() throws Exception {
     String json = "{'name':'test','group':'group1'}";
-    RegionConfig regionConfig = mapper.readValue(json, RegionConfig.class);
+    Region regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getGroup()).isEqualTo("group1");
   }
 
   @Test
   public void groups() throws Exception {
     String json = "{'name':'test','groups':['group1','group2']}";
-    RegionConfig regionConfig = mapper.readValue(json, RegionConfig.class);
+    Region regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
   public void serializeGroup() throws Exception {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("test");
     config.setGroup("group1");
     String json = mapper.writeValueAsString(config);
@@ -122,7 +121,7 @@ public class CacheElementJsonMappingTest {
 
   @Test
   public void serializeMultipleGroup() throws Exception {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("test");
     config.getGroups().add("group1");
     config.getGroups().add("group2");
@@ -132,28 +131,8 @@ public class CacheElementJsonMappingTest {
   }
 
   @Test
-  public void serializeRuntimeRegionConfigWithIndex() throws Exception {
-    RegionConfig config = new RegionConfig();
-    config.setName("region1");
-    config.setType(RegionType.REPLICATE);
-    config.setGroup("group1");
-    RegionConfig.Index index = new RegionConfig.Index();
-    index.setName("index1");
-    index.setFromClause("/region1 r");
-    index.setExpression("id");
-    config.getIndexes().add(index);
-    String json = mapper.writeValueAsString(config);
-    System.out.println(json);
-
-    RegionConfig config1 = mapper.readValue(json, RegionConfig.class);
-    assertThat(config1.getGroups()).containsExactly("group1");
-    List<RegionConfig.Index> indexes = config1.getIndexes();
-    assertThat(indexes).hasSize(1);
-  }
-
-  @Test
   public void serializeGroupCluster() throws Exception {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("test");
     config.setGroup("cluster");
     String json = mapper.writeValueAsString(config);

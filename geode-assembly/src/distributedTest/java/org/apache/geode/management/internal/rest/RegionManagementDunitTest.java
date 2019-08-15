@@ -26,10 +26,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -37,6 +35,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -69,7 +68,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createsRegion() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("customers");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
@@ -89,27 +88,25 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createRegionWithKeyValueConstraint() throws Exception {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("customers2");
     config.setGroup("group1");
     config.setType(RegionType.PARTITION);
-    RegionAttributesType type = new RegionAttributesType();
-    type.setKeyConstraint("java.lang.Boolean");
-    type.setValueConstraint("java.lang.Integer");
-    config.setRegionAttributes(type);
+    config.setKeyConstraint("java.lang.Boolean");
+    config.setValueConstraint("java.lang.Integer");
     cms.create(config);
 
-    List<RegionConfig> result = cms.get(config).getConfigResult();
+    List<Region> result = cms.get(config).getConfigResult();
 
     assertThat(result).hasSize(1);
-    RegionConfig config1 = result.get(0);
-    assertThat(config1.getType()).isEqualTo("PARTITION");
-    assertThat(config1.getRegionAttributes().getDataPolicy().name()).isEqualTo("PARTITION");
-    assertThat(config1.getRegionAttributes().getValueConstraint()).isEqualTo("java.lang.Integer");
-    assertThat(config1.getRegionAttributes().getKeyConstraint()).isEqualTo("java.lang.Boolean");
+    Region config1 = result.get(0);
+    assertThat(config1.getType()).isEqualTo(RegionType.PARTITION);
+    assertThat(config1.getValueConstraint()).isEqualTo("java.lang.Integer");
+    assertThat(config1.getKeyConstraint()).isEqualTo("java.lang.Boolean");
 
     server1.invoke(() -> {
-      Region customers2 = ClusterStartupRule.getCache().getRegionByPath("/customers2");
+      org.apache.geode.cache.Region customers2 =
+          ClusterStartupRule.getCache().getRegionByPath("/customers2");
       assertThatThrownBy(() -> customers2.put("key", 2)).isInstanceOf(ClassCastException.class)
           .hasMessageContaining("does not satisfy keyConstraint");
       assertThatThrownBy(() -> customers2.put(Boolean.TRUE, "2"))
@@ -167,14 +164,14 @@ public class RegionManagementDunitTest {
 
   static void verifyRegionCreated(String regionName, String type) {
     Cache cache = ClusterStartupRule.getCache();
-    Region region = cache.getRegion(regionName);
+    org.apache.geode.cache.Region region = cache.getRegion(regionName);
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
   }
 
   @Test
   public void createSameRegionOnDisjointGroups() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("disJoint");
     regionConfig.setGroup("group1");
     regionConfig.setType(RegionType.REPLICATE);
@@ -188,7 +185,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createSameRegionOnGroupsWithCommonMember() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("commonMember");
     regionConfig.setGroup("group2");
     regionConfig.setType(RegionType.REPLICATE);
@@ -206,7 +203,7 @@ public class RegionManagementDunitTest {
 
   @Test
   public void createIncompatibleRegionOnDisjointGroups() throws Exception {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName("incompatible");
     regionConfig.setGroup("group4");
     regionConfig.setType(RegionType.REPLICATE);

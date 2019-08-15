@@ -37,6 +37,7 @@ import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateIndexFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
@@ -87,7 +88,7 @@ public class CreateIndexCommand extends GfshCommand {
     // we will find the applicable members based on the what group this region is on
     if (ccService != null && memberNameOrID == null) {
       regionName = getValidRegionName(regionPath, cms);
-      RegionConfig config = getRegionConfig(cms, regionName);
+      Region config = getRegionConfig(cms, regionName);
       if (config == null) {
         return ResultModel.createError("Region " + regionName + " does not exist.");
       }
@@ -174,7 +175,7 @@ public class CreateIndexCommand extends GfshCommand {
     String regionName = regionPath.trim().split(" ")[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
     while (regionName.contains(".")) {
-      RegionConfig region = getRegionConfig(cms, regionName);
+      Region region = getRegionConfig(cms, regionName);
       if (region != null) {
         break;
       }
@@ -186,11 +187,11 @@ public class CreateIndexCommand extends GfshCommand {
     return regionName;
   }
 
-  RegionConfig getRegionConfig(ClusterManagementService cms,
+  Region getRegionConfig(ClusterManagementService cms,
       String regionName) {
-    RegionConfig regionConfig = new RegionConfig();
+    Region regionConfig = new Region();
     regionConfig.setName(regionName);
-    List<ConfigurationResult<RegionConfig, RuntimeRegionInfo>> list =
+    List<ConfigurationResult<Region, RuntimeRegionInfo>> list =
         cms.list(regionConfig).getResult();
     if (list.isEmpty()) {
       return null;

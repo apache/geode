@@ -39,7 +39,6 @@ import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -47,6 +46,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -92,7 +92,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_Successful() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -116,7 +116,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_NoSsl() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -133,7 +133,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_WrongPassword() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -153,7 +153,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_NoUser() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -174,7 +174,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_NoPassword() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -194,7 +194,7 @@ public class ClientClusterManagementSSLTest {
 
   @Test
   public void createRegion_NoPrivilege() {
-    RegionConfig region = new RegionConfig();
+    Region region = new Region();
     region.setName("customer");
     region.setType(RegionType.PARTITION);
     int httpPort = locator.getHttpPort();
@@ -219,7 +219,7 @@ public class ClientClusterManagementSSLTest {
       ClusterManagementService cmsClient = buildWithCache()
           .setCache(ClusterStartupRule.getCache())
           .setCredentials("dataManage", "dataManage").build();
-      RegionConfig region = new RegionConfig();
+      Region region = new Region();
       region.setName("orders");
       region.setType(RegionType.PARTITION);
       cmsClient.create(region);

@@ -22,12 +22,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
 public class CacheElementTest {
 
   private CacheElement element;
-  private RegionConfig runtime;
+  private Region runtime;
 
   private static ObjectMapper mapper;
   private String json;
@@ -39,8 +40,8 @@ public class CacheElementTest {
 
   @Before
   public void before() throws Exception {
-    element = new RegionConfig();
-    runtime = new RegionConfig();
+    element = new Region();
+    runtime = new Region();
   }
 
   @Test

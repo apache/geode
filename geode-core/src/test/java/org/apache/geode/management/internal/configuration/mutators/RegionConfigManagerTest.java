@@ -21,20 +21,20 @@ import static org.mockito.Mockito.spy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.configuration.Region;
 
 public class RegionConfigManagerTest {
 
   private RegionConfigManager manager;
-  private RegionConfig config1, config2;
+  private Region config1, config2;
 
   @Before
   public void before() throws Exception {
     manager = spy(new RegionConfigManager());
-    config1 = new RegionConfig();
+    config1 = new Region();
     config1.setName("test");
-    config2 = new RegionConfig();
+    config2 = new Region();
     config2.setName("test");
   }
 

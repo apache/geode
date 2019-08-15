@@ -39,6 +39,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.result.CommandResult;
 import org.apache.geode.test.junit.rules.GfshParserRule;
@@ -148,9 +149,9 @@ public class CreateIndexCommandTest {
   @Test
   public void getValidRegionName() {
     // the existing configuration has a region named /regionA.B
-    doReturn(mock(RegionConfig.class)).when(command).getRegionConfig(cms,
+    doReturn(mock(Region.class)).when(command).getRegionConfig(cms,
         "/regionA.B");
-    when(cms.list(any(RegionConfig.class))).thenReturn(new ClusterManagementListResult<>());
+    when(cms.list(any(Region.class))).thenReturn(new ClusterManagementListResult<>());
 
     assertThat(command.getValidRegionName("regionB", cms)).isEqualTo("regionB");
     assertThat(command.getValidRegionName("/regionB", cms)).isEqualTo("/regionB");
@@ -166,7 +167,7 @@ public class CreateIndexCommandTest {
   @Test
   public void groupIgnored() throws Exception {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
-    RegionConfig config = mock(RegionConfig.class);
+    Region config = mock(Region.class);
     List<String> realGroups = Arrays.asList("group2", "group1");
     when(config.getGroups()).thenReturn(realGroups);
     doReturn(config).when(command).getRegionConfig(any(), any());

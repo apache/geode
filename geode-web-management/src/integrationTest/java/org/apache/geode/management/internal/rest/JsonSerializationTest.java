@@ -35,9 +35,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.management.configuration.Region;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(locations = {"classpath*:WEB-INF/management-servlet.xml"},
@@ -54,12 +54,12 @@ public class JsonSerializationTest {
   private MockLocatorContextLoader mockLocator;
   private ClusterManagementService cms;
 
-  private ArgumentCaptor<RegionConfig> regionConfigCaptor;
+  private ArgumentCaptor<Region> regionConfigCaptor;
 
   @Before
   public void before() {
     context = new LocatorWebContext(webApplicationContext);
-    regionConfigCaptor = ArgumentCaptor.forClass(RegionConfig.class);
+    regionConfigCaptor = ArgumentCaptor.forClass(Region.class);
     mockLocator = (MockLocatorContextLoader) context.getLocator();
     cms = mockLocator.getClusterManagementService();
   }
@@ -83,7 +83,7 @@ public class JsonSerializationTest {
     context.perform(post("/experimental/regions").content(json))
         .andExpect(status().isCreated());
     verify(cms, atLeastOnce()).create(regionConfigCaptor.capture());
-    RegionConfig value = regionConfigCaptor.getValue();
+    Region value = regionConfigCaptor.getValue();
     assertThat(value.getGroup()).isEqualTo("group1");
   }
 }

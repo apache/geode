@@ -45,10 +45,10 @@ import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -60,6 +60,7 @@ import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
@@ -78,14 +79,14 @@ public class LocatorClusterManagementServiceTest {
   private LocatorClusterManagementService service;
   private InternalCache cache;
   private InternalConfigurationPersistenceService persistenceService;
-  private RegionConfig regionConfig;
+  private Region regionConfig;
   private ClusterManagementResult result;
   private Map<Class, ConfigurationValidator> validators = new HashMap<>();
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private OperationManager executorManager;
-  private ConfigurationValidator<RegionConfig> regionValidator;
+  private ConfigurationValidator<Region> regionValidator;
   private CacheElementValidator cacheElementValidator;
-  private ConfigurationManager<RegionConfig> regionManager;
+  private ConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
 
   @Before
@@ -95,8 +96,8 @@ public class LocatorClusterManagementServiceTest {
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(RegionConfigManager.class);
     cacheElementValidator = spy(CacheElementValidator.class);
-    validators.put(RegionConfig.class, regionValidator);
-    managers.put(RegionConfig.class, regionManager);
+    validators.put(Region.class, regionValidator);
+    managers.put(Region.class, regionManager);
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
 
     memberValidator = mock(MemberValidator.class);
@@ -114,7 +115,7 @@ public class LocatorClusterManagementServiceTest {
     service =
         spy(new LocatorClusterManagementService(persistenceService, managers, validators,
             memberValidator, cacheElementValidator, executorManager));
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
     regionConfig.setName("region1");
   }
 
@@ -179,10 +180,11 @@ public class LocatorClusterManagementServiceTest {
     CacheConfig cacheConfig = new CacheConfig();
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     regionConfig.setName("test");
+    regionConfig.setType(RegionType.REPLICATE);
     result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
@@ -209,14 +211,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void list_aRegionInClusterAndGroup1() {
-    doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
-    RegionConfig region1 = new RegionConfig();
+  public void list_aRegionInMultipleGroups() {
+    doReturn(Sets.newHashSet("group1", "group2")).when(persistenceService).getGroups();
+    Region region1 = new Region();
     region1.setName("region1");
-    region1.setType("REPLICATE");
-    RegionConfig region2 = new RegionConfig();
+    region1.setType(RegionType.REPLICATE);
+    Region region2 = new Region();
     region2.setName("region1");
-    region2.setType("REPLICATE");
+    region2.setType(RegionType.REPLICATE);
 
     List clusterRegions = Arrays.asList(region1);
     List group1Regions = Arrays.asList(region2);
@@ -224,27 +226,27 @@ public class LocatorClusterManagementServiceTest {
 
     // this is to make sure when 'cluster" is in one of the group, it will show
     // the cluster and the other group name
-    List<RegionConfig> results =
-        service.list(new RegionConfig()).getConfigResult();
+    List<Region> results =
+        service.list(new Region()).getConfigResult();
     assertThat(results).hasSize(1);
-    RegionConfig result = results.get(0);
+    Region result = results.get(0);
     assertThat(result.getName()).isEqualTo("region1");
-    assertThat(result.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
+    assertThat(result.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
   public void delete_unknownRegionFails() {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("unknown");
     doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessage("ENTITY_NOT_FOUND: RegionConfig 'unknown' does not exist.");
+        .hasMessage("ENTITY_NOT_FOUND: Region 'unknown' does not exist.");
   }
 
   @Test
   public void delete_usingGroupFails() {
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("test");
     config.setGroup("group1");
     assertThatThrownBy(() -> service.delete(config))
@@ -271,7 +273,9 @@ public class LocatorClusterManagementServiceTest {
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
 
-    result = service.delete(regionConfig);
+    Region region = new Region();
+    region.setName("test");
+    result = service.delete(region);
     assertThat(result.isSuccessful()).isFalse();
     assertThat(result.getStatusMessage())
         .contains("Failed to delete on all members.");
@@ -297,10 +301,12 @@ public class LocatorClusterManagementServiceTest {
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
-    result = service.delete(regionConfig);
+    Region region = new Region();
+    region.setName("test");
+    result = service.delete(region);
     assertThat(result.isSuccessful()).isTrue();
 
     assertThat(config.getRegions()).isEmpty();
@@ -314,7 +320,7 @@ public class LocatorClusterManagementServiceTest {
     // no members found in any group
     doReturn(Collections.emptySet()).when(memberValidator).findServers();
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     ClusterManagementRealizationResult result = service.delete(regionConfig);

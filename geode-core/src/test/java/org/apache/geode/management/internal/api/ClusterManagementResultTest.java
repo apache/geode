@@ -27,13 +27,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 
@@ -139,12 +140,12 @@ public class ClusterManagementResultTest {
   @Test
   public void serializeResult() throws Exception {
     ObjectMapper mapper = GeodeJsonMapper.getMapper();
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result =
+    ClusterManagementListResult<Region, RuntimeRegionInfo> result =
         new ClusterManagementListResult<>();
-    ConfigurationResult<RegionConfig, RuntimeRegionInfo> response = new ConfigurationResult<>();
-    RegionConfig region = new RegionConfig();
+    ConfigurationResult<Region, RuntimeRegionInfo> response = new ConfigurationResult<>();
+    Region region = new Region();
     region.setName("region");
-    region.setType("REPLICATE");
+    region.setType(RegionType.REPLICATE);
     region.setGroup("group1");
     response.setConfig(region);
 
@@ -155,10 +156,10 @@ public class ClusterManagementResultTest {
 
     String json = mapper.writeValueAsString(result);
     System.out.println(json);
-    ClusterManagementListResult<RegionConfig, RuntimeRegionInfo> result1 =
+    ClusterManagementListResult<Region, RuntimeRegionInfo> result1 =
         mapper.readValue(json, ClusterManagementListResult.class);
     assertThat(result1.getConfigResult()).hasSize(1)
-        .extracting(RegionConfig::getName).containsExactly("region");
+        .extracting(Region::getName).containsExactly("region");
     assertThat(result1.getRuntimeResult()).hasSize(1)
         .extracting(RuntimeRegionInfo::getEntryCount).containsExactly(3L);
   }

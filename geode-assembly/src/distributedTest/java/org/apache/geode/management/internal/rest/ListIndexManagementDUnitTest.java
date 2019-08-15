@@ -25,12 +25,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Index;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.runtime.RuntimeInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -39,7 +39,7 @@ import org.apache.geode.test.junit.rules.GfshCommandRule;
 public class ListIndexManagementDUnitTest {
   private static MemberVM locator, server;
 
-  private RegionConfig regionConfig;
+  private Region regionConfig;
 
   @ClassRule
   public static ClusterStartupRule lsRule = new ClusterStartupRule();
@@ -58,7 +58,7 @@ public class ListIndexManagementDUnitTest {
         .setHostAddress("localhost", locator.getHttpPort())
         .build();
 
-    RegionConfig config = new RegionConfig();
+    Region config = new Region();
     config.setName("region1");
     config.setType(RegionType.REPLICATE);
     cms.create(config);
@@ -75,24 +75,21 @@ public class ListIndexManagementDUnitTest {
 
   @Before
   public void before() {
-    regionConfig = new RegionConfig();
+    regionConfig = new Region();
   }
 
   @Test
   public void listRegion() {
-    List<RegionConfig> result =
-        cms.list(new RegionConfig()).getConfigResult();
+    List<Region> result =
+        cms.list(new Region()).getConfigResult();
     assertThat(result).hasSize(1);
   }
 
   @Test
   public void getRegion() {
     regionConfig.setName("region1");
-    List<RegionConfig> regions = cms.get(regionConfig).getConfigResult();
+    List<Region> regions = cms.get(regionConfig).getConfigResult();
     assertThat(regions).hasSize(1);
-    RegionConfig region = regions.get(0);
-    List<RegionConfig.Index> indexes = region.getIndexes();
-    assertThat(indexes).hasSize(2);
   }
 
   @Test

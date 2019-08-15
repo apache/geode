@@ -24,12 +24,12 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
-import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -61,7 +61,7 @@ public class RegionAPIDUnitTest {
   public void createsPartitionedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      RegionConfig config = new RegionConfig();
+      Region config = new Region();
       config.setName(regionName);
       config.setType(RegionType.PARTITION);
       ClusterManagementResult result =
@@ -87,7 +87,7 @@ public class RegionAPIDUnitTest {
   public void createsReplicatedRegion() {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      RegionConfig config = new RegionConfig();
+      Region config = new Region();
       config.setName(regionName);
       config.setType(RegionType.REPLICATE);
       ClusterManagementResult result =
@@ -105,7 +105,7 @@ public class RegionAPIDUnitTest {
   public void createPartitionedRegion() throws Exception {
     String regionName = testName.getMethodName();
     locator.invoke(() -> {
-      RegionConfig config = new RegionConfig();
+      Region config = new Region();
       config.setName(regionName);
       config.setType(RegionType.PARTITION);
       ClusterManagementResult result =
@@ -128,7 +128,7 @@ public class RegionAPIDUnitTest {
 
   private static void verifyRegionCreated(String regionName, String type) {
     Cache cache = ClusterStartupRule.getCache();
-    Region region = cache.getRegion(regionName);
+    org.apache.geode.cache.Region region = cache.getRegion(regionName);
     assertThat(region).isNotNull();
     assertThat(region.getAttributes().getDataPolicy().toString()).isEqualTo(type);
   }

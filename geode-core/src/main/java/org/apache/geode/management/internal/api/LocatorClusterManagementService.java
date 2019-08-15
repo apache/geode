@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -64,6 +63,7 @@ import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.MemberConfig;
 import org.apache.geode.management.configuration.Pdx;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.ClusterManagementOperationStatusResult;
 import org.apache.geode.management.internal.cli.functions.CacheRealizationFunction;
@@ -100,13 +100,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
         new MemberValidator(cache, persistenceService), new CacheElementValidator(),
         new OperationManager(cache, new OperationHistoryManager()));
     // initialize the list of managers
-    managers.put(RegionConfig.class, new RegionConfigManager());
+    managers.put(Region.class, new RegionConfigManager());
     managers.put(Pdx.class, new PdxManager());
     managers.put(GatewayReceiver.class, new GatewayReceiverConfigManager());
     managers.put(Index.class, new IndexConfigManager());
 
     // initialize the list of validators
-    validators.put(RegionConfig.class, new RegionConfigValidator(cache));
+    validators.put(Region.class, new RegionConfigValidator(cache));
     validators.put(GatewayReceiver.class, new GatewayReceiverConfigValidator());
   }
 
@@ -305,8 +305,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
         return result;
       }
 
-      // right now the list contains [{regionA, group1}, {regionA, group2}...], if the elements are
-      // MultiGroupCacheElement, we need to consolidate the list into [{regionA, [group1, group2]}
+      // right now the list contains [{regionA, group1}, {regionA, group2}...], we need to
+      // consolidate the list into [{regionA, [group1, group2]}
       List<T> consolidatedResultList = new ArrayList<>();
       for (T element : resultList) {
         int index = consolidatedResultList.indexOf(element);

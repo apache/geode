@@ -16,20 +16,20 @@
  */
 package org.apache.geode.management.internal.configuration.realizers;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
-import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 
@@ -38,43 +38,63 @@ public class RegionConfigRealizerTest {
   RegionFactory regionFactory;
   RegionConfigRealizer realizer;
   RegionConfigValidator validator;
+  Region config;
 
   @Before
   public void setup() {
     cache = mock(InternalCache.class);
     validator = new RegionConfigValidator(cache);
     regionFactory = mock(RegionFactory.class);
-    when(cache.createRegionFactory()).thenReturn(regionFactory);
+    when(cache.createRegionFactory(anyString())).thenReturn(regionFactory);
     realizer = new RegionConfigRealizer();
+    config = new Region();
   }
 
   @Test
   public void createsPartitionedInCache() {
-    RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType(RegionShortcut.PARTITION.name());
+    config.setType(RegionType.PARTITION);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
-
-    ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
-    verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
-    assertThat(dataPolicyArgumentCaptor.getValue()).isEqualTo(DataPolicy.PARTITION);
-
+    verify(cache).createRegionFactory("PARTITION");
     verify(regionFactory).create("regionName");
   }
 
   @Test
   public void createsReplicateInCache() {
-    RegionConfig config = new RegionConfig();
     config.setName("regionName");
-    config.setType(RegionShortcut.REPLICATE.name());
+    config.setType(RegionType.REPLICATE);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
-
-    ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
-    verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
-    assertThat(dataPolicyArgumentCaptor.getValue()).isEqualTo(DataPolicy.REPLICATE);
-
+    verify(cache).createRegionFactory("REPLICATE");
     verify(regionFactory).create("regionName");
+  }
+
+  @Test
+  public void getRegionFactory() throws Exception {
+    config.setType(RegionType.REPLICATE);
+    config.setDiskStoreName("diskstore");
+    config.setKeyConstraint("java.lang.String");
+    config.setValueConstraint("java.lang.Boolean");
+
+    realizer.getRegionFactory(cache, config);
+    verify(regionFactory).setKeyConstraint(String.class);
+    verify(regionFactory).setValueConstraint(Boolean.class);
+    verify(regionFactory).setDiskStoreName("diskstore");
+    verify(cache).createRegionFactory("REPLICATE");
+  }
+
+  @Test
+  public void getRegionFactoryWhenValueNotSet() throws Exception {
+    config.setType(RegionType.REPLICATE);
+    config.setDiskStoreName(null);
+    config.setKeyConstraint(null);
+    config.setValueConstraint(null);
+
+    realizer.getRegionFactory(cache, config);
+    verify(regionFactory, never()).setKeyConstraint(any());
+    verify(regionFactory, never()).setValueConstraint(any());
+    verify(regionFactory, never()).setDiskStoreName(any());
+    verify(cache).createRegionFactory("REPLICATE");
   }
 }

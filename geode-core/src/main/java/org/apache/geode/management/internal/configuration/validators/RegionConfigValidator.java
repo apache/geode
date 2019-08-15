@@ -19,18 +19,14 @@ package org.apache.geode.management.internal.configuration.validators;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
-import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
-import org.apache.geode.cache.configuration.RegionAttributesScope;
-import org.apache.geode.cache.configuration.RegionAttributesType;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.security.ResourcePermission;
 
-public class RegionConfigValidator implements ConfigurationValidator<RegionConfig> {
+public class RegionConfigValidator implements ConfigurationValidator<Region> {
   private InternalCache cache;
 
   public RegionConfigValidator(InternalCache cache) {
@@ -38,7 +34,7 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
   }
 
   @Override
-  public void validate(CacheElementOperation operation, RegionConfig config)
+  public void validate(CacheElementOperation operation, Region config)
       throws IllegalArgumentException {
     switch (operation) {
       case UPDATE:
@@ -58,236 +54,21 @@ public class RegionConfigValidator implements ConfigurationValidator<RegionConfi
     }
   }
 
-  private void validateCreate(RegionConfig config) {
+  private void validateCreate(Region config) {
     if (config.getType() == null) {
       throw new IllegalArgumentException("Region type is required.");
     }
 
-    // validate if the type is a valid RegionType. Only types defined in RegionType are supported
-    // by management v2 api.
-    try {
-      RegionType.valueOf(config.getType());
-    } catch (IllegalArgumentException e) {
-      throw new IllegalArgumentException(
-          String.format("Region type '%s' is not supported.", config.getType()));
+    if (config.getType() == RegionType.UNSUPPORTED) {
+      throw new IllegalArgumentException(("Region type is unsupported."));
     }
-
     RegionNameValidation.validate(config.getName());
 
-    setShortcutAttributes(config);
-
     // additional authorization
-    if (config.getRegionAttributes().getDataPolicy().isPersistent()) {
+    if (config.getType().name().contains("PERSISTENT")) {
       cache.getSecurityService()
           .authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
               ResourcePermission.Target.DISK);
-    }
-  }
-
-  public static void setShortcutAttributes(RegionConfig config) {
-    String type = config.getType();
-    RegionAttributesType regionAttributes;
-
-    if (config.getRegionAttributes() == null) {
-      regionAttributes = new RegionAttributesType();
-      config.setRegionAttributes(regionAttributes);
-    }
-
-    regionAttributes = config.getRegionAttributes();
-    switch (type) {
-      case "PARTITION": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        break;
-      }
-      case "REPLICATE": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        break;
-      }
-      case "PARTITION_REDUNDANT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        break;
-      }
-      case "PARTITION_PERSISTENT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION, regionAttributes);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION, regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        break;
-      }
-      case "PARTITION_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "PARTITION_REDUNDANT_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "PARTITION_PERSISTENT_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "PARTITION_REDUNDANT_PERSISTENT_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION, regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "PARTITION_HEAP_LRU": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY, regionAttributes);
-        break;
-
-      }
-      case "PARTITION_REDUNDANT_HEAP_LRU": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY, regionAttributes);
-        break;
-      }
-
-      case "REPLICATE_PERSISTENT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        break;
-      }
-      case "REPLICATE_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-
-      }
-      case "REPLICATE_PERSISTENT_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "REPLICATE_HEAP_LRU": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PRELOADED, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        regionAttributes.setInterestPolicy("all");
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY, regionAttributes);
-        break;
-      }
-      case "LOCAL": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.NORMAL, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.LOCAL, regionAttributes);
-        break;
-      }
-      case "LOCAL_PERSISTENT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.LOCAL, regionAttributes);
-        break;
-      }
-      case "LOCAL_HEAP_LRU": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.NORMAL, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.LOCAL, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY, regionAttributes);
-        break;
-      }
-      case "LOCAL_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.NORMAL, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.LOCAL, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "LOCAL_PERSISTENT_OVERFLOW": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.LOCAL, regionAttributes);
-        checkAndSetEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK, regionAttributes);
-        break;
-      }
-      case "PARTITION_PROXY": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetLocalMaxMemory("0", regionAttributes);
-        break;
-      }
-      case "PARTITION_PROXY_REDUNDANT": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.PARTITION, regionAttributes);
-        checkAndSetLocalMaxMemory("0", regionAttributes);
-        checkAndSetRedundancyCopy("1", regionAttributes);
-        break;
-      }
-      case "REPLICATE_PROXY": {
-        checkAndSetDataPolicy(RegionAttributesDataPolicy.EMPTY, regionAttributes);
-        checkAndSetScope(RegionAttributesScope.DISTRIBUTED_ACK, regionAttributes);
-        break;
-      }
-      default:
-        throw new IllegalArgumentException("Invalid type " + type + ".");
-    }
-  }
-
-  private static void checkAndSetLocalMaxMemory(String maxMemory,
-      RegionAttributesType regionAttributes) {
-    if (regionAttributes.getPartitionAttributes() == null
-        || regionAttributes.getPartitionAttributes().getLocalMaxMemory() == null) {
-      regionAttributes.setLocalMaxMemory(maxMemory);
-    }
-    String existing = regionAttributes.getPartitionAttributes().getLocalMaxMemory();
-    if (!existing.equals(maxMemory)) {
-      throw new IllegalArgumentException("Invalid local max memory: " + existing + ".");
-    }
-  }
-
-  private static void checkAndSetEvictionAction(EnumActionDestroyOverflow evictionAction,
-      RegionAttributesType regionAttributes) {
-    if (regionAttributes.getEvictionAttributes() == null
-        || regionAttributes.getEvictionAttributes().getLruHeapPercentage() == null
-        || regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction() == null) {
-      regionAttributes.setLruHeapPercentageEvictionAction(evictionAction);
-    }
-
-    EnumActionDestroyOverflow existing =
-        regionAttributes.getEvictionAttributes().getLruHeapPercentage().getAction();
-    if (existing != evictionAction) {
-      throw new IllegalArgumentException(
-          "Conflicting eviction action " + existing.toString() + ".");
-    }
-  }
-
-  private static void checkAndSetScope(RegionAttributesScope scope,
-      RegionAttributesType regionAttributes) {
-    RegionAttributesScope existing = regionAttributes.getScope();
-    if (existing == null) {
-      regionAttributes.setScope(scope);
-    } else if (existing != scope) {
-      throw new IllegalArgumentException("Conflicting scope " + existing.toString() + ".");
-    }
-  }
-
-  private static void checkAndSetDataPolicy(RegionAttributesDataPolicy policy,
-      RegionAttributesType regionAttributes) {
-    RegionAttributesDataPolicy existing = regionAttributes.getDataPolicy();
-    if (existing == null) {
-      regionAttributes.setDataPolicy(policy);
-    } else if (existing != policy) {
-      throw new IllegalArgumentException("Conflicting data policy "
-          + existing.toString() + ".");
-    }
-  }
-
-  // need to do this if user already set the redundant copy in the RegionAttributeType
-  private static void checkAndSetRedundancyCopy(String copies,
-      RegionAttributesType regionAttributes) {
-    if (regionAttributes.getPartitionAttributes() == null
-        || regionAttributes.getPartitionAttributes().getRedundantCopies() == null) {
-      regionAttributes.setRedundantCopy(copies);
-    }
-    RegionAttributesType.PartitionAttributes partitionAttributes =
-        regionAttributes.getPartitionAttributes();
-    if ("0".equals(partitionAttributes.getRedundantCopies())) {
-      throw new IllegalArgumentException(
-          "Conflicting redundant copy when region type is REDUNDANT.");
     }
   }
 }
