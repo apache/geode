@@ -25,10 +25,22 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
   protected Region fromNonNullXmlObject(RegionConfig xmlObject) {
     Region region = new Region();
     region.setName(xmlObject.getName());
-    region.setType(RegionType.valueOf(xmlObject.getType()));
+    if (xmlObject.getType() == null) {
+      // older gfsh would generate the region xml without the refid/type. we will not
+      // support showing these regions in management rest api for now.
+      region.setType(RegionType.UNSUPPORTED);
+    } else {
+      try {
+        region.setType(RegionType.valueOf(xmlObject.getType()));
+      } catch (IllegalArgumentException e) {
+        // Management rest api will not support showing regions with "LOCAL*" types or user defined
+        // refids
+        region.setType(RegionType.UNSUPPORTED);
+      }
+    }
     RegionAttributesType regionAttributes = xmlObject.getRegionAttributes();
 
-    if(regionAttributes != null) {
+    if (regionAttributes != null) {
       region.setDiskStoreName(regionAttributes.getDiskStoreName());
       region.setKeyConstraint(regionAttributes.getKeyConstraint());
       region.setValueConstraint(regionAttributes.getValueConstraint());

@@ -29,7 +29,6 @@ import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -87,7 +86,7 @@ public class RegionConfigRealizer
     return new RealizationResult().setMessage("Region successfully created.");
   }
 
-  private RegionFactory getRegionFactory(Cache cache, Region regionConfig) {
+  RegionFactory getRegionFactory(Cache cache, Region regionConfig) {
     RegionFactory factory =
         cache.createRegionFactory(regionConfig.getType().name());
     if (regionConfig.getDiskStoreName() != null) {

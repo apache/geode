@@ -43,5 +43,9 @@ public enum RegionType {
   REPLICATE_PERSISTENT_OVERFLOW,
   REPLICATE_HEAP_LRU,
 
-  REPLICATE_PROXY
+  REPLICATE_PROXY,
+
+  // this is used to represent regions not supported by the management V2 API. For example Gfsh can
+  // create regions with "LOCAL*" types
+  UNSUPPORTED
 }

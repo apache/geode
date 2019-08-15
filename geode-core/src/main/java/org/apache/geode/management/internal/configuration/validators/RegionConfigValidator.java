@@ -19,6 +19,7 @@ package org.apache.geode.management.internal.configuration.validators;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
 import org.apache.geode.management.configuration.Region;
@@ -58,6 +59,9 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
       throw new IllegalArgumentException("Region type is required.");
     }
 
+    if (config.getType() == RegionType.UNSUPPORTED) {
+      throw new IllegalArgumentException(("Region type is unsupported."));
+    }
     RegionNameValidation.validate(config.getName());
 
     // additional authorization

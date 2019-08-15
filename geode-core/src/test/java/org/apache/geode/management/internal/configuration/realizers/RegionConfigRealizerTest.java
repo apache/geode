@@ -16,20 +16,17 @@
  */
 package org.apache.geode.management.internal.configuration.realizers;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
-import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.Region;
@@ -41,6 +38,7 @@ public class RegionConfigRealizerTest {
   RegionFactory regionFactory;
   RegionConfigRealizer realizer;
   RegionConfigValidator validator;
+  Region config;
 
   @Before
   public void setup() {
@@ -49,35 +47,54 @@ public class RegionConfigRealizerTest {
     regionFactory = mock(RegionFactory.class);
     when(cache.createRegionFactory(anyString())).thenReturn(regionFactory);
     realizer = new RegionConfigRealizer();
+    config = new Region();
   }
 
   @Test
   public void createsPartitionedInCache() {
-    Region config = new Region();
     config.setName("regionName");
     config.setType(RegionType.PARTITION);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
-
-    ArgumentCaptor<String> type = ArgumentCaptor.forClass(String.class);
-    verify(cache).createRegionFactory(type.capture());
-    assertThat(type.getValue()).isEqualTo("PARTITION");
-
+    verify(cache).createRegionFactory("PARTITION");
     verify(regionFactory).create("regionName");
   }
 
   @Test
   public void createsReplicateInCache() {
-    Region config = new Region();
     config.setName("regionName");
     config.setType(RegionType.REPLICATE);
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
-
-    ArgumentCaptor<String> type = ArgumentCaptor.forClass(String.class);
-    verify(cache).createRegionFactory(type.capture());
-    assertThat(type.getValue()).isEqualTo("REPLICATE");
-
+    verify(cache).createRegionFactory("REPLICATE");
     verify(regionFactory).create("regionName");
+  }
+
+  @Test
+  public void getRegionFactory() throws Exception {
+    config.setType(RegionType.REPLICATE);
+    config.setDiskStoreName("diskstore");
+    config.setKeyConstraint("java.lang.String");
+    config.setValueConstraint("java.lang.Boolean");
+
+    realizer.getRegionFactory(cache, config);
+    verify(regionFactory).setKeyConstraint(String.class);
+    verify(regionFactory).setValueConstraint(Boolean.class);
+    verify(regionFactory).setDiskStoreName("diskstore");
+    verify(cache).createRegionFactory("REPLICATE");
+  }
+
+  @Test
+  public void getRegionFactoryWhenValueNotSet() throws Exception {
+    config.setType(RegionType.REPLICATE);
+    config.setDiskStoreName(null);
+    config.setKeyConstraint(null);
+    config.setValueConstraint(null);
+
+    realizer.getRegionFactory(cache, config);
+    verify(regionFactory, never()).setKeyConstraint(any());
+    verify(regionFactory, never()).setValueConstraint(any());
+    verify(regionFactory, never()).setDiskStoreName(any());
+    verify(cache).createRegionFactory("REPLICATE");
   }
 }

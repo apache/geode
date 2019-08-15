@@ -18,6 +18,7 @@
 package org.apache.geode.management.internal.configuration.mutators;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,7 +56,8 @@ public class RegionConfigManager implements ConfigurationManager<Region> {
     if (StringUtils.isNotBlank(filter.getName())) {
       stream = stream.filter(r -> filter.getName().equals(r.getName()));
     }
-    return stream.map(converter::fromXmlObject).collect(Collectors.toList());
+    return stream.map(converter::fromXmlObject).filter(Objects::nonNull)
+        .collect(Collectors.toList());
   }
 
   @Override

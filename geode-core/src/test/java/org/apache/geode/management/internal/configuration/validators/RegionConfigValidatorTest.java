@@ -100,4 +100,14 @@ public class RegionConfigValidatorTest {
         .hasMessageContaining(
             "Region type is required.");
   }
+
+  @Test
+  public void invalidType() throws Exception {
+    config.setName("test");
+    config.setType(RegionType.UNSUPPORTED);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "Region type is unsupported.");
+  }
 }
