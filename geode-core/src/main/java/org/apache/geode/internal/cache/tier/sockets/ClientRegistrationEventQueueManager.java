@@ -260,16 +260,24 @@ class ClientRegistrationEventQueueManager {
         FilterRoutingInfo.FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
 
         if (filterInfo != null) {
+          internalCacheEvent.setLocalFilterInfo(filterInfo);
+
           ClientUpdateMessageImpl clientUpdateMessage = conflatable instanceof HAEventWrapper
               ? (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage()
               : (ClientUpdateMessageImpl) conflatable;
 
-          internalCacheEvent.setLocalFilterInfo(filterInfo);
+          // The client update message may be part of a shared HAEventWrapper object in
+          // the HAContainer used by all registered client queues. To avoid data races where
+          // multiple client registration or queue GII threads can mutate this shared object,
+          // we create a copy of the client update message here and use that copy to
+          // retrieve the current filter client IDs.
+          ClientUpdateMessageImpl clientUpdateMessageCopy =
+              new ClientUpdateMessageImpl(clientUpdateMessage);
 
           Set<ClientProxyMembershipID> newFilterClientIDs =
               cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile,
                   filterInfo,
-                  clientUpdateMessage);
+                  clientUpdateMessageCopy);
 
           if (eventNotInOriginalFilterClientIDs(proxyID, newFilterClientIDs,
               originalFilterClientIDs)) {

@@ -16,6 +16,9 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -25,7 +28,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -44,35 +46,14 @@ import org.apache.geode.internal.cache.LocalRegion;
 
 public class ClientRegistrationEventQueueManagerTest {
   @Test
-  public void messageDeliveredAfterRegisteringOnDrainIfNewFilterIDsIncludesClient()
-      throws ExecutionException, InterruptedException {
+  public void messageDeliveredAfterRegisteringOnDrainIfNewFilterIDsIncludesClient() {
     ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
         new ClientRegistrationEventQueueManager();
 
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
 
-    ReadWriteLock mockPutDrainLock = mock(ReadWriteLock.class);
-    ReadWriteLock actualPutDrainLock = new ReentrantReadWriteLock();
-
-    CountDownLatch waitForDrainAndRemoveLatch = new CountDownLatch(1);
-    CountDownLatch waitForAddInProgressLatch = new CountDownLatch(1);
-
-    when(mockPutDrainLock.readLock())
-        .thenAnswer(i -> {
-          waitForAddInProgressLatch.countDown();
-          waitForDrainAndRemoveLatch.await();
-          return actualPutDrainLock.readLock();
-        });
-
-    when(mockPutDrainLock.writeLock())
-        .thenAnswer(i -> {
-          waitForAddInProgressLatch.await();
-          waitForDrainAndRemoveLatch.countDown();
-          return actualPutDrainLock.writeLock();
-        });
-
     clientRegistrationEventQueueManager.create(clientProxyMembershipID,
-        new ConcurrentLinkedQueue<>(), mockPutDrainLock, new ReentrantLock());
+        new ConcurrentLinkedQueue<>(), new ReentrantReadWriteLock(), new ReentrantLock());
 
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     LocalRegion localRegion = mock(LocalRegion.class);
@@ -93,28 +74,31 @@ public class ClientRegistrationEventQueueManagerTest {
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
     Set<ClientProxyMembershipID> recalculatedFilterClientIDs = new HashSet<>();
     recalculatedFilterClientIDs.add(clientProxyMembershipID);
-    when(cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo,
-        clientUpdateMessage))
-            .thenReturn(recalculatedFilterClientIDs);
+
+    when(cacheClientNotifier.getFilterClientIDs(eq(internalCacheEvent), eq(filterProfile),
+        eq(filterInfo), any(ClientUpdateMessageImpl.class)))
+            .thenAnswer(i -> {
+              ClientUpdateMessageImpl clientUpdateMessageCopy = i.getArgument(3);
+              // To ensure isolation when calculating the filter info for a client, we make a
+              // copy of the client message. This assert is ensuring that copy is made thus
+              // guaranteeing isolation.
+              assertNotEquals(clientUpdateMessage, clientUpdateMessageCopy);
+              return recalculatedFilterClientIDs;
+            });
+
     CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    when(cacheClientProxy.getProxyID()).thenReturn(clientProxyMembershipID);
     when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
 
     // Create empty filter client IDs produced by the "normal" put processing path, so we can test
     // that the event is still delivered if the client finished registering and needs the event.
     Set<ClientProxyMembershipID> normalPutFilterClientIDs = new HashSet<>();
-    CompletableFuture<Void> addEventsToQueueTask = CompletableFuture.runAsync(() -> {
-      // In thread one, we add and event to the queue
-      clientRegistrationEventQueueManager
-          .add(internalCacheEvent, clientUpdateMessage, normalPutFilterClientIDs,
-              cacheClientNotifier);
-    });
 
-    CompletableFuture<Void> drainEventsFromQueueTask = CompletableFuture.runAsync(() -> {
-      // In thread two, we drain the event from the queue
-      clientRegistrationEventQueueManager.drain(clientProxyMembershipID, cacheClientNotifier);
-    });
+    clientRegistrationEventQueueManager
+        .add(internalCacheEvent, clientUpdateMessage, normalPutFilterClientIDs,
+            cacheClientNotifier);
 
-    CompletableFuture.allOf(addEventsToQueueTask, drainEventsFromQueueTask).get();
+    clientRegistrationEventQueueManager.drain(clientProxyMembershipID, cacheClientNotifier);
 
     // The client update message should still be delivered because it is now part of the
     // filter clients interested in this event, despite having not been included in the original
