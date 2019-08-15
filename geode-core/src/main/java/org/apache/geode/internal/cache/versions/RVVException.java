@@ -71,6 +71,12 @@ abstract class RVVException
   long nextVersion;
 
 
+  /**
+   * Create an exception to represent missing versions
+   *
+   * @param previousVersion The previous version before the first missing version
+   * @param nextVersion The next received version after the last missing version
+   */
   static RVVException createException(long previousVersion, long nextVersion) {
     return createException(previousVersion, nextVersion, 0);
   }
