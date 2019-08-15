@@ -58,7 +58,7 @@ public class RegionConfigValidatorTest {
 
     verify(securityService).authorize(ResourcePermission.Resource.CLUSTER,
         ResourcePermission.Operation.WRITE, ResourcePermission.Target.DISK);
-    assertThat(config.getType()).isEqualTo("REPLICATE_PERSISTENT");
+    assertThat(config.getType()).isEqualTo(RegionType.REPLICATE_PERSISTENT);
   }
 
   @Test
@@ -70,7 +70,7 @@ public class RegionConfigValidatorTest {
     verify(securityService, times(0)).authorize(
         any(ResourcePermission.Resource.class),
         any(ResourcePermission.Operation.class), any(ResourcePermission.Target.class));
-    assertThat(config.getType()).isEqualTo("REPLICATE");
+    assertThat(config.getType()).isEqualTo(RegionType.REPLICATE);
   }
 
   @Test

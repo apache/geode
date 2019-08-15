@@ -34,6 +34,7 @@ import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.MemberConfig;
+import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.realizers.ConfigurationRealizer;
 import org.apache.geode.management.internal.configuration.realizers.GatewayReceiverRealizer;
@@ -47,7 +48,7 @@ public class CacheRealizationFunction implements InternalFunction<List> {
   private static final Map<Class, ConfigurationRealizer> realizers = new HashMap<>();
 
   static {
-    realizers.put(RegionConfig.class, new RegionConfigRealizer());
+    realizers.put(Region.class, new RegionConfigRealizer());
     realizers.put(GatewayReceiver.class, new GatewayReceiverRealizer());
     realizers.put(MemberConfig.class, new MemberConfigRealizer());
   }

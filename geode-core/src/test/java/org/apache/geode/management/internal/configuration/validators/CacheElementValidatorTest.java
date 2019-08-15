@@ -75,6 +75,6 @@ public class CacheElementValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "Can only create RegionConfig in one group at a time.");
+            "Can only create Region in one group at a time.");
   }
 }

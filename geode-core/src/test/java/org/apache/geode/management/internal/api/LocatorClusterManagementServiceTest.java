@@ -48,6 +48,7 @@ import org.junit.Test;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -95,8 +96,8 @@ public class LocatorClusterManagementServiceTest {
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(RegionConfigManager.class);
     cacheElementValidator = spy(CacheElementValidator.class);
-    validators.put(RegionConfig.class, regionValidator);
-    managers.put(RegionConfig.class, regionManager);
+    validators.put(Region.class, regionValidator);
+    managers.put(Region.class, regionManager);
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
 
     memberValidator = mock(MemberValidator.class);
@@ -179,10 +180,11 @@ public class LocatorClusterManagementServiceTest {
     CacheConfig cacheConfig = new CacheConfig();
     when(persistenceService.getCacheConfig("cluster", true)).thenReturn(cacheConfig);
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     regionConfig.setName("test");
+    regionConfig.setType(RegionType.REPLICATE);
     result = service.create(regionConfig);
     assertThat(result.isSuccessful()).isTrue();
 
@@ -209,14 +211,14 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
-  public void list_aRegionInClusterAndGroup1() {
-    doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
-    RegionConfig region1 = new RegionConfig();
+  public void list_aRegionInMultipleGroups() {
+    doReturn(Sets.newHashSet("group1", "group2")).when(persistenceService).getGroups();
+    Region region1 = new Region();
     region1.setName("region1");
-    region1.setType("REPLICATE");
-    RegionConfig region2 = new RegionConfig();
+    region1.setType(RegionType.REPLICATE);
+    Region region2 = new Region();
     region2.setName("region1");
-    region2.setType("REPLICATE");
+    region2.setType(RegionType.REPLICATE);
 
     List clusterRegions = Arrays.asList(region1);
     List group1Regions = Arrays.asList(region2);
@@ -229,7 +231,7 @@ public class LocatorClusterManagementServiceTest {
     assertThat(results).hasSize(1);
     Region result = results.get(0);
     assertThat(result.getName()).isEqualTo("region1");
-    assertThat(result.getGroups()).containsExactlyInAnyOrder("cluster", "group1");
+    assertThat(result.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
@@ -239,7 +241,7 @@ public class LocatorClusterManagementServiceTest {
     doReturn(new String[] {}).when(memberValidator).findGroupsWithThisElement(any(), any());
     assertThatThrownBy(() -> service.delete(config))
         .isInstanceOf(ClusterManagementException.class)
-        .hasMessage("ENTITY_NOT_FOUND: RegionConfig 'unknown' does not exist.");
+        .hasMessage("ENTITY_NOT_FOUND: Region 'unknown' does not exist.");
   }
 
   @Test
@@ -299,7 +301,7 @@ public class LocatorClusterManagementServiceTest {
     config.getRegions().add(regionConfig);
     doReturn(config).when(persistenceService).getCacheConfig(eq("cluster"), anyBoolean());
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     Region region = new Region();
@@ -318,7 +320,7 @@ public class LocatorClusterManagementServiceTest {
     // no members found in any group
     doReturn(Collections.emptySet()).when(memberValidator).findServers();
     doReturn(null).when(persistenceService).getConfiguration(any());
-    Region mockRegion = mock(Region.class);
+    org.apache.geode.cache.Region mockRegion = mock(org.apache.geode.cache.Region.class);
     doReturn(mockRegion).when(persistenceService).getConfigurationRegion();
 
     ClusterManagementRealizationResult result = service.delete(regionConfig);

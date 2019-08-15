@@ -17,6 +17,8 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.powermock.api.mockito.PowerMockito.when;
@@ -27,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionFactory;
+import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.Region;
@@ -44,7 +47,7 @@ public class RegionConfigRealizerTest {
     cache = mock(InternalCache.class);
     validator = new RegionConfigValidator(cache);
     regionFactory = mock(RegionFactory.class);
-    when(cache.createRegionFactory()).thenReturn(regionFactory);
+    when(cache.createRegionFactory(anyString())).thenReturn(regionFactory);
     realizer = new RegionConfigRealizer();
   }
 
@@ -56,9 +59,9 @@ public class RegionConfigRealizerTest {
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 
-    ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
-    verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
-    assertThat(dataPolicyArgumentCaptor.getValue()).isEqualTo(DataPolicy.PARTITION);
+    ArgumentCaptor<String> type = ArgumentCaptor.forClass(String.class);
+    verify(cache).createRegionFactory(type.capture());
+    assertThat(type.getValue()).isEqualTo("PARTITION");
 
     verify(regionFactory).create("regionName");
   }
@@ -71,9 +74,9 @@ public class RegionConfigRealizerTest {
     validator.validate(CacheElementOperation.CREATE, config);
     realizer.create(config, cache);
 
-    ArgumentCaptor<DataPolicy> dataPolicyArgumentCaptor = ArgumentCaptor.forClass(DataPolicy.class);
-    verify(regionFactory).setDataPolicy(dataPolicyArgumentCaptor.capture());
-    assertThat(dataPolicyArgumentCaptor.getValue()).isEqualTo(DataPolicy.REPLICATE);
+    ArgumentCaptor<String> type = ArgumentCaptor.forClass(String.class);
+    verify(cache).createRegionFactory(type.capture());
+    assertThat(type.getValue()).isEqualTo("REPLICATE");
 
     verify(regionFactory).create("regionName");
   }

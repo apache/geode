@@ -149,7 +149,7 @@ public class CreateIndexCommandTest {
   @Test
   public void getValidRegionName() {
     // the existing configuration has a region named /regionA.B
-    doReturn(mock(RegionConfig.class)).when(command).getRegionConfig(cms,
+    doReturn(mock(Region.class)).when(command).getRegionConfig(cms,
         "/regionA.B");
     when(cms.list(any(Region.class))).thenReturn(new ClusterManagementListResult<>());
 

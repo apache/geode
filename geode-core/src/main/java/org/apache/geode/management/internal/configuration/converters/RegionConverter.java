@@ -27,9 +27,12 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     region.setName(xmlObject.getName());
     region.setType(RegionType.valueOf(xmlObject.getType()));
     RegionAttributesType regionAttributes = xmlObject.getRegionAttributes();
-    region.setDiskStoreName(regionAttributes.getDiskStoreName());
-    region.setKeyConstraint(regionAttributes.getKeyConstraint());
-    region.setValueConstraint(regionAttributes.getValueConstraint());
+
+    if(regionAttributes != null) {
+      region.setDiskStoreName(regionAttributes.getDiskStoreName());
+      region.setKeyConstraint(regionAttributes.getKeyConstraint());
+      region.setValueConstraint(regionAttributes.getValueConstraint());
+    }
     return region;
   }
 

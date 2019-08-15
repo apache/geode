@@ -154,7 +154,7 @@ import org.apache.geode.lang.Identifiable;
 @XmlType(name = "region-type", namespace = "http://geode.apache.org/schema/cache",
     propOrder = {"regionAttributes", "indexes", "entries", "regionElements", "regions"})
 @Experimental
-public class RegionConfig implements Identifiable<String> {
+public class RegionConfig implements Identifiable<String>, Serializable {
 
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 
@@ -280,8 +280,12 @@ public class RegionConfig implements Identifiable<String> {
    * {@link String }
    *
    */
-  public void setName(String value) {
-    this.name = value;
+  public void setName(String value) throws IllegalArgumentException {
+    if (value == null) {
+      return;
+    }
+
+    this.name = value.startsWith("/") ? value.substring(1) : value;
   }
 
   /**
@@ -312,19 +316,6 @@ public class RegionConfig implements Identifiable<String> {
     if (regionType != null) {
       this.type = regionType.toUpperCase();
     }
-  }
-
-  @Override
-  public boolean equals(Object that) {
-    if (this == that) {
-      return true;
-    }
-    if (that == null || getClass() != that.getClass()) {
-      return false;
-    }
-    RegionConfig config = (RegionConfig) that;
-    return Objects.equals(getName(), config.getName()) &&
-        Objects.equals(getType(), config.getType());
   }
 
   @Override

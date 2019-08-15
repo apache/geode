@@ -89,7 +89,7 @@ public class RegionConfigRealizer
 
   private RegionFactory getRegionFactory(Cache cache, Region regionConfig) {
     RegionFactory factory =
-        cache.createRegionFactory(RegionShortcut.valueOf(regionConfig.getType().name()));
+        cache.createRegionFactory(regionConfig.getType().name());
     if (regionConfig.getDiskStoreName() != null) {
       factory.setDiskStoreName(regionConfig.getDiskStoreName());
     }

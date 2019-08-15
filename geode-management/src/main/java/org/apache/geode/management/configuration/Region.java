@@ -15,9 +15,12 @@
 
 package org.apache.geode.management.configuration;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
@@ -110,4 +113,18 @@ public class Region extends CacheElement implements RestfulEndpoint,
   public void setDiskStoreName(String diskStoreName) {
     this.diskStoreName = diskStoreName;
   }
+
+  @Override
+  public boolean equals(Object that) {
+    if (this == that) {
+      return true;
+    }
+    if (that == null || getClass() != that.getClass()) {
+      return false;
+    }
+    Region config = (Region) that;
+    return Objects.equals(getName(), config.getName()) &&
+        Objects.equals(getType(), config.getType());
+  }
+
 }
