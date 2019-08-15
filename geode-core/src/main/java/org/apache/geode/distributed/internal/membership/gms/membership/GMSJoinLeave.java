@@ -45,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
@@ -609,7 +610,8 @@ public class GMSJoinLeave implements JoinLeave {
     }
 
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
-      logger.info("Checking to see if I should become coordinator");
+      logger.info("Checking to see if I should become coordinator.  My address is {}",
+          localAddress);
       GMSMembershipView check = new GMSMembershipView(v, v.getViewId() + 1);
       check.remove(mbr);
       synchronized (removedMembers) {
@@ -620,15 +622,10 @@ public class GMSJoinLeave implements JoinLeave {
         leftMembers.add(mbr);
         check.removeAll(leftMembers);
       }
-      Collection<GMSMember> suspectMembers =
-          services.getHealthMonitor().getMembersFailingAvailabilityCheck();
-      check.removeAll(suspectMembers);
-      logger.info("View with removed and left members removed is {}", check);
-      if (check.getCoordinator().equals(localAddress)) {
-        for (GMSMember suspect : suspectMembers) {
-          recordViewRequest(
-              new RemoveMemberMessage(localAddress, suspect, "Failed availability check"));
-        }
+      GMSMember coordinator = check.getCoordinator();
+      logger.info("View with removed and left members removed is {} and coordinator would be {}",
+          check, coordinator);
+      if (coordinator.equals(localAddress)) {
         synchronized (viewInstallationLock) {
           becomeCoordinator(mbr);
         }
@@ -724,7 +721,8 @@ public class GMSJoinLeave implements JoinLeave {
     }
   }
 
-  private void recordViewRequest(AbstractGMSMessage request) {
+  @VisibleForTesting
+  void recordViewRequest(AbstractGMSMessage request) {
     try {
       synchronized (viewRequests) {
         logger.debug("Recording the request to be processed in the next membership view");

@@ -498,6 +498,31 @@ public class GMSHealthMonitorJUnitTest {
     }
   }
 
+  @Test
+  public void testMemberIsExaminedAgainAfterPassingAvailabilityCheck() {
+    // use the test health monitor's availability check for the first round of suspect processing
+    // but then turn it off so that a subsequent round is performed and fails to get a heartbeat
+    useGMSHealthMonitorTestClass = true;
+
+    try {
+      GMSMembershipView v = installAView();
+
+      setFailureDetectionPorts(v);
+
+      GMSMember memberToCheck = mockMembers.get(1);
+
+      boolean retVal = gmsHealthMonitor.checkIfAvailable(memberToCheck, "Not responding", true);
+      assertTrue("CheckIfAvailable should have return true", retVal);
+
+      // memberToCheck should be suspected again since it's not sending heartbeats and then
+      // it should fail an availability check and cause removal of the member
+      useGMSHealthMonitorTestClass = false;
+      await().untilAsserted(() -> verify(joinLeave, atLeastOnce()).remove(memberToCheck,
+          "Member isn't responding to heartbeat requests"));
+    } finally {
+      useGMSHealthMonitorTestClass = false;
+    }
+  }
 
   @Test
   public void testNeighborRemainsSameAfterSuccessfulFinalCheck() {

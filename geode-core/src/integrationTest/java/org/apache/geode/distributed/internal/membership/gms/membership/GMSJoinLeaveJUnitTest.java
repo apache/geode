@@ -707,12 +707,13 @@ public class GMSJoinLeaveJUnitTest {
         D = mockMembers[2],
         E = mockMembers[3];
     prepareAndInstallView(C, createMemberList(A, B, C, D, E));
-    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
     LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");
     msg.setSender(C);
     gmsJoinLeave.processMessage(msg);
+    RemoveMemberMessage removeMemberMessage = new RemoveMemberMessage(B, A, "removing for test");
+    removeMemberMessage.setSender(B);
+    gmsJoinLeave.processMessage(removeMemberMessage);
     assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
-    await().until(() -> gmsJoinLeave.getView().size() == 1);
   }
 
   /**
@@ -729,18 +730,39 @@ public class GMSJoinLeaveJUnitTest {
         C = mockMembers[1],
         D = mockMembers[2],
         E = mockMembers[3];
+
     prepareAndInstallView(C, createMemberList(A, B, C, D));
-    when(healthMonitor.getMembersFailingAvailabilityCheck()).thenReturn(Collections.singleton(A));
-    E.setVmViewId(1);
+
+    // have the Messenger acknowledge all membership view messages so no-one is kicked out for
+    // failure to respond
+    when(messenger.send(isA(InstallViewMessage.class), isA(GMSMembershipView.class)))
+        .thenAnswer((request) -> {
+          InstallViewMessage installViewMessage = request.getArgument(0);
+          for (GMSMember recipient : installViewMessage.getRecipients()) {
+            ViewAckMessage viewAckMessage =
+                new ViewAckMessage(gmsJoinLeaveMemberId, installViewMessage.getView().getViewId(),
+                    installViewMessage.isPreparing());
+            viewAckMessage.setSender(recipient);
+            gmsJoinLeave.processMessage(viewAckMessage);
+          }
+          return null;
+        });
+
+    E.setVmViewId(2);
+
+    gmsJoinLeave.recordViewRequest(new LeaveRequestMessage(B, C, "removing for test"));
+
     gmsJoinLeave.processMessage(new JoinRequestMessage(B, E, null, 1, 1));
-    LeaveRequestMessage msg = new LeaveRequestMessage(B, C, "leaving for test");
-    msg.setSender(C);
+
+    RemoveMemberMessage msg = new RemoveMemberMessage(B, A, "crashed for test");
+    msg.setSender(D);
     gmsJoinLeave.processMessage(msg);
-    assertTrue("Expected becomeCoordinator to be invoked", gmsJoinLeave.isCoordinator());
-    await().until(() -> {
-      GMSMembershipView preparedView = gmsJoinLeave.getPreparedView();
-      return preparedView != null && preparedView.contains(E);
-    });
+
+    await().until(() -> gmsJoinLeave.isCoordinator() && gmsJoinLeave.getViewRequests().isEmpty());
+
+    // E should have joined and retained its view ID of 2
+    await().until(() -> gmsJoinLeave.getView().contains(E));
+    assertEquals(2, E.getVmViewId());
   }
 
   @Test
