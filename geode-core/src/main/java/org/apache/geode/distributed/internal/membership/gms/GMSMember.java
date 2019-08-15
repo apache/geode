@@ -22,7 +22,6 @@ import java.net.InetAddress;
 
 import org.jgroups.util.UUID;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -489,10 +488,10 @@ public class GMSMember implements DataSerializableFixedID {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInetAddress(getInetAddress(), out);
+    InternalDataSerializer.writeInetAddress(getInetAddress(), out);
     out.writeInt(getPort());
 
-    DataSerializer.writeString(hostName, out);
+    InternalDataSerializer.writeString(hostName, out);
 
     int flags = 0;
     if (isNetworkPartitionDetectionEnabled())
@@ -509,17 +508,17 @@ public class GMSMember implements DataSerializableFixedID {
     out.writeInt(getProcessId());
     int vmKind = getVmKind();
     out.writeByte(vmKind);
-    DataSerializer.writeStringArray(getGroups(), out);
+    InternalDataSerializer.writeStringArray(getGroups(), out);
 
-    DataSerializer.writeString(getName(), out);
+    InternalDataSerializer.writeString(getName(), out);
     if (vmKind == LONER_VM_TYPE) {
-      DataSerializer.writeString("", out);
+      InternalDataSerializer.writeString("", out);
     } else { // added in 6.5 for unique identifiers in P2P
-      DataSerializer.writeString(String.valueOf(getVmViewId()), out);
+      InternalDataSerializer.writeString(String.valueOf(getVmViewId()), out);
     }
-    DataSerializer
+    InternalDataSerializer
         .writeString(durableId == null ? "" : durableId, out);
-    DataSerializer.writeInteger(durableId == null ? 300 : durableTimeout, out);
+    InternalDataSerializer.writeInteger(durableId == null ? 300 : durableTimeout, out);
 
     Version.writeOrdinal(out, versionOrdinal, true);
 
@@ -538,7 +537,7 @@ public class GMSMember implements DataSerializableFixedID {
       flags |= PREFERRED_FOR_COORD_BIT;
     out.writeShort(flags);
 
-    DataSerializer.writeInetAddress(inetAddr, out);
+    InternalDataSerializer.writeInetAddress(inetAddr, out);
     out.writeInt(udpPort);
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
@@ -550,10 +549,10 @@ public class GMSMember implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    inetAddr = DataSerializer.readInetAddress(in);
+    inetAddr = InternalDataSerializer.readInetAddress(in);
     udpPort = in.readInt();
 
-    this.hostName = DataSerializer.readString(in);
+    this.hostName = InternalDataSerializer.readString(in);
 
     int flags = in.readUnsignedByte();
     preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
@@ -562,20 +561,20 @@ public class GMSMember implements DataSerializableFixedID {
     directPort = in.readInt();
     processId = in.readInt();
     vmKind = (byte) in.readUnsignedByte();
-    groups = DataSerializer.readStringArray(in);
+    groups = InternalDataSerializer.readStringArray(in);
     vmViewId = -1;
 
-    name = DataSerializer.readString(in);
+    name = InternalDataSerializer.readString(in);
     if (vmKind == LONER_DM_TYPE) {
-      DataSerializer.readString(in);
+      InternalDataSerializer.readString(in);
     } else {
-      String str = DataSerializer.readString(in);
+      String str = InternalDataSerializer.readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    durableId = DataSerializer.readString(in);
+    durableId = InternalDataSerializer.readString(in);
     durableTimeout = in.readInt();
 
     versionOrdinal = readVersion(flags, in);
@@ -613,7 +612,7 @@ public class GMSMember implements DataSerializableFixedID {
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
     this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
 
-    this.inetAddr = DataSerializer.readInetAddress(in);
+    this.inetAddr = InternalDataSerializer.readInetAddress(in);
     if (this.inetAddr != null) {
       this.hostName =
           SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr)

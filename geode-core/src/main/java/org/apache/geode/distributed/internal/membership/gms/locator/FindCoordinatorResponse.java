@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
@@ -161,7 +160,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
-    DataSerializer.writeObject(view, out);
+    InternalDataSerializer.writeObject(view, out);
     GMSUtil.writeSetOfMemberIDs(registrants, out);
   }
 
@@ -176,7 +175,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
-      view = DataSerializer.readObject(in);
+      view = InternalDataSerializer.readObject(in);
       registrants = GMSUtil.readHashSetOfMemberIDs(in);
     }
   }

@@ -19,9 +19,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 public class LeaveRequestMessage extends AbstractGMSMessage implements HasMemberID {
@@ -70,13 +70,13 @@ public class LeaveRequestMessage extends AbstractGMSMessage implements HasMember
   @Override
   public void toData(DataOutput out) throws IOException {
     GMSUtil.writeMemberID(memberID, out);
-    DataSerializer.writeString(reason, out);
+    InternalDataSerializer.writeString(reason, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     memberID = GMSUtil.readMemberID(in);
-    reason = DataSerializer.readString(in);
+    reason = InternalDataSerializer.readString(in);
   }
 
   @Override

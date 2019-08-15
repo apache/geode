@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 // TODO this class has been made unintelligible with different combinations of response values.
@@ -112,20 +112,20 @@ public class JoinResponseMessage extends AbstractGMSMessage {
 
   @Override
   public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(currentView, out);
+    InternalDataSerializer.writeObject(currentView, out);
     GMSUtil.writeMemberID(memberID, out);
-    DataSerializer.writeString(rejectionMessage, out);
-    DataSerializer.writeByteArray(messengerData, out);
-    DataSerializer.writeByteArray(secretPk, out);
+    InternalDataSerializer.writeString(rejectionMessage, out);
+    InternalDataSerializer.writeByteArray(messengerData, out);
+    InternalDataSerializer.writeByteArray(secretPk, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    currentView = DataSerializer.readObject(in);
+    currentView = InternalDataSerializer.readObject(in);
     memberID = GMSUtil.readMemberID(in);
-    rejectionMessage = DataSerializer.readString(in);
-    messengerData = DataSerializer.readByteArray(in);
-    secretPk = DataSerializer.readByteArray(in);
+    rejectionMessage = InternalDataSerializer.readString(in);
+    messengerData = InternalDataSerializer.readByteArray(in);
+    secretPk = InternalDataSerializer.readByteArray(in);
   }
 
   @Override

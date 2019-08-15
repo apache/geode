@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 public class SuspectMembersMessage extends AbstractGMSMessage {
@@ -64,7 +64,7 @@ public class SuspectMembersMessage extends AbstractGMSMessage {
       out.writeInt(suspectRequests.size());
       for (SuspectRequest sr : suspectRequests) {
         GMSUtil.writeMemberID(sr.getSuspectMember(), out);
-        DataSerializer.writeString(sr.getReason(), out);
+        InternalDataSerializer.writeString(sr.getReason(), out);
       }
     } else {
       out.writeInt(0);
@@ -76,7 +76,7 @@ public class SuspectMembersMessage extends AbstractGMSMessage {
     int size = in.readInt();
     for (int i = 0; i < size; i++) {
       SuspectRequest sr = new SuspectRequest(
-          GMSUtil.readMemberID(in), DataSerializer.readString(in));
+          GMSUtil.readMemberID(in), InternalDataSerializer.readString(in));
       suspectRequests.add(sr);
     }
   }

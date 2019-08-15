@@ -65,7 +65,6 @@ import org.jgroups.stack.IpAddress;
 import org.jgroups.util.Digest;
 import org.jgroups.util.UUID;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.GemFireIOException;
@@ -954,7 +953,7 @@ public class JGroupsMessenger implements Messenger {
       throws IOException {
     GMSMember m = this.localAddress;
     m.writeEssentialData(out_stream);
-    DataSerializer.writeObject(services.getManager().unwrapMessage(gfmsg), out_stream);
+    InternalDataSerializer.writeObject(services.getManager().unwrapMessage(gfmsg), out_stream);
 
     return out_stream.toByteArray();
   }
@@ -1125,7 +1124,7 @@ public class JGroupsMessenger implements Messenger {
       throws ClassNotFoundException, IOException {
     GMSMember m = new GMSMember();
     m.readEssentialData(in);
-    GMSMessage result = services.getManager().wrapMessage(DataSerializer.readObject(in));
+    GMSMessage result = services.getManager().wrapMessage(InternalDataSerializer.readObject(in));
 
     setSender(result, m, ordinal);
 

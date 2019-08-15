@@ -19,8 +19,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 
 public class InstallViewMessage extends AbstractGMSMessage {
@@ -82,16 +82,16 @@ public class InstallViewMessage extends AbstractGMSMessage {
   public void toData(DataOutput out) throws IOException {
     out.writeInt(previousViewId);
     out.writeInt(kind.ordinal());
-    DataSerializer.writeObject(this.view, out);
-    DataSerializer.writeObject(this.credentials, out);
+    InternalDataSerializer.writeObject(this.view, out);
+    InternalDataSerializer.writeObject(this.credentials, out);
   }
 
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
     this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
-    this.view = DataSerializer.readObject(in);
-    this.credentials = DataSerializer.readObject(in);
+    this.view = InternalDataSerializer.readObject(in);
+    this.credentials = InternalDataSerializer.readObject(in);
   }
 
   @Override

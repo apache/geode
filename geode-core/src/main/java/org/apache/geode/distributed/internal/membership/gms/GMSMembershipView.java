@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
@@ -604,9 +603,9 @@ public class GMSMembershipView implements DataSerializableFixedID {
     writeAsArrayList(members, out);
     GMSUtil.writeSetOfMemberIDs(shutdownMembers, out);
     GMSUtil.writeSetOfMemberIDs(crashedMembers, out);
-    DataSerializer.writeIntArray(failureDetectionPorts, out);
+    InternalDataSerializer.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
-    DataSerializer.writeHashMap(publicKeys, out);
+    InternalDataSerializer.writeHashMap(publicKeys, out);
   }
 
 
@@ -618,8 +617,8 @@ public class GMSMembershipView implements DataSerializableFixedID {
     this.hashedMembers = new HashSet<>(members);
     shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in);
     crashedMembers = GMSUtil.readHashSetOfMemberIDs(in);
-    failureDetectionPorts = DataSerializer.readIntArray(in);
-    Map pubkeys = DataSerializer.readHashMap(in);
+    failureDetectionPorts = InternalDataSerializer.readIntArray(in);
+    Map pubkeys = InternalDataSerializer.readHashMap(in);
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
     }

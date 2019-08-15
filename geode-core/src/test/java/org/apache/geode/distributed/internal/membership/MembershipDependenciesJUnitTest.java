@@ -28,7 +28,6 @@ import com.tngtech.archunit.lang.ArchRule;
 import org.junit.runner.RunWith;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
@@ -121,7 +120,6 @@ public class MembershipDependenciesJUnitTest {
               .or(type(ConnectExceptions.class))
 
               // TODO: Serialization needs to become its own module
-              .or(type(DataSerializer.class))
               .or(type(DataSerializableFixedID.class))
               .or(type(InternalDataSerializer.class))
               .or(type(Version.class))

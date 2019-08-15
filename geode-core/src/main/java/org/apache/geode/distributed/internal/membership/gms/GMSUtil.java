@@ -30,7 +30,6 @@ import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.internal.DSFIDFactory;
@@ -65,7 +64,7 @@ public class GMSUtil {
   }
 
   public static GMSMember readMemberID(DataInput in) throws IOException, ClassNotFoundException {
-    Object id = DataSerializer.readObject(in);
+    Object id = InternalDataSerializer.readObject(in);
     if (id == null || id instanceof GMSMember) {
       return (GMSMember) id;
     }
@@ -211,20 +210,18 @@ public class GMSUtil {
   private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out)
       throws IOException {
     InternalDataSerializer.writeDSFID(suspect, DSFIDFactory.DISTRIBUTED_MEMBER, out);
-    // DataSerializer.writeObject(new InternalDistributedMember(new GMSMemberAdapter(suspect)),
-    // out);
   }
 
   public static void writeMemberID(GMSMember id, DataOutput out) throws IOException {
     if (id == null) {
-      DataSerializer.writeObject(id, out);
+      InternalDataSerializer.writeObject(id, out);
       return;
     }
     if (InternalDataSerializer.getVersionForDataStream(out).ordinal() < Version.GEODE_1_10_0
         .ordinal()) {
       writeAsInternalDistributedMember(id, out);
     } else {
-      DataSerializer.writeObject(id, out);
+      InternalDataSerializer.writeObject(id, out);
     }
   }
 

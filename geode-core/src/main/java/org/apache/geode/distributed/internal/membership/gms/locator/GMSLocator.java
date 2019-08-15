@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.LocatorStats;
@@ -47,6 +46,7 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
@@ -335,7 +335,7 @@ public class GMSLocator implements Locator {
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(viewFile))) {
       oos.writeInt(LOCATOR_FILE_STAMP);
       oos.writeInt(Version.CURRENT_ORDINAL);
-      DataSerializer.writeObject(view, oos);
+      InternalDataSerializer.writeObject(view, oos);
     } catch (Exception e) {
       logger.warn(
           "Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system",
@@ -429,7 +429,7 @@ public class GMSLocator implements Locator {
         input = new VersionedObjectInput(input, geodeVersion);
       }
 
-      recoveredView = DataSerializer.readObject(input);
+      recoveredView = InternalDataSerializer.readObject(input);
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
       List<GMSMember> members = new ArrayList<>(recoveredView.getMembers());
