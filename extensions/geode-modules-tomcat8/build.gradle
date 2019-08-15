@@ -28,12 +28,23 @@ dependencies {
   distributedTestCompile('junit:junit')
   compile('mx4j:mx4j')
   distributedTestImplementation(project(':geode-logging'))
+  testCompile('org.httpunit:httpunit')
+  testCompile('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
+  testCompile('org.httpunit:httpunit')
+  testCompile('junit:junit')
+  testCompile('org.assertj:assertj-core')
+  testCompile('org.mockito:mockito-core')
+  testCompile(project(':extensions:geode-modules-test'))
   distributedTestCompile('org.httpunit:httpunit')
   distributedTestCompile('org.apache.tomcat:tomcat-jaspic-api:' + DependencyConstraints.get('tomcat8.version'))
   compile(project(':geode-core'))
   compile(project(':extensions:geode-modules')) {
     exclude group: 'org.apache.tomcat'
   }
+  testCompile(project(':extensions:geode-modules')) {
+    exclude group: 'org.apache.tomcat'
+  }
+
 
   compile('org.apache.tomcat:tomcat-catalina:' + DependencyConstraints.get('tomcat8.version')) {
     exclude module: 'tomcat-annotations-api'
@@ -44,6 +55,16 @@ dependencies {
   }
   compile('org.apache.tomcat:tomcat-juli:' + DependencyConstraints.get('tomcat8.version'))
   compile('javax.servlet:javax.servlet-api')
+  
+  integrationTestCompile(project(':geode-dunit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':geode-junit')) {
+    exclude module: 'geode-core'
+  }
+  integrationTestCompile(project(':extensions:geode-modules-test'))
+  integrationTestRuntime('xerces:xercesImpl')
+  integrationTestRuntime('javax.annotation:javax.annotation-api')
 
   distributedTestCompile(project(':geode-dunit')) {
     exclude module: 'geode-core'
