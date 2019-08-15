@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -207,6 +208,36 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
    */
   public ClientUpdateMessageImpl() {
 
+  }
+
+  /**
+   * This copy constructor will make a copy of the mutable client interest and CQ collections
+   * in this class to ensure that the caller has isolation when working with these collections.
+   */
+  ClientUpdateMessageImpl(ClientUpdateMessageImpl other) {
+    this._operation = other._operation;
+    this._regionName = other._regionName;
+    this._keyOfInterest = other._keyOfInterest;
+    this._value = other._value;
+    this._valueIsObject = other._valueIsObject;
+    this._callbackArgument = other._callbackArgument;
+    this._membershipId = other._membershipId;
+    this._eventIdentifier = other._eventIdentifier;
+    this._shouldConflate = other._shouldConflate;
+    this._isInterestListPassed = other._isInterestListPassed;
+    this._hasCqs = other._hasCqs;
+    this._clientCqs = other._clientCqs != null
+        ? new ClientCqConcurrentMap(other._clientCqs)
+        : null;
+    this._clientInterestList = other._clientInterestList != null
+        ? new HashSet<>(other._clientInterestList)
+        : null;
+    this._clientInterestListInv = other._clientInterestListInv != null
+        ? new HashSet<>(other._clientInterestListInv)
+        : null;
+    this._isNetLoad = other._isNetLoad;
+    this.deltaBytes = other.deltaBytes;
+    this.versionTag = other.versionTag;
   }
 
   @Override
@@ -1213,6 +1244,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     return (this._clientInterestListInv != null && this._clientInterestListInv.contains(clientId));
   }
 
+  @VisibleForTesting
+  boolean hasClientInterestListForUpdates() {
+    return this._clientInterestList != null;
+  }
+
+  @VisibleForTesting
+  boolean hasClientInterestListForInvalidates() {
+    return this._clientInterestListInv != null;
+  }
+
   protected Object deserialize(byte[] serializedBytes) {
     Object deserializedObject = serializedBytes;
     // This is a debugging method so ignore all exceptions like
@@ -1455,6 +1496,20 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public ClientCqConcurrentMap() {
       super(16, 1.0f, 1);
     }
+
+    ClientCqConcurrentMap(ClientCqConcurrentMap other) {
+      for (Entry<ClientProxyMembershipID, CqNameToOp> entry : other.entrySet()) {
+        ClientProxyMembershipID clientProxyMembershipID = entry.getKey();
+        CqNameToOp cqNameToOp = entry.getValue();
+        if (cqNameToOp instanceof CqNameToOpHashMap) {
+          this.put(clientProxyMembershipID,
+              new CqNameToOpHashMap((CqNameToOpHashMap) cqNameToOp));
+        } else {
+          this.put(clientProxyMembershipID,
+              new CqNameToOpSingleEntry((CqNameToOpSingleEntry) cqNameToOp));
+        }
+      }
+    }
   }
   /**
    * Replaces what used to be a HashMap<String, Integer>.
@@ -1491,6 +1546,11 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     public CqNameToOpSingleEntry(String name, Integer op) {
       initializeName(name);
       this.op = op.intValue();
+    }
+
+    CqNameToOpSingleEntry(CqNameToOpSingleEntry other) {
+      this.name = new String[] {other.name[0]};
+      this.op = other.op;
     }
 
     private void initializeName(String name) {
@@ -1557,10 +1617,10 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
   /**
-   * Basically just a ConcurrentHashMap<String, Integer> but limits itself to the CqNameToOp
+   * Basically just a HashMap<String, Integer> but limits itself to the CqNameToOp
    * interface.
    */
-  public static class CqNameToOpHashMap extends ConcurrentHashMap<String, Integer>
+  public static class CqNameToOpHashMap extends HashMap<String, Integer>
       implements CqNameToOp {
     public CqNameToOpHashMap(int initialCapacity) {
       super(initialCapacity, 1.0f);
@@ -1571,11 +1631,15 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
       add(se.name[0], se.op);
     }
 
+    CqNameToOpHashMap(CqNameToOpHashMap other) {
+      super(other);
+    }
+
     @Override
     public void sendTo(DataOutput out) throws IOException {
       // When serialized it needs to look just as if writeObject was called on a HASH_MAP
       out.writeByte(DSCODE.HASH_MAP.toByte());
-      DataSerializer.writeConcurrentHashMap(this, out);
+      DataSerializer.writeHashMap(this, out);
     }
 
     @Override
