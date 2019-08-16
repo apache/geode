@@ -163,6 +163,6 @@ public class GfshParserJUnitTest {
   @Test
   public void testShorthandReplacement() {
     assertThat(GfshParser.convertToSimpleParserInput("command --option=~/foo/bar"))
-      .isEqualTo("command --option " + System.getProperty("user.home") + "/foo/bar");
+        .isEqualTo("command --option " + System.getProperty("user.home") + "/foo/bar");
   }
 }

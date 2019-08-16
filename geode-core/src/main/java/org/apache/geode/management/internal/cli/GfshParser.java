@@ -69,7 +69,7 @@ public class GfshParser extends SimpleParser {
   }
 
   static String convertToSimpleParserInput(String userInput) {
-    userInput=userInput.replaceAll("=~/", "=" + System.getProperty("user.home")+ "/");
+    userInput = userInput.replaceAll("=~/", "=" + System.getProperty("user.home") + "/");
     List<String> inputTokens = splitUserInput(userInput);
     return getSimpleParserInputFromTokens(inputTokens);
   }
