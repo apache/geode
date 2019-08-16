@@ -57,7 +57,7 @@ For Geode, a preconfigured **book** is provided in the directory `{geode-project
     ```
     $ gem install libv8 -v '3.16.14.15' --  --with-system-v8
     ```
-   This can help you avoid errors with the default GCC compilter provided by xcode.
+   This can help you avoid errors with the default GCC compiler provided by xcode.
 
 
 4. To start a local website of the Apache Geode User Guide, enter:
