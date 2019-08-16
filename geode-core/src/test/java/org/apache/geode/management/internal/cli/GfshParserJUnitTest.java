@@ -159,4 +159,10 @@ public class GfshParserJUnitTest {
     assertThat(tokens.get(7)).isEqualTo("' '");
     assertThat(tokens.get(5)).isEqualTo("''");
   }
+
+  @Test
+  public void testShorthandReplacement() {
+    assertThat(GfshParser.convertToSimpleParserInput("command --option=~/foo/bar"))
+      .isEqualTo("command --option " + System.getProperty("user.home") + "/foo/bar");
+  }
 }
