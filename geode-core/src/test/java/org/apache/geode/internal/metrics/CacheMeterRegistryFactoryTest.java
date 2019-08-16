@@ -14,17 +14,11 @@
  */
 package org.apache.geode.internal.metrics;
 
-import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 
-import java.util.Collection;
-
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 public class CacheMeterRegistryFactoryTest {
@@ -81,107 +75,5 @@ public class CacheMeterRegistryFactoryTest {
 
     assertThat(meter.getId().getTags())
         .contains(Tag.of("host.name", theHostName));
-  }
-
-  @Test
-  public void addsGaugesForHeapMemory() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Gauge> heapGauges = registry
-        .find("jvm.memory.used")
-        .tag("area", "heap")
-        .gauges();
-
-    assertThat(heapGauges).isNotEmpty();
-  }
-
-  @Test
-  public void addsGaugesForNonHeapUsedMemory() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Gauge> nonheapGauges = registry
-        .find("jvm.memory.used")
-        .tag("area", "nonheap")
-        .gauges();
-
-    assertThat(nonheapGauges).isNotEmpty();
-  }
-
-  @Test
-  public void addsMetersForJvmThreadMetricsBinder() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Meter> meters = registry
-        .find("jvm.threads.peak")
-        .meters();
-
-    assertThat(meters).isNotEmpty();
-  }
-
-  @Test
-  public void addsMetersForJvmGcMetricsBinder() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Meter> meters = registry
-        .find("jvm.gc.max.data.size")
-        .meters();
-
-    assertThat(meters).isNotEmpty();
-  }
-
-  @Test
-  public void addsMetersForProcessorMetricsBinder() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Meter> meters = registry
-        .find("system.cpu.count")
-        .meters();
-
-    assertThat(meters).isNotEmpty();
-  }
-
-  @Test
-  public void addsMetersForUptimeMetricsBinder() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Meter> meters = registry
-        .find("process.uptime")
-        .meters();
-
-    assertThat(meters).isNotEmpty();
-  }
-
-  @Test
-  public void addsMetersForFileDescriptorMetricsBinder() {
-    assumeThat(isWindows()).isFalse();
-
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Meter> meters = registry
-        .find("process.files.open")
-        .meters();
-
-    assertThat(meters).isNotEmpty();
   }
 }

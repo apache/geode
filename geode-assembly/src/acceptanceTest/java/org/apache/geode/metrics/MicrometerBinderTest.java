@@ -14,9 +14,7 @@
  */
 package org.apache.geode.metrics;
 
-import static org.apache.geode.internal.lang.SystemUtils.isWindows;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assumptions.assumeThat;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -25,7 +23,6 @@ import java.util.List;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import org.junit.After;
@@ -171,22 +168,6 @@ public class MicrometerBinderTest {
 
     assertThat(results)
         .as("Meter from %s binder should exist", UptimeMetrics.class.getSimpleName())
-        .containsOnly(true);
-  }
-
-  @Test
-  public void fileDescriptorMetricsBinderExists() {
-    assumeThat(isWindows()).isFalse();
-
-    String meterNameToCheck = "process.files.open";
-
-    List<Boolean> results = functionExecution
-        .setArguments(meterNameToCheck)
-        .execute(CheckIfMeterExistsFunction.ID)
-        .getResult();
-
-    assertThat(results)
-        .as("Meter from %s binder should exist", FileDescriptorMetrics.class.getSimpleName())
         .containsOnly(true);
   }
 
