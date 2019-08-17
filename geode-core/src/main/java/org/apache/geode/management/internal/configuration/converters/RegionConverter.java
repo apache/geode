@@ -58,7 +58,8 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     region.setType(configObject.getType().name());
 
 
-    RegionAttributesType attributesType = createRegionAttributesByType(configObject.getType().name());
+    RegionAttributesType attributesType =
+        createRegionAttributesByType(configObject.getType().name());
 
     attributesType.setDiskStoreName(configObject.getDiskStoreName());
     attributesType.setKeyConstraint(configObject.getKeyConstraint());

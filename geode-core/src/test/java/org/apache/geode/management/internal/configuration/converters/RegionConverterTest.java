@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.configuration.RegionType;
@@ -99,6 +100,7 @@ public class RegionConverterTest {
     assertThat(config.getName()).isEqualTo("test");
     assertThat(config.getType()).isEqualTo("REPLICATE");
     RegionAttributesType regionAttributes = config.getRegionAttributes();
+    assertThat(regionAttributes.getDataPolicy()).isEqualTo(RegionAttributesDataPolicy.REPLICATE);
     assertThat(regionAttributes.getKeyConstraint()).isEqualTo("bar");
     assertThat(regionAttributes.getValueConstraint()).isEqualTo("foo");
     assertThat(regionAttributes.getDiskStoreName()).isEqualTo("diskstore");
