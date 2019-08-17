@@ -101,14 +101,17 @@ class ClientRegistrationEventQueueManager {
   void drain(final ClientRegistrationEventQueue clientRegistrationEventQueue,
       final CacheClientNotifier cacheClientNotifier) {
     try {
-      CacheClientProxy cacheClientProxy = cacheClientNotifier
-          .getClientProxy(clientRegistrationEventQueue.getClientProxyMembershipID());
+      ClientProxyMembershipID clientProxyMembershipID =
+          clientRegistrationEventQueue.getClientProxyMembershipID();
 
       if (logger.isDebugEnabled()) {
         logger.debug("Draining events from registration queue for client proxy "
-            + clientRegistrationEventQueue.getClientProxyMembershipID()
+            + clientProxyMembershipID
             + " without synchronization");
       }
+
+      CacheClientProxy cacheClientProxy = cacheClientNotifier
+          .getClientProxy(clientProxyMembershipID);
 
       drainEventsReceivedWhileRegisteringClient(
           cacheClientProxy,
@@ -120,7 +123,7 @@ class ClientRegistrationEventQueueManager {
       try {
         if (logger.isDebugEnabled()) {
           logger.debug("Draining remaining events from registration queue for client proxy "
-              + clientRegistrationEventQueue.getClientProxyMembershipID()
+              + clientProxyMembershipID
               + " with synchronization");
         }
 
