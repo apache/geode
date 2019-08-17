@@ -42,6 +42,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import org.apache.logging.log4j.Logger;
@@ -658,8 +659,12 @@ public class CacheClientNotifier {
 
     FilterProfile regionProfile = ((InternalRegion) event.getRegion()).getFilterProfile();
 
+    ClientProxyMembershipID eventOriginator = event.getContext();
+
     Set<ClientProxyMembershipID> filterClients =
-        getFilterClientIDs(event, regionProfile, filterInfo, clientMessage);
+        getFilterClientIDs(regionProfile, filterInfo, eventOriginator);
+
+    addRoutingInfoToClientMessage(regionProfile, filterInfo, clientMessage, eventOriginator);
 
     Conflatable conflatable;
 
@@ -698,14 +703,50 @@ public class CacheClientNotifier {
     }
   }
 
-  Set<ClientProxyMembershipID> getFilterClientIDs(final InternalCacheEvent event,
-      final FilterProfile regionProfile,
+  Set<ClientProxyMembershipID> getFilterClientIDs(final FilterProfile regionProfile,
       final FilterInfo filterInfo,
-      final ClientUpdateMessageImpl clientMessage) {
+      final ClientProxyMembershipID eventOriginator) {
     // Holds the clientIds to which filter message needs to be sent.
     Set<ClientProxyMembershipID> filterClients = new HashSet<>();
 
+    consumeCqInfo(regionProfile, filterInfo, (cq, cqEventType) -> {
+      ClientProxyMembershipID id = cq.getClientProxyId();
+      filterClients.add(id);
+    });
+
+    addInterestListInfoToFilterClients(regionProfile, eventOriginator, filterClients,
+        filterInfo.getInterestedClientsInv());
+
+    addInterestListInfoToFilterClients(regionProfile, eventOriginator, filterClients,
+        filterInfo.getInterestedClients());
+
+    return filterClients;
+  }
+
+  private void addRoutingInfoToClientMessage(final FilterProfile regionProfile,
+      final FilterInfo filterInfo,
+      final ClientUpdateMessageImpl clientMessage,
+      final ClientProxyMembershipID eventOriginator) {
     // Add CQ info.
+    consumeCqInfo(regionProfile, filterInfo, (cq, cqEventType) -> {
+      ClientProxyMembershipID id = cq.getClientProxyId();
+      String cqName = cq.getName();
+      if (logger.isDebugEnabled()) {
+        logger.debug("Adding cq routing info to message for id: {} and cq: {}", id, cqName);
+      }
+      clientMessage.addClientCq(id, cqName, cqEventType);
+    });
+
+    addInterestListInfoToClientMessage(regionProfile, clientMessage, eventOriginator,
+        filterInfo.getInterestedClientsInv(), false);
+
+    addInterestListInfoToClientMessage(regionProfile, clientMessage, eventOriginator,
+        filterInfo.getInterestedClients(), true);
+  }
+
+  private void consumeCqInfo(final FilterProfile regionProfile,
+      final FilterInfo filterInfo,
+      final BiConsumer<ServerCQ, Integer> consumeCq) {
     if (filterInfo.getCQs() != null) {
       for (Map.Entry<Long, Integer> e : filterInfo.getCQs().entrySet()) {
         Long cqID = e.getKey();
@@ -715,44 +756,50 @@ public class CacheClientNotifier {
         }
         ServerCQ cq = regionProfile.getCq(cqName);
         if (cq != null) {
-          ClientProxyMembershipID id = cq.getClientProxyId();
-          filterClients.add(id);
-          if (logger.isDebugEnabled()) {
-            logger.debug("Adding cq routing info to message for id: {} and cq: {}", id, cqName);
-          }
-
-          clientMessage.addClientCq(id, cq.getName(), e.getValue());
+          consumeCq.accept(cq, e.getValue());
         }
       }
     }
+  }
 
-    // Add interestList info.
-    if (filterInfo.getInterestedClientsInv() != null) {
-      Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClientsInv());
+  private void addInterestListInfoToFilterClients(final FilterProfile regionProfile,
+      final ClientProxyMembershipID eventOriginator,
+      final Set<ClientProxyMembershipID> filterClients,
+      final Set interestedClients) {
+    if (interestedClients != null) {
+      Set rawIDs = regionProfile.getRealClientIDs(interestedClients);
       Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
-      incMessagesNotQueuedOriginatorStat(event, ids);
+      ids.remove(eventOriginator);
       if (!ids.isEmpty()) {
-        if (logger.isTraceEnabled()) {
-          logger.trace("adding invalidation routing to message for {}", ids);
-        }
-        clientMessage.addClientInterestList(ids, false);
         filterClients.addAll(ids);
       }
     }
-    if (filterInfo.getInterestedClients() != null) {
-      Set<Object> rawIDs = regionProfile.getRealClientIDs(filterInfo.getInterestedClients());
+  }
+
+  private void addInterestListInfoToClientMessage(final FilterProfile regionProfile,
+      final ClientUpdateMessageImpl clientMessage,
+      final ClientProxyMembershipID eventOriginator,
+      final Set interestedClients,
+      final boolean receiveValues) {
+    if (interestedClients != null) {
+      Set rawIDs = regionProfile.getRealClientIDs(interestedClients);
       Set<ClientProxyMembershipID> ids = getProxyIDs(rawIDs);
-      incMessagesNotQueuedOriginatorStat(event, ids);
+      if (ids.remove(eventOriginator)) {
+        CacheClientProxy ccp = getClientProxy(eventOriginator);
+        if (ccp != null) {
+          ccp.getStatistics().incMessagesNotQueuedOriginator();
+        }
+      }
       if (!ids.isEmpty()) {
         if (logger.isTraceEnabled()) {
-          logger.trace("adding routing to message for {}", ids);
+          String message = receiveValues
+              ? "adding routing to message for {}"
+              : "adding invalidation routing message for {}";
+          logger.trace(message, ids);
         }
-        clientMessage.addClientInterestList(ids, true);
-        filterClients.addAll(ids);
+        clientMessage.addClientInterestList(ids, receiveValues);
       }
     }
-
-    return filterClients;
   }
 
   private boolean isClientPermitted(ClientRegistrationMetadata clientRegistrationMetadata,
@@ -764,17 +811,6 @@ public class CacheClientNotifier {
       return false;
     }
     return true;
-  }
-
-  private void incMessagesNotQueuedOriginatorStat(final InternalCacheEvent event,
-      final Set<ClientProxyMembershipID> ids) {
-    // don't send to member of origin
-    if (ids.remove(event.getContext())) {
-      CacheClientProxy ccp = getClientProxy(event.getContext());
-      if (ccp != null) {
-        ccp.getStatistics().incMessagesNotQueuedOriginator();
-      }
-    }
   }
 
   private void removeDestroyTokensFromCqResultKeys(InternalCacheEvent event,

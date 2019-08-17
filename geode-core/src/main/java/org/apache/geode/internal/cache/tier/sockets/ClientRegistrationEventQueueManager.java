@@ -260,16 +260,10 @@ class ClientRegistrationEventQueueManager {
         FilterRoutingInfo.FilterInfo filterInfo = filterRoutingInfo.getLocalFilterInfo();
 
         if (filterInfo != null) {
-          ClientUpdateMessageImpl clientUpdateMessage = conflatable instanceof HAEventWrapper
-              ? (ClientUpdateMessageImpl) ((HAEventWrapper) conflatable).getClientUpdateMessage()
-              : (ClientUpdateMessageImpl) conflatable;
-
-          internalCacheEvent.setLocalFilterInfo(filterInfo);
-
           Set<ClientProxyMembershipID> newFilterClientIDs =
-              cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile,
+              cacheClientNotifier.getFilterClientIDs(filterProfile,
                   filterInfo,
-                  clientUpdateMessage);
+                  internalCacheEvent.getContext());
 
           if (eventNotInOriginalFilterClientIDs(proxyID, newFilterClientIDs,
               originalFilterClientIDs)) {

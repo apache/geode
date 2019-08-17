@@ -89,14 +89,15 @@ public class ClientRegistrationEventQueueManagerTest {
     when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
 
     ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
-
+    ClientProxyMembershipID originatorId = mock(ClientProxyMembershipID.class);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
     Set<ClientProxyMembershipID> recalculatedFilterClientIDs = new HashSet<>();
     recalculatedFilterClientIDs.add(clientProxyMembershipID);
-    when(cacheClientNotifier.getFilterClientIDs(internalCacheEvent, filterProfile, filterInfo,
-        clientUpdateMessage))
+
+    when(cacheClientNotifier.getFilterClientIDs(filterProfile, filterInfo,
+        originatorId))
             .thenReturn(recalculatedFilterClientIDs);
-    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
     when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
 
     // Create empty filter client IDs produced by the "normal" put processing path, so we can test
