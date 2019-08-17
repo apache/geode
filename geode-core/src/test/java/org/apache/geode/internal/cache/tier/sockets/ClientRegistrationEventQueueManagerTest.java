@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.junit.Test;
@@ -132,8 +131,8 @@ public class ClientRegistrationEventQueueManagerTest {
   @Test
   public void addAndDrainQueueContentionTest() throws ExecutionException, InterruptedException {
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    ReadWriteLock mockPutDrainLock = mock(ReadWriteLock.class);
-    ReadWriteLock actualPutDrainLock = new ReentrantReadWriteLock();
+    ReentrantReadWriteLock mockPutDrainLock = mock(ReentrantReadWriteLock.class);
+    ReentrantReadWriteLock actualPutDrainLock = new ReentrantReadWriteLock();
 
     when(mockPutDrainLock.readLock())
         .thenReturn(actualPutDrainLock.readLock());
