@@ -14,6 +14,9 @@
  */
 package org.apache.geode.session.tests;
 
+import static java.lang.System.lineSeparator;
+import static java.nio.charset.Charset.defaultCharset;
+import static org.apache.commons.io.FileUtils.readLines;
 import static org.apache.geode.session.tests.ContainerInstall.GEODE_BUILD_HOME;
 import static org.apache.geode.session.tests.ContainerInstall.TMP_DIR;
 
@@ -154,8 +157,15 @@ public class GenericAppServerContainer extends ServerContainer {
     int exitCode = process.waitFor();
     // Throw error if bad exit
     if (exitCode != 0) {
-      throw new IOException("Unable to run modify_war script, command: " + builder.command()
-          + "\ncheck log file: " + modifyWarScriptLog.getAbsolutePath());
+      StringBuilder sb = new StringBuilder();
+      sb.append("Unable to run modify_war script, command: ").append(builder.command());
+      sb.append(lineSeparator());
+      sb.append("log file: ");
+      for (String line : readLines(modifyWarScriptLog, defaultCharset())) {
+        sb.append(lineSeparator());
+        sb.append(line);
+      }
+      throw new IOException(sb.toString());
     }
   }
 
