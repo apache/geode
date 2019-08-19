@@ -15,12 +15,7 @@
 package org.apache.geode.internal.metrics;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
-import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
-import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
-import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 
 public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory {
@@ -35,11 +30,6 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
     registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
 
     new JvmMemoryMetrics().bindTo(registry);
-    new JvmThreadMetrics().bindTo(registry);
-    new JvmGcMetrics().bindTo(registry);
-    new ProcessorMetrics().bindTo(registry);
-    new UptimeMetrics().bindTo(registry);
-    new FileDescriptorMetrics().bindTo(registry);
 
     return registry;
   }
