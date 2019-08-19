@@ -345,6 +345,9 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
   }
 
   private void recordVersionWithBitSet(long version) {
+
+    flushBitSetDuringRecording(version);
+
     if (this.version == version) {
       if (version >= this.bitSetVersion) {
         setVersionInBitSet(version);
@@ -353,7 +356,6 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       return;
     }
 
-    flushBitSetDuringRecording(version);
 
     if (version >= this.bitSetVersion) {
       if (this.getSpecialException() != null) {
@@ -443,14 +445,7 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
     this.exceptions = other.exceptions;
     this.version = other.version;
 
-    // Initialize the bit set to be empty. Merge bit set should
-    // have already done this, but just to be sure.
-    if (this.bitSet != null) {
-      this.bitSetVersion = this.version;
-      // Make sure the bit set is empty except for the first, bit, indicating
-      // that the version has been received.
-      this.bitSet.set(0);
-    }
+
 
     // Now if this.version/exceptions overlap with myVersion/myExceptions, use this'
     // The only case needs special handling is: if myVersion is newer than this.version,
@@ -470,6 +465,15 @@ public class RegionVersionHolder<T> implements Cloneable, DataSerializable {
       }
       this.exceptions.add(i, e);
       this.version = myVersion;
+    }
+
+    // Initialize the bit set to be empty. Merge bit set should
+    // have already done this, but just to be sure.
+    if (this.bitSet != null) {
+      this.bitSetVersion = this.version;
+      // Make sure the bit set is empty except for the first, bit, indicating
+      // that the version has been received.
+      this.bitSet.set(0);
     }
   }
 
