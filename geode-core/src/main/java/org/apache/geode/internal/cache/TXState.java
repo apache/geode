@@ -139,7 +139,7 @@ public class TXState implements TXStateInterface {
   protected final TXStateProxy proxy;
   protected boolean firedWriter = false;
   protected final boolean onBehalfOfRemoteStub;
-  private boolean gotBucketLocks = false;
+  boolean gotBucketLocks = false;
   protected TXCommitMessage commitMessage = null;
   ClientProxyMembershipID bridgeContext = null;
   /** keeps track of events, so as not to re-apply events */
@@ -909,7 +909,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private void cleanupTXRegionState() {
+  void cleanupTXRegionState() {
     Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
     try {
       while (it.hasNext()) {
@@ -931,7 +931,7 @@ public class TXState implements TXStateInterface {
     }
   }
 
-  private void unlockPrimaryMoveReadLock(InternalRegion internalRegion) {
+  void unlockPrimaryMoveReadLock(InternalRegion internalRegion) {
     if (internalRegion.isUsedForPartitionedRegionBucket()
         && (((BucketRegion) internalRegion).getBucketAdvisor().isPrimary())) {
       try {

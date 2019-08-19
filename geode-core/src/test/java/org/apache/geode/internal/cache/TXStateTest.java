@@ -313,4 +313,63 @@ public class TXStateTest {
     assertThat(txState.isBucketLocks()).isFalse();
   }
 
+  @Test
+  public void primaryMoveReadLockAreUnlockedAndRegionStateAreCleanedUp() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    DistributedRegion replicate = mock(DistributedRegion.class);
+    TXBucketRegionState bucketState = mock(TXBucketRegionState.class);
+    TXRegionState replicateState = mock(TXRegionState.class);
+    txState.regions.put(bucket, bucketState);
+    txState.regions.put(replicate, replicateState);
+    txState.gotBucketLocks = true;
+
+    txState.cleanupTXRegionState();
+
+    verify(txState).unlockPrimaryMoveReadLock(bucket);
+    verify(txState).unlockPrimaryMoveReadLock(replicate);
+    verify(bucketState).cleanup(bucket);
+    verify(replicateState).cleanup(replicate);
+    assertThat(txState.isBucketLocks()).isFalse();
+  }
+
+  @Test
+  public void doUnlockForPrimaryIfIsPrimaryBucket() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+
+    verify(bucket).doUnlockForPrimary();
+  }
+
+  @Test
+  public void doNotUnlockForPrimaryIfNotAPrimaryBucket() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(false);
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+
+    verify(bucket, never()).doUnlockForPrimary();
+  }
+
+  @Test
+  public void doNotUnlockForPrimaryIfNotABucket() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(false);
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+
+    verify(bucket, never()).doUnlockForPrimary();
+  }
+
 }
