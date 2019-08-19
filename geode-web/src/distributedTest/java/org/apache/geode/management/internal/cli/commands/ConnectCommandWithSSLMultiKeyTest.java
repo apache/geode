@@ -15,18 +15,8 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_CIPHERS;
+import static org.apache.geode.distributed.ConfigurationProperties.JMX_MANAGER_HOSTNAME_FOR_CLIENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_DEFAULT_ALIAS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_ENABLED_COMPONENTS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_TYPE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_PROTOCOLS;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_AUTHENTICATION;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
-import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_TYPE;
-import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -42,7 +32,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
-import org.apache.geode.security.SecurableCommunicationChannels;
+import org.apache.geode.cache.ssl.CertStores;
+import org.apache.geode.cache.ssl.CertificateBuilder;
+import org.apache.geode.cache.ssl.CertificateMaterial;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -66,59 +58,61 @@ public class ConnectCommandWithSSLMultiKeyTest {
   public static ClusterStartupRule clusterRule = new ClusterStartupRule();
 
   @BeforeClass
-  public static void beforeClass() {
-    // The files were generated using the following commands.
-    // echo "Add two certs to keystore to test using a specific alias."
-    // keytool -genkey -keyalg RSA -validity 3650 -keysize 2048 -alias server -keystore
-    // multiKeyStore.jks -storepass password -keypass password -dname "CN=127.0.0.1, O=Apache"
-    // keytool -genkey -keyalg RSA -validity 3650 -keysize 2048 -alias client -keystore
-    // multiKeyStore.jks -storepass password -keypass password -dname "CN=127.0.0.1, O=Apache"
-    // echo "Export public cert..."
-    // keytool -export -alias client -keystore multiKeyStore.jks -rfc -file client.cer -storepass
-    // password
-    // echo "Setup trustStore..."
-    // keytool -import -alias client -file client.cer -keystore truststore.jks -storepass password
-    // -noprompt
-    // echo "Remove exported certs..."
-    // rm client.cer
-    String multiKeyTrustStore = createTempFileFromResource(ConnectCommandWithSSLMultiKeyTest.class,
-        "/org/apache/geode/management/internal/cli/commands/multiKey_TrustStore.jks")
-            .getAbsolutePath();
-    String multiKeyKeyStore =
-        createTempFileFromResource(ConnectCommandWithSSLMultiKeyTest.class,
-            "/org/apache/geode/management/internal/cli/commands/multiKey_KeyStore.jks")
-                .getAbsolutePath();
+  public static void beforeClass() throws Exception {
 
-    sslProperties = new Properties();
-    sslProperties.setProperty(SSL_ENABLED_COMPONENTS, SecurableCommunicationChannels.ALL);
-    sslProperties.setProperty(SSL_REQUIRE_AUTHENTICATION, "true");
-    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "client");
-    sslProperties.setProperty(SSL_KEYSTORE, multiKeyKeyStore);
-    sslProperties.setProperty(SSL_KEYSTORE_PASSWORD, "password");
-    sslProperties.setProperty(SSL_KEYSTORE_TYPE, "JKS");
-    sslProperties.setProperty(SSL_CIPHERS, "any");
-    sslProperties.setProperty(SSL_PROTOCOLS, "any");
-    sslProperties.setProperty(SSL_TRUSTSTORE, multiKeyTrustStore);
-    sslProperties.setProperty(SSL_TRUSTSTORE_PASSWORD, "password");
-    sslProperties.setProperty(SSL_TRUSTSTORE_TYPE, "JKS");
+    CertificateMaterial ca = new CertificateBuilder()
+        .commonName("Test CA")
+        .isCA()
+        .generate();
 
-    final Properties serializableProperties = new Properties();
-    sslProperties
-        .forEach((key, value) -> serializableProperties.setProperty((String) key, (String) value));
+    CertificateMaterial memberMaterial = new CertificateBuilder()
+        .commonName("member")
+        .sanDnsName("localhost")
+        .issuedBy(ca)
+        .generate();
+
+    CertStores memberStore = new CertStores("member");
+    memberStore.withCertificate("member", memberMaterial);
+    memberStore.trust("ca", ca);
+
+    final Properties memberProperties = memberStore.propertiesWith("all", true, false);
+
     locator = clusterRule.startLocatorVM(0,
-        l -> l.withProperties(serializableProperties).withHttpService());
+        l -> l.withProperties(memberProperties)
+            .withProperty(JMX_MANAGER_HOSTNAME_FOR_CLIENTS, "localhost")
+            .withHttpService());
+
+    CertificateMaterial clientMaterial = new CertificateBuilder()
+        .commonName("client")
+        .issuedBy(ca)
+        .generate();
+
+    CertificateMaterial selfSigned = new CertificateBuilder()
+        .commonName("bad-self-signed")
+        .generate();
+
+    CertStores clientStore = new CertStores("client");
+    clientStore.withCertificate("bad-self-signed", selfSigned);
+    clientStore.withCertificate("client", clientMaterial);
+    clientStore.trust("ca", ca);
+
+    sslProperties = clientStore.propertiesWith("all", true, true);
   }
 
   @Before
   public void before() throws Exception {
-    IgnoredException.addIgnoredException("javax.net.ssl.SSLException: Unrecognized SSL message");
     sslConfigFile = temporaryFolder.newFile("ssl.properties");
     out = new FileOutputStream(sslConfigFile);
   }
 
-  private void connectWithSSLTo(int port, GfshCommandRule.PortType locator) throws Exception {
+  private void connectWithSSLSucceeds(int port, GfshCommandRule.PortType locator) throws Exception {
     gfsh.connect(port, locator, "security-properties-file", sslConfigFile.getAbsolutePath());
     assertThat(gfsh.isConnected()).isTrue();
+  }
+
+  private void connectWithSSLFails(int port, GfshCommandRule.PortType locator) throws Exception {
+    gfsh.connect(port, locator, "security-properties-file", sslConfigFile.getAbsolutePath());
+    assertThat(gfsh.isConnected()).isFalse();
   }
 
   private void failToConnectWithoutSSLTo(int port, GfshCommandRule.PortType locator)
@@ -144,22 +138,38 @@ public class ConnectCommandWithSSLMultiKeyTest {
 
   @Test
   public void connectWithSSLShouldSucceed() throws Exception {
+    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "client");
     sslProperties.store(out, null);
 
-    connectWithSSLTo(locator.getPort(), GfshCommandRule.PortType.locator);
+    connectWithSSLSucceeds(locator.getPort(), GfshCommandRule.PortType.locator);
     gfsh.disconnect();
 
-    connectWithSSLTo(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+    connectWithSSLSucceeds(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
     gfsh.disconnect();
+  }
+
+  @Test
+  public void connectWithSSLAndBadCertificateShouldFail() throws Exception {
+    IgnoredException.addIgnoredException(
+        "javax.net.ssl.SSLHandshakeException: Received fatal alert: certificate_unknown");
+    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "bad-self-signed");
+    sslProperties.store(out, null);
+
+    connectWithSSLFails(locator.getPort(), GfshCommandRule.PortType.locator);
+
+    connectWithSSLFails(locator.getJmxPort(), GfshCommandRule.PortType.jmxManager);
+
+    IgnoredException.removeAllExpectedExceptions();
   }
 
   @Test
   public void connectWithSSLShouldSucceedAndSubsequentConnectWithNoSSLShouldFail()
       throws Exception {
+    sslProperties.setProperty(SSL_DEFAULT_ALIAS, "client");
     sslProperties.store(out, null);
 
     // can connect to both locator and jmx
-    connectWithSSLTo(locator.getPort(), GfshCommandRule.PortType.locator);
+    connectWithSSLSucceeds(locator.getPort(), GfshCommandRule.PortType.locator);
     gfsh.disconnect();
 
     // reconnect again with no SSL should fail
