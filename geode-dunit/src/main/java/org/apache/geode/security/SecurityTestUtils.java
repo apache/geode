@@ -554,8 +554,10 @@ public class SecurityTestUtils {
       File logFile = new File(name + "-locator" + port + ".log");
       FileOutputStream logOut = new FileOutputStream(logFile);
       PrintStream logStream = new PrintStream(logOut);
-      for (String expectedException : expectedExceptions) {
-        addIgnoredException(expectedException);
+      if (ignoredExceptions != null) {
+        for (String expectedException : expectedExceptions) {
+          addIgnoredException(expectedException);
+        }
       }
       logStream.flush();
 
@@ -1766,8 +1768,10 @@ public class SecurityTestUtils {
 
     DistributedSystem dsys = distributedTestCase.getSystem(sysProps);
     assertNotNull(dsys);
-    for (String ignoredException : ignoredExceptions) {
-      addIgnoredException(ignoredException);
+    if (ignoredExceptions != null) {
+      for (String ignoredException : ignoredExceptions) {
+        addIgnoredException(ignoredException);
+      }
     }
     return dsys;
   }
