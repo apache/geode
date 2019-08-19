@@ -41,6 +41,7 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -362,14 +363,29 @@ public class TXStateTest {
   }
 
   @Test
-  public void doNotUnlockForPrimaryIfNotABucket() {
+  public void unlockForPrimaryDoesNotThrowIfDoUnlockForPrimaryThrowsRegionDestroyedException() {
     TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
     BucketRegion bucket = mock(BucketRegion.class);
-    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(false);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+    doThrow(new RegionDestroyedException("", "")).when(bucket).doUnlockForPrimary();
 
     txState.unlockPrimaryMoveReadLock(bucket);
+  }
 
-    verify(bucket, never()).doUnlockForPrimary();
+  @Test
+  public void unlockForPrimaryDoesNotThrowIfDoUnlockForPrimaryThrowsException() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+    doThrow(new RuntimeException()).when(bucket).doUnlockForPrimary();
+
+    txState.unlockPrimaryMoveReadLock(bucket);
   }
 
 }
