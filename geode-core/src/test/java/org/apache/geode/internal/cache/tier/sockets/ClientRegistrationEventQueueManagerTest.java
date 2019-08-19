@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -219,18 +218,21 @@ public class ClientRegistrationEventQueueManagerTest {
 
     clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
 
-    assertEquals(0, clientRegistrationEventQueueManager.getRegisteringProxyEventQueuesSize());
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    Conflatable conflatable = mock(Conflatable.class);
+    Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
+
+    // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
+    // to the test client's registration queue, because it should already be removed. We can
+    // validate that by asserting that the client's registration queue is empty after the add.
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
+        cacheClientNotifier);
+
+    assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
 
   @Test
   public void drainThrowsExceptionQueueStillRemoved() {
-    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
-    RuntimeException testException = new RuntimeException();
-    when(internalCacheEvent.getRegion()).thenThrow(testException);
-    Operation mockOperation = mock(Operation.class);
-    when(mockOperation.isEntry()).thenReturn(true);
-    when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
-
     CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
     CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
     ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
@@ -247,6 +249,13 @@ public class ClientRegistrationEventQueueManagerTest {
     Conflatable conflatable = mock(Conflatable.class);
     Set<ClientProxyMembershipID> filterClientIDs = new HashSet<>();
 
+    EntryEventImpl internalCacheEvent = mock(EntryEventImpl.class);
+    RuntimeException testException = new RuntimeException();
+    when(internalCacheEvent.getRegion()).thenThrow(testException);
+    Operation mockOperation = mock(Operation.class);
+    when(mockOperation.isEntry()).thenReturn(true);
+    when(internalCacheEvent.getOperation()).thenReturn(mockOperation);
+
     clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
         cacheClientNotifier);
 
@@ -254,11 +263,26 @@ public class ClientRegistrationEventQueueManagerTest {
         cacheClientNotifier))
             .isEqualTo(testException);
 
-    assertEquals(0, clientRegistrationEventQueueManager.getRegisteringProxyEventQueuesSize());
+    // Pass a new event to the ClientRegistrationEventQueueManager. This event should not be added
+    // to the test client's registration queue, because it should already be removed. We can
+    // validate that by asserting that the client's registration queue is empty after the add.
+    clientRegistrationEventQueueManager.add(internalCacheEvent, conflatable, filterClientIDs,
+        cacheClientNotifier);
+
+    assertThat(clientRegistrationEventQueue.isEmpty()).isTrue();
   }
 
   @Test
   public void addEventInOriginalFilterIDsButQueueWasRemovedDueToSuccessfulRegistrationSoEventNotRedelivered() {
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
+    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
+    Set<ClientProxyMembershipID> originalFilterIDs = new HashSet<>();
+    originalFilterIDs.add(clientProxyMembershipID);
+
+    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
+
     InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
     LocalRegion localRegion = mock(LocalRegion.class);
     FilterProfile filterProfile = mock(FilterProfile.class);
@@ -272,15 +296,6 @@ public class ClientRegistrationEventQueueManagerTest {
     when(localRegion.getFilterProfile()).thenReturn(filterProfile);
     when(internalCacheEvent.getRegion()).thenReturn(localRegion);
     when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
-
-    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
-    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
-    CacheClientProxy cacheClientProxy = mock(CacheClientProxy.class);
-    when(cacheClientNotifier.getClientProxy(clientProxyMembershipID)).thenReturn(cacheClientProxy);
-    Set<ClientProxyMembershipID> originalFilterIDs = new HashSet<>();
-    originalFilterIDs.add(clientProxyMembershipID);
-
-    ClientUpdateMessageImpl clientUpdateMessage = mock(ClientUpdateMessageImpl.class);
 
     Set<ClientProxyMembershipID> recalculatedFilterClientIDs = new HashSet<>();
     recalculatedFilterClientIDs.add(clientProxyMembershipID);
