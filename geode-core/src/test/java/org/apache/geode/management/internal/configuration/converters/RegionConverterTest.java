@@ -49,7 +49,7 @@ public class RegionConverterTest {
   @Test
   public void fromXmlWithNameType() throws Exception {
     config.setName("test");
-    config.setType("REPLICATE");
+    config.setRegionAttributes(converter.createRegionAttributesByType("REPLICATE"));
 
     Region region = converter.fromXmlObject(config);
     assertThat(region.getName()).isEqualTo("test");
@@ -59,9 +59,9 @@ public class RegionConverterTest {
   @Test
   public void fromXmlWithAll() throws Exception {
     config.setName("test");
-    config.setType("REPLICATE");
+    config.setRegionAttributes(converter.createRegionAttributesByType("REPLICATE"));
 
-    RegionAttributesType attributesType = new RegionAttributesType();
+    RegionAttributesType attributesType = config.getRegionAttributes();
     attributesType.setValueConstraint("foo");
     attributesType.setKeyConstraint("bar");
     attributesType.setDiskStoreName("diskstore");
@@ -78,7 +78,7 @@ public class RegionConverterTest {
   @Test
   public void fromXmlWithLocalType() throws Exception {
     config.setName("test");
-    config.setType("LOCAL");
+    config.setRegionAttributes(converter.createRegionAttributesByType("LOCAL"));
     assertThat(converter.fromXmlObject(config).getType()).isEqualTo(RegionType.UNSUPPORTED);
   }
 
@@ -122,5 +122,45 @@ public class RegionConverterTest {
       RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
+  }
+
+  @Test
+  public void getRegionType() throws Exception {
+    assertThat(converter.getRegionType(null)).isEqualTo(RegionType.UNSUPPORTED);
+
+    RegionAttributesType regionAttributes = new RegionAttributesType();
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION);
+
+    RegionAttributesType.PartitionAttributes pAttributes =
+        new RegionAttributesType.PartitionAttributes();
+    pAttributes.setLocalMaxMemory("20000");
+    regionAttributes.setPartitionAttributes(pAttributes);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION);
+
+    pAttributes.setLocalMaxMemory("0");
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION_PROXY);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+    assertThat(converter.getRegionType(regionAttributes))
+        .isEqualTo(RegionType.PARTITION_PERSISTENT);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.REPLICATE);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+    assertThat(converter.getRegionType(regionAttributes))
+        .isEqualTo(RegionType.REPLICATE_PERSISTENT);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.REPLICATE_PROXY);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+
+    regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
+    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
   }
 }

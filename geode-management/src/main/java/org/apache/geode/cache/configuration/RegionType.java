@@ -18,34 +18,32 @@ package org.apache.geode.cache.configuration;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * these are the region types supported by Cluster Management V2 API. The attributes of these
- * region types are the same as their namesakes in RegionShortcut
+ * these are the region types supported by Cluster Management V2 API.
+ * these corresponds to a subset of data policies
  */
 @Experimental
 public enum RegionType {
   PARTITION,
-  PARTITION_REDUNDANT,
   PARTITION_PERSISTENT,
-  PARTITION_REDUNDANT_PERSISTENT,
-  PARTITION_OVERFLOW,
-  PARTITION_REDUNDANT_OVERFLOW,
-  PARTITION_PERSISTENT_OVERFLOW,
-  PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
-  PARTITION_HEAP_LRU,
-  PARTITION_REDUNDANT_HEAP_LRU,
-
   PARTITION_PROXY,
-  PARTITION_PROXY_REDUNDANT,
 
   REPLICATE,
   REPLICATE_PERSISTENT,
-  REPLICATE_OVERFLOW,
-  REPLICATE_PERSISTENT_OVERFLOW,
-  REPLICATE_HEAP_LRU,
-
   REPLICATE_PROXY,
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
   UNSUPPORTED;
+
+  public boolean isProxy() {
+    return name().contains("PROXY");
+  }
+
+  public boolean isPersistent() {
+    return name().contains("PERSISTENT");
+  }
+
+  public boolean isReplicate() {
+    return name().contains("REPLICATE");
+  }
 }

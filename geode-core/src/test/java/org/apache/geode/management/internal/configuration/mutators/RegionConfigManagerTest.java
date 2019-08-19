@@ -46,8 +46,8 @@ public class RegionConfigManagerTest {
 
   @Test
   public void compatibleWithSameType() throws Exception {
-    config1.setType(RegionType.PARTITION_HEAP_LRU);
-    config2.setType(RegionType.PARTITION_HEAP_LRU);
+    config1.setType(RegionType.PARTITION_PERSISTENT);
+    config2.setType(RegionType.PARTITION_PERSISTENT);
     manager.checkCompatibility(config1, "group", config2);
   }
 

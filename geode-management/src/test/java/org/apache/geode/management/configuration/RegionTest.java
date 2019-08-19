@@ -30,6 +30,7 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class RegionTest {
 
   private Region regionConfig;
+  private static ObjectMapper mapper = GeodeJsonMapper.getMapper();
 
   @Before
   public void before() throws Exception {
@@ -54,7 +55,6 @@ public class RegionTest {
   @Test
   public void correctJson() throws Exception {
     String json = "{\"name\":\"test\", \"type\":\"REPLICATE\"}";
-    ObjectMapper mapper = GeodeJsonMapper.getMapper();
     regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getType()).isEqualTo(RegionType.REPLICATE);
@@ -79,4 +79,31 @@ public class RegionTest {
     assertThat(regionConfig.hasRuntimeInfo()).isTrue();
   }
 
+  @Test
+  public void parseJsonWithShortcut() throws Exception {
+    String json = "{\"name\":\"test\", \"shortcut\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
+    regionConfig = mapper.readValue(json, Region.class);
+    assertThat(regionConfig.getName()).isEqualTo("test");
+    assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
+    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_PERSISTENT);
+
+    String resultJson = mapper.writeValueAsString(regionConfig);
+    assertThat(resultJson).contains("\"type\":\"PARTITION_PERSISTENT\"")
+        .contains("\"redundantCopies\":1");
+
+    Region resultRegion = mapper.readValue(resultJson, Region.class);
+    assertThat(regionConfig.getName()).isEqualTo(resultRegion.getName());
+    assertThat(regionConfig.getType()).isEqualTo(resultRegion.getType());
+    assertThat(regionConfig.getRedundantCopies()).isEqualTo(resultRegion.getRedundantCopies());
+  }
+
+  @Test
+  public void parseWithShortcutAndOtherOverridingAttributes() throws Exception {
+    String json =
+        "{\"name\":\"test\", \"redundantCopies\":0, \"shortcut\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
+    regionConfig = mapper.readValue(json, Region.class);
+    assertThat(regionConfig.getName()).isEqualTo("test");
+    assertThat(regionConfig.getRedundantCopies()).isEqualTo(0);
+    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_PERSISTENT);
+  }
 }
