@@ -43,6 +43,31 @@ public class RegionVersionHolderBitSetJUnitTest {
   }
 
   @Test
+  public void initializeFromUpdatesBitSetVersionCorrectly() {
+    RegionVersionHolder holder = createHolder(true);
+    RegionVersionHolder other = createHolder(true);
+
+    int moreThanBitSetWidth = BIT_SET_WIDTH + 10;
+    holder.recordVersion(moreThanBitSetWidth);
+    other.recordVersion(2);
+
+    holder.initializeFrom(other);
+
+    assertThat(holder.getBitSetVersionForTesting()).isEqualTo(moreThanBitSetWidth);
+    assertEquals(bitSet(0), holder.getBitSetForTesting());
+    assertHasExceptions(holder, RVVException.createException(2, moreThanBitSetWidth + 1),
+        RVVException.createException(0, 2));
+
+    holder.recordVersion(moreThanBitSetWidth);
+
+    assertThat(holder.getBitSetVersionForTesting()).isEqualTo(moreThanBitSetWidth);
+    assertEquals(bitSet(0), holder.getBitSetForTesting());
+    assertContains(holder, 2, moreThanBitSetWidth);
+    assertHasExceptions(holder, RVVException.createException(2, moreThanBitSetWidth),
+        RVVException.createException(0, 2));
+  }
+
+  @Test
   public void recordVersionLessThanBitSetWidthShouldNotMoveBitSet() {
     RegionVersionHolder h = createHolder(true);
     int version = BIT_SET_WIDTH - 10;
