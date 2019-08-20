@@ -1,10 +1,13 @@
 package org.apache.geode.internal.cache;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.RegionShortcut;
+import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.cache.CacheTestCase;
@@ -19,7 +22,7 @@ public class PersistentPartitionedRegionLargeVersionDUnitTest extends CacheTestC
     VM vm0 = VM.getVM(0);
     VM vm1 = VM.getVM(1);
 
-    vm0.invoke(() -> {
+    final DiskStoreID vm0_memberId = vm0.invoke(() -> {
       createRegion();
       PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region");
       region.put(0, 0);
@@ -34,12 +37,19 @@ public class PersistentPartitionedRegionLargeVersionDUnitTest extends CacheTestC
       // Do a destroy, and a tombstone gc, which will set the gc version to the large version
       region.destroy(1);
       getCache().getTombstoneService().forceBatchExpirationForTests(1);
+      vectorVector = region.getBucketRegion(0).getVersionVector();
+      assertThat(vectorVector.getCurrentVersion()).isEqualTo(((long) Integer.MAX_VALUE) + 12L);
+      return (DiskStoreID) vectorVector.getOwnerId();
     });
 
     // Start a second member to copy the bucket
     vm1.invoke(() -> {
       createRegion();
       getCache().getResourceManager().createRebalanceFactory().start().getResults();
+      PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region");
+      RegionVersionVector vectorVector = region.getBucketRegion(0).getVersionVector();
+      assertThat(vectorVector.getGCVersion(vm0_memberId))
+          .isEqualTo(((long) Integer.MAX_VALUE) + 12L);
     });
 
     // Shutdown both members
@@ -47,8 +57,20 @@ public class PersistentPartitionedRegionLargeVersionDUnitTest extends CacheTestC
     vm1.invoke(() -> getCache().close());
 
     // Restart both members
-    vm1.invoke(() -> createRegion());
-    vm0.invoke(() -> createRegion());
+    vm1.invoke(() -> {
+      createRegion();
+      PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region");
+      RegionVersionVector vectorVector = region.getBucketRegion(0).getVersionVector();
+      assertThat(vectorVector.getGCVersion(vm0_memberId))
+          .isEqualTo(((long) Integer.MAX_VALUE) + 12L);
+    });
+    vm0.invoke(() -> {
+      createRegion();
+      getCache().getResourceManager().createRebalanceFactory().start().getResults();
+      PartitionedRegion region = (PartitionedRegion) getCache().getRegion("region");
+      RegionVersionVector vectorVector = region.getBucketRegion(0).getVersionVector();
+      assertThat(vectorVector.getCurrentVersion()).isEqualTo(((long) Integer.MAX_VALUE) + 12L);
+    });
   }
 
   private void createRegion() {
