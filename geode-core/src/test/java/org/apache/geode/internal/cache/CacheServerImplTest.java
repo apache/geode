@@ -91,7 +91,7 @@ public class CacheServerImplTest {
     OverflowAttributes overflowAttributes = mock(OverflowAttributes.class);
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     Acceptor acceptor = server.createAcceptor(overflowAttributes);
@@ -103,7 +103,7 @@ public class CacheServerImplTest {
   public void getGroups_returnsSpecifiedGroup() {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup = "group0";
 
@@ -117,7 +117,7 @@ public class CacheServerImplTest {
   public void getGroups_returnsMultipleSpecifiedGroups() {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
@@ -135,7 +135,7 @@ public class CacheServerImplTest {
     when(config.getGroups()).thenReturn(membershipGroup);
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
@@ -151,7 +151,7 @@ public class CacheServerImplTest {
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     assertThat(server.getCombinedGroups())
@@ -167,7 +167,7 @@ public class CacheServerImplTest {
         .thenReturn(membershipGroup1 + "," + membershipGroup2 + "," + membershipGroup3);
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     String specifiedGroup1 = "group1";
     String specifiedGroup2 = "group2";
@@ -184,7 +184,7 @@ public class CacheServerImplTest {
   public void startNotifiesResourceEventCacheServerStart() throws IOException {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
 
     server.start();
@@ -196,7 +196,7 @@ public class CacheServerImplTest {
   public void stopNotifiesResourceEventCacheServerStart() throws IOException {
     InternalCacheServer server = new CacheServerImpl(cache, securityService,
         StatisticsClockFactory.disabledClock(), new AcceptorBuilder(),
-        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h) -> cacheClientNotifier,
+        true, true, () -> socketCreator, (a, b, c, d, e, f, g, h, i) -> cacheClientNotifier,
         (a, b, c) -> clientHealthMonitor, a -> advisor);
     server.start();
 

@@ -617,7 +617,8 @@ public class AcceptorImpl implements Acceptor, Runnable {
     crHelper = new CachedRegionHelper(cache);
 
     clientNotifier =
-        cacheClientNotifierProvider.get(internalCache, statisticsClock, stats, maximumMessageCount,
+        cacheClientNotifierProvider.get(internalCache, new ClientRegistrationEventQueueManager(),
+            statisticsClock, stats, maximumMessageCount,
             messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
 
     this.socketBufferSize = socketBufferSize;

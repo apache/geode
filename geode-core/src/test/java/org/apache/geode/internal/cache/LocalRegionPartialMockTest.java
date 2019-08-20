@@ -52,6 +52,7 @@ import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientProxy;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
 
 public class LocalRegionPartialMockTest {
@@ -227,7 +228,8 @@ public class LocalRegionPartialMockTest {
     when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
 
     CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(cache, disabledClock(), mock(CacheServerStats.class), 10,
+        CacheClientNotifier.getInstance(cache, mock(ClientRegistrationEventQueueManager.class),
+            disabledClock(), mock(CacheServerStats.class), 10,
             10, mock(ConnectionListener.class), null, true);
 
     doCallRealMethod().when(region).notifyClientsOfTombstoneGC(regionGCVersions, keysRemoved,
@@ -249,7 +251,8 @@ public class LocalRegionPartialMockTest {
     when(cache.getCCPTimer()).thenReturn(mock(SystemTimer.class));
 
     CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance(cache, disabledClock(), mock(CacheServerStats.class), 10,
+        CacheClientNotifier.getInstance(cache, mock(ClientRegistrationEventQueueManager.class),
+            disabledClock(), mock(CacheServerStats.class), 10,
             10, mock(ConnectionListener.class), null, true);
 
     when(proxy.getProxyID()).thenReturn(mock(ClientProxyMembershipID.class));
