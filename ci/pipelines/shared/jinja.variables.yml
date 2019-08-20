@@ -57,9 +57,9 @@ java_test_versions:
   version: 11
 
 benchmarks:
-  branch: "release/1.9.0"
+  branch: "develop"
   baseline_branch: ""
-  baseline_version: "1.8.0"
+  baseline_version: "1.9.0"
 
 java_build_version:
   name: OpenJDK8

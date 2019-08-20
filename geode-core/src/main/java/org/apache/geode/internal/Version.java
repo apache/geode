@@ -57,7 +57,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 100;
+  public static final int HIGHEST_VERSION = 101;
 
   @Immutable
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
@@ -263,6 +263,12 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_1_9_0 =
       new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_9_0_ORDINAL);
 
+  private static final byte GEODE_1_9_1_ORDINAL = 101;
+
+  @Immutable
+  public static final Version GEODE_1_9_1 =
+      new Version("GEODE", "1.9.1", (byte) 1, (byte) 9, (byte) 1, (byte) 0, GEODE_1_9_1_ORDINAL);
+
   /* NOTE: when adding a new version bump the ordinal by 5. Ordinals can be short ints */
 
   /**
@@ -270,7 +276,7 @@ public class Version implements Comparable<Version> {
    * HIGHEST_VERSION when changing CURRENT !!!
    */
   @Immutable
-  public static final Version CURRENT = GEODE_1_9_0;
+  public static final Version CURRENT = GEODE_1_9_1;
 
   /**
    * A lot of versioning code needs access to the current version's ordinal
