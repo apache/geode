@@ -60,10 +60,10 @@ import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.test.dunit.DistributedTestCase;
 import org.apache.geode.test.dunit.Host;
@@ -127,16 +127,16 @@ public class ClusterDistributionManagerDUnitTest extends DistributedTestCase {
   @Test
   public void testConnectAfterBeingShunned() {
     InternalDistributedSystem system = getSystem();
-    MembershipManager membershipManager = MembershipManagerHelper.getMembershipManager(system);
-    InternalDistributedMember memberBefore = membershipManager.getLocalMember();
+    Membership membership = MembershipManagerHelper.getMembershipManager(system);
+    InternalDistributedMember memberBefore = membership.getLocalMember();
 
     // TODO GMS needs to have a system property allowing the bind-port to be set
     System.setProperty(GEMFIRE_PREFIX + "jg-bind-port", "" + memberBefore.getPort());
     system.disconnect();
     system = getSystem();
-    membershipManager = MembershipManagerHelper.getMembershipManager(system);
+    membership = MembershipManagerHelper.getMembershipManager(system);
     system.disconnect();
-    InternalDistributedMember memberAfter = membershipManager.getLocalMember();
+    InternalDistributedMember memberAfter = membership.getLocalMember();
 
     assertThat(memberAfter.getPort()).isEqualTo(memberBefore.getPort());
   }

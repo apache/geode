@@ -40,10 +40,10 @@ import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 import org.apache.geode.distributed.internal.membership.gms.fd.GMSHealthMonitor;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
@@ -66,7 +66,6 @@ import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMembe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
-import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 
@@ -80,8 +79,8 @@ public class Services {
   private final HealthMonitor healthMon;
   private final Messenger messenger;
   private final Authenticator auth;
-  private final ServiceConfig config;
-  private final DMStats stats;
+  private final MembershipConfig config;
+  private final MembershipStatistics stats;
   private final Stopper cancelCriterion;
   private final DSFIDSerializer serializer;
 
@@ -126,13 +125,12 @@ public class Services {
     this.serializer = null;
   }
 
-  public Services(Manager membershipManager,
-      RemoteTransportConfig transport, DMStats stats,
-      final Authenticator authenticator, DistributionConfig config,
+  public Services(Manager membershipManager, MembershipStatistics stats,
+      final Authenticator authenticator, MembershipConfig membershipConfig,
       DSFIDSerializer serializer) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
-    this.config = new ServiceConfig(transport, config);
+    this.config = membershipConfig;
     this.manager = membershipManager;
     this.joinLeave = new GMSJoinLeave();
     this.healthMon = new GMSHealthMonitor();
@@ -256,7 +254,6 @@ public class Services {
     }
     logger.info("Stopping membership services");
     this.stopping = true;
-    config.setIsReconnecting(false);
     try {
       this.timer.cancel();
     } finally {
@@ -331,7 +328,7 @@ public class Services {
     return this.healthMon;
   }
 
-  public ServiceConfig getConfig() {
+  public MembershipConfig getConfig() {
     return this.config;
   }
 
@@ -339,7 +336,7 @@ public class Services {
     return this.messenger;
   }
 
-  public DMStats getStatistics() {
+  public MembershipStatistics getStatistics() {
     return this.stats;
   }
 
@@ -360,7 +357,7 @@ public class Services {
   }
 
   public boolean isAutoReconnectEnabled() {
-    return !getConfig().getDistributionConfig().getDisableAutoReconnect();
+    return !getConfig().getDisableAutoReconnect();
   }
 
   public DSFIDSerializer getSerializer() {

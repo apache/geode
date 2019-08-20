@@ -31,10 +31,11 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.ConfigurationProperties;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.test.junit.categories.MembershipTest;
 import org.apache.geode.test.junit.rules.ConcurrencyRule;
@@ -65,10 +66,10 @@ public class GMSEncryptJUnitTest {
     RemoteTransportConfig tconfig =
         new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
-    ServiceConfig serviceConfig = new ServiceConfig(tconfig, config);
+    MembershipConfig membershipConfig = new ServiceConfig(tconfig, config);
 
     services = mock(Services.class);
-    when(services.getConfig()).thenReturn(serviceConfig);
+    when(services.getConfig()).thenReturn(membershipConfig);
 
     mockMembers = new GMSMember[4];
     for (int i = 0; i < mockMembers.length; i++) {

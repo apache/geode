@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.cache.tier.sockets.command;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -109,6 +110,6 @@ public class CommitCommandTest {
 
     verify(txMgr, atLeastOnce()).commit();
     verify(membershipManager, times(1)).waitForDeparture(isA(DistributedMember.class),
-        isA(Integer.class));
+        anyLong());
   }
 }

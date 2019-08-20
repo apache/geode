@@ -89,10 +89,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.distributed.internal.tcpserver.LocatorCancelException;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.AvailablePortHelper;
@@ -797,7 +797,7 @@ public class LocatorDUnitTest implements Serializable {
 
       @Override
       public void run() {
-        MembershipManager mmgr = MembershipManagerHelper.getMembershipManager(system);
+        Membership mmgr = MembershipManagerHelper.getMembershipManager(system);
 
         // check for shutdown cause in MembershipManager. Following call should
         // throw DistributedSystemDisconnectedException which should have cause as

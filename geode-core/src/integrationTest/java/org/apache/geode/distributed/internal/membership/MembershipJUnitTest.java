@@ -52,18 +52,24 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipBuilder;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.security.SecurityServiceFactory;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 @Category({MembershipJUnitTest.class})
 public class MembershipJUnitTest {
@@ -152,10 +158,10 @@ public class MembershipJUnitTest {
       }
 
       // start the second membership manager
-      final Pair<MembershipManager, DistributedMembershipListener> pair =
+      final Pair<MembershipManager, MessageListener> pair =
           createMembershipManager(config, transport);
       m2 = pair.getLeft();
-      final DistributedMembershipListener listener2 = pair.getRight();
+      final MessageListener listener2 = pair.getRight();
 
       // we have to check the views with JoinLeave because the membership
       // manager queues new views for processing through the DM listener,
@@ -191,7 +197,7 @@ public class MembershipJUnitTest {
       SerialAckedMessage msg = new SerialAckedMessage();
       msg.setRecipient(m2.getLocalMember());
       msg.setMulticast(false);
-      m1.send(new InternalDistributedMember[] {m2.getLocalMember()}, msg, null);
+      m1.send(new InternalDistributedMember[] {m2.getLocalMember()}, msg);
       giveUp = System.currentTimeMillis() + 15000;
       boolean verified = false;
       Throwable problem = null;
@@ -208,7 +214,7 @@ public class MembershipJUnitTest {
       if (!verified) {
         AssertionError error = new AssertionError("Expected a message to be received");
         if (problem != null) {
-          error.initCause(error);
+          error.initCause(problem);
         }
         throw error;
       }
@@ -236,21 +242,27 @@ public class MembershipJUnitTest {
     }
   }
 
-  private Pair<MembershipManager, DistributedMembershipListener> createMembershipManager(
+  private Pair<MembershipManager, MessageListener> createMembershipManager(
       final DistributionConfigImpl config,
       final RemoteTransportConfig transport) {
-    final DistributedMembershipListener listener = mock(DistributedMembershipListener.class);
+    final MembershipListener listener = mock(MembershipListener.class);
+    final MessageListener messageListener = mock(MessageListener.class);
     final DMStats stats1 = mock(DMStats.class);
     final InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
-    System.out.println("creating 1st membership manager");
     final SecurityService securityService = SecurityServiceFactory.create();
+    DSFIDSerializer serializer = InternalDataSerializer.getDSFIDSerializer();
     final MembershipManager m1 =
-        MemberFactory.newMembershipManager(listener, transport, stats1,
-            new GMSAuthenticator(config.getSecurityProps(), securityService,
-                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()),
-            config);
+        MembershipBuilder.newMembershipBuilder(null)
+            .setAuthenticator(new GMSAuthenticator(config.getSecurityProps(), securityService,
+                mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()))
+            .setStatistics(stats1)
+            .setMessageListener(messageListener)
+            .setMembershipListener(listener)
+            .setConfig(new ServiceConfig(transport, config))
+            .setSerializer(serializer)
+            .create();
     m1.startEventProcessing();
-    return Pair.of(m1, listener);
+    return Pair.of(m1, messageListener);
   }
 
   /**
@@ -304,10 +316,10 @@ public class MembershipJUnitTest {
       }
 
       // start the second membership manager
-      final Pair<MembershipManager, DistributedMembershipListener> pair =
+      final Pair<MembershipManager, MessageListener> pair =
           createMembershipManager(config, transport);
       m2 = pair.getLeft();
-      final DistributedMembershipListener listener2 = pair.getRight();
+      final MessageListener listener2 = pair.getRight();
 
       // we have to check the views with JoinLeave because the membership
       // manager queues new views for processing through the DM listener,
@@ -337,7 +349,7 @@ public class MembershipJUnitTest {
       SerialAckedMessage msg = new SerialAckedMessage();
       msg.setRecipient(m2.getLocalMember());
       msg.setMulticast(true);
-      m1.send(new InternalDistributedMember[] {m2.getLocalMember()}, msg, null);
+      m1.send(new InternalDistributedMember[] {m2.getLocalMember()}, msg);
       giveUp = System.currentTimeMillis() + 5000;
       boolean verified = false;
       Throwable problem = null;
@@ -388,8 +400,8 @@ public class MembershipJUnitTest {
     DistributionConfigImpl config = new DistributionConfigImpl(nonDefault);
     RemoteTransportConfig transport =
         new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
-    ServiceConfig sc = new ServiceConfig(transport, config);
-    assertEquals(2 * timeout + ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL,
+    MembershipConfig sc = new ServiceConfig(transport, config);
+    assertEquals(2 * timeout + MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL,
         sc.getJoinTimeout());
 
     nonDefault.clear();
@@ -430,12 +442,10 @@ public class MembershipJUnitTest {
     RemoteTransportConfig transport =
         new RemoteTransportConfig(config, ClusterDistributionManager.NORMAL_DM_TYPE);
 
-    ServiceConfig serviceConfig = mock(ServiceConfig.class);
-    when(serviceConfig.getDistributionConfig()).thenReturn(config);
-    when(serviceConfig.getTransport()).thenReturn(transport);
+    MembershipConfig membershipConfig = new ServiceConfig(transport, config);
 
     Services services = mock(Services.class);
-    when(services.getConfig()).thenReturn(serviceConfig);
+    when(services.getConfig()).thenReturn(membershipConfig);
 
     GMSJoinLeave joinLeave = new GMSJoinLeave();
     try {

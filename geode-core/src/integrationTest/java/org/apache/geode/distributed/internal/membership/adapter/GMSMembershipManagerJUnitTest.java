@@ -65,20 +65,20 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.HighPriorityAckedMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
-import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager.StartupEvent;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
 import org.apache.geode.distributed.internal.membership.gms.SuspectMember;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipListener;
+import org.apache.geode.distributed.internal.membership.gms.api.MessageListener;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.GMSMessage;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave;
@@ -95,7 +95,7 @@ public class GMSMembershipManagerJUnitTest {
   private static final long WAIT_FOR_REPLIES_MILLIS = 2000;
 
   private Services services;
-  private ServiceConfig mockConfig;
+  private MembershipConfig mockConfig;
   private DistributionConfig distConfig;
   private Properties distProperties;
   private Authenticator authenticator;
@@ -105,10 +105,11 @@ public class GMSMembershipManagerJUnitTest {
   private Messenger messenger;
   private JoinLeave joinLeave;
   private Stopper stopper;
-  private DistributedMembershipListener listener;
+  private MembershipListener listener;
   private GMSMembershipManager manager;
   private List<InternalDistributedMember> members;
   private DirectChannel dc;
+  private MessageListener messageListener;
 
   @Before
   public void initMocks() throws Exception {
@@ -127,9 +128,7 @@ public class GMSMembershipManagerJUnitTest {
     RemoteTransportConfig tconfig =
         new RemoteTransportConfig(distConfig, ClusterDistributionManager.NORMAL_DM_TYPE);
 
-    mockConfig = mock(ServiceConfig.class);
-    when(mockConfig.getDistributionConfig()).thenReturn(distConfig);
-    when(mockConfig.getTransport()).thenReturn(tconfig);
+    mockConfig = new ServiceConfig(tconfig, distConfig);
 
     authenticator = mock(Authenticator.class);
     myMemberId = new InternalDistributedMember("localhost", 8887);
@@ -170,9 +169,9 @@ public class GMSMembershipManagerJUnitTest {
     }
     members = new ArrayList<>(Arrays.asList(mockMembers));
 
-    listener = mock(DistributedMembershipListener.class);
-
-    manager = new GMSMembershipManager(listener);
+    listener = mock(MembershipListener.class);
+    messageListener = mock(MessageListener.class);
+    manager = new GMSMembershipManager(listener, messageListener, null);
     manager.getGMSManager().init(services);
     when(services.getManager()).thenReturn(manager.getGMSManager());
   }
@@ -197,7 +196,7 @@ public class GMSMembershipManagerJUnitTest {
             Collectors.toList());
     manager.getGMSManager().installView(new GMSMembershipView(myGMSMemberId, 1, gmsMembers));
     Set<InternalDistributedMember> failures =
-        manager.send(m.getRecipients(), m, this.services.getStatistics());
+        manager.send(m.getRecipients(), m);
     verify(messenger).send(isA(GMSMessageAdapter.class));
     if (failures != null) {
       assertEquals(0, failures.size());
@@ -225,7 +224,7 @@ public class GMSMembershipManagerJUnitTest {
     manager.getGMSManager().installView(createView(myMemberId, 1, members));
     manager.setShutdown();
     Set<InternalDistributedMember> failures =
-        manager.send(new InternalDistributedMember[] {mockMembers[0]}, m, null);
+        manager.send(new InternalDistributedMember[] {mockMembers[0]}, m);
     verify(messenger, never()).send(isA(GMSMessage.class));
     assertEquals(1, failures.size());
     assertEquals(mockMembers[0], failures.iterator().next());
@@ -239,10 +238,10 @@ public class GMSMembershipManagerJUnitTest {
     manager.getGMSManager().start();
     manager.getGMSManager().started();
     manager.getGMSManager().installView(createView(myMemberId, 1, members));
-    Set<InternalDistributedMember> failures = manager.send(null, m, null);
+    Set<InternalDistributedMember> failures = manager.send(null, m);
     verify(messenger, never()).send(isA(GMSMessage.class));
     reset(messenger);
-    failures = manager.send(emptyList, m, null);
+    failures = manager.send(emptyList, m);
     verify(messenger, never()).send(isA(GMSMessage.class));
   }
 
@@ -328,7 +327,7 @@ public class GMSMembershipManagerJUnitTest {
     reset(listener);
     manager.handleOrDeferViewEvent(new MembershipView(myMemberId, 5, viewmembers));
     assertEquals(0, manager.getStartupEvents().size());
-    verify(listener).messageReceived(isA(LocalViewMessage.class));
+    verify(messageListener).messageReceived(isA(LocalViewMessage.class));
 
     // process a suspect now - it will be passed to the listener
     reset(listener);
@@ -346,7 +345,7 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m);
     assertTrue(failures == null);
     verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()),
         isA(DistributionMessage.class), anyLong(), anyLong());
@@ -359,13 +358,13 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m);
 
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
-    failures = manager.directChannelSend(recipients, m, null);
+    failures = manager.directChannelSend(recipients, m);
     assertTrue(failures != null);
     assertEquals(1, failures.size());
     assertEquals(recipients[0], failures.iterator().next());
@@ -378,12 +377,12 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m);
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyInt(), anyInt())).thenReturn(0);
     when(stopper.isCancelInProgress()).thenReturn(Boolean.TRUE);
     try {
-      manager.directChannelSend(recipients, m, null);
+      manager.directChannelSend(recipients, m);
       fail("expected directChannelSend to throw an exception");
     } catch (DistributedSystemDisconnectedException expected) {
     }
@@ -395,7 +394,7 @@ public class GMSMembershipManagerJUnitTest {
     HighPriorityAckedMessage m = new HighPriorityAckedMessage();
     m.setRecipient(DistributionMessage.ALL_RECIPIENTS);
     assertTrue(m.forAll());
-    Set<InternalDistributedMember> failures = manager.directChannelSend(null, m, null);
+    Set<InternalDistributedMember> failures = manager.directChannelSend(null, m);
     assertTrue(failures == null);
     verify(dc).send(isA(GMSMembershipManager.class), isA(mockMembers.getClass()),
         isA(DistributionMessage.class), anyLong(), anyLong());
@@ -408,14 +407,14 @@ public class GMSMembershipManagerJUnitTest {
     InternalDistributedMember[] recipients =
         new InternalDistributedMember[] {mockMembers[2], mockMembers[3]};
     m.setRecipients(Arrays.asList(recipients));
-    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m, null);
+    Set<InternalDistributedMember> failures = manager.directChannelSend(recipients, m);
     manager.setShutdown();
     ConnectExceptions exception = new ConnectExceptions();
     exception.addFailure(recipients[0], new Exception("testing"));
     when(dc.send(any(GMSMembershipManager.class), any(mockMembers.getClass()),
         any(DistributionMessage.class), anyLong(), anyLong())).thenThrow(exception);
     Assertions.assertThatThrownBy(() -> {
-      manager.directChannelSend(recipients, m, null);
+      manager.directChannelSend(recipients, m);
     }).isInstanceOf(DistributedSystemDisconnectedException.class);
   }
 
@@ -466,8 +465,9 @@ public class GMSMembershipManagerJUnitTest {
     when(dm.getMembershipManager()).thenReturn(manager);
     when(dm.getViewMembers()).thenReturn(members);
     when(dm.getDistributionManagerIds()).thenReturn(new HashSet(members));
-    when(dm.addMembershipListenerAndGetDistributionManagerIds(any(MembershipListener.class)))
-        .thenReturn(new HashSet(members));
+    when(dm.addMembershipListenerAndGetDistributionManagerIds(any(
+        org.apache.geode.distributed.internal.MembershipListener.class)))
+            .thenReturn(new HashSet(members));
 
     manager.getGMSManager().start();
     manager.getGMSManager().started();

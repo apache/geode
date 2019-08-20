@@ -26,7 +26,7 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.security.CallbackInstantiator;
 import org.apache.geode.internal.security.SecurityService;

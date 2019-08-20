@@ -26,7 +26,7 @@ import java.util.Set;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.gms.api.Membership;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.PureLogWriter;
 
@@ -69,7 +69,7 @@ public class ProductUseLog implements MembershipListener {
     this.system = system;
     DistributionManager dmgr = system.getDistributionManager();
     dmgr.addMembershipListener(this);
-    MembershipManager mmgr = dmgr.getMembershipManager();
+    Membership mmgr = dmgr.getMembershipManager();
     if (mmgr != null) {
       log("Log opened with new distributed system connection.  "
           + system.getDM().getMembershipManager().getView());

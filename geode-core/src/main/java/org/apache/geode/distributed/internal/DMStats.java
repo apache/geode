@@ -19,7 +19,8 @@ package org.apache.geode.distributed.internal;
  *
  *
  */
-public interface DMStats {
+public interface DMStats extends
+    org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics {
 
   /**
    * Returns the total number of messages sent by the distribution manager
@@ -104,11 +105,6 @@ public interface DMStats {
   void incReceivedBytes(long bytes);
 
   /**
-   * Increments the total number of message bytes sent by the distribution manager
-   */
-  void incSentBytes(long bytes);
-
-  /**
    * Returns the total number of messages processed by the distribution manager
    */
   long getProcessedMessages();
@@ -160,8 +156,6 @@ public interface DMStats {
 
   void incMessageChannelTime(long val);
 
-  void incUDPDispatchRequestTime(long val);
-
   long getUDPDispatchRequestTime();
 
   long getReplyMessageTime();
@@ -177,30 +171,6 @@ public interface DMStats {
   void endSocketWrite(boolean sync, long start, int bytesWritten, int retries);
 
   /**
-   * increments the number of unicast writes performed and the number of bytes written
-   *
-   * @since GemFire 5.0
-   */
-  void incUcastWriteBytes(int bytesWritten);
-
-  /**
-   * increment the number of unicast datagram payload bytes received and the number of unicast reads
-   * performed
-   */
-  void incUcastReadBytes(int amount);
-
-  /**
-   * increment the number of multicast datagrams sent and the number of multicast bytes transmitted
-   */
-  void incMcastWriteBytes(int bytesWritten);
-
-  /**
-   * increment the number of multicast datagram payload bytes received, and the number of mcast
-   * messages read
-   */
-  void incMcastReadBytes(int amount);
-
-  /**
    * returns the current value of the mcastWrites statistic
    */
   int getMcastWrites();
@@ -214,22 +184,6 @@ public interface DMStats {
   long startDeserialization();
 
   void endDeserialization(long start, int bytes);
-
-  long startMsgSerialization();
-
-  void endMsgSerialization(long start);
-
-  long startUDPMsgEncryption();
-
-  void endUDPMsgEncryption(long start);
-
-  long startUDPMsgDecryption();
-
-  void endUDPMsgDecryption(long start);
-
-  long startMsgDeserialization();
-
-  void endMsgDeserialization(long start);
 
   long getUDPMsgEncryptionTiime();
 
@@ -321,30 +275,9 @@ public interface DMStats {
   int getSendersSU();
 
   /**
-   * increment the number of unicast UDP retransmission requests received from other processes
-   *
-   * @since GemFire 5.0
-   */
-  void incUcastRetransmits();
-
-  /**
-   * increment the number of multicast UDP retransmissions sent to other processes
-   *
-   * @since GemFire 5.0
-   */
-  void incMcastRetransmits();
-
-  /**
    * returns the current number of multicast retransmission requests processed
    */
   int getMcastRetransmits();
-
-  /**
-   * increment the number of multicast UDP retransmission requests sent to other processes
-   *
-   * @since GemFire 5.0
-   */
-  void incMcastRetransmitRequests();
 
   /**
    * @since GemFire 4.2.2
@@ -622,83 +555,11 @@ public interface DMStats {
 
   void incPdxInstanceCreations();
 
-  // Stats for GMSHealthMonitor
-  long getHeartbeatRequestsSent();
-
-  void incHeartbeatRequestsSent();
-
-  long getHeartbeatRequestsReceived();
-
-  void incHeartbeatRequestsReceived();
-
-  long getHeartbeatsSent();
-
-  void incHeartbeatsSent();
-
   long getHeartbeatsReceived();
-
-  void incHeartbeatsReceived();
-
-
-  long getSuspectsSent();
-
-  void incSuspectsSent();
-
-  long getSuspectsReceived();
-
-  void incSuspectsReceived();
-
-
-  long getFinalCheckRequestsSent();
-
-  void incFinalCheckRequestsSent();
-
-  long getFinalCheckRequestsReceived();
-
-  void incFinalCheckRequestsReceived();
-
-  long getFinalCheckResponsesSent();
-
-  void incFinalCheckResponsesSent();
-
-  long getFinalCheckResponsesReceived();
-
-  void incFinalCheckResponsesReceived();
-
-
-  long getTcpFinalCheckRequestsSent();
-
-  void incTcpFinalCheckRequestsSent();
-
-  long getTcpFinalCheckRequestsReceived();
-
-  void incTcpFinalCheckRequestsReceived();
-
-  long getTcpFinalCheckResponsesSent();
-
-  void incTcpFinalCheckResponsesSent();
-
-  long getTcpFinalCheckResponsesReceived();
-
-  void incTcpFinalCheckResponsesReceived();
 
 
   long getUdpFinalCheckRequestsSent();
 
-  void incUdpFinalCheckRequestsSent();
-
-  // UDP final check is implemented using HeartbeatRequestMessage and HeartbeatMessage
-  // So the following code is commented out.
-
-  // public long getUdpFinalCheckRequestsReceived();
-  //
-  // public void incUdpFinalCheckRequestsReceived();
-  //
-  // public long getUdpFinalCheckResponsesSent();
-  //
-  // public void incUdpFinalCheckResponsesSent();
-
   long getUdpFinalCheckResponsesReceived();
 
-  void incUdpFinalCheckResponsesReceived();
 }

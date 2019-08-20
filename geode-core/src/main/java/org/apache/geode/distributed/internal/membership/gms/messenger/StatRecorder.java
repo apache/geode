@@ -28,8 +28,8 @@ import org.jgroups.protocols.pbcast.NAKACK2;
 import org.jgroups.protocols.pbcast.NakAckHeader2;
 import org.jgroups.stack.Protocol;
 
-import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.membership.gms.Services;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipStatistics;
 
 /**
  * JGroups doesn't capture quite the stats we want so this protocol is inserted into the stack to
@@ -44,7 +44,7 @@ public class StatRecorder extends Protocol {
   private static final int OUTGOING = 0;
   private static final int INCOMING = 1;
 
-  DMStats stats;
+  MembershipStatistics stats;
   Services services;
 
   private final short nakackHeaderId = ClassConfigurator.getProtocolId(NAKACK2.class);

@@ -1227,7 +1227,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
-                MembershipManager mgr = MembershipManagerHelper.getMembershipManager(getSystem());
+                MembershipManager mgr =
+                    MembershipManagerHelper.getMembershipManager(getSystem());
                 mgr.requestMemberRemoval(server2ID, "removing for test");
                 try {
                   mgr.waitForDeparture(server2ID);
@@ -1268,7 +1269,8 @@ public class ConcurrentMapOpsDUnitTest extends JUnit4CacheTestCase {
           r.getAttributesMutator().addCacheListener(new CacheListenerAdapter() {
             private void killSender(EntryEvent event) {
               if (event.isOriginRemote()) {
-                MembershipManager mgr = MembershipManagerHelper.getMembershipManager(getSystem());
+                MembershipManager mgr =
+                    MembershipManagerHelper.getMembershipManager(getSystem());
                 mgr.requestMemberRemoval(server1ID, "removing for test");
                 try {
                   mgr.waitForDeparture(server1ID);

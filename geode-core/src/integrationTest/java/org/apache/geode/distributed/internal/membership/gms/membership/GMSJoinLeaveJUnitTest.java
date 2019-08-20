@@ -54,14 +54,14 @@ import org.mockito.verification.Timeout;
 
 import org.apache.geode.SystemConnectException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
-import org.apache.geode.distributed.internal.DistributionConfig;
+import org.apache.geode.distributed.internal.membership.adapter.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.distributed.internal.membership.gms.ServiceConfig;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.Services.Stopper;
-import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.Authenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipConfig;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.HealthMonitor;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
@@ -86,8 +86,7 @@ import org.apache.geode.test.junit.categories.MembershipTest;
 @Category({MembershipTest.class})
 public class GMSJoinLeaveJUnitTest {
   private Services services;
-  private ServiceConfig mockConfig;
-  private DistributionConfig mockDistConfig;
+  private MembershipConfig mockConfig;
   private Authenticator authenticator;
   private HealthMonitor healthMonitor;
   private GMSMember gmsJoinLeaveMemberId;
@@ -111,15 +110,13 @@ public class GMSJoinLeaveJUnitTest {
   }
 
   public void initMocks(boolean enableNetworkPartition, boolean useTestGMSJoinLeave) {
-    mockDistConfig = mock(DistributionConfig.class);
-    when(mockDistConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
-    when(mockDistConfig.getSecurityUDPDHAlgo()).thenReturn("");
     mockConfig = mock(ServiceConfig.class);
-    when(mockDistConfig.getStartLocator()).thenReturn("localhost[12345]");
-    when(mockConfig.getDistributionConfig()).thenReturn(mockDistConfig);
-    when(mockDistConfig.getLocators()).thenReturn("localhost[12345]");
-    when(mockDistConfig.getMcastPort()).thenReturn(0);
-    when(mockDistConfig.getMemberTimeout()).thenReturn(2000);
+    when(mockConfig.getEnableNetworkPartitionDetection()).thenReturn(enableNetworkPartition);
+    when(mockConfig.getSecurityUDPDHAlgo()).thenReturn("");
+    when(mockConfig.getStartLocator()).thenReturn("localhost[12345]");
+    when(mockConfig.getLocators()).thenReturn("localhost[12345]");
+    when(mockConfig.getMcastPort()).thenReturn(0);
+    when(mockConfig.getMemberTimeout()).thenReturn(2000L);
 
     authenticator = mock(Authenticator.class);
     gmsJoinLeaveMemberId = new GMSMember("localhost", 8887);
@@ -1246,7 +1243,8 @@ public class GMSJoinLeaveJUnitTest {
           new RemoveMemberMessage(gmsJoinLeaveMemberId, mockMembers[0], "crashed");
       msg.setSender(gmsJoinLeaveMemberId);
       gmsJoinLeave.processMessage(msg);
-      Timeout to = new Timeout(3 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
+      Timeout to =
+          new Timeout(3 * MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, new Times(1));
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
 
     } finally {
@@ -1269,7 +1267,7 @@ public class GMSJoinLeaveJUnitTest {
         msg.setSender(gmsJoinLeaveMemberId);
         gmsJoinLeave.processMessage(msg);
       }
-      Timeout to = new Timeout(2 * ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, never());
+      Timeout to = new Timeout(2 * MembershipConfig.MEMBER_REQUEST_COLLECTION_INTERVAL, never());
       verify(messenger, to).send(isA(NetworkPartitionMessage.class));
 
     } finally {
