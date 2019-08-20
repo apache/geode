@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.AbstractSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -363,30 +364,49 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (locProfiles.length == 0) {
       return null;
     }
+
+    List<Profile> outProfiles = filterOutIsInitializing(locProfiles);
+
+    if (outProfiles.isEmpty()) {
+      return null;
+    }
+
     getPartitionedRegionStats().incPreferredReadRemote();
 
+    int i = 0;
+    if (outProfiles.size() > 1) {
+      // Pick one at random.
+      i = myRand.nextInt(outProfiles.size());
+    }
 
-    int index = 0;
-    for (int j = 0; j < locProfiles.length; j++) {
-      Profile tempprofile = locProfiles[j];
-      BucketProfile bp = (BucketProfile) locProfiles[j];
+    Profile resultProfile = outProfiles.get(i);
+    return resultProfile.peerMemberId;
+  }
+
+  /**
+   * Get an List of the <code>Profile</code>s that are not initializing BucketProfile.
+   *
+   */
+  private List<Profile> filterOutIsInitializing(Profile[] inProfiles) {
+    List<Profile> outProfiles = null;
+    for (Profile locProfile : inProfiles) {
+      BucketProfile bp = (BucketProfile) locProfile;
       if (!bp.isInitializing) {
-        locProfiles[index] = tempprofile;
-        index++;
+        if (outProfiles == null) {
+          outProfiles = new ArrayList<>(inProfiles.length);
+        }
+        outProfiles.add(locProfile);
       }
     }
 
-    if (index == 0) {
-      return null;
-    } else if (index == 1) {
-      return locProfiles[0].peerMemberId;
+    if (outProfiles == null) {
+      outProfiles = Collections.emptyList();
     }
+    return outProfiles;
 
-    // Pick one at random.
-    int i = myRand.nextInt(index);
-
-    return locProfiles[i].peerMemberId;
   }
+
+
 
   /**
    * Returns the thread-safe queue of primary volunteering tasks for the parent Partitioned Region.
