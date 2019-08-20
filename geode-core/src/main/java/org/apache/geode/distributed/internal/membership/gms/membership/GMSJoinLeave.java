@@ -45,6 +45,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.SystemConnectException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.Locator;
@@ -612,7 +613,8 @@ public class GMSJoinLeave implements JoinLeave {
     }
 
     if (!isCoordinator && !isStopping && !services.getCancelCriterion().isCancelInProgress()) {
-      logger.info("Checking to see if I should become coordinator");
+      logger.info("Checking to see if I should become coordinator.  My address is {}",
+          localAddress);
       NetView check = new NetView(v, v.getViewId() + 1);
       check.remove(mbr);
       synchronized (removedMembers) {
@@ -623,15 +625,10 @@ public class GMSJoinLeave implements JoinLeave {
         leftMembers.add(mbr);
         check.removeAll(leftMembers);
       }
-      Collection<InternalDistributedMember> suspectMembers =
-          services.getHealthMonitor().getMembersFailingAvailabilityCheck();
-      check.removeAll(suspectMembers);
-      logger.info("View with removed and left members removed is {}", check);
-      if (check.getCoordinator().equals(localAddress)) {
-        for (InternalDistributedMember suspect : suspectMembers) {
-          recordViewRequest(
-              new RemoveMemberMessage(localAddress, suspect, "Failed availability check"));
-        }
+      DistributedMember coordinator = check.getCoordinator();
+      logger.info("View with removed and left members removed is {} and coordinator would be {}",
+          check, coordinator);
+      if (coordinator.equals(localAddress)) {
         synchronized (viewInstallationLock) {
           becomeCoordinator(mbr);
         }
@@ -727,7 +724,8 @@ public class GMSJoinLeave implements JoinLeave {
     }
   }
 
-  private void recordViewRequest(DistributionMessage request) {
+  @VisibleForTesting
+  void recordViewRequest(DistributionMessage request) {
     try {
       synchronized (viewRequests) {
         if (request instanceof JoinRequestMessage) {
