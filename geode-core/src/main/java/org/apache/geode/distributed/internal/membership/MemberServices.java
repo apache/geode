@@ -76,7 +76,7 @@ public interface MemberServices {
    *
    * @return a MembershipManager
    */
-  MembershipManager newMembershipManager(DistributedMembershipListener listener,
+  InternalMembershipManager newMembershipManager(DistributedMembershipListener listener,
       RemoteTransportConfig transport,
       DMStats stats,
       Authenticator authenticator,

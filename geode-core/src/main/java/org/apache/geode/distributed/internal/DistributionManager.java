@@ -30,7 +30,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.alerting.AlertingService;
 import org.apache.geode.internal.cache.InternalCache;
@@ -308,7 +308,7 @@ public interface DistributionManager extends ReplySender {
    *
    * @return the membership manager
    */
-  MembershipManager getMembershipManager();
+  InternalMembershipManager getMembershipManager();
 
   /**
    * Set the root cause for DM failure

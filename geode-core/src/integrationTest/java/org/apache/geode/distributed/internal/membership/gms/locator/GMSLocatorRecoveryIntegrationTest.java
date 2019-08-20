@@ -48,11 +48,11 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipManagerFactory;
 import org.apache.geode.internal.AvailablePortHelper;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -70,7 +70,7 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private File stateFile;
   private GMSLocator gmsLocator;
-  private MembershipManager membershipManager;
+  private InternalMembershipManager membershipManager;
   private Locator locator;
 
   @Before
@@ -160,7 +160,7 @@ public class GMSLocatorRecoveryIntegrationTest {
     when(mockSystem.getConfig()).thenReturn(config);
 
     // start the membership manager
-    membershipManager = MemberFactory.newMembershipManager(mockListener, transport,
+    membershipManager = MembershipManagerFactory.newMembershipManager(mockListener, transport,
         mockDmStats,
         new GMSAuthenticator(mockSystem.getSecurityProperties(), mockSystem.getSecurityService(),
             mockSystem.getSecurityLogWriter(), mockSystem.getInternalLogWriter()),

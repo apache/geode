@@ -14,16 +14,12 @@
  */
 package org.apache.geode.distributed.internal.membership;
 
-import java.io.NotSerializableException;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReadWriteLock;
 
 import org.apache.geode.SystemFailure;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.distributed.internal.DMStats;
-import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 
 /**
@@ -35,7 +31,8 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
  *
  *
  */
-public interface MembershipManager {
+public interface InternalMembershipManager extends
+    org.apache.geode.distributed.internal.membership.gms.api.MembershipManager {
 
   /**
    * this must be sent to the manager after instantiation to allow it to perform post-connection
@@ -44,26 +41,12 @@ public interface MembershipManager {
   void postConnect();
 
   /**
-   * Fetch the current view of memberships in th distributed system, as an ordered list.
-   *
-   * @return list of members
-   */
-  MembershipView getView();
-
-  /**
    * Returns an object that is used to sync access to the view. While this lock is held the view
    * can't change.
    *
    * @since GemFire 5.7
    */
   ReadWriteLock getViewLock();
-
-  /**
-   * Return a {@link InternalDistributedMember} representing the current system
-   *
-   * @return an address corresponding to the current system
-   */
-  InternalDistributedMember getLocalMember();
 
   /**
    * Sanity checking, esp. for elder processing. Does the existing member (still) exist in our view?
@@ -141,21 +124,6 @@ public interface MembershipManager {
 
 
   /**
-   * @param destinations list of members to send the message to. A list of length 1 with
-   *        <em>null</em> as a single element broadcasts to all members of the system.
-   * @param content the message to send
-   * @param stats the statistics object to update
-   * @return list of members who did not receive the message. If
-   *         {@link DistributionMessage#ALL_RECIPIENTS} is given as thelist of recipients, this
-   *         return list is null (empty). Otherwise, this list is all of those recipients that did
-   *         not receive the message because they departed the distributed system.
-   * @throws NotSerializableException If content cannot be serialized
-   */
-  Set<InternalDistributedMember> send(InternalDistributedMember[] destinations,
-      DistributionMessage content, DMStats stats)
-      throws NotSerializableException;
-
-  /**
    * Indicates to the membership manager that the system is shutting down. Typically speaking, this
    * means that new connection attempts are to be ignored and disconnect failures are to be (more)
    * tolerated.
@@ -176,28 +144,6 @@ public interface MembershipManager {
    * @return true if it is shutting down
    */
   boolean shutdownInProgress();
-
-  /**
-   * Returns a serializable map of communications state for use in state stabilization.
-   *
-   * @param member the member whose message state is to be captured
-   * @param includeMulticast whether the state of the mcast messaging should be included
-   * @return the current state of the communication channels between this process and the given
-   *         distributed member
-   * @since GemFire 5.1
-   */
-  Map<String, Long> getMessageState(DistributedMember member, boolean includeMulticast);
-
-  /**
-   * Waits for the given communications to reach the associated state
-   *
-   * @param member The member whose messaging state we're waiting for
-   * @param state The message states to wait for. This should come from getMessageStates
-   * @throws InterruptedException Thrown if the thread is interrupted
-   * @since GemFire 5.1
-   */
-  void waitForMessageState(DistributedMember member, Map<String, Long> state)
-      throws InterruptedException;
 
   /**
    * Wait for the given member to not be in the membership view and for all direct-channel receivers
@@ -243,23 +189,6 @@ public interface MembershipManager {
    *
    */
   void addSurpriseMemberForTesting(DistributedMember mbr, long birthTime);
-
-  /**
-   * Request the current membership coordinator to remove the given member
-   */
-  boolean requestMemberRemoval(DistributedMember member, String reason);
-
-  /**
-   * like memberExists() this checks to see if the given ID is in the current membership view. If it
-   * is in the view though we try to connect to its failure-detection port to see if it's still
-   * around. If we can't then suspect processing is initiated on the member with the given reason
-   * string.
-   *
-   * @param mbr the member to verify
-   * @param reason why the check is being done (must not be blank/null)
-   * @return true if the member checks out
-   */
-  boolean verifyMember(DistributedMember mbr, String reason);
 
 
   /**
@@ -324,11 +253,6 @@ public interface MembershipManager {
    * @return true if the member is a surprise member
    */
   boolean isSurpriseMember(DistributedMember m);
-
-  /**
-   * Returns true if the member is being shunned
-   */
-  boolean isShunned(DistributedMember m);
 
   /**
    * Forces use of UDP for communications in the current thread. UDP is connectionless, so no tcp/ip

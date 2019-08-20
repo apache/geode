@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.distributed.internal.membership;
+package org.apache.geode.distributed.internal.membership.gms.api;
 
 import java.net.InetAddress;
 import java.nio.file.Path;
@@ -21,6 +21,11 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.LocatorStats;
+import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
+import org.apache.geode.distributed.internal.membership.MemberServices;
+import org.apache.geode.distributed.internal.membership.NetLocator;
+import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMemberFactory;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
@@ -31,52 +36,10 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
  *
  * @see NetMember
  */
-public class MemberFactory {
+public class MembershipManagerFactory {
 
   @Immutable
-  private static final MemberServices services = new GMSMemberFactory();
-
-  /**
-   * Return a new NetMember, possibly for a different host
-   *
-   * @param i the name of the host for the specified NetMember, the current host (hopefully) if
-   *        there are any problems.
-   * @param p the membership port
-   * @param splitBrainEnabled whether the member has this feature enabled
-   * @param canBeCoordinator whether the member can be membership coordinator
-   * @param payload the payload for this member
-   * @return the new NetMember
-   */
-  public static NetMember newNetMember(InetAddress i, String hostName, int p,
-      boolean splitBrainEnabled,
-      boolean canBeCoordinator, short version,
-      MemberAttributes payload) {
-    return services.newNetMember(i, hostName, p, splitBrainEnabled, canBeCoordinator, payload,
-        version);
-  }
-
-  /**
-   * Return a new NetMember representing current host
-   *
-   * @param i an InetAddress referring to the current host
-   * @param p the membership port being used
-   * @return the new NetMember
-   */
-  public static NetMember newNetMember(InetAddress i, int p) {
-    NetMember result = services.newNetMember(i, p);
-    return result;
-  }
-
-  /**
-   * Return a new NetMember representing current host
-   *
-   * @param s a String referring to the current host
-   * @param p the membership port being used
-   * @return the new member
-   */
-  public static NetMember newNetMember(String s, int p) {
-    return services.newNetMember(s, p);
-  }
+  public static final MemberServices services = new GMSMemberFactory();
 
   /**
    * Create a new MembershipManager. Be sure to send the manager a postConnect() message before you
@@ -88,7 +51,7 @@ public class MemberFactory {
    * @param stats are used for recording statistical communications information
    * @return a MembershipManager
    */
-  public static MembershipManager newMembershipManager(
+  public static InternalMembershipManager newMembershipManager(
       final DistributedMembershipListener listener,
       final RemoteTransportConfig transport,
       final DMStats stats,

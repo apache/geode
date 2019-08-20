@@ -26,9 +26,9 @@ import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionException;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.MemberAttributes;
 import org.apache.geode.distributed.internal.membership.MemberServices;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.NetLocator;
 import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
@@ -110,7 +110,7 @@ public class GMSMemberFactory implements MemberServices {
   }
 
   @Override
-  public MembershipManager newMembershipManager(
+  public InternalMembershipManager newMembershipManager(
       final DistributedMembershipListener listener,
       final RemoteTransportConfig transport, DMStats stats,
       final Authenticator authenticator,

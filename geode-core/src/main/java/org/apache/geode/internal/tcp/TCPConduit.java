@@ -42,7 +42,7 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.direct.DirectChannel;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
@@ -112,13 +112,13 @@ public class TCPConduit implements Runnable {
   private final SocketCreator socketCreator;
 
 
-  private MembershipManager membershipManager;
+  private InternalMembershipManager membershipManager;
 
   static {
     init();
   }
 
-  public MembershipManager getMembershipManager() {
+  public InternalMembershipManager getMembershipManager() {
     return membershipManager;
   }
 
@@ -227,7 +227,8 @@ public class TCPConduit implements Runnable {
    * p2p.idleConnectionTimeout
    * </pre>
    */
-  public TCPConduit(MembershipManager mgr, int port, InetAddress address, boolean isBindAddress,
+  public TCPConduit(InternalMembershipManager mgr, int port, InetAddress address,
+      boolean isBindAddress,
       DirectChannel receiver, Properties props) throws ConnectionException {
     parseProperties(props);
 

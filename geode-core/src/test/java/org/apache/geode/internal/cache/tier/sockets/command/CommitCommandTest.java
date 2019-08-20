@@ -34,7 +34,7 @@ import org.apache.geode.cache.TransactionInDoubtException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.TXManagerImpl;
 import org.apache.geode.internal.cache.TXStateProxy;
@@ -82,7 +82,7 @@ public class CommitCommandTest {
     TXStateProxy txProxy = mock(TXStateProxy.class);
     InternalCache cache = mock(InternalCache.class);
     DistributionManager distributionManager = mock(DistributionManager.class);
-    MembershipManager membershipManager = mock(MembershipManager.class);
+    InternalMembershipManager membershipManager = mock(InternalMembershipManager.class);
     ServerSideHandshake handshake = mock(ServerSideHandshake.class);
     boolean wasInProgress = false;
 

@@ -71,7 +71,7 @@ import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.distributed.internal.membership.gms.messenger.MembershipInformation;
@@ -1429,7 +1429,7 @@ public class InternalDistributedSystem extends DistributedSystem
    */
   public void emergencyClose() {
     if (dm != null) {
-      MembershipManager mm = dm.getMembershipManager();
+      InternalMembershipManager mm = dm.getMembershipManager();
       if (mm != null) {
         mm.emergencyClose();
       }
@@ -2469,7 +2469,7 @@ public class InternalDistributedSystem extends DistributedSystem
     }
 
     // get the membership manager for quorum checks
-    MembershipManager mbrMgr = dm.getMembershipManager();
+    InternalMembershipManager mbrMgr = dm.getMembershipManager();
     quorumChecker = mbrMgr.getQuorumChecker();
     if (logger.isDebugEnabled()) {
       if (quorumChecker == null) {

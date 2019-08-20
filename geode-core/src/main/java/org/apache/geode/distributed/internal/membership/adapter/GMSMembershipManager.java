@@ -68,7 +68,7 @@ import org.apache.geode.distributed.internal.direct.DirectChannelListener;
 import org.apache.geode.distributed.internal.direct.ShunnedMemberException;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.QuorumChecker;
@@ -94,7 +94,7 @@ import org.apache.geode.internal.tcp.ConnectExceptions;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 import org.apache.geode.internal.util.Breadcrumbs;
 
-public class GMSMembershipManager implements MembershipManager {
+public class GMSMembershipManager implements InternalMembershipManager {
   private static final Logger logger = Services.getLogger();
 
   /** product version to use for multicast serialization */

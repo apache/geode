@@ -24,7 +24,7 @@ import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.api.RealizationResult;
@@ -74,7 +74,7 @@ public class MemberConfigRealizer
   String getCoordinatorId(InternalCache cache) {
     return Optional.ofNullable(cache.getDistributionManager())
         .map(DistributionManager::getMembershipManager)
-        .map(MembershipManager::getCoordinator)
+        .map(InternalMembershipManager::getCoordinator)
         .map(DistributedMember::getId)
         .orElse(null);
   }

@@ -43,7 +43,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DirectReplyMessage;
 import org.apache.geode.internal.logging.LogService;
@@ -108,7 +108,8 @@ public class DirectChannel {
     return conduit.getCancelCriterion();
   }
 
-  public DirectChannel(MembershipManager mgr, DirectChannelListener listener, DistributionConfig dc)
+  public DirectChannel(InternalMembershipManager mgr, DirectChannelListener listener,
+      DistributionConfig dc)
       throws ConnectionException {
     this.receiver = listener;
 
@@ -235,7 +236,8 @@ public class DirectChannel {
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
    * @throws NotSerializableException If the msg cannot be serialized
    */
-  private int sendToOne(final MembershipManager mgr, InternalDistributedMember[] p_destinations,
+  private int sendToOne(final InternalMembershipManager mgr,
+      InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     return sendToMany(mgr, p_destinations, msg, ackWaitThreshold, ackSAThreshold);
@@ -254,7 +256,8 @@ public class DirectChannel {
    * @throws ConnectExceptions if message could not be send to its <code>destination</code>
    * @throws NotSerializableException If the msg cannot be serialized
    */
-  private int sendToMany(final MembershipManager mgr, InternalDistributedMember[] p_destinations,
+  private int sendToMany(final InternalMembershipManager mgr,
+      InternalDistributedMember[] p_destinations,
       final DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
     InternalDistributedMember destinations[] = p_destinations;
@@ -503,7 +506,7 @@ public class DirectChannel {
    * @return null if everything went okay, or a ConnectExceptions object if some connections
    *         couldn't be obtained
    */
-  private ConnectExceptions getConnections(MembershipManager mgr, DistributionMessage msg,
+  private ConnectExceptions getConnections(InternalMembershipManager mgr, DistributionMessage msg,
       InternalDistributedMember[] destinations, boolean preserveOrder, boolean retry,
       long ackTimeout, long ackSDTimeout, List cons) {
     ConnectExceptions ce = null;
@@ -567,7 +570,7 @@ public class DirectChannel {
    * @throws NotSerializableException If the content cannot be serialized
    * @throws ConnectionException if the conduit has stopped
    */
-  public int send(MembershipManager mgr, InternalDistributedMember[] destinations,
+  public int send(InternalMembershipManager mgr, InternalDistributedMember[] destinations,
       DistributionMessage msg, long ackWaitThreshold, long ackSAThreshold)
       throws ConnectExceptions, NotSerializableException {
 

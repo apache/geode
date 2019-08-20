@@ -32,13 +32,16 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireException;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Locator;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
+import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.FlowControlParams;
 import org.apache.geode.distributed.internal.LocatorStats;
 import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
+import org.apache.geode.distributed.internal.membership.adapter.GMSMemberFactory;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
@@ -64,7 +67,7 @@ import org.apache.geode.internal.util.Breadcrumbs;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 @RunWith(ArchUnitRunner.class)
-@AnalyzeClasses(packages = "org.apache.geode.distributed.internal.membership.gms..")
+@AnalyzeClasses(packages = "org.apache.geode")
 public class MembershipDependenciesJUnitTest {
 
   /*
@@ -129,12 +132,17 @@ public class MembershipDependenciesJUnitTest {
               .or(type(VersionedObjectInput.class))
               .or(type(HeapDataOutputStream.class))
               .or(type(VersionedDataInputStream.class))
+              .or(type(DistributionMessage.class))
 
               // TODO: Membership needs its own config object
               .or(type(DistributionConfig.class))
               .or(type(DistributionConfigImpl.class))
               .or(type(RemoteTransportConfig.class))
               .or(type(FlowControlParams.class))
+              .or(type(MemberServices.class))
+              .or(type(DistributedMembershipListener.class))
+              .or(type(GMSMemberFactory.class))
+              .or(type(InternalMembershipManager.class))
 
 
               // TODO: Break dependency on geode logger
@@ -159,6 +167,7 @@ public class MembershipDependenciesJUnitTest {
               .or(type(Locator.class))
               .or(type(TcpClient.class))
               .or(type(DistributionLocatorId.class))
+              .or(type(NetLocator.class))
 
               // TODO: break dependency on internal.security
               .or(type(SecurableCommunicationChannel.class))
@@ -181,6 +190,11 @@ public class MembershipDependenciesJUnitTest {
               // TODO:
               .or(type(Breadcrumbs.class))
 
-  );
+              // TODO: MemberIDs need a new interface for membership
+              .or(type(InternalDistributedMember.class))
+              .or(type(InternalDistributedMember[].class))
+              .or(type(DistributedMember.class))
+              .or(type(MembershipView.class))
 
+  );
 }

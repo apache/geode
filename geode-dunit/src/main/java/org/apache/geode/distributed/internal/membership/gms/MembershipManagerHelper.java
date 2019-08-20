@@ -23,7 +23,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipTestHook;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipManager;
 import org.apache.geode.test.awaitility.GeodeAwaitility;
@@ -37,7 +37,7 @@ import org.apache.geode.test.dunit.WaitCriterion;
 public class MembershipManagerHelper {
 
   /** returns the JGroupMembershipManager for the given distributed system */
-  public static MembershipManager getMembershipManager(DistributedSystem sys) {
+  public static InternalMembershipManager getMembershipManager(DistributedSystem sys) {
     InternalDistributedSystem isys = (InternalDistributedSystem) sys;
     ClusterDistributionManager dm = (ClusterDistributionManager) isys.getDM();
     return dm.getMembershipManager();

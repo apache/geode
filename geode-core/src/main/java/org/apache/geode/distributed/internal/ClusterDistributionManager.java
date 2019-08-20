@@ -64,10 +64,10 @@ import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.locks.ElderState;
 import org.apache.geode.distributed.internal.membership.DistributedMembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.distributed.internal.membership.MemberFactory;
-import org.apache.geode.distributed.internal.membership.MembershipManager;
+import org.apache.geode.distributed.internal.membership.InternalMembershipManager;
 import org.apache.geode.distributed.internal.membership.MembershipView;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
+import org.apache.geode.distributed.internal.membership.gms.api.MembershipManagerFactory;
 import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.NanoTimer;
@@ -94,7 +94,7 @@ import org.apache.geode.internal.tcp.ConnectionTable;
 import org.apache.geode.internal.tcp.ReenteredConnectException;
 
 /**
- * The <code>DistributionManager</code> uses a {@link MembershipManager} to distribute
+ * The <code>DistributionManager</code> uses a {@link InternalMembershipManager} to distribute
  * {@link DistributionMessage messages}. It also reports on who is currently in the distributed
  * system and tracks the elder member for the distributed lock service. You may also register a
  * membership listener with the DistributionManager to receive notification of changes in
@@ -329,7 +329,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   private volatile String rejectionMessage = null;
 
-  private MembershipManager membershipManager;
+  private InternalMembershipManager membershipManager;
 
   /**
    * The (non-admin-only) members of the distributed system. This is a map of memberid->memberid for
@@ -777,7 +777,7 @@ public class ClusterDistributionManager implements DistributionManager {
       long start = System.currentTimeMillis();
 
       DMListener l = new DMListener(this);
-      membershipManager = MemberFactory.newMembershipManager(l, transport,
+      membershipManager = MembershipManagerFactory.newMembershipManager(l, transport,
           stats,
           new GMSAuthenticator(system.getSecurityProperties(), system.getSecurityService(),
               system.getSecurityLogWriter(), system.getInternalLogWriter()),
@@ -2175,7 +2175,7 @@ public class ClusterDistributionManager implements DistributionManager {
 
   @Override
   public Set<InternalDistributedMember> addAllMembershipListenerAndGetAllIds(MembershipListener l) {
-    MembershipManager mgr = membershipManager;
+    InternalMembershipManager mgr = membershipManager;
     mgr.getViewLock().writeLock().lock();
     try {
       synchronized (membersLock) {
@@ -3122,7 +3122,7 @@ public class ClusterDistributionManager implements DistributionManager {
    * to another.
    */
   @Override
-  public MembershipManager getMembershipManager() {
+  public InternalMembershipManager getMembershipManager() {
     // NOTE: do not add cancellation checks here. This method is
     // used during auto-reconnect after the DS has been closed
     return membershipManager;
