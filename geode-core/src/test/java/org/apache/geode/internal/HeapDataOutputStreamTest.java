@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
-import static org.apache.geode.internal.HeapDataOutputStream.SMALLEST_CHUNK_SIZE;
+import static org.apache.geode.internal.serialization.HeapDataOutputStream.SMALLEST_CHUNK_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

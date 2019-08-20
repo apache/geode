@@ -18,6 +18,8 @@ package org.apache.geode.internal;
 import java.io.IOException;
 import java.io.ObjectInput;
 
+import org.apache.geode.internal.serialization.Version;
+
 /**
  * An extension to {@link ObjectInput} that implements {@link VersionedDataStream} wrapping given
  * {@link ObjectInput} for a stream coming from a different product version.

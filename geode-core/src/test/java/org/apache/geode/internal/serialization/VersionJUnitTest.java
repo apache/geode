@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.serialization.Version;
 
 public class VersionJUnitTest {
   @Test

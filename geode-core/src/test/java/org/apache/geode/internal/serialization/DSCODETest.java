@@ -26,6 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.util.DscodeHelper;
 import org.apache.geode.test.junit.categories.SerializationTest;
 

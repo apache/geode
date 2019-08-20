@@ -18,7 +18,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSCODE;
+import org.apache.geode.internal.serialization.DSCODE;
 
 public class DscodeHelper {
 

@@ -19,6 +19,8 @@ import java.io.DataInput;
 import java.io.DataOutput;
 
 import org.apache.geode.DataSerializable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that

@@ -15,6 +15,7 @@
 package org.apache.geode.internal;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * An enumeration that contains a bunch of pre-defined values for use in the implementation of
