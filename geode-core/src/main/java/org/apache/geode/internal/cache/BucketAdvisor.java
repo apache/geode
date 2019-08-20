@@ -365,12 +365,26 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     }
     getPartitionedRegionStats().incPreferredReadRemote();
 
-    if (locProfiles.length == 1) { // only one choice!
+
+    int index = 0;
+    for (int j = 0; j < locProfiles.length; j++) {
+      Profile tempprofile = locProfiles[j];
+      BucketProfile bp = (BucketProfile) locProfiles[j];
+      if (!bp.isInitializing) {
+        locProfiles[index] = tempprofile;
+        index++;
+      }
+    }
+
+    if (index == 0) {
+      return null;
+    } else if (index == 1) {
       return locProfiles[0].peerMemberId;
     }
 
     // Pick one at random.
-    int i = myRand.nextInt(locProfiles.length);
+    int i = myRand.nextInt(index);
+
     return locProfiles[i].peerMemberId;
   }
 
