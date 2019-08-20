@@ -65,7 +65,7 @@ When a failure (such as an execution error or member crash while executing) occu
 
 For client regions, the system retries the execution according to `org.apache.geode.cache.client.Pool` `retryAttempts`. If the function fails to run every time, the final exception is returned to the `getResult` method.
 
-The default number of retries is the total number of servers present. For member calls, if a function fails then the system will retry on each server only once or till no data remains in the system for the function to operate on. If the function fails on every server, then an exception will be returned to the user.
+The default number of retries is the total number of servers present. For member calls, if a function fails then the system will retry on each server only once or until no data remains in the system for the function to operate on. If the function fails on every server, then an exception will be returned to the user.
 
 ## <a id="how_function_execution_works__section_A0FD54B73E9A453AA38FC4A4D5282351" class="no-quick-link"></a>Function Execution Scenarios
 
