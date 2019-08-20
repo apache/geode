@@ -17,13 +17,16 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -125,6 +128,39 @@ public class ClientRegistrationEventQueueManagerTest {
     // The client should no longer be in the filter clients since the event was queued in the
     // client's registration queue.
     assertThat(filterClientIDs.isEmpty()).isTrue();
+  }
+
+  @Test
+  public void putInProgressCounterIncrementedOnAddAndDecrementedOnRemoveForAllEvents() {
+    ClientRegistrationEventQueueManager clientRegistrationEventQueueManager =
+        new ClientRegistrationEventQueueManager();
+
+    ClientProxyMembershipID clientProxyMembershipID = mock(ClientProxyMembershipID.class);
+
+    ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+        clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+            new ConcurrentLinkedQueue<>(),
+            new ReentrantReadWriteLock());
+
+    List<HAEventWrapper> haEventWrappers = new ArrayList<>();
+    CacheClientNotifier cacheClientNotifier = mock(CacheClientNotifier.class);
+
+    for (int i = 0; i < 5; ++i) {
+      HAEventWrapper haEventWrapper = mock(HAEventWrapper.class);
+      haEventWrappers.add(haEventWrapper);
+      InternalCacheEvent internalCacheEvent = mock(InternalCacheEvent.class);
+      when(internalCacheEvent.getRegion()).thenReturn(mock(LocalRegion.class));
+      when(internalCacheEvent.getOperation()).thenReturn(mock(Operation.class));
+      clientRegistrationEventQueueManager.add(internalCacheEvent,
+          haEventWrapper, new HashSet<>(), cacheClientNotifier);
+      verify(haEventWrapper, times(1)).incrementPutInProgressCounter(anyString());
+    }
+
+    clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, cacheClientNotifier);
+
+    for (HAEventWrapper haEventWrapper : haEventWrappers) {
+      verify(haEventWrapper, times(1)).decrementPutInProgressCounter();
+    }
   }
 
   @Test
