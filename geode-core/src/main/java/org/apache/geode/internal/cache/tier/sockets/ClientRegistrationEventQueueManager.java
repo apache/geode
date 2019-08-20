@@ -35,7 +35,7 @@ import org.apache.geode.internal.logging.LogService;
  * client is completely registered (filter info retrieved and GII complete), we will drain the
  * client's queued events and deliver them to the cache client proxy if necessary.
  */
-class ClientRegistrationEventQueueManager {
+public class ClientRegistrationEventQueueManager {
   private static final Logger logger = LogService.getLogger();
   private final Set<ClientRegistrationEventQueue> registeringProxyEventQueues =
       new ConcurrentHashSet<>();

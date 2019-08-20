@@ -125,21 +125,27 @@ public class CacheClientNotifier {
   private static volatile CacheClientNotifier ccnSingleton;
 
   private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
-  private final ClientRegistrationEventQueueManager registrationQueueManager =
-      new ClientRegistrationEventQueueManager();
+  private final ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
 
   /**
    * Factory method to construct a CacheClientNotifier {@code CacheClientNotifier} instance.
    *
    * @param cache The GemFire {@code InternalCache}
+   * @param clientRegistrationEventQueueManager Manages temporary registration queues for clients
    * @return A {@code CacheClientNotifier} instance
    */
   public static synchronized CacheClientNotifier getInstance(InternalCache cache,
-      StatisticsClock statisticsClock, CacheServerStats acceptorStats, int maximumMessageCount,
-      int messageTimeToLive, ConnectionListener listener, OverflowAttributes overflowAttributes,
+      ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+      StatisticsClock statisticsClock,
+      CacheServerStats acceptorStats,
+      int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener,
+      OverflowAttributes overflowAttributes,
       boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
-      ccnSingleton = new CacheClientNotifier(cache, statisticsClock, acceptorStats,
+      ccnSingleton = new CacheClientNotifier(cache, clientRegistrationEventQueueManager,
+          statisticsClock, acceptorStats,
           maximumMessageCount, messageTimeToLive, listener, isGatewayReceiver);
     }
 
@@ -177,14 +183,15 @@ public class CacheClientNotifier {
     try {
       if (isClientPermitted(clientRegistrationMetadata, clientProxyMembershipID)) {
         ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
-            registrationQueueManager.create(clientProxyMembershipID, new ConcurrentLinkedQueue<>(),
+            clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+                new ConcurrentLinkedQueue<>(),
                 new ReentrantReadWriteLock());
 
         try {
           registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
               notifyBySubscription);
         } finally {
-          registrationQueueManager.drain(clientRegistrationEventQueue, this);
+          clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, this);
         }
       }
     } catch (AuthenticationRequiredException ex) {
@@ -680,7 +687,7 @@ public class CacheClientNotifier {
       conflatable = wrapper;
     }
 
-    registrationQueueManager.add(event, conflatable, filterClients, this);
+    clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
 
     singletonRouteClientMessage(conflatable, filterClients);
 
@@ -1682,11 +1689,15 @@ public class CacheClientNotifier {
    * @param cache The GemFire {@code InternalCache}
    * @param listener a listener which should receive notifications abouts queues being added or
    */
-  private CacheClientNotifier(InternalCache cache, StatisticsClock statisticsClock,
-      CacheServerStats acceptorStats, int maximumMessageCount, int messageTimeToLive,
+  private CacheClientNotifier(InternalCache cache,
+      ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+      StatisticsClock statisticsClock,
+      CacheServerStats acceptorStats, int maximumMessageCount,
+      int messageTimeToLive,
       ConnectionListener listener, boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
+    this.clientRegistrationEventQueueManager = clientRegistrationEventQueueManager;
     this.statisticsClock = statisticsClock;
     this.acceptorStats = acceptorStats;
     // we only need one thread per client and wait 50ms for close
@@ -2084,7 +2095,9 @@ public class CacheClientNotifier {
   @FunctionalInterface
   @VisibleForTesting
   public interface CacheClientNotifierProvider {
-    CacheClientNotifier get(InternalCache cache, StatisticsClock statisticsClock,
+    CacheClientNotifier get(InternalCache cache,
+        ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+        StatisticsClock statisticsClock,
         CacheServerStats acceptorStats, int maximumMessageCount, int messageTimeToLive,
         ConnectionListener listener, OverflowAttributes overflowAttributes,
         boolean isGatewayReceiver);
