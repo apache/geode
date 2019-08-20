@@ -48,24 +48,4 @@ public enum RegionType {
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
   UNSUPPORTED;
-
-  public boolean isProxy() {
-    return name().contains("PROXY");
-  }
-
-  public boolean isPartition() {
-    return name().contains("PARTITION");
-  }
-
-  public boolean isReplicate() {
-    return name().contains("REPLICATE");
-  }
-
-  public boolean isPersistent() {
-    return name().contains("PERSISTENT");
-  }
-
-  public boolean isOverflow() {
-    return name().contains("OVERFLOW");
-  }
 }
