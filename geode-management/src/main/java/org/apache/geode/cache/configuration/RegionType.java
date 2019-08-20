@@ -47,5 +47,5 @@ public enum RegionType {
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
-  UNSUPPORTED
+  UNSUPPORTED;
 }
