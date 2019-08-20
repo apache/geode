@@ -139,7 +139,7 @@ public class TXState implements TXStateInterface {
   protected final TXStateProxy proxy;
   protected boolean firedWriter = false;
   protected final boolean onBehalfOfRemoteStub;
-  protected boolean gotBucketLocks = false;
+  boolean gotBucketLocks = false;
   protected TXCommitMessage commitMessage = null;
   ClientProxyMembershipID bridgeContext = null;
   /** keeps track of events, so as not to re-apply events */
@@ -898,7 +898,20 @@ public class TXState implements TXStateInterface {
           this.proxy.getTxMgr().getCachePerfStats()
               .incTxConflictCheckTime(statisticsClock.getTime() - conflictStart);
       }
-      Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+      cleanupTXRegionState();
+    } finally {
+      synchronized (this.completionGuard) {
+        this.completionGuard.notifyAll();
+      }
+      if (exception != null && !this.proxy.getCache().isClosed()) {
+        throw exception;
+      }
+    }
+  }
+
+  void cleanupTXRegionState() {
+    Iterator<Map.Entry<InternalRegion, TXRegionState>> it = this.regions.entrySet().iterator();
+    try {
       while (it.hasNext()) {
         Map.Entry<InternalRegion, TXRegionState> me = it.next();
         InternalRegion r = me.getKey();
@@ -906,37 +919,42 @@ public class TXState implements TXStateInterface {
         /*
          * Need to unlock the primary lock for rebalancing so that rebalancing can resume.
          */
-        if (gotBucketLocks) {
-          if (r instanceof BucketRegion && (((BucketRegion) r).getBucketAdvisor().isPrimary())) {
-            try {
-              ((BucketRegion) r).doUnlockForPrimary();
-            } catch (RegionDestroyedException rde) {
-              // ignore
-              if (logger.isDebugEnabled()) {
-                logger.debug("RegionDestroyedException while unlocking bucket region {}",
-                    r.getFullPath(), rde);
-              }
-            } catch (Exception rde) {
-              // ignore
-              if (logger.isDebugEnabled()) {
-                logger.debug(
-                    "Exception while unlocking bucket region {} this is probably because the bucket was destroyed and never locked initially.",
-                    r.getFullPath(), rde);
-              }
-            }
-          }
+        if (isBucketLocks()) {
+          unlockPrimaryMoveReadLock(r);
         }
         txrs.cleanup(r);
       }
     } finally {
-      synchronized (this.completionGuard) {
-        this.completionGuard.notifyAll();
-      }
-
-      if (exception != null && !this.proxy.getCache().isClosed()) {
-        throw exception;
+      if (isBucketLocks()) {
+        gotBucketLocks = false;
       }
     }
+  }
+
+  void unlockPrimaryMoveReadLock(InternalRegion internalRegion) {
+    if (internalRegion.isUsedForPartitionedRegionBucket()
+        && (((BucketRegion) internalRegion).getBucketAdvisor().isPrimary())) {
+      try {
+        ((BucketRegion) internalRegion).doUnlockForPrimary();
+      } catch (RegionDestroyedException rde) {
+        // ignore
+        if (logger.isDebugEnabled()) {
+          logger.debug("RegionDestroyedException while unlocking bucket region {}",
+              internalRegion.getFullPath(), rde);
+        }
+      } catch (Exception rde) {
+        // ignore
+        if (logger.isDebugEnabled()) {
+          logger.debug(
+              "Exception while unlocking bucket region {} this is probably because the bucket was destroyed and never locked initially.",
+              internalRegion.getFullPath(), rde);
+        }
+      }
+    }
+  }
+
+  boolean isBucketLocks() {
+    return gotBucketLocks;
   }
 
   /*

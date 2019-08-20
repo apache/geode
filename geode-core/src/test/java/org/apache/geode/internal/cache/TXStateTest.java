@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -28,6 +29,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import javax.transaction.Status;
 
@@ -38,6 +41,7 @@ import org.apache.geode.cache.CommitConflictException;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.FailedSynchronizationException;
 import org.apache.geode.cache.RegionAttributes;
+import org.apache.geode.cache.RegionDestroyedException;
 import org.apache.geode.cache.SynchronizationCommitConflictException;
 import org.apache.geode.cache.TransactionDataNodeHasDepartedException;
 import org.apache.geode.cache.TransactionException;
@@ -296,6 +300,92 @@ public class TXStateTest {
 
     assertThat(thrown).isInstanceOf(IllegalMonitorStateException.class);
     verify(regionState1).cleanup(region1);
+  }
+
+  @Test
+  public void gotBucketLocksFlagIsResetAfterCommit() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    List entries = mock(List.class);
+    doReturn(entries).when(txState).generateEventOffsets();
+    doNothing().when(txState).attachFilterProfileInformation(entries);
+    doNothing().when(txState).applyChanges(entries);
+    txState.commit();
+
+    assertThat(txState.isBucketLocks()).isFalse();
+  }
+
+  @Test
+  public void primaryMoveReadLockAreUnlockedAndRegionStateAreCleanedUp() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    DistributedRegion replicate = mock(DistributedRegion.class);
+    TXBucketRegionState bucketState = mock(TXBucketRegionState.class);
+    TXRegionState replicateState = mock(TXRegionState.class);
+    txState.regions.put(bucket, bucketState);
+    txState.regions.put(replicate, replicateState);
+    txState.gotBucketLocks = true;
+
+    txState.cleanupTXRegionState();
+
+    verify(txState).unlockPrimaryMoveReadLock(bucket);
+    verify(txState).unlockPrimaryMoveReadLock(replicate);
+    verify(bucketState).cleanup(bucket);
+    verify(replicateState).cleanup(replicate);
+    assertThat(txState.isBucketLocks()).isFalse();
+  }
+
+  @Test
+  public void doUnlockForPrimaryIfIsPrimaryBucket() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+
+    verify(bucket).doUnlockForPrimary();
+  }
+
+  @Test
+  public void doNotUnlockForPrimaryIfNotAPrimaryBucket() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(false);
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+
+    verify(bucket, never()).doUnlockForPrimary();
+  }
+
+  @Test
+  public void unlockForPrimaryDoesNotThrowIfDoUnlockForPrimaryThrowsRegionDestroyedException() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+    doThrow(new RegionDestroyedException("", "")).when(bucket).doUnlockForPrimary();
+
+    txState.unlockPrimaryMoveReadLock(bucket);
+  }
+
+  @Test
+  public void unlockForPrimaryDoesNotThrowIfDoUnlockForPrimaryThrowsException() {
+    TXState txState = spy(new TXState(txStateProxy, false, disabledClock()));
+    BucketRegion bucket = mock(BucketRegion.class);
+    when(bucket.isUsedForPartitionedRegionBucket()).thenReturn(true);
+    BucketAdvisor advisor = mock(BucketAdvisor.class);
+    when(bucket.getBucketAdvisor()).thenReturn(advisor);
+    when(advisor.isPrimary()).thenReturn(true);
+    doThrow(new RuntimeException()).when(bucket).doUnlockForPrimary();
+
+    txState.unlockPrimaryMoveReadLock(bucket);
   }
 
 }
