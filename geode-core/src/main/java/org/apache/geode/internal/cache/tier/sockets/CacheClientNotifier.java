@@ -40,7 +40,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Supplier;
 
@@ -125,22 +124,27 @@ public class CacheClientNotifier {
   private static volatile CacheClientNotifier ccnSingleton;
 
   private final SocketMessageWriter socketMessageWriter = new SocketMessageWriter();
-  private final ClientRegistrationEventQueueManager registrationQueueManager =
-      new ClientRegistrationEventQueueManager();
+  private final ClientRegistrationEventQueueManager clientRegistrationEventQueueManager;
 
   /**
    * Factory method to construct a CacheClientNotifier {@code CacheClientNotifier} instance.
    *
    * @param cache The GemFire {@code InternalCache}
+   * @param clientRegistrationEventQueueManager Manages temporary registration queues for clients
    * @return A {@code CacheClientNotifier} instance
    */
   public static synchronized CacheClientNotifier getInstance(InternalCache cache,
-      CacheServerStats acceptorStats, int maximumMessageCount, int messageTimeToLive,
-      ConnectionListener listener, OverflowAttributes overflowAttributes,
+      ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+      CacheServerStats acceptorStats,
+      int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener,
+      OverflowAttributes overflowAttributes,
       boolean isGatewayReceiver) {
     if (ccnSingleton == null) {
-      ccnSingleton = new CacheClientNotifier(cache, acceptorStats, maximumMessageCount,
-          messageTimeToLive, listener, isGatewayReceiver);
+      ccnSingleton =
+          new CacheClientNotifier(cache, clientRegistrationEventQueueManager, acceptorStats,
+              maximumMessageCount, messageTimeToLive, listener, isGatewayReceiver);
     }
 
     if (!isGatewayReceiver && ccnSingleton.getHaContainer() == null) {
@@ -176,16 +180,16 @@ public class CacheClientNotifier {
 
     try {
       if (isClientPermitted(clientRegistrationMetadata, clientProxyMembershipID)) {
-        registrationQueueManager.create(clientProxyMembershipID, new ConcurrentLinkedQueue<>(),
-            new ReentrantReadWriteLock(), new ReentrantLock());
+        ClientRegistrationEventQueueManager.ClientRegistrationEventQueue clientRegistrationEventQueue =
+            clientRegistrationEventQueueManager.create(clientProxyMembershipID,
+                new ConcurrentLinkedQueue<>(),
+                new ReentrantReadWriteLock());
 
         try {
           registerClientInternal(clientRegistrationMetadata, socket, isPrimary, acceptorId,
               notifyBySubscription);
         } finally {
-          if (isProxyInitialized(clientProxyMembershipID)) {
-            registrationQueueManager.drain(clientProxyMembershipID, this);
-          }
+          clientRegistrationEventQueueManager.drain(clientRegistrationEventQueue, this);
         }
       }
     } catch (AuthenticationRequiredException ex) {
@@ -287,8 +291,8 @@ public class CacheClientNotifier {
         }
         cacheClientProxy =
             new CacheClientProxy(this, socket, clientProxyMembershipID, isPrimary, clientConflation,
-                clientVersion,
-                acceptorId, notifyBySubscription, cache.getSecurityService(), subject);
+                clientVersion, acceptorId, notifyBySubscription, cache.getSecurityService(),
+                subject);
         successful = initializeProxy(cacheClientProxy);
       } else {
         cacheClientProxy.setSubject(subject);
@@ -680,7 +684,7 @@ public class CacheClientNotifier {
       conflatable = wrapper;
     }
 
-    registrationQueueManager.add(event, conflatable, filterClients, this);
+    clientRegistrationEventQueueManager.add(event, conflatable, filterClients, this);
 
     singletonRouteClientMessage(conflatable, filterClients);
 
@@ -1178,16 +1182,6 @@ public class CacheClientNotifier {
       proxy.setKeepAlive(keepalive);
       proxy.unregisterClientInterest(regionName, keysOfInterest, isClosing);
     }
-  }
-
-  /**
-   * Determines whether a client proxy has been initialized
-   *
-   * @param clientProxyMembershipID The client proxy membership ID
-   * @return Whether the client proxy is initialized
-   */
-  private boolean isProxyInitialized(final ClientProxyMembershipID clientProxyMembershipID) {
-    return getClientProxy(clientProxyMembershipID) != null;
   }
 
   /**
@@ -1692,11 +1686,14 @@ public class CacheClientNotifier {
    * @param cache The GemFire {@code InternalCache}
    * @param listener a listener which should receive notifications abouts queues being added or
    */
-  private CacheClientNotifier(InternalCache cache, CacheServerStats acceptorStats,
-      int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-      boolean isGatewayReceiver) {
+  private CacheClientNotifier(InternalCache cache,
+      ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+      CacheServerStats acceptorStats, int maximumMessageCount,
+      int messageTimeToLive,
+      ConnectionListener listener, boolean isGatewayReceiver) {
     // Set the Cache
     setCache(cache);
+    this.clientRegistrationEventQueueManager = clientRegistrationEventQueueManager;
     this.acceptorStats = acceptorStats;
     // we only need one thread per client and wait 50ms for close
     socketCloser = new SocketCloser(1, 50);
@@ -2091,9 +2088,11 @@ public class CacheClientNotifier {
   @FunctionalInterface
   @VisibleForTesting
   public interface CacheClientNotifierProvider {
-    CacheClientNotifier get(InternalCache cache, CacheServerStats acceptorStats,
-        int maximumMessageCount, int messageTimeToLive, ConnectionListener listener,
-        OverflowAttributes overflowAttributes, boolean isGatewayReceiver);
+    CacheClientNotifier get(InternalCache cache,
+        ClientRegistrationEventQueueManager clientRegistrationEventQueueManager,
+        CacheServerStats acceptorStats, int maximumMessageCount, int messageTimeToLive,
+        ConnectionListener listener, OverflowAttributes overflowAttributes,
+        boolean isGatewayReceiver);
   }
 
   @VisibleForTesting
