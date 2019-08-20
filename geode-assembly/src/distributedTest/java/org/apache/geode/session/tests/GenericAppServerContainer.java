@@ -105,6 +105,8 @@ public class GenericAppServerContainer extends ServerContainer {
     List<String> command = new ArrayList<>();
     // Path to the modify war script to run
     command.add(modifyWarScript.getAbsolutePath());
+    command.add("-J");
+    command.add("-Xmx2096m");
     // Path to the WAR file to modify
     command.add("-w");
     command.add(install.getWarFilePath());
