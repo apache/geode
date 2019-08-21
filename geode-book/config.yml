@@ -21,7 +21,7 @@ public_host: localhost
 sections:
 - repository:
     name: geode-docs
-  directory: docs/guide/191
+  directory: docs/guide/19
   subnav_template: geode-subnav
 
 template_variables:
