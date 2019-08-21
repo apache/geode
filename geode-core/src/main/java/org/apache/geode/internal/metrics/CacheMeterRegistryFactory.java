@@ -22,14 +22,13 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
 
   @Override
   public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
-    CompositeMeterRegistry registry = new CompositeMeterRegistry();
+    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry();
 
     MeterRegistry.Config registryConfig = registry.config();
     registryConfig.commonTags("cluster.id", String.valueOf(systemId));
     registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
     registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
-
-    new JvmMemoryMetrics().bindTo(registry);
+    registry.registerBinders();
 
     return registry;
   }
