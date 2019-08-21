@@ -103,6 +103,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.OverflowAttributes;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.InternalLogWriter;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCloser;
@@ -767,10 +768,13 @@ public class CacheClientNotifier {
   private void incMessagesNotQueuedOriginatorStat(final InternalCacheEvent event,
       final Set<ClientProxyMembershipID> ids) {
     // don't send to member of origin
-    if (ids.remove(event.getContext())) {
-      CacheClientProxy ccp = getClientProxy(event.getContext());
-      if (ccp != null) {
-        ccp.getStatistics().incMessagesNotQueuedOriginator();
+    ClientProxyMembershipID eventOriginator = event.getContext();
+    if (eventOriginator != null) {
+      if (ids.remove(eventOriginator)) {
+        CacheClientProxy ccp = getClientProxy(eventOriginator);
+        if (ccp != null) {
+          ccp.getStatistics().incMessagesNotQueuedOriginator();
+        }
       }
     }
   }
@@ -905,7 +909,7 @@ public class CacheClientNotifier {
    * collection of non-durable identifiers of clients connected to this VM
    */
   Set<ClientProxyMembershipID> getProxyIDs(Set mixedDurableAndNonDurableIDs) {
-    Set<ClientProxyMembershipID> result = new HashSet<>();
+    Set<ClientProxyMembershipID> result = new ConcurrentHashSet<>();
     for (Object id : mixedDurableAndNonDurableIDs) {
       if (id instanceof String) {
         CacheClientProxy clientProxy = getClientProxy((String) id, true);

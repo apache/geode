@@ -1818,8 +1818,8 @@ fromData,63
 toData,59
 
 org/apache/geode/internal/cache/tier/sockets/ClientUpdateMessageImpl,2
-fromData,171
-toData,162
+fromData,172
+toData,196
 
 org/apache/geode/internal/cache/tier/sockets/HAEventWrapper,2
 fromData,440
