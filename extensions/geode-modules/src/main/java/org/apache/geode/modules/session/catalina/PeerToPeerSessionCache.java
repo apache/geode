@@ -24,6 +24,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionFactory;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.execute.Execution;
+import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
 import org.apache.geode.cache.execute.ResultCollector;
 import org.apache.geode.modules.session.catalina.callback.LocalSessionCacheLoader;
@@ -87,12 +88,11 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     ResultCollector collector = null;
     if (regionAttributesID.startsWith("partition")) {
       // Execute the partitioned touch function on the primary server(s)
-      Execution execution = FunctionService.onRegion(getSessionRegion()).withFilter(sessionIds);
+      Execution execution = getExecutionForFunctionOnRegionWithFilter(sessionIds);
       collector = execution.execute(TouchPartitionedRegionEntriesFunction.ID);
     } else {
       // Execute the member touch function on all the server(s)
-      Execution execution = FunctionService.onMembers()
-          .setArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
+      Execution execution = getExecutionForFunctionOnMembersWithArguments(new Object[] {this.sessionRegion.getFullPath(), sessionIds});
       collector = execution.execute(TouchReplicatedRegionEntriesFunction.ID);
     }
 
@@ -104,6 +104,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       getSessionManager().getLogger().warn("Caught unexpected exception:", e);
     }
   }
+
 
   @Override
   public boolean isPeerToPeer() {
@@ -142,13 +143,13 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
 
   private void registerFunctions() {
     // Register the touch partitioned region entries function if it is not already registered
-    if (!FunctionService.isRegistered(TouchPartitionedRegionEntriesFunction.ID)) {
-      FunctionService.registerFunction(new TouchPartitionedRegionEntriesFunction());
+    if (!isFunctionRegistered(TouchPartitionedRegionEntriesFunction.ID)) {
+      registerFunctionWithFunctionService(new TouchPartitionedRegionEntriesFunction());
     }
 
     // Register the touch replicated region entries function if it is not already registered
-    if (!FunctionService.isRegistered(TouchReplicatedRegionEntriesFunction.ID)) {
-      FunctionService.registerFunction(new TouchReplicatedRegionEntriesFunction());
+    if (!isFunctionRegistered(TouchReplicatedRegionEntriesFunction.ID)) {
+      registerFunctionWithFunctionService(new TouchReplicatedRegionEntriesFunction());
     }
   }
 
@@ -164,7 +165,7 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
     Region region = this.cache.getRegion(getSessionManager().getRegionName());
     if (region == null) {
       // Create the region
-      region = RegionHelper.createRegion((Cache) getCache(), configuration);
+      region = createRegionUsingHelper(configuration);
       if (getSessionManager().getLogger().isDebugEnabled()) {
         getSessionManager().getLogger().debug("Created new session region: " + region);
       }
@@ -173,11 +174,19 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       if (getSessionManager().getLogger().isDebugEnabled()) {
         getSessionManager().getLogger().debug("Retrieved existing session region: " + region);
       }
-      RegionHelper.validateRegion((Cache) getCache(), configuration, region);
+      validateRegionUsingRegionhelper(configuration, region);
     }
 
     // Set the session region
     this.sessionRegion = region;
+  }
+
+  void validateRegionUsingRegionhelper(RegionConfiguration configuration, Region region) {
+    RegionHelper.validateRegion((Cache) getCache(), configuration, region);
+  }
+
+  Region createRegionUsingHelper(RegionConfiguration configuration) {
+    return RegionHelper.createRegion((Cache) getCache(), configuration);
   }
 
   private Region<String, HttpSession> createOrRetrieveLocalRegion() {
@@ -214,5 +223,22 @@ public class PeerToPeerSessionCache extends AbstractSessionCache {
       }
     }
     return frontingRegion;
+  }
+
+  //Helper methods added to improve unit testing of class
+  void registerFunctionWithFunctionService(Function function) {
+    FunctionService.registerFunction(function);
+  }
+
+  boolean isFunctionRegistered(String id) {
+    return FunctionService.isRegistered(id);
+  }
+
+  Execution getExecutionForFunctionOnRegionWithFilter(Set<String> sessionIds) {
+    return FunctionService.onRegion(getSessionRegion()).withFilter(sessionIds);
+  }
+
+  Execution getExecutionForFunctionOnMembersWithArguments(Object[] arguments) {
+    return FunctionService.onMembers().setArguments(arguments);
   }
 }
