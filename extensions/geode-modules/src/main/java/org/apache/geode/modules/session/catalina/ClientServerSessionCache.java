@@ -143,7 +143,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
   @Override
   public boolean isBackingCacheAvailable() {
     if (getSessionManager().isCommitValveFailfastEnabled()) {
-      PoolImpl pool = (PoolImpl) PoolManager.find(getOperatingRegionName());
+      PoolImpl pool = findPoolInPoolManager();
       return pool.isPrimaryUpdaterAlive();
     }
     return true;
@@ -163,34 +163,6 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     } catch (Exception e) {
       // If an exception occurs in the function, log it.
       getSessionManager().getLogger().warn("Caught unexpected exception:", e);
-    }
-  }
-
-  Execution getExecutionForFunctionOnServers() {
-    return getExecutionForFunctionOnServersWithArguments(null);
-  }
-
-  Execution getExecutionForFunctionOnServersWithArguments(Object[] arguments) {
-    if(arguments != null && arguments.length > 0) {
-      return FunctionService.onServers(getCache()).setArguments(arguments);
-    } else {
-      return FunctionService.onServers(getCache());
-    }
-  }
-
-  Execution getExecutionForFunctionOnServerWithRegionConfiguration(RegionConfiguration arguments) {
-    if(arguments != null) {
-      return FunctionService.onServer(getCache()).setArguments(arguments);
-    } else {
-      return FunctionService.onServer(getCache());
-    }
-  }
-
-  Execution getExecutionForFunctionOnRegionWithFilter(Set<?> filter) {
-    if(filter != null && filter.size() > 0) {
-      return FunctionService.onRegion(getSessionRegion()).withFilter(filter);
-    } else {
-      return FunctionService.onRegion(getSessionRegion());
     }
   }
 
@@ -230,7 +202,7 @@ public class ClientServerSessionCache extends AbstractSessionCache {
         .anyMatch(x -> x instanceof SessionExpirationCacheListener);
   }
 
-  private void createSessionRegionOnServers() {
+  void createSessionRegionOnServers() {
     // Create the RegionConfiguration
     RegionConfiguration configuration = createRegionConfiguration();
 
@@ -284,5 +256,38 @@ public class ClientServerSessionCache extends AbstractSessionCache {
     }
 
     return region;
+  }
+
+  //Helper methods added to improve unit testing of class
+  Execution getExecutionForFunctionOnServers() {
+    return getExecutionForFunctionOnServersWithArguments(null);
+  }
+
+  Execution getExecutionForFunctionOnServersWithArguments(Object[] arguments) {
+    if(arguments != null && arguments.length > 0) {
+      return FunctionService.onServers(getCache()).setArguments(arguments);
+    } else {
+      return FunctionService.onServers(getCache());
+    }
+  }
+
+  Execution getExecutionForFunctionOnServerWithRegionConfiguration(RegionConfiguration arguments) {
+    if(arguments != null) {
+      return FunctionService.onServer(getCache()).setArguments(arguments);
+    } else {
+      return FunctionService.onServer(getCache());
+    }
+  }
+
+  Execution getExecutionForFunctionOnRegionWithFilter(Set<?> filter) {
+    if(filter != null && filter.size() > 0) {
+      return FunctionService.onRegion(getSessionRegion()).withFilter(filter);
+    } else {
+      return FunctionService.onRegion(getSessionRegion());
+    }
+  }
+
+  PoolImpl findPoolInPoolManager() {
+    return (PoolImpl) PoolManager.find(getOperatingRegionName());
   }
 }
