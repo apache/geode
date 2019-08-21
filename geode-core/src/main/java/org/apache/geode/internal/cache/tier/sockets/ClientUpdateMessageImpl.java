@@ -30,6 +30,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireIOException;
 import org.apache.geode.InternalGemFireError;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.internal.ByteArrayDataInput;
@@ -46,6 +47,7 @@ import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.cache.ha.HAContainerRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.size.Sizeable;
 
@@ -1125,39 +1127,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
   }
 
-  /*
-   * private void writeCqInfo(ObjectOutput out) throws IOException { // Write Client CQ Size
-   * out.writeInt(this._clientCqs.size()); // For each client. Iterator entries =
-   * this._clientCqs.entrySet().iterator(); while (entries.hasNext()) { Map.Entry entry =
-   * (Map.Entry)entries.next();
-   *
-   * // Write ProxyId. ClientProxyMembershipID proxyId = (ClientProxyMembershipID)entry.getKey();
-   * proxyId.toData(out);
-   *
-   * HashMap cqs = (HashMap)entry.getValue(); // Write CQ size for each Client.
-   * out.writeInt(cqs.size()); Iterator clients = cqs.entrySet().iterator(); while
-   * (clients.hasNext()) { Map.Entry client = (Map.Entry)clients.next(); // Write CQ Name. String cq
-   * = (String)client.getKey(); out.writeObject(cq); // Write CQ OP. int cqOp =
-   * ((Integer)client.getValue()).intValue(); out.writeInt(cqOp); } } // while }
-   */
-
-  /*
-   * private void readCqInfo(ObjectInput in) throws IOException, ClassNotFoundException { // Read
-   * Client CQ Size int numClientIds = in.readInt(); this._clientCqs = new HashMap();
-   *
-   * // For each Client. for (int cCnt=0; cCnt < numClientIds; cCnt++){ ClientProxyMembershipID
-   * proxyId = new ClientProxyMembershipID();
-   *
-   * // Read Proxy id. proxyId.fromData(in); // read CQ size for each Client. int numCqs =
-   * in.readInt(); HashMap cqs = new HashMap();
-   *
-   * for (int cqCnt=0; cqCnt < numCqs; cqCnt++){ // Get CQ Name and CQ Op. // Read CQ Name. String
-   * cqName = (String)in.readObject(); int cqOp = in.readInt();
-   *
-   * // Read CQ Op. cqs.put(cqName, Integer.valueOf(cqOp)); } this._clientCqs.put(proxyId, cqs); } }
-   */
-
-  public void addClientInterestList(Set clientIds, boolean receiveValues) {
+  void addClientInterestList(Set<ClientProxyMembershipID> clientIds, boolean receiveValues) {
     if (receiveValues) {
       if (this._clientInterestList == null) {
         this._clientInterestList = clientIds;
@@ -1175,23 +1145,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   public void addClientInterestList(ClientProxyMembershipID clientId, boolean receiveValues) {
     // This happens under synchronization on HAContainer.
-    HashSet<ClientProxyMembershipID> newInterests;
     if (receiveValues) {
       if (this._clientInterestList == null) {
-        newInterests = new HashSet<ClientProxyMembershipID>();
-      } else {
-        newInterests = new HashSet<ClientProxyMembershipID>(this._clientInterestList);
+        this._clientInterestList = new ConcurrentHashSet<>();
       }
-      newInterests.add(clientId);
-      this._clientInterestList = newInterests;
+      this._clientInterestList.add(clientId);
     } else {
       if (this._clientInterestListInv == null) {
-        newInterests = new HashSet<ClientProxyMembershipID>();
-      } else {
-        newInterests = new HashSet<ClientProxyMembershipID>(this._clientInterestListInv);
+        this._clientInterestListInv = new ConcurrentHashSet<>();
       }
-      newInterests.add(clientId);
-      this._clientInterestListInv = newInterests;
+      this._clientInterestListInv.add(clientId);
     }
   }
 
@@ -1207,6 +1170,16 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   public boolean isClientInterestedInInvalidates(ClientProxyMembershipID clientId) {
     return (this._clientInterestListInv != null && this._clientInterestListInv.contains(clientId));
+  }
+
+  @VisibleForTesting
+  boolean hasClientsInterestedInUpdates() {
+    return this._clientInterestList != null;
+  }
+
+  @VisibleForTesting
+  boolean hasClientsInterestedInInvalidates() {
+    return this._clientInterestListInv != null;
   }
 
   protected Object deserialize(byte[] serializedBytes) {
@@ -1257,17 +1230,24 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     }
     out.writeByte(_valueIsObject);
     DataSerializer.writeObject(_membershipId, out);
-    // DataSerializer.writeObject(_eventIdentifier,out);
     out.writeBoolean(_shouldConflate);
     out.writeBoolean(_isInterestListPassed);
     DataSerializer.writeByteArray(this.deltaBytes, out);
     out.writeBoolean(_hasCqs);
-    // if (_hasCqs) {
-    // DataSerializer.writeHashMap(this._clientCqs, out);
-    // }
     DataSerializer.writeObject(_callbackArgument, out);
-    DataSerializer.writeHashSet((HashSet) this._clientInterestList, out);
-    DataSerializer.writeHashSet((HashSet) this._clientInterestListInv, out);
+
+    HashSet<ClientProxyMembershipID> clientInterestListSnapshot =
+        this._clientInterestList != null
+            ? new HashSet<>(this._clientInterestList)
+            : null;
+    DataSerializer.writeHashSet(clientInterestListSnapshot, out);
+
+    HashSet<ClientProxyMembershipID> clientInterestListInvSnapshot =
+        this._clientInterestListInv != null
+            ? new HashSet<>(this._clientInterestListInv)
+            : null;
+    DataSerializer.writeHashSet(clientInterestListInvSnapshot, out);
+
     DataSerializer.writeObject(this.versionTag, out);
   }
 
@@ -1279,33 +1259,25 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
     this._value = DataSerializer.readByteArray(in);
     this._valueIsObject = in.readByte();
     this._membershipId = ClientProxyMembershipID.readCanonicalized(in);
-    // this._eventIdentifier = (EventID)DataSerializer.readObject(in);;
     this._shouldConflate = in.readBoolean();
     this._isInterestListPassed = in.readBoolean();
     this.deltaBytes = DataSerializer.readByteArray(in);
     this._hasCqs = in.readBoolean();
-
-    // if (this._hasCqs) {
-    // this._clientCqs = DataSerializer.readHashMap(in);
-    // }
     this._callbackArgument = DataSerializer.readObject(in);
 
     CacheClientNotifier ccn = CacheClientNotifier.getInstance();
 
-    HashSet ids = DataSerializer.readHashSet(in);
+    Set<ClientProxyMembershipID> clientInterestList = DataSerializer.readHashSet(in);
+    this._clientInterestList = ccn != null && clientInterestList != null
+        ? ccn.getProxyIDs(clientInterestList)
+        : null;
 
-    if (ccn != null && ids != null) { // use canonical IDs in servers
-      ids = (HashSet) ccn.getProxyIDs(ids);
-    }
-    this._clientInterestList = ids;
+    Set<ClientProxyMembershipID> clientInterestListInv = DataSerializer.readHashSet(in);
+    this._clientInterestListInv = ccn != null && clientInterestListInv != null
+        ? ccn.getProxyIDs(clientInterestListInv)
+        : null;
 
-    ids = DataSerializer.readHashSet(in);
-    if (ccn != null && ids != null) {
-      ids = (HashSet) ccn.getProxyIDs(ids);
-    }
-    this._clientInterestListInv = ids;
-
-    this.versionTag = (VersionTag) DataSerializer.readObject(in);
+    this.versionTag = DataSerializer.readObject(in);
   }
 
   private Object getOriginalCallbackArgument() {
