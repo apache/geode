@@ -81,7 +81,9 @@ public class ClientUpdateMessageImplTest implements Serializable {
     // ClientUpdateMessageImpl.fromData(), so we need to do this for serialization to
     // succeed.
     CacheClientNotifier cacheClientNotifier =
-        CacheClientNotifier.getInstance(Fakes.cache(), mock(StatisticsClock.class),
+        CacheClientNotifier.getInstance(Fakes.cache(),
+            mock(ClientRegistrationEventQueueManager.class),
+            mock(StatisticsClock.class),
             mock(CacheServerStats.class), 10, 10,
             mock(ConnectionListener.class), null, true);
 
