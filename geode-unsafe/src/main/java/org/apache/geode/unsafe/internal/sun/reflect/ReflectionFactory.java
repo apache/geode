@@ -12,28 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.rest.internal.web.controllers.support;
 
-import org.springframework.stereotype.Component;
+package org.apache.geode.unsafe.internal.sun.reflect;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
-
-@Component("cacheProvider")
-public class CacheProviderImpl implements CacheProvider {
-
-  @Override
-  public InternalCacheForClientAccess getCache() {
-    final InternalCache result = getInternalCache();
-    if (result == null) {
-      return null;
-    }
-    return new InternalCacheForClientAccess(result);
-  }
-
-  @SuppressWarnings("deprecation")
-  private InternalCache getInternalCache() {
-    return GemFireCacheImpl.getExisting();
+public class ReflectionFactory {
+  public static sun.reflect.ReflectionFactory getReflectionFactory() {
+    return sun.reflect.ReflectionFactory.getReflectionFactory();
   }
 }

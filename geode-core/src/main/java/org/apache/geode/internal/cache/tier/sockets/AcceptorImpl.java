@@ -1081,8 +1081,7 @@ public class AcceptorImpl implements Acceptor, Runnable {
             } catch (ClosedChannelException cce) {
               // for bug bug 38474
               finishCon(sc);
-            } catch (IOException | RuntimeException ex) {
-
+            } catch (RuntimeException ex) {
               finishCon(sc);
               logger.warn("ignoring", ex);
             }

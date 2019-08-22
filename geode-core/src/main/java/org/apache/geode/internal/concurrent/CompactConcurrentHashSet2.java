@@ -34,7 +34,6 @@ package org.apache.geode.internal.concurrent;
 
 import java.io.ObjectStreamField;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.AbstractSet;
@@ -49,6 +48,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * <p>
@@ -1961,13 +1961,9 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
     }
 
     @Immutable
-    private static final sun.misc.Unsafe U;
     private static final long LOCKSTATE;
     static {
       try {
-        Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-        f.setAccessible(true);
-        U = (sun.misc.Unsafe) f.get(null);
         Class<?> k = TreeBin.class;
         LOCKSTATE = U.objectFieldOffset(k.getDeclaredField("lockState"));
       } catch (Exception e) {
@@ -2287,7 +2283,7 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
   // Unsafe mechanics
   @Immutable
-  private static final sun.misc.Unsafe U;
+  private static final Unsafe U = new Unsafe();
   private static final long SIZECTL;
   private static final long TRANSFERINDEX;
   private static final long BASECOUNT;
@@ -2298,9 +2294,6 @@ public class CompactConcurrentHashSet2<V> extends AbstractSet<V> implements Set<
 
   static {
     try {
-      Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-      f.setAccessible(true);
-      U = (sun.misc.Unsafe) f.get(null);
       Class<?> k = CompactConcurrentHashSet2.class;
       SIZECTL = U.objectFieldOffset(k.getDeclaredField("sizeCtl"));
       TRANSFERINDEX = U.objectFieldOffset(k.getDeclaredField("transferIndex"));

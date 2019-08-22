@@ -12,28 +12,21 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.rest.internal.web.controllers.support;
 
-import org.springframework.stereotype.Component;
+package org.apache.geode.unsafe.internal.sun.misc;
 
-import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.InternalCache;
-import org.apache.geode.internal.cache.InternalCacheForClientAccess;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Component("cacheProvider")
-public class CacheProviderImpl implements CacheProvider {
+import org.junit.Test;
 
-  @Override
-  public InternalCacheForClientAccess getCache() {
-    final InternalCache result = getInternalCache();
-    if (result == null) {
-      return null;
-    }
-    return new InternalCacheForClientAccess(result);
-  }
-
-  @SuppressWarnings("deprecation")
-  private InternalCache getInternalCache() {
-    return GemFireCacheImpl.getExisting();
+public class SignalHandlerTest {
+  @Test
+  public void defaultSignalHandlers() {
+    assertThat(SignalHandler.SIG_DFL).isNotNull().isInstanceOf(Signal.SunSignalHandler.class);
+    assertThat(((Signal.SunSignalHandler) SignalHandler.SIG_DFL).signalHandler)
+        .isSameAs(sun.misc.SignalHandler.SIG_DFL);
+    assertThat(SignalHandler.SIG_IGN).isNotNull().isInstanceOf(Signal.SunSignalHandler.class);
+    assertThat(((Signal.SunSignalHandler) SignalHandler.SIG_IGN).signalHandler)
+        .isSameAs(sun.misc.SignalHandler.SIG_IGN);
   }
 }

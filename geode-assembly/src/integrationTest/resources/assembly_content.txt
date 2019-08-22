@@ -939,6 +939,7 @@ lib/fastutil-8.2.2.jar
 lib/findbugs-annotations-1.3.9-1.jar
 lib/geo-0.7.1.jar
 lib/geode-common-0.0.0.jar
+lib/geode-unsafe-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar

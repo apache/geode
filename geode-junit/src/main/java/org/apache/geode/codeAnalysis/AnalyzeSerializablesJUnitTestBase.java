@@ -49,7 +49,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
-import sun.reflect.ReflectionFactory;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.DataSerializer;
@@ -65,6 +64,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
+import org.apache.geode.unsafe.internal.sun.reflect.ReflectionFactory;
 
 @Category({SerializationTest.class})
 public abstract class AnalyzeSerializablesJUnitTestBase {

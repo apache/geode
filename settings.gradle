@@ -23,6 +23,7 @@ rootProject.name = 'geode'
 gradle.startParameter.continueOnFailure = true
 
 include 'geode-common'
+include 'geode-unsafe'
 include 'geode-junit'
 include 'geode-dunit'
 include 'geode-core'

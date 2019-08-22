@@ -19,7 +19,7 @@ import org.apache.commons.lang3.JavaVersion;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.lang.SystemUtils;
-import org.apache.geode.pdx.internal.unsafe.UnsafeWrapper;
+import org.apache.geode.unsafe.internal.sun.misc.Unsafe;
 
 /**
  * The class provides info about some JVM characteristics
@@ -31,11 +31,11 @@ public class JvmSizeUtils {
   private static final int objectHeaderSize;
 
   @Immutable
-  private static final UnsafeWrapper unsafe;
+  private static final Unsafe unsafe;
   static {
-    UnsafeWrapper tmp = null;
+    Unsafe tmp = null;
     try {
-      tmp = new UnsafeWrapper();
+      tmp = new Unsafe();
     } catch (RuntimeException ignore) {
     } catch (Error ignore) {
     }

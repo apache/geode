@@ -36,7 +36,7 @@ import net.sourceforge.pmd.lang.java.symboltable.VariableNameDeclaration;
 
 public class StaticFieldsMustBeImmutable extends AbstractJavaRule {
   private static final Set<String> immutableTypes =
-      Collections.unmodifiableSet(new HashSet(Arrays.asList(
+      Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
           String.class.getSimpleName(),
           ThreadLocal.class.getSimpleName(),
           Object.class.getSimpleName(),
