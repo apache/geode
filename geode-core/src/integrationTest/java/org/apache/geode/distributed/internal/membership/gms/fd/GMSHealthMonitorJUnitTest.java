@@ -604,6 +604,33 @@ public class GMSHealthMonitorJUnitTest {
   }
 
   @Test
+  public void testExonerationMessageIsNotSentToVersion_1_3() {
+    // versions older than 1.4 don't know about the FinalCheckPassedMessage class
+    useGMSHealthMonitorTestClass = true;
+
+    try {
+      GMSMembershipView v = installAView();
+
+      setFailureDetectionPorts(v);
+
+      GMSMember memberToCheck = gmsHealthMonitor.getNextNeighbor();
+
+      gmsHealthMonitor.setNextNeighbor(v, memberToCheck);
+      assertNotEquals(memberToCheck, gmsHealthMonitor.getNextNeighbor());
+
+      mockMembers.get(0).setVersion(Version.GEODE_1_3_0);
+      boolean retVal = gmsHealthMonitor.inlineCheckIfAvailable(mockMembers.get(0), v, true,
+          memberToCheck, "Not responding");
+
+      assertTrue("CheckIfAvailable should have return true", retVal);
+      verify(messenger, never()).send(isA(FinalCheckPassedMessage.class));
+
+    } finally {
+      useGMSHealthMonitorTestClass = false;
+    }
+  }
+
+  @Test
   public void testFinalCheckPassedMessageCanBeSerializedAndDeserialized()
       throws IOException, ClassNotFoundException {
     HeapDataOutputStream heapDataOutputStream = new HeapDataOutputStream(500, Version.CURRENT);

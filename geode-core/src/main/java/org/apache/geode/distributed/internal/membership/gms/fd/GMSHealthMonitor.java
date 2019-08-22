@@ -1387,7 +1387,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
       if (!failed) {
         if (!isStopping && !initiator.equals(localAddress)
-            && initiator.getVersionOrdinal() >= Version.GEODE_1_3_0.ordinal()) {
+            && initiator.getVersionOrdinal() >= Version.GEODE_1_4_0.ordinal()) {
           // let the sender know that it's okay to monitor this member again
           FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
           services.getMessenger().send(message);
