@@ -202,6 +202,9 @@ resources:
     bucket: ((version-bucket))
     json_key: ((concourse-gcp-key))
     regexp: ((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
+- name: daily
+  type: time
+    interval: 24h
 
 resource_types:
 - name: concourse-metadata-resource
@@ -539,6 +542,8 @@ jobs:
   public: true
   plan:
   - do:
+    - get: daily
+      trigger: true
     {{- plan_resource_gets(test) |indent(4) }}
       - put: concourse-metadata-resource
     - aggregate:
