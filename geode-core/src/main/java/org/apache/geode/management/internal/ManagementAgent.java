@@ -49,11 +49,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
+import org.apache.geode.cache.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.SSLConfig;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
@@ -204,10 +205,10 @@ public class ManagementAgent {
         final int port = this.config.getHttpServicePort();
 
         Pair<String, Object> securityServiceAttr =
-            new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
                 securityService);
         Pair<String, Object> sslConfigAttr =
-            new ImmutablePair<>(HttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+            new ImmutablePair<>(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
                 createSslProps());
 
         // if jmx manager is running, admin rest should be available, either on locator or server

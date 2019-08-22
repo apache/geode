@@ -25,17 +25,15 @@ import org.junit.Test;
 
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
-import org.apache.geode.internal.cache.HttpService;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 
 /**
- * The HttpServiceJunitTest class is a test suite of test cases testing the contract and
- * functionality of the JettyHelper class. Does not start Jetty.
- *
- * @see org.junit.Test
+ * The InternalHttpServiceJunitTest class is a test suite of test cases testing the contract and
+ * functionality of the InternalHttpService class. It does not start Jetty.
  */
-public class HttpServiceJunitTest {
+public class InternalHttpServiceJunitTest {
   private DistributionConfig distributionConfig;
 
   @Before
@@ -51,7 +49,7 @@ public class HttpServiceJunitTest {
 
   @Test
   public void testSetPortNoBindAddress() {
-    final HttpService jetty = new HttpService(null, 8090, SSLConfigurationFactory
+    final InternalHttpService jetty = new InternalHttpService(null, 8090, SSLConfigurationFactory
         .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
     assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();
@@ -61,8 +59,9 @@ public class HttpServiceJunitTest {
 
   @Test
   public void testSetPortWithBindAddress() {
-    final HttpService jetty = new HttpService("10.123.50.1", 10480, SSLConfigurationFactory
-        .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
+    final InternalHttpService jetty =
+        new InternalHttpService("10.123.50.1", 10480, SSLConfigurationFactory
+            .getSSLConfigForComponent(distributionConfig, SecurableCommunicationChannel.WEB));
     assertThat(jetty).isNotNull();
     assertThat(jetty.getHttpServer().getConnectors()[0]).isNotNull();
     assertThat(((ServerConnector) jetty.getHttpServer().getConnectors()[0]).getPort())

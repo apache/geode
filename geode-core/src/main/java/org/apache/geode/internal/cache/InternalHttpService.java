@@ -36,11 +36,12 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import org.apache.geode.cache.HttpService;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.SSLUtil;
 
-public class HttpService {
+public class InternalHttpService implements HttpService {
 
   private static final Logger logger = LogService.getLogger();
   private Server httpServer;
@@ -62,7 +63,7 @@ public class HttpService {
 
   private List<WebAppContext> webApps = new ArrayList<>();
 
-  public HttpService(String bindAddress, int port, SSLConfig sslConfig) {
+  public InternalHttpService(String bindAddress, int port, SSLConfig sslConfig) {
     if (port == 0) {
       return;
     }
@@ -125,13 +126,14 @@ public class HttpService {
     }
     this.port = port;
 
-    logger.info("Enabled HttpService on port {}", port);
+    logger.info("Enabled InternalHttpService on port {}", port);
   }
 
   public Server getHttpServer() {
     return httpServer;
   }
 
+  @Override
   public synchronized void addWebApplication(String webAppContext, String warFilePath,
       Pair<String, Object>... attributeNameValuePairs)
       throws Exception {
@@ -183,6 +185,7 @@ public class HttpService {
     return workingDirectory;
   }
 
+  @Override
   public void stop() {
     if (this.httpServer == null) {
       return;

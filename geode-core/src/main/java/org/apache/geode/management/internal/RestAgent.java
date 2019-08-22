@@ -24,12 +24,13 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
+import org.apache.geode.cache.HttpService;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -101,7 +102,7 @@ public class RestAgent {
     } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
       Pair<String, Object> securityServiceAttr =
-          new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+          new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
               securityService);
 
       if (cache.getHttpService().isPresent()) {

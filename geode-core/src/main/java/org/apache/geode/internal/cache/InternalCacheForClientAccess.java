@@ -45,6 +45,7 @@ import org.apache.geode.cache.DiskStore;
 import org.apache.geode.cache.DiskStoreFactory;
 import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.HttpService;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.RegionExistsException;

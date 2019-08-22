@@ -112,6 +112,7 @@ import org.apache.geode.cache.DynamicRegionFactory;
 import org.apache.geode.cache.EvictionAction;
 import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.GatewayException;
+import org.apache.geode.cache.HttpService;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
 import org.apache.geode.cache.Region;
@@ -939,9 +940,11 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
           httpService = Optional.empty();
         } else {
           try {
-            httpService = Optional.of(new HttpService(systemConfig.getHttpServiceBindAddress(),
-                systemConfig.getHttpServicePort(), SSLConfigurationFactory
-                    .getSSLConfigForComponent(systemConfig, SecurableCommunicationChannel.WEB)));
+            httpService =
+                Optional.of(new InternalHttpService(systemConfig.getHttpServiceBindAddress(),
+                    systemConfig.getHttpServicePort(), SSLConfigurationFactory
+                        .getSSLConfigForComponent(systemConfig,
+                            SecurableCommunicationChannel.WEB)));
           } catch (Throwable ex) {
             logger.warn("Could not enable HttpService: {}", ex.getMessage());
           }

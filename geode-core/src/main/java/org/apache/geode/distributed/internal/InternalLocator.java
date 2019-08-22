@@ -68,9 +68,9 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
@@ -754,10 +754,10 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     }
 
     Pair<String, Object> securityServiceAttribute =
-        new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
             internalCache.getSecurityService());
     Pair<String, Object> clusterManagementServiceAttribute =
-        new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        new ImmutablePair<>(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
             clusterManagementService);
 
     if (distributionConfig.getEnableManagementRestService()) {
