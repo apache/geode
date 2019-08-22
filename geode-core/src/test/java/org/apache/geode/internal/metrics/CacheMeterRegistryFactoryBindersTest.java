@@ -41,7 +41,7 @@ public class CacheMeterRegistryFactoryBindersTest {
   }
 
   @Test
-  public void verifyThatJvmMemoryBinderMetersExist() {
+  public void addsJvmMemoryMeters() {
     assertThatMeterExists(Gauge.class, "jvm.buffer.count");
     assertThatMeterExists(Gauge.class, "jvm.buffer.memory.used");
     assertThatMeterExists(Gauge.class, "jvm.buffer.total.capacity");
@@ -49,9 +49,9 @@ public class CacheMeterRegistryFactoryBindersTest {
     assertThatMeterExists(Gauge.class, "jvm.memory.committed");
     assertThatMeterExists(Gauge.class, "jvm.memory.max");
   }
-
+  
   @Test
-  public void verifyThatJvmThreadBinderMetersExist() {
+  public void addsJvmThreadMeters() {
     assertThatMeterExists(Gauge.class, "jvm.threads.peak");
     assertThatMeterExists(Gauge.class, "jvm.threads.daemon");
     assertThatMeterExists(Gauge.class, "jvm.threads.live");
@@ -70,12 +70,12 @@ public class CacheMeterRegistryFactoryBindersTest {
   }
 
   @Test
-  public void verifyThatProcessorBinderMetersExist() {
+  public void addsSystemCpuMeters() {
     assertThatMeterExists(Gauge.class, "system.cpu.count");
   }
 
   @Test
-  public void verifyThatUptimeBinderMetersExist() {
+  public void addsProcessUptimeMeters() {
     assertThatMeterExists(TimeGauge.class, "process.uptime");
     assertThatMeterExists(TimeGauge.class, "process.start.time");
   }
