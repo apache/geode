@@ -43,6 +43,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.jta.CacheUtils;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -209,9 +210,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx.begin();
       assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      long start = System.currentTimeMillis();
-      Thread.sleep(2000);
-      waitUntilTransactionTimeout(utx, start);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -228,14 +227,9 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  private static void waitUntilTransactionTimeout(UserTransaction utx, long start)
-      throws InterruptedException, SystemException {
-    long waitTime = 30 * 1000; // 30 seconds
-    do {
-      long current = System.currentTimeMillis();
-      assertThat(current - start < waitTime).as("UserTransaction is not timed out for 30 seconds");
-      Thread.sleep(10);
-    } while (utx.getStatus() != Status.STATUS_NO_TRANSACTION);
+  private static void waitUntilTransactionTimeout(UserTransaction utx) {
+    GeodeAwaitility.await().pollInSameThread()
+        .until(() -> utx.getStatus() == Status.STATUS_NO_TRANSACTION);
   }
 
   public static void runTest2() throws Exception {
@@ -246,9 +240,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx.begin();
       assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      long start = System.currentTimeMillis();
-      Thread.sleep(2000);
-      waitUntilTransactionTimeout(utx, start);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -271,9 +263,7 @@ public class TxnTimeOutDUnitTest extends JUnit4DistributedTestCase {
     utx.begin();
     assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
     utx.setTransactionTimeout(sleeptime);
-    long start = System.currentTimeMillis();
-    Thread.sleep(sleeptime * 2000);
-    waitUntilTransactionTimeout(utx, start);
+    waitUntilTransactionTimeout(utx);
     try {
       utx.commit();
     } catch (Exception e) {
