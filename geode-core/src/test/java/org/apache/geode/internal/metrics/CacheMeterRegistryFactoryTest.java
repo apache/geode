@@ -16,13 +16,9 @@ package org.apache.geode.internal.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Collection;
-
-import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Test;
 
 public class CacheMeterRegistryFactoryTest {
@@ -79,35 +75,5 @@ public class CacheMeterRegistryFactoryTest {
 
     assertThat(meter.getId().getTags())
         .contains(Tag.of("host.name", theHostName));
-  }
-
-  @Test
-  public void addsGaugesForHeapMemory() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Gauge> heapGauges = registry
-        .find("jvm.memory.used")
-        .tag("area", "heap")
-        .gauges();
-
-    assertThat(heapGauges).isNotEmpty();
-  }
-
-  @Test
-  public void addsGaugesForNonHeapUsedMemory() {
-    CacheMeterRegistryFactory factory = new CacheMeterRegistryFactory();
-
-    CompositeMeterRegistry registry = factory.create(CLUSTER_ID, MEMBER_NAME, HOST_NAME);
-    registry.add(new SimpleMeterRegistry());
-
-    Collection<Gauge> nonheapGauges = registry
-        .find("jvm.memory.used")
-        .tag("area", "nonheap")
-        .gauges();
-
-    assertThat(nonheapGauges).isNotEmpty();
   }
 }
