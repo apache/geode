@@ -14,11 +14,8 @@
  */
 package org.apache.geode.internal.metrics;
 
-import java.util.HashSet;
-import java.util.Set;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.binder.MeterBinder;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
@@ -31,22 +28,20 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
 
   @Override
   public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
-    Set<MeterBinder> meterBinders = new HashSet<>();
-    meterBinders.add(new JvmMemoryMetrics());
-    meterBinders.add(new JvmThreadMetrics());
-    meterBinders.add(new JvmGcMetrics());
-    meterBinders.add(new ProcessorMetrics());
-    meterBinders.add(new UptimeMetrics());
-    meterBinders.add(new FileDescriptorMetrics());
-
-    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(meterBinders);
+    JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
+    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
     MeterRegistry.Config registryConfig = registry.config();
     registryConfig.commonTags("cluster.id", String.valueOf(systemId));
     registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
     registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
 
-    registry.registerBinders();
+    gcMetricsBinder.bindTo(registry);
+    new JvmMemoryMetrics().bindTo(registry);
+    new JvmThreadMetrics().bindTo(registry);
+    new ProcessorMetrics().bindTo(registry);
+    new UptimeMetrics().bindTo(registry);
+    new FileDescriptorMetrics().bindTo(registry);
 
     return registry;
   }

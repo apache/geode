@@ -14,39 +14,42 @@
  */
 package org.apache.geode.internal.metrics;
 
-import java.util.Set;
+import static java.util.Arrays.asList;
 
-import io.micrometer.core.instrument.binder.MeterBinder;
+import java.util.Collection;
+
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import org.apache.logging.log4j.Logger;
+
+import org.apache.geode.annotations.VisibleForTesting;
+import org.apache.geode.internal.logging.LogService;
 
 public class GeodeCompositeMeterRegistry extends CompositeMeterRegistry {
+  private final Logger logger;
+  private final Collection<AutoCloseable> ownedResources;
 
-  private final Set<MeterBinder> binders;
-
-  public GeodeCompositeMeterRegistry(Set<MeterBinder> binders) {
-    super();
-    this.binders = binders;
+  GeodeCompositeMeterRegistry(AutoCloseable... ownedResources) {
+    this(LogService.getLogger(), ownedResources);
   }
 
-  void registerBinders() {
-    for (MeterBinder binder : binders) {
-      binder.bindTo(this);
-    }
+  @VisibleForTesting
+  GeodeCompositeMeterRegistry(Logger logger, AutoCloseable... ownedResources) {
+    super();
+    this.logger = logger;
+    this.ownedResources = asList(ownedResources);
   }
 
   @Override
   public void close() {
-    for (MeterBinder binder : binders) {
-      if (binder instanceof AutoCloseable) {
-        AutoCloseable autoCloseable = (AutoCloseable) binder;
-        try {
-          autoCloseable.close();
-        } catch (Exception ignored) {
-          // Shutting down anyway.
-        }
-      }
-    }
-
+    ownedResources.forEach(this::closeResource);
     super.close();
+  }
+
+  private void closeResource(AutoCloseable resource) {
+    try {
+      resource.close();
+    } catch (Exception thrown) {
+      logger.warn("Exception while closing resource " + resource, thrown);
+    }
   }
 }

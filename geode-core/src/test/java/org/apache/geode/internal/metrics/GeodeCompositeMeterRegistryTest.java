@@ -14,50 +14,43 @@
  */
 package org.apache.geode.internal.metrics;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import java.util.HashSet;
-
-import io.micrometer.core.instrument.binder.MeterBinder;
-import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
-import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 public class GeodeCompositeMeterRegistryTest {
 
   @Test
-  public void registerBinders_AllBindersWereRegistered() {
-    HashSet<MeterBinder> binders = new HashSet<>();
+  public void close_closesAllOwnedResources() throws Exception {
+    AutoCloseable resource1 = mock(AutoCloseable.class);
+    AutoCloseable resource2 = mock(AutoCloseable.class);
 
-    JvmMemoryMetrics jvmMemoryMetrics = mock(JvmMemoryMetrics.class);
-    JvmGcMetrics jvmGcMetrics = mock(JvmGcMetrics.class);
-    binders.add(jvmMemoryMetrics);
-    binders.add(jvmGcMetrics);
+    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(resource1, resource2);
 
-    GeodeCompositeMeterRegistry registry =
-        new GeodeCompositeMeterRegistry(binders);
+    registry.close();
 
-    registry.registerBinders();
-
-    verify(jvmMemoryMetrics).bindTo(registry);
-    verify(jvmGcMetrics).bindTo(registry);
-
+    verify(resource1).close();
+    verify(resource2).close();
   }
 
   @Test
-  public void close_AllAutoClosablesHadCloseCalled() {
-    HashSet<MeterBinder> binders = new HashSet<>();
+  public void close_logsException_ifResourceCloseThrows() throws Exception {
+    AutoCloseable throwingResource = mock(AutoCloseable.class);
+    Exception thrownByResource = new Exception("thrown by resource.close()");
 
-    JvmMemoryMetrics jvmMemoryMetrics = mock(JvmMemoryMetrics.class);
-    JvmGcMetrics jvmGcMetrics = mock(JvmGcMetrics.class);
-    binders.add(jvmMemoryMetrics);
-    binders.add(jvmGcMetrics);
+    doThrow(thrownByResource).when(throwingResource).close();
 
+    Logger logger = mock(Logger.class);
     GeodeCompositeMeterRegistry registry =
-        new GeodeCompositeMeterRegistry(binders);
+        new GeodeCompositeMeterRegistry(logger, throwingResource);
 
     registry.close();
-    verify(jvmGcMetrics).close();
+
+    verify(logger).warn(any(String.class), same(thrownByResource));
   }
 }

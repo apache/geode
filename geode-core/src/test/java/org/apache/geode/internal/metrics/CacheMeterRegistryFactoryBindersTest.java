@@ -14,10 +14,12 @@
  */
 package org.apache.geode.internal.metrics;
 
+import static java.util.Arrays.asList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Meter;
@@ -28,8 +30,10 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.Before;
 import org.junit.Test;
 
+
 public class CacheMeterRegistryFactoryBindersTest {
 
+  private static final String[] COMMON_TAG_KEYS = {"cluster.id", "member.name", "host.name"};
   private CompositeMeterRegistry registry;
 
   @Before
@@ -42,55 +46,67 @@ public class CacheMeterRegistryFactoryBindersTest {
 
   @Test
   public void addsJvmMemoryMeters() {
-    assertThatMeterExists(Gauge.class, "jvm.buffer.count");
-    assertThatMeterExists(Gauge.class, "jvm.buffer.memory.used");
-    assertThatMeterExists(Gauge.class, "jvm.buffer.total.capacity");
-    assertThatMeterExists(Gauge.class, "jvm.memory.used");
-    assertThatMeterExists(Gauge.class, "jvm.memory.committed");
-    assertThatMeterExists(Gauge.class, "jvm.memory.max");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.buffer.count");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.buffer.memory.used");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.buffer.total.capacity");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.memory.used");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.memory.committed");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.memory.max");
   }
-  
+
   @Test
   public void addsJvmThreadMeters() {
-    assertThatMeterExists(Gauge.class, "jvm.threads.peak");
-    assertThatMeterExists(Gauge.class, "jvm.threads.daemon");
-    assertThatMeterExists(Gauge.class, "jvm.threads.live");
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.peak");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.daemon");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.live");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.BLOCKED)));
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.NEW)));
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.RUNNABLE)));
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.WAITING)));
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.TIMED_WAITING)));
-    assertThatMeterExists(Gauge.class, "jvm.threads.states",
+    assertThatMeterExistsWithCommonTags(Gauge.class, "jvm.threads.states",
         Tag.of("state", getTagValue(Thread.State.TERMINATED)));
   }
 
   @Test
   public void addsSystemCpuMeters() {
-    assertThatMeterExists(Gauge.class, "system.cpu.count");
+    assertThatMeterExistsWithCommonTags(Gauge.class, "system.cpu.count");
   }
 
   @Test
   public void addsProcessUptimeMeters() {
-    assertThatMeterExists(TimeGauge.class, "process.uptime");
-    assertThatMeterExists(TimeGauge.class, "process.start.time");
+    assertThatMeterExistsWithCommonTags(TimeGauge.class, "process.uptime");
+    assertThatMeterExistsWithCommonTags(TimeGauge.class, "process.start.time");
   }
 
   private static String getTagValue(Thread.State state) {
     return state.name().toLowerCase().replace("_", "-");
   }
 
-  private <T extends Meter> void assertThatMeterExists(Class<T> type, String name, Tag... tags) {
+  private <T extends Meter> void assertThatMeterExistsWithCommonTags(Class<T> type, String name,
+      Tag... customTags) {
     Collection<Meter> meters = registry
         .find(name)
-        .tags(Arrays.asList(tags))
+        .tags(asList(customTags))
         .meters();
 
     assertThat(meters).isNotEmpty();
-    assertThat(meters).first().isInstanceOf(type);
+    assertThat(meters)
+        .allMatch(type::isInstance, "instance of " + type);
+
+    meters.forEach(meter -> assertThatHasCommonTags(meter));
+  }
+
+  private static void assertThatHasCommonTags(Meter meter) {
+    List<String> keys = meter.getId().getTags().stream().map(Tag::getKey).collect(toList());
+
+    assertThat(keys)
+        .as("Tags for meter %s", meter.getId().getName())
+        .contains(COMMON_TAG_KEYS);
   }
 }
