@@ -35,7 +35,7 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import org.apache.geode.cache.HttpService;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.SSLUtil;

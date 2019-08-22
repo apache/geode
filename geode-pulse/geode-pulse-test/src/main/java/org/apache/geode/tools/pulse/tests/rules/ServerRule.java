@@ -18,11 +18,12 @@ package org.apache.geode.tools.pulse.tests.rules;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.junit.rules.ExternalResource;
 
-import org.apache.geode.cache.HttpService;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.AvailablePort;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.cache.InternalHttpService;
@@ -79,7 +80,7 @@ public class ServerRule extends ExternalResource {
 
     int httpPort = AvailablePort.getRandomAvailablePort(AvailablePort.SOCKET);
     jetty = new InternalHttpService(LOCALHOST, httpPort, new SSLConfig());
-    jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath());
+    jetty.addWebApplication(PULSE_CONTEXT, getPulseWarPath(), new HashMap<>());
     pulseURL = "http://" + LOCALHOST + ":" + httpPort + PULSE_CONTEXT;
   }
 

@@ -12,11 +12,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.cache;
+package org.apache.geode.cache.internal;
 
 import java.util.Map;
 
-import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.InternalCache;
 
 /**
@@ -24,7 +23,6 @@ import org.apache.geode.internal.cache.InternalCache;
  * {@link InternalCache}. An instance can be retrieved by calling
  * {@code InternalCache.getHttpService()}.
  */
-@Experimental
 public interface HttpService {
 
   /**
