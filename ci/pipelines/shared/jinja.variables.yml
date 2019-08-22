@@ -96,7 +96,7 @@ tests:
   GRADLE_TASK: distributedTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '180'
+  RAM: '210'
   name: Distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
