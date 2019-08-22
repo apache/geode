@@ -32,30 +32,12 @@ dependencies {
   testImplementation('org.awaitility:awaitility')
 }
 
-ext.findJavac = { ->
-  def javac = new File(System.getProperty('java.home') + '/bin/javac')
-  if (javac.isFile() && javac.canExecute()) {
-    return javac.toString()
+tasks.withType(AbstractCompile) {
+  options.with {
+    fork = true
+    forkOptions.javaHome = file(System.getProperty('java.home'))
+    compilerArgs << '-XDignore.symbol.file'
   }
-
-  javac = new File(System.getProperty('java.home') + '/../bin/javac')
-  if (javac.isFile() && javac.canExecute()) {
-    return javac.toString()
-  }
-
-  return 'javac'
-}
-
-compileJava {
-  options.fork = true
-  options.forkOptions.executable = project.findJavac()
-  options.compilerArgs << '-XDignore.symbol.file'
-}
-
-compileTestJava {
-  options.fork = true
-  options.forkOptions.executable = project.findJavac()
-  options.compilerArgs << '-XDignore.symbol.file'
 }
 
 ext.moduleName = group + '.unsafe'
