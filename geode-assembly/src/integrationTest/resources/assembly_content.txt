@@ -203,6 +203,7 @@ javadoc/org/apache/geode/cache/FixedPartitionResolver.html
 javadoc/org/apache/geode/cache/GatewayConfigurationException.html
 javadoc/org/apache/geode/cache/GatewayException.html
 javadoc/org/apache/geode/cache/GemFireCache.html
+javadoc/org/apache/geode/cache/HttpService.html
 javadoc/org/apache/geode/cache/IncompatibleVersionException.html
 javadoc/org/apache/geode/cache/InterestPolicy.html
 javadoc/org/apache/geode/cache/InterestRegistrationEvent.html

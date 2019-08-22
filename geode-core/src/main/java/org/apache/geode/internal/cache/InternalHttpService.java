@@ -16,12 +16,11 @@ package org.apache.geode.internal.cache;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -135,7 +134,7 @@ public class InternalHttpService implements HttpService {
 
   @Override
   public synchronized void addWebApplication(String webAppContext, String warFilePath,
-      Pair<String, Object>... attributeNameValuePairs)
+      Map<String, Object> attributeNameValuePairs)
       throws Exception {
     if (httpServer == null) {
       logger.info(
@@ -152,8 +151,7 @@ public class InternalHttpService implements HttpService {
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
 
     if (attributeNameValuePairs != null) {
-      Arrays.stream(attributeNameValuePairs)
-          .forEach(p -> webapp.setAttribute(p.getKey(), p.getValue()));
+      attributeNameValuePairs.forEach((key, value) -> webapp.setAttribute(key, value));
     }
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));

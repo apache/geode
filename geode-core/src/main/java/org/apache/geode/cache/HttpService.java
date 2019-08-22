@@ -14,7 +14,7 @@
  */
 package org.apache.geode.cache;
 
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.Map;
 
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.internal.cache.InternalCache;
@@ -29,7 +29,7 @@ public interface HttpService {
 
   /**
    * Stop the service. This should also stop any transitively managed components. Starting the
-   * service is implicitly handled by {@link #addWebApplication(String, String, Pair[])}
+   * service is implicitly handled by {@link #addWebApplication(String, String, Map)}
    */
   void stop();
 
@@ -42,5 +42,5 @@ public interface HttpService {
    * @param attributeNameValuePairs attributes to be set on the servlet context
    */
   void addWebApplication(String webAppContext, String warFilePath,
-      Pair<String, Object>... attributeNameValuePairs) throws Exception;
+      Map<String, Object> attributeNameValuePairs) throws Exception;
 }

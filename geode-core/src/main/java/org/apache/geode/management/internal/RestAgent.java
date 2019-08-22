@@ -15,10 +15,10 @@
 package org.apache.geode.management.internal;
 
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -101,9 +101,9 @@ public class RestAgent {
           "Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server.");
     } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
-      Pair<String, Object> securityServiceAttr =
-          new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-              securityService);
+      Map<String, Object> securityServiceAttr = new HashMap<>();
+      securityServiceAttr.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+          securityService);
 
       if (cache.getHttpService().isPresent()) {
         HttpService httpService = cache.getHttpService().get();

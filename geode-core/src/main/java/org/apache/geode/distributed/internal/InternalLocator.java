@@ -29,7 +29,9 @@ import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -39,8 +41,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -753,20 +753,18 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
       return;
     }
 
-    Pair<String, Object> securityServiceAttribute =
-        new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-            internalCache.getSecurityService());
-    Pair<String, Object> clusterManagementServiceAttribute =
-        new ImmutablePair<>(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-            clusterManagementService);
+    Map<String, Object> serviceAttributes = new HashMap<>();
+    serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        internalCache.getSecurityService());
+    serviceAttributes.put(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        clusterManagementService);
 
     if (distributionConfig.getEnableManagementRestService()) {
       internalCache.getHttpService().ifPresent(x -> {
         try {
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
-          x.addWebApplication("/management", gemfireManagementWar, securityServiceAttribute,
-              clusterManagementServiceAttribute);
+          x.addWebApplication("/management", gemfireManagementWar, serviceAttributes);
         } catch (Throwable e) {
           logger.warn("Unable to start management service: {}", e.getMessage());
         }

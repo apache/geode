@@ -27,6 +27,7 @@ import java.rmi.server.RMIClientSocketFactory;
 import java.rmi.server.RMIServerSocketFactory;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -44,8 +45,6 @@ import javax.management.remote.rmi.RMIServerImpl;
 
 import com.healthmarketscience.rmiio.exporter.RemoteStreamExporter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.GemFireConfigException;
@@ -204,17 +203,14 @@ public class ManagementAgent {
         final String bindAddress = this.config.getHttpServiceBindAddress();
         final int port = this.config.getHttpServicePort();
 
-        Pair<String, Object> securityServiceAttr =
-            new ImmutablePair<>(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-                securityService);
-        Pair<String, Object> sslConfigAttr =
-            new ImmutablePair<>(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
-                createSslProps());
+        Map<String, Object> serviceAttributes = new HashMap<>();
+        serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+            securityService);
 
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
-          httpService.addWebApplication("/gemfire", adminRestWar, securityServiceAttr);
-          httpService.addWebApplication("/geode-mgmt", adminRestWar, securityServiceAttr);
+          httpService.addWebApplication("/gemfire", adminRestWar, serviceAttributes);
+          httpService.addWebApplication("/geode-mgmt", adminRestWar, serviceAttributes);
         }
 
         // if jmx manager is running, pulse should be available, either on locator or server
@@ -230,7 +226,11 @@ public class ManagementAgent {
               .getSocketCreatorForComponent(SecurableCommunicationChannel.LOCATOR);
           System.setProperty(PULSE_USESSL_MANAGER, jmxSocketCreator.useSSL() + "");
           System.setProperty(PULSE_USESSL_LOCATOR, locatorSocketCreator.useSSL() + "");
-          httpService.addWebApplication("/pulse", pulseWar, securityServiceAttr, sslConfigAttr);
+
+          serviceAttributes.put(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
+              createSslProps());
+
+          httpService.addWebApplication("/pulse", pulseWar, serviceAttributes);
 
           managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
               .concat(String.valueOf(port)).concat("/pulse/"));
