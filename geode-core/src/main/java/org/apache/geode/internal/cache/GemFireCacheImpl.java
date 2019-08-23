@@ -2130,9 +2130,6 @@ public class GemFireCacheImpl implements InternalCache, InternalClientCache, Has
         resourceManager.close();
         meterRegistry.close();
 
-        for (MeterRegistry tmpMeterRegistry : meterSubregistries)
-          tmpMeterRegistry.close();
-
         try {
           resourceAdvisor.close();
         } catch (CancelException ignore) {
