@@ -40,9 +40,9 @@ For peer-to-peer topologies, apply the following settings to enable non-sticky s
 
 **Client-server**
 
--   The Java system property `gemfire.loadClassOnEveryDeserialization=true` must be set, in the `bin/setenv.sh file`.
+-   The Java system property `gemfire.loadClassOnEveryDeserialization=true` must be set, in the `bin/setenv.sh` file.
 -   The local client cache must be empty. Ensure that the `gemfire.cache.enable_local_cache` property is set to false. This effectively sets the local client cache to be a **PROXY** cache.
--   If the local client cache is a **PROXY** cache then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
+-   If the local client cache is a **PROXY** cache, then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
 
 
 ## <a id="sticky_vs_non-sticky_overview__section_E0E0E5A1C9484D4AA13878273F16A920" class="no-quick-link"></a>Configuring Non-Sticky Session Replication for WebLogic
@@ -54,4 +54,4 @@ No additional configuration is required.
 **Client-Server**
 
 -   The local client cache must be empty. Ensure that the `gemfire.cache.enable_local_cache` property is set to false. This effectively sets the local client cache to be a **PROXY** cache.
--   If the local client cache is a **PROXY** cache then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
+-   If the local client cache is a **PROXY** cache, then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
