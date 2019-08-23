@@ -202,7 +202,7 @@ public class GMSMemberJUnitTest {
     dataOutput = new HeapDataOutputStream(Version.GFE_90);
     member.writeEssentialData(dataOutput);
     bais = new ByteArrayInputStream(baos.toByteArray());
-    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90.ordinal());
+    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
     newMember = new GMSMember();
     newMember.readEssentialData(dataInput);
     assertEquals(0, newMember.getVmKind());

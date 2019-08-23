@@ -239,7 +239,7 @@ public class ByteArrayDataInputTest {
       return new java.io.DataInputStream(new java.io.ByteArrayInputStream(inputBytes));
     } else {
       ByteArrayDataInput input = new ByteArrayDataInput();
-      input.initialize(inputBytes, 0);
+      input.initialize(inputBytes, null);
       return input;
     }
   }

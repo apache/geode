@@ -240,7 +240,7 @@ public class MsgDestreamer {
           final Version v = version;
           DataInputStream dis =
               v == null ? new DataInputStream(this.is)
-                  : new VersionedDataInputStream(this.is, v.ordinal());
+                  : new VersionedDataInputStream(this.is, v);
           long startSer = this.stats.startMsgDeserialization();
           setResult((DistributionMessage) InternalDataSerializer.readDSFID(dis));
           this.stats.endMsgDeserialization(startSer);

@@ -52,7 +52,7 @@ public class FilterInfoTest {
     byte[] outputBytes = dataOut.toByteArray();
     FilterInfo deserialized = new FilterInfo();
     ByteArrayDataInput dataInput = new ByteArrayDataInput();
-    dataInput.initialize(outputBytes, Version.CURRENT_ORDINAL);
+    dataInput.initialize(outputBytes, Version.CURRENT);
     deserialized.fromData(dataInput);
     assertThat(deserialized.getCQs()).isEqualTo(cqs);
     assertThat(deserialized.getInterestedClients()).isEqualTo(clients);

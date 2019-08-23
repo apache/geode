@@ -35,7 +35,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   private int pos;
   /** reusable buffer for readUTF */
   private char[] charBuf;
-  private short version;
+  private SerializationVersion version;
 
   /**
    * Create a {@link DataInput} whose contents are empty.
@@ -43,10 +43,10 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   public ByteArrayDataInput() {}
 
   public ByteArrayDataInput(byte[] bytes) {
-    initialize(bytes, (short) 0);
+    initialize(bytes, null);
   }
 
-  public ByteArrayDataInput(byte[] bytes, short version) {
+  public ByteArrayDataInput(byte[] bytes, SerializationVersion version) {
     initialize(bytes, version);
   }
 
@@ -57,18 +57,18 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    *        (a copy is not made) so it should not be changed externally.
    * @param version the product version that serialized the object on given bytes
    */
-  public void initialize(byte[] bytes, int version) {
+  public void initialize(byte[] bytes, SerializationVersion version) {
     this.bytes = bytes;
     this.nBytes = bytes.length;
     this.pos = 0;
-    this.version = (short) version;
+    this.version = version;
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
+  public SerializationVersion getVersion() {
     return version;
   }
 
@@ -463,7 +463,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
     this.bytes = null;
     this.nBytes = 0;
     this.pos = 0;
-    this.version = 0;
+    this.version = null;
   }
 
   /**
@@ -471,7 +471,8 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public String toString() {
-    return this.version == 0 ? super.toString() : (super.toString() + " (v" + this.version + ')');
+    return this.version == null ? super.toString()
+        : (super.toString() + " (v" + this.version + ')');
   }
 
   private void throwUTFEncodingError(int index, int char1, int char2, Integer char3, int enc)

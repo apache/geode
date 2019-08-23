@@ -356,7 +356,7 @@ public class ClientCacheFactoryJUnitTest {
 
     DataInputStream in =
         new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
-            Version.CURRENT_ORDINAL);
+            Version.CURRENT);
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
@@ -374,7 +374,7 @@ public class ClientCacheFactoryJUnitTest {
     DataSerializer.writeObject(clientID, out);
 
     in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
-        Version.CURRENT_ORDINAL);
+        Version.CURRENT);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);

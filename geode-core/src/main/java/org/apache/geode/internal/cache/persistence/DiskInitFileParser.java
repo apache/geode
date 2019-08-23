@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 public class DiskInitFileParser {
   private static final Logger logger = LogService.getLogger();
@@ -426,7 +427,7 @@ public class DiskInitFileParser {
         }
           break;
         case DiskInitFile.IFREC_GEMFIRE_VERSION: {
-          short ver = Version.readOrdinal(dis);
+          short ver = SerializationVersion.readOrdinal(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",

@@ -180,7 +180,7 @@ public class EventIdOptimizationJUnitTest {
 
 
     HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, Version.GFE_90);
-    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90.ordinal());
+    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90);
 
     eventID.toData(dop);
 
@@ -188,7 +188,7 @@ public class EventIdOptimizationJUnitTest {
 
 
     VersionedDataInputStream dataInputStream =
-        new VersionedDataInputStream(bais, Version.GFE_90.ordinal());
+        new VersionedDataInputStream(bais, Version.GFE_90);
 
     EventID eventID2 = new EventID();
     eventID2.fromData(dataInputStream);

@@ -21,6 +21,7 @@ import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -42,11 +43,8 @@ class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
-    if (version == null) {
-      return Version.CURRENT_ORDINAL;
-    }
-    return this.version.ordinal();
+  public SerializationVersion getVersion() {
+    return this.version;
   }
 
   /**

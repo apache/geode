@@ -18,6 +18,7 @@ package org.apache.geode.internal;
 import java.io.IOException;
 import java.io.ObjectInput;
 
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -46,11 +47,8 @@ public class VersionedObjectInput implements ObjectInput, VersionedDataStream {
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
-    if (version == null) {
-      return Version.CURRENT_ORDINAL;
-    }
-    return this.version.ordinal();
+  public SerializationVersion getVersion() {
+    return this.version;
   }
 
   /**

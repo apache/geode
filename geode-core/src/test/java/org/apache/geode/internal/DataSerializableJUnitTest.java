@@ -1165,13 +1165,13 @@ public class DataSerializableJUnitTest implements Serializable {
     VersionedDataSerializableImpl ds = new VersionedDataSerializableImpl(getRandom());
 
     VersionedDataOutputStream v =
-        new VersionedDataOutputStream(this.baos, Version.GFE_70.ordinal());
+        new VersionedDataOutputStream(this.baos, Version.GFE_70);
     DataSerializer.writeObject(ds, v);
     v.flush();
 
     ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
-    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, Version.GFE_70.ordinal());
+    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, Version.GFE_70);
     VersionedDataSerializableImpl ds2 =
         (VersionedDataSerializableImpl) DataSerializer.readObject(vin);
 

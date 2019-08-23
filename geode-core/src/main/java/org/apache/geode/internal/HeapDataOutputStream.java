@@ -67,7 +67,7 @@ public class HeapDataOutputStream extends
    *        instead referenced.
    */
   public HeapDataOutputStream(int allocSize, Version version, boolean doNotCopy) {
-    super(allocSize, version == null ? Version.CURRENT_ORDINAL : version.ordinal(), doNotCopy);
+    super(allocSize, version, doNotCopy);
   }
 
   /**
@@ -75,7 +75,7 @@ public class HeapDataOutputStream extends
    *        instead referenced.
    */
   public HeapDataOutputStream(ByteBuffer initialBuffer, Version version, boolean doNotCopy) {
-    super(initialBuffer, version == null ? Version.CURRENT_ORDINAL : version.ordinal(), doNotCopy);
+    super(initialBuffer, version, doNotCopy);
   }
 
   /**

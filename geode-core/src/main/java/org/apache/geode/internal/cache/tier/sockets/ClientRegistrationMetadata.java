@@ -29,6 +29,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 
@@ -58,9 +59,9 @@ class ClientRegistrationMetadata {
         unversionedDataOutputStream)) {
       if (oldClientRequiresVersionedStreams(clientVersion)) {
         dataInputStream =
-            new VersionedDataInputStream(unversionedDataInputStream, clientVersion.ordinal());
+            new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
         dataOutputStream =
-            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion.ordinal());
+            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
       } else {
         dataInputStream = unversionedDataInputStream;
         dataOutputStream = unversionedDataOutputStream;
@@ -113,7 +114,7 @@ class ClientRegistrationMetadata {
   private boolean getAndValidateClientVersion(final Socket socket,
       final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
-    short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
+    short clientVersionOrdinal = SerializationVersion.readOrdinal(dataInputStream);
 
     try {
       clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);

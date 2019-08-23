@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.serialization.VersionedDataStream;
@@ -87,9 +88,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         this.clientReadTimeout = dataInputStream.readInt();
         if (clientVersion.compareTo(Version.CURRENT) < 0) {
           // versioned streams allow object serialization code to deal with older clients
-          dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion.ordinal());
+          dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
           dataOutputStream =
-              new VersionedDataOutputStream(dataOutputStream, clientVersion.ordinal());
+              new VersionedDataOutputStream(dataOutputStream, clientVersion);
         }
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
         // Note: credentials should always be the last piece in handshake for
@@ -134,8 +135,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
     if (clientVersion.compareTo(Version.CURRENT) < 0) {
-      dis = new VersionedDataInputStream(in, clientVersion.ordinal());
-      dos = new VersionedDataOutputStream(dos, clientVersion.ordinal());
+      dis = new VersionedDataInputStream(in, clientVersion);
+      dos = new VersionedDataOutputStream(dos, clientVersion);
     } else {
       dis = new DataInputStream(in);
     }
@@ -149,7 +150,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     // additional byte of wan site needs to send for Gateway BC
     if (communicationMode.isWAN()) {
-      Version.writeOrdinal(dos, currentServerVersion.ordinal(), true);
+      SerializationVersion.writeOrdinal(dos, currentServerVersion.ordinal(), true);
     }
 
     dos.writeByte(endpointType);
@@ -160,7 +161,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     Version v = Version.CURRENT;
     if (dos instanceof VersionedDataStream) {
-      v = Version.getVersionForDataStream((VersionedDataStream) dos);
+      v = (Version) ((VersionedDataStream) dos).getVersion();
     }
     HeapDataOutputStream hdos = new HeapDataOutputStream(v);
     DataSerializer.writeObject(member, hdos);
@@ -171,7 +172,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     dos.writeUTF("");
 
     // Write delta-propagation property value if this is not WAN.
-    if (!communicationMode.isWAN() && this.clientVersion.compareTo(Version.GFE_61) >= 0) {
+    if (!communicationMode.isWAN() && this.clientVersion.compareTo(
+        Version.GFE_61) >= 0) {
       dos.writeBoolean(((InternalDistributedSystem) this.system).getConfig().getDeltaPropagation());
     }
 
@@ -189,7 +191,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
           .getDistributedSystemId());
     }
 
-    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(Version.GFE_80) >= 0
+    if ((communicationMode.isWAN()) && this.clientVersion.compareTo(
+        Version.GFE_80) >= 0
         && currentServerVersion.compareTo(Version.GFE_80) >= 0) {
       int pdxSize = PeerTypeRegistration.getPdxRegistrySize();
       dos.writeInt(pdxSize);

@@ -26,7 +26,7 @@ import java.io.OutputStream;
  */
 public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
 
-  private final short version;
+  private SerializationVersion version;
 
   /**
    * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
@@ -34,7 +34,7 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
    * @param out the underlying output stream
    * @param version the product version that serialized object on the given {@link OutputStream}
    */
-  public VersionedDataOutputStream(OutputStream out, short version) {
+  public VersionedDataOutputStream(OutputStream out, SerializationVersion version) {
     super(out);
     this.version = version;
   }
@@ -43,7 +43,7 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
+  public SerializationVersion getVersion() {
     return this.version;
   }
 }

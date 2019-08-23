@@ -34,6 +34,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MakeNotStatic;
+import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.SSLConfig;
@@ -209,7 +210,7 @@ public class TcpClient {
       out = new DataOutputStream(new BufferedOutputStream(sock.getOutputStream()));
 
       if (serverVersion < Version.CURRENT_ORDINAL) {
-        out = new VersionedDataOutputStream(out, serverVersion);
+        out = new VersionedDataOutputStream(out, Version.fromOrdinalNoThrow(serverVersion, false));
       }
 
       out.writeInt(gossipVersion);
@@ -221,7 +222,7 @@ public class TcpClient {
 
       if (replyExpected) {
         DataInputStream in = new DataInputStream(sock.getInputStream());
-        in = new VersionedDataInputStream(in, serverVersion);
+        in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion, false));
         try {
           Object response = DataSerializer.readObject(in);
           logger.debug("received response: {}", response);
@@ -236,6 +237,13 @@ public class TcpClient {
       } else {
         return null;
       }
+    } catch (UnsupportedVersionException ex) {
+      if (logger.isDebugEnabled()) {
+        logger
+            .debug("Remote TcpServer version: " + serverVersion + " is higher than local version: "
+                + Version.CURRENT_ORDINAL + ". This is never expected as remoteVersion");
+      }
+      return null;
     } finally {
       try {
         if (replyExpected) {
@@ -288,8 +296,7 @@ public class TcpClient {
     try {
       OutputStream outputStream = new BufferedOutputStream(sock.getOutputStream());
       DataOutputStream out =
-          new VersionedDataOutputStream(new DataOutputStream(outputStream),
-              Version.GFE_57.ordinal());
+          new VersionedDataOutputStream(new DataOutputStream(outputStream), Version.GFE_57);
 
       out.writeInt(gossipVersion);
 
@@ -299,7 +306,7 @@ public class TcpClient {
 
       InputStream inputStream = sock.getInputStream();
       DataInputStream in = new DataInputStream(inputStream);
-      in = new VersionedDataInputStream(in, Version.GFE_57.ordinal());
+      in = new VersionedDataInputStream(in, Version.GFE_57);
       try {
         Object readObject = DataSerializer.readObject(in);
         if (!(readObject instanceof VersionResponse)) {

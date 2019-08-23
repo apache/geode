@@ -735,7 +735,7 @@ public class GatewaySenderEventImpl
     // this._id = in.readUTF();
     if (version < 0x11 && (in instanceof InputStream)
         && InternalDataSerializer.getVersionForDataStream(in) == Version.CURRENT) {
-      in = new VersionedDataInputStream((InputStream) in, Version.GFE_701.ordinal());
+      in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
     }
     this.id = (EventID) DataSerializer.readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM

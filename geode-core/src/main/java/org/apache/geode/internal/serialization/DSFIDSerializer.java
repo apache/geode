@@ -129,11 +129,11 @@ public class DSFIDSerializer {
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
         SerializationVersions sv = (SerializationVersions) ds;
-        Version[] versions = sv.getSerializationVersions();
+        SerializationVersion[] versions = sv.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (SerializationVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
@@ -181,13 +181,12 @@ public class DSFIDSerializer {
    * Returns
    * zero if the version is same as this member's.
    */
-  public short getVersionForDataStreamOrZero(DataOutput out) {
+  public SerializationVersion getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      return ((VersionedDataStream) out).getVersionOrdinal();
+      return ((VersionedDataStream) out).getVersion();
     } else {
-      // assume latest version
-      return 0;
+      return null;
     }
   }
 
@@ -262,13 +261,13 @@ public class DSFIDSerializer {
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        Version[] versions = null;
+        SerializationVersion[] versions = null;
         SerializationVersions vds = (SerializationVersions) ds;
         versions = vds.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (SerializationVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),

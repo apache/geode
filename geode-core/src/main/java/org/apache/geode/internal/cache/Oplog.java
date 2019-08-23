@@ -108,6 +108,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.shared.NativeCalls;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.pdx.internal.PdxWriterImpl;
@@ -2071,7 +2072,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   private Version readProductVersionRecord(DataInput dis, File f) throws IOException {
     Version recoveredGFVersion;
-    short ver = Version.readOrdinal(dis);
+    short ver = SerializationVersion.readOrdinal(dis);
     try {
       recoveredGFVersion = Version.fromOrdinal(ver, false);
     } catch (UnsupportedVersionException e) {
@@ -6362,7 +6363,8 @@ public class Oplog implements CompactableOplog, Flushable {
   }
 
   /**
-   * If this OpLog is from an older version of the product, then return that {@link Version} else
+   * If this OpLog is from an older version of the product, then return that
+   * {@link org.apache.geode.internal.Version} else
    * return null.
    */
   public Version getProductVersionIfOld() {
@@ -6385,7 +6387,7 @@ public class Oplog implements CompactableOplog, Flushable {
 
   /**
    * If this OpLog has data that was written by an older version of the product, then return that
-   * {@link Version} else return null.
+   * {@link org.apache.geode.internal.Version} else return null.
    */
   public Version getDataVersionIfOld() {
     final Version version = this.dataVersion;
@@ -6574,7 +6576,7 @@ public class Oplog implements CompactableOplog, Flushable {
         flushNoSync(olf);
       }
       // don't compress since we setup fixed size of buffers
-      Version.writeOrdinal(bb, ordinal, false);
+      SerializationVersion.writeOrdinal(bb, ordinal, false);
     }
 
     private void writeInt(OplogFile olf, int v) throws IOException {

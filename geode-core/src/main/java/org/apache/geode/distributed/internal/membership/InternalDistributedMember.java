@@ -50,6 +50,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -115,7 +116,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   /** The versions in which this message was modified */
   @Immutable
-  private static final Version[] dsfidVersions = new Version[] {Version.GFE_71, Version.GFE_90};
+  private static final Version[] dsfidVersions = new Version[] {
+      Version.GFE_71, Version.GFE_90};
 
   private void defaultToCurrentHost() {
     netMbr.setProcessId(OSProcess.getId());
@@ -743,7 +745,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   private short readVersion(int flags, DataInput in) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
-      short version = Version.readOrdinal(in);
+      short version = SerializationVersion.readOrdinal(in);
       this.versionObj = Version.fromOrdinalNoThrow(version, false);
       return version;
     } else {
@@ -799,7 +801,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializer.writeString(attributes == null ? "" : attributes.getId(), out);
     DataSerializer.writeInteger(Integer.valueOf(attributes == null ? 300 : attributes.getTimeout()),
         out);
-    Version.writeOrdinal(out, netMbr.getVersionOrdinal(), true);
+    SerializationVersion.writeOrdinal(out, netMbr.getVersionOrdinal(), true);
     netMbr.writeAdditionalData(out);
   }
 
@@ -908,7 +910,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
 
     short version = netMbr.getVersionOrdinal();
-    Version.writeOrdinal(out, version, true);
+    SerializationVersion.writeOrdinal(out, version, true);
   }
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
@@ -1100,7 +1102,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     netMbr = MemberFactory.newNetMember(inetAddr, hostName, port, sbEnabled, elCoord,
         InternalDataSerializer.getVersionForDataStream(in).ordinal(), attr);
 
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GFE_90) == 0) {
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
+        Version.GFE_90) == 0) {
       netMbr.readAdditionalData(in);
     }
   }

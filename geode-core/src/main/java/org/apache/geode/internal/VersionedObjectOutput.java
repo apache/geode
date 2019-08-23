@@ -18,6 +18,7 @@ package org.apache.geode.internal;
 import java.io.IOException;
 import java.io.ObjectOutput;
 
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -49,11 +50,8 @@ public class VersionedObjectOutput implements ObjectOutput, VersionedDataStream 
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
-    if (version == null) {
-      return Version.CURRENT_ORDINAL;
-    }
-    return this.version.ordinal();
+  public SerializationVersion getVersion() {
+    return this.version;
   }
 
   /**

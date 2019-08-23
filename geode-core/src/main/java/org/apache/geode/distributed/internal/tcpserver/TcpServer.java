@@ -458,7 +458,7 @@ public class TcpServer {
         log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
             + Version.fromOrdinal(versionOrdinal, false));
       }
-      input = new VersionedDataInputStream(input, versionOrdinal);
+      input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
       request = DataSerializer.readObject(input);
       if (log.isDebugEnabled()) {
         log.debug("Locator received request " + request + " from " + socket.getInetAddress());
@@ -484,7 +484,7 @@ public class TcpServer {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
           output =
-              new VersionedDataOutputStream(output, versionOrdinal);
+              new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
         }
         DataSerializer.writeObject(response, output);
         output.flush();

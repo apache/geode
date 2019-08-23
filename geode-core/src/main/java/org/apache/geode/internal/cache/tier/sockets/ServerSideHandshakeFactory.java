@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 class ServerSideHandshakeFactory {
   private static final Logger logger = LogService.getLogger();
@@ -64,7 +65,7 @@ class ServerSideHandshakeFactory {
       soTimeout = socket.getSoTimeout();
       socket.setSoTimeout(timeout);
       InputStream is = socket.getInputStream();
-      short clientVersionOrdinal = Version.readOrdinalFromInputStream(is);
+      short clientVersionOrdinal = SerializationVersion.readOrdinalFromInputStream(is);
       if (clientVersionOrdinal == -1) {
         throw new EOFException(
             "HandShakeReader: EOF reached before client version could be read");

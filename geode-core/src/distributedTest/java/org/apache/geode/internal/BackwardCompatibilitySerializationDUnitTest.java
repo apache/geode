@@ -35,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
@@ -93,7 +94,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromHigherVersionToLower() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_56.ordinal());
+        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_56);
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataPre66Called);
     assertFalse(toDataCalled);
@@ -107,7 +108,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromLowerVersionToHigher() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_701.ordinal());
+        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_701);
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataCalled);
   }
@@ -123,7 +124,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701.ordinal());
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataCalled);
@@ -140,7 +141,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56.ordinal());
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataPre66Called);
@@ -192,7 +193,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   }
 
   private void checkSupportForRollingUpgrade(Object ds) {
-    Version[] versions = null;
+    SerializationVersion[] versions = null;
     if (ds instanceof SerializationVersions) {
       versions = ((SerializationVersions) ds).getSerializationVersions();
     }

@@ -62,6 +62,7 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -211,11 +212,11 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
           || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-        short wanSiteVersion = Version.readOrdinal(dis);
+        short wanSiteVersion = SerializationVersion.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, wanSiteVersion);
+          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
         }
       }
 
@@ -234,7 +235,8 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Read delta-propagation property value from server.
       // [sumedh] Static variable below? Client can connect to different
       // DSes with different values of this. It shoule be a member variable.
-      if (!communicationMode.isWAN() && currentClientVersion.compareTo(Version.GFE_61) >= 0) {
+      if (!communicationMode.isWAN() && currentClientVersion.compareTo(
+          Version.GFE_61) >= 0) {
         ((InternalDistributedSystem) system).setDeltaEnabledOnServer(dis.readBoolean());
       }
 
@@ -270,7 +272,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
-    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v == null ? 0 : v.ordinal());
+    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v);
     try {
       return DataSerializer.readObject(dis);
     } catch (EOFException e) {
@@ -372,9 +374,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       hdos.writeByte(communicationMode.getModeNumber());
       if (overrideClientVersion > 0) {
         // for testing
-        Version.writeOrdinal(hdos, overrideClientVersion, true);
+        SerializationVersion.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        Version.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        SerializationVersion.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
       }
 
       hdos.writeByte(replyCode);
@@ -389,7 +391,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // we do not know the receiver's version at this point, but the on-wire
       // form of InternalDistributedMember changed in 9.0, so we must serialize
       // it using the previous version
-      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82.ordinal());
+      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
       DataSerializer.writeObject(this.id, idOut);
 
       if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {

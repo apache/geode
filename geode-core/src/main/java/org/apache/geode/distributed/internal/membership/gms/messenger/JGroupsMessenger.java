@@ -97,6 +97,7 @@ import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 
@@ -1002,10 +1003,10 @@ public class JGroupsMessenger implements Messenger {
       DataInputStream dis =
           new DataInputStream(new ByteArrayInputStream(buf, jgmsg.getOffset(), jgmsg.getLength()));
 
-      short ordinal = Version.readOrdinal(dis);
+      short ordinal = SerializationVersion.readOrdinal(dis);
 
       if (ordinal < Version.CURRENT_ORDINAL) {
-        dis = new VersionedDataInputStream(dis, ordinal);
+        dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(ordinal, true));
       }
 
       // read
@@ -1101,7 +1102,7 @@ public class JGroupsMessenger implements Messenger {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
         if (ordinal < Version.CURRENT_ORDINAL) {
-          in = new VersionedDataInputStream(in, ordinal);
+          in = new VersionedDataInputStream(in, Version.fromOrdinalNoThrow(ordinal, true));
         }
 
         GMSMessage result = deserializeMessage(in, ordinal);

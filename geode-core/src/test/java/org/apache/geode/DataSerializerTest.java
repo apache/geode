@@ -57,9 +57,9 @@ public class DataSerializerTest {
   public void readStringShouldReturnCanonicalEmptyString() throws IOException {
     byte[] serializedEmptyStringBytes = BlobHelper.serializeToBlob("");
     ByteArrayDataInput dataInput1 = new ByteArrayDataInput();
-    dataInput1.initialize(serializedEmptyStringBytes, 0);
+    dataInput1.initialize(serializedEmptyStringBytes, null);
     ByteArrayDataInput dataInput2 = new ByteArrayDataInput();
-    dataInput2.initialize(serializedEmptyStringBytes, 0);
+    dataInput2.initialize(serializedEmptyStringBytes, null);
 
     String firstRead = DataSerializer.readString(dataInput1);
     String secondRead = DataSerializer.readString(dataInput2);

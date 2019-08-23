@@ -66,7 +66,7 @@ public class InternalDataSerializerBenchmark {
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public String readStringBenchmark() throws IOException {
-    dataInput.initialize(serializedBytes, Version.CURRENT_ORDINAL);
+    dataInput.initialize(serializedBytes, Version.CURRENT);
     String result = InternalDataSerializer.readString(dataInput, DSCODE.STRING_BYTES.toByte());
     return result;
   }

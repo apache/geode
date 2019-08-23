@@ -112,6 +112,7 @@ import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -351,7 +352,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
-      Version version = Version.getVersionForDataStream(vout);
+      Version version = (Version) vout.getVersion();
       if (null != version) {
         if (version.compareTo(Version.GEODE_1_9_0) < 0) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
@@ -2242,7 +2243,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       try {
         ObjectOutput oos = new ObjectOutputStream(stream);
         if (stream instanceof VersionedDataStream) {
-          Version v = Version.getVersionForDataStream((VersionedDataStream) stream);
+          Version v = (Version) ((VersionedDataStream) stream).getVersion();
           if (v != null && v != Version.CURRENT) {
             oos = new VersionedObjectOutput(oos, v);
           }
@@ -2280,7 +2281,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        Version[] versions = null;
+        SerializationVersion[] versions = null;
         if (ds instanceof SerializationVersions) {
           SerializationVersions sv = (SerializationVersions) ds;
           versions = sv.getSerializationVersions();
@@ -2288,7 +2289,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (SerializationVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
@@ -2345,7 +2346,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        Version[] versions = null;
+        SerializationVersion[] versions = null;
         if (ds instanceof SerializationVersions) {
           SerializationVersions vds = (SerializationVersions) ds;
           versions = vds.getSerializationVersions();
@@ -2353,7 +2354,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (Version version : versions) {
+          for (SerializationVersion version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),
@@ -2409,12 +2410,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Get the {@link Version} of the peer or disk store that created this {@link DataInput}.
+   * Get the {@link org.apache.geode.internal.Version} of the peer or disk store that created this
+   * {@link DataInput}.
    */
   public static Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final Version v = Version.getVersionForDataStream((VersionedDataStream) in);
+      final Version v = (Version) ((VersionedDataStream) in).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2423,13 +2425,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Get the {@link Version} of the peer or disk store that created this {@link DataInput}. Returns
+   * Get the {@link org.apache.geode.internal.Version} of the peer or disk store that created this
+   * {@link DataInput}. Returns
    * null if the version is same as this member's.
    */
   public static Version getVersionForDataStreamOrNull(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      return Version.getVersionForDataStream((VersionedDataStream) in);
+      return (Version) ((VersionedDataStream) in).getVersion();
     } else {
       // assume latest version
       return null;
@@ -2437,12 +2440,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Get the {@link Version} of the peer or disk store that created this {@link DataOutput}.
+   * Get the {@link org.apache.geode.internal.Version} of the peer or disk store that created this
+   * {@link DataOutput}.
    */
   public static Version getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final Version v = Version.getVersionForDataStream((VersionedDataStream) out);
+      final Version v = (Version) ((VersionedDataStream) out).getVersion();
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2451,13 +2455,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   /**
-   * Get the {@link Version} of the peer or disk store that created this {@link DataOutput}. Returns
+   * Get the {@link org.apache.geode.internal.Version} of the peer or disk store that created this
+   * {@link DataOutput}. Returns
    * null if the version is same as this member's.
    */
   public static Version getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      return Version.getVersionForDataStream((VersionedDataStream) out);
+      return (Version) ((VersionedDataStream) out).getVersion();
     } else {
       // assume latest version
       return null;
@@ -2816,7 +2821,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
       serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
-        Version v = Version.getVersionForDataStream((VersionedDataStream) stream);
+        Version v = (Version) ((VersionedDataStream) stream).getVersion();
         if (Version.CURRENT != v && v != null) {
           ois = new VersionedObjectInput(ois, v);
         }

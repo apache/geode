@@ -28,6 +28,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 /**
  * GMSMember is the membership identifier class for Group Membership Services.
@@ -521,7 +522,7 @@ public class GMSMember implements DataSerializableFixedID {
         .writeString(durableId == null ? "" : durableId, out);
     DataSerializer.writeInteger(durableId == null ? 300 : durableTimeout, out);
 
-    Version.writeOrdinal(out, versionOrdinal, true);
+    SerializationVersion.writeOrdinal(out, versionOrdinal, true);
 
     if (versionOrdinal >= Version.GFE_90.ordinal()) {
       writeAdditionalData(out);
@@ -529,7 +530,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   public void writeEssentialData(DataOutput out) throws IOException {
-    Version.writeOrdinal(out, this.versionOrdinal, true);
+    SerializationVersion.writeOrdinal(out, this.versionOrdinal, true);
 
     int flags = 0;
     if (networkPartitionDetectionEnabled)
@@ -543,7 +544,8 @@ public class GMSMember implements DataSerializableFixedID {
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_2_0) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
+        Version.GEODE_1_2_0) >= 0) {
       out.writeByte(vmKind);
     }
   }
@@ -587,7 +589,7 @@ public class GMSMember implements DataSerializableFixedID {
 
   private short readVersion(int flags, DataInput in) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
-      return Version.readOrdinal(in);
+      return SerializationVersion.readOrdinal(in);
     } else {
       // prior to 7.1 member IDs did not serialize their version information
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
@@ -607,7 +609,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   public void readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
-    this.versionOrdinal = Version.readOrdinal(in);
+    this.versionOrdinal = SerializationVersion.readOrdinal(in);
 
     int flags = in.readShort();
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
@@ -623,7 +625,8 @@ public class GMSMember implements DataSerializableFixedID {
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_2_0) >= 0) {
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
+        Version.GEODE_1_2_0) >= 0) {
       this.vmKind = in.readByte();
     }
     this.isPartial = true;

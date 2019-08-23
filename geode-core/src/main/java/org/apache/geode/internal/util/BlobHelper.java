@@ -95,7 +95,7 @@ public class BlobHelper {
       if (in == null) {
         in = new ByteArrayDataInput();
       }
-      in.initialize(blob, version == null ? 0 : version.ordinal());
+      in.initialize(blob, version);
       result = DataSerializer.readObject(in);
     }
     endDeserialization(start, blob.length);

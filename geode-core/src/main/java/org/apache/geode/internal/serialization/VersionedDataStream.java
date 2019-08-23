@@ -37,10 +37,10 @@ public interface VersionedDataStream {
 
   /**
    * If the remote peer to which this input/output is connected has a lower version that this
-   * member, then this returns the {@link Version} ordinal of the peer else 0. If the peer has a
+   * member, then this returns the {@link Version} of the peer else null. If the peer has a
    * higher
    * {@link Version}, then this member cannot do any adjustment to serialization and its the remote
    * peer's responsibility to adjust the serialization/deserialization according to this peer.
    */
-  short getVersionOrdinal();
+  SerializationVersion getVersion();
 }

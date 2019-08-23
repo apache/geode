@@ -43,7 +43,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   protected LinkedList<ByteBuffer> chunks = null;
   protected int size = 0;
   protected boolean ignoreWrites = false; // added for bug 39569
-  protected short version;
+  protected SerializationVersion version;
   protected boolean doNotCopy;
   protected ByteBuffer buffer;
   /**
@@ -55,7 +55,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   private Error expansionException = null;
   private int memoPosition;
 
-  public BufferDataOutputStream(int allocSize, short version) {
+  public BufferDataOutputStream(int allocSize, SerializationVersion version) {
     this(allocSize, version, false);
   }
 
@@ -80,7 +80,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * @param doNotCopy if true then byte arrays/buffers/sources will not be copied to this hdos but
    *        instead referenced.
    */
-  public BufferDataOutputStream(int allocSize, short version, boolean doNotCopy) {
+  public BufferDataOutputStream(int allocSize, SerializationVersion version, boolean doNotCopy) {
     if (allocSize < SMALLEST_CHUNK_SIZE) {
       this.MIN_CHUNK_SIZE = SMALLEST_CHUNK_SIZE;
     } else {
@@ -91,7 +91,8 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
     this.doNotCopy = doNotCopy;
   }
 
-  public BufferDataOutputStream(ByteBuffer initialBuffer, short version, boolean doNotCopy) {
+  public BufferDataOutputStream(ByteBuffer initialBuffer, SerializationVersion version,
+      boolean doNotCopy) {
     if (initialBuffer.position() != 0) {
       initialBuffer = initialBuffer.slice();
     }
@@ -151,7 +152,7 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
    * {@inheritDoc}
    */
   @Override
-  public short getVersionOrdinal() {
+  public SerializationVersion getVersion() {
     return version;
   }
 

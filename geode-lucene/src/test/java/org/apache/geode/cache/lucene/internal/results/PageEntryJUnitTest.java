@@ -84,7 +84,7 @@ public class PageEntryJUnitTest {
     entry.toData(out);
     final byte[] bytes = out.toByteArray();
     ByteArrayDataInput in = new ByteArrayDataInput();
-    in.initialize(bytes, (short) 0);
+    in.initialize(bytes, null);
     PageEntry newEntry = new PageEntry();
     newEntry.fromData(in);
     return newEntry;

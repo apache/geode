@@ -77,7 +77,7 @@ public class FunctionAdapterJUnitTest {
                 + "serializedFunctionAdapterWithDifferentSerialVersionUID.ser").getAbsolutePath());
 
     DataInputStream dis =
-        new VersionedDataInputStream(new DataInputStream(fis), Version.GFE_82.ordinal());
+        new VersionedDataInputStream(new DataInputStream(fis), Version.GFE_82);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof FunctionAdapter);
   }

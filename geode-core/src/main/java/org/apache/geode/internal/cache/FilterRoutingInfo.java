@@ -486,7 +486,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
     private void deserialize() {
       try {
         ByteArrayDataInput dis =
-            new ByteArrayDataInput(myData, myDataVersion == null ? 0 : myDataVersion.ordinal());
+            new ByteArrayDataInput(myData, myDataVersion);
         boolean hasCQs = dis.readBoolean();
         if (hasCQs) {
           int numEntries = InternalDataSerializer.readArrayLength(dis);

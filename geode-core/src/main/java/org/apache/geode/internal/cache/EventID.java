@@ -315,7 +315,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       disVersion = Version.GFE_90;
     }
     ByteArrayDataInput dis =
-        new ByteArrayDataInput(membershipID, disVersion == null ? 0 : disVersion.ordinal());
+        new ByteArrayDataInput(membershipID, disVersion);
     InternalDistributedMember result = null;
     try {
       result = InternalDistributedMember.readEssentialData(dis);
