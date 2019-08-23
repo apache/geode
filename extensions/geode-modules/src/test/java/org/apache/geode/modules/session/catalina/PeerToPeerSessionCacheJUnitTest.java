@@ -37,18 +37,12 @@ import org.apache.geode.modules.util.TouchReplicatedRegionEntriesFunction;
 
 public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTest {
 
-  private String regionName = "testRegion";
-  private String localRegionName = regionName + "_local";
+  private String localRegionName = sessionRegionName + "_local";
   @SuppressWarnings("unchecked")
   private RegionFactory<String, HttpSession> regionFactory = mock(RegionFactory.class);
   @SuppressWarnings("unchecked")
-  private Region<String, HttpSession> sessionRegion = mock(Region.class);
-  @SuppressWarnings("unchecked")
   private Region<String, HttpSession> localRegion = mock(Region.class);
   private Cache cache = mock(GemFireCacheImpl.class);
-  private DistributedSystem distributedSystem = mock(DistributedSystem.class);
-  private Log logger = mock(Log.class);
-  private Execution emptyExecution = mock(Execution.class);
 
   @Before
   public void setUp() {
@@ -56,13 +50,13 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
     doReturn(sessionRegion).when((PeerToPeerSessionCache)sessionCache).createRegionUsingHelper(any(RegionConfiguration.class));
     doReturn(true).when((PeerToPeerSessionCache)sessionCache).isFunctionRegistered(any(String.class));
 
-    when(sessionManager.getRegionName()).thenReturn(regionName);
+    when(sessionManager.getRegionName()).thenReturn(sessionRegionName);
     when(sessionManager.getRegionAttributesId()).thenReturn(RegionShortcut.PARTITION.toString());
     when(sessionManager.getLogger()).thenReturn(logger);
     when(sessionManager.getEnableLocalCache()).thenReturn(true);
     when(sessionManager.getMaxInactiveInterval()).thenReturn(RegionConfiguration.DEFAULT_MAX_INACTIVE_INTERVAL);
 
-    when(sessionRegion.getName()).thenReturn(regionName);
+    when(sessionRegion.getName()).thenReturn(sessionRegionName);
 
     doReturn(regionFactory).when(cache).createRegionFactory(RegionShortcut.LOCAL_HEAP_LRU);
     when(regionFactory.create(localRegionName)).thenReturn(localRegion);
@@ -96,7 +90,7 @@ public class PeerToPeerSessionCacheJUnitTest extends AbstractSessionCacheJUnitTe
 
   @Test
   public void initializeSessionCacheSucceedsWhenSessionRegionAlreadyExists() {
-    doReturn(sessionRegion).when(cache).getRegion(regionName);
+    doReturn(sessionRegion).when(cache).getRegion(sessionRegionName);
     doNothing().when((PeerToPeerSessionCache)sessionCache).validateRegionUsingRegionhelper(any(RegionConfiguration.class),any(Region.class));
 
     sessionCache.initialize();

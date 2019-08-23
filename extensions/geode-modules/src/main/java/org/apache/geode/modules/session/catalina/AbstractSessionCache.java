@@ -18,6 +18,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.catalina.Session;
 
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.modules.session.catalina.internal.DeltaSessionStatistics;
@@ -96,7 +97,7 @@ public abstract class AbstractSessionCache implements SessionCache {
   }
 
   RegionConfiguration createRegionConfiguration() {
-    RegionConfiguration configuration = new RegionConfiguration();
+    RegionConfiguration configuration = getNewRegionConfiguration();
     configuration.setRegionName(getSessionManager().getRegionName());
     configuration.setRegionAttributesId(getSessionManager().getRegionAttributesId());
     if (getSessionManager()
@@ -109,5 +110,10 @@ public abstract class AbstractSessionCache implements SessionCache {
     configuration.setEnableGatewayReplication(getSessionManager().getEnableGatewayReplication());
     configuration.setEnableDebugListener(getSessionManager().getEnableDebugListener());
     return configuration;
+  }
+
+  //Helper methods added to improve unit testing of class
+  RegionConfiguration getNewRegionConfiguration() {
+    return new RegionConfiguration();
   }
 }
