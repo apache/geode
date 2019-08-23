@@ -60,11 +60,11 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.xmlcache.CacheXmlGenerator;
 import org.apache.geode.internal.cache.xmlcache.ClientCacheCreation;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.pdx.ReflectionBasedAutoSerializer;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
@@ -355,7 +355,8 @@ public class ClientCacheFactoryJUnitTest {
     DataSerializer.writeObject(clientID, out);
 
     DataInputStream in =
-        new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT);
+        new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
+            Version.CURRENT_ORDINAL);
     ClientProxyMembershipID newID = DataSerializer.readObject(in);
     InternalDistributedMember newMemberID =
         (InternalDistributedMember) newID.getDistributedMember();
@@ -372,7 +373,8 @@ public class ClientCacheFactoryJUnitTest {
     out = new HeapDataOutputStream(Version.CURRENT);
     DataSerializer.writeObject(clientID, out);
 
-    in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()), Version.CURRENT);
+    in = new VersionedDataInputStream(new ByteArrayInputStream(out.toByteArray()),
+        Version.CURRENT_ORDINAL);
     newID = DataSerializer.readObject(in);
     newMemberID = (InternalDistributedMember) newID.getDistributedMember();
     assertThat(newMemberID.getVersionObject()).isEqualTo(Version.CURRENT);

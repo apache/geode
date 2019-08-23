@@ -26,11 +26,11 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 
 class ClientRegistrationMetadata {
   private static final Logger logger = LogService.getLogger();
@@ -57,9 +57,10 @@ class ClientRegistrationMetadata {
     if (getAndValidateClientVersion(socket, unversionedDataInputStream,
         unversionedDataOutputStream)) {
       if (oldClientRequiresVersionedStreams(clientVersion)) {
-        dataInputStream = new VersionedDataInputStream(unversionedDataInputStream, clientVersion);
+        dataInputStream =
+            new VersionedDataInputStream(unversionedDataInputStream, clientVersion.ordinal());
         dataOutputStream =
-            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion);
+            new VersionedDataOutputStream(unversionedDataOutputStream, clientVersion.ordinal());
       } else {
         dataInputStream = unversionedDataInputStream;
         dataOutputStream = unversionedDataOutputStream;

@@ -25,12 +25,12 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can

@@ -12,10 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * An enumeration that contains a bunch of pre-defined values for use in the implementation of

@@ -49,7 +49,6 @@ import org.apache.geode.cache.Scope;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.InternalStatisticsDisabledException;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedRegion.DiskPosition;
@@ -63,6 +62,7 @@ import org.apache.geode.internal.cache.persistence.DiskRecoveryStore;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionStamp;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * This is a test verifies region is LIFO enabled by MEMORY verifies correct stats updating and

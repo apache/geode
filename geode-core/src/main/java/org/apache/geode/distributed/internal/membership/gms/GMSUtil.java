@@ -220,8 +220,8 @@ public class GMSUtil {
       DataSerializer.writeObject(id, out);
       return;
     }
-    if (InternalDataSerializer.getVersionForDataStream(out).ordinal() < Version.GEODE_1_10_0
-        .ordinal()) {
+    short ordinal = InternalDataSerializer.getVersionForDataStream(out).ordinal();
+    if (ordinal < Version.GEODE_1_10_0.ordinal()) {
       writeAsInternalDistributedMember(id, out);
     } else {
       DataSerializer.writeObject(id, out);

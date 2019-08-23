@@ -65,11 +65,11 @@ import org.apache.geode.LogWriter;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.logging.InternalLogWriter;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.GemFireSecurityException;
 

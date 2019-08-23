@@ -67,8 +67,6 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
 import org.apache.geode.internal.Version;
@@ -96,6 +94,8 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
 /**
@@ -2516,7 +2516,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -3518,7 +3518,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -4075,7 +4075,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {

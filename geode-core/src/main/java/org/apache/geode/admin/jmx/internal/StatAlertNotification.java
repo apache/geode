@@ -21,10 +21,10 @@ import java.io.Serializable;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Notification to be sent to clients (e.g GFMon2.0 ). It incorporates

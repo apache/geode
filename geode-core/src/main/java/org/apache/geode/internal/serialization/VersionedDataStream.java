@@ -13,14 +13,14 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 
 import org.apache.geode.DataSerializable;
-import org.apache.geode.internal.serialization.DataSerializableFixedID;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that
@@ -37,9 +37,10 @@ public interface VersionedDataStream {
 
   /**
    * If the remote peer to which this input/output is connected has a lower version that this
-   * member, then this returns the {@link Version} of the peer else null. If the peer has a higher
+   * member, then this returns the {@link Version} ordinal of the peer else 0. If the peer has a
+   * higher
    * {@link Version}, then this member cannot do any adjustment to serialization and its the remote
    * peer's responsibility to adjust the serialization/deserialization according to this peer.
    */
-  Version getVersion();
+  short getVersionOrdinal();
 }

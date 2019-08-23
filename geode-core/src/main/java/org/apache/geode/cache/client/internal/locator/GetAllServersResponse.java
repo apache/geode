@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class GetAllServersResponse extends ServerLocationResponse {
 

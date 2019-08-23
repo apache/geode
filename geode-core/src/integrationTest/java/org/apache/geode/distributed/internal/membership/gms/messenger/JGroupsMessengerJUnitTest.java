@@ -91,10 +91,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRespons
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})

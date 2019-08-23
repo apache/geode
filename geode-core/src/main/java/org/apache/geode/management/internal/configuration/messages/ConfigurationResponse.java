@@ -33,8 +33,8 @@ import org.xml.sax.SAXException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 

@@ -21,8 +21,8 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneResultStruct;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class LuceneResultStructImpl<K, V>
     implements LuceneResultStruct<K, V>, DataSerializableFixedID {

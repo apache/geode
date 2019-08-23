@@ -28,7 +28,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
-import org.apache.geode.DataSerializable;
 import org.apache.geode.GemFireRethrowable;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.SerializationException;
@@ -37,10 +36,11 @@ import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 
-public class BasicDSFIDSerializer {
+public class DSFIDSerializer {
   private static final Logger logger = LogService.getLogger();
 
   @Immutable
@@ -77,7 +77,9 @@ public class BasicDSFIDSerializer {
   public void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
       throws IOException {
     if (dsfid == NO_FIXED_ID) {
-      throw new IllegalArgumentException("NO_FIXED_ID is not supported by BasicDSFIDSerializer - use InternalDataSerializer instead: " + o.getClass().getName());
+      throw new IllegalArgumentException(
+          "NO_FIXED_ID is not supported by BasicDSFIDSerializer - use InternalDataSerializer instead: "
+              + o.getClass().getName());
     }
     writeDSFIDHeader(dsfid, out);
     try {
@@ -117,7 +119,8 @@ public class BasicDSFIDSerializer {
   public void invokeToData(Object ds, DataOutput out) throws IOException {
     boolean isDSFID = ds instanceof DataSerializableFixedID;
     if (!isDSFID) {
-      throw new IllegalArgumentException("Expected a DataSerializableFixedID but found " + ds.getClass().getName());
+      throw new IllegalArgumentException(
+          "Expected a DataSerializableFixedID but found " + ds.getClass().getName());
     }
     try {
       boolean invoked = false;
@@ -125,11 +128,8 @@ public class BasicDSFIDSerializer {
 
       if (Version.CURRENT != v && v != null) {
         // get versions where DataOutput was upgraded
-        Version[] versions = null;
-        if (ds instanceof SerializationVersions) {
-          SerializationVersions sv = (SerializationVersions) ds;
-          versions = sv.getSerializationVersions();
-        }
+        SerializationVersions sv = (SerializationVersions) ds;
+        Version[] versions = sv.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
@@ -170,21 +170,24 @@ public class BasicDSFIDSerializer {
       // is still usable:
       SystemFailure.checkFailure();
       throw new ToDataException(
-          "toData failed on DataSerializableFixedID " + null == ds ? "null" : ds.getClass().toString(), t);
+          "toData failed on DataSerializableFixedID " + null == ds ? "null"
+              : ds.getClass().toString(),
+          t);
     }
   }
 
   /**
-   * Get the {@link Version} of the peer or disk store that created this {@link DataOutput}. Returns
-   * null if the version is same as this member's.
+   * Get the {@link Version} ordinal of the peer or disk store that created this {@link DataOutput}.
+   * Returns
+   * zero if the version is same as this member's.
    */
-  public Version getVersionForDataStreamOrNull(DataOutput out) {
+  public short getVersionForDataStreamOrZero(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      return ((VersionedDataStream) out).getVersion();
+      return ((VersionedDataStream) out).getVersionOrdinal();
     } else {
       // assume latest version
-      return null;
+      return 0;
     }
   }
 
@@ -200,7 +203,8 @@ public class BasicDSFIDSerializer {
       case DS_FIXED_ID_SHORT:
         return create(in.readShort(), in);
       case DS_NO_FIXED_ID:
-        throw new IllegalStateException("DS_NO_FIXED_ID is not supported in readDSFID - use InternalDataSerializer instead");
+        throw new IllegalStateException(
+            "DS_NO_FIXED_ID is not supported in readDSFID - use InternalDataSerializer instead");
       case DS_FIXED_ID_INT:
         return create(in.readInt(), in);
       default:

@@ -24,8 +24,8 @@ import java.util.UUID;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A file that is stored in a Apache Geode region.

@@ -20,8 +20,8 @@ import java.util.List;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
  * An extension of {@link MsgStreamer} that implements {@link VersionedDataStream}.
@@ -42,8 +42,11 @@ class VersionedMsgStreamer extends MsgStreamer implements VersionedDataStream {
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
-    return this.version;
+  public short getVersionOrdinal() {
+    if (version == null) {
+      return Version.CURRENT_ORDINAL;
+    }
+    return this.version.ordinal();
   }
 
   /**

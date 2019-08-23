@@ -24,10 +24,10 @@ import org.jgroups.util.UUID;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * GMSMember is the membership identifier class for Group Membership Services.

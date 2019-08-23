@@ -49,13 +49,10 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.LonerDistributionManager;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
@@ -64,6 +61,9 @@ import org.apache.geode.internal.cache.tier.sockets.EncryptorImpl;
 import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.security.AuthenticationFailedException;
 import org.apache.geode.security.AuthenticationRequiredException;
 import org.apache.geode.security.GemFireSecurityException;
@@ -215,7 +215,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
-          dis = new VersionedDataInputStream(dis, Version.fromOrdinalOrCurrent(wanSiteVersion));
+          dis = new VersionedDataInputStream(dis, wanSiteVersion);
         }
       }
 
@@ -270,7 +270,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
 
     byte[] memberBytes = DataSerializer.readByteArray(p_dis);
     Version v = InternalDataSerializer.getVersionForDataStreamOrNull(p_dis);
-    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v);
+    ByteArrayDataInput dis = new ByteArrayDataInput(memberBytes, v == null ? 0 : v.ordinal());
     try {
       return DataSerializer.readObject(dis);
     } catch (EOFException e) {
@@ -389,7 +389,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // we do not know the receiver's version at this point, but the on-wire
       // form of InternalDistributedMember changed in 9.0, so we must serialize
       // it using the previous version
-      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82);
+      DataOutput idOut = new VersionedDataOutputStream(hdos, Version.GFE_82.ordinal());
       DataSerializer.writeObject(this.id, idOut);
 
       if (currentClientVersion.compareTo(Version.GFE_603) >= 0) {

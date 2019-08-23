@@ -23,10 +23,10 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * Unit test for FilterRoutingInfo.FilterInfo
@@ -52,7 +52,7 @@ public class FilterInfoTest {
     byte[] outputBytes = dataOut.toByteArray();
     FilterInfo deserialized = new FilterInfo();
     ByteArrayDataInput dataInput = new ByteArrayDataInput();
-    dataInput.initialize(outputBytes, Version.CURRENT);
+    dataInput.initialize(outputBytes, Version.CURRENT_ORDINAL);
     deserialized.fromData(dataInput);
     assertThat(deserialized.getCQs()).isEqualTo(cqs);
     assertThat(deserialized.getInterestedClients()).isEqualTo(clients);

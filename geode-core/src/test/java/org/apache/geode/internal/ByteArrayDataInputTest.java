@@ -23,6 +23,8 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+
 public class ByteArrayDataInputTest {
   @Test
   public void readFullyThatReadsPastEndOfDataThrowsEOFException() throws IOException {
@@ -237,7 +239,7 @@ public class ByteArrayDataInputTest {
       return new java.io.DataInputStream(new java.io.ByteArrayInputStream(inputBytes));
     } else {
       ByteArrayDataInput input = new ByteArrayDataInput();
-      input.initialize(inputBytes, null);
+      input.initialize(inputBytes, 0);
       return input;
     }
   }

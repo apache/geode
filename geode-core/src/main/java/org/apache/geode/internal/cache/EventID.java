@@ -37,8 +37,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
@@ -46,6 +44,8 @@ import org.apache.geode.internal.cache.ha.HARegionQueue;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
@@ -314,7 +314,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
       // read if the stream's version is 1.0.0-incubating
       disVersion = Version.GFE_90;
     }
-    ByteArrayDataInput dis = new ByteArrayDataInput(membershipID, disVersion);
+    ByteArrayDataInput dis =
+        new ByteArrayDataInput(membershipID, disVersion == null ? 0 : disVersion.ordinal());
     InternalDistributedMember result = null;
     try {
       result = InternalDistributedMember.readEssentialData(dis);

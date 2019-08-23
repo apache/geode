@@ -36,9 +36,9 @@ import org.junit.rules.ExpectedException;
 
 import org.apache.geode.cache.CacheClosedException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
+import org.apache.geode.internal.serialization.DSCODE;
 
 public class MemoryBlockNodeJUnitTest {
 

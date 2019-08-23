@@ -34,6 +34,10 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -66,14 +70,16 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   public final void postSetUp() {
     baos = new ByteArrayOutputStream();
     // register TestMessage using an existing dsfid
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     resetFlags();
     // reset the class mapped to the dsfid
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.PUTALL_VERSIONS_LIST,
         EntryVersionsList.class);
     this.baos = null;
     this.bais = null;
@@ -87,7 +93,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromHigherVersionToLower() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_56);
+        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_56.ordinal());
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataPre66Called);
     assertFalse(toDataCalled);
@@ -101,7 +107,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   @Test
   public void testToDataFromLowerVersionToHigher() throws Exception {
     DataOutputStream dos =
-        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_701);
+        new VersionedDataOutputStream(new DataOutputStream(baos), Version.GFE_701.ordinal());
     InternalDataSerializer.writeDSFID(msg, dos);
     assertTrue(toDataCalled);
   }
@@ -116,7 +122,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
-    DataInputStream dis = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701);
+    DataInputStream dis =
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701.ordinal());
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataCalled);
@@ -132,7 +139,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
-    DataInputStream dis = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56);
+    DataInputStream dis =
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56.ordinal());
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataPre66Called);
@@ -164,7 +172,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     constdsfids.add(new Short(DataSerializableFixedID.TOKEN_TOMBSTONE).intValue());
 
     for (int i = 0; i < 256; i++) {
-      Constructor<?> cons = DSFIDFactory.getDsfidmap()[i];
+      Constructor<?> cons = InternalDataSerializer.getDSFIDSerializer().getDsfidmap()[i];
       if (!constdsfids.contains(i - Byte.MAX_VALUE - 1) && cons != null) {
         Object ds = cons.newInstance((Object[]) null);
         checkSupportForRollingUpgrade(ds);
@@ -173,7 +181,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     // some msgs require distributed system
     Cache c = getCache();
-    for (Object o : DSFIDFactory.getDsfidmap2().values()) {
+    for (Object o : InternalDataSerializer.getDSFIDSerializer().getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {
         DataSerializableFixedID ds = (DataSerializableFixedID) cons.newInstance((Object[]) null);

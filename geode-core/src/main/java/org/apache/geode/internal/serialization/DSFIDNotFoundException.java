@@ -13,9 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.NotSerializableException;
+
+import org.apache.geode.internal.Version;
 
 /**
  * Exception to indicate that a specified DSFID type could not be found (e.g. due to class being

@@ -31,8 +31,8 @@ import org.apache.geode.cache.query.internal.types.CollectionTypeImpl;
 import org.apache.geode.cache.query.internal.types.StructTypeImpl;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class LinkedStructSet extends LinkedHashSet<Struct>
     implements SelectResults<Struct>, Ordered, DataSerializableFixedID {

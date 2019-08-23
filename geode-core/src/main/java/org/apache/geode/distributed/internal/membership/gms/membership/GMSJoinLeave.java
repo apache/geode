@@ -17,9 +17,9 @@ package org.apache.geode.distributed.internal.membership.gms.membership;
 import static org.apache.geode.distributed.ConfigurationProperties.LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.START_LOCATOR;
 import static org.apache.geode.distributed.internal.membership.gms.ServiceConfig.MEMBER_REQUEST_COLLECTION_INTERVAL;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
-import static org.apache.geode.internal.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

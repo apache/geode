@@ -33,6 +33,8 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Warmup;
 
 import org.apache.geode.DataSerializer;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 
 
 /**
@@ -64,7 +66,7 @@ public class InternalDataSerializerBenchmark {
   @BenchmarkMode(Mode.Throughput)
   @OutputTimeUnit(TimeUnit.MILLISECONDS)
   public String readStringBenchmark() throws IOException {
-    dataInput.initialize(serializedBytes, Version.CURRENT);
+    dataInput.initialize(serializedBytes, Version.CURRENT_ORDINAL);
     String result = InternalDataSerializer.readString(dataInput, DSCODE.STRING_BYTES.toByte());
     return result;
   }

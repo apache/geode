@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Adds one more object type which indicates that the key is not present at the server.

@@ -24,8 +24,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {

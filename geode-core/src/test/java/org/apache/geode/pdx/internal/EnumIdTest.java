@@ -14,7 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static org.apache.geode.internal.DataSerializableFixedID.ENUM_ID;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.ENUM_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;

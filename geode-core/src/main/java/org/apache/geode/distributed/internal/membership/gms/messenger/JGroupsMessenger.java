@@ -16,10 +16,10 @@ package org.apache.geode.distributed.internal.membership.gms.messenger;
 
 import static org.apache.geode.distributed.internal.membership.gms.GMSUtil.replaceStrings;
 import static org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage.ALL_RECIPIENTS;
-import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_REQ;
-import static org.apache.geode.internal.DataSerializableFixedID.FIND_COORDINATOR_RESP;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_REQUEST;
-import static org.apache.geode.internal.DataSerializableFixedID.JOIN_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -93,11 +93,11 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 
 @SuppressWarnings("StatementWithEmptyBody")
@@ -1005,7 +1005,7 @@ public class JGroupsMessenger implements Messenger {
       short ordinal = Version.readOrdinal(dis);
 
       if (ordinal < Version.CURRENT_ORDINAL) {
-        dis = new VersionedDataInputStream(dis, Version.fromOrdinalNoThrow(ordinal, true));
+        dis = new VersionedDataInputStream(dis, ordinal);
       }
 
       // read
@@ -1101,7 +1101,7 @@ public class JGroupsMessenger implements Messenger {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
         if (ordinal < Version.CURRENT_ORDINAL) {
-          in = new VersionedDataInputStream(in, Version.fromOrdinalNoThrow(ordinal, true));
+          in = new VersionedDataInputStream(in, ordinal);
         }
 
         GMSMessage result = deserializeMessage(in, ordinal);

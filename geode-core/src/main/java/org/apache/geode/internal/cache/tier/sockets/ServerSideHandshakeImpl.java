@@ -31,13 +31,13 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
-import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.security.SecurityService;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.pdx.internal.PeerTypeRegistration;
 import org.apache.geode.security.AuthenticationRequiredException;
 
@@ -87,8 +87,9 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
         this.clientReadTimeout = dataInputStream.readInt();
         if (clientVersion.compareTo(Version.CURRENT) < 0) {
           // versioned streams allow object serialization code to deal with older clients
-          dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion);
-          dataOutputStream = new VersionedDataOutputStream(dataOutputStream, clientVersion);
+          dataInputStream = new VersionedDataInputStream(dataInputStream, clientVersion.ordinal());
+          dataOutputStream =
+              new VersionedDataOutputStream(dataOutputStream, clientVersion.ordinal());
         }
         this.id = ClientProxyMembershipID.readCanonicalized(dataInputStream);
         // Note: credentials should always be the last piece in handshake for
@@ -133,8 +134,8 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
     DataOutputStream dos = new DataOutputStream(out);
     DataInputStream dis;
     if (clientVersion.compareTo(Version.CURRENT) < 0) {
-      dis = new VersionedDataInputStream(in, clientVersion);
-      dos = new VersionedDataOutputStream(dos, clientVersion);
+      dis = new VersionedDataInputStream(in, clientVersion.ordinal());
+      dos = new VersionedDataOutputStream(dos, clientVersion.ordinal());
     } else {
       dis = new DataInputStream(in);
     }
@@ -159,7 +160,7 @@ public class ServerSideHandshakeImpl extends Handshake implements ServerSideHand
 
     Version v = Version.CURRENT;
     if (dos instanceof VersionedDataStream) {
-      v = ((VersionedDataStream) dos).getVersion();
+      v = Version.getVersionForDataStream((VersionedDataStream) dos);
     }
     HeapDataOutputStream hdos = new HeapDataOutputStream(v);
     DataSerializer.writeObject(member, hdos);

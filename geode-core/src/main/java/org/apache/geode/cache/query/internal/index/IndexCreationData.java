@@ -24,8 +24,8 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.cache.query.IndexType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  *

@@ -23,7 +23,6 @@ import java.util.UUID;
 
 import org.apache.geode.cache.EntryDestroyedException;
 import org.apache.geode.distributed.DistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachedDeserializable;
@@ -32,6 +31,7 @@ import org.apache.geode.internal.cache.NonTXEntry;
 import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**

@@ -12,13 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.serialization;
 
 import java.io.IOException;
 import java.util.Arrays;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.serialization.DSCODE;
 
 public class DscodeHelper {
 

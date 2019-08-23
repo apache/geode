@@ -36,7 +36,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
 @Category({SecurityTest.class})
@@ -202,7 +202,7 @@ public class GMSMemberJUnitTest {
     dataOutput = new HeapDataOutputStream(Version.GFE_90);
     member.writeEssentialData(dataOutput);
     bais = new ByteArrayInputStream(baos.toByteArray());
-    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
+    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90.ordinal());
     newMember = new GMSMember();
     newMember.readEssentialData(dataInput);
     assertEquals(0, newMember.getVmKind());

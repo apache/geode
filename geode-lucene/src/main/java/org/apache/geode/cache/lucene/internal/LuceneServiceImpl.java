@@ -15,7 +15,7 @@
 
 package org.apache.geode.cache.lucene.internal;
 
-import static org.apache.geode.internal.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.CREATE_REGION_MESSAGE_LUCENE;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,8 +69,7 @@ import org.apache.geode.cache.lucene.internal.results.PageResults;
 import org.apache.geode.cache.lucene.internal.xml.LuceneServiceXmlGenerator;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketNotFoundException;
 import org.apache.geode.internal.cache.BucketRegion;
@@ -82,6 +81,7 @@ import org.apache.geode.internal.cache.RegionListener;
 import org.apache.geode.internal.cache.extension.Extensible;
 import org.apache.geode.internal.cache.xmlcache.XmlGenerator;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 /**
@@ -601,37 +601,49 @@ public class LuceneServiceImpl implements InternalLuceneService {
 
   /** Public for test purposes */
   public static void registerDataSerializables() {
-    DSFIDFactory.registerDSFID(CREATE_REGION_MESSAGE_LUCENE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(CREATE_REGION_MESSAGE_LUCENE,
         CreateRegionProcessorForLucene.CreateRegionMessage.class);
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.LUCENE_CHUNK_KEY, ChunkKey.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FILE, File.class);
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(DataSerializableFixedID.LUCENE_FILE,
+        File.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LUCENE_FUNCTION_CONTEXT,
         LuceneFunctionContext.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LUCENE_STRING_QUERY_PROVIDER,
         StringQueryProvider.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR_MANAGER,
         TopEntriesCollectorManager.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.LUCENE_ENTRY_SCORE, EntryScore.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES, TopEntries.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LUCENE_TOP_ENTRIES_COLLECTOR,
         TopEntriesCollector.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.WAIT_UNTIL_FLUSHED_FUNCTION_CONTEXT,
         WaitUntilFlushedFunctionContext.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.DESTROY_LUCENE_INDEX_MESSAGE,
         DestroyLuceneIndexMessage.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.LUCENE_PAGE_RESULTS, PageResults.class);
 
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.LUCENE_RESULT_STRUCT,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.LUCENE_RESULT_STRUCT,
         LuceneResultStructImpl.class);
   }
 

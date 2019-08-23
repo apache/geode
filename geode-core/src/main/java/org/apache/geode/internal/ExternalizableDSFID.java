@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+
 /**
  * Abstract class for subclasses that want to be Externalizable in addition to being
  * DataSerializableFixedID.

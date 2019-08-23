@@ -20,8 +20,8 @@ import java.io.IOException;
 
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.cache.query.internal.index.IndexManager;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A Token representing null.

@@ -23,11 +23,11 @@ import java.io.ObjectOutput;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.DistributedSystem;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Class <code>ClientInterestMessageImpl</code> represents an update to the a client's interest

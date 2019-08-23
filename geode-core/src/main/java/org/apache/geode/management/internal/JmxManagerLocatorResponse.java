@@ -21,8 +21,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a

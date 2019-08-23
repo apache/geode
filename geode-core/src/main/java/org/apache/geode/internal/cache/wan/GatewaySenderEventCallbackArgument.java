@@ -24,9 +24,9 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.wan.GatewaySender;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Class <code>GatewayEventCallbackArgument</code> is a wrapper on a callback arg plus the id of the

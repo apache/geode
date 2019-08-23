@@ -25,9 +25,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -57,9 +57,9 @@ public class DataSerializerTest {
   public void readStringShouldReturnCanonicalEmptyString() throws IOException {
     byte[] serializedEmptyStringBytes = BlobHelper.serializeToBlob("");
     ByteArrayDataInput dataInput1 = new ByteArrayDataInput();
-    dataInput1.initialize(serializedEmptyStringBytes, null);
+    dataInput1.initialize(serializedEmptyStringBytes, 0);
     ByteArrayDataInput dataInput2 = new ByteArrayDataInput();
-    dataInput2.initialize(serializedEmptyStringBytes, null);
+    dataInput2.initialize(serializedEmptyStringBytes, 0);
 
     String firstRead = DataSerializer.readString(dataInput1);
     String secondRead = DataSerializer.readString(dataInput2);

@@ -108,7 +108,12 @@ import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.lang.ClassUtils;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.util.DscodeHelper;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.pdx.NonPortableClassException;
 import org.apache.geode.pdx.PdxInstance;
@@ -287,6 +292,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   @MakeNotStatic
   private static OldClientSupportService oldClientSupportService;
+
+  private static final DSFIDSerializer dsfidSerializer = new DSFIDSerializer();
+
+  private static DSFIDFactory dsfidFactory;
+
   /**
    * {@code RegistrationListener}s that receive callbacks when {@code DataSerializer}s and {@code
    * Instantiator}s are registered. Note: copy-on-write access used for this set
@@ -296,6 +306,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   static {
     initializeWellKnownSerializers();
+    dsfidFactory = new DSFIDFactory(dsfidSerializer);
+    dsfidFactory.registerDSFIDTypes();
   }
 
   /**
@@ -339,7 +351,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     if (out instanceof VersionedDataStream) {
       VersionedDataStream vout = (VersionedDataStream) out;
-      Version version = vout.getVersion();
+      Version version = Version.getVersionForDataStream(vout);
       if (null != version) {
         if (version.compareTo(Version.GEODE_1_9_0) < 0) {
           if (name.equals(POST_GEODE_190_SERVER_CQIMPL)) {
@@ -1471,28 +1483,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
       throws IOException {
-    if (dsfidToClassMap != null
-        && logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE, "writeDSFID {} class={}", dsfid,
-          o.getClass());
-      if (dsfid != DataSerializableFixedID.NO_FIXED_ID
-          && dsfid != DataSerializableFixedID.ILLEGAL) {
-        // consistency check to make sure that the same DSFID is not used
-        // for two different classes
-        String newClassName = o.getClass().getName();
-        String existingClassName = dsfidToClassMap.putIfAbsent(dsfid, newClassName);
-        if (existingClassName != null && !existingClassName.equals(newClassName)) {
-          logger.trace(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE,
-              "dsfid={} is used for class {} and class {}", dsfid, existingClassName, newClassName);
-        }
-      }
+    if (dsfid != DataSerializableFixedID.NO_FIXED_ID) {
+      dsfidSerializer.writeDSFID(o, dsfid, out);
+      return;
     }
-    if (dsfid == DataSerializableFixedID.NO_FIXED_ID) {
-      out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
-      DataSerializer.writeClass(o.getClass(), out);
-    } else {
-      writeDSFIDHeader(dsfid, out);
-    }
+    out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
+    DataSerializer.writeClass(o.getClass(), out);
     try {
       invokeToData(o, out);
     } catch (IOException | CancelException | ToDataException | GemFireRethrowable io) {
@@ -2069,7 +2065,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     } else if (o instanceof DataSerializableFixedID) {
       checkPdxCompatible(o, ensurePdxCompatibility);
       DataSerializableFixedID dsfid = (DataSerializableFixedID) o;
-      writeDSFID(dsfid, out);
+      dsfidSerializer.writeDSFID(dsfid, out);
     } else if (autoSerialized(o, out)) {
       // all done
     } else if (o instanceof DataSerializable.Replaceable) {
@@ -2246,7 +2242,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       try {
         ObjectOutput oos = new ObjectOutputStream(stream);
         if (stream instanceof VersionedDataStream) {
-          Version v = ((VersionedDataStream) stream).getVersion();
+          Version v = Version.getVersionForDataStream((VersionedDataStream) stream);
           if (v != null && v != Version.CURRENT) {
             oos = new VersionedObjectOutput(oos, v);
           }
@@ -2274,6 +2270,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   public static void invokeToData(Object ds, DataOutput out) throws IOException {
     boolean isDSFID = ds instanceof DataSerializableFixedID;
+    if (isDSFID) {
+      dsfidSerializer.invokeToData(ds, out);
+      return;
+    }
     try {
       boolean invoked = false;
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
@@ -2301,22 +2301,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       if (!invoked) {
-        if (isDSFID) {
-          ((DataSerializableFixedID) ds).toData(out);
-        } else {
-          ((DataSerializable) ds).toData(out);
-        }
+        ((DataSerializable) ds).toData(out);
       }
     } catch (IOException io) {
-      // DSFID serialization expects an IOException but otherwise
-      // we want to catch it and transform into a ToDataException
-      // since it might be in user code and we want to report it
-      // as a problem with the plugin code
-      if (isDSFID) {
-        throw io;
-      } else {
-        throw new ToDataException("toData failed on DataSerializable " + ds.getClass(), io);
-      }
+      throw new ToDataException("toData failed on DataSerializable " + ds.getClass(), io);
     } catch (CancelException | ToDataException | GemFireRethrowable ex) {
       // Serializing a PDX can result in a cache closed exception. Just rethrow
       throw ex;
@@ -2348,6 +2336,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
    */
   public static void invokeFromData(Object ds, DataInput in)
       throws IOException, ClassNotFoundException {
+    if (ds instanceof DataSerializableFixedID) {
+      dsfidSerializer.invokeFromData(ds, in);
+      return;
+    }
     try {
       boolean invoked = false;
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
@@ -2373,11 +2365,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         }
       }
       if (!invoked) {
-        if (ds instanceof DataSerializableFixedID) {
-          ((DataSerializableFixedID) ds).fromData(in);
-        } else {
-          ((DataSerializable) ds).fromData(in);
-        }
+        ((DataSerializable) ds).fromData(in);
 
         if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
           logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read {} {}",
@@ -2426,7 +2414,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) in).getVersion();
+      final Version v = Version.getVersionForDataStream((VersionedDataStream) in);
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2441,7 +2429,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStreamOrNull(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      return ((VersionedDataStream) in).getVersion();
+      return Version.getVersionForDataStream((VersionedDataStream) in);
     } else {
       // assume latest version
       return null;
@@ -2454,7 +2442,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final Version v = ((VersionedDataStream) out).getVersion();
+      final Version v = Version.getVersionForDataStream((VersionedDataStream) out);
       return v != null ? v : Version.CURRENT;
     } else {
       // assume latest version
@@ -2469,7 +2457,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   public static Version getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      return ((VersionedDataStream) out).getVersion();
+      return Version.getVersionForDataStream((VersionedDataStream) out);
     } else {
       // assume latest version
       return null;
@@ -2516,13 +2504,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
     switch (dscode) {
       case DS_FIXED_ID_BYTE:
-        return DSFIDFactory.create(in.readByte(), in);
+        return dsfidFactory.create(in.readByte(), in);
       case DS_FIXED_ID_SHORT:
-        return DSFIDFactory.create(in.readShort(), in);
+        return dsfidFactory.create(in.readShort(), in);
       case DS_NO_FIXED_ID:
         return readDataSerializable(in);
       case DS_FIXED_ID_INT:
-        return DSFIDFactory.create(in.readInt(), in);
+        return dsfidFactory.create(in.readInt(), in);
       default:
         throw new IllegalStateException("unexpected byte: " + dscode + " while reading dsfid");
     }
@@ -2533,22 +2521,8 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return readDSFID(in, DscodeHelper.toDSCODE(in.readByte()));
   }
 
-  private static int readDSFIDHeader(final DataInput in, DSCODE dscode) throws IOException {
-    switch (dscode) {
-      case DS_FIXED_ID_BYTE:
-        return in.readByte();
-      case DS_FIXED_ID_SHORT:
-        return in.readShort();
-      case DS_FIXED_ID_INT:
-        return in.readInt();
-      default:
-        throw new IllegalStateException("unexpected byte: " + dscode + " while reading dsfid");
-    }
-  }
-
   public static int readDSFIDHeader(final DataInput in) throws IOException {
-    checkIn(in);
-    return readDSFIDHeader(in, DscodeHelper.toDSCODE(in.readByte()));
+    return dsfidSerializer.readDSFIDHeader(in);
   }
 
   /**
@@ -2668,11 +2642,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     switch (headerDSCode) {
       case DS_FIXED_ID_BYTE:
-        return DSFIDFactory.create(in.readByte(), in);
+        return dsfidFactory.create(in.readByte(), in);
       case DS_FIXED_ID_SHORT:
-        return DSFIDFactory.create(in.readShort(), in);
+        return dsfidFactory.create(in.readShort(), in);
       case DS_FIXED_ID_INT:
-        return DSFIDFactory.create(in.readInt(), in);
+        return dsfidFactory.create(in.readInt(), in);
       case DS_NO_FIXED_ID:
       case DATA_SERIALIZABLE:
         return readDataSerializable(in);
@@ -2842,7 +2816,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
       ObjectInput ois = new DSObjectInputStream(stream);
       serializationFilter.setFilterOn((ObjectInputStream) ois);
       if (stream instanceof VersionedDataStream) {
-        Version v = ((VersionedDataStream) stream).getVersion();
+        Version v = Version.getVersionForDataStream((VersionedDataStream) stream);
         if (Version.CURRENT != v && v != null) {
           ois = new VersionedObjectInput(ois, v);
         }
@@ -3304,6 +3278,14 @@ public abstract class InternalDataSerializer extends DataSerializer {
       // Not locking classCache during clear as doing so causes a deadlock in the DeployedJar
       classCache.clear();
     }
+  }
+
+  public static DSFIDSerializer getDSFIDSerializer() {
+    return dsfidSerializer;
+  }
+
+  public static DSFIDFactory getDSFIDFactory() {
+    return dsfidFactory;
   }
 
   /**

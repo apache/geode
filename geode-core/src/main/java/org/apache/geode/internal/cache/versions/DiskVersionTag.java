@@ -18,9 +18,9 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * The version tag class for version tags for persistent regions. The VersionSource held in these
@@ -51,7 +51,7 @@ public class DiskVersionTag extends VersionTag<DiskStoreID> {
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
    */
   @Override
   public int getDSFID() {

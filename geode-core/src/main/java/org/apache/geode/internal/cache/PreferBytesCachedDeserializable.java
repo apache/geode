@@ -21,9 +21,9 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * This cache deserializable always keeps its byte[] in serialized form. You can ask it for its

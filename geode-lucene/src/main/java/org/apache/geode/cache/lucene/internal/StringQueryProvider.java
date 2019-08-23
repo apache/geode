@@ -28,9 +28,9 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneIndex;
 import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Constructs a Lucene Query object by parsing a search string. The class uses

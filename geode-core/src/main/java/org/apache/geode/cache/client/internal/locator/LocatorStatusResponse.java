@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**

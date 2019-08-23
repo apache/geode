@@ -32,8 +32,8 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.ProcessorKeeper21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * This class keeps track of how many InitialImageMessages are in flight between the initial image

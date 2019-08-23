@@ -13,12 +13,11 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 
-import org.apache.geode.internal.serialization.Version;
 
 /**
  * An extension of {@link DataOutputStream} that implements {@link VersionedDataStream}.
@@ -27,7 +26,7 @@ import org.apache.geode.internal.serialization.Version;
  */
 public class VersionedDataOutputStream extends DataOutputStream implements VersionedDataStream {
 
-  private final Version version;
+  private final short version;
 
   /**
    * Creates a VersionedDataOutputStream that wraps the specified underlying OutputStream.
@@ -35,7 +34,7 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
    * @param out the underlying output stream
    * @param version the product version that serialized object on the given {@link OutputStream}
    */
-  public VersionedDataOutputStream(OutputStream out, Version version) {
+  public VersionedDataOutputStream(OutputStream out, short version) {
     super(out);
     this.version = version;
   }
@@ -44,7 +43,7 @@ public class VersionedDataOutputStream extends DataOutputStream implements Versi
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
+  public short getVersionOrdinal() {
     return this.version;
   }
 }

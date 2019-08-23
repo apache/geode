@@ -22,10 +22,10 @@ import java.io.IOException;
 import org.apache.geode.CopyHelper;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.pdx.PdxInstance;
 
 /**

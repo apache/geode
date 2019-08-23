@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public abstract class AbstractStoredObjectTestBase {
 

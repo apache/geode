@@ -30,11 +30,11 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.SerializationVersions;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.serialization.SerializationVersions;
 
 public class DistributedTombstoneOperation extends DistributedCacheOperation {
   private enum TOperation {

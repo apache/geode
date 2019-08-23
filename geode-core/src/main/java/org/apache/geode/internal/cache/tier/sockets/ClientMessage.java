@@ -17,8 +17,8 @@ package org.apache.geode.internal.cache.tier.sockets;
 
 import java.io.IOException;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.Conflatable;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Interface <code>ClientMessage</code> is a message representing a cache operation that is sent

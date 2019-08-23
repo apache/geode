@@ -22,13 +22,13 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.compression.Compressor;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.size.Sizeable;
 
 /**

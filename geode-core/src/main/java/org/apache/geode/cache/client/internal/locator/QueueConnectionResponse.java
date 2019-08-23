@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A response from locator to client indicating the servers to use to host the clients queue. The

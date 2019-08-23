@@ -12,9 +12,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.Version;
 
 /**
  * This interface is extended by DataSerializableFixedID and VersionedDataSerializable in order to

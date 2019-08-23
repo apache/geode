@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -619,5 +620,17 @@ public class Version implements Comparable<Version> {
   public static Iterable<? extends Version> getAllVersions() {
     return Arrays.asList(VALUES).stream().filter(x -> x != null && x != TEST_VERSION)
         .collect(Collectors.toList());
+  }
+
+  public static Version getVersionForDataStream(VersionedDataStream input) {
+    try {
+      short ordinal = input.getVersionOrdinal();
+      if (ordinal <= 0) {
+        return null;
+      }
+      return fromOrdinal(ordinal, false);
+    } catch (UnsupportedVersionException e) {
+      return null;
+    }
   }
 }

@@ -62,7 +62,6 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.ClassLoadUtil;
 import org.apache.geode.internal.CopyOnWriteHashSet;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheDistributionAdvisor.CacheProfile;
@@ -77,6 +76,7 @@ import org.apache.geode.internal.cache.tier.sockets.UnregisterAllInterest;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -1977,7 +1977,7 @@ public class FilterProfile implements DataSerializableFixedID {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {

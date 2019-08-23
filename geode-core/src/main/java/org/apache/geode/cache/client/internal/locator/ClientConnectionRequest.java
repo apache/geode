@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.distributed.internal.ServerLocation;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A request from a client to the locator asking for a server to connect to for client to server

@@ -12,14 +12,15 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal;
 
-import static org.apache.geode.internal.serialization.HeapDataOutputStream.SMALLEST_CHUNK_SIZE;
+import static org.apache.geode.internal.HeapDataOutputStream.SMALLEST_CHUNK_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 import org.junit.Test;
@@ -33,9 +34,9 @@ public class HeapDataOutputStreamTest {
   @Test
   public void shouldBeMockable() throws Exception {
     HeapDataOutputStream mockHeapDataOutputStream = mock(HeapDataOutputStream.class);
-    Version mockVersion = mock(Version.class);
-    when(mockHeapDataOutputStream.getVersion()).thenReturn(mockVersion);
-    assertThat(mockHeapDataOutputStream.getVersion()).isEqualTo(mockVersion);
+    InputStream mockInputStream = mock(InputStream.class);
+    when(mockHeapDataOutputStream.getInputStream()).thenReturn(mockInputStream);
+    assertThat(mockHeapDataOutputStream.getInputStream()).isEqualTo(mockInputStream);
   }
 
   @Test

@@ -30,10 +30,8 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.EventSequenceID;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
@@ -54,6 +52,8 @@ import org.apache.geode.internal.offheap.annotations.OffHeapIdentifier;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -735,7 +735,7 @@ public class GatewaySenderEventImpl
     // this._id = in.readUTF();
     if (version < 0x11 && (in instanceof InputStream)
         && InternalDataSerializer.getVersionForDataStream(in) == Version.CURRENT) {
-      in = new VersionedDataInputStream((InputStream) in, Version.GFE_701);
+      in = new VersionedDataInputStream((InputStream) in, Version.GFE_701.ordinal());
     }
     this.id = (EventID) DataSerializer.readObject(in);
     // TODO:Asif ; Check if this violates Barry's logic of not assiging VM

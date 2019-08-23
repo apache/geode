@@ -26,9 +26,9 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.junit.categories.ClientServerTest;
 
 /**
@@ -180,14 +180,15 @@ public class EventIdOptimizationJUnitTest {
 
 
     HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, Version.GFE_90);
-    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90);
+    VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90.ordinal());
 
     eventID.toData(dop);
 
     ByteArrayInputStream bais = new ByteArrayInputStream(hdos90.toByteArray());
 
 
-    VersionedDataInputStream dataInputStream = new VersionedDataInputStream(bais, Version.GFE_90);
+    VersionedDataInputStream dataInputStream =
+        new VersionedDataInputStream(bais, Version.GFE_90.ordinal());
 
     EventID eventID2 = new EventID();
     eventID2.fromData(dataInputStream);

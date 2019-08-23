@@ -20,8 +20,8 @@ import java.io.IOException;
 import java.util.Set;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 public class RemoteLocatorResponse implements DataSerializableFixedID {
 

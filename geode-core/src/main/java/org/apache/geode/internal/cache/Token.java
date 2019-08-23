@@ -22,9 +22,9 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Internal tokens used as region values. These tokens are never seen from the public API.

@@ -42,13 +42,13 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.MembershipListener;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of operations applied to a
@@ -1184,7 +1184,7 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#toData(java.io.DataOutput)
    */
   @Override
   public void toData(DataOutput out) throws IOException {
@@ -1215,7 +1215,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
+   * @see
+   * org.apache.geode.internal.serialization.DataSerializableFixedID#fromData(java.io.DataInput)
    */
   @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {

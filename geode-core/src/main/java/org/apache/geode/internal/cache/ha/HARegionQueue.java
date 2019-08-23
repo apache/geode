@@ -79,7 +79,6 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
@@ -100,6 +99,7 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -3305,7 +3305,8 @@ public class HARegionQueue implements RegionQueue {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#fromData(java.io.DataInput)
+     * @see
+     * org.apache.geode.internal.serialization.DataSerializableFixedID#fromData(java.io.DataInput)
      */
     @Override
     public void fromData(DataInput in) throws IOException, ClassNotFoundException {
@@ -3318,7 +3319,7 @@ public class HARegionQueue implements RegionQueue {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -3328,7 +3329,8 @@ public class HARegionQueue implements RegionQueue {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#toData(java.io.DataOutput)
+     * @see
+     * org.apache.geode.internal.serialization.DataSerializableFixedID#toData(java.io.DataOutput)
      */
     @Override
     public void toData(DataOutput out) throws IOException {

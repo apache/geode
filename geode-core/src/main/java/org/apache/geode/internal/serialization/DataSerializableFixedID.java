@@ -12,14 +12,13 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
-import org.apache.geode.Instantiator;
+import org.apache.geode.internal.Version;
 
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a
@@ -30,8 +29,7 @@ import org.apache.geode.Instantiator;
  * Implementors MUST have a public zero-arg constructor.
  *
  * <p>
- * Note that this class is for internal use only. Customer classes that want to do something
- * similar should implement a subclass of {@link DataSerializer} or {@link Instantiator}.
+ * Note that this class is for internal use only.
  *
  * <p>
  * To add a new DataSerializableFixedID do this following:
@@ -42,19 +40,12 @@ import org.apache.geode.Instantiator;
  * should use {@link #NO_FIXED_ID}. In this case you can skip steps 3 and 4.
  * <li>Define a method in the class that implements <code>DataSerializableFixedID</code> named
  * {@link #getDSFID} that returns the constant from step 1.
- * <li>Define a private static method in {@link DSFIDFactory} that returns an instance of the class
- * from step 2 usually be calling its zero-arg constructor and then calling fromData(in). See the
- * end of {@link DSFIDFactory} for examples.
- * <li>Add a case statement in {@link DSFIDFactory#create} for the constant from step 1 that calls
- * the method from step 3.
+ * <li>Add registration of your class to DSFIDFactory's registration method.
  * <li>Implement {@link #toData} and {@link #fromData} just like you would on a
- * <code>DataSerializer</code>. Make sure you follow the javadocs for these methods to add support
+ * DataSerializable class. Make sure you follow the javadocs for these methods to add support
  * for rolling upgrades.
  * </ol>
  *
- * @see DataSerializer
- *
- * @since GemFire 5.7
  */
 public interface DataSerializableFixedID extends SerializationVersions {
 
@@ -845,10 +836,11 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * Writes the state of this object as primitive data to the given <code>DataOutput</code>.<br>
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
-   * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link Version} in
-   * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
-   * version 80, create toDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
-   * array and copy previous toData contents to this newly created toDataPre_GFE_X_X_X_X() method.
+   * add a new toDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
+   * Version} in the getSerializationVersions array of the
+   * implementing class. e.g. if msg format changed in version 80, create toDataPre_GFE_8_0_0_0, add
+   * Version.GFE_80 to the getSerializationVersions array and copy previous toData contents to this
+   * newly created toDataPre_GFE_X_X_X_X() method.
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
@@ -858,16 +850,14 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * Reads the state of this object as primitive data from the given <code>DataInput</code>. <br>
    * <br>
    * Note: For rolling upgrades, if there is a change in the object format from previous version,
-   * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link Version} in
-   * the getSerializationVersions array of the implementing class. e.g. if msg format changed in
-   * version 80, create fromDataPre_GFE_8_0_0_0, add Version.GFE_80 to the getSerializationVersions
-   * array and copy previous fromData contents to this newly created fromDataPre_GFE_X_X_X_X()
-   * method.
+   * add a new fromDataPre_GFE_X_X_X_X() method and add an entry for the current {@link
+   * Version} in the getSerializationVersions array of the
+   * implementing class. e.g. if msg format changed in version 80, create fromDataPre_GFE_8_0_0_0,
+   * add Version.GFE_80 to the getSerializationVersions array and copy previous fromData contents to
+   * this newly created fromDataPre_GFE_X_X_X_X() method.
    *
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
   void fromData(DataInput in) throws IOException, ClassNotFoundException;
-
-
 }

@@ -13,7 +13,7 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.EOFException;
@@ -23,8 +23,8 @@ import java.io.UTFDataFormatException;
 
 /**
  * A reusable {@link DataInput} implementation that wraps a given byte array. It also implements
- * {@link org.apache.geode.internal.VersionedDataStream} for a stream coming from a different
- * product version.
+ * {@link org.apache.geode.internal.serialization.VersionedDataStream} for a stream coming from a
+ * different product version.
  *
  * @since GemFire 7.1
  */
@@ -35,7 +35,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   private int pos;
   /** reusable buffer for readUTF */
   private char[] charBuf;
-  private Version version;
+  private short version;
 
   /**
    * Create a {@link DataInput} whose contents are empty.
@@ -43,10 +43,10 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
   public ByteArrayDataInput() {}
 
   public ByteArrayDataInput(byte[] bytes) {
-    initialize(bytes, null);
+    initialize(bytes, (short) 0);
   }
 
-  public ByteArrayDataInput(byte[] bytes, Version version) {
+  public ByteArrayDataInput(byte[] bytes, short version) {
     initialize(bytes, version);
   }
 
@@ -57,19 +57,19 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    *        (a copy is not made) so it should not be changed externally.
    * @param version the product version that serialized the object on given bytes
    */
-  public void initialize(byte[] bytes, Version version) {
+  public void initialize(byte[] bytes, int version) {
     this.bytes = bytes;
     this.nBytes = bytes.length;
     this.pos = 0;
-    this.version = version;
+    this.version = (short) version;
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public Version getVersion() {
-    return this.version;
+  public short getVersionOrdinal() {
+    return version;
   }
 
   private int skipOver(long n) {
@@ -463,7 +463,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
     this.bytes = null;
     this.nBytes = 0;
     this.pos = 0;
-    this.version = null;
+    this.version = 0;
   }
 
   /**
@@ -471,7 +471,7 @@ public class ByteArrayDataInput extends InputStream implements DataInput, Versio
    */
   @Override
   public String toString() {
-    return this.version == null ? super.toString() : (super.toString() + " (" + this.version + ')');
+    return this.version == 0 ? super.toString() : (super.toString() + " (v" + this.version + ')');
   }
 
   private void throwUTFEncodingError(int index, int char1, int char2, Integer char3, int enc)

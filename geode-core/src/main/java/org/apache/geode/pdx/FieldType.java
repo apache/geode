@@ -17,8 +17,8 @@ package org.apache.geode.pdx;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.pdx.internal.DataSize;
 
 /**

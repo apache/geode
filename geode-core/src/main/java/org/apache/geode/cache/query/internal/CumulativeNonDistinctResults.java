@@ -34,10 +34,10 @@ import org.apache.geode.cache.query.internal.utils.LimitIterator;
 import org.apache.geode.cache.query.internal.utils.PDXUtils;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.HeapDataOutputStream.LongUpdater;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * This is used as a wrapper over all the results of PR which are of non distinct type

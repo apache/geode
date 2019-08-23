@@ -33,8 +33,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.query.internal.cq.InternalCqQuery;
 import org.apache.geode.cache.util.ObjectSizer;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DSCODE;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Sendable;
 import org.apache.geode.internal.Version;
@@ -49,6 +47,8 @@ import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.size.Sizeable;
 
 

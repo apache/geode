@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A variant of the ObjectPartList which deserializes the values as byte arrays of serialized

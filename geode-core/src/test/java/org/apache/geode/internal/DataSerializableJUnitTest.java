@@ -68,6 +68,8 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.SystemFailure;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.internal.statistics.StatArchiveWriter;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 import org.apache.geode.test.junit.categories.SerializationTest;
@@ -1162,13 +1164,14 @@ public class DataSerializableJUnitTest implements Serializable {
   public void testVersionedDataSerializable() throws Exception {
     VersionedDataSerializableImpl ds = new VersionedDataSerializableImpl(getRandom());
 
-    VersionedDataOutputStream v = new VersionedDataOutputStream(this.baos, Version.GFE_70);
+    VersionedDataOutputStream v =
+        new VersionedDataOutputStream(this.baos, Version.GFE_70.ordinal());
     DataSerializer.writeObject(ds, v);
     v.flush();
 
     ByteBuffer bb = ByteBuffer.wrap(this.baos.toByteArray());
     ByteBufferInputStream bbis = new ByteBufferInputStream(bb);
-    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, Version.GFE_70);
+    VersionedDataInputStream vin = new VersionedDataInputStream(bbis, Version.GFE_70.ordinal());
     VersionedDataSerializableImpl ds2 =
         (VersionedDataSerializableImpl) DataSerializer.readObject(vin);
 

@@ -23,10 +23,10 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
 import com.gemstone.gemfire.cache.execute.EmtpyRegionFunctionException;
@@ -106,7 +106,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     // if the client is old then it needs com.gemstone.gemfire package names
     if (out instanceof VersionedDataOutputStream) {
       VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
-      Version version = vout.getVersion();
+      Version version = Version.getVersionForDataStream(vout);
       if (version != null && version.compareTo(Version.GFE_90) < 0) {
         return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
       }

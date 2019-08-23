@@ -51,11 +51,11 @@ import org.apache.geode.cache.query.internal.QueryMonitor;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * This class takes the responsibility of executing the query on a data store for the buckets

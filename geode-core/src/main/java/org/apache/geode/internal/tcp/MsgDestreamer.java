@@ -30,7 +30,7 @@ import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 /**
  * <p>
@@ -239,7 +239,8 @@ public class MsgDestreamer {
           ReplyProcessor21.initMessageRPId();
           final Version v = version;
           DataInputStream dis =
-              v == null ? new DataInputStream(this.is) : new VersionedDataInputStream(this.is, v);
+              v == null ? new DataInputStream(this.is)
+                  : new VersionedDataInputStream(this.is, v.ordinal());
           long startSer = this.stats.startMsgDeserialization();
           setResult((DistributionMessage) InternalDataSerializer.readDSFID(dis));
           this.stats.endMsgDeserialization(startSer);

@@ -44,12 +44,12 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.DistributionAdvisor.ProfileId;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.

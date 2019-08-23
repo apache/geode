@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.offheap;
 
-import static org.apache.geode.internal.DSFIDFactory.registerDSFID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,15 +56,14 @@ import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.Instantiator;
 import org.apache.geode.distributed.internal.ReplyMessage;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
 import org.apache.geode.internal.cache.execute.data.CustId;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.
@@ -95,7 +93,9 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals(
-        "org.apache.geode.internal.DataSerializableFixedID:" + ReplyMessage.class.getName(), type);
+        "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + ReplyMessage.class.getName(),
+        type);
   }
 
   @Test
@@ -107,19 +107,23 @@ public class DataTypeJUnitTest {
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
     assertEquals(
-        "org.apache.geode.internal.DataSerializableFixedID:" + ShutdownAllResponse.class
-            .getName(),
+        "org.apache.geode.internal.serialization.DataSerializableFixedID:"
+            + ShutdownAllResponse.class
+                .getName(),
         type);
   }
 
   @Test
   public void testDataSerializableFixedIDInt() throws IOException, ClassNotFoundException {
     assertFalse(
-        DSFIDFactory.getDsfidmap2().containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
-    registerDSFID(DummyIntDataSerializableFixedID.INT_SIZE_id,
+        InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+            .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DummyIntDataSerializableFixedID.INT_SIZE_id,
         DummyIntDataSerializableFixedID.class);
     assertTrue(
-        DSFIDFactory.getDsfidmap2().containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
+        InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+            .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
 
     try {
       DummyIntDataSerializableFixedID dummyObj = new DummyIntDataSerializableFixedID();
@@ -130,13 +134,15 @@ public class DataTypeJUnitTest {
       byte[] bytes = baos.toByteArray();
 
       String type = DataType.getDataType(bytes);
-      assertEquals("org.apache.geode.internal.DataSerializableFixedID:"
+      assertEquals("org.apache.geode.internal.serialization.DataSerializableFixedID:"
           + DummyIntDataSerializableFixedID.class.getName(),
           type);
     } finally {
-      DSFIDFactory.getDsfidmap2().remove(DummyIntDataSerializableFixedID.INT_SIZE_id);
+      InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+          .remove(DummyIntDataSerializableFixedID.INT_SIZE_id);
       assertFalse(
-          DSFIDFactory.getDsfidmap2().containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
+          InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+              .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
     }
   }
 
@@ -148,7 +154,8 @@ public class DataTypeJUnitTest {
     DataSerializer.writeClass(Integer.class, out);
     byte[] bytes = baos.toByteArray();
     String type = DataType.getDataType(bytes);
-    assertEquals("org.apache.geode.internal.DataSerializableFixedID:" + Integer.class.getName(),
+    assertEquals("org.apache.geode.internal.serialization.DataSerializableFixedID:"
+        + Integer.class.getName(),
         type);
   }
 

@@ -24,8 +24,6 @@ import java.util.concurrent.atomic.AtomicLongFieldUpdater;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.DSCODE;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.Conflatable;
@@ -36,6 +34,8 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNa
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpHashMap;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNameToOpSingleEntry;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.size.Sizeable;
 
 /**

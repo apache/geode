@@ -89,7 +89,7 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   /*
    * (non-Javadoc)
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
    */
   @Override
   public int getDSFID() {

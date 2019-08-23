@@ -32,7 +32,6 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SerializationVersions;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.EventID;
@@ -45,6 +44,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientTombstoneMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationVersions;
 
 /**
  * This message class sends tombstone GC information to other PR holders

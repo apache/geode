@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.serialization;
+package org.apache.geode.internal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -28,8 +28,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.UnitTestValueHolder;
-import org.apache.geode.internal.serialization.HeapDataOutputStream;
-import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.pdx.internal.TypeRegistry;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -112,7 +111,7 @@ public class HeapDataOutputStreamJUnitTest {
 
     out.write(0);
 
-    byte[] bytes = new byte[HeapDataOutputStream.MIN_TO_COPY + 1];
+    byte[] bytes = new byte[BufferDataOutputStream.MIN_TO_COPY + 1];
     for (int i = 0; i < bytes.length; i++) {
       bytes[i] = (byte) ((i + 1) % 128);
     }

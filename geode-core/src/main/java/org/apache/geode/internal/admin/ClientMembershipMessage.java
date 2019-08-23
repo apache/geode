@@ -23,6 +23,7 @@ import org.apache.geode.admin.internal.AdminDistributedSystemImpl;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 /**
  * A PooledDistributionMessage for notifying admin members about changes in Client Membership
@@ -85,7 +86,7 @@ public class ClientMembershipMessage extends PooledDistributionMessage {
 
   /**
    *
-   * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+   * @see DataSerializableFixedID#getDSFID()
    */
   @Override
   public int getDSFID() {
