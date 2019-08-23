@@ -15,6 +15,8 @@
 package org.apache.geode.management.internal;
 
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,8 +109,9 @@ public class RestAgent {
 
       if (cache.getHttpService().isPresent()) {
         HttpService httpService = cache.getHttpService().get();
-        httpService.addWebApplication("/gemfire-api", gemfireAPIWar, securityServiceAttr);
-        httpService.addWebApplication("/geode", gemfireAPIWar, securityServiceAttr);
+        Path gemfireAPIWarPath = Paths.get(gemfireAPIWar);
+        httpService.addWebApplication("/gemfire-api", gemfireAPIWarPath, securityServiceAttr);
+        httpService.addWebApplication("/geode", gemfireAPIWarPath, securityServiceAttr);
       } else {
         logger.warn("HttpService is not available - could not start Dev REST API");
       }

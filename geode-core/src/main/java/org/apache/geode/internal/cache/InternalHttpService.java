@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,6 @@ public class InternalHttpService implements HttpService {
   private Server httpServer;
   private String bindAddress = "0.0.0.0";
   private int port;
-  private SSLConfig sslConfig;
   private static final String FILE_PATH_SEPARATOR = System.getProperty("file.separator");
   private static final String USER_DIR = System.getProperty("user.dir");
   private static final String USER_NAME = System.getProperty("user.name");
@@ -66,7 +66,6 @@ public class InternalHttpService implements HttpService {
     if (port == 0) {
       return;
     }
-    this.sslConfig = sslConfig;
 
     this.httpServer = new Server();
 
@@ -133,7 +132,7 @@ public class InternalHttpService implements HttpService {
   }
 
   @Override
-  public synchronized void addWebApplication(String webAppContext, String warFilePath,
+  public synchronized void addWebApplication(String webAppContext, Path warFilePath,
       Map<String, Object> attributeNameValuePairs)
       throws Exception {
     if (httpServer == null) {
@@ -145,7 +144,7 @@ public class InternalHttpService implements HttpService {
 
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
-    webapp.setWar(warFilePath);
+    webapp.setWar(warFilePath.toString());
     webapp.setParentLoaderPriority(false);
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());

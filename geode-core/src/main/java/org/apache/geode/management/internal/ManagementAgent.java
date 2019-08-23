@@ -20,6 +20,8 @@ import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.AlreadyBoundException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -209,8 +211,9 @@ public class ManagementAgent {
 
         // if jmx manager is running, admin rest should be available, either on locator or server
         if (agentUtil.isAnyWarFileAvailable(adminRestWar)) {
-          httpService.addWebApplication("/gemfire", adminRestWar, serviceAttributes);
-          httpService.addWebApplication("/geode-mgmt", adminRestWar, serviceAttributes);
+          Path adminRestWarPath = Paths.get(adminRestWar);
+          httpService.addWebApplication("/gemfire", adminRestWarPath, serviceAttributes);
+          httpService.addWebApplication("/geode-mgmt", adminRestWarPath, serviceAttributes);
         }
 
         // if jmx manager is running, pulse should be available, either on locator or server
@@ -230,7 +233,7 @@ public class ManagementAgent {
           serviceAttributes.put(InternalHttpService.GEODE_SSLCONFIG_SERVLET_CONTEXT_PARAM,
               createSslProps());
 
-          httpService.addWebApplication("/pulse", pulseWar, serviceAttributes);
+          httpService.addWebApplication("/pulse", Paths.get(pulseWar), serviceAttributes);
 
           managerBean.setPulseURL("http://".concat(getHost(bindAddress)).concat(":")
               .concat(String.valueOf(port)).concat("/pulse/"));

@@ -14,6 +14,7 @@
  */
 package org.apache.geode.cache.internal;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 import org.apache.geode.internal.cache.InternalCache;
@@ -27,7 +28,7 @@ public interface HttpService {
 
   /**
    * Stop the service. This should also stop any transitively managed components. Starting the
-   * service is implicitly handled by {@link #addWebApplication(String, String, Map)}
+   * service is implicitly handled by {@link #addWebApplication(String, Path, Map)}
    */
   void stop();
 
@@ -39,6 +40,6 @@ public interface HttpService {
    * @param warFilePath the absolute path to the war file
    * @param attributeNameValuePairs attributes to be set on the servlet context
    */
-  void addWebApplication(String webAppContext, String warFilePath,
+  void addWebApplication(String webAppContext, Path warFilePath,
       Map<String, Object> attributeNameValuePairs) throws Exception;
 }
