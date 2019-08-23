@@ -44,6 +44,7 @@ import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
 import org.apache.geode.management.internal.cli.functions.CreateDiskStoreFunction;
 import org.apache.geode.management.internal.cli.functions.ListDiskStoresFunction;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
+import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
 import org.apache.geode.security.ResourcePermission;
@@ -89,7 +90,10 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
           help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_WARNING_PCT__HELP) float diskUsageWarningPercentage,
       @CliOption(key = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT,
           unspecifiedDefaultValue = "99",
-          help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage) {
+          help = CliStrings.CREATE_DISK_STORE__DISK_USAGE_CRITICAL_PCT__HELP) float diskUsageCriticalPercentage,
+      @CliOption(key = CliStrings.CREATE_DISK_STORE__STAGE_CONFIGURATION,
+          specifiedDefaultValue = "true", unspecifiedDefaultValue = "false",
+          help = CliStrings.CREATE_DISK_STORE__STAGE_CONFIGURATION__HELP) boolean diskStoreConfigOnly) {
 
     DiskStoreAttributes diskStoreAttributes = new DiskStoreAttributes();
     diskStoreAttributes.allowForceCompaction = allowForceCompaction;
@@ -121,25 +125,38 @@ public class CreateDiskStoreCommand extends SingleGfshCommand {
 
     Set<DistributedMember> targetMembers = findMembers(groups, null);
 
-    if (targetMembers.isEmpty()) {
+    if (targetMembers.isEmpty() && !diskStoreConfigOnly) {
       return ResultModel.createError(CliStrings.NO_MEMBERS_FOUND_MESSAGE);
     }
 
+    if (diskStoreConfigOnly) {
+      targetMembers = findMembersIncludingLocators(groups, null);
+    }
     Pair<Boolean, String> validationResult =
         validateDiskstoreAttributes(diskStoreAttributes, targetMembers);
     if (validationResult.getLeft().equals(Boolean.FALSE)) {
       return ResultModel.createError(validationResult.getRight());
     }
 
-    List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
-        new CreateDiskStoreFunction(), new Object[] {name, diskStoreAttributes}, targetMembers);
+    ResultModel result;
+    DiskStoreType diskStoreType = createDiskStoreType(name, diskStoreAttributes);
+    if (diskStoreConfigOnly) {
+      result = new ResultModel();
+      InfoResultModel infoSection = result.addInfo();
+      result.setConfigObject(diskStoreType);
 
-    ResultModel result = ResultModel.createMemberStatusResult(functionResults);
-    result.setConfigObject(createDiskStoreType(name, diskStoreAttributes));
 
-    if (!waitForDiskStoreMBeanCreation(name, targetMembers)) {
-      result.addInfo()
-          .addLine("Did not complete waiting for Disk Store MBean proxy creation");
+    } else {
+      List<CliFunctionResult> functionResults = executeAndGetFunctionResult(
+          new CreateDiskStoreFunction(), new Object[] {name, diskStoreAttributes}, targetMembers);
+
+      result = ResultModel.createMemberStatusResult(functionResults);
+      result.setConfigObject(diskStoreType);
+
+      if (!waitForDiskStoreMBeanCreation(name, targetMembers)) {
+        result.addInfo()
+            .addLine("Did not complete waiting for Disk Store MBean proxy creation");
+      }
     }
 
     return result;

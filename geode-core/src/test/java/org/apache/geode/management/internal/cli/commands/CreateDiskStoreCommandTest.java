@@ -19,7 +19,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+
+
 
 import java.util.Collections;
 
@@ -59,10 +63,7 @@ public class CreateDiskStoreCommandTest {
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist")
             .getResultModel();
-    DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
-
-    DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
-    assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo("./data/persist");
+    verifyDiskStoreDir(resultModel, "./data/persist");
   }
 
   @Test
@@ -77,9 +78,84 @@ public class CreateDiskStoreCommandTest {
     ResultModel resultModel =
         gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=/data/persist")
             .getResultModel();
+    verifyDiskStoreDir(resultModel, "/data/persist");
+
+  }
+
+  @Test
+  public void stageConfiguration_doesNotExecuteCreateDiskStoreFunction() {
+    doReturn(Collections.emptySet()).when(command).findMembers(any(),
+            any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembersIncludingLocators(any(),
+            any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+            any());
+
+    ResultModel resultModel =
+            gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist --stage-configuration=true")
+                    .statusIsSuccess().getResultModel();
+    verifyDiskStoreDir(resultModel, "./data/persist");
+
+    verify(command, never()).executeAndGetFunctionResult(any(), any(), any());
+  }
+
+  @Test
+  public void stageConfiguration_noServers_persistsConfig() {
+    doReturn(Collections.emptySet()).when(command).findMembers(any(),
+            any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembersIncludingLocators(any(),
+            any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+            any());
+
+    ResultModel resultModel =
+            gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist --stage-configuration=true")
+                    .statusIsSuccess().getResultModel();
+    verifyDiskStoreDir(resultModel, "./data/persist");
+  }
+
+  @Test
+  public void stageConfiguration_withServers_persistsConfig() {
+    doReturn(Collections.emptySet()).when(command).findMembers(any(),
+            any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembersIncludingLocators(any(),
+            any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+            any());
+
+    ResultModel resultModel =
+            gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist --stage-configuration=true")
+                    .statusIsSuccess().getResultModel();
+    verifyDiskStoreDir(resultModel, "./data/persist");
+  }
+
+  @Test
+  public void stageConfiguration_isIdempotent() {
+    doReturn(Collections.emptySet()).when(command).findMembers(any(),
+            any());
+    doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembersIncludingLocators(any(),
+            any());
+    doReturn(Pair.of(Boolean.TRUE, null)).when(command).validateDiskstoreAttributes(any(),
+            any());
+
+    ResultModel resultModel =
+            gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist --stage-configuration=true")
+                    .statusIsSuccess().getResultModel();
+
+    verifyDiskStoreDir(resultModel, "./data/persist");
+    DiskStoreType diskStoreType;
+    DiskDirType diskDirType;
+
+    resultModel =
+            gfsh.executeAndAssertThat(command, "create disk-store --name=ds1 --dir=./data/persist --stage-configuration=true")
+                    .statusIsSuccess().getResultModel();
+    verifyDiskStoreDir(resultModel, "./data/persist");
+  }
+
+  private void verifyDiskStoreDir(ResultModel resultModel, String expectedDir) {
     DiskStoreType diskStoreType = (DiskStoreType) resultModel.getConfigObject();
 
     DiskDirType diskDirType = diskStoreType.getDiskDirs().get(0);
-    assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo("/data/persist");
+    assertThat(diskDirType.getContent().replace('\\', '/')).isEqualTo(expectedDir);
   }
 }
