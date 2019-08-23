@@ -53,7 +53,7 @@ resources:
   type: git
   source:
     uri: https://github.com/apache/geode-examples.git
-    branch: develop
+    branch: {{ repository.branch }}
     depth: 10
 - name: geode-ci
   type: git
