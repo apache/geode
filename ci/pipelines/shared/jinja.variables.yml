@@ -81,7 +81,7 @@ tests:
   CALL_STACK_TIMEOUT: '1800'
   CPUS: '8'
   DUNIT_PARALLEL_FORKS: '0'
-  EXECUTE_TEST_TIMEOUT: 45m
+  EXECUTE_TEST_TIMEOUT: 1h
   GRADLE_TASK: acceptanceTest
   PARALLEL_DUNIT: 'false'
   PARALLEL_GRADLE: 'false'
@@ -96,7 +96,7 @@ tests:
   GRADLE_TASK: distributedTest
   PARALLEL_DUNIT: 'true'
   PLATFORM: linux
-  RAM: '180'
+  RAM: '250'
   name: Distributed
 - ARTIFACT_SLUG: integrationtestfiles
   CALL_STACK_TIMEOUT: '1500'
