@@ -272,7 +272,7 @@ jobs:
         - name: geode-ci
         - name: geode
         - name: instance-data
-    timeout: 5m
+    timeout: 10m
     on_failure:
       do:
       - task: delete_instance
