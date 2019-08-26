@@ -569,6 +569,7 @@ public class GemFireCacheImplTest {
     MeterRegistry subregistry = spy(new SimpleMeterRegistry());
     gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
         .addMeterSubregistry(subregistry)
+        .setTypeRegistry(mock(TypeRegistry.class))
         .create(Fakes.distributedSystem());
 
     gemFireCacheImpl.close();
