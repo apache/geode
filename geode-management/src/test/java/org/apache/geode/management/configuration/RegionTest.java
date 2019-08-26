@@ -80,8 +80,8 @@ public class RegionTest {
   }
 
   @Test
-  public void parseJsonWithShortcut() throws Exception {
-    String json = "{\"name\":\"test\", \"shortcut\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
+  public void parseJsonWithDeprecatedType() throws Exception {
+    String json = "{\"name\":\"test\", \"type\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
     regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
@@ -100,7 +100,7 @@ public class RegionTest {
   @Test
   public void parseWithShortcutAndOtherOverridingAttributes() throws Exception {
     String json =
-        "{\"name\":\"test\", \"redundantCopies\":0, \"shortcut\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
+        "{\"name\":\"test\", \"redundantCopies\":0, \"type\":\"PARTITION_REDUNDANT_PERSISTENT\"}";
     regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getRedundantCopies()).isEqualTo(0);

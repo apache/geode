@@ -46,32 +46,9 @@ public class Region extends CacheElement implements RestfulEndpoint,
   /**
    * this indicates how many redundant copies of data to store
    */
-  private int redundantCopies;
+  private Integer redundantCopies;
 
   public Region() {}
-
-  /**
-   * you are allowed to create a region configuration object with the
-   * shortcut, but you can't set the shortcut after it's created.
-   *
-   * the json string can have "shortcut" property, we will use that to
-   * construct the object and then set other properties, this allows you
-   * to "addon" or "amend" the shortcut attributes.
-   *
-   */
-  public Region(@JsonProperty("shortcut") RegionShortcut shortcut) {
-    if (shortcut == null) {
-      return;
-    }
-
-    this.type = shortcut.getRegionType();
-    if (shortcut.withRedundant()) {
-      redundantCopies = 1;
-    }
-    if (shortcut.withOverflow() || shortcut.withHeapLRU()) {
-      // todo: after we added eviction attributes, we will set those attributes here.
-    }
-  }
 
   @Override
   public boolean isGlobalRuntime() {
@@ -117,6 +94,7 @@ public class Region extends CacheElement implements RestfulEndpoint,
 
   public void setType(RegionType type) {
     this.type = type;
+
   }
 
   public int getRedundantCopies() {

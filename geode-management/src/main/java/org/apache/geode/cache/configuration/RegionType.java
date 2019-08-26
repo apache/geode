@@ -33,17 +33,70 @@ public enum RegionType {
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
-  UNSUPPORTED;
+  UNSUPPORTED,
 
-  public boolean isProxy() {
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1
+   */
+  PARTITION_REDUNDANT,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1
+   */
+  PARTITION_REDUNDANT_PERSISTENT,
+  /**
+   * @deprecated use PARTITION and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_OVERFLOW,
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1, and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_REDUNDANT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1 and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION and set the evictionAction to LOCAL_DESTROY
+   */
+  // PARTITION_HEAP_LRU,
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1 and set the evictionAction to LOCAL_DESTROY
+   */
+  // PARTITION_REDUNDANT_HEAP_LRU,
+  /**
+   * @deprecated use PARTITION_PROXY and set the redundancy level to 1
+   */
+  PARTITION_PROXY_REDUNDANT;
+  /**
+   * @deprecated use REPLICATE and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // REPLICATE_OVERFLOW,
+  /**
+   * @deprecated use REPLICATE_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // REPLICATE_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use REPLICATE and set the evictionAction to LOCAL_DESTROY
+   */
+  // REPLICATE_HEAP_LRU;
+
+  public boolean withProxy() {
     return name().contains("PROXY");
   }
 
-  public boolean isPersistent() {
+  public boolean withPersistent() {
     return name().contains("PERSISTENT");
   }
 
-  public boolean isReplicate() {
+  public boolean withReplicate() {
     return name().contains("REPLICATE");
+  }
+
+  public boolean withRedundant() {
+    return name().contains("REDUNDANT");
   }
 }

@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import java.util.Optional;
+
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
@@ -29,7 +31,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     Region region = new Region();
     region.setName(xmlObject.getName());
     RegionAttributesType regionAttributes = xmlObject.getRegionAttributes();
-    region.setType(getRegionType(regionAttributes));
+    region.setType(getRegionType(xmlObject.getType(), regionAttributes));
 
     if (regionAttributes != null) {
       region.setDiskStoreName(regionAttributes.getDiskStoreName());
@@ -70,7 +72,17 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
    * policies not supported by management rest api (for example, NORMAL and RELOADED)
    * it will show as UNSUPPORTED
    */
-  public RegionType getRegionType(RegionAttributesType regionAttributes) {
+  public RegionType getRegionType(String refid, RegionAttributesType regionAttributes) {
+    if (refid != null) {
+      try {
+        return RegionType.valueOf(refid);
+      }
+      catch(Exception e){
+        return RegionType.UNSUPPORTED;
+      }
+    }
+
+    // if refid is null, we will try to determine the type based on the region attributes
     if (regionAttributes == null) {
       return RegionType.UNSUPPORTED;
     }
@@ -80,8 +92,8 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       return RegionType.UNSUPPORTED;
     }
 
-    switch (dataPolicy.name()) {
-      case "PARTITION": {
+    switch (dataPolicy) {
+      case PARTITION: {
         RegionAttributesType.PartitionAttributes partitionAttributes =
             regionAttributes.getPartitionAttributes();
         if (partitionAttributes != null && partitionAttributes.getLocalMaxMemory().equals("0")) {
@@ -89,16 +101,16 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         }
         return RegionType.PARTITION;
       }
-      case "PERSISTENT_PARTITION": {
+      case PERSISTENT_PARTITION: {
         return RegionType.PARTITION_PERSISTENT;
       }
-      case "PERSISTENT_REPLICATE": {
+      case PERSISTENT_REPLICATE: {
         return RegionType.REPLICATE_PERSISTENT;
       }
-      case "REPLICATE": {
+      case REPLICATE: {
         return RegionType.REPLICATE;
       }
-      case "EMPTY": {
+      case EMPTY: {
         return RegionType.REPLICATE_PROXY;
       }
     }
