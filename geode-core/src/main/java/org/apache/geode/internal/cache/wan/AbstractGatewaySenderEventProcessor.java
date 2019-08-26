@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -800,7 +801,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
           // The event should not be conflated (create or destroy). Add it to
           // the map.
           ConflationKey key = new ConflationKey(gsEvent.getRegionPath(),
-              gsEvent.getKeyToConflate(), gsEvent.getOperation(), gsEvent.getShadowKey());
+              gsEvent.getKeyToConflate(), gsEvent.getOperation(), gsEvent.getEventId());
           conflatedEventsMap.put(key, gsEvent);
         }
       }
@@ -1389,17 +1390,17 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
 
     private String regionName;
 
-    private long shadowKey;
+    private EventID eventId;
 
     private ConflationKey(String region, Object key, Operation operation) {
-      this(region, key, operation, -1);
+      this(region, key, operation, null);
     }
 
-    private ConflationKey(String region, Object key, Operation operation, long shadowKey) {
+    private ConflationKey(String region, Object key, Operation operation, EventID eventId) {
       this.key = key;
       this.operation = operation;
       this.regionName = region;
-      this.shadowKey = shadowKey;
+      this.eventId = eventId;
     }
 
     @Override
@@ -1409,7 +1410,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       result = prime * result + key.hashCode();
       result = prime * result + operation.hashCode();
       result = prime * result + regionName.hashCode();
-      result = prime * result + Long.hashCode(this.shadowKey);
+      result = prime * result + (eventId == null ? 0 : eventId.hashCode());
       return result;
     }
 
@@ -1434,7 +1435,7 @@ public abstract class AbstractGatewaySenderEventProcessor extends LoggingThread
       if (!this.operation.equals(that.operation)) {
         return false;
       }
-      if (this.shadowKey != that.shadowKey) {
+      if (!Objects.equals(this.eventId, that.eventId)) {
         return false;
       }
       return true;
