@@ -70,7 +70,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     }
 
     if (redundantCopies != null && (redundantCopies < 0 || redundantCopies > 3)) {
-      throw new IllegalArgumentException("redundantCopies cannot be less than 0 or bigger than 3.");
+      throw new IllegalArgumentException("redundantCopies cannot be less than 0 or greater than 3.");
     }
 
     if (!config.getType().withPartition() && config.getRedundantCopies() != null) {

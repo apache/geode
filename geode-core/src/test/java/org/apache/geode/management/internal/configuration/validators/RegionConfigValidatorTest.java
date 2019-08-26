@@ -137,14 +137,14 @@ public class RegionConfigValidatorTest {
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "redundantCopies cannot be less than 0 or bigger than 3.");
+            "redundantCopies cannot be less than 0 or greater than 3.");
 
     config.setRedundantCopies(4);
     config.setType(RegionType.PARTITION_REDUNDANT);
     assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
         IllegalArgumentException.class)
         .hasMessageContaining(
-            "redundantCopies cannot be less than 0 or bigger than 3.");
+            "redundantCopies cannot be less than 0 or greater than 3.");
 
   }
 

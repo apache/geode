@@ -41,10 +41,6 @@ public class Region extends CacheElement implements RestfulEndpoint,
   private String keyConstraint;
   private String valueConstraint;
   private String diskStoreName;
-
-  /**
-   * this indicates how many redundant copies of data to store
-   */
   private Integer redundantCopies;
 
   public Region() {}
@@ -95,6 +91,9 @@ public class Region extends CacheElement implements RestfulEndpoint,
     this.type = type;
   }
 
+  /**
+   * @return the redundant copies of a region
+   */
   public Integer getRedundantCopies() {
     if (type != null && type.withRedundant() && redundantCopies == null) {
       return 1;

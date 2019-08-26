@@ -91,22 +91,37 @@ public enum RegionType {
    */
   // REPLICATE_HEAP_LRU;
 
+  /**
+   * @return if the type contains "PROXY"
+   */
   public boolean withProxy() {
     return name().contains("PROXY");
   }
 
+  /**
+   * @return if the type contains "PERSISTENT"
+   */
   public boolean withPersistent() {
     return name().contains("PERSISTENT");
   }
 
+  /**
+   * @return if the type contains "REPLICATE"
+   */
   public boolean withReplicate() {
     return name().contains("REPLICATE");
   }
 
+  /**
+   * @return if the type contains "PARTITION"
+   */
   public boolean withPartition() {
     return name().contains("PARTITION");
   }
 
+  /**
+   * @return if the type contains "REDUNDANT"
+   */
   public boolean withRedundant() {
     return name().contains("REDUNDANT");
   }

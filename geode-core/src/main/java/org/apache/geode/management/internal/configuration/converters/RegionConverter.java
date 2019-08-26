@@ -156,7 +156,6 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
         break;
       }
-      // below can come from gfsh
       case "PARTITION_REDUNDANT": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
         regionAttributes.setRedundantCopy("1");
