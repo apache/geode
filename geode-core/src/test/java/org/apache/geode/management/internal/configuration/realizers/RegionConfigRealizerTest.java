@@ -30,9 +30,9 @@ import org.mockito.ArgumentCaptor;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.PartitionAttributes;
 import org.apache.geode.cache.RegionFactory;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
 

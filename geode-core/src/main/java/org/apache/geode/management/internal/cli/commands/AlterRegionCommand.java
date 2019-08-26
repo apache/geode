@@ -14,6 +14,8 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -25,7 +27,6 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.ExpirationAction;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionAttributesType.EvictionAttributes;
@@ -119,7 +120,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
           // we always know that regionPath starts with a "/", so we need to strip it out before we
           // pass it in to look for the regionConfig
           regionConfig =
-              CacheElement.findElement(clusterConfig.getRegions(), regionPath.substring(1));
+              find(clusterConfig.getRegions(), regionPath.substring(1));
         }
 
         if (regionConfig == null) {
@@ -204,7 +205,7 @@ public class AlterRegionCommand extends SingleGfshCommand {
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig cacheConfig, Object configObject) {
     RegionConfig deltaConfig = (RegionConfig) configObject;
-    RegionConfig existingConfig = CacheElement.findElement(cacheConfig.getRegions(),
+    RegionConfig existingConfig = find(cacheConfig.getRegions(),
         deltaConfig.getId());
 
     RegionAttributesType deltaAttributes = deltaConfig.getRegionAttributes();

@@ -26,7 +26,6 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.management.api.ClusterManagementException;
 import org.apache.geode.management.api.ClusterManagementListOperationsResult;
 import org.apache.geode.management.api.ClusterManagementListResult;
@@ -37,6 +36,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -70,7 +70,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement> ClusterManagementRealizationResult create(T config) {
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config) {
     String endPoint = getEndpoint(config);
     // the response status code info is represented by the ClusterManagementResult.errorCode already
     return assertSuccessful(restTemplate
@@ -80,7 +80,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement> ClusterManagementRealizationResult delete(
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(
       T config) {
     String uri = getIdentityEndPoint(config);
     return assertSuccessful(restTemplate
@@ -93,14 +93,14 @@ public class ClientClusterManagementService implements ClusterManagementService 
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementRealizationResult update(
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not Implemented");
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config) {
     String endPoint = getEndpoint(config);
     return assertSuccessful(restTemplate
@@ -111,7 +111,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
 
   @Override
   @SuppressWarnings("unchecked")
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
     return assertSuccessful(restTemplate
         .getForEntity(getIdentityEndPoint(config), ClusterManagementListResult.class)
@@ -169,7 +169,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return s;
   }
 
-  private String getEndpoint(CacheElement config) {
+  private String getEndpoint(AbstractConfiguration config) {
     checkIsRestful(config);
     String endpoint = ((RestfulEndpoint) config).getEndpoint();
     if (endpoint == null) {
@@ -179,7 +179,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return RestfulEndpoint.URI_VERSION + endpoint;
   }
 
-  private String getIdentityEndPoint(CacheElement config) {
+  private String getIdentityEndPoint(AbstractConfiguration config) {
     checkIsRestful(config);
     String uri = ((RestfulEndpoint) config).getIdentityEndPoint();
     if (uri == null) {
@@ -189,7 +189,7 @@ public class ClientClusterManagementService implements ClusterManagementService 
     return RestfulEndpoint.URI_VERSION + uri;
   }
 
-  private void checkIsRestful(CacheElement config) {
+  private void checkIsRestful(AbstractConfiguration config) {
     if (!(config instanceof RestfulEndpoint)) {
       throw new IllegalArgumentException(
           String.format("The config type %s does not have a RESTful endpoint defined",

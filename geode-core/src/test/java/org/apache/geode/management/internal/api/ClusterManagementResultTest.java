@@ -27,7 +27,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
@@ -35,6 +34,7 @@ import org.apache.geode.management.api.ClusterManagementResult.StatusCode;
 import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 

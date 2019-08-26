@@ -17,15 +17,15 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.internal.CacheElementOperation;
 
 /**
  * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
-public class CacheElementValidator implements ConfigurationValidator<CacheElement> {
+public class CacheElementValidator implements ConfigurationValidator<AbstractConfiguration> {
   @Override
-  public void validate(CacheElementOperation operation, CacheElement config)
+  public void validate(CacheElementOperation operation, AbstractConfiguration config)
       throws IllegalArgumentException {
     if (StringUtils.isBlank(config.getId())) {
       throw new IllegalArgumentException(
@@ -43,16 +43,16 @@ public class CacheElementValidator implements ConfigurationValidator<CacheElemen
     }
   }
 
-  private void validateCreate(CacheElement config) {
+  private void validateCreate(AbstractConfiguration config) {
     if (config.getGroups().size() > 1) {
       throw new IllegalArgumentException(
           "Can only create " + config.getClass().getSimpleName() + " in one group at a time.");
     }
 
     String group = config.getGroup();
-    if (CacheElement.CLUSTER.equalsIgnoreCase(group)) {
+    if (AbstractConfiguration.CLUSTER.equalsIgnoreCase(group)) {
       throw new IllegalArgumentException("'"
-          + CacheElement.CLUSTER
+          + AbstractConfiguration.CLUSTER
           + "' is a reserved group name. Do not use it for member groups.");
     }
     if (group != null && group.contains(",")) {

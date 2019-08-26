@@ -42,7 +42,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.PdxType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.operation.RebalanceOperation;
 import org.apache.geode.util.internal.GeodeJsonMapper;
 

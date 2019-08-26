@@ -24,11 +24,11 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.internal.cli.functions.CliFunctionResult;
@@ -153,7 +153,7 @@ public class CreateJndiBindingCommand extends SingleGfshCommand {
 
     if (service != null) {
       CacheConfig cacheConfig = service.getCacheConfig("cluster");
-      if (cacheConfig != null && CacheElement.exists(cacheConfig.getJndiBindings(), jndiName)) {
+      if (cacheConfig != null && Identifiable.exists(cacheConfig.getJndiBindings(), jndiName)) {
         String message =
             CliStrings.format("Jndi binding with jndi-name \"{0}\" already exists.", jndiName);
         return ifNotExists ? ResultModel.createInfo("Skipping: " + message)

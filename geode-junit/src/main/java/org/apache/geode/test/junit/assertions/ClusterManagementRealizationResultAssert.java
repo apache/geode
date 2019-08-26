@@ -46,7 +46,7 @@ public class ClusterManagementRealizationResultAssert
 
   public ClusterManagementRealizationResultAssert hasStatusCode(
       ClusterManagementResult.StatusCode... codes) {
-    assertThat(actual.getStatusCode()).isIn(codes);
+    assertThat(actual.getStatusCode()).isIn((Object[]) codes);
     return this;
   }
 

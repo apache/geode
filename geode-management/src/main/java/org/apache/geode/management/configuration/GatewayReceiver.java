@@ -19,8 +19,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.DeclarableType;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.GatewayReceiverInfo;
@@ -32,7 +30,7 @@ import org.apache.geode.management.runtime.GatewayReceiverInfo;
  * setting the bindAddress and hostname for clients are not supported by this api.
  */
 
-public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
+public class GatewayReceiver extends AbstractConfiguration implements RestfulEndpoint,
     CorrespondWith<GatewayReceiverInfo> {
   @Override
   @JsonIgnore
@@ -50,7 +48,7 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
     return GATEWAY_RECEIVERS_ENDPOINTS;
   }
 
-  private List<DeclarableType> gatewayTransportFilters;
+  private List<ClassName> gatewayTransportFilters;
   private Integer startPort;
   private Integer endPort;
   private Integer maximumTimeBetweenPings;
@@ -61,7 +59,7 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
    * get the list of transport filters
    * if you modify the returned list, you will be modifying the list owned by this config object.
    */
-  public List<DeclarableType> getGatewayTransportFilters() {
+  public List<ClassName> getGatewayTransportFilters() {
     return gatewayTransportFilters;
   }
 
@@ -69,7 +67,7 @@ public class GatewayReceiver extends CacheElement implements RestfulEndpoint,
    * set the gateway transport filters
    */
   public void setGatewayTransportFilters(
-      List<DeclarableType> gatewayTransportFilters) {
+      List<ClassName> gatewayTransportFilters) {
     this.gatewayTransportFilters = gatewayTransportFilters;
   }
 

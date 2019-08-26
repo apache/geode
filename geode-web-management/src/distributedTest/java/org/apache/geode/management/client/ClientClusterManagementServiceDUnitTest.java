@@ -34,13 +34,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.context.WebApplicationContext;
 
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.rest.LocatorWebContext;
 import org.apache.geode.management.internal.rest.PlainLocatorContextLoader;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;

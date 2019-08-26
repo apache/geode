@@ -16,6 +16,7 @@
 package org.apache.geode.lang;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * The Identifiable interface defines a contract for classes whose Object instances can be uniquely
@@ -36,4 +37,15 @@ public interface Identifiable<T extends Comparable<T>> extends Serializable {
    */
   T getId();
 
+  static <T extends Identifiable> boolean exists(List<T> list, String id) {
+    return list.stream().anyMatch(o -> o.getId().equals(id));
+  }
+
+  static <T extends Identifiable> T find(List<T> list, String id) {
+    return list.stream().filter(o -> o.getId().equals(id)).findFirst().orElse(null);
+  }
+
+  static <T extends Identifiable> void remove(List<T> list, String id) {
+    list.removeIf(t -> t.getId().equals(id));
+  }
 }

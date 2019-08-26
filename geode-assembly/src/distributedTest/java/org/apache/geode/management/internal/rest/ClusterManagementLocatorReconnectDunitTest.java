@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.lang.Identifiable.exists;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,11 +26,10 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -94,7 +94,7 @@ public class ClusterManagementLocatorReconnectDunitTest {
       CacheConfig cacheConfig =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService()
               .getCacheConfig("cluster");
-      assertThat(CacheElement.exists(cacheConfig.getRegions(), regionName)).isTrue();
+      assertThat(exists(cacheConfig.getRegions(), regionName)).isTrue();
     });
 
   }

@@ -26,8 +26,8 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.configuration.converters.RegionConverter;
 
@@ -62,7 +62,7 @@ public class RegionConfigManager implements ConfigurationManager<Region> {
 
   @Override
   public Region get(String id, CacheConfig existing) {
-    return converter.fromXmlObject(CacheElement.findElement(existing.getRegions(), id));
+    return converter.fromXmlObject(Identifiable.find(existing.getRegions(), id));
   }
 
   @Override
