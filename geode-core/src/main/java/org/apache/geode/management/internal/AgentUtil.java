@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Objects;
@@ -52,13 +54,13 @@ public class AgentUtil {
    * @param warFilePrefix : the prefix of the war file, e.g. geode-web, geode-pulse, or
    *        geode-web-api
    */
-  public String findWarLocation(String warFilePrefix) {
+  public URI findWarLocation(String warFilePrefix) {
     final String versionedWarFileName = warFilePrefix + "-" + gemfireVersion + ".war";
     final String unversionedWarFileName = warFilePrefix + ".war";
 
     // This will attempt to find the war file defined somewhere on the Java classpath,
     // other than the
-    String possiblePath =
+    URI possiblePath =
         lookupWarLocationFromClasspath(versionedWarFileName, unversionedWarFileName);
     if (possiblePath != null) {
       logger.info("Located war: {} at location: {}", warFilePrefix, possiblePath);
@@ -83,7 +85,7 @@ public class AgentUtil {
     return null;
   }
 
-  private String findPossibleWarLocationFromExtraLocations(String versionedWarFileName,
+  private URI findPossibleWarLocationFromExtraLocations(String versionedWarFileName,
       String unversionedWarFileName) {
     final URL url = Arrays.stream(new String[] {versionedWarFileName,
         "tools/Pulse/" + versionedWarFileName,
@@ -93,15 +95,19 @@ public class AgentUtil {
         .map(possibleFile -> this.getClass().getClassLoader().getResource(possibleFile))
         .filter(Objects::nonNull).findFirst().orElse(null);
 
+    URI uri = null;
     if (url != null) {
-      final String path = url.getPath();
-      logger.info("War file found: {}", path);
-      return path;
+      try {
+        uri = url.toURI();
+        logger.info("War file found: {}", uri.toString());
+      } catch (URISyntaxException ex) {
+        logger.warn("War file URL could not be converted to URI: {}", url.toString());
+      }
     }
-    return null;
+    return uri;
   }
 
-  private String findPossibleWarLocationFromGeodeHome(String versionedWarFileName,
+  private URI findPossibleWarLocationFromGeodeHome(String versionedWarFileName,
       String unversionedWarFileName) {
     String[] possibleFiles = {};
     String geodeHome = getGeodeHome();
@@ -116,28 +122,22 @@ public class AgentUtil {
     return findPossibleWarLocationFromStream(Arrays.stream(possibleFiles));
   }
 
-  private String findPossibleWarLocationFromStream(Stream<String> stream) {
+  private URI findPossibleWarLocationFromStream(Stream<String> stream) {
     return stream.filter(possiblePath -> new File(possiblePath).isFile())
-        .findFirst().orElse(null);
+        .findFirst().map(s -> new File(s).toURI()).orElse(null);
   }
 
-  private String lookupWarLocationFromClasspath(String versionedWarFileName,
+  private URI lookupWarLocationFromClasspath(String versionedWarFileName,
       String unversionedWarFileName) {
     return Arrays
         .stream(System.getProperty("java.class.path").split(File.pathSeparator))
         .filter(pathString -> pathString.endsWith(versionedWarFileName) || pathString
             .endsWith(unversionedWarFileName))
-        .findFirst().orElse(null);
+        .findFirst().map(s -> new File(s).toURI()).orElse(null);
   }
 
-  boolean isAnyWarFileAvailable(final String... warFileLocations) {
-    for (String warFileLocation : warFileLocations) {
-      if (StringUtils.isNotBlank(warFileLocation)) {
-        return true;
-      }
-    }
-
-    return false;
+  boolean isAnyWarFileAvailable(final URI... warFileLocations) {
+    return Arrays.stream(warFileLocations).anyMatch(Objects::nonNull);
   }
 
   private String getGeodeHome() {

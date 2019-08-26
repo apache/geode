@@ -72,7 +72,7 @@ import org.apache.geode.cache.RegionEvent;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.TimeoutException;
 import org.apache.geode.cache.execute.FunctionService;
-import org.apache.geode.internal.cache.HttpService;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.management.internal.RestAgent;
 import org.apache.geode.pdx.PdxInstance;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
@@ -997,7 +997,8 @@ class TestContextLoader extends GenericXmlWebContextLoader {
   protected void loadBeanDefinitions(GenericWebApplicationContext context,
       WebMergedContextConfiguration webMergedConfig) {
     super.loadBeanDefinitions(context, webMergedConfig);
-    context.getServletContext().setAttribute(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+    context.getServletContext().setAttribute(
+        InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
         RestAccessControllerTest.rule.getCache().getSecurityService());
   }
 

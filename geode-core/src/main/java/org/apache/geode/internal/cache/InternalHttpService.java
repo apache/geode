@@ -15,13 +15,13 @@
 package org.apache.geode.internal.cache;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
@@ -36,17 +36,17 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.management.internal.SSLUtil;
 
-public class HttpService {
+public class InternalHttpService implements HttpService {
 
   private static final Logger logger = LogService.getLogger();
   private Server httpServer;
   private String bindAddress = "0.0.0.0";
   private int port;
-  private SSLConfig sslConfig;
   private static final String FILE_PATH_SEPARATOR = System.getProperty("file.separator");
   private static final String USER_DIR = System.getProperty("user.dir");
   private static final String USER_NAME = System.getProperty("user.name");
@@ -62,11 +62,10 @@ public class HttpService {
 
   private List<WebAppContext> webApps = new ArrayList<>();
 
-  public HttpService(String bindAddress, int port, SSLConfig sslConfig) {
+  public InternalHttpService(String bindAddress, int port, SSLConfig sslConfig) {
     if (port == 0) {
       return;
     }
-    this.sslConfig = sslConfig;
 
     this.httpServer = new Server();
 
@@ -125,15 +124,16 @@ public class HttpService {
     }
     this.port = port;
 
-    logger.info("Enabled HttpService on port {}", port);
+    logger.info("Enabled InternalHttpService on port {}", port);
   }
 
   public Server getHttpServer() {
     return httpServer;
   }
 
-  public synchronized void addWebApplication(String webAppContext, String warFilePath,
-      Pair<String, Object>... attributeNameValuePairs)
+  @Override
+  public synchronized void addWebApplication(String webAppContext, Path warFilePath,
+      Map<String, Object> attributeNameValuePairs)
       throws Exception {
     if (httpServer == null) {
       logger.info(
@@ -144,14 +144,13 @@ public class HttpService {
 
     WebAppContext webapp = new WebAppContext();
     webapp.setContextPath(webAppContext);
-    webapp.setWar(warFilePath);
+    webapp.setWar(warFilePath.toString());
     webapp.setParentLoaderPriority(false);
     webapp.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
     webapp.addAliasCheck(new AllowSymLinkAliasChecker());
 
     if (attributeNameValuePairs != null) {
-      Arrays.stream(attributeNameValuePairs)
-          .forEach(p -> webapp.setAttribute(p.getKey(), p.getValue()));
+      attributeNameValuePairs.forEach((key, value) -> webapp.setAttribute(key, value));
     }
 
     File tmpPath = new File(getWebAppBaseDirectory(webAppContext));
@@ -183,6 +182,7 @@ public class HttpService {
     return workingDirectory;
   }
 
+  @Override
   public void stop() {
     if (this.httpServer == null) {
       return;

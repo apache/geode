@@ -25,11 +25,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -39,8 +42,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
@@ -68,9 +69,9 @@ import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.InternalCacheBuilder;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.tier.sockets.TcpServerFactory;
 import org.apache.geode.internal.cache.wan.WANServiceProvider;
 import org.apache.geode.internal.config.JAXBService;
@@ -746,27 +747,25 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
 
     // Find the V2 Management rest WAR file
-    String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+    URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
     if (gemfireManagementWar == null) {
       logger.info(
           "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
       return;
     }
 
-    Pair<String, Object> securityServiceAttribute =
-        new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-            internalCache.getSecurityService());
-    Pair<String, Object> clusterManagementServiceAttribute =
-        new ImmutablePair<>(HttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
-            clusterManagementService);
+    Map<String, Object> serviceAttributes = new HashMap<>();
+    serviceAttributes.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+        internalCache.getSecurityService());
+    serviceAttributes.put(InternalHttpService.CLUSTER_MANAGEMENT_SERVICE_CONTEXT_PARAM,
+        clusterManagementService);
 
     if (distributionConfig.getEnableManagementRestService()) {
       internalCache.getHttpService().ifPresent(x -> {
         try {
           logger.info("Geode Property {}=true Geode Management Rest Service is enabled.",
               ConfigurationProperties.ENABLE_MANAGEMENT_REST_SERVICE);
-          x.addWebApplication("/management", gemfireManagementWar, securityServiceAttribute,
-              clusterManagementServiceAttribute);
+          x.addWebApplication("/management", Paths.get(gemfireManagementWar), serviceAttributes);
         } catch (Throwable e) {
           logger.warn("Unable to start management service: {}", e.getMessage());
         }

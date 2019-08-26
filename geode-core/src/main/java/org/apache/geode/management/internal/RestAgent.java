@@ -14,11 +14,14 @@
  */
 package org.apache.geode.management.internal;
 
+import java.net.URI;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesFactory;
@@ -26,10 +29,11 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.Scope;
+import org.apache.geode.cache.internal.HttpService;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.cache.HttpService;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.internal.cache.InternalHttpService;
 import org.apache.geode.internal.cache.InternalRegionArguments;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
@@ -88,7 +92,7 @@ public class RestAgent {
   // Start HTTP service in embedded mode
   public void startHttpService(InternalCache cache) throws Exception {
     // Find the developer REST WAR file
-    final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
+    final URI gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
     if (gemfireAPIWar == null) {
       logger.info(
           "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");
@@ -100,14 +104,15 @@ public class RestAgent {
           "Detected presence of catalina system properties. HTTP service will not be started. To enable the GemFire Developer REST API, please deploy the /geode-web-api WAR file in your application server.");
     } else if (agentUtil.isAnyWarFileAvailable(gemfireAPIWar)) {
 
-      Pair<String, Object> securityServiceAttr =
-          new ImmutablePair<>(HttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
-              securityService);
+      Map<String, Object> securityServiceAttr = new HashMap<>();
+      securityServiceAttr.put(InternalHttpService.SECURITY_SERVICE_SERVLET_CONTEXT_PARAM,
+          securityService);
 
       if (cache.getHttpService().isPresent()) {
         HttpService httpService = cache.getHttpService().get();
-        httpService.addWebApplication("/gemfire-api", gemfireAPIWar, securityServiceAttr);
-        httpService.addWebApplication("/geode", gemfireAPIWar, securityServiceAttr);
+        Path gemfireAPIWarPath = Paths.get(gemfireAPIWar);
+        httpService.addWebApplication("/gemfire-api", gemfireAPIWarPath, securityServiceAttr);
+        httpService.addWebApplication("/geode", gemfireAPIWarPath, securityServiceAttr);
       } else {
         logger.warn("HttpService is not available - could not start Dev REST API");
       }
