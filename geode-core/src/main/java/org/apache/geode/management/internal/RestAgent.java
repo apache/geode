@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal;
 
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,7 +92,7 @@ public class RestAgent {
   // Start HTTP service in embedded mode
   public void startHttpService(InternalCache cache) throws Exception {
     // Find the developer REST WAR file
-    final String gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
+    final URI gemfireAPIWar = agentUtil.findWarLocation("geode-web-api");
     if (gemfireAPIWar == null) {
       logger.info(
           "Unable to find GemFire Developer REST API WAR file; the Developer REST Interface for GemFire will not be accessible.");

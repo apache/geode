@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -172,7 +173,7 @@ public class ManagementAgent {
     }
 
     // Find the Management rest WAR file
-    final String adminRestWar = agentUtil.findWarLocation("geode-web");
+    final URI adminRestWar = agentUtil.findWarLocation("geode-web");
     if (adminRestWar == null) {
       if (logger.isDebugEnabled()) {
         logger.debug(
@@ -181,7 +182,7 @@ public class ManagementAgent {
     }
 
     // Find the Pulse WAR file
-    final String pulseWar = agentUtil.findWarLocation("geode-pulse");
+    final URI pulseWar = agentUtil.findWarLocation("geode-pulse");
 
     if (pulseWar == null) {
       final String message =

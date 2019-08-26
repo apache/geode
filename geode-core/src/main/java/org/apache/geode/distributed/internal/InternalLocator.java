@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.UnknownHostException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -746,7 +747,7 @@ public class InternalLocator extends Locator implements ConnectListener, LogConf
     AgentUtil agentUtil = new AgentUtil(GemFireVersion.getGemFireVersion());
 
     // Find the V2 Management rest WAR file
-    String gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
+    URI gemfireManagementWar = agentUtil.findWarLocation("geode-web-management");
     if (gemfireManagementWar == null) {
       logger.info(
           "Unable to find GemFire V2 Management REST API WAR file; the Management REST Interface for Geode will not be accessible.");
