@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is sent to all the nodes in the DistributedSystem. It contains the list of messages
@@ -143,12 +144,13 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     /*
      * first write the total list size then in a loop write the region name, number of eventIds and
      * the event ids
      */
-    super.toData(out);
+    super.toData(out, context);
     // write the size of the data list
     DataSerializer.writeInteger(this.messagesList.size(), out);
     Iterator iterator = messagesList.iterator();
@@ -178,12 +180,13 @@ public class QueueRemovalMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     /*
      * read the total list size, reconstruct the message list in a loop by reading the region name,
      * number of eventIds and the event ids
      */
-    super.fromData(in);
+    super.fromData(in, context);
     // read the size of the message
     int size = DataSerializer.readInteger(in);
     this.messagesList = new LinkedList();

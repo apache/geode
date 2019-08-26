@@ -18,10 +18,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 public class ViewAckMessage extends AbstractGMSMessage {
 
@@ -66,17 +66,19 @@ public class ViewAckMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.viewId);
     out.writeBoolean(this.preparing);
-    DataSerializer.writeObject(this.alternateView, out);
+    context.getDSFIDSerializer().writeDSFID(this.alternateView, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.viewId = in.readInt();
     this.preparing = in.readBoolean();
-    this.alternateView = DataSerializer.readObject(in);
+    this.alternateView = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
   }
 
   @Override
@@ -87,7 +89,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 }

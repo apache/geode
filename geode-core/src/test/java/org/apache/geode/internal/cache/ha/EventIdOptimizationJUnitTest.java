@@ -182,7 +182,7 @@ public class EventIdOptimizationJUnitTest {
     HeapDataOutputStream hdos90 = new HeapDataOutputStream(256, Version.GFE_90);
     VersionedDataOutputStream dop = new VersionedDataOutputStream(hdos90, Version.GFE_90);
 
-    eventID.toData(dop);
+    eventID.toData(dop, null);
 
     ByteArrayInputStream bais = new ByteArrayInputStream(hdos90.toByteArray());
 
@@ -191,7 +191,7 @@ public class EventIdOptimizationJUnitTest {
         new VersionedDataInputStream(bais, Version.GFE_90);
 
     EventID eventID2 = new EventID();
-    eventID2.fromData(dataInputStream);
+    eventID2.fromData(dataInputStream, null);
 
     assertEquals(distributedMember, eventID2.getDistributedMember(Version.GFE_90));
 

@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.SerialDistributionMessage;
 import org.apache.geode.internal.alerting.AlertLevel;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to make members of the distributed system aware that a manager agent wants
@@ -66,14 +67,16 @@ public class AlertLevelChangeMessage extends SerialDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(newLevel);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     newLevel = in.readInt();
   }
 

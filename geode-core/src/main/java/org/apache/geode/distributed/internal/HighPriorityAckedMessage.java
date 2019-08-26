@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a given collection of managers and then awaits replies. It is used by
@@ -203,8 +204,9 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(processorId);
     out.writeInt(this.op.ordinal());
     out.writeBoolean(this.useNative);
@@ -212,9 +214,10 @@ public class HighPriorityAckedMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
     processorId = in.readInt();
     this.op = operationType.values()[in.readInt()];
     this.useNative = in.readBoolean();

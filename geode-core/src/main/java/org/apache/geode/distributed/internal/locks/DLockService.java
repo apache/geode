@@ -59,6 +59,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.StopWatch;
 import org.apache.geode.internal.util.concurrent.FutureResult;
 
@@ -2983,10 +2984,12 @@ public class DLockService extends DistributedLockService {
     }
 
     @Override
-    public void fromData(DataInput in) {}
+    public void fromData(DataInput in,
+        SerializationContext context) {}
 
     @Override
-    public void toData(DataOutput out) {}
+    public void toData(DataOutput out,
+        SerializationContext context) {}
 
     @Override
     public Version[] getSerializationVersions() {

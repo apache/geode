@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
 
@@ -107,7 +108,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
     out.writeByte(op.ordinal());
     out.writeByte(_operation.getEventCode());
@@ -118,7 +120,8 @@ public class ClientTombstoneMessage extends ClientUpdateMessageImpl {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // note: does not call super.fromData() since there are no keys, etc.
     // The message class hierarchy should be revised to have a more abstract
     // top-level class.

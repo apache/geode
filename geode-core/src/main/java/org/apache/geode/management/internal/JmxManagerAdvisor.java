@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * @since GemFire 7.0
@@ -214,15 +215,17 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.profile = (JmxManagerProfile) DataSerializer.readObject(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       DataSerializer.writeObject(this.profile, out);
     }
@@ -331,8 +334,9 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.jmxManager = DataSerializer.readPrimitiveBoolean(in);
       this.host = DataSerializer.readString(in);
       this.port = DataSerializer.readPrimitiveInt(in);
@@ -341,7 +345,8 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       boolean tmpJmxManager;
       String tmpHost;
       int tmpPort;
@@ -354,7 +359,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
         tmpSsl = this.ssl;
         tmpStarted = this.started;
       }
-      super.toData(out);
+      super.toData(out, context);
       DataSerializer.writePrimitiveBoolean(tmpJmxManager, out);
       DataSerializer.writeString(tmpHost, out);
       DataSerializer.writePrimitiveInt(tmpPort, out);

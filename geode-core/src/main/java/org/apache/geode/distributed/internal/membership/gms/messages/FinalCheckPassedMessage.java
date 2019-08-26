@@ -20,7 +20,8 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 public class FinalCheckPassedMessage extends AbstractGMSMessage {
 
@@ -46,18 +47,20 @@ public class FinalCheckPassedMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(suspect, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(suspect, out, context);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    suspect = GMSUtil.readMemberID(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    suspect = GMSUtil.readMemberID(in, context);
   }
 
   public GMSMember getSuspect() {

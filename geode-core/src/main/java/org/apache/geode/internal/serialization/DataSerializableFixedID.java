@@ -844,7 +844,7 @@ public interface DataSerializableFixedID extends SerializationVersions {
    *
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
-  void toData(DataOutput out) throws IOException;
+  void toData(DataOutput out, SerializationContext context) throws IOException;
 
   /**
    * Reads the state of this object as primitive data from the given <code>DataInput</code>. <br>
@@ -859,5 +859,17 @@ public interface DataSerializableFixedID extends SerializationVersions {
    * @throws IOException A problem occurs while reading from <code>in</code>
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
-  void fromData(DataInput in) throws IOException, ClassNotFoundException;
+  void fromData(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException;
+
+
+  public default void toData(DataOutput out) throws IOException {
+    toData(out, null);
+  }
+
+  public default void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromData(in, null);
+  }
+
+
 }

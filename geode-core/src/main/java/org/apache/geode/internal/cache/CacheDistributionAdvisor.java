@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Adds bookkeeping info and cache-specific behavior to DistributionAdvisor. Adds bit-encoded flags
@@ -779,8 +780,9 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(getIntInfo());
       if (persistentID != null) {
         InternalDataSerializer.invokeToData(persistentID, out);
@@ -804,8 +806,9 @@ public class CacheDistributionAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       int bits = in.readInt();
       setIntInfo(bits);
       if (hasPersistentID(bits)) {

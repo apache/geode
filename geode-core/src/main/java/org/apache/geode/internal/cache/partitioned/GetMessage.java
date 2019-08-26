@@ -60,6 +60,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -235,8 +236,9 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
     this.cbArg = DataSerializer.readObject(in);
     this.context = DataSerializer.readObject(in);
@@ -244,8 +246,9 @@ public class GetMessage extends PartitionMessageWithDirectReply {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.key, out);
     DataSerializer.writeObject(this.cbArg, out);
     DataSerializer.writeObject(this.context, out);
@@ -424,8 +427,9 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       final boolean hasVersionTag = (this.versionTag != null);
       byte flags = this.valueType;
       if (hasVersionTag) {
@@ -443,8 +447,9 @@ public class GetMessage extends PartitionMessageWithDirectReply {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte flags = in.readByte();
       final boolean hasVersionTag;
       if ((hasVersionTag = (flags & VALUE_HAS_VERSION_TAG) != 0)) {

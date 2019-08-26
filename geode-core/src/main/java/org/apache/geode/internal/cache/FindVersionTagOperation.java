@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FindVersionTagOperation {
   private static final Logger logger = LogService.getLogger();
@@ -173,8 +174,9 @@ public class FindVersionTagOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       out.writeUTF(this.regionName);
       InternalDataSerializer.invokeToData(this.eventId, out);
@@ -182,8 +184,9 @@ public class FindVersionTagOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
       this.eventId = new EventID();
@@ -214,14 +217,16 @@ public class FindVersionTagOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.versionTag, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.versionTag = (VersionTag) DataSerializer.readObject(in);
     }
 

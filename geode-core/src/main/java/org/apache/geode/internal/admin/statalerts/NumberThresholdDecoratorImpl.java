@@ -24,6 +24,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of {@link StatAlertDefinition}, represents threshold as number
@@ -123,14 +124,16 @@ public class NumberThresholdDecoratorImpl extends BaseDecoratorImpl
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     super.toData(out);
     DataSerializer.writeObject(this.threshold, out);
     DataSerializer.writePrimitiveBoolean(this.evalForGtThan, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.threshold = (Number) DataSerializer.readObject(in);
     this.evalForGtThan = DataSerializer.readPrimitiveBoolean(in);

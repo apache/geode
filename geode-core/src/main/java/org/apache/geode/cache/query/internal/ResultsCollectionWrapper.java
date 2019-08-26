@@ -40,6 +40,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EntriesSet;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of SelectResults that wraps an existing java.util.Collection and optionally adds a
@@ -540,7 +541,8 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    * @throws IOException A problem occurs while writing to <code>out</code>
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // special case when wrapping a ResultsBag.SetView
     boolean isBagSetView = this.base instanceof Bag.SetView;
     out.writeBoolean(isBagSetView);
@@ -560,7 +562,8 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    * @throws ClassNotFoundException A class could not be loaded while reading from <code>in</code>
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     boolean isBagSetView = in.readBoolean();
     if (isBagSetView) {
       this.base = (Set) InternalDataSerializer.readSet(in);

@@ -30,6 +30,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Distribution message for dropping client from denylist.
@@ -80,8 +81,9 @@ public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(proxyID, out);
   }
 
@@ -91,8 +93,9 @@ public class RemoveClientFromDenylistMessage extends PooledDistributionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     proxyID = ClientProxyMembershipID.readCanonicalized(in);
   }
 

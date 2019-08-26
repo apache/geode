@@ -68,10 +68,10 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.ConnectionWatcher;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 /**
  * Failure Detection
@@ -636,7 +636,7 @@ public class GMSHealthMonitor implements HealthMonitor {
   }
 
   void writeMemberToStream(GMSMember gmbr, DataOutputStream out) throws IOException {
-    out.writeShort(Version.CURRENT_ORDINAL);
+    out.writeShort(localAddress.getVersionOrdinal());
     out.writeInt(gmbr.getVmViewId());
     out.writeLong(gmbr.getUuidLSBs());
     out.writeLong(gmbr.getUuidMSBs());
@@ -1387,7 +1387,7 @@ public class GMSHealthMonitor implements HealthMonitor {
 
       if (!failed) {
         if (!isStopping && !initiator.equals(localAddress)
-            && initiator.getVersionOrdinal() >= Version.GEODE_1_4_0.ordinal()) {
+            && initiator.getVersionOrdinal() >= SerializationVersion.GEODE_1_4_0_ORDINAL) {
           // let the sender know that it's okay to monitor this member again
           FinalCheckPassedMessage message = new FinalCheckPassedMessage(initiator, mbr);
           services.getMessenger().send(message);

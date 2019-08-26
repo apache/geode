@@ -36,6 +36,7 @@ import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHold
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
@@ -320,8 +321,9 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     DataSerializer.writeString(this.version, out);
     out.writeInt(this.replyProcessorId);
@@ -371,7 +373,7 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   }
 
   /**
-   * Notes a problem that occurs while invoking {@link #fromData}.
+   * Notes a problem that occurs while invoking {@link DataSerializableFixedID#fromData}.
    */
   private void recordFromDataProblem(String s) {
     if (this.fromDataProblems == null) {
@@ -383,8 +385,9 @@ public class StartupMessage extends DistributionMessage implements AdminMessageT
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     this.version = DataSerializer.readString(in);
     this.replyProcessorId = in.readInt();

@@ -39,6 +39,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for
@@ -436,7 +437,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
     this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();
@@ -465,7 +467,8 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
   // instead
   // of struct
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     boolean isStruct = this.collectionType.getElementType().isStructType();
     DataSerializer.writeObject(this.collectionType.getElementType(), out);
     DataSerializer.writePrimitiveBoolean(this.isDistinct, out);

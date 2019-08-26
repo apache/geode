@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is generated based on event received on GatewayReceiver for updating the time-stamp
@@ -167,8 +168,9 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.eventId = (EventID) DataSerializer.readObject(in);
@@ -176,8 +178,9 @@ public class PRUpdateEntryVersionMessage extends PartitionMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
     out.writeByte(this.op.ordinal);
     DataSerializer.writeObject(this.eventId, out);

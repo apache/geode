@@ -56,6 +56,7 @@ import org.apache.geode.internal.cache.execute.BucketMovedException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingExecutors;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This class takes the responsibility of executing the query on a data store for the buckets
@@ -366,12 +367,14 @@ public class PRQueryProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.bucketId = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       out.writeInt(this.bucketId);
     }
 

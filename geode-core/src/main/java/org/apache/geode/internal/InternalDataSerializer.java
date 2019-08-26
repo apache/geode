@@ -112,8 +112,11 @@ import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.SerializerPlugin;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 import org.apache.geode.pdx.NonPortableClassException;
@@ -140,14 +143,6 @@ import org.apache.geode.pdx.internal.TypeRegistry;
  * @since GemFire 3.5
  */
 public abstract class InternalDataSerializer extends DataSerializer {
-  // array is null
-  public static final byte NULL_ARRAY = -1;
-  /**
-   * array len encoded as int in next 4 bytes
-   *
-   * @since GemFire 5.7
-   */
-  public static final byte INT_ARRAY_LEN = -3;
   public static final boolean LOAD_CLASS_EACH_TIME =
       Boolean.getBoolean(DistributionConfig.GEMFIRE_PREFIX + "loadClassOnEveryDeserialization");
   private static final Logger logger = LogService.getLogger();
@@ -246,27 +241,11 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static final ConcurrentHashMap<String, SerializerAttributesHolder> supportedClassesToHolders =
       new ConcurrentHashMap<>();
   private static final Object listenersSync = new Object();
-  private static final byte TIME_UNIT_NANOSECONDS = -1;
-  private static final byte TIME_UNIT_MICROSECONDS = -2;
-  private static final byte TIME_UNIT_MILLISECONDS = -3;
-  private static final byte TIME_UNIT_SECONDS = -4;
   @MakeNotStatic
   private static final ConcurrentMap<Integer, String> dsfidToClassMap =
       logger.isTraceEnabled(LogMarker.SERIALIZER_WRITE_DSFID_VERBOSE) ? new ConcurrentHashMap<>()
           : null;
-  /**
-   * array len encoded as unsigned short in next 2 bytes
-   *
-   * @since GemFire 5.7
-   */
-  private static final byte SHORT_ARRAY_LEN = -2;
-  private static final int MAX_BYTE_ARRAY_LEN = (byte) -4 & 0xFF;
   private static final ThreadLocal<Boolean> pdxSerializationInProgress = new ThreadLocal<>();
-  // Variable Length long encoded as int in next 4 bytes
-  private static final byte INT_VL = 126;
-  // Variable Length long encoded as long in next 8 bytes
-  private static final byte LONG_VL = 127;
-  private static final int MAX_BYTE_VL = 125;
   @MakeNotStatic
   private static final CopyOnWriteHashMap<String, WeakReference<Class<?>>> classCache =
       LOAD_CLASS_EACH_TIME ? null : new CopyOnWriteHashMap<>();
@@ -294,7 +273,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   @MakeNotStatic
   private static OldClientSupportService oldClientSupportService;
 
-  private static final DSFIDSerializer dsfidSerializer = new DSFIDSerializer();
+  private static final DSFIDSerializer dsfidSerializer;
 
   private static DSFIDFactory dsfidFactory;
 
@@ -306,6 +285,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static volatile Set<RegistrationListener> listeners = new HashSet<>();
 
   static {
+    dsfidSerializer = new DSFIDSerializer(new SerializerPlugin() {
+      @Override
+      public void writeObject(Object obj, DataOutput output) throws IOException {
+        InternalDataSerializer.writeObject(obj, output);
+      }
+
+      @Override
+      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
+        return InternalDataSerializer.readObject(input);
+      }
+
+      @Override
+      public SerializationVersion getVersionForOrdinalOrCurrent(int ordinal) {
+        return Version.fromOrdinalOrCurrent((short) ordinal);
+      }
+    });
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
     dsfidFactory.registerDSFIDTypes();
@@ -676,22 +671,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
         switch (timeUnit) {
           case NANOSECONDS: {
             out.writeByte(DSCODE.TIME_UNIT.toByte());
-            out.writeByte(TIME_UNIT_NANOSECONDS);
+            out.writeByte(StaticSerialization.TIME_UNIT_NANOSECONDS);
             break;
           }
           case MICROSECONDS: {
             out.writeByte(DSCODE.TIME_UNIT.toByte());
-            out.writeByte(TIME_UNIT_MICROSECONDS);
+            out.writeByte(StaticSerialization.TIME_UNIT_MICROSECONDS);
             break;
           }
           case MILLISECONDS: {
             out.writeByte(DSCODE.TIME_UNIT.toByte());
-            out.writeByte(TIME_UNIT_MILLISECONDS);
+            out.writeByte(StaticSerialization.TIME_UNIT_MILLISECONDS);
             break;
           }
           case SECONDS: {
             out.writeByte(DSCODE.TIME_UNIT.toByte());
-            out.writeByte(TIME_UNIT_SECONDS);
+            out.writeByte(StaticSerialization.TIME_UNIT_SECONDS);
             break;
           }
           // handles all other timeunits
@@ -1484,13 +1479,13 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
       throws IOException {
-    if (dsfid != DataSerializableFixedID.NO_FIXED_ID) {
-      dsfidSerializer.writeDSFID(o, dsfid, out);
-      return;
-    }
-    out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
-    DataSerializer.writeClass(o.getClass(), out);
     try {
+      if (dsfid != DataSerializableFixedID.NO_FIXED_ID) {
+        dsfidSerializer.writeDSFID(o, dsfid, out);
+        return;
+      }
+      out.writeByte(DSCODE.DS_NO_FIXED_ID.toByte());
+      DataSerializer.writeClass(o.getClass(), out);
       invokeToData(o, out);
     } catch (IOException | CancelException | ToDataException | GemFireRethrowable io) {
       // Note: this is not a user code toData but one from our
@@ -1905,16 +1900,16 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     TimeUnit unit;
     switch (type) {
-      case TIME_UNIT_NANOSECONDS:
+      case StaticSerialization.TIME_UNIT_NANOSECONDS:
         unit = TimeUnit.NANOSECONDS;
         break;
-      case TIME_UNIT_MICROSECONDS:
+      case StaticSerialization.TIME_UNIT_MICROSECONDS:
         unit = TimeUnit.MICROSECONDS;
         break;
-      case TIME_UNIT_MILLISECONDS:
+      case StaticSerialization.TIME_UNIT_MILLISECONDS:
         unit = TimeUnit.MILLISECONDS;
         break;
-      case TIME_UNIT_SECONDS:
+      case StaticSerialization.TIME_UNIT_SECONDS:
         unit = TimeUnit.SECONDS;
         break;
       default:
@@ -2270,12 +2265,12 @@ public abstract class InternalDataSerializer extends DataSerializer {
    * @param out the output stream.
    */
   public static void invokeToData(Object ds, DataOutput out) throws IOException {
-    boolean isDSFID = ds instanceof DataSerializableFixedID;
-    if (isDSFID) {
-      dsfidSerializer.invokeToData(ds, out);
-      return;
-    }
     try {
+      boolean isDSFID = ds instanceof DataSerializableFixedID;
+      if (isDSFID) {
+        dsfidSerializer.invokeToData(ds, out);
+        return;
+      }
       boolean invoked = false;
       Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
 
@@ -2471,28 +2466,28 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
   public static void writeArrayLength(int len, DataOutput out) throws IOException {
     if (len == -1) {
-      out.writeByte(NULL_ARRAY);
-    } else if (len <= MAX_BYTE_ARRAY_LEN) {
+      out.writeByte(StaticSerialization.NULL_ARRAY);
+    } else if (len <= StaticSerialization.MAX_BYTE_ARRAY_LEN) {
       out.writeByte(len);
     } else if (len <= 0xFFFF) {
-      out.writeByte(SHORT_ARRAY_LEN);
+      out.writeByte(StaticSerialization.SHORT_ARRAY_LEN);
       out.writeShort(len);
     } else {
-      out.writeByte(INT_ARRAY_LEN);
+      out.writeByte(StaticSerialization.INT_ARRAY_LEN);
       out.writeInt(len);
     }
   }
 
   public static int readArrayLength(DataInput in) throws IOException {
     byte code = in.readByte();
-    if (code == NULL_ARRAY) {
+    if (code == StaticSerialization.NULL_ARRAY) {
       return -1;
     } else {
       int result = ubyteToInt(code);
-      if (result > MAX_BYTE_ARRAY_LEN) {
-        if (code == SHORT_ARRAY_LEN) {
+      if (result > StaticSerialization.MAX_BYTE_ARRAY_LEN) {
+        if (code == StaticSerialization.SHORT_ARRAY_LEN) {
           return in.readUnsignedShort();
-        } else if (code == INT_ARRAY_LEN) {
+        } else if (code == StaticSerialization.INT_ARRAY_LEN) {
           return in.readInt();
         } else {
           throw new IllegalStateException("unexpected array length code=" + code);
@@ -2577,21 +2572,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return in.readUTF();
   }
 
-  @MakeNotStatic("not tied to the cache lifecycle")
-  private static final ThreadLocalByteArrayCache threadLocalByteArrayCache =
-      new ThreadLocalByteArrayCache(65535);
-
-  /**
-   * Returns a byte array for use by the calling thread.
-   * The returned byte array may be longer than minimumLength.
-   * The byte array belongs to the calling thread but callers must
-   * be careful to not call other methods that may also use this
-   * byte array.
-   */
-  public static byte[] getThreadLocalByteArray(int minimumLength) {
-    return threadLocalByteArrayCache.get(minimumLength);
-  }
-
   private static String readStringBytesFromDataInput(DataInput dataInput, int len)
       throws IOException {
     if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
@@ -2600,7 +2580,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (len == 0) {
       return "";
     }
-    byte[] buf = getThreadLocalByteArray(len);
+    byte[] buf = StaticSerialization.getThreadLocalByteArray(len);
     dataInput.readFully(buf, 0, len);
     return new String(buf, 0, 0, len); // intentionally using deprecated constructor
   }
@@ -3100,17 +3080,17 @@ public abstract class InternalDataSerializer extends DataSerializer {
     if (data < 0) {
       Assert.fail("Data expected to be >=0 is " + data);
     }
-    if (data <= MAX_BYTE_VL) {
+    if (data <= StaticSerialization.MAX_BYTE_VL) {
       out.writeByte((byte) data);
     } else if (data <= 0x7FFF) {
       // set the sign bit to indicate a short
       out.write(((int) data >>> 8 | 0x80) & 0xFF);
       out.write((int) data & 0xFF);
     } else if (data <= Integer.MAX_VALUE) {
-      out.writeByte(INT_VL);
+      out.writeByte(StaticSerialization.INT_VL);
       out.writeInt((int) data);
     } else {
-      out.writeByte(LONG_VL);
+      out.writeByte(StaticSerialization.LONG_VL);
       out.writeLong(data);
     }
   }
@@ -3127,9 +3107,9 @@ public abstract class InternalDataSerializer extends DataSerializer {
       result = code & 0x7F;
       result <<= 8;
       result |= in.readByte() & 0xFF;
-    } else if (code <= MAX_BYTE_VL) {
+    } else if (code <= StaticSerialization.MAX_BYTE_VL) {
       result = code;
-    } else if (code == INT_VL) {
+    } else if (code == StaticSerialization.INT_VL) {
       result = in.readInt();
     } else {
       result = in.readLong();
@@ -3602,16 +3582,18 @@ public abstract class InternalDataSerializer extends DataSerializer {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeNonPrimitiveClassName(this.className, out);
       out.writeInt(this.id);
       DataSerializer.writeObject(this.eventId, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       InternalDataSerializer.checkIn(in);
       this.className = DataSerializer.readNonPrimitiveClassName(in);
       this.id = in.readInt();

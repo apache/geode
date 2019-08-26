@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Contains function arguments for WaitUntilFlushed
@@ -69,14 +70,16 @@ public class WaitUntilFlushedFunctionContext implements DataSerializableFixedID 
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(indexName, out);
     out.writeLong(timeout);
     DataSerializer.writeEnum(unit, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException {
     this.indexName = DataSerializer.readString(in);
     timeout = in.readLong();
     unit = DataSerializer.readEnum(TimeUnit.class, in);

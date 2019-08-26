@@ -25,23 +25,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.CancelException;
-import org.apache.geode.GemFireRethrowable;
-import org.apache.geode.InternalGemFireError;
-import org.apache.geode.SerializationException;
-import org.apache.geode.SystemFailure;
-import org.apache.geode.ToDataException;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.CacheClosedException;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.logging.log4j.LogMarker;
 
 public class DSFIDSerializer {
-  private static final Logger logger = LogService.getLogger();
 
   @Immutable
   private final Constructor<?>[] dsfidMap = new Constructor<?>[256];
@@ -49,6 +37,44 @@ public class DSFIDSerializer {
   @Immutable("This maybe should be wrapped in an unmodifiableMap?")
   private final Int2ObjectOpenHashMap dsfidMap2 = new Int2ObjectOpenHashMap(800);
 
+  private final SerializerPlugin objectSerializer;
+
+  public DSFIDSerializer() {
+    objectSerializer = new SerializerPlugin() {
+      @Override
+      public void writeObject(Object obj, DataOutput output) throws IOException {
+        writeDSFID((DataSerializableFixedID) obj, output);
+      }
+
+      @Override
+      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
+        return readDSFID(input);
+      }
+
+      @Override
+      public SerializationVersion getVersionForOrdinalOrCurrent(int ordinal) {
+        if (ordinal > SerializationVersion.getCurrentVersion().ordinal()) {
+          return SerializationVersion.getCurrentVersion();
+        }
+        return new SerializationVersion(ordinal);
+      }
+    };
+  }
+
+  public DSFIDSerializer(SerializerPlugin objectSerializer) {
+    this.objectSerializer = objectSerializer;
+  }
+
+  /**
+   * Returns a plug-in object that can serialize Objects that are not handled by
+   * DSFIDSerializer. The default implementation handles only DataSerializableFixedID.
+   * In the context of Geode this will return a serializer that uses
+   * InternalDataSerializer to read/write any object supported by Geode serialization
+   * (PDX, DataSerializable, Java serializable, etc).
+   */
+  public SerializerPlugin getDataSerializer() {
+    return objectSerializer;
+  }
 
   // Writes just the header of a DataSerializableFixedID to out.
   public void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException {
@@ -70,6 +96,10 @@ public class DSFIDSerializer {
 
 
   public void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException {
+    if (o == null) {
+      out.writeByte(DSCODE.NULL.toByte());
+      return;
+    }
     int dsfid = o.getDSFID();
     writeDSFID(o, dsfid, out);
   }
@@ -82,29 +112,7 @@ public class DSFIDSerializer {
               + o.getClass().getName());
     }
     writeDSFIDHeader(dsfid, out);
-    try {
-      invokeToData(o, out);
-    } catch (IOException | CancelException | ToDataException | GemFireRethrowable io) {
-      // Note: this is not a user code toData but one from our
-      // internal code since only GemFire product code implements DSFID
-
-      // Serializing a PDX can result in a cache closed exception. Just rethrow
-
-      throw io;
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable t) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
-      throw new ToDataException("toData failed on dsfid=" + dsfid + " msg:" + t.getMessage(), t);
-    }
+    invokeToData(o, out);
   }
 
   /**
@@ -122,11 +130,12 @@ public class DSFIDSerializer {
       throw new IllegalArgumentException(
           "Expected a DataSerializableFixedID but found " + ds.getClass().getName());
     }
+    SerializationContext context = new SerializationContextImpl(out, this);
     try {
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(out);
+      SerializationVersion v = context.getSerializationVersion();
 
-      if (Version.CURRENT != v && v != null) {
+      if (!v.isCurrentVersion()) {
         // get versions where DataOutput was upgraded
         SerializationVersions sv = (SerializationVersions) ds;
         SerializationVersion[] versions = sv.getSerializationVersions();
@@ -137,7 +146,8 @@ public class DSFIDSerializer {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
-                  new Class[] {DataOutput.class}).invoke(ds, out);
+                  new Class[] {DataOutput.class, SerializationContext.class})
+                  .invoke(ds, out, context);
               invoked = true;
               break;
             }
@@ -146,38 +156,17 @@ public class DSFIDSerializer {
       }
 
       if (!invoked) {
-        ((DataSerializableFixedID) ds).toData(out);
+        ((DataSerializableFixedID) ds).toData(out, context);
       }
-    } catch (IOException io) {
-      // DSFID serialization expects an IOException but otherwise
-      // we want to catch it and transform into a ToDataException
-      // since it might be in user code and we want to report it
-      // as a problem with the plugin code
-      throw io;
-    } catch (CancelException | ToDataException | GemFireRethrowable ex) {
-      // Serializing a PDX can result in a cache closed exception. Just rethrow
-      throw ex;
-    } catch (VirtualMachineError err) {
-      SystemFailure.initiateFailure(err);
-      // If this ever returns, rethrow the error. We're poisoned
-      // now, so don't let this thread continue.
-      throw err;
-    } catch (Throwable t) {
-      // Whenever you catch Error or Throwable, you must also
-      // catch VirtualMachineError (see above). However, there is
-      // _still_ a possibility that you are dealing with a cascading
-      // error condition, so you also need to check to see if the JVM
-      // is still usable:
-      SystemFailure.checkFailure();
-      throw new ToDataException(
-          "toData failed on DataSerializableFixedID " + null == ds ? "null"
-              : ds.getClass().toString(),
-          t);
+    } catch (NoSuchMethodException | SecurityException | IllegalAccessException
+        | InvocationTargetException e) {
+      throw new IOException(
+          "problem invoking toData method on object of class" + ds.getClass().getName(), e);
     }
   }
 
   /**
-   * Get the {@link Version} ordinal of the peer or disk store that created this {@link DataOutput}.
+   * Get the SerializationVersion of the peer or disk store that created this {@link DataOutput}.
    * Returns
    * zero if the version is same as this member's.
    */
@@ -193,9 +182,6 @@ public class DSFIDSerializer {
 
   public Object readDSFID(final DataInput in, DSCODE dscode)
       throws IOException, ClassNotFoundException {
-    if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-      logger.trace(LogMarker.SERIALIZER_VERBOSE, "readDSFID: header={}", dscode);
-    }
     switch (dscode) {
       case DS_FIXED_ID_BYTE:
         return create(in.readByte(), in);
@@ -213,7 +199,11 @@ public class DSFIDSerializer {
 
   public Object readDSFID(final DataInput in) throws IOException, ClassNotFoundException {
     checkIn(in);
-    return readDSFID(in, DscodeHelper.toDSCODE(in.readByte()));
+    DSCODE dsHeaderType = DscodeHelper.toDSCODE(in.readByte());
+    if (dsHeaderType == DSCODE.NULL) {
+      return null;
+    }
+    return readDSFID(in, dsHeaderType);
   }
 
   public int readDSFIDHeader(final DataInput in, DSCODE dscode) throws IOException {
@@ -256,10 +246,11 @@ public class DSFIDSerializer {
    */
   public void invokeFromData(Object ds, DataInput in)
       throws IOException, ClassNotFoundException {
+    DeserializationContextImpl context = new DeserializationContextImpl(in, this);
     try {
       boolean invoked = false;
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
-      if (Version.CURRENT != v && v != null) {
+      SerializationVersion v = context.getSerializationVersion();
+      if (!v.isCurrentVersion()) {
         // get versions where DataOutput was upgraded
         SerializationVersion[] versions = null;
         SerializationVersions vds = (SerializationVersions) ds;
@@ -271,7 +262,8 @@ public class DSFIDSerializer {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),
-                  new Class[] {DataInput.class}).invoke(ds, in);
+                  new Class[] {DataInput.class, SerializationContext.class})
+                  .invoke(ds, in, context);
               invoked = true;
               break;
             }
@@ -279,18 +271,13 @@ public class DSFIDSerializer {
         }
       }
       if (!invoked) {
-        ((DataSerializableFixedID) ds).fromData(in);
-
-        if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializableFixedId {}",
-              ds);
-        }
+        ((DataSerializableFixedID) ds).fromData(in, context);
       }
     } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
       // client went away - ignore
       throw ex;
     } catch (Exception ex) {
-      throw new SerializationException(
+      throw new IOException(
           String.format("Could not create an instance of %s .",
               ds.getClass().getName()),
           ex);
@@ -305,7 +292,7 @@ public class DSFIDSerializer {
       Constructor<?> cons = dsfidClass.getConstructor((Class[]) null);
       cons.setAccessible(true);
       if (!cons.isAccessible()) {
-        throw new InternalGemFireError(
+        throw new IllegalArgumentException(
             "default constructor not accessible " + "for DSFID=" + dsfid + ": " + dsfidClass);
       }
       if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
@@ -314,7 +301,8 @@ public class DSFIDSerializer {
         dsfidMap2.put(dsfid, cons);
       }
     } catch (NoSuchMethodException nsme) {
-      throw new InternalGemFireError(nsme);
+      throw new IllegalArgumentException("Unable to find a default constructor for " + dsfidClass,
+          nsme);
     }
   }
 
@@ -362,5 +350,13 @@ public class DSFIDSerializer {
   }
 
 
+  /** create a context for serializaing an object */
+  public SerializationContext createSerializationContext(DataOutput dataOutput) {
+    return new SerializationContextImpl(dataOutput, this);
+  }
 
+  /** create a context for deserializaing an object */
+  public SerializationContext createSerializationContext(DataInput dataInput) {
+    return new DeserializationContextImpl(dataInput, this);
+  }
 }

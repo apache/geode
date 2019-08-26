@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.HAEventWrapper;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.statistics.StatisticsClock;
 
 /**
@@ -547,8 +548,9 @@ public class HARegion extends DistributedRegion {
        * DataInput)
        */
       @Override
-      public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-        super.fromData(in);
+      public void fromData(DataInput in,
+          SerializationContext context) throws IOException, ClassNotFoundException {
+        super.fromData(in, context);
         int flags = in.readByte();
         hasRegisteredInterest = (flags & HAS_REGISTERED_INTEREST_BIT) != 0;
         isPrimary = (flags & IS_PRIMARY_BIT) != 0;
@@ -561,8 +563,9 @@ public class HARegion extends DistributedRegion {
        * DataOutput)
        */
       @Override
-      public void toData(DataOutput out) throws IOException {
-        super.toData(out);
+      public void toData(DataOutput out,
+          SerializationContext context) throws IOException {
+        super.toData(out, context);
         int flags = 0;
         if (hasRegisteredInterest) {
           flags |= HAS_REGISTERED_INTEREST_BIT;

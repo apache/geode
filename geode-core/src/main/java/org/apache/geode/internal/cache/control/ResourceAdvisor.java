@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * The advisor associated with a {@link ResourceManager}. Allows knowledge of remote
@@ -133,8 +134,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       final int l = in.readInt();
       if (l != -1) {
@@ -150,8 +152,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       if (this.profiles != null) {
         out.writeInt(this.profiles.length);
@@ -360,8 +363,9 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
 
       final long heapBytesUsed = in.readLong();
       MemoryState heapState = MemoryState.fromData(in);
@@ -375,7 +379,8 @@ public class ResourceAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       final long heapBytesUsed;
       final MemoryState heapState;
       final MemoryThresholds heapThresholds;
@@ -391,7 +396,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
         offHeapState = this.offHeapState;
         offHeapThresholds = this.offHeapThresholds;
       }
-      super.toData(out);
+      super.toData(out, context);
 
       out.writeLong(heapBytesUsed);
       heapState.toData(out);

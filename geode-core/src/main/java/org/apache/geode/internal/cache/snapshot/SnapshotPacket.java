@@ -32,6 +32,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**
@@ -139,7 +140,8 @@ public class SnapshotPacket implements DataSerializableFixedID {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       InternalDataSerializer.writeByteArray(key, out);
       InternalDataSerializer.writeByteArray(value, out);
     }
@@ -151,7 +153,8 @@ public class SnapshotPacket implements DataSerializableFixedID {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       key = InternalDataSerializer.readByteArray(in);
       value = InternalDataSerializer.readByteArray(in);
     }
@@ -240,7 +243,8 @@ public class SnapshotPacket implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(windowId);
     InternalDataSerializer.writeString(packetId, out);
     InternalDataSerializer.writeObject(sender, out);
@@ -252,7 +256,8 @@ public class SnapshotPacket implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     windowId = in.readInt();
     packetId = InternalDataSerializer.readString(in);
     sender = InternalDataSerializer.readObject(in);

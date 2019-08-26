@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Responds to {@link RegionSizeRequest}.
@@ -81,15 +82,17 @@ public class RegionSizeResponse extends AdminResponse implements Cancellable {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(entryCount);
     out.writeInt(subregionCount);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.entryCount = in.readInt();
     this.subregionCount = in.readInt();
   }

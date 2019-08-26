@@ -77,6 +77,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
 
 /**
@@ -1484,7 +1485,8 @@ public class FilterProfile implements DataSerializableFixedID {
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     InternalDistributedMember id = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(id, in);
     this.memberID = id;
@@ -1523,7 +1525,8 @@ public class FilterProfile implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     InternalDataSerializer.invokeToData(memberID, out);
     InternalDataSerializer.writeSetOfLongs(this.allKeyClients.getSnapshot(),
         this.clientMap.hasLongID, out);
@@ -1985,8 +1988,9 @@ public class FilterProfile implements DataSerializableFixedID {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       out.writeUTF(this.regionName);
       out.writeShort(this.opType.ordinal());
@@ -2008,8 +2012,9 @@ public class FilterProfile implements DataSerializableFixedID {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
       this.opType = operationType.values()[in.readShort()];

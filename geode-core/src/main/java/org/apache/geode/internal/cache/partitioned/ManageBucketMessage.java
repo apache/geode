@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A request to manage a particular bucket
@@ -75,7 +76,7 @@ public class ManageBucketMessage extends PartitionMessage {
   }
 
   public ManageBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
@@ -171,16 +172,18 @@ public class ManageBucketMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
     this.bucketSize = in.readInt();
     this.forceCreation = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
     out.writeInt(this.bucketSize);
     out.writeBoolean(this.forceCreation);
@@ -225,7 +228,7 @@ public class ManageBucketMessage extends PartitionMessage {
     public ManageBucketReplyMessage() {}
 
     public ManageBucketReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     private ManageBucketReplyMessage(int processorId, boolean accept, boolean initializing) {
@@ -307,8 +310,9 @@ public class ManageBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.acceptedBucket);
       out.writeBoolean(this.notYetInitialized);
     }
@@ -319,8 +323,9 @@ public class ManageBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.acceptedBucket = in.readBoolean();
       this.notYetInitialized = in.readBoolean();
     }

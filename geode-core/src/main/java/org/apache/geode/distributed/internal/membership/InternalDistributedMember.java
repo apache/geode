@@ -50,6 +50,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
 
 /**
@@ -860,15 +861,17 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GFE_9_0_0_0(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    toDataPre_GFE_9_0_0_0(out, context);
     if (netMbr.getVersionOrdinal() >= Version.GFE_90.ordinal()) {
       getNetMember().writeAdditionalData(out);
     }
   }
 
 
-  public void toDataPre_GFE_9_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_9_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     // Assert.assertTrue(vmKind > 0);
     // NOTE: If you change the serialized format of this class
     // then bump Connection.HANDSHAKE_VERSION since an
@@ -913,7 +916,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     SerializationVersion.writeOrdinal(out, version, true);
   }
 
-  public void toDataPre_GFE_7_1_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     Assert.assertTrue(netMbr.getVmKind() > 0);
     // disabled to allow post-connect setting of the port for loner systems
     // Assert.assertTrue(getPort() > 0);
@@ -960,8 +964,9 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_9_0_0_0(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_9_0_0_0(in, context);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
     if (getNetMember().getVersionOrdinal() >= Version.GFE_90.ordinal()) {
@@ -973,7 +978,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
   }
 
-  public void fromDataPre_GFE_9_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_9_0_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 
@@ -1019,7 +1025,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // Assert.assertTrue(getPort() > 0);
   }
 
-  public void fromDataPre_GFE_7_1_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_7_1_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
 

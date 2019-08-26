@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.ExternalizableDSFID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.Versionable;
 import org.apache.geode.internal.util.VersionedArrayList;
 
@@ -245,7 +246,8 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.prId);
     out.writeByte(this.scope.ordinal);
     InternalDataSerializer.invokeToData(this.pAttrs, out);
@@ -271,7 +273,8 @@ public class PartitionRegionConfig extends ExternalizableDSFID implements Versio
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.prId = in.readInt();
     this.scope = Scope.fromOrdinal(in.readByte());
     this.pAttrs = PartitionAttributesImpl.createFromData(in);

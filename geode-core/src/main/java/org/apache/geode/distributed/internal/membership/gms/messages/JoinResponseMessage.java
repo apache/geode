@@ -20,11 +20,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 // TODO this class has been made unintelligible with different combinations of response values.
 // It needs to have an enum that indicates what type of response is in the message or it
@@ -101,7 +102,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
@@ -111,21 +112,23 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeObject(currentView, out);
-    GMSUtil.writeMemberID(memberID, out);
-    DataSerializer.writeString(rejectionMessage, out);
-    DataSerializer.writeByteArray(messengerData, out);
-    DataSerializer.writeByteArray(secretPk, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    context.getDSFIDSerializer().writeDSFID(currentView, out);
+    GMSUtil.writeMemberID(memberID, out, context);
+    StaticSerialization.writeString(rejectionMessage, out);
+    StaticSerialization.writeByteArray(messengerData, out);
+    StaticSerialization.writeByteArray(secretPk, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    currentView = DataSerializer.readObject(in);
-    memberID = GMSUtil.readMemberID(in);
-    rejectionMessage = DataSerializer.readString(in);
-    messengerData = DataSerializer.readByteArray(in);
-    secretPk = DataSerializer.readByteArray(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    currentView = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+    memberID = GMSUtil.readMemberID(in, context);
+    rejectionMessage = StaticSerialization.readString(in);
+    messengerData = StaticSerialization.readByteArray(in);
+    secretPk = StaticSerialization.readByteArray(in);
   }
 
   @Override

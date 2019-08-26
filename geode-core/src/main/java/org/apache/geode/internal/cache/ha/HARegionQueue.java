@@ -100,6 +100,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.BlobHelper;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
@@ -3309,7 +3310,8 @@ public class HARegionQueue implements RegionQueue {
      * org.apache.geode.internal.serialization.DataSerializableFixedID#fromData(java.io.DataInput)
      */
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       synchronized (this) {
         this.lastDispatchedSequenceId = in.readLong();
         this.lastSequenceIDPut = in.readLong();
@@ -3333,7 +3335,8 @@ public class HARegionQueue implements RegionQueue {
      * org.apache.geode.internal.serialization.DataSerializableFixedID#toData(java.io.DataOutput)
      */
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       synchronized (this) { // fix for bug #41621
         out.writeLong(this.lastDispatchedSequenceId);
         out.writeLong(this.lastSequenceIDPut);

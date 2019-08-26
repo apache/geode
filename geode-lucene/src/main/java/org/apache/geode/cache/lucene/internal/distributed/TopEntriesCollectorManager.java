@@ -33,6 +33,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * An implementation of {@link CollectorManager} for managing {@link TopEntriesCollector}. This is
@@ -151,13 +152,15 @@ public class TopEntriesCollectorManager
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(id, out);
     out.writeInt(limit);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     id = DataSerializer.readString(in);
     limit = in.readInt();
   }

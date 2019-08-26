@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.distributed.internal.ResourceEvent;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.Alert;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.AlertDetails;
 
 /**
@@ -129,8 +130,9 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(alertLevel);
     DataSerializer.writeObject(date, out);
     DataSerializer.writeString(connectionName, out);
@@ -141,8 +143,9 @@ public class AlertListenerMessage extends PooledDistributionMessage implements A
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     alertLevel = in.readInt();
     date = DataSerializer.readObject(in);
     connectionName = DataSerializer.readString(in);

@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
@@ -47,7 +48,8 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
   public JmxManagerLocatorResponse() {}
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.host = DataSerializer.readString(in);
     this.port = DataSerializer.readPrimitiveInt(in);
     this.ssl = DataSerializer.readPrimitiveBoolean(in);
@@ -55,7 +57,8 @@ public class JmxManagerLocatorResponse implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(this.host, out);
     DataSerializer.writePrimitiveInt(this.port, out);
     DataSerializer.writePrimitiveBoolean(this.ssl, out);

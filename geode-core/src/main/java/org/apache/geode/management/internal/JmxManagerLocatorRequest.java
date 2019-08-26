@@ -30,6 +30,7 @@ import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Sent to a locator to request it to find (and possibly start) a jmx manager for us. It returns a
@@ -41,10 +42,12 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
 public class JmxManagerLocatorRequest implements DataSerializableFixedID {
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {}
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
   @Override
   public int getDSFID() {

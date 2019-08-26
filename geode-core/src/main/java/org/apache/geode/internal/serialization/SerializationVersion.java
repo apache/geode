@@ -22,17 +22,48 @@ import java.nio.ByteBuffer;
 
 public class SerializationVersion implements Comparable<SerializationVersion> {
 
+  // TBD: should all ordinals for Geode be defined here and then used in Version.java?
+  // We need access to them in GMS for backward-compatibility
+  public static final byte GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
+  public static final byte GEODE_1_2_0_ORDINAL = 65;
+  public static final byte GEODE_1_3_0_ORDINAL = 70;
+  public static final byte GEODE_1_10_0_ORDINAL = 105;
+
   /**
    * Reserved token that cannot be used for product version but as a flag in internal contexts.
    */
   protected static final byte TOKEN_ORDINAL = -1;
   protected static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
 
+  public static SerializationVersion ILLEGAL_VERSION = new SerializationVersion(-1);
+
+  public static SerializationVersion currentVersion =
+      new SerializationVersion(ILLEGAL_VERSION.ordinal);
+
   /** value used as ordinal to represent this <code>SerializationVersion</code> */
-  protected final short ordinal;
+  protected short ordinal;
+
+  /** establish the current version */
+  public static void setCurrentVersion(SerializationVersion version) {
+    currentVersion = version;
+  }
+
+  /** retrieve the current version */
+  public static SerializationVersion getCurrentVersion() {
+    return currentVersion;
+  }
 
   public SerializationVersion(int ordinal) {
     this.ordinal = (short) ordinal;
+    if (currentVersion != null &&
+        ordinal > currentVersion.ordinal) {
+      currentVersion.ordinal = this.ordinal;
+    }
+  }
+
+  /** is this SerializationVersion the current version? */
+  public boolean isCurrentVersion() {
+    return getCurrentVersion().ordinal == this.ordinal;
   }
 
   /**
@@ -136,5 +167,9 @@ public class SerializationVersion implements Comparable<SerializationVersion> {
     } else {
       return 1;
     }
+  }
+
+  public short ordinal() {
+    return this.ordinal;
   }
 }

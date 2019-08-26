@@ -47,6 +47,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A refinement of ObjectPartList that adds per-entry versionTags and has its own serialized form to
@@ -303,13 +304,15 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     return serializationVersions;
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     getCanonicalIDs();
-    toData(out);
+    toData(out, context);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
+    fromData(in, context);
   }
 
   /*
@@ -336,7 +339,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   static final byte FLAG_TAG_WITH_NUMBER_ID = 3;
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     toData(out, 0, this.regionIsVersioned ? this.versionTags.size() : size(), true, true);
   }
 
@@ -437,7 +441,8 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled_VOL =
         logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE);
     int flags = in.readByte();
@@ -559,12 +564,12 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
@@ -739,27 +744,31 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       int startIndex = index;
       this.index += this.chunkSize;
       this.list.toData(out, startIndex, chunkSize, sendKeys, sendObjects);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       throw new IOException("this fromData method should never be invoked");
     }
 
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
       if (this.index == 0) {
         this.list.getCanonicalIDs();
       }
-      toData(out);
+      toData(out, context);
     }
 
     // when deserialized a VersionedObjectList is created, not a Chunker, so this method isn't
     // needed
-    // public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException
+    // public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context) throws
+    // IOException, ClassNotFoundException
     // {
     // fromData(in);
     // }

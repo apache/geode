@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class GatewaySenderAdvisor extends DistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -536,8 +537,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     public GatewaySenderProfile() {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.Id = DataSerializer.readString(in);
       this.startTime = in.readLong();
       this.remoteDSId = in.readInt();
@@ -577,8 +579,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(Id, out);
       out.writeLong(startTime);
       out.writeInt(remoteDSId);
@@ -614,8 +617,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+        throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.Id = DataSerializer.readString(in);
       this.startTime = in.readLong();
       this.remoteDSId = in.readInt();
@@ -639,8 +643,9 @@ public class GatewaySenderAdvisor extends DistributionAdvisor {
       }
     }
 
-    public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(Id, out);
       out.writeLong(startTime);
       out.writeInt(remoteDSId);

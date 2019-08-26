@@ -17,8 +17,6 @@ package org.apache.geode.internal.serialization;
 
 import java.io.NotSerializableException;
 
-import org.apache.geode.internal.Version;
-
 /**
  * Exception to indicate that a specified DSFID type could not be found (e.g. due to class being
  * absent in lower product versions).
@@ -38,7 +36,7 @@ public class DSFIDNotFoundException extends NotSerializableException {
   public DSFIDNotFoundException(String msg, int dsfid) {
     super(msg);
     this.dsfid = dsfid;
-    this.versionOrdinal = Version.CURRENT.ordinal();
+    this.versionOrdinal = SerializationVersion.getCurrentVersion().ordinal();
   }
 
   public int getUnknownDSFID() {

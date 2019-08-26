@@ -32,9 +32,11 @@ import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -199,14 +201,29 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     }
     if (versions != null && versions.length > 0) {
       for (int i = 0; i < versions.length; i++) {
-        try {
-          ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
-              new Class[] {DataOutput.class});
+        if (ds instanceof DataSerializableFixedID) {
+          try {
+            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataOutput.class, SerializationContext.class});
 
-          ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
-              new Class[] {DataInput.class});
-        } catch (NoSuchMethodException e) {
-          fail("toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataInput.class, SerializationContext.class});
+          } catch (NoSuchMethodException e) {
+            fail(
+                "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+          }
+        }
+        if (ds instanceof DataSerializable) {
+          try {
+            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataOutput.class});
+
+            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataInput.class});
+          } catch (NoSuchMethodException e) {
+            fail(
+                "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+          }
         }
       }
     } else {
@@ -246,28 +263,34 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       toDataCalled = true;
     }
 
-    public void toDataPre_GFE_6_6_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GFE_6_6_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
       toDataPre66Called = true;
     }
 
-    public void toDataPre_GFE_7_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GFE_7_0_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
       toDataPre70called = true;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException {
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GFE_6_6_0_0(DataInput out) throws IOException {
+    public void fromDataPre_GFE_6_6_0_0(DataInput out, SerializationContext context)
+        throws IOException {
       fromDataPre66Called = true;
     }
 
-    public void fromDataPre_GFE_7_0_0_0(DataInput out) throws IOException {
+    public void fromDataPre_GFE_7_0_0_0(DataInput out, SerializationContext context)
+        throws IOException {
       fromDataPre70Called = true;
     }
 

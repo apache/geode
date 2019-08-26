@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLe
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 
 @SuppressWarnings("ConstantConditions")
 public class Services {
@@ -48,6 +49,7 @@ public class Services {
   private final ServiceConfig config;
   private final DMStats stats;
   private final Stopper cancelCriterion;
+  private final DSFIDSerializer serializer;
 
   private volatile boolean stopping;
   private volatile boolean stopped;
@@ -87,11 +89,13 @@ public class Services {
     this.healthMon = null;
     this.messenger = null;
     this.auth = null;
+    this.serializer = null;
   }
 
   public Services(Manager membershipManager,
       RemoteTransportConfig transport, DMStats stats,
-      final Authenticator authenticator, DistributionConfig config) {
+      final Authenticator authenticator, DistributionConfig config,
+      DSFIDSerializer serializer) {
     this.cancelCriterion = new Stopper();
     this.stats = stats;
     this.config = new ServiceConfig(transport, config);
@@ -100,6 +104,7 @@ public class Services {
     this.healthMon = new GMSHealthMonitor();
     this.messenger = new JGroupsMessenger();
     this.auth = authenticator;
+    this.serializer = serializer;
   }
 
   /**
@@ -299,6 +304,10 @@ public class Services {
 
   public boolean isAutoReconnectEnabled() {
     return !getConfig().getDistributionConfig().getDisableAutoReconnect();
+  }
+
+  public DSFIDSerializer getSerializer() {
+    return this.serializer;
   }
 
   public class Stopper extends CancelCriterion {

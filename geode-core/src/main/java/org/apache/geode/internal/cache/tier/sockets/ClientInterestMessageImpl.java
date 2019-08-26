@@ -28,6 +28,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Class <code>ClientInterestMessageImpl</code> represents an update to the a client's interest
@@ -198,15 +199,16 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   public void writeExternal(ObjectOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventId, out);
     DataSerializer.writeString(this.regionName, out);
     DataSerializer.writeObject(this.keyOfInterest, out);
@@ -218,7 +220,8 @@ public class ClientInterestMessageImpl implements ClientMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.keyOfInterest = DataSerializer.readObject(in);

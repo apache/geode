@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Class <code>ClientMarkerMessageImpl</code> is a marker message that is placed in the
@@ -83,7 +84,8 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventId, out);
   }
 
@@ -93,7 +95,8 @@ public class ClientMarkerMessageImpl implements ClientMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.eventId = (EventID) DataSerializer.readObject(in);
   }
 

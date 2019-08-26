@@ -53,6 +53,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is used by transactions to invalidate an entry on a transaction hosted on a remote
@@ -314,8 +315,9 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte b = 0;
       if (this.versionTag != null) {
         b |= HAS_VERSION;
@@ -330,8 +332,9 @@ public class RemoteInvalidateMessage extends RemoteDestroyMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION) != 0;
       boolean persistentTag = (b & PERSISTENT) != 0;

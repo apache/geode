@@ -31,6 +31,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.OffHeapHelper;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Encapsulates list containing objects, serialized objects, raw byte arrays, or exceptions. It can
@@ -183,7 +184,8 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeBoolean(this.hasKeys);
     if (this.objectTypeArray != null) {
       int numObjects = this.objects.size();
@@ -212,7 +214,8 @@ public class ObjectPartList implements DataSerializableFixedID, Releasable {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.hasKeys = in.readBoolean();
     if (this.hasKeys) {
       this.keys = new ArrayList();

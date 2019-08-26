@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Identifies a group of transaction locks.
@@ -121,13 +122,25 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   }
 
   @Override
+  public void toData(DataOutput out) throws IOException {
+    toData(out, null);
+  }
+
+  @Override
   public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    fromData(in, null);
+  }
+
+  @Override
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.memberId = (InternalDistributedMember) DataSerializer.readObject(in);
     this.id = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.memberId, out);
     out.writeInt(this.id);
   }
@@ -135,7 +148,7 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
   public static TXLockIdImpl createFromData(DataInput in)
       throws IOException, ClassNotFoundException {
     TXLockIdImpl result = new TXLockIdImpl();
-    result.fromData(in);
+    result.fromData(in, null);
     return result;
   }
 

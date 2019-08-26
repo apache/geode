@@ -27,6 +27,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ResultsBag extends Bag implements DataSerializableFixedID {
 
@@ -135,7 +136,8 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.elementType = (ObjectType) DataSerializer.readObject(in);
     this.size = in.readInt();
     assert this.size >= 0 : this.size;
@@ -159,7 +161,8 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.elementType, out);
     out.writeInt(this.size());
     this.writeNumNulls(out);

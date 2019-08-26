@@ -23,8 +23,9 @@ import java.util.Collection;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class FindCoordinatorRequest extends AbstractGMSMessage
     implements PeerLocatorRequest {
@@ -87,7 +88,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
@@ -103,34 +104,36 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
   // TODO serialization not backward compatible with 1.9 - may need InternalDistributedMember, not
   // GMSMember
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(memberID, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(memberID, out, context);
     if (this.rejectedCoordinators != null) {
       out.writeInt(this.rejectedCoordinators.size());
       for (GMSMember mbr : this.rejectedCoordinators) {
-        GMSUtil.writeMemberID(mbr, out);
+        GMSUtil.writeMemberID(mbr, out, context);
       }
     } else {
       out.writeInt(0);
     }
     out.writeInt(lastViewId);
     out.writeInt(requestId);
-    InternalDataSerializer.writeString(dhalgo, out);
-    InternalDataSerializer.writeByteArray(this.myPublicKey, out);
+    StaticSerialization.writeString(dhalgo, out);
+    StaticSerialization.writeByteArray(this.myPublicKey, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    this.memberID = GMSUtil.readMemberID(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    this.memberID = GMSUtil.readMemberID(in, context);
     int size = in.readInt();
     this.rejectedCoordinators = new ArrayList<GMSMember>(size);
     for (int i = 0; i < size; i++) {
-      this.rejectedCoordinators.add(GMSUtil.readMemberID(in));
+      this.rejectedCoordinators.add(GMSUtil.readMemberID(in, context));
     }
     this.lastViewId = in.readInt();
     this.requestId = in.readInt();
-    this.dhalgo = InternalDataSerializer.readString(in);
-    this.myPublicKey = InternalDataSerializer.readByteArray(in);
+    this.dhalgo = StaticSerialization.readString(in);
+    this.myPublicKey = StaticSerialization.readByteArray(in);
   }
 
   @Override

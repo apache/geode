@@ -38,6 +38,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A Set constrained to contain Structs of all the same type. To conserve on objects, we store the
@@ -455,7 +456,8 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.contents = new ObjectOpenCustomHashSet(new ObjectArrayHashingStrategy());
     int size = in.readInt();
     this.structType = (StructTypeImpl) DataSerializer.readObject(in);
@@ -465,7 +467,8 @@ public class StructSet /* extends ObjectOpenCustomHashSet */ implements Set, Sel
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.size());
     DataSerializer.writeObject(this.structType, out);
     for (Iterator i = this.iterator(); i.hasNext();) {

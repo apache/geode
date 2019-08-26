@@ -295,6 +295,11 @@ public class Version extends SerializationVersion {
   public static final Version TEST_VERSION = new Version("TEST", "VERSION", (byte) 0, (byte) 0,
       (byte) 0, (byte) 0, validOrdinalForTesting);
 
+  static {
+    /* establish the serialization version for DSFID serialization */
+    SerializationVersion.setCurrentVersion(CURRENT);
+  }
+
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release, byte patch,
       byte ordinal) {

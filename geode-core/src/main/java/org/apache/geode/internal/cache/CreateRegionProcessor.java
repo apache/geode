@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message processor handles creation and initial exchange of
@@ -745,8 +746,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       this.profile = (CacheProfile) DataSerializer.readObject(in);
       this.processorId = in.readInt();
@@ -759,8 +761,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.regionPath, out);
       DataSerializer.writeObject(this.profile, out);
       out.writeInt(this.processorId);
@@ -806,8 +809,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       if (in.readBoolean()) {
         this.profile = (CacheProfile) DataSerializer.readObject(in);
       }
@@ -834,8 +838,9 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.profile != null);
       if (this.profile != null) {
         DataSerializer.writeObject(this.profile, out);

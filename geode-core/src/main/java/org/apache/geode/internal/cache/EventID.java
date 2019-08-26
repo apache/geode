@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.Breadcrumbs;
 
 /**
@@ -347,7 +348,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
   }
 
   @Override
-  public void toData(DataOutput dop) throws IOException {
+  public void toData(DataOutput dop,
+      SerializationContext context) throws IOException {
     Version version = InternalDataSerializer.getVersionForDataStream(dop);
     // if we are sending to old clients we need to reserialize the ID
     // using the client's version to ensure it gets the proper on-wire form
@@ -369,14 +371,16 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     dop.writeByte(this.breadcrumbCounter);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput dop) throws IOException {
+  public void toDataPre_GFE_8_0_0_0(DataOutput dop, SerializationContext context)
+      throws IOException {
     DataSerializer.writeByteArray(this.membershipID, dop);
     DataSerializer.writeByteArray(getOptimizedByteArrayForEventID(this.threadID, this.sequenceID),
         dop);
   }
 
   @Override
-  public void fromData(DataInput di) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput di,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
@@ -385,7 +389,8 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     this.breadcrumbCounter = di.readByte();
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput di) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_8_0_0_0(DataInput di, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);

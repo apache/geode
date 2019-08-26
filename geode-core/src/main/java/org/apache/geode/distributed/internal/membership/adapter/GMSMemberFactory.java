@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.membership.NetMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Authenticator;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
@@ -117,7 +118,8 @@ public class GMSMemberFactory implements MemberServices {
       final DistributionConfig config) throws DistributionException {
     GMSMembershipManager gmsMembershipManager = new GMSMembershipManager(listener);
     Services services =
-        new Services(gmsMembershipManager.getGMSManager(), transport, stats, authenticator, config);
+        new Services(gmsMembershipManager.getGMSManager(), transport, stats, authenticator, config,
+            InternalDataSerializer.getDSFIDSerializer());
     try {
       services.init();
       services.start();

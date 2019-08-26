@@ -53,6 +53,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.pdx.PdxSerializationException;
 
 /**
@@ -2082,13 +2083,15 @@ public class TXEntryState implements Releasable {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DataSerializer.writeLong(this.regionVersion, out);
       DataSerializer.writeLong(this.tailKey, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.regionVersion = DataSerializer.readLong(in);
       this.tailKey = DataSerializer.readLong(in);
     }

@@ -68,6 +68,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is used by transactions to update an entry on a transaction hosted on a remote
@@ -449,8 +450,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
 
     final int extraFlags = in.readUnsignedByte();
@@ -502,9 +504,10 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     this.hasDelta = false;
-    super.toData(out);
+    super.toData(out, context);
     DataSerializer.writeObject(getKey(), out);
 
     int extraFlags = this.deserializationPolicy;
@@ -836,8 +839,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       byte flags = (byte) (in.readByte() & 0xff);
       this.result = (flags & FLAG_RESULT) != 0;
       this.op = Operation.fromOrdinal(in.readByte());
@@ -872,8 +876,9 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       byte flags = 0;
       if (this.result)
         flags |= FLAG_RESULT;

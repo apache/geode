@@ -22,6 +22,7 @@ import java.util.Set;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A request from a client to locator asking for a server to host a queue. If the durable client Id
@@ -48,8 +49,9 @@ public class QueueConnectionRequest extends ServerLocationRequest {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     proxyId = ClientProxyMembershipID.readCanonicalized(in);
     redundantCopies = DataSerializer.readPrimitiveInt(in);
@@ -58,8 +60,9 @@ public class QueueConnectionRequest extends ServerLocationRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(proxyId, out);
     DataSerializer.writePrimitiveInt(redundantCopies, out);
     SerializationHelper.writeServerLocationSet(this.excludedServers, out);

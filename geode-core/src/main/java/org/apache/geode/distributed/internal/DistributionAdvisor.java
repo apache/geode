@@ -49,6 +49,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArrayUtils;
 
 /**
@@ -1468,14 +1469,16 @@ public class DistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       InternalDataSerializer.invokeToData(peerMemberId, out);
       out.writeInt(version);
       out.writeInt(serialNumber);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       peerMemberId = new InternalDistributedMember();
       InternalDataSerializer.invokeFromData(peerMemberId, in);
       version = in.readInt();

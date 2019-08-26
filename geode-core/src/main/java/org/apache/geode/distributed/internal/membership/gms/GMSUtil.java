@@ -30,14 +30,14 @@ import java.util.StringTokenizer;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.GemFireConfigException;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
-import org.apache.geode.internal.DSFIDFactory;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class GMSUtil {
   private static final Logger logger = LogService.getLogger();
@@ -64,8 +64,9 @@ public class GMSUtil {
     return parseLocators(locatorsString, addr);
   }
 
-  public static GMSMember readMemberID(DataInput in) throws IOException, ClassNotFoundException {
-    Object id = DataSerializer.readObject(in);
+  public static GMSMember readMemberID(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    Object id = context.getDSFIDSerializer().getDataSerializer().readObject(in);
     if (id == null || id instanceof GMSMember) {
       return (GMSMember) id;
     }
@@ -80,15 +81,16 @@ public class GMSUtil {
     }
   }
 
-  public static Set<GMSMember> readHashSetOfMemberIDs(DataInput in)
+  public static Set<GMSMember> readHashSetOfMemberIDs(DataInput in,
+      SerializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = InternalDataSerializer.readArrayLength(in);
+    int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
     Set<GMSMember> result = new HashSet<>();
     for (int i = 0; i < size; i++) {
-      result.add(readMemberID(in));
+      result.add(readMemberID(in, context));
     }
     return result;
   }
@@ -195,65 +197,53 @@ public class GMSUtil {
     return sb.toString();
   }
 
-  public static List<GMSMember> readArrayOfIDs(DataInput in)
+  public static List<GMSMember> readArrayOfIDs(DataInput in,
+      SerializationContext context)
       throws IOException, ClassNotFoundException {
-    int size = InternalDataSerializer.readArrayLength(in);
+    int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
       return null;
     }
     List<GMSMember> result = new ArrayList<>(size);
     for (int i = 0; i < size; i++) {
-      result.add(readMemberID(in));
+      result.add(readMemberID(in, context));
     }
     return result;
   }
 
-  private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out)
+  private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out,
+      SerializationContext context)
       throws IOException {
-    InternalDataSerializer.writeDSFID(suspect, DSFIDFactory.DISTRIBUTED_MEMBER, out);
-    // DataSerializer.writeObject(new InternalDistributedMember(new GMSMemberAdapter(suspect)),
-    // out);
+    context.getDSFIDSerializer().writeDSFID(suspect, DataSerializableFixedID.DISTRIBUTED_MEMBER,
+        out);
   }
 
-  public static void writeMemberID(GMSMember id, DataOutput out) throws IOException {
+  public static void writeMemberID(GMSMember id, DataOutput out,
+      SerializationContext context) throws IOException {
     if (id == null) {
-      DataSerializer.writeObject(id, out);
+      context.getDSFIDSerializer().getDataSerializer().writeObject(id, out);
       return;
     }
-    short ordinal = InternalDataSerializer.getVersionForDataStream(out).ordinal();
-    if (ordinal < Version.GEODE_1_10_0.ordinal()) {
-      writeAsInternalDistributedMember(id, out);
+    short ordinal = context.getSerializationVersion().ordinal();
+    if (ordinal <= SerializationVersion.GEODE_1_10_0_ORDINAL) {
+      writeAsInternalDistributedMember(id, out, context);
     } else {
-      DataSerializer.writeObject(id, out);
+      context.getDSFIDSerializer().writeDSFID(id, out);
     }
   }
 
-  public static Set<GMSMember> readSetOfMemberIDs(DataInput in)
-      throws IOException, ClassNotFoundException {
-    int size = InternalDataSerializer.readArrayLength(in);
-    if (size == -1) {
-      return null;
-    }
-    Set<GMSMember> result = new HashSet<>(size);
-    for (int i = 0; i < size; i++) {
-      result.add(readMemberID(in));
-    }
-    return result;
-
-
-  }
-
-  public static void writeSetOfMemberIDs(Set<GMSMember> set, DataOutput out) throws IOException {
+  public static void writeSetOfMemberIDs(Set<GMSMember> set, DataOutput out,
+      SerializationContext context) throws IOException {
     int size;
     if (set == null) {
       size = -1;
     } else {
       size = set.size();
     }
-    InternalDataSerializer.writeArrayLength(size, out);
+    StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
       for (GMSMember member : set) {
-        GMSUtil.writeMemberID(member, out);
+        GMSUtil.writeMemberID(member, out, context);
       }
     }
   }

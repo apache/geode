@@ -35,6 +35,7 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.BucketAdvisor.BucketProfile;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A Partitioned Region meta-data update message. This is used to send a bucket's meta-data to other
@@ -147,8 +148,9 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.prId = in.readInt();
     this.bucketId = in.readInt();
     this.processorId = in.readInt();
@@ -156,8 +158,9 @@ public class BucketProfileUpdateMessage extends DistributionMessage implements M
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.prId);
     out.writeInt(this.bucketId);
     out.writeInt(this.processorId);

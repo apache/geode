@@ -24,6 +24,7 @@ import org.apache.geode.GemFireCacheException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class AppCacheSnapshotMessage extends RegionAdminMessage {
   // private int numResults;
@@ -107,15 +108,17 @@ public class AppCacheSnapshotMessage extends RegionAdminMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     // out.writeInt(numResults);
     out.writeInt(snapshotId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     // this.numResults = in.readInt();
     this.snapshotId = in.readInt();
   }

@@ -25,6 +25,7 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 
 public class PRQueryTraceInfo implements DataSerializableFixedID {
@@ -38,14 +39,16 @@ public class PRQueryTraceInfo implements DataSerializableFixedID {
   public PRQueryTraceInfo() {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeFloat(timeInMillis);
     out.writeInt(numResults);
     DataSerializer.writeString(indexesUsed, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     timeInMillis = in.readFloat();
     numResults = in.readInt();
     indexesUsed = DataSerializer.readString(in);

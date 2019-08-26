@@ -254,10 +254,10 @@ public class JGroupsMessengerJUnitTest {
     HeapDataOutputStream out = new HeapDataOutputStream(500, Version.CURRENT);
     GMSMember mbr = createAddress(8888);
     mbr.setMemberWeight((byte) 40);
-    mbr.toData(out);
+    mbr.toData(out, null);
     DataInputStream in = new DataInputStream(new ByteArrayInputStream(out.toByteArray()));
     mbr = new GMSMember();
-    mbr.fromData(in);
+    mbr.fromData(in, null);
     assertEquals(40, mbr.getMemberWeight());
   }
 
@@ -276,7 +276,7 @@ public class JGroupsMessengerJUnitTest {
       // for code coverage we need to test with both a SerializationException and
       // an IOException. The former is wrapped in a GemfireIOException while the
       // latter is not
-      doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class));
+      doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class), null);
       try {
         messenger.send(msg);
         fail("expected a failure");
@@ -286,7 +286,7 @@ public class JGroupsMessengerJUnitTest {
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
-      doThrow(new IOException()).when(msg).toData(any(DataOutput.class));
+      doThrow(new IOException()).when(msg).toData(any(DataOutput.class), null);
       try {
         messenger.send(msg);
         fail("expected a failure");
@@ -421,7 +421,7 @@ public class JGroupsMessengerJUnitTest {
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
-      verify(msg).toData(isA(DataOutput.class));
+      verify(msg).toData(isA(DataOutput.class), null);
       assertTrue("expected 1 message but found " + interceptor.collectedMessages,
           interceptor.collectedMessages.size() == 1);
       assertTrue(interceptor.collectedMessages.get(0).isFlagSet(Message.Flag.NO_RELIABILITY));

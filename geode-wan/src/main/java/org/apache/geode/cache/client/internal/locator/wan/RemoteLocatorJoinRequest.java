@@ -22,6 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Requests remote locators of a remote WAN site
@@ -47,13 +48,15 @@ public class RemoteLocatorJoinRequest implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.locator = DataSerializer.readObject(in);
     this.distributedSystemId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(locator, out);
     out.writeInt(this.distributedSystemId);
   }

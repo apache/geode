@@ -26,6 +26,7 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
 
 public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSerializableFixedID {
@@ -208,12 +209,14 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_6_0_0(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    toDataPre_GEODE_1_6_0_0(out, context);
     DataSerializer.writeEnum(this.state, out);
   }
 
-  public void toDataPre_GEODE_1_6_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GEODE_1_6_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writePrimitiveBoolean(this.isSuccessful(), out);
     DataSerializer.writeObject(this.xmlEntity, out);
@@ -222,19 +225,22 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     DataSerializer.writeByteArray(this.byteData, out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     DataSerializer.writeString(this.memberIdOrName, out);
     DataSerializer.writeObjectArray(this.serializables, out);
     DataSerializer.writeObject(this.resultObject, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_6_0_0(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_6_0_0(in, context);
     this.state = DataSerializer.readEnum(StatusState.class, in);
   }
 
-  public void fromDataPre_GEODE_1_6_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GEODE_1_6_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
     this.xmlEntity = DataSerializer.readObject(in);
@@ -243,7 +249,8 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.byteData = DataSerializer.readByteArray(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.resultObject = DataSerializer.readObject(in);
     this.serializables = (Serializable[]) DataSerializer.readObjectArray(in);

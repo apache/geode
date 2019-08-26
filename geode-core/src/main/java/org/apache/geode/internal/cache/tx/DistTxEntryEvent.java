@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistTxEntryEvent extends EntryEventImpl {
 
@@ -69,7 +70,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeObject(this.eventID, out);
     DataSerializer.writeObject(this.getRegion().getFullPath(), out);
     out.writeByte(this.op.ordinal);
@@ -97,7 +99,8 @@ public class DistTxEntryEvent extends EntryEventImpl {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.eventID = (EventID) DataSerializer.readObject(in);
     this.regionName = DataSerializer.readString(in);
     this.op = Operation.fromOrdinal(in.readByte());

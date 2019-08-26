@@ -17,8 +17,8 @@ package org.apache.geode.pdx;
 import java.nio.ByteBuffer;
 import java.util.Date;
 
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.pdx.internal.DataSize;
 
 /**
@@ -42,17 +42,17 @@ public enum FieldType {
   DATE(true, DataSize.DATE_SIZE, "Date", new byte[] {-1, -1, -1, -1, -1, -1, -1, -1}, null),
   STRING(false, -1, "String", new byte[] {DSCODE.NULL_STRING.toByte()}, null),
   OBJECT(false, -1, "Object", new byte[] {DSCODE.NULL.toByte()}, null),
-  BOOLEAN_ARRAY(false, -1, "boolean[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  CHAR_ARRAY(false, -1, "char[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  BYTE_ARRAY(false, -1, "byte[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  SHORT_ARRAY(false, -1, "short[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  INT_ARRAY(false, -1, "int[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  LONG_ARRAY(false, -1, "long[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  FLOAT_ARRAY(false, -1, "float[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  DOUBLE_ARRAY(false, -1, "double[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  STRING_ARRAY(false, -1, "String[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  OBJECT_ARRAY(false, -1, "Object[]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null),
-  ARRAY_OF_BYTE_ARRAYS(false, -1, "byte[][]", new byte[] {InternalDataSerializer.NULL_ARRAY}, null);
+  BOOLEAN_ARRAY(false, -1, "boolean[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  CHAR_ARRAY(false, -1, "char[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  BYTE_ARRAY(false, -1, "byte[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  SHORT_ARRAY(false, -1, "short[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  INT_ARRAY(false, -1, "int[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  LONG_ARRAY(false, -1, "long[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  FLOAT_ARRAY(false, -1, "float[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  DOUBLE_ARRAY(false, -1, "double[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  STRING_ARRAY(false, -1, "String[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  OBJECT_ARRAY(false, -1, "Object[]", new byte[] {StaticSerialization.NULL_ARRAY}, null),
+  ARRAY_OF_BYTE_ARRAYS(false, -1, "byte[][]", new byte[] {StaticSerialization.NULL_ARRAY}, null);
 
   private final boolean isFixedWidth;
   /**

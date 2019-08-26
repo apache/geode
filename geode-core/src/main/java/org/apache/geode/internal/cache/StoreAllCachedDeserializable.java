@@ -24,6 +24,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This cache deserializable always keeps its byte[] in serialized form and the object form.
@@ -122,13 +123,15 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readByteArray(in);
     this.objValue = EntryEventImpl.deserialize(this.value);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeByteArray(this.value, out);
   }
 
@@ -144,7 +147,7 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
 
   @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   @Override

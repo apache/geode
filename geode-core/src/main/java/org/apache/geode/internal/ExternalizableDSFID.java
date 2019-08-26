@@ -22,6 +22,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Abstract class for subclasses that want to be Externalizable in addition to being
@@ -36,18 +37,20 @@ public abstract class ExternalizableDSFID implements DataSerializableFixedID, Ex
   public abstract int getDSFID();
 
   @Override
-  public abstract void toData(DataOutput out) throws IOException;
+  public abstract void toData(DataOutput out,
+      SerializationContext context) throws IOException;
 
   @Override
-  public abstract void fromData(DataInput in) throws IOException, ClassNotFoundException;
+  public abstract void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException;
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   @Override
   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 }

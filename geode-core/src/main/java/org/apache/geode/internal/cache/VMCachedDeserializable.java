@@ -26,6 +26,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.eviction.EvictableEntry;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.pdx.PdxInstance;
 
 /**
@@ -218,7 +219,8 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // fix for bug 38309
     byte[] bytes = DataSerializer.readByteArray(in);
     this.valueSize = bytes.length;
@@ -226,7 +228,8 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // fix for bug 38309
     DataSerializer.writeObjectAsByteArray(getValue(), out);
   }
@@ -243,7 +246,7 @@ public class VMCachedDeserializable implements CachedDeserializable, DataSeriali
 
   @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   @Override

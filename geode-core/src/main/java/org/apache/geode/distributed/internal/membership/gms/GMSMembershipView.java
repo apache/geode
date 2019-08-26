@@ -32,12 +32,12 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * The GMSMembershipView class represents a membership view. Note that this class is not
@@ -598,66 +598,54 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(creator, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(creator, out, context);
     out.writeInt(viewId);
-    writeAsArrayList(members, out);
-    GMSUtil.writeSetOfMemberIDs(shutdownMembers, out);
-    GMSUtil.writeSetOfMemberIDs(crashedMembers, out);
-    DataSerializer.writeIntArray(failureDetectionPorts, out);
+    writeAsArrayList(members, out, context);
+    GMSUtil.writeSetOfMemberIDs(shutdownMembers, out, context);
+    GMSUtil.writeSetOfMemberIDs(crashedMembers, out, context);
+    StaticSerialization.writeIntArray(failureDetectionPorts, out);
     // TODO expensive serialization
-    DataSerializer.writeHashMap(publicKeys, out);
+    StaticSerialization.writeHashMap(publicKeys, out, context);
   }
 
 
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    creator = GMSUtil.readMemberID(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    creator = GMSUtil.readMemberID(in, context);
     viewId = in.readInt();
-    members = GMSUtil.readArrayOfIDs(in);
+    members = GMSUtil.readArrayOfIDs(in, context);
     assert members != null;
     this.hashedMembers = new HashSet<>(members);
-    shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in);
-    crashedMembers = GMSUtil.readHashSetOfMemberIDs(in);
-    failureDetectionPorts = DataSerializer.readIntArray(in);
-    Map pubkeys = DataSerializer.readHashMap(in);
+    shutdownMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
+    crashedMembers = GMSUtil.readHashSetOfMemberIDs(in, context);
+    failureDetectionPorts = StaticSerialization.readIntArray(in);
+    Map pubkeys = StaticSerialization.readHashMap(in, context);
     if (pubkeys != null) {
       publicKeys.putAll(pubkeys);
     }
   }
 
   /** this will deserialize as an ArrayList */
-  private void writeAsArrayList(List<GMSMember> list, DataOutput out) throws IOException {
+  private void writeAsArrayList(List<GMSMember> list, DataOutput out,
+      SerializationContext context) throws IOException {
     int size;
     if (list == null) {
       size = -1;
     } else {
       size = list.size();
     }
-    InternalDataSerializer.writeArrayLength(size, out);
+    StaticSerialization.writeArrayLength(size, out);
     if (size > 0) {
       for (int i = 0; i < size; i++) {
-        GMSUtil.writeMemberID(list.get(i), out);
-      }
-    }
-  }
-
-  private void writeAsSet(Set<GMSMember> set, DataOutput out) throws IOException {
-    int size;
-    if (set == null) {
-      size = -1;
-    } else {
-      size = set.size();
-    }
-    InternalDataSerializer.writeArrayLength(size, out);
-    if (size > 0) {
-      for (GMSMember member : set) {
-        GMSUtil.writeMemberID(member, out);
+        GMSUtil.writeMemberID(list.get(i), out, context);
       }
     }
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 

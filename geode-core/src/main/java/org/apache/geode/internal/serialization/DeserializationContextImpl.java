@@ -14,5 +14,25 @@
  */
 package org.apache.geode.internal.serialization;
 
-public interface ObjectSerializer {
+import java.io.DataInput;
+
+public class DeserializationContextImpl extends AbstractSerializationContext {
+
+  DataInput dataInput;
+  private final DSFIDSerializer serializer;
+
+  DeserializationContextImpl(DataInput dataInput, DSFIDSerializer serializer) {
+    this.dataInput = dataInput;
+    this.serializer = serializer;
+  }
+
+  @Override
+  public SerializationVersion getSerializationVersion() {
+    return getVersionForDataStream(dataInput);
+  }
+
+  @Override
+  public DSFIDSerializer getDSFIDSerializer() {
+    return serializer;
+  }
 }

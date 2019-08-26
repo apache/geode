@@ -19,9 +19,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
 
 public class InstallViewMessage extends AbstractGMSMessage {
 
@@ -69,7 +69,7 @@ public class InstallViewMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
@@ -79,19 +79,21 @@ public class InstallViewMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(previousViewId);
     out.writeInt(kind.ordinal());
-    DataSerializer.writeObject(this.view, out);
-    DataSerializer.writeObject(this.credentials, out);
+    context.getDSFIDSerializer().writeDSFID(this.view, out);
+    context.getDSFIDSerializer().getDataSerializer().writeObject(this.credentials, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
-    this.view = DataSerializer.readObject(in);
-    this.credentials = DataSerializer.readObject(in);
+    this.view = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+    this.credentials = context.getDSFIDSerializer().getDataSerializer().readObject(in);
   }
 
   @Override

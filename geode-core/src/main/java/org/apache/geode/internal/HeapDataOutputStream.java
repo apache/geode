@@ -23,6 +23,7 @@ import java.nio.channels.SocketChannel;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
@@ -379,7 +380,7 @@ public class HeapDataOutputStream extends
       final int preArraySize = size();
       DataSerializer.writeObject(v, this);
       int arraySize = size() - preArraySize;
-      sizeBuf.put(sizePos, InternalDataSerializer.INT_ARRAY_LEN);
+      sizeBuf.put(sizePos, StaticSerialization.INT_ARRAY_LEN);
       sizeBuf.putInt(sizePos + 1, arraySize);
     }
   }

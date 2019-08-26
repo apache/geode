@@ -14,7 +14,6 @@
  */
 package org.apache.geode.internal.cache.partitioned;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.cache.PartitionedRegion;
 
 /**
@@ -24,6 +23,6 @@ import org.apache.geode.internal.cache.PartitionedRegion;
  * them to provide different methods for determining load.
  *
  */
-public interface LoadProbe extends DataSerializable {
+public interface LoadProbe {
   PRLoad getLoad(PartitionedRegion pr);
 }

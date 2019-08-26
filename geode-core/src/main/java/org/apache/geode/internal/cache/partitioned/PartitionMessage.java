@@ -64,6 +64,8 @@ import org.apache.geode.internal.cache.TransactionMessage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * The base PartitionedRegion message type upon which other messages should be based.
@@ -528,11 +530,12 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Fill out this instance of the message using the <code>DataInput</code> Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #toData(DataOutput)}in what it reads
+   * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.flags = in.readShort();
     setBooleans(this.flags, in);
     this.regionId = in.readInt();
@@ -563,11 +566,12 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #fromData(DataInput)}in what it writes
+   * {@link DataSerializableFixedID#fromData(DataInput, SerializationContext)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     short compressedShort = 0;
     compressedShort = computeCompressedShort(compressedShort);
     out.writeShort(compressedShort);

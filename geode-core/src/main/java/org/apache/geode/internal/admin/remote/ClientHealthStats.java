@@ -27,6 +27,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Bean class act as container for client stats
@@ -223,7 +224,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writePrimitiveLong(numOfGets, out);
     DataSerializer.writePrimitiveLong(numOfPuts, out);
     DataSerializer.writePrimitiveLong(numOfMisses, out);
@@ -235,7 +237,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeHashMap((poolStats), out);
   }
 
-  public void toDataPre_GFE_8_0_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GFE_8_0_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     DataSerializer.writePrimitiveInt((int) numOfGets, out);
     DataSerializer.writePrimitiveInt((int) numOfPuts, out);
     DataSerializer.writePrimitiveInt((int) numOfMisses, out);
@@ -246,13 +249,15 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     DataSerializer.writeDate(updateTime, out);
   }
 
-  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
-    toDataPre_GFE_8_0_0_0(out);
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    toDataPre_GFE_8_0_0_0(out, context);
     DataSerializer.writeHashMap((poolStats), out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveLong(in);
     this.numOfPuts = DataSerializer.readPrimitiveLong(in);
     this.numOfMisses = DataSerializer.readPrimitiveLong(in);
@@ -264,7 +269,8 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
     this.numOfMisses = DataSerializer.readPrimitiveInt(in);
@@ -275,8 +281,9 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.updateTime = DataSerializer.readDate(in);
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GFE_8_0_0_0(in);
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
+    fromDataPre_GFE_8_0_0_0(in, context);
     this.poolStats = DataSerializer.readHashMap(in);
   }
 

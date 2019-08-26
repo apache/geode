@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A request from a client to the locator asking for a server to connect to for client to server
@@ -41,14 +42,16 @@ public class ClientConnectionRequest extends ServerLocationRequest {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.excludedServers = SerializationHelper.readServerLocationSet(in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     SerializationHelper.writeServerLocationSet(this.excludedServers, out);
   }
 

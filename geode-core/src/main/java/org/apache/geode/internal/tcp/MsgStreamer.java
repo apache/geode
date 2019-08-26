@@ -37,6 +37,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * <p>
@@ -957,7 +958,7 @@ public class MsgStreamer extends OutputStream
       if (overBuf != null) {
         baLength += overBuf.size();
       }
-      this.buffer.put(lengthPos, InternalDataSerializer.INT_ARRAY_LEN);
+      this.buffer.put(lengthPos, StaticSerialization.INT_ARRAY_LEN);
       this.buffer.putInt(lengthPos + 1, baLength);
       disableOverflowMode();
       finished = true;

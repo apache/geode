@@ -23,6 +23,7 @@ import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A load probe which calculates the load of a pr using the just the number of buckets on a member.
@@ -53,10 +54,12 @@ public class BucketCountLoadProbe implements LoadProbe, DataSerializableFixedID 
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {}
 
   @Override
-  public void toData(DataOutput out) throws IOException {}
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
   @Override
   public int getDSFID() {

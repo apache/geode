@@ -24,6 +24,7 @@ import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent as a reply to a {@link AdminRequest}.
@@ -59,16 +60,18 @@ public abstract class AdminResponse extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // System.out.println("BEGIN AdminResponse toData");
-    super.toData(out);
+    super.toData(out, context);
     out.writeInt(this.msgId);
     // System.out.println("END AdminResponse toData");
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.msgId = in.readInt();
   }
 

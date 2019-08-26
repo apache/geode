@@ -19,12 +19,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Notification to be sent to clients (e.g GFMon2.0 ). It incorporates
@@ -35,7 +35,7 @@ import org.apache.geode.internal.serialization.DataSerializableFixedID;
  * @since GemFire 5.7
  */
 public class StatAlertNotification extends StatAlert
-    implements Serializable, DataSerializable, DataSerializableFixedID {
+    implements Serializable, DataSerializableFixedID {
   private static final long serialVersionUID = -1634729103430107871L;
   private String memberId;
 
@@ -125,7 +125,8 @@ public class StatAlertNotification extends StatAlert
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
     DataSerializer.writePrimitiveInt(this.getDefinitionId(), out);
@@ -136,7 +137,8 @@ public class StatAlertNotification extends StatAlert
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
     this.setDefinitionId(DataSerializer.readPrimitiveInt(in));

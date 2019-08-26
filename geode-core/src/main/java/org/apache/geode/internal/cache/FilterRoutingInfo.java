@@ -35,6 +35,7 @@ import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * This class is used to hold the information about the servers and their Filters (CQs and Interest
@@ -380,7 +381,7 @@ public class FilterRoutingInfo implements VersionedDataSerializable {
       size += interestedClients == null ? 4 : interestedClients.size() * 8 + 5;
       size += interestedClientsInv == null ? 4 : interestedClientsInv.size() * 8 + 5;
       size += cqs == null ? 0 : cqs.size() * 12;
-      byte[] myData = InternalDataSerializer.getThreadLocalByteArray(size);
+      byte[] myData = StaticSerialization.getThreadLocalByteArray(size);
       hdos = new HeapDataOutputStream(myData);
       hdos.disallowExpansion();
       if (this.cqs == null) {

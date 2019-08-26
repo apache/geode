@@ -37,6 +37,7 @@ import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is sent to a recipient to make it become the primary for a partitioned region
@@ -97,7 +98,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   }
 
   public BecomePrimaryBucketMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
@@ -147,15 +148,17 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
     this.isRebalance = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
     out.writeBoolean(this.isRebalance);
   }
@@ -174,7 +177,7 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
 
     public BecomePrimaryBucketReplyMessage(DataInput in)
         throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     private BecomePrimaryBucketReplyMessage(int processorId, ReplyException re, byte responseCode) {
@@ -221,8 +224,9 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(responseCode);
     }
 
@@ -232,8 +236,9 @@ public class BecomePrimaryBucketMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.responseCode = in.readByte();
     }
 

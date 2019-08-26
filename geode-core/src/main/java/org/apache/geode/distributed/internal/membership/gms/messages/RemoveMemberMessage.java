@@ -19,10 +19,11 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 public class RemoveMemberMessage extends AbstractGMSMessage implements HasMemberID {
   private GMSMember memberID;
@@ -69,20 +70,22 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    GMSUtil.writeMemberID(memberID, out);
-    DataSerializer.writeString(reason, out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    GMSUtil.writeMemberID(memberID, out, context);
+    StaticSerialization.writeString(reason, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    memberID = GMSUtil.readMemberID(in);
-    reason = DataSerializer.readString(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    memberID = GMSUtil.readMemberID(in, context);
+    reason = StaticSerialization.readString(in);
   }
 
 }

@@ -57,6 +57,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  *
@@ -150,8 +151,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.keys = DataSerializer.readByte(in);
     if (this.keys == KEY_LIST) {
       this.bucketKeys = DataSerializer.readHashMap(in);
@@ -163,8 +165,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeByte(this.keys, out);
     if (this.keys == KEY_LIST) {
       DataSerializer.writeHashMap(this.bucketKeys, out);
@@ -423,8 +426,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
 
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.lastInSeries);
       DataSerializer.writePrimitiveInt(this.msgNum, out);
       DataSerializer.writeObjectAsByteArray(this.chunkStream, out);
@@ -437,8 +441,9 @@ public class FetchBulkEntriesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.lastInSeries = in.readBoolean();
       this.msgNum = DataSerializer.readPrimitiveInt(in);
       this.chunk = DataSerializer.readByteArray(in);

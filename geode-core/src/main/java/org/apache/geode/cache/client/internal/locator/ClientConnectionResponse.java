@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A response from a locator to a client Indicating which server to connect to for client to server
@@ -46,7 +47,8 @@ public class ClientConnectionResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.serverFound = DataSerializer.readPrimitiveBoolean(in);
     if (this.serverFound) {
       server = new ServerLocation();
@@ -55,7 +57,8 @@ public class ClientConnectionResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     boolean serverFound = server != null;
     DataSerializer.writePrimitiveBoolean(serverFound, out);
     if (serverFound) {

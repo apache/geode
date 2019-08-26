@@ -49,6 +49,7 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * RegionVersionVector tracks the highest region-level version number of operations applied to a
@@ -1187,7 +1188,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * @see org.apache.geode.internal.serialization.DataSerializableFixedID#toData(java.io.DataOutput)
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     if (this.isLiveVector) {
       throw new IllegalStateException("serialization of this object is not allowed");
     }
@@ -1219,7 +1221,8 @@ public abstract class RegionVersionVector<T extends VersionSource<?>>
    * org.apache.geode.internal.serialization.DataSerializableFixedID#fromData(java.io.DataInput)
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.myId = readMember(in);
     int flags = in.readInt();
     this.singleMember = ((flags & 0x01) == 0x01);

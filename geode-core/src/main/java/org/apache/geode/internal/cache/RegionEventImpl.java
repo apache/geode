@@ -33,6 +33,7 @@ import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Implementation of a region event
@@ -202,7 +203,8 @@ public class RegionEventImpl
    * Writes the contents of this message to the given output.
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeObject(this.callbackArgument, out);
     out.writeByte(this.op.ordinal);
@@ -214,7 +216,8 @@ public class RegionEventImpl
    * Reads the contents of this message from the given input.
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.regionPath = DataSerializer.readString(in);
     this.callbackArgument = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());

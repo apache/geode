@@ -26,6 +26,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Holds a ordered collection of entries matching a search query.
@@ -117,13 +118,15 @@ public class TopEntries<K> implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(limit);
     DataSerializer.writeObject(hits, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     limit = in.readInt();
     hits = DataSerializer.readObject(in);
   };

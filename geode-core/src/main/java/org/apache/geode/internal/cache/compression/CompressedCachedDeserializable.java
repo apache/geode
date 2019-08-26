@@ -29,6 +29,7 @@ import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntry;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -105,18 +106,20 @@ public abstract class CompressedCachedDeserializable
   }
 
   /**
-   * @see DataSerializableFixedID#toData(DataOutput)
+   * @see DataSerializableFixedID#toData(DataOutput, SerializationContext)
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeByteArray(getCompressor().decompress(this.value), out);
   }
 
   /**
-   * @see DataSerializableFixedID#fromData(DataInput)
+   * @see DataSerializableFixedID#fromData(DataInput, SerializationContext)
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.value = getCompressor().compress(DataSerializer.readByteArray(in));
   }
 
@@ -179,7 +182,7 @@ public abstract class CompressedCachedDeserializable
 
   @Override
   public void writeValueAsByteArray(DataOutput out) throws IOException {
-    toData(out);
+    toData(out, null);
   }
 
   @Override

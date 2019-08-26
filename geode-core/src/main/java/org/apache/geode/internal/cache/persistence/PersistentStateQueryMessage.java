@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     implements MessageWithReply {
@@ -162,8 +163,9 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     regionPath = DataSerializer.readString(in);
     processorId = in.readInt();
     boolean hasId = in.readBoolean();
@@ -179,8 +181,9 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(regionPath, out);
     out.writeInt(processorId);
     out.writeBoolean(id != null);
@@ -230,8 +233,9 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean hasId = in.readBoolean();
       if (hasId) {
         myId = new PersistentMemberID();
@@ -257,8 +261,9 @@ public class PersistentStateQueryMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (myId == null) {
         out.writeBoolean(false);
       } else {

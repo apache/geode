@@ -36,6 +36,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl.CqNa
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.Sizeable;
 
 /**
@@ -270,7 +271,8 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    * @param out The output stream which the object should be written to.
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     ClientUpdateMessageImpl cum = (ClientUpdateMessageImpl) this.haContainer.get(this);
 
     // If the dispatcher sends the cum object to the client and removes it from
@@ -299,7 +301,8 @@ public class HAEventWrapper implements Conflatable, DataSerializableFixedID, Siz
    * @param in The input stream from which the object should be constructed.
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     if (DataSerializer.readPrimitiveBoolean(in)) {
       // Indicates that we have a ClientUpdateMessage along with the HAEW instance in inputstream.
       this.eventIdentifier = (EventID) DataSerializer.readObject(in);

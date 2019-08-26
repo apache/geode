@@ -26,6 +26,7 @@ import org.apache.geode.cache.lucene.internal.repository.IndexRepository;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Contains function arguments for text / lucene search
@@ -93,7 +94,8 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(limit);
     DataSerializer.writeObject(queryProvider, out);
     DataSerializer.writeObject(manager, out);
@@ -101,7 +103,8 @@ public class LuceneFunctionContext<C extends IndexResultCollector>
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     limit = in.readInt();
     queryProvider = DataSerializer.readObject(in);
     manager = DataSerializer.readObject(in);

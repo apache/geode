@@ -400,6 +400,7 @@ import org.apache.geode.internal.cache.wan.parallel.ParallelQueueRemovalMessage;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfileMessage;
 import org.apache.geode.management.internal.JmxManagerLocatorRequest;
@@ -431,12 +432,14 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException();
   }
 
@@ -1054,21 +1057,21 @@ public class DSFIDFactory implements DataSerializableFixedID {
   private static DataSerializableFixedID readDestroyOnDataStore(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = new DestroyRegionOnDataStoreMessage();
-    serializable.fromData(in);
+    serializable.fromData(in, null);
     return serializable;
   }
 
   private static DataSerializableFixedID readNullToken(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = (NullToken) IndexManager.NULL;
-    serializable.fromData(in);
+    serializable.fromData(in, null);
     return serializable;
   }
 
   private static DataSerializableFixedID readConfigurationResponse(DataInput in)
       throws IOException, ClassNotFoundException {
     DataSerializableFixedID serializable = new ConfigurationResponse();
-    serializable.fromData(in);
+    serializable.fromData(in, null);
     return serializable;
   }
 

@@ -23,6 +23,7 @@ import java.io.Serializable;
 import org.apache.geode.cache.query.QueryService;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * An UNDEFINED value is the result of accessing an attribute of a null-valued attribute. If you
@@ -57,13 +58,15 @@ public class Undefined implements DataSerializableFixedID, Comparable, Serializa
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // Serialized simply as a one-byte class id, as a class well known to
     // DataSerializer
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {}
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {}
 
   @Override
   public int compareTo(Object o) {

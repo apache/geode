@@ -41,6 +41,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This class represents a ConnectionProxy of the CacheClient
@@ -317,7 +318,8 @@ public class ClientProxyMembershipID
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     // if (this.transientPort == 0) {
     // InternalDistributedSystem.getLogger().warning(
     // String.format("%s",
@@ -329,7 +331,8 @@ public class ClientProxyMembershipID
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}

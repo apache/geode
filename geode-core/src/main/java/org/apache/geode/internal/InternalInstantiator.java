@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientInstantiatorMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.Part;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Contains the implementation of {@link org.apache.geode.Instantiator} registration and
@@ -807,8 +808,9 @@ public class InternalInstantiator {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeNonPrimitiveClassName(instantiatorClass.getName(), out);
       DataSerializer.writeNonPrimitiveClassName(instantiatedClass.getName(), out);
       out.writeInt(id);
@@ -825,9 +827,10 @@ public class InternalInstantiator {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
 
-      super.fromData(in);
+      super.fromData(in, context);
       instantiatorClassName = DataSerializer.readNonPrimitiveClassName(in);
       instantiatedClassName = DataSerializer.readNonPrimitiveClassName(in);
       if (CacheClientNotifier.getInstance() != null) {
@@ -917,15 +920,17 @@ public class InternalInstantiator {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
-      context = ClientProxyMembershipID.readCanonicalized(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
+      this.context = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
-      DataSerializer.writeObject(context, out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
+      DataSerializer.writeObject(this.context, out);
     }
   }
 

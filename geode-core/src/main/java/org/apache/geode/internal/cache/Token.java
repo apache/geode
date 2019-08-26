@@ -25,6 +25,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Internal tokens used as region values. These tokens are never seen from the public API.
@@ -145,10 +146,12 @@ public abstract class Token {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     public boolean isSerializedValue(byte[] value) {
       ByteBuffer buf = ByteBuffer.wrap(value);
@@ -202,10 +205,12 @@ public abstract class Token {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -233,10 +238,12 @@ public abstract class Token {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -264,10 +271,12 @@ public abstract class Token {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -295,10 +304,12 @@ public abstract class Token {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -345,10 +356,12 @@ public abstract class Token {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {}
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
-    public void toData(DataOutput out) throws IOException {}
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {}
 
     @Override
     public Version[] getSerializationVersions() {

@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Handles messaging to all members of a lock service for the purposes of recoverying from the loss
@@ -276,8 +277,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.serviceName = DataSerializer.readString(in);
       this.processorId = in.readInt();
       this.grantorSerialNumber = in.readInt();
@@ -286,8 +288,9 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.serviceName, out);
       out.writeInt(this.processorId);
       out.writeInt(this.grantorSerialNumber);
@@ -353,15 +356,17 @@ public class DLockRecoverGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.replyCode = in.readByte();
       this.heldLocks = (DLockRemoteToken[]) DataSerializer.readObjectArray(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(this.replyCode);
       DataSerializer.writeObjectArray(this.heldLocks, out);
     }

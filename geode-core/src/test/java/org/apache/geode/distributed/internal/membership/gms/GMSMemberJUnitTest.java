@@ -35,7 +35,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.test.junit.categories.SecurityTest;
 
@@ -189,22 +191,24 @@ public class GMSMemberJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     GMSMember member = new GMSMember();
     DataOutput dataOutput = new DataOutputStream(baos);
-    member.writeEssentialData(dataOutput);
+    SerializationContext context = InternalDataSerializer.getDSFIDSerializer()
+        .createSerializationContext(dataOutput);
+    member.writeEssentialData(dataOutput, context);
 
     // vmKind should be transmitted to a member with the current version
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInput dataInput = new DataInputStream(bais);
     GMSMember newMember = new GMSMember();
-    newMember.readEssentialData(dataInput);
+    newMember.readEssentialData(dataInput, context);
     assertEquals(member.getVmKind(), newMember.getVmKind());
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
     dataOutput = new HeapDataOutputStream(Version.GFE_90);
-    member.writeEssentialData(dataOutput);
+    member.writeEssentialData(dataOutput, context);
     bais = new ByteArrayInputStream(baos.toByteArray());
     dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
     newMember = new GMSMember();
-    newMember.readEssentialData(dataInput);
+    newMember.readEssentialData(dataInput, context);
     assertEquals(0, newMember.getVmKind());
   }
 

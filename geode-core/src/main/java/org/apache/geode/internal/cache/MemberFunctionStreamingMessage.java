@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
 import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class MemberFunctionStreamingMessage extends DistributionMessage
     implements TransactionMessage, MessageWithReply {
@@ -111,7 +112,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   public MemberFunctionStreamingMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   private TXStateProxy prepForTransaction(ClusterDistributionManager dm)
@@ -260,8 +261,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     short flags = in.readShort();
     if ((flags & HAS_PROCESSOR_ID) != 0) {
@@ -291,8 +293,9 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     short flags = 0;
     if (this.processorId != 0)

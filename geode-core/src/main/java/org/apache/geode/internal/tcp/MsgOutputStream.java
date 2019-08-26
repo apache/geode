@@ -20,9 +20,9 @@ import java.io.UTFDataFormatException;
 import java.nio.ByteBuffer;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * MsgOutputStream should no longer be used except in Connection to do the handshake. Otherwise
@@ -407,7 +407,7 @@ public class MsgOutputStream extends OutputStream implements ObjToByteArraySeria
     final int preArraySize = size();
     DataSerializer.writeObject(v, this);
     int arraySize = size() - preArraySize;
-    sizeBuf.put(sizePos, InternalDataSerializer.INT_ARRAY_LEN);
+    sizeBuf.put(sizePos, StaticSerialization.INT_ARRAY_LEN);
     sizeBuf.putInt(sizePos + 1, arraySize);
   }
 }

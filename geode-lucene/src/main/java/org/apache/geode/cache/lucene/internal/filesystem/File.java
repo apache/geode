@@ -26,6 +26,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A file that is stored in a Apache Geode region.
@@ -123,7 +124,8 @@ public class File implements DataSerializableFixedID {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     DataSerializer.writeString(name, out);
     out.writeLong(length);
     out.writeInt(chunks);
@@ -135,7 +137,8 @@ public class File implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     name = DataSerializer.readString(in);
     length = in.readLong();
     chunks = in.readInt();

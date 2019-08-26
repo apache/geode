@@ -31,6 +31,7 @@ import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHold
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to all other distribution manager when a distribution manager starts up.
@@ -206,9 +207,10 @@ public class StartupResponseMessage extends DistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
-    super.toData(out);
+    super.toData(out, context);
 
     out.writeInt(processorId);
     DataSerializer.writeString(this.rejectionMessage, out);
@@ -235,9 +237,10 @@ public class StartupResponseMessage extends DistributionMessage
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
 
-    super.fromData(in);
+    super.fromData(in, context);
 
     this.processorId = in.readInt();
     this.rejectionMessage = DataSerializer.readString(in);

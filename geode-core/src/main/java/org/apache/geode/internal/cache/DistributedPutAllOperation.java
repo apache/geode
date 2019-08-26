@@ -60,6 +60,7 @@ import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Handles distribution of a Region.putall operation.
@@ -397,9 +398,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
      * that the callers to this method are backwards compatible by creating toDataPreXX methods for
      * them even if they are not changed. <br>
      * Callers for this method are: <br>
-     * {@link PutAllMessage#toData(DataOutput)} <br>
-     * {@link PutAllPRMessage#toData(DataOutput)} <br>
-     * {@link RemotePutAllMessage#toData(DataOutput)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
      */
     public void toData(final DataOutput out) throws IOException {
       Object key = this.key;
@@ -664,7 +665,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     static final byte FLAG_TAG_WITH_NUMBER_ID = 3;
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       int flags = 0;
       boolean hasTags = false;
 
@@ -720,7 +722,8 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       int flags = in.readByte();
       boolean hasTags = (flags & 0x04) == 0x04;
       boolean persistent = (flags & 0x20) == 0x20;
@@ -764,12 +767,12 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-      toData(out);
+      toData(out, null);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     @Override
@@ -1196,9 +1199,10 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
 
-      super.fromData(in);
+      super.fromData(in, context);
       this.eventId = (EventID) DataSerializer.readObject(in);
       this.putAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.putAllData = new PutAllEntryData[this.putAllDataSize];
@@ -1225,8 +1229,9 @@ public class DistributedPutAllOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.eventId, out);
       InternalDataSerializer.writeUnsignedVL(this.putAllDataSize, out);
       if (this.putAllDataSize > 0) {

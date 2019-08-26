@@ -14,11 +14,11 @@
  */
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Logger;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireException;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.internal.LocatorStats;
@@ -47,9 +46,11 @@ import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedObjectInput;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 public class GMSLocator implements Locator {
 
@@ -334,8 +335,8 @@ public class GMSLocator implements Locator {
     }
     try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(viewFile))) {
       oos.writeInt(LOCATOR_FILE_STAMP);
-      oos.writeInt(Version.CURRENT_ORDINAL);
-      DataSerializer.writeObject(view, oos);
+      oos.writeInt(SerializationVersion.getCurrentVersion().ordinal());
+      services.getSerializer().writeDSFID(view, oos);
     } catch (Exception e) {
       logger.warn(
           "Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system",
@@ -413,23 +414,30 @@ public class GMSLocator implements Locator {
     }
 
     logger.info("Peer locator recovering from {}", file.getAbsolutePath());
-    try (ObjectInput ois = new ObjectInputStream(new FileInputStream(file))) {
-      if (ois.readInt() != LOCATOR_FILE_STAMP) {
+    try (FileInputStream fileInputStream = new FileInputStream(file);
+        ObjectInputStream ois = new ObjectInputStream(fileInputStream)) {
+      int stamp = ois.readInt();
+      if (stamp != LOCATOR_FILE_STAMP) {
         return false;
       }
 
-      ObjectInput input = ois;
-      int version = input.readInt();
-      if (version != Version.CURRENT_ORDINAL) {
-        Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
-        logger.info("Peer locator found that persistent view was written with {}", geodeVersion);
-        if (version > Version.CURRENT_ORDINAL) {
+      int version = ois.readInt();
+      int currentVersion = SerializationVersion.getCurrentVersion().ordinal();
+      DataInputStream input = new DataInputStream(fileInputStream);
+      if (version != currentVersion) {
+        SerializationVersion geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
+        logger.info("Peer locator found that persistent view was written with version ",
+            geodeVersion);
+        if (version > currentVersion) {
           return false;
         }
-        input = new VersionedObjectInput(input, geodeVersion);
+        input = new VersionedDataInputStream(ois, geodeVersion);
       }
 
-      recoveredView = DataSerializer.readObject(input);
+      // TBD - services isn't available when we recover from disk so this will throw an NPE
+      // recoveredView = (GMSMembershipView) services.getSerializer().readDSFID(input);
+      recoveredView = (GMSMembershipView) InternalDataSerializer.readObject(input);
+
       // this is not a valid view so it shouldn't have a usable Id
       recoveredView.setViewId(-1);
       List<GMSMember> members = new ArrayList<>(recoveredView.getMembers());
@@ -444,7 +452,7 @@ public class GMSLocator implements Locator {
       logger.info("Peer locator recovered membership is {}", recoveredView);
       return true;
 
-    } catch (Exception e) {
+    } catch (Throwable e) {
       String message =
           String.format("Unable to recover previous membership view from %s", file.toString());
       logger.warn(message, e);

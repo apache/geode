@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FunctionStreamingReplyMessage extends ReplyMessage {
   private static final Logger logger = LogService.getLogger();
@@ -81,8 +82,9 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.msgNum = in.readInt();
     this.lastMsg = in.readBoolean();
     this.processorId = in.readInt();
@@ -98,8 +100,9 @@ public class FunctionStreamingReplyMessage extends ReplyMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.msgNum);
     out.writeBoolean(this.lastMsg);
     out.writeInt(this.processorId);

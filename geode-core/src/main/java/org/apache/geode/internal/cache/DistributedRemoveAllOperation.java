@@ -40,11 +40,9 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.cache.ha.ThreadIdentifier;
-import org.apache.geode.internal.cache.partitioned.PutAllPRMessage;
 import org.apache.geode.internal.cache.partitioned.RemoveAllPRMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.cache.tier.sockets.VersionedObjectList;
-import org.apache.geode.internal.cache.tx.RemotePutAllMessage;
 import org.apache.geode.internal.cache.tx.RemoteRemoveAllMessage;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.cache.versions.DiskVersionTag;
@@ -55,6 +53,8 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Handles distribution of a Region.removeAll operation.
@@ -370,9 +370,9 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
      * that the callers to this method are backwards compatible by creating toDataPreXX methods for
      * them even if they are not changed. <br>
      * Callers for this method are: <br>
-     * {@link RemoveAllMessage#toData(DataOutput)} <br>
-     * {@link PutAllPRMessage#toData(DataOutput)} <br>
-     * {@link RemotePutAllMessage#toData(DataOutput)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
+     * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)} <br>
      */
     public void toData(final DataOutput out) throws IOException {
       Object key = this.key;
@@ -979,9 +979,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
 
-      super.fromData(in);
+      super.fromData(in, context);
       this.eventId = (EventID) DataSerializer.readObject(in);
       this.removeAllDataSize = (int) InternalDataSerializer.readUnsignedVL(in);
       this.removeAllData = new RemoveAllEntryData[this.removeAllDataSize];
@@ -1008,9 +1009,10 @@ public class DistributedRemoveAllOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
 
-      super.toData(out);
+      super.toData(out, context);
       DataSerializer.writeObject(this.eventId, out);
       InternalDataSerializer.writeUnsignedVL(this.removeAllDataSize, out);
       if (this.removeAllDataSize > 0) {

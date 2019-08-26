@@ -32,7 +32,6 @@ import org.apache.geode.cache.util.ObjectSizer;
 import org.apache.geode.cache.wan.EventSequenceID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CachedDeserializable;
 import org.apache.geode.internal.cache.CachedDeserializableFactory;
 import org.apache.geode.internal.cache.Conflatable;
@@ -53,6 +52,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.size.Sizeable;
 
@@ -65,8 +65,7 @@ import org.apache.geode.internal.size.Sizeable;
  *
  */
 public class GatewaySenderEventImpl
-    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable,
-    VersionedDataSerializable {
+    implements AsyncEvent, DataSerializableFixedID, Conflatable, Sizeable, Releasable {
   private static final long serialVersionUID = -5690172020872255422L;
 
   protected static final Object TOKEN_NULL = new Object();
@@ -690,12 +689,14 @@ public class GatewaySenderEventImpl
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_9_0_0(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    toDataPre_GEODE_1_9_0_0(out, context);
     DataSerializer.writeBoolean(this.isConcurrencyConflict, out);
   }
 
-  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
     // Make sure we are initialized before we serialize.
     initialize();
     out.writeShort(VERSION);
@@ -720,14 +721,16 @@ public class GatewaySenderEventImpl
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_9_0_0(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_9_0_0(in, context);
     if (version >= Version.GEODE_1_9_0.ordinal()) {
       this.isConcurrencyConflict = DataSerializer.readBoolean(in);
     }
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
     version = in.readShort();
     this.isInitialized = true;
     this.action = in.readInt();

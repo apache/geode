@@ -65,6 +65,7 @@ import org.apache.geode.internal.cache.control.MemoryThresholds;
 import org.apache.geode.internal.cache.control.ResourceAdvisor;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RegionAdvisor extends CacheDistributionAdvisor {
   private static final Logger logger = LogService.getLogger();
@@ -549,8 +550,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       localMaxMemory = in.readInt();
       isDataStore = localMaxMemory > 0;
       fixedPAttrs = DataSerializer.readObject(in);
@@ -558,8 +560,9 @@ public class RegionAdvisor extends CacheDistributionAdvisor {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(localMaxMemory);
       DataSerializer.writeObject(fixedPAttrs, out);
       out.writeInt(shutDownAllStatus);

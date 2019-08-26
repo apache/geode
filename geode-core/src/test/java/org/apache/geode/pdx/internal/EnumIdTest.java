@@ -111,14 +111,14 @@ public class EnumIdTest {
     final EnumId before = new EnumId(ID);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
     DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-    before.toData(dataOutputStream);
+    before.toData(dataOutputStream, null);
     dataOutputStream.close();
 
     final EnumId after = new EnumId();
     ByteArrayInputStream byteArrayInputStream =
         new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    after.fromData(dataInputStream);
+    after.fromData(dataInputStream, null);
 
     assertEquals(before.intValue(), after.intValue());
   }

@@ -56,7 +56,7 @@ public class LocatorStatusResponseJUnitTest {
 
     assertNotNull(expectedResponse);
 
-    expectedResponse.toData(new DataOutputStream(byteStream));
+    expectedResponse.toData(new DataOutputStream(byteStream), null);
 
     final byte[] bytes = byteStream.toByteArray();
 
@@ -69,7 +69,7 @@ public class LocatorStatusResponseJUnitTest {
     assertNotSame(expectedResponse, actualResponse);
     assertFalse(actualResponse.equals(expectedResponse));
 
-    actualResponse.fromData(new DataInputStream(new ByteArrayInputStream(bytes)));
+    actualResponse.fromData(new DataInputStream(new ByteArrayInputStream(bytes)), null);
 
     assertEquals(expectedResponse, actualResponse);
   }

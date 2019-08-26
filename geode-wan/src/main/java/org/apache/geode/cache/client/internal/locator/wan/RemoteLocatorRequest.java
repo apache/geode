@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class RemoteLocatorRequest implements DataSerializableFixedID {
   private int distributedSystemId;
@@ -33,12 +34,14 @@ public class RemoteLocatorRequest implements DataSerializableFixedID {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.distributedSystemId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.distributedSystemId);
   }
 

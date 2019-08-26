@@ -22,13 +22,12 @@ import java.net.InetAddress;
 
 import org.jgroups.util.UUID;
 
-import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.VisibleForTesting;
-import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 
 /**
  * GMSMember is the membership identifier class for Group Membership Services.
@@ -59,7 +58,7 @@ public class GMSMember implements DataSerializableFixedID {
   private int directPort;
   private String name;
   private String[] groups;
-  private short versionOrdinal = Version.CURRENT_ORDINAL;
+  private short versionOrdinal = SerializationVersion.currentVersion.ordinal();
   private long uuidLSBs;
   private long uuidMSBs;
   private String durableId;
@@ -75,7 +74,7 @@ public class GMSMember implements DataSerializableFixedID {
   public GMSMember() {}
 
   @VisibleForTesting
-  public GMSMember(String localhost, int udpPort, Version version) {
+  public GMSMember(String localhost, int udpPort, SerializationVersion version) {
     this.hostName = localhost;
     this.inetAddr = SocketCreator.toInetAddress(localhost);
     this.udpPort = udpPort;
@@ -97,7 +96,7 @@ public class GMSMember implements DataSerializableFixedID {
    */
   @VisibleForTesting
   public GMSMember(String i, int p) {
-    this(i, p, Version.CURRENT);
+    this(i, p, SerializationVersion.currentVersion);
   }
 
   /**
@@ -432,7 +431,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
 
-  public void setVersion(Version v) {
+  public void setVersion(SerializationVersion v) {
     this.versionOrdinal = v.ordinal();
   }
 
@@ -473,7 +472,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   @Override
-  public Version[] getSerializationVersions() {
+  public SerializationVersion[] getSerializationVersions() {
     return null;
   }
 
@@ -489,11 +488,12 @@ public class GMSMember implements DataSerializableFixedID {
   static final int LONER_VM_TYPE = 13; // from ClusterDistributionManager
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    DataSerializer.writeInetAddress(getInetAddress(), out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    StaticSerialization.writeInetAddress(getInetAddress(), out);
     out.writeInt(getPort());
 
-    DataSerializer.writeString(hostName, out);
+    StaticSerialization.writeString(hostName, out);
 
     int flags = 0;
     if (isNetworkPartitionDetectionEnabled())
@@ -510,26 +510,27 @@ public class GMSMember implements DataSerializableFixedID {
     out.writeInt(getProcessId());
     int vmKind = getVmKind();
     out.writeByte(vmKind);
-    DataSerializer.writeStringArray(getGroups(), out);
+    StaticSerialization.writeStringArray(getGroups(), out);
 
-    DataSerializer.writeString(getName(), out);
+    StaticSerialization.writeString(getName(), out);
     if (vmKind == LONER_VM_TYPE) {
-      DataSerializer.writeString("", out);
+      StaticSerialization.writeString("", out);
     } else { // added in 6.5 for unique identifiers in P2P
-      DataSerializer.writeString(String.valueOf(getVmViewId()), out);
+      StaticSerialization.writeString(String.valueOf(getVmViewId()), out);
     }
-    DataSerializer
+    StaticSerialization
         .writeString(durableId == null ? "" : durableId, out);
-    DataSerializer.writeInteger(durableId == null ? 300 : durableTimeout, out);
+    out.writeInt(durableId == null ? 300 : durableTimeout);
 
     SerializationVersion.writeOrdinal(out, versionOrdinal, true);
 
-    if (versionOrdinal >= Version.GFE_90.ordinal()) {
+    if (versionOrdinal >= SerializationVersion.GFE_90_ORDINAL) {
       writeAdditionalData(out);
     }
   }
 
-  public void writeEssentialData(DataOutput out) throws IOException {
+  public void writeEssentialData(DataOutput out,
+      SerializationContext context) throws IOException {
     SerializationVersion.writeOrdinal(out, this.versionOrdinal, true);
 
     int flags = 0;
@@ -539,23 +540,23 @@ public class GMSMember implements DataSerializableFixedID {
       flags |= PREFERRED_FOR_COORD_BIT;
     out.writeShort(flags);
 
-    DataSerializer.writeInetAddress(inetAddr, out);
+    StaticSerialization.writeInetAddress(inetAddr, out);
     out.writeInt(udpPort);
     out.writeInt(vmViewId);
     out.writeLong(uuidMSBs);
     out.writeLong(uuidLSBs);
-    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(
-        Version.GEODE_1_2_0) >= 0) {
+    if (context.getSerializationVersion().ordinal() >= SerializationVersion.GEODE_1_2_0_ORDINAL) {
       out.writeByte(vmKind);
     }
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    inetAddr = DataSerializer.readInetAddress(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    inetAddr = StaticSerialization.readInetAddress(in);
     udpPort = in.readInt();
 
-    this.hostName = DataSerializer.readString(in);
+    this.hostName = StaticSerialization.readString(in);
 
     int flags = in.readUnsignedByte();
     preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
@@ -564,39 +565,37 @@ public class GMSMember implements DataSerializableFixedID {
     directPort = in.readInt();
     processId = in.readInt();
     vmKind = (byte) in.readUnsignedByte();
-    groups = DataSerializer.readStringArray(in);
+    groups = StaticSerialization.readStringArray(in);
     vmViewId = -1;
 
-    name = DataSerializer.readString(in);
+    name = StaticSerialization.readString(in);
     if (vmKind == LONER_DM_TYPE) {
-      DataSerializer.readString(in);
+      StaticSerialization.readString(in);
     } else {
-      String str = DataSerializer.readString(in);
+      String str = StaticSerialization.readString(in);
       if (str != null) { // backward compatibility from earlier than 6.5
         vmViewId = Integer.parseInt(str);
       }
     }
 
-    durableId = DataSerializer.readString(in);
+    durableId = StaticSerialization.readString(in);
     durableTimeout = in.readInt();
 
-    versionOrdinal = readVersion(flags, in);
+    versionOrdinal = readVersion(flags, in, context);
 
-    if (versionOrdinal >= Version.GFE_90.ordinal()) {
+    if (versionOrdinal >= SerializationVersion.GFE_90_ORDINAL) {
       readAdditionalData(in);
     }
   }
 
-  private short readVersion(int flags, DataInput in) throws IOException {
+  private short readVersion(int flags, DataInput in,
+      SerializationContext context) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
       return SerializationVersion.readOrdinal(in);
     } else {
       // prior to 7.1 member IDs did not serialize their version information
-      Version v = InternalDataSerializer.getVersionForDataStreamOrNull(in);
-      if (v != null) {
-        return v.ordinal();
-      }
-      return Version.CURRENT_ORDINAL;
+      SerializationVersion v = context.getSerializationVersion();
+      return v.ordinal();
     }
   }
 
@@ -608,14 +607,15 @@ public class GMSMember implements DataSerializableFixedID {
     this.hostName = hostName;
   }
 
-  public void readEssentialData(DataInput in) throws IOException, ClassNotFoundException {
+  public void readEssentialData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     this.versionOrdinal = SerializationVersion.readOrdinal(in);
 
     int flags = in.readShort();
     this.networkPartitionDetectionEnabled = (flags & NPD_ENABLED_BIT) != 0;
     this.preferredForCoordinator = (flags & PREFERRED_FOR_COORD_BIT) != 0;
 
-    this.inetAddr = DataSerializer.readInetAddress(in);
+    this.inetAddr = StaticSerialization.readInetAddress(in);
     if (this.inetAddr != null) {
       this.hostName =
           SocketCreator.resolve_dns ? SocketCreator.getHostName(inetAddr)
@@ -625,8 +625,7 @@ public class GMSMember implements DataSerializableFixedID {
     this.vmViewId = in.readInt();
     this.uuidMSBs = in.readLong();
     this.uuidLSBs = in.readLong();
-    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(
-        Version.GEODE_1_2_0) >= 0) {
+    if (context.getSerializationVersion().ordinal() >= SerializationVersion.GEODE_1_2_0_ORDINAL) {
       this.vmKind = in.readByte();
     }
     this.isPartial = true;

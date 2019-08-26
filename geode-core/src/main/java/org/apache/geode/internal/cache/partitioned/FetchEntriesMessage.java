@@ -62,6 +62,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.OffHeapHelper;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
 public class FetchEntriesMessage extends PartitionMessage {
@@ -140,14 +141,16 @@ public class FetchEntriesMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
   }
 
@@ -375,8 +378,9 @@ public class FetchEntriesMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.bucketId);
       out.writeInt(this.seriesNum);
       out.writeInt(this.msgNum);
@@ -392,8 +396,9 @@ public class FetchEntriesMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.bucketId = in.readInt();
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();

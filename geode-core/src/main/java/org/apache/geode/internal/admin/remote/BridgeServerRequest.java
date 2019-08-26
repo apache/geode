@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a VM that hosts a cache to perform an administrative operation on one
@@ -170,8 +171,9 @@ public class BridgeServerRequest extends AdminRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.cacheId);
     out.writeInt(this.operation);
     DataSerializer.writeObject(this.bridgeInfo, out);
@@ -179,8 +181,9 @@ public class BridgeServerRequest extends AdminRequest {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.cacheId = in.readInt();
     this.operation = in.readInt();
     this.bridgeInfo = (RemoteBridgeServer) DataSerializer.readObject(in);

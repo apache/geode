@@ -24,6 +24,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
   private byte[][] serializedDataSerializer;
@@ -157,10 +158,11 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    * Writes an object to a <code>Datautput</code>.
    *
    * @throws IOException If this serializer cannot write an object to <code>out</code>.
-   * @see #fromData
+   * @see DataSerializableFixedID#fromData
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
     out.writeByte(_operation.getEventCode());
     int dataSerializerCount = this.serializedDataSerializer.length;
@@ -177,10 +179,11 @@ public class ClientDataSerializerMessage extends ClientUpdateMessageImpl {
    *
    * @throws IOException If this serializer cannot read an object from <code>in</code>.
    * @throws ClassNotFoundException If the class for an object being restored cannot be found.
-   * @see #toData
+   * @see DataSerializableFixedID#toData
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int dataSerializerCount = in.readInt();

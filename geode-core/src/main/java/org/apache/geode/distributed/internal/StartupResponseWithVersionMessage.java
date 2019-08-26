@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * @since GemFire 6.6.2
@@ -82,8 +83,9 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.version, out);
     StartupMessageData data = new StartupMessageData();
     data.writeHostedLocators(this.hostedLocators);
@@ -92,8 +94,9 @@ public class StartupResponseWithVersionMessage extends StartupResponseMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.version = DataSerializer.readString(in);
     StartupMessageData data = new StartupMessageData();
     data.readFrom(in);

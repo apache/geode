@@ -75,6 +75,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * TXCommitMessage is the message that contains all the information that needs to be distributed, on
@@ -799,7 +800,8 @@ public class TXCommitMessage extends PooledDistributionMessage
    */
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     int pId = in.readInt();
 
     if (isAckRequired()) {
@@ -866,7 +868,8 @@ public class TXCommitMessage extends PooledDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeInt(this.processorId);
     InternalDataSerializer.invokeToData(this.txIdent, out);
     {
@@ -1735,12 +1738,14 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       InternalDataSerializer.invokeToData(this.lockId, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.lockId = TXLockIdImpl.createFromData(in);
       Assert.assertTrue(this.lockId != null,
           "CommitProcessForLockIdMessage must have a non-null lockid!");
@@ -1788,12 +1793,14 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       InternalDataSerializer.invokeToData(this.txId, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.txId = TXId.createFromData(in);
       Assert.assertTrue(this.txId != null,
           "CommitProcessMessageForTXId must have a non-null txid!");
@@ -1866,7 +1873,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DataSerializer.writeObject(this.trackerKey, out);
       out.writeInt(this.processorId);
     }
@@ -1877,7 +1885,8 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.trackerKey = DataSerializer.readObject(in);
       this.processorId = in.readInt();
     }
@@ -1915,14 +1924,16 @@ public class TXCommitMessage extends PooledDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.wasReceived = in.readBoolean();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.wasReceived);
     }
 

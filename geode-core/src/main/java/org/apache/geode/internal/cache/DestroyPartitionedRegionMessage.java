@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is sent for two purposes <br>
@@ -221,14 +222,16 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    fromDataPre_GEODE_1_9_0_0(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    fromDataPre_GEODE_1_9_0_0(in, context);
     this.eventID = DataSerializer.readObject(in);
 
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+      throws IOException, ClassNotFoundException {
+    super.fromData(in, null);
     this.cbArg = DataSerializer.readObject(in);
     this.op = Operation.fromOrdinal(in.readByte());
     this.prSerial = in.readInt();
@@ -240,13 +243,15 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    toDataPre_GEODE_1_9_0_0(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    toDataPre_GEODE_1_9_0_0(out, context);
     DataSerializer.writeObject(this.eventID, out);
   }
 
-  public void toDataPre_GEODE_1_9_0_0(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
+      throws IOException {
+    super.toData(out, null);
     DataSerializer.writeObject(this.cbArg, out);
     out.writeByte(this.op.ordinal);
     out.writeInt(this.prSerial);

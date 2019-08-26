@@ -27,6 +27,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.ForceReattemptException;
 import org.apache.geode.internal.cache.PartitionedRegion;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is sent to a member to make it attempt to become primary. This message is sent at
@@ -73,7 +74,7 @@ public class EndBucketCreationMessage extends PartitionMessage {
   }
 
   public EndBucketCreationMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
@@ -124,16 +125,18 @@ public class EndBucketCreationMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.bucketId = in.readInt();
     newPrimary = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(newPrimary, in);
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.bucketId);
     InternalDataSerializer.invokeToData(newPrimary, out);
   }

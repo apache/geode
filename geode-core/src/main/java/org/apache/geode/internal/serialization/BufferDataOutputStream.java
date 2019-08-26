@@ -14,6 +14,7 @@
  */
 package org.apache.geode.internal.serialization;
 
+import java.io.DataOutput;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,7 +24,8 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BufferDataOutputStream extends OutputStream implements VersionedDataStream {
+public class BufferDataOutputStream extends OutputStream implements VersionedDataStream,
+    DataOutput {
   /**
    * We set "doNotCopy" to prevent wasting time by copying bytes. But to do this we create either a
    * HeapByteBuffer to DirectByteBuffer to reference the byte array or off-heap memory. The
@@ -55,8 +57,12 @@ public class BufferDataOutputStream extends OutputStream implements VersionedDat
   private Error expansionException = null;
   private int memoPosition;
 
-  public BufferDataOutputStream(int allocSize, SerializationVersion version) {
-    this(allocSize, version, false);
+  public BufferDataOutputStream(int initialCapacity, SerializationVersion version) {
+    this(initialCapacity, version, false);
+  }
+
+  public BufferDataOutputStream(SerializationVersion version) {
+    this(INITIAL_CAPACITY, version, false);
   }
 
   /**

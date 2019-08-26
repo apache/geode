@@ -51,6 +51,7 @@ import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistTXPrecommitMessage extends TXMessage {
 
@@ -141,14 +142,16 @@ public class DistTXPrecommitMessage extends TXMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeArrayList((ArrayList<?>) secondaryTransactionalOperations, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.secondaryTransactionalOperations = DataSerializer.readArrayList(in);
   }
 
@@ -183,7 +186,7 @@ public class DistTXPrecommitMessage extends TXMessage {
     public DistTXPrecommitReplyMessage() {}
 
     public DistTXPrecommitReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     private DistTXPrecommitReplyMessage(int processorId, DistTxPrecommitResponse val) {
@@ -245,14 +248,16 @@ public class DistTXPrecommitMessage extends TXMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(commitResponse, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.commitResponse = (DistTxPrecommitResponse) DataSerializer.readObject(in);
     }
 
@@ -486,13 +491,15 @@ public class DistTXPrecommitMessage extends TXMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DataSerializer.writeBoolean(commitState, out);
       DataSerializer.writeArrayList(distTxEventList, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.commitState = DataSerializer.readBoolean(in);
       this.distTxEventList = DataSerializer.readArrayList(in);
     }
