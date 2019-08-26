@@ -16,6 +16,7 @@
 package org.apache.geode.management.internal.configuration.converters;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.File;
 import java.net.URL;
@@ -59,7 +60,7 @@ public class RegionConverterTest {
   @Test
   public void fromXmlWithAll() throws Exception {
     config.setName("test");
-    config.setRegionAttributes(converter.createRegionAttributesByType("REPLICATE"));
+    config.setRegionAttributes(converter.createRegionAttributesByType("PARTITION"));
 
     RegionAttributesType attributesType = config.getRegionAttributes();
     attributesType.setValueConstraint("foo");
@@ -67,12 +68,18 @@ public class RegionConverterTest {
     attributesType.setDiskStoreName("diskstore");
     config.setRegionAttributes(attributesType);
 
+    RegionAttributesType.PartitionAttributes partitionAttributes =
+        new RegionAttributesType.PartitionAttributes();
+    partitionAttributes.setRedundantCopies("2");
+    attributesType.setPartitionAttributes(partitionAttributes);
+
     Region region = converter.fromXmlObject(config);
     assertThat(region.getName()).isEqualTo("test");
-    assertThat(region.getType()).isEqualTo(RegionType.REPLICATE);
+    assertThat(region.getType()).isEqualTo(RegionType.PARTITION);
     assertThat(region.getValueConstraint()).isEqualTo("foo");
     assertThat(region.getKeyConstraint()).isEqualTo("bar");
     assertThat(region.getDiskStoreName()).isEqualTo("diskstore");
+    assertThat(region.getRedundantCopies()).isEqualTo(2);
   }
 
   @Test
@@ -92,18 +99,20 @@ public class RegionConverterTest {
   @Test
   public void fromConfig() throws Exception {
     region.setName("test");
-    region.setType(RegionType.REPLICATE);
+    region.setType(RegionType.PARTITION);
     region.setValueConstraint("foo");
     region.setKeyConstraint("bar");
     region.setDiskStoreName("diskstore");
+    region.setRedundantCopies(2);
     RegionConfig config = converter.fromConfigObject(region);
     assertThat(config.getName()).isEqualTo("test");
-    assertThat(config.getType()).isEqualTo("REPLICATE");
+    assertThat(config.getType()).isEqualTo("PARTITION");
     RegionAttributesType regionAttributes = config.getRegionAttributes();
-    assertThat(regionAttributes.getDataPolicy()).isEqualTo(RegionAttributesDataPolicy.REPLICATE);
+    assertThat(regionAttributes.getDataPolicy()).isEqualTo(RegionAttributesDataPolicy.PARTITION);
     assertThat(regionAttributes.getKeyConstraint()).isEqualTo("bar");
     assertThat(regionAttributes.getValueConstraint()).isEqualTo("foo");
     assertThat(regionAttributes.getDiskStoreName()).isEqualTo("diskstore");
+    assertThat(regionAttributes.getPartitionAttributes().getRedundantCopies()).isEqualTo("2");
   }
 
   @Test
@@ -126,41 +135,54 @@ public class RegionConverterTest {
 
   @Test
   public void getRegionType() throws Exception {
-    assertThat(converter.getRegionType(null)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType("ABC", null))
+        .isEqualTo(RegionType.UNSUPPORTED);
+
+    assertThat(converter.getRegionType("PARTITION_REDUNDANT", null))
+        .isEqualTo(RegionType.PARTITION_REDUNDANT);
+    assertThat(converter.getRegionType(null, null)).isEqualTo(RegionType.UNSUPPORTED);
 
     RegionAttributesType regionAttributes = new RegionAttributesType();
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.PARTITION);
 
     RegionAttributesType.PartitionAttributes pAttributes =
         new RegionAttributesType.PartitionAttributes();
     pAttributes.setLocalMaxMemory("20000");
     regionAttributes.setPartitionAttributes(pAttributes);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.PARTITION);
 
     pAttributes.setLocalMaxMemory("0");
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.PARTITION_PROXY);
+    assertThat(converter.getRegionType(null, regionAttributes))
+        .isEqualTo(RegionType.PARTITION_PROXY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-    assertThat(converter.getRegionType(regionAttributes))
+    assertThat(converter.getRegionType(null, regionAttributes))
         .isEqualTo(RegionType.PARTITION_PERSISTENT);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.REPLICATE);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.REPLICATE);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-    assertThat(converter.getRegionType(regionAttributes))
+    assertThat(converter.getRegionType(null, regionAttributes))
         .isEqualTo(RegionType.REPLICATE_PERSISTENT);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.REPLICATE_PROXY);
+    assertThat(converter.getRegionType(null, regionAttributes))
+        .isEqualTo(RegionType.REPLICATE_PROXY);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.NORMAL);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
 
     regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PRELOADED);
-    assertThat(converter.getRegionType(regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+    assertThat(converter.getRegionType(null, regionAttributes)).isEqualTo(RegionType.UNSUPPORTED);
+  }
+
+  @Test
+  public void createRegionAttributesByInvalidType() throws Exception {
+    assertThatThrownBy(() -> converter.createRegionAttributesByType("abc"))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

@@ -110,4 +110,53 @@ public class RegionConfigValidatorTest {
         .hasMessageContaining(
             "Region type is unsupported.");
   }
+
+  @Test
+  public void invalidRedundancy() throws Exception {
+    config.setName("test");
+    config.setType(RegionType.PARTITION_REDUNDANT);
+    config.setRedundantCopies(0);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "redundantCopies cannot be 0");
+  }
+
+  @Test
+  public void invalidRedundancy1() throws Exception {
+    config.setName("test");
+    config.setRedundantCopies(0);
+    config.setType(RegionType.PARTITION_REDUNDANT);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "redundantCopies cannot be 0");
+
+    config.setRedundantCopies(-1);
+    config.setType(RegionType.PARTITION_REDUNDANT);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "redundantCopies cannot be less than 0 or bigger than 3.");
+
+    config.setRedundantCopies(4);
+    config.setType(RegionType.PARTITION_REDUNDANT);
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "redundantCopies cannot be less than 0 or bigger than 3.");
+
+  }
+
+  @Test
+  public void replicateWithRedundancy() throws Exception {
+    config.setName("test");
+    config.setType(RegionType.REPLICATE);
+    config.setRedundantCopies(2);
+
+    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
+        IllegalArgumentException.class)
+        .hasMessageContaining(
+            "redundantCopies can only be set with PARTITION regions.");
+  }
 }

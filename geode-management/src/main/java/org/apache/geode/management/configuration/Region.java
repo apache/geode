@@ -18,7 +18,6 @@ package org.apache.geode.management.configuration;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionType;
@@ -94,14 +93,16 @@ public class Region extends CacheElement implements RestfulEndpoint,
 
   public void setType(RegionType type) {
     this.type = type;
-
   }
 
-  public int getRedundantCopies() {
+  public Integer getRedundantCopies() {
+    if (type.withRedundant() && redundantCopies == null) {
+      return 1;
+    }
     return redundantCopies;
   }
 
-  public void setRedundantCopies(int redundantCopies) {
+  public void setRedundantCopies(Integer redundantCopies) {
     this.redundantCopies = redundantCopies;
   }
 

@@ -85,10 +85,10 @@ public class RegionTest {
     regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_PERSISTENT);
+    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_REDUNDANT_PERSISTENT);
 
     String resultJson = mapper.writeValueAsString(regionConfig);
-    assertThat(resultJson).contains("\"type\":\"PARTITION_PERSISTENT\"")
+    assertThat(resultJson).contains("\"type\":\"PARTITION_REDUNDANT_PERSISTENT\"")
         .contains("\"redundantCopies\":1");
 
     Region resultRegion = mapper.readValue(resultJson, Region.class);
@@ -104,6 +104,23 @@ public class RegionTest {
     regionConfig = mapper.readValue(json, Region.class);
     assertThat(regionConfig.getName()).isEqualTo("test");
     assertThat(regionConfig.getRedundantCopies()).isEqualTo(0);
-    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_PERSISTENT);
+    assertThat(regionConfig.getType()).isEqualTo(RegionType.PARTITION_REDUNDANT_PERSISTENT);
   }
+
+  @Test
+  public void redundancySetter() throws Exception {
+    regionConfig.setType(RegionType.PARTITION_REDUNDANT);
+    regionConfig.setRedundantCopies(3);
+    assertThat(regionConfig.getRedundantCopies()).isEqualTo(3);
+  }
+
+  @Test
+  public void redundant() throws Exception {
+    regionConfig.setType(RegionType.PARTITION_REDUNDANT);
+    assertThat(regionConfig.getRedundantCopies()).isEqualTo(1);
+
+    regionConfig.setType(RegionType.PARTITION);
+    assertThat(regionConfig.getRedundantCopies()).isNull();
+  }
+
 }

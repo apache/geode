@@ -38,25 +38,30 @@ public enum RegionType {
   /**
    * @deprecated use PARTITION and set the redundancy level to 1
    */
+  @Deprecated
   PARTITION_REDUNDANT,
   /**
    * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1
    */
+  @Deprecated
   PARTITION_REDUNDANT_PERSISTENT,
   /**
    * @deprecated use PARTITION and set the evictionAction to OVERFLOW_TO_DISK
    */
   // PARTITION_OVERFLOW,
   /**
-   * @deprecated use PARTITION and set the redundancy level to 1, and set the evictionAction to OVERFLOW_TO_DISK
+   * @deprecated use PARTITION and set the redundancy level to 1, and set the evictionAction to
+   *             OVERFLOW_TO_DISK
    */
+
   // PARTITION_REDUNDANT_OVERFLOW,
   /**
    * @deprecated use PARTITION_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
    */
   // PARTITION_PERSISTENT_OVERFLOW,
   /**
-   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1 and set the evictionAction to OVERFLOW_TO_DISK
+   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1 and set the
+   *             evictionAction to OVERFLOW_TO_DISK
    */
   // PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
   /**
@@ -64,12 +69,14 @@ public enum RegionType {
    */
   // PARTITION_HEAP_LRU,
   /**
-   * @deprecated use PARTITION and set the redundancy level to 1 and set the evictionAction to LOCAL_DESTROY
+   * @deprecated use PARTITION and set the redundancy level to 1 and set the evictionAction to
+   *             LOCAL_DESTROY
    */
   // PARTITION_REDUNDANT_HEAP_LRU,
   /**
    * @deprecated use PARTITION_PROXY and set the redundancy level to 1
    */
+  @Deprecated
   PARTITION_PROXY_REDUNDANT;
   /**
    * @deprecated use REPLICATE and set the evictionAction to OVERFLOW_TO_DISK
@@ -94,6 +101,10 @@ public enum RegionType {
 
   public boolean withReplicate() {
     return name().contains("REPLICATE");
+  }
+
+  public boolean withPartition() {
+    return name().contains("PARTITION");
   }
 
   public boolean withRedundant() {

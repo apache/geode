@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
-import java.util.Optional;
 
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
@@ -60,6 +59,13 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
     region.setRegionAttributes(attributesType);
+
+    if (configObject.getRedundantCopies() != null) {
+      RegionAttributesType.PartitionAttributes partitionAttributes =
+          new RegionAttributesType.PartitionAttributes();
+      partitionAttributes.setRedundantCopies(configObject.getRedundantCopies().toString());
+      attributesType.setPartitionAttributes(partitionAttributes);
+    }
     return region;
   }
 
@@ -76,8 +82,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     if (refid != null) {
       try {
         return RegionType.valueOf(refid);
-      }
-      catch(Exception e){
+      } catch (Exception e) {
         return RegionType.UNSUPPORTED;
       }
     }
@@ -96,7 +101,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       case PARTITION: {
         RegionAttributesType.PartitionAttributes partitionAttributes =
             regionAttributes.getPartitionAttributes();
-        if (partitionAttributes != null && partitionAttributes.getLocalMaxMemory().equals("0")) {
+        if (partitionAttributes != null && "0".equals(partitionAttributes.getLocalMaxMemory())) {
           return RegionType.PARTITION_PROXY;
         }
         return RegionType.PARTITION;
