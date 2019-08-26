@@ -784,6 +784,9 @@ public class PeerTypeRegistration implements TypeRegistration {
 
   @Override
   public int getLocalSize() {
+    if (null == idToType) {
+      return 0;
+    }
     return idToType.size();
   }
 }
