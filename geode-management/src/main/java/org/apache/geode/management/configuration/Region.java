@@ -96,7 +96,7 @@ public class Region extends CacheElement implements RestfulEndpoint,
   }
 
   public Integer getRedundantCopies() {
-    if (type.withRedundant() && redundantCopies == null) {
+    if (type != null && type.withRedundant() && redundantCopies == null) {
       return 1;
     }
     return redundantCopies;
