@@ -16,6 +16,8 @@
 package org.apache.geode.management.internal.configuration.converters;
 
 
+import java.util.Optional;
+
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
@@ -36,11 +38,10 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
       region.setDiskStoreName(regionAttributes.getDiskStoreName());
       region.setKeyConstraint(regionAttributes.getKeyConstraint());
       region.setValueConstraint(regionAttributes.getValueConstraint());
-      RegionAttributesType.PartitionAttributes partitionAttributes =
-          regionAttributes.getPartitionAttributes();
-      if (partitionAttributes != null && partitionAttributes.getRedundantCopies() != null) {
-        region.setRedundantCopies(Integer.parseInt(partitionAttributes.getRedundantCopies()));
-      }
+      Optional.ofNullable(regionAttributes.getPartitionAttributes())
+          .flatMap(
+              partitionAttributes -> Optional.ofNullable(partitionAttributes.getRedundantCopies()))
+          .ifPresent(copies -> region.setRedundantCopies(Integer.parseInt(copies)));
     }
     return region;
   }
@@ -75,7 +76,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
    * to determine if it's a PARTITION type or a PARTITION_PROXY type.
    *
    * we do our best to infer the type from the existing xml attributes. For data
-   * policies not supported by management rest api (for example, NORMAL and RELOADED)
+   * policies not supported by management rest api (for example, NORMAL and PRELOADED)
    * it will show as UNSUPPORTED
    */
   public RegionType getRegionType(String refid, RegionAttributesType regionAttributes) {
@@ -93,7 +94,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     }
     RegionAttributesDataPolicy dataPolicy = regionAttributes.getDataPolicy();
 
-    if (regionAttributes.getDataPolicy() == null) {
+    if (dataPolicy == null) {
       return RegionType.UNSUPPORTED;
     }
 
