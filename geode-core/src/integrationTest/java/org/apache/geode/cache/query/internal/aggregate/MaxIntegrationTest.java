@@ -40,7 +40,7 @@ import org.apache.geode.cache.query.data.PortfolioPdx;
 import org.apache.geode.test.junit.categories.OQLQueryTest;
 
 @Category(OQLQueryTest.class)
-public class MaxFunctionIntegrationTest extends AggregateFunctionQueryBaseIntegrationTest {
+public class MaxIntegrationTest extends AggregateFunctionQueryBaseIntegrationTest {
   private Map<String, Comparable> queries = new HashMap<>();
   private Map<String, Comparable> equiJoinQueries = new HashMap<>();
 
