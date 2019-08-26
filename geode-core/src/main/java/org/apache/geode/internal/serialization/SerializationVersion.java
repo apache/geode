@@ -26,7 +26,7 @@ public class SerializationVersion implements Comparable<SerializationVersion> {
   // We need access to them in GMS for backward-compatibility
   public static final byte GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
   public static final byte GEODE_1_2_0_ORDINAL = 65;
-  public static final byte GEODE_1_3_0_ORDINAL = 70;
+  public static final byte GEODE_1_4_0_ORDINAL = 75;
   public static final byte GEODE_1_10_0_ORDINAL = 105;
 
   /**
