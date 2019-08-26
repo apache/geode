@@ -290,8 +290,10 @@ dependencies {
   implementation('org.eclipse.jetty:jetty-webapp') {
     ext.optional = true
   }
-  //Jetty is used by the http service, which is used for the developer and management rest APIs
-  implementation('org.eclipse.jetty:jetty-server')
+//  Jetty is used by the http service, which is used for the developer and management rest APIs
+  implementation('org.eclipse.jetty:jetty-server') {
+    ext.optional = true
+  }
 
   //Spring core is used by the the gfsh cli
   implementation('org.springframework:spring-core') {
