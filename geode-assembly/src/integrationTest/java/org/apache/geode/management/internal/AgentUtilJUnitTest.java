@@ -21,7 +21,6 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 import java.net.URI;
 
-import org.hamcrest.text.IsEqualIgnoringCase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
