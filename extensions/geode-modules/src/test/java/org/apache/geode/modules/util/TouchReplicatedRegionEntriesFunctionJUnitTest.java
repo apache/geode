@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Collections;
 import java.util.HashSet;
 
+import org.apache.geode.internal.logging.LocalLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ public class TouchReplicatedRegionEntriesFunctionJUnitTest {
   private TouchReplicatedRegionEntriesFunction function = spy(new TouchReplicatedRegionEntriesFunction());
   private FunctionContext context = mock(RegionFunctionContext.class);
   private Cache cache = mock(GemFireCacheImpl.class);
-  private LogWriterLogger logger = mock(LogWriterLogger.class);
+  private LocalLogWriter logger = mock(LocalLogWriter.class);
   private Region region = mock(Region.class);
   private ResultSender resultSender = mock(ResultSender.class);
   private String regionName = "regionName";

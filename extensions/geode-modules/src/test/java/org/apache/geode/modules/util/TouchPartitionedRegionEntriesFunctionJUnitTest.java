@@ -12,6 +12,8 @@ import static org.mockito.Mockito.when;
 
 import java.util.HashSet;
 
+import org.apache.geode.LogWriter;
+import org.apache.geode.internal.logging.LocalLogWriter;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,14 +23,13 @@ import org.apache.geode.cache.execute.FunctionContext;
 import org.apache.geode.cache.execute.RegionFunctionContext;
 import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
-import org.apache.geode.internal.logging.log4j.LogWriterLogger;
 
 public class TouchPartitionedRegionEntriesFunctionJUnitTest {
 
   private TouchPartitionedRegionEntriesFunction function = spy(new TouchPartitionedRegionEntriesFunction());
   private FunctionContext context = mock(RegionFunctionContext.class);
   private Cache cache = mock(GemFireCacheImpl.class);
-  private LogWriterLogger logger = mock(LogWriterLogger.class);
+  private LocalLogWriter logger = mock(LocalLogWriter.class);
   private Region primaryDataSet = mock(Region.class);
   private ResultSender resultSender = mock(ResultSender.class);
 
