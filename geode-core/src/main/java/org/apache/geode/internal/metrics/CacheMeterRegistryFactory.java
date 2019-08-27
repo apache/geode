@@ -14,7 +14,9 @@
  */
 package org.apache.geode.internal.metrics;
 
+
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
@@ -26,13 +28,15 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
 
   @Override
   public CompositeMeterRegistry create(int systemId, String memberName, String hostName) {
-    CompositeMeterRegistry registry = new CompositeMeterRegistry();
+    JvmGcMetrics gcMetricsBinder = new JvmGcMetrics();
+    GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
     MeterRegistry.Config registryConfig = registry.config();
     registryConfig.commonTags("cluster.id", String.valueOf(systemId));
     registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
     registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
 
+    gcMetricsBinder.bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);
     new JvmThreadMetrics().bindTo(registry);
     new ProcessorMetrics().bindTo(registry);

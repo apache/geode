@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
@@ -560,6 +562,19 @@ public class GemFireCacheImplTest {
     List<CacheServer> list1 = gemFireCacheImpl.getCacheServers();
     List<CacheServer> list2 = gemFireCacheImpl.getCacheServers();
     assertThat(list1).isSameAs(list2);
+  }
+
+  @Test
+  public void closeDoesNotCloseMeterSubregistries() {
+    MeterRegistry subregistry = spy(new SimpleMeterRegistry());
+    gemFireCacheImpl = (GemFireCacheImpl) new InternalCacheBuilder()
+        .addMeterSubregistry(subregistry)
+        .setTypeRegistry(mock(TypeRegistry.class))
+        .create(Fakes.distributedSystem());
+
+    gemFireCacheImpl.close();
+
+    assertThat(subregistry.isClosed()).isFalse();
   }
 
   private static GemFireCacheImpl createGemFireCacheImpl() {
