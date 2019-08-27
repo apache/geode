@@ -189,6 +189,7 @@ public class ClusterStartupRule implements SerializableTestRule {
     // close suspect string at the end of tear down
     // any background thread can fill the dunit_suspect.log
     // after its been truncated if we do it before closing cache
+    IgnoredException.removeAllExpectedExceptions();
     DUnitLauncher.closeAndCheckForSuspects();
   }
 
