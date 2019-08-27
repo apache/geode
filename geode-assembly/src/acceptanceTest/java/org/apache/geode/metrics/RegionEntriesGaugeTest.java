@@ -359,8 +359,8 @@ public class RegionEntriesGaugeTest {
       String regionName = context.getArguments()[0];
 
       Gauge memberRegionEntriesGauge = SimpleMetricsPublishingService.getRegistry()
-          .find("member.region.entries")
-          .tag("region.name", regionName)
+          .find("geode.cache.entries")
+          .tag("region", regionName)
           .gauge();
 
       Object result = memberRegionEntriesGauge == null
