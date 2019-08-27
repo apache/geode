@@ -213,6 +213,8 @@ public class PeerTypeRegistration implements TypeRegistration {
       throw new PdxInitializationException("Could not create pdx registry", ex);
     }
 
+    statistics.initialize();
+
     // If there is anything in the id to type registry,
     // we should validate our configuration now.
     // And send those types to any existing gateways.

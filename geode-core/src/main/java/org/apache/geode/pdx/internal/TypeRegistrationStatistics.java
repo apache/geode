@@ -27,6 +27,7 @@ class TypeRegistrationStatistics {
   static final String ENUM_CREATED = "enumCreated";
   static final String SIZE = "size";
 
+  private final TypeRegistration typeRegistration;
   private final int typeDefinedId;
   private final int typeCreatedId;
   private final int enumDefinedId;
@@ -35,6 +36,8 @@ class TypeRegistrationStatistics {
 
   TypeRegistrationStatistics(final StatisticsFactory statisticsFactory,
       final TypeRegistration typeRegistration) {
+    this.typeRegistration = typeRegistration;
+
     final StatisticsType statisticsType =
         statisticsFactory.createType("PdxTypeRegistration", "PDX type registration statistics.",
             new StatisticDescriptor[] {
@@ -57,7 +60,9 @@ class TypeRegistrationStatistics {
 
     statistics = statisticsFactory.createAtomicStatistics(statisticsType,
         typeRegistration.getClass().getSimpleName());
+  }
 
+  public void initialize() {
     statistics.setLongSupplier(SIZE, typeRegistration::getLocalSize);
   }
 
