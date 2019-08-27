@@ -112,6 +112,14 @@ public class RegionConfigValidatorTest {
   }
 
   @Test
+  public void validateDefaultRedundancy() throws Exception {
+    config.setName("test");
+    config.setType(RegionType.PARTITION_REDUNDANT);
+    // the config without the explicit redundancy is valid
+    validator.validate(CacheElementOperation.CREATE, config);
+  }
+
+  @Test
   public void invalidRedundancy() throws Exception {
     config.setName("test");
     config.setType(RegionType.PARTITION_REDUNDANT);
