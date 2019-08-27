@@ -32,7 +32,6 @@ import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
-
 @Category({AEQTest.class})
 public class CreateAsyncEventQueueCommandDUnitTest {
 
@@ -70,7 +69,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
-  public void create_sync_event_queue() throws Exception {
+  public void create_async_event_queue() throws Exception {
     locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, "group1", locator.getPort());
     lsRule.startServerVM(2, "group2", locator.getPort());

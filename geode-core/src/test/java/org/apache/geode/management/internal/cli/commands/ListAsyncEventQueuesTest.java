@@ -156,7 +156,7 @@ public class ListAsyncEventQueuesTest {
     FakeDetails details2 = new FakeDetails("server1", "s1-queue-id2", 15, true,
         "otherDiskStoreName", 10, "my.listener.class", new Properties(), false);
     FakeDetails details3 = new FakeDetails("server1", "s1-queue-id3", 25, true, "diskStoreName",
-        100, "my.listener.class", new Properties(), false);
+        100, "my.listener.class", new Properties(), true);
     CliFunctionResult member1Result =
         new CliFunctionResult("server1", Arrays.asList(details1.asAsyncEventQueueDetails(),
             details2.asAsyncEventQueueDetails(), details3.asAsyncEventQueueDetails()));
@@ -231,7 +231,8 @@ public class ListAsyncEventQueuesTest {
     private boolean startPaused;
 
     private FakeDetails(String memberName, String queueId, int batchSize, boolean persistent,
-        String diskStoreName, int maxQueueMemory, String listener, Properties listenerProperties, boolean startPaused) {
+        String diskStoreName, int maxQueueMemory, String listener, Properties listenerProperties,
+        boolean startPaused) {
       this.memberName = memberName;
       this.queueId = queueId;
       this.batchSize = batchSize;
@@ -254,8 +255,10 @@ public class ListAsyncEventQueuesTest {
 
     private String[] expectedRowHeaderAndValue() {
       return new String[] {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory",
-          "Listener", memberName, queueId, String.valueOf(batchSize), String.valueOf(persistent),
-          diskStoreName, String.valueOf(maxQueueMemory), expectedListenerOutput()};
+          "Listener", "Start Paused", memberName, queueId, String.valueOf(batchSize),
+          String.valueOf(persistent),
+          diskStoreName, String.valueOf(maxQueueMemory), expectedListenerOutput(),
+          String.valueOf(startPaused)};
     }
 
     private String expectedListenerOutput() {

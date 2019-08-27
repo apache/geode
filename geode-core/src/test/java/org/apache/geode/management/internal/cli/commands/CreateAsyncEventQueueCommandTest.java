@@ -25,6 +25,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_AS
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__ORDERPOLICY;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__PARALLEL;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__PERSISTENT;
+import static org.apache.geode.management.internal.cli.i18n.CliStrings.CREATE_ASYNC_EVENT_QUEUE__START_PAUSED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
@@ -110,6 +111,8 @@ public class CreateAsyncEventQueueCommandTest {
     result = gfsh.parse(COMMAND + "--id=id --listener=xyz --forward-expiration-destroy");
     assertThat(result.getParamValue(CREATE_ASYNC_EVENT_QUEUE__FORWARD_EXPIRATION_DESTROY))
         .isEqualTo(true);
+    assertThat(result.getParamValue(CREATE_ASYNC_EVENT_QUEUE__START_PAUSED))
+        .isEqualTo(false);
   }
 
   @Test

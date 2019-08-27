@@ -69,16 +69,29 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
+    // add default false expectation for start-paused
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue2")
         .tableHasRowWithValues("Member", "ID", "server-1", "queue")
         .tableHasRowWithValues("Member", "ID", "server-2", "queue");
 
+    gfsh.executeAndAssertThat("create async-event-queue --id=queue3 --listener="
+        + MyAsyncEventListener.class.getName() + " --start-paused").statusIsSuccess();
+
+    // locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(6)
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-1", "queue3", "true")
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "true");
+
+
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue1").statusIsSuccess();
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue2").statusIsSuccess();
+    gfsh.executeAndAssertThat("destroy async-event-queue --id=queue3").statusIsSuccess();
   }
+
 
   @Test
   public void ensureNoResultIsSuccess() {
