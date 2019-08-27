@@ -42,9 +42,9 @@ class RegionPerfStats extends CachePerfStats implements RegionStats {
     this.clock = clock;
     this.cachePerfStats = cachePerfStats;
     this.meterRegistry = meterRegistry;
-    entriesGauge = Gauge.builder("member.region.entries", region::getLocalSize)
+    entriesGauge = Gauge.builder("geode.cache.entries", region::getLocalSize)
         .description("Current number of entries in the region.")
-        .tag("region.name", region.getName())
+        .tag("region", region.getName())
         .tag("data.policy", region.getDataPolicy().toString())
         .baseUnit("entries")
         .register(meterRegistry);
