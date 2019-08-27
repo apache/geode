@@ -33,7 +33,7 @@ import org.junit.Test;
 
 public class CacheMeterRegistryFactoryBindersTest {
 
-  private static final String[] COMMON_TAG_KEYS = {"cluster.id", "member.name", "host.name"};
+  private static final String[] COMMON_TAG_KEYS = {"cluster", "member", "host"};
   private CompositeMeterRegistry registry;
 
   @Before

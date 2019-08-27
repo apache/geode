@@ -46,7 +46,7 @@ public class CacheMeterRegistryFactoryTest {
         .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of("member.name", theMemberName));
+        .contains(Tag.of("member", theMemberName));
   }
 
   @Test
@@ -60,7 +60,7 @@ public class CacheMeterRegistryFactoryTest {
         .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of("cluster.id", String.valueOf(theSystemId)));
+        .contains(Tag.of("cluster", String.valueOf(theSystemId)));
   }
 
   @Test
@@ -74,6 +74,6 @@ public class CacheMeterRegistryFactoryTest {
         .counter("my.meter");
 
     assertThat(meter.getId().getTags())
-        .contains(Tag.of("host.name", theHostName));
+        .contains(Tag.of("host", theHostName));
   }
 }
