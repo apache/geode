@@ -196,7 +196,7 @@ public class CreateIndexCommand extends GfshCommand {
     if (list.isEmpty()) {
       return null;
     } else {
-      return list.get(0).getConfig();
+      return list.get(0).getConfiguration();
     }
   }
 
