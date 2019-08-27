@@ -42,7 +42,9 @@ import org.apache.geode.distributed.internal.OverflowQueueWithDMStats;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.ClassPathLoader;
 import org.apache.geode.internal.ConnectionWatcher;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
+import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.alerting.AlertingAction;
@@ -118,15 +120,8 @@ public class MembershipDependenciesJUnitTest {
               .or(type(ConnectExceptions.class))
 
               // TODO: Serialization needs to become its own module
-              // .or(type(DataSerializer.class))
-              // .or(type(DataSerializableFixedID.class))
-              // .or(type(InternalDataSerializer.class))
-              // .or(type(Version.class))
-              // .or(type(Version[].class)) // ArchUnit needs the array type to be explicitly
-              // mentioned
-              // .or(type(VersionedObjectInput.class))
-              // .or(type(HeapDataOutputStream.class))
-              // .or(type(VersionedDataInputStream.class))
+              .or(type(InternalDataSerializer.class)) // still used by GMSLocator
+              .or(type(Version.class)) // still used by GMSLocator
 
               // TODO: Membership needs its own config object
               .or(type(DistributionConfig.class))

@@ -14,12 +14,31 @@
  */
 package org.apache.geode.distributed.internal.membership.gms;
 
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FINAL_CHECK_PASSED_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.FIND_COORDINATOR_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_REQ;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GET_VIEW_RESP;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.GMSMEMBER;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.HEARTBEAT_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.INSTALL_VIEW_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.JOIN_RESPONSE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.LEAVE_REQUEST_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETVIEW;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.NETWORK_PARTITION_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.REMOVE_MEMBER_REQUEST;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.SUSPECT_MEMBERS_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.VIEW_ACK_MESSAGE;
+
 import java.util.Timer;
 
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelCriterion;
 import org.apache.geode.ForcedDisconnectException;
+import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.distributed.DistributedSystemDisconnectedException;
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionConfig;
@@ -30,7 +49,22 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.JoinLeave
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Manager;
 import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.logging.LogService;
@@ -105,6 +139,29 @@ public class Services {
     this.messenger = new JGroupsMessenger();
     this.auth = authenticator;
     this.serializer = serializer;
+    registerSerializables(serializer);
+  }
+
+  @VisibleForTesting
+  public static void registerSerializables(DSFIDSerializer serializer) {
+    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.registerDSFID(GMSMEMBER, GMSMember.class);
+    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
+    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
+
   }
 
   /**

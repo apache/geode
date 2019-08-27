@@ -276,6 +276,8 @@ public class DSFIDSerializer {
     } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
       // client went away - ignore
       throw ex;
+    } catch (RuntimeException e) {
+      throw e;
     } catch (Exception ex) {
       throw new IOException(
           String.format("Could not create an instance of %s .",

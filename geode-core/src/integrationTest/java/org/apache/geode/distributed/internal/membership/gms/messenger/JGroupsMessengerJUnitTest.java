@@ -41,6 +41,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
+import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -91,10 +92,14 @@ import org.apache.geode.distributed.internal.membership.gms.messages.JoinRespons
 import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
 import org.apache.geode.distributed.internal.membership.gms.messenger.JGroupsMessenger.JGroupsReceiver;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
+import org.apache.geode.internal.serialization.BufferDataOutputStream;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category({MembershipTest.class})
@@ -159,6 +164,11 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
+    DSFIDSerializer serializer = new DSFIDSerializer();
+    Services.registerSerializables(serializer);
+    when(services.getSerializer()).thenReturn(serializer);
+    Version current = Version.CURRENT; // force Version static initialization to set
+                                       // SerializationVersion
 
     when(services.getStatistics()).thenReturn(mock(DistributionStats.class));
 
@@ -251,7 +261,8 @@ public class JGroupsMessengerJUnitTest {
 
   @Test
   public void testMemberWeightIsSerialized() throws Exception {
-    HeapDataOutputStream out = new HeapDataOutputStream(500, Version.CURRENT);
+    BufferDataOutputStream out =
+        new BufferDataOutputStream(500, SerializationVersion.getCurrentVersion());
     GMSMember mbr = createAddress(8888);
     mbr.setMemberWeight((byte) 40);
     mbr.toData(out, null);
@@ -276,7 +287,8 @@ public class JGroupsMessengerJUnitTest {
       // for code coverage we need to test with both a SerializationException and
       // an IOException. The former is wrapped in a GemfireIOException while the
       // latter is not
-      doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class), null);
+      doThrow(new SerializationException("")).when(msg).toData(any(DataOutput.class),
+          any(SerializationContext.class));
       try {
         messenger.send(msg);
         fail("expected a failure");
@@ -286,7 +298,8 @@ public class JGroupsMessengerJUnitTest {
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
-      doThrow(new IOException()).when(msg).toData(any(DataOutput.class), null);
+      doThrow(new IOException()).when(msg).toData(any(DataOutput.class),
+          any(SerializationContext.class));
       try {
         messenger.send(msg);
         fail("expected a failure");
@@ -421,7 +434,7 @@ public class JGroupsMessengerJUnitTest {
       if (enableMcast) {
         verify(msg, atLeastOnce()).registerProcessor();
       }
-      verify(msg).toData(isA(DataOutput.class), null);
+      verify(msg).toData(isA(DataOutput.class), any(SerializationContext.class));
       assertTrue("expected 1 message but found " + interceptor.collectedMessages,
           interceptor.collectedMessages.size() == 1);
       assertTrue(interceptor.collectedMessages.get(0).isFlagSet(Message.Flag.NO_RELIABILITY));
@@ -453,7 +466,7 @@ public class JGroupsMessengerJUnitTest {
     JoinRequestMessage msg = new JoinRequestMessage(messenger.localAddress, sender, null, -1, 0);
 
     Message jmsg = messenger.createJGMessage(msg, messenger.jgAddress, messenger.localAddress,
-        Version.CURRENT_ORDINAL);
+        SerializationVersion.getCurrentVersion().ordinal());
     interceptor.up(new Event(Event.MSG, jmsg));
 
     verify(mh, times(1)).processMessage(any(JoinRequestMessage.class));
@@ -461,7 +474,7 @@ public class JGroupsMessengerJUnitTest {
     LeaveRequestMessage lmsg = new LeaveRequestMessage(messenger.localAddress, sender, "testing");
     when(joinLeave.getMemberID(any())).thenReturn(sender);
     jmsg = messenger.createJGMessage(lmsg, messenger.jgAddress, messenger.localAddress,
-        Version.CURRENT_ORDINAL);
+        SerializationVersion.getCurrentVersion().ordinal());
     interceptor.up(new Event(Event.MSG, jmsg));
 
     verify(manager).processMessage(any(LeaveRequestMessage.class));
@@ -484,6 +497,38 @@ public class JGroupsMessengerJUnitTest {
     doTestBigMessageIsFragmented(false, true);
   }
 
+  public static class ByteHolder implements DataSerializableFixedID {
+    static final int DSFID = 123456;
+    private byte[] payload;
+
+    @Override
+    public int getDSFID() {
+      return DSFID;
+    }
+
+    public ByteHolder(byte[] payload) {
+      this.payload = payload;
+    }
+
+    public ByteHolder() {}
+
+    @Override
+    public void toData(DataOutput out, SerializationContext context) throws IOException {
+      StaticSerialization.writeByteArray(payload, out);
+    }
+
+    @Override
+    public void fromData(DataInput in, SerializationContext context)
+        throws IOException, ClassNotFoundException {
+      payload = StaticSerialization.readByteArray(in);
+    }
+
+    @Override
+    public SerializationVersion[] getSerializationVersions() {
+      return null;
+    }
+  }
+
   public void doTestBigMessageIsFragmented(boolean mcastEnabled, boolean broadcastMessage)
       throws Exception {
     initMocks(mcastEnabled);
@@ -497,8 +542,11 @@ public class JGroupsMessengerJUnitTest {
 
     // send a big message and expect fragmentation
     GMSMember recipient = broadcastMessage ? null : messenger.localAddress;
+    services.getSerializer().registerDSFID(ByteHolder.DSFID, ByteHolder.class);
     JoinRequestMessage msg = new JoinRequestMessage(recipient, sender,
-        new byte[(int) (services.getConfig().getDistributionConfig().getUdpFragmentSize() * (1.5))],
+        new ByteHolder(
+            new byte[(int) (services.getConfig().getDistributionConfig().getUdpFragmentSize()
+                * (1.2))]),
         -1, 0);
 
     msg.setMulticast(broadcastMessage);
@@ -841,7 +889,7 @@ public class JGroupsMessengerJUnitTest {
 
     // a message is ignored during manager shutdown
     msg = messenger.createJGMessage(dmsg, new JGAddress(other),
-        recipients.get(0), Version.CURRENT_ORDINAL);
+        recipients.get(0), SerializationVersion.getCurrentVersion().ordinal());
     when(manager.shutdownInProgress()).thenReturn(Boolean.TRUE);
     receiver.receive(msg);
     verify(manager, never()).processMessage(isA(GMSMessage.class));
@@ -959,9 +1007,10 @@ public class JGroupsMessengerJUnitTest {
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
-    short version = Version.CURRENT_ORDINAL;
+    short version = SerializationVersion.getCurrentVersion().ordinal();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream out =
+        new BufferDataOutputStream(SerializationVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -999,9 +1048,10 @@ public class JGroupsMessengerJUnitTest {
     recipients.add(otherMbr);
     gfmsg.setRecipients(recipients);
 
-    short version = Version.CURRENT_ORDINAL;
+    short version = SerializationVersion.getCurrentVersion().ordinal();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream out =
+        new BufferDataOutputStream(SerializationVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1035,9 +1085,10 @@ public class JGroupsMessengerJUnitTest {
     JoinRequestMessage gfmsg =
         new JoinRequestMessage(otherMbr, messenger.getMemberID(), null, 9789, 1);
 
-    short version = Version.CURRENT_ORDINAL;
+    short version = SerializationVersion.getCurrentVersion().ordinal();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream out =
+        new BufferDataOutputStream(SerializationVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1071,9 +1122,10 @@ public class JGroupsMessengerJUnitTest {
     JoinResponseMessage gfmsg =
         new JoinResponseMessage(otherMbr, messenger.getClusterSecretKey(), 1);
 
-    short version = Version.CURRENT_ORDINAL;
+    short version = SerializationVersion.getCurrentVersion().ordinal();
 
-    HeapDataOutputStream out = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream out =
+        new BufferDataOutputStream(SerializationVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(gfmsg, otherMbr, version, out);
 
@@ -1092,7 +1144,7 @@ public class JGroupsMessengerJUnitTest {
 
     InstallViewMessage installViewMessage = new InstallViewMessage(v, null, true);
 
-    out = new HeapDataOutputStream(Version.CURRENT);
+    out = new BufferDataOutputStream(SerializationVersion.getCurrentVersion());
 
     messenger.writeEncryptedMessage(installViewMessage, otherMbr, version, out);
 
@@ -1113,7 +1165,7 @@ public class JGroupsMessengerJUnitTest {
     GMSMember gms = new GMSMember("localhost", port);
     gms.setUUID(UUID.randomUUID());
     gms.setVmKind(GMSMember.NORMAL_DM_TYPE);
-    gms.setVersionOrdinal(Version.CURRENT_ORDINAL);
+    gms.setVersionOrdinal(SerializationVersion.getCurrentVersion().ordinal());
     return gms;
   }
 }

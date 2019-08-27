@@ -2364,9 +2364,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
         ((DataSerializable) ds).fromData(in);
 
         if (logger.isTraceEnabled(LogMarker.SERIALIZER_VERBOSE)) {
-          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read {} {}",
-              ds instanceof DataSerializableFixedID ? "DataSerializableFixedID"
-                  : "DataSerializable",
+          logger.trace(LogMarker.SERIALIZER_VERBOSE, "Read DataSerializable {}",
               ds);
         }
       }

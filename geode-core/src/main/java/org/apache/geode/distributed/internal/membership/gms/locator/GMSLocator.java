@@ -15,6 +15,7 @@
 package org.apache.geode.distributed.internal.membership.gms.locator;
 
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -333,16 +334,20 @@ public class GMSLocator implements Locator {
       logger.warn("Peer locator is unable to delete persistent membership information in {}",
           viewFile.getAbsolutePath());
     }
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(viewFile))) {
+    try (FileOutputStream fileStream = new FileOutputStream(viewFile);
+        ObjectOutputStream oos = new ObjectOutputStream(fileStream)) {
       oos.writeInt(LOCATOR_FILE_STAMP);
       oos.writeInt(SerializationVersion.getCurrentVersion().ordinal());
-      services.getSerializer().writeDSFID(view, oos);
+      oos.flush();
+      DataOutputStream dataOutputStream = new DataOutputStream(fileStream);
+      services.getSerializer().getDataSerializer().writeObject(view, dataOutputStream);
     } catch (Exception e) {
       logger.warn(
           "Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system",
           e);
       viewFile = null;
     }
+    logger.info("BRUCE: saved view to {} size {}", viewFile.getAbsolutePath(), viewFile.length());
   }
 
   public void endRequest(Object request, long startTime) {

@@ -24,10 +24,10 @@ public class SerializationVersion implements Comparable<SerializationVersion> {
 
   // TBD: should all ordinals for Geode be defined here and then used in Version.java?
   // We need access to them in GMS for backward-compatibility
-  public static final byte GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
-  public static final byte GEODE_1_2_0_ORDINAL = 65;
-  public static final byte GEODE_1_4_0_ORDINAL = 75;
-  public static final byte GEODE_1_10_0_ORDINAL = 105;
+  public static final short GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
+  public static final short GEODE_1_2_0_ORDINAL = 65;
+  public static final short GEODE_1_4_0_ORDINAL = 75;
+  public static final short GEODE_1_10_0_ORDINAL = 105;
 
   /**
    * Reserved token that cannot be used for product version but as a flag in internal contexts.

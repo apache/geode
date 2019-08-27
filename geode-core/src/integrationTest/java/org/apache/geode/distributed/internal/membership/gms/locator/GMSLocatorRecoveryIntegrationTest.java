@@ -24,6 +24,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -53,10 +55,13 @@ import org.apache.geode.distributed.internal.membership.MembershipManager;
 import org.apache.geode.distributed.internal.membership.adapter.GMSMemberAdapter;
 import org.apache.geode.distributed.internal.membership.adapter.auth.GMSAuthenticator;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.Services;
 import org.apache.geode.internal.AvailablePortHelper;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.test.junit.categories.MembershipTest;
 
 @Category(MembershipTest.class)
@@ -72,14 +77,20 @@ public class GMSLocatorRecoveryIntegrationTest {
   private GMSLocator gmsLocator;
   private MembershipManager membershipManager;
   private Locator locator;
+  private DSFIDSerializer serializer;
 
   @Before
   public void setUp() throws Exception {
+    serializer = InternalDataSerializer.getDSFIDSerializer();
+    Services.registerSerializables(serializer);
+    Version current = Version.CURRENT; // force version initialization
+
     stateFile = new File(temporaryFolder.getRoot(), getClass().getSimpleName() + "_locator.dat");
 
     gmsLocator = new GMSLocator(null, null, false, false, new LocatorStats(), "",
         temporaryFolder.getRoot().toPath());
     gmsLocator.setViewFile(stateFile);
+
   }
 
   @After
@@ -193,11 +204,14 @@ public class GMSLocatorRecoveryIntegrationTest {
 
   private void populateStateFile(File file, int fileStamp, int ordinal, Object object)
       throws IOException {
-    try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+    try (FileOutputStream fileStream = new FileOutputStream(file);
+        ObjectOutputStream oos = new ObjectOutputStream(fileStream)) {
       oos.writeInt(fileStamp);
       oos.writeInt(ordinal);
-      DataSerializer.writeObject(object, oos);
       oos.flush();
+      DataOutput dataOutput = new DataOutputStream(fileStream);
+      DataSerializer.writeObject(object, dataOutput);
+      fileStream.flush();
     }
   }
 }

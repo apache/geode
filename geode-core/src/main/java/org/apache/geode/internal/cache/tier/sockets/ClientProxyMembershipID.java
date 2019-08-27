@@ -51,6 +51,7 @@ import org.apache.geode.internal.serialization.SerializationContext;
  */
 public class ClientProxyMembershipID
     implements DataSerializableFixedID, Serializable, Externalizable {
+  public static final long serialVersionUID = 7144300815346556370L;
 
   private static final Logger logger = LogService.getLogger();
 
