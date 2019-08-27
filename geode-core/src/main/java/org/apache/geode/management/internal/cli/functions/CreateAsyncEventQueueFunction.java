@@ -83,6 +83,10 @@ public class CreateAsyncEventQueueFunction extends CliFunction {
               .setDispatcherThreads(Integer.parseInt(config.getDispatcherThreads()))
               .setOrderPolicy(OrderPolicy.valueOf(config.getOrderPolicy()));
 
+      if (config.isPauseEventProcessing()) {
+        asyncEventQueueFactory.pauseEventDispatching();
+      }
+
       String[] gatewayEventFilters = config.getGatewayEventFilters().stream()
           .map(ClassNameType::getClassName).toArray(String[]::new);
 
