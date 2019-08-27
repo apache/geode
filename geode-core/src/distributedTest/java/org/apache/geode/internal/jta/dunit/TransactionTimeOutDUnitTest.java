@@ -17,6 +17,7 @@ package org.apache.geode.internal.jta.dunit;
 import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FILE;
 import static org.apache.geode.test.dunit.Assert.fail;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -32,6 +33,7 @@ import java.util.Properties;
 
 import javax.naming.Context;
 import javax.sql.DataSource;
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import org.junit.Test;
@@ -43,6 +45,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.datasource.GemFireTransactionDataSource;
 import org.apache.geode.internal.jta.CacheUtils;
 import org.apache.geode.internal.jta.UserTransactionImpl;
+import org.apache.geode.test.awaitility.GeodeAwaitility;
 import org.apache.geode.test.dunit.Assert;
 import org.apache.geode.test.dunit.AsyncInvocation;
 import org.apache.geode.test.dunit.Host;
@@ -59,7 +62,6 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
 
   static DistributedSystem ds;
   static Cache cache = null;
-  private static String tblName;
 
   public static void init() throws Exception {
     Properties props = new Properties();
@@ -194,14 +196,15 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     vm0.invoke(() -> TransactionTimeOutDUnitTest.runTest10());
   }
 
-  public static void runTest1() throws Exception {
+  public static void runTest1() {
     boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -214,14 +217,20 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void runTest2() throws Exception {
+  private static void waitUntilTransactionTimeout(UserTransaction utx) {
+    GeodeAwaitility.await().pollInSameThread()
+        .until(() -> utx.getStatus() == Status.STATUS_NO_TRANSACTION);
+  }
+
+  public static void runTest2() {
     boolean exceptionOccurred = false;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -239,8 +248,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       utx.begin();
       utx.commit();
     } catch (Exception e) {
@@ -256,7 +266,8 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx = new UserTransactionImpl();
       utx.setTransactionTimeout(2);
       utx.begin();
-      Thread.sleep(4000);
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -278,10 +289,11 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx = new UserTransactionImpl();
       utx.setTransactionTimeout(10);
       utx.begin();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(8);
       utx.setTransactionTimeout(6);
       utx.setTransactionTimeout(2);
-      Thread.sleep(6000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -302,7 +314,8 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.setTransactionTimeout(4);
       utx.begin();
-      Thread.sleep(6000);
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -317,12 +330,12 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
   }
 
   public static void runTest7() {
-    // boolean exceptionOccurred = true;
     try {
       Context ctx = cache.getJNDIContext();
       UserTransaction utx = (UserTransaction) ctx.lookup("java:/UserTransaction");
       utx.begin();
-      utx.setTransactionTimeout(6);
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
+      utx.setTransactionTimeout(30);
       Thread.sleep(2000);
       try {
         utx.commit();
@@ -350,7 +363,6 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       utx.setTransactionTimeout(30);
       Thread.sleep(5000);
       utx.setTransactionTimeout(20);
-      utx.setTransactionTimeout(10);
       sql = "insert into newTable1  values (1)";
       sm.execute(sql);
       utx.commit();
@@ -367,7 +379,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void runTest9() {
+  public static void runTest9() throws Exception {
     try {
       boolean exceptionOccurred = false;
       Context ctx = cache.getJNDIContext();
@@ -392,8 +404,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sm.execute(sql);
       sm.close();
       conn.close();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(1);
-      Thread.sleep(3000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.commit();
       } catch (Exception e) {
@@ -407,7 +420,7 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
     }
   }
 
-  public static void runTest10() {
+  public static void runTest10() throws Exception {
     try {
       boolean exceptionOccurred = false;
       Context ctx = cache.getJNDIContext();
@@ -432,8 +445,9 @@ public class TransactionTimeOutDUnitTest extends JUnit4DistributedTestCase {
       sm.execute(sql);
       sm.close();
       conn.close();
+      assertThat(utx.getStatus() == Status.STATUS_ACTIVE);
       utx.setTransactionTimeout(1);
-      Thread.sleep(3000);
+      waitUntilTransactionTimeout(utx);
       try {
         utx.rollback();
       } catch (Exception e) {
