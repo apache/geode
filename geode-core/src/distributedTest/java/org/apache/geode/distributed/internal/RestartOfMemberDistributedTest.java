@@ -14,74 +14,67 @@
  */
 package org.apache.geode.distributed.internal;
 
+import static org.apache.geode.distributed.ConfigurationProperties.DISABLE_AUTO_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MAX_WAIT_TIME_RECONNECT;
+import static org.apache.geode.distributed.ConfigurationProperties.MEMBER_TIMEOUT;
+import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
-import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import org.apache.geode.ForcedDisconnectException;
-import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
-import org.apache.geode.test.dunit.rules.MemberVM;
-
 
 public class RestartOfMemberDistributedTest {
-  public List<MemberVM> locators = new ArrayList<>();
-  public List<MemberVM> servers = new ArrayList<>();
 
-
+  private static final int locator1 = 0;
+  private static final int server1 = 1;
+  private static final int locator2 = 2;
+  private static final int server2 = 3;
+  private int locatorPort1;
+  private int locatorPort2;
 
   @Rule
   public ClusterStartupRule clusterStartupRule = new ClusterStartupRule();
 
   @Before
   public void before() {
-    Properties properties = new Properties();
+    Properties properties = createProperties();
 
-    locators.add(clusterStartupRule.startLocatorVM(0, properties));
-    servers.add(clusterStartupRule.startServerVM(1, properties, locators.get(0).getPort()));
-    locators.add(clusterStartupRule.startLocatorVM(2, properties, locators.get(0).getPort()));
-    servers.add(clusterStartupRule.startServerVM(3, properties, locators.get(0).getPort()));
-  }
+    clusterStartupRule.startLocatorVM(locator1, properties);
+    locatorPort1 = clusterStartupRule.getMember(locator1).getPort();
+    clusterStartupRule.startServerVM(server1, properties, locatorPort1);
 
-  @After
-  public void after() {
-    servers.clear();
-    locators.clear();
+    clusterStartupRule.startLocatorVM(locator2, properties, locatorPort1);
+    locatorPort2 = clusterStartupRule.getMember(locator2).getPort();
+    clusterStartupRule.startServerVM(server2, properties, locatorPort1);
+
+    addIgnoredException(ForcedDisconnectException.class.getName());
+    addIgnoredException("Possible loss of quorum due to the loss");
+    addIgnoredException("Received invalid result from");
   }
 
   @Test
   public void exCoordinatorJoiningQuorumDoesNotThrowNullPointerException() {
-    IgnoredException exp1 =
-        IgnoredException.addIgnoredException(ForcedDisconnectException.class.getName());
-    IgnoredException exp2 =
-        IgnoredException.addIgnoredException("Possible loss of quorum due to the loss");
-    IgnoredException exp3 =
-        IgnoredException.addIgnoredException("Received invalid result from");
-    try {
-      int locator2port = locators.get(1).getPort();
-      Properties properties = new Properties();
-      int locator0port = locators.get(0).getPort();
-      clusterStartupRule.crashVM(1);
-      clusterStartupRule.crashVM(0);
-      await().until(() -> {
-        clusterStartupRule.startLocatorVM(0, locator0port, properties, locator2port);
-        return true;
-      });
-      clusterStartupRule.startServerVM(1, properties, locator2port);
-      locators.get(1).waitTilFullyReconnected();
-    } finally {
-      exp1.remove();
-      exp2.remove();
-      exp3.remove();
-    }
+    clusterStartupRule.crashVM(locator1);
+    clusterStartupRule.crashVM(server1);
+
+    clusterStartupRule.startLocatorVM(locator1, locatorPort1, createProperties(), locatorPort2);
+    clusterStartupRule.startServerVM(server1, createProperties(), locatorPort2);
+
+    assertThatCode(() -> clusterStartupRule.getMember(locator2).waitTilFullyReconnected())
+        .doesNotThrowAnyException();
   }
 
+  private static Properties createProperties() {
+    Properties properties = new Properties();
+    properties.setProperty(DISABLE_AUTO_RECONNECT, "false");
+    properties.setProperty(MAX_WAIT_TIME_RECONNECT, "1000");
+    properties.setProperty(MEMBER_TIMEOUT, "2000");
+    return properties;
+  }
 }
