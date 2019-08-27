@@ -30,7 +30,6 @@ import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.LocalRegion;
-import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.test.fake.Fakes;
 
 public class ClientUpdateMessageImplTest implements Serializable {
@@ -83,7 +82,6 @@ public class ClientUpdateMessageImplTest implements Serializable {
     CacheClientNotifier cacheClientNotifier =
         CacheClientNotifier.getInstance(Fakes.cache(),
             mock(ClientRegistrationEventQueueManager.class),
-            mock(StatisticsClock.class),
             mock(CacheServerStats.class), 10, 10,
             mock(ConnectionListener.class), null, true);
 
