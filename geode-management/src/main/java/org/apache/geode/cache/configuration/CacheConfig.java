@@ -1142,6 +1142,8 @@ public class CacheConfig {
     protected String orderPolicy;
     @XmlAttribute(name = "forward-expiration-destroy")
     protected Boolean forwardExpirationDestroy;
+    @XmlAttribute(name = "start-paused")
+    protected Boolean startPaused;
 
     /**
      * Gets the value of the gatewayEventFilters property.
@@ -1484,6 +1486,18 @@ public class CacheConfig {
      */
     public void setForwardExpirationDestroy(Boolean value) {
       this.forwardExpirationDestroy = value;
+    }
+
+    public Boolean isStartPaused() {
+      if (startPaused == null) {
+        return false;
+      } else {
+        return startPaused;
+      }
+    }
+
+    public void setStartPaused(Boolean value) {
+      startPaused = value;
     }
 
   }

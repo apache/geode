@@ -37,7 +37,8 @@ import org.apache.geode.security.ResourcePermission;
 
 public class ListAsyncEventQueuesCommand extends GfshCommand {
   private static final String[] DETAILS_OUTPUT_COLUMNS =
-      {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory", "Listener"};
+      {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory", "Listener",
+          "Start Paused"};
   private static final String ASYNC_EVENT_QUEUES_TABLE_SECTION = "Async Event Queues";
   private static final String MEMBER_ERRORS_TABLE_SECTION = "Member Errors";
 
@@ -88,7 +89,7 @@ public class ListAsyncEventQueuesCommand extends GfshCommand {
           .forEach(entry -> detailsTable.addRow(memberName, entry.getId(),
               String.valueOf(entry.getBatchSize()), String.valueOf(entry.isPersistent()),
               String.valueOf(entry.getDiskStoreName()), String.valueOf(entry.getMaxQueueMemory()),
-              getListenerEntry(entry)));
+              getListenerEntry(entry), String.valueOf(entry.isStartPaused())));
     });
     return result;
   }

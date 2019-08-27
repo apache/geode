@@ -664,6 +664,9 @@ public class CliStrings {
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE = "listener-param";
   public static final String CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP =
       "Parameter name for the AsyncEventListener.  Optionally, parameter names may be followed by # and a value for the parameter.  Example: --listener-param=loadAll --listener-param=maxRead#1024";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__START_PAUSED = "start-paused";
+  public static final String CREATE_ASYNC_EVENT_QUEUE__START_PAUSED__HELP =
+      "Whether or not to create this AEQ in a paused state.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__GROUP__HELP =
       "Group(s) of members on which queue will be created. If no group is specified the queue will be created on all members.";
   public static final String CREATE_ASYNC_EVENT_QUEUE__ERROR_WHILE_CREATING_REASON_0 =

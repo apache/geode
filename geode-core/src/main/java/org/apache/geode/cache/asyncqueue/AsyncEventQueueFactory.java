@@ -149,6 +149,11 @@ public interface AsyncEventQueueFactory {
    */
   AsyncEventQueueFactory setForwardExpirationDestroy(boolean forward);
 
+  // BR:ES may be replaced by implementation from API story
+  default AsyncEventQueueFactory setStartPaused(boolean startPaused) {
+    return this;
+  }
+
   /**
    * Creates the <code>AsyncEventQueue</code>. It accepts Id of AsyncEventQueue and instance of
    * AsyncEventListener. Multiple queues can be created using Same listener instance. So, the

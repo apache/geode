@@ -87,7 +87,10 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER, mandatory = true,
           help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER__HELP) String listener,
       @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE,
-          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP) String[] listenerParamsAndValues) {
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__LISTENER_PARAM_AND_VALUE__HELP) String[] listenerParamsAndValues,
+      @CliOption(key = CliStrings.CREATE_ASYNC_EVENT_QUEUE__START_PAUSED,
+          help = CliStrings.CREATE_ASYNC_EVENT_QUEUE__START_PAUSED__HELP,
+          unspecifiedDefaultValue = "false", specifiedDefaultValue = "true") boolean startPaused) {
 
     if (persistent) {
       authorize(ResourcePermission.Resource.CLUSTER, ResourcePermission.Operation.WRITE,
@@ -129,6 +132,7 @@ public class CreateAsyncEventQueueCommand extends SingleGfshCommand {
     config.setOrderPolicy(orderPolicy);
     config.setParallel(parallel);
     config.setPersistent(persistent);
+    config.setStartPaused(startPaused);
 
     CreateAsyncEventQueueFunction function = new CreateAsyncEventQueueFunction();
     List<CliFunctionResult> results = executeAndGetFunctionResult(function, config, targetMembers);
