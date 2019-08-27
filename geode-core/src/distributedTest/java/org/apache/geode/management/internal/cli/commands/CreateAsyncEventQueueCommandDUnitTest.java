@@ -32,7 +32,6 @@ import org.apache.geode.test.junit.categories.AEQTest;
 import org.apache.geode.test.junit.rules.GfshCommandRule;
 import org.apache.geode.test.junit.rules.MemberStarterRule;
 
-
 @Category({AEQTest.class})
 public class CreateAsyncEventQueueCommandDUnitTest {
 
@@ -70,7 +69,7 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
-  public void create_sync_event_queue() throws Exception {
+  public void create_async_event_queue() throws Exception {
     locator = lsRule.startLocatorVM(0);
     lsRule.startServerVM(1, "group1", locator.getPort());
     lsRule.startServerVM(2, "group2", locator.getPort());
@@ -107,6 +106,41 @@ public class CreateAsyncEventQueueCommandDUnitTest {
         .tableHasRowCount("Member", 3).tableHasRowWithValues("Member", "ID", "Batch Size",
             "Persistent", "Disk Store", "Max Memory", "server-2", "queue2", "1024", "true",
             "diskStore2", "512");
+  }
+
+  @Test
+  public void create_paused_async_event_queue() throws Exception {
+    locator = lsRule.startLocatorVM(0);
+    lsRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    // create queue without start paused set
+    gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue1 "
+        + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 ")
+        .statusIsSuccess().tableHasRowCount(1);
+
+
+    // list the queue to verify the the queue has start paused set to false
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(1).tableHasRowWithValues("Member", "ID", "Batch Size",
+            "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
+            "Currently Paused", "server-1",
+            "queue1", "1024", "false",
+            "null", "512", "false", "false");
+
+    // create queue with start paused set
+    gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue2 "
+        + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 --pause-event-processing")
+        .statusIsSuccess().tableHasRowCount(1);
+
+
+    // list the queue to verify the the queue has start paused set to true
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "Batch Size",
+            "Persistent", "Disk Store", "Max Memory", "Created with paused event processing",
+            "Currently Paused", "server-1",
+            "queue2", "1024", "false",
+            "null", "512", "true", "true");
   }
 
   @Test

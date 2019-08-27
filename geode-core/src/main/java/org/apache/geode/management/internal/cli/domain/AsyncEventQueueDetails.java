@@ -32,10 +32,13 @@ public class AsyncEventQueueDetails implements Serializable {
   private final int maxQueueMemory;
   private final String listener;
   private final Properties listenerProperties;
+  private final boolean createdWithPausedEventProcessing;
+  private final boolean pausedEventProcessing;
 
   public AsyncEventQueueDetails(final String id, final int batchSize, final boolean persistent,
       final String diskStoreName, final int maxQueueMemory, final String listener,
-      final Properties listenerProperties) {
+      final Properties listenerProperties, final boolean createdWithPausedEventProcessing,
+      final boolean pausedEventProcessing) {
     this.id = id;
     this.batchSize = batchSize;
     this.persistent = persistent;
@@ -43,6 +46,8 @@ public class AsyncEventQueueDetails implements Serializable {
     this.maxQueueMemory = maxQueueMemory;
     this.listener = listener;
     this.listenerProperties = listenerProperties;
+    this.createdWithPausedEventProcessing = createdWithPausedEventProcessing;
+    this.pausedEventProcessing = pausedEventProcessing;
   }
 
   public String getId() {
@@ -71,5 +76,13 @@ public class AsyncEventQueueDetails implements Serializable {
 
   public Properties getListenerProperties() {
     return this.listenerProperties;
+  }
+
+  public boolean isCreatedWithPausedEventProcessing() {
+    return createdWithPausedEventProcessing;
+  }
+
+  public boolean isPausedEventProcessing() {
+    return pausedEventProcessing;
   }
 }
