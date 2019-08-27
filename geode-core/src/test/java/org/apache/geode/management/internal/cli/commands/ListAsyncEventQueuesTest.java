@@ -78,7 +78,7 @@ public class ListAsyncEventQueuesTest {
 
     // Mock member's queue details
     FakeDetails details = new FakeDetails("server1", "s1-queue-id", 5, true, "diskStoreName", 10,
-        "my.listener.class", new Properties());
+        "my.listener.class", new Properties(), false, false);
     CliFunctionResult memberResult = new CliFunctionResult(details.getMemberName(),
         Collections.singletonList(details.asAsyncEventQueueDetails()));
     memberCliResults = Collections.singletonList(memberResult);
@@ -100,7 +100,7 @@ public class ListAsyncEventQueuesTest {
     listenerProperties.setProperty("special-property", "special-value");
     listenerProperties.setProperty("another-property", "mundane-value");
     FakeDetails details = new FakeDetails("server1", "s1-queue-id", 5, true, "diskStoreName", 10,
-        "my.listener.class", listenerProperties);
+        "my.listener.class", listenerProperties, false, false);
     CliFunctionResult memberResult = new CliFunctionResult(details.getMemberName(),
         Collections.singletonList(details.asAsyncEventQueueDetails()));
     memberCliResults = Collections.singletonList(memberResult);
@@ -152,21 +152,21 @@ public class ListAsyncEventQueuesTest {
 
     // Mock member's queue details
     FakeDetails details1 = new FakeDetails("server1", "s1-queue-id1", 5, false, "diskStoreName", 1,
-        "my.listener.class", new Properties());
+        "my.listener.class", new Properties(), false, false);
     FakeDetails details2 = new FakeDetails("server1", "s1-queue-id2", 15, true,
-        "otherDiskStoreName", 10, "my.listener.class", new Properties());
+        "otherDiskStoreName", 10, "my.listener.class", new Properties(), false, false);
     FakeDetails details3 = new FakeDetails("server1", "s1-queue-id3", 25, true, "diskStoreName",
-        100, "my.listener.class", new Properties());
+        100, "my.listener.class", new Properties(), true, true);
     CliFunctionResult member1Result =
         new CliFunctionResult("server1", Arrays.asList(details1.asAsyncEventQueueDetails(),
             details2.asAsyncEventQueueDetails(), details3.asAsyncEventQueueDetails()));
 
     FakeDetails details4 = new FakeDetails("server2", "s2-queue-id1", 5, false, "diskStoreName", 1,
-        "my.listener.class", new Properties());
+        "my.listener.class", new Properties(), false, false);
     FakeDetails details5 = new FakeDetails("server2", "s2-queue-id2", 15, true,
-        "otherDiskStoreName", 10, "my.listener.class", new Properties());
+        "otherDiskStoreName", 10, "my.listener.class", new Properties(), false, false);
     FakeDetails details6 = new FakeDetails("server2", "s2-queue-id3", 25, true, "diskStoreName",
-        100, "my.listener.class", new Properties());
+        100, "my.listener.class", new Properties(), false, false);
     CliFunctionResult member2Result =
         new CliFunctionResult("server2", Arrays.asList(details4.asAsyncEventQueueDetails(),
             details5.asAsyncEventQueueDetails(), details6.asAsyncEventQueueDetails()));
@@ -192,11 +192,11 @@ public class ListAsyncEventQueuesTest {
 
     // Mock member's queue details
     FakeDetails details1 = new FakeDetails("server1", "s1-queue-id1", 5, false, "diskStoreName", 1,
-        "my.listener.class", new Properties());
+        "my.listener.class", new Properties(), false, false);
     FakeDetails details2 = new FakeDetails("server1", "s1-queue-id2", 15, true,
-        "otherDiskStoreName", 10, "my.listener.class", new Properties());
+        "otherDiskStoreName", 10, "my.listener.class", new Properties(), false, false);
     FakeDetails details3 = new FakeDetails("server1", "s1-queue-id3", 25, true, "diskStoreName",
-        100, "my.listener.class", new Properties());
+        100, "my.listener.class", new Properties(), false, false);
     CliFunctionResult member1Result =
         new CliFunctionResult("server1", Arrays.asList(details1.asAsyncEventQueueDetails(),
             details2.asAsyncEventQueueDetails(), details3.asAsyncEventQueueDetails()));
@@ -228,9 +228,12 @@ public class ListAsyncEventQueuesTest {
     private int maxQueueMemory;
     private String listener;
     private Properties listenerProperties;
+    private boolean createWithPausedEventProcessing;
+    private boolean pausedEventProcessing;
 
     private FakeDetails(String memberName, String queueId, int batchSize, boolean persistent,
-        String diskStoreName, int maxQueueMemory, String listener, Properties listenerProperties) {
+        String diskStoreName, int maxQueueMemory, String listener, Properties listenerProperties,
+        boolean createWithPausedEventProcessing, boolean pausedEventProcessing) {
       this.memberName = memberName;
       this.queueId = queueId;
       this.batchSize = batchSize;
@@ -239,6 +242,8 @@ public class ListAsyncEventQueuesTest {
       this.maxQueueMemory = maxQueueMemory;
       this.listener = listener;
       this.listenerProperties = listenerProperties;
+      this.createWithPausedEventProcessing = createWithPausedEventProcessing;
+      this.pausedEventProcessing = pausedEventProcessing;
     }
 
     public String getMemberName() {
@@ -247,13 +252,17 @@ public class ListAsyncEventQueuesTest {
 
     private AsyncEventQueueDetails asAsyncEventQueueDetails() {
       return new AsyncEventQueueDetails(queueId, batchSize, persistent, diskStoreName,
-          maxQueueMemory, listener, listenerProperties);
+          maxQueueMemory, listener, listenerProperties, createWithPausedEventProcessing,
+          pausedEventProcessing);
     }
 
     private String[] expectedRowHeaderAndValue() {
       return new String[] {"Member", "ID", "Batch Size", "Persistent", "Disk Store", "Max Memory",
-          "Listener", memberName, queueId, String.valueOf(batchSize), String.valueOf(persistent),
-          diskStoreName, String.valueOf(maxQueueMemory), expectedListenerOutput()};
+          "Listener", "Created with paused event processing", "Currently Paused", memberName,
+          queueId, String.valueOf(batchSize),
+          String.valueOf(persistent),
+          diskStoreName, String.valueOf(maxQueueMemory), expectedListenerOutput(),
+          String.valueOf(createWithPausedEventProcessing), String.valueOf(pausedEventProcessing)};
     }
 
     private String expectedListenerOutput() {

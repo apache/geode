@@ -505,7 +505,7 @@ org/apache/geode/management/internal/cli/AbstractCliAroundInterceptor$Response,f
 org/apache/geode/management/internal/cli/CliUtil$DeflaterInflaterData,true,1104813333595216795,data:byte[],dataLength:int
 org/apache/geode/management/internal/cli/commands/CreateJndiBindingCommand$DATASOURCE_TYPE,false,type:java/lang/String
 org/apache/geode/management/internal/cli/commands/ImportClusterConfigurationCommand$Action,false
-org/apache/geode/management/internal/cli/domain/AsyncEventQueueDetails,true,1,batchSize:int,diskStoreName:java/lang/String,id:java/lang/String,listener:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,persistent:boolean
+org/apache/geode/management/internal/cli/domain/AsyncEventQueueDetails,true,1,batchSize:int,createdWithPausedEventProcessing:boolean,diskStoreName:java/lang/String,id:java/lang/String,listener:java/lang/String,listenerProperties:java/util/Properties,maxQueueMemory:int,pausedEventProcessing:boolean,persistent:boolean
 org/apache/geode/management/internal/cli/domain/CacheServerInfo,true,1,bindAddress:java/lang/String,isRunning:boolean,port:int
 org/apache/geode/management/internal/cli/domain/ClassName,true,1,className:java/lang/String,initProperties:java/util/Properties
 org/apache/geode/management/internal/cli/domain/DataCommandRequest,false,command:java/lang/String,key:java/lang/String,keyClass:java/lang/String,loadOnCacheMiss:boolean,principal:java/lang/Object,putIfAbsent:boolean,query:java/lang/String,recursive:boolean,regionName:java/lang/String,removeAllKeys:java/lang/String,value:java/lang/String,valueClass:java/lang/String
