@@ -62,6 +62,22 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     if (config.getType() == RegionType.UNSUPPORTED) {
       throw new IllegalArgumentException(("Region type is unsupported."));
     }
+
+    Integer redundantCopies = config.getRedundantCopies();
+    if (config.getType().withRedundant() && redundantCopies == 0) {
+      throw new IllegalArgumentException(
+          "redundantCopies cannot be 0 when the type has redundancy.");
+    }
+
+    if (redundantCopies != null && (redundantCopies < 0 || redundantCopies > 3)) {
+      throw new IllegalArgumentException(
+          "redundantCopies cannot be less than 0 or greater than 3.");
+    }
+
+    if (!config.getType().withPartition() && config.getRedundantCopies() != null) {
+      throw new IllegalArgumentException("redundantCopies can only be set with PARTITION regions.");
+    }
+
     RegionNameValidation.validate(config.getName());
 
     // additional authorization

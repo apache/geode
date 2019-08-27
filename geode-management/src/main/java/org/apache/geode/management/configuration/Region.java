@@ -25,6 +25,12 @@ import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 
+/**
+ * this holds the region attributes you can configure using management rest api
+ *
+ * for regions created using gfsh but listed using management rest api, the attributes not supported
+ * by management rest api won't be shown.
+ */
 public class Region extends CacheElement implements RestfulEndpoint,
     CorrespondWith<RuntimeRegionInfo> {
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
@@ -35,13 +41,9 @@ public class Region extends CacheElement implements RestfulEndpoint,
   private String keyConstraint;
   private String valueConstraint;
   private String diskStoreName;
+  private Integer redundantCopies;
 
   public Region() {}
-
-  public Region(String name, RegionType type) {
-    this.name = name;
-    this.type = type;
-  }
 
   @Override
   public boolean isGlobalRuntime() {
@@ -87,6 +89,20 @@ public class Region extends CacheElement implements RestfulEndpoint,
 
   public void setType(RegionType type) {
     this.type = type;
+  }
+
+  /**
+   * @return the redundant copies of a region
+   */
+  public Integer getRedundantCopies() {
+    if (type != null && type.withRedundant() && redundantCopies == null) {
+      return 1;
+    }
+    return redundantCopies;
+  }
+
+  public void setRedundantCopies(Integer redundantCopies) {
+    this.redundantCopies = redundantCopies;
   }
 
   public String getKeyConstraint() {

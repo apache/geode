@@ -57,9 +57,8 @@ public class RegionConfigRealizer
    */
   @Override
   public RealizationResult create(Region regionConfig, InternalCache cache) {
-    RegionFactory factory = getRegionFactory(cache, regionConfig);
-    factory.create(regionConfig.getName());
-    return new RealizationResult().setMessage("Region successfully created.");
+    RegionConfig xmlConfig = converter.fromConfigObject(regionConfig);
+    return create(xmlConfig, regionConfig.getName(), cache);
   }
 
   /**
@@ -84,28 +83,6 @@ public class RegionConfigRealizer
     org.apache.geode.cache.Region parentRegion = cache.getRegion(parentRegionPath);
     factory.createSubregion(parentRegion, regionName);
     return new RealizationResult().setMessage("Region successfully created.");
-  }
-
-  RegionFactory getRegionFactory(Cache cache, Region regionConfig) {
-    RegionFactory factory =
-        cache.createRegionFactory(regionConfig.getType().name());
-    if (regionConfig.getDiskStoreName() != null) {
-      factory.setDiskStoreName(regionConfig.getDiskStoreName());
-    }
-    final String keyConstraint = regionConfig.getKeyConstraint();
-    final String valueConstraint = regionConfig.getValueConstraint();
-    if (keyConstraint != null && !keyConstraint.isEmpty()) {
-      Class<Object> keyConstraintClass =
-          CliUtil.forName(keyConstraint, CliStrings.CREATE_REGION__KEYCONSTRAINT);
-      factory.setKeyConstraint(keyConstraintClass);
-    }
-
-    if (valueConstraint != null && !valueConstraint.isEmpty()) {
-      Class<Object> valueConstraintClass =
-          CliUtil.forName(valueConstraint, CliStrings.CREATE_REGION__VALUECONSTRAINT);
-      factory.setValueConstraint(valueConstraintClass);
-    }
-    return factory;
   }
 
   private RegionFactory getRegionFactory(Cache cache, RegionAttributesType regionAttributes) {

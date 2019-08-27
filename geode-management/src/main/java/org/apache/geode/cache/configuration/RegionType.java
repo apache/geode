@@ -18,34 +18,111 @@ package org.apache.geode.cache.configuration;
 import org.apache.geode.annotations.Experimental;
 
 /**
- * these are the region types supported by Cluster Management V2 API. The attributes of these
- * region types are the same as their namesakes in RegionShortcut
+ * these are the region types supported by Cluster Management V2 API.
+ * these corresponds to a subset of data policies
  */
 @Experimental
 public enum RegionType {
   PARTITION,
-  PARTITION_REDUNDANT,
   PARTITION_PERSISTENT,
-  PARTITION_REDUNDANT_PERSISTENT,
-  PARTITION_OVERFLOW,
-  PARTITION_REDUNDANT_OVERFLOW,
-  PARTITION_PERSISTENT_OVERFLOW,
-  PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
-  PARTITION_HEAP_LRU,
-  PARTITION_REDUNDANT_HEAP_LRU,
-
   PARTITION_PROXY,
-  PARTITION_PROXY_REDUNDANT,
 
   REPLICATE,
   REPLICATE_PERSISTENT,
-  REPLICATE_OVERFLOW,
-  REPLICATE_PERSISTENT_OVERFLOW,
-  REPLICATE_HEAP_LRU,
-
   REPLICATE_PROXY,
 
   // this is used to represent regions not supported by the management V2 API. For example Gfsh can
   // create regions with "LOCAL*" types
-  UNSUPPORTED;
+  UNSUPPORTED,
+
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1
+   */
+  @Deprecated
+  PARTITION_REDUNDANT,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1
+   */
+  @Deprecated
+  PARTITION_REDUNDANT_PERSISTENT,
+  /**
+   * @deprecated use PARTITION and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_OVERFLOW,
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1, and set the evictionAction to
+   *             OVERFLOW_TO_DISK
+   */
+
+  // PARTITION_REDUNDANT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION_PERSISTENT and set the redundancy level to 1 and set the
+   *             evictionAction to OVERFLOW_TO_DISK
+   */
+  // PARTITION_REDUNDANT_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use PARTITION and set the evictionAction to LOCAL_DESTROY
+   */
+  // PARTITION_HEAP_LRU,
+  /**
+   * @deprecated use PARTITION and set the redundancy level to 1 and set the evictionAction to
+   *             LOCAL_DESTROY
+   */
+  // PARTITION_REDUNDANT_HEAP_LRU,
+  /**
+   * @deprecated use PARTITION_PROXY and set the redundancy level to 1
+   */
+  @Deprecated
+  PARTITION_PROXY_REDUNDANT;
+  /**
+   * @deprecated use REPLICATE and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // REPLICATE_OVERFLOW,
+  /**
+   * @deprecated use REPLICATE_PERSISTENT and set the evictionAction to OVERFLOW_TO_DISK
+   */
+  // REPLICATE_PERSISTENT_OVERFLOW,
+  /**
+   * @deprecated use REPLICATE and set the evictionAction to LOCAL_DESTROY
+   */
+  // REPLICATE_HEAP_LRU;
+
+  /**
+   * @return if the type contains "PROXY"
+   */
+  public boolean withProxy() {
+    return name().contains("PROXY");
+  }
+
+  /**
+   * @return if the type contains "PERSISTENT"
+   */
+  public boolean withPersistent() {
+    return name().contains("PERSISTENT");
+  }
+
+  /**
+   * @return if the type contains "REPLICATE"
+   */
+  public boolean withReplicate() {
+    return name().contains("REPLICATE");
+  }
+
+  /**
+   * @return if the type contains "PARTITION"
+   */
+  public boolean withPartition() {
+    return name().contains("PARTITION");
+  }
+
+  /**
+   * @return if the type contains "REDUNDANT"
+   */
+  public boolean withRedundant() {
+    return name().contains("REDUNDANT");
+  }
 }

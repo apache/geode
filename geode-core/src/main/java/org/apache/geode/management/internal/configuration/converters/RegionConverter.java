@@ -15,6 +15,9 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+
+import java.util.Optional;
+
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
@@ -28,25 +31,17 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
   protected Region fromNonNullXmlObject(RegionConfig xmlObject) {
     Region region = new Region();
     region.setName(xmlObject.getName());
-    if (xmlObject.getType() == null) {
-      // older gfsh would generate the region xml without the refid/type. we will not
-      // support showing these regions in management rest api for now.
-      region.setType(RegionType.UNSUPPORTED);
-    } else {
-      try {
-        region.setType(RegionType.valueOf(xmlObject.getType()));
-      } catch (IllegalArgumentException e) {
-        // Management rest api will not support showing regions with "LOCAL*" types or user defined
-        // refids
-        region.setType(RegionType.UNSUPPORTED);
-      }
-    }
     RegionAttributesType regionAttributes = xmlObject.getRegionAttributes();
+    region.setType(getRegionType(xmlObject.getType(), regionAttributes));
 
     if (regionAttributes != null) {
       region.setDiskStoreName(regionAttributes.getDiskStoreName());
       region.setKeyConstraint(regionAttributes.getKeyConstraint());
       region.setValueConstraint(regionAttributes.getValueConstraint());
+      Optional.ofNullable(regionAttributes.getPartitionAttributes())
+          .flatMap(
+              partitionAttributes -> Optional.ofNullable(partitionAttributes.getRedundantCopies()))
+          .ifPresent(copies -> region.setRedundantCopies(Integer.parseInt(copies)));
     }
     return region;
   }
@@ -65,18 +60,99 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
     attributesType.setKeyConstraint(configObject.getKeyConstraint());
     attributesType.setValueConstraint(configObject.getValueConstraint());
     region.setRegionAttributes(attributesType);
+
+    if (configObject.getRedundantCopies() != null) {
+      RegionAttributesType.PartitionAttributes partitionAttributes =
+          new RegionAttributesType.PartitionAttributes();
+      partitionAttributes.setRedundantCopies(configObject.getRedundantCopies().toString());
+      attributesType.setPartitionAttributes(partitionAttributes);
+    }
     return region;
   }
+
+  /**
+   * Data policy to regionType is almost a 1-to-1 mapping, except in
+   * the case of DataPolicy.PARTITION, we will need to see the local max memory
+   * to determine if it's a PARTITION type or a PARTITION_PROXY type.
+   *
+   * we do our best to infer the type from the existing xml attributes. For data
+   * policies not supported by management rest api (for example, NORMAL and PRELOADED)
+   * it will show as UNSUPPORTED
+   */
+  public RegionType getRegionType(String refid, RegionAttributesType regionAttributes) {
+    if (refid != null) {
+      try {
+        return RegionType.valueOf(refid);
+      } catch (Exception e) {
+        return RegionType.UNSUPPORTED;
+      }
+    }
+
+    // if refid is null, we will try to determine the type based on the region attributes
+    if (regionAttributes == null) {
+      return RegionType.UNSUPPORTED;
+    }
+    RegionAttributesDataPolicy dataPolicy = regionAttributes.getDataPolicy();
+
+    if (dataPolicy == null) {
+      return RegionType.UNSUPPORTED;
+    }
+
+    switch (dataPolicy) {
+      case PARTITION: {
+        RegionAttributesType.PartitionAttributes partitionAttributes =
+            regionAttributes.getPartitionAttributes();
+        if (partitionAttributes != null && "0".equals(partitionAttributes.getLocalMaxMemory())) {
+          return RegionType.PARTITION_PROXY;
+        }
+        return RegionType.PARTITION;
+      }
+      case PERSISTENT_PARTITION: {
+        return RegionType.PARTITION_PERSISTENT;
+      }
+      case PERSISTENT_REPLICATE: {
+        return RegionType.REPLICATE_PERSISTENT;
+      }
+      case REPLICATE: {
+        return RegionType.REPLICATE;
+      }
+      case EMPTY: {
+        return RegionType.REPLICATE_PROXY;
+      }
+    }
+    return RegionType.UNSUPPORTED;
+  }
+
 
   public RegionAttributesType createRegionAttributesByType(String type) {
     RegionAttributesType regionAttributes = new RegionAttributesType();
     switch (type) {
+      // these are supported by the management rest api
       case "PARTITION": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
         break;
       }
+      case "PARTITION_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
+        break;
+      }
+      case "PARTITION_PROXY": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
+        regionAttributes.setLocalMaxMemory("0");
+        break;
+      }
       case "REPLICATE": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        break;
+      }
+      case "REPLICATE_PERSISTENT": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
+        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
+        break;
+      }
+      case "REPLICATE_PROXY": {
+        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
         regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
         break;
       }
@@ -85,10 +161,7 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
         regionAttributes.setRedundantCopy("1");
         break;
       }
-      case "PARTITION_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
-        break;
-      }
+
       case "PARTITION_REDUNDANT_PERSISTENT": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_PARTITION);
         regionAttributes.setRedundantCopy("1");
@@ -134,19 +207,12 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
             .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.LOCAL_DESTROY);
         break;
       }
-
-      case "REPLICATE_PERSISTENT": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
       case "REPLICATE_OVERFLOW": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.REPLICATE);
         regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
         regionAttributes
             .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
-
       }
       case "REPLICATE_PERSISTENT_OVERFLOW": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PERSISTENT_REPLICATE);
@@ -194,22 +260,14 @@ public class RegionConverter extends ConfigurationConverter<Region, RegionConfig
             .setLruHeapPercentageEvictionAction(EnumActionDestroyOverflow.OVERFLOW_TO_DISK);
         break;
       }
-      case "PARTITION_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
-        regionAttributes.setLocalMaxMemory("0");
-        break;
-      }
+
       case "PARTITION_PROXY_REDUNDANT": {
         regionAttributes.setDataPolicy(RegionAttributesDataPolicy.PARTITION);
         regionAttributes.setLocalMaxMemory("0");
         regionAttributes.setRedundantCopy("1");
         break;
       }
-      case "REPLICATE_PROXY": {
-        regionAttributes.setDataPolicy(RegionAttributesDataPolicy.EMPTY);
-        regionAttributes.setScope(RegionAttributesScope.DISTRIBUTED_ACK);
-        break;
-      }
+
       default:
         throw new IllegalArgumentException("invalid type " + type);
     }
