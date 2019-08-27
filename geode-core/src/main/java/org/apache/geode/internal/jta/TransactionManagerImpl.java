@@ -754,7 +754,7 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
     }
   }
 
-  void removeTranxnMappings(List tranxns) {
+  void removeTranxnMappingsAndRollbackExpiredTransaction(List tranxns) {
     Object[] threads = transactionMap.keySet().toArray();
     int len = threads.length;
     Object tx = null;
@@ -765,7 +765,11 @@ public class TransactionManagerImpl implements TransactionManager, Serializable 
       removed = tranxns.remove(tx);
       if (removed) {
         transactionMap.remove(temp);
-        globalTransactionMap.remove(tx);
+        GlobalTransaction globalTransaction = (GlobalTransaction) globalTransactionMap.remove(tx);
+        try {
+          globalTransaction.rollback();
+        } catch (Exception ignore) {
+        }
       }
     }
   }

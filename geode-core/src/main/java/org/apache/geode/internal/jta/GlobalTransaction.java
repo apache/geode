@@ -623,7 +623,8 @@ public class GlobalTransaction {
     try {
       if (writer.infoEnabled())
         writer.info(String.format("Transaction %s has timed out.", this));
-      TransactionManagerImpl.getTransactionManager().removeTranxnMappings(transactions);
+      TransactionManagerImpl.getTransactionManager()
+          .removeTranxnMappingsAndRollbackExpiredTransaction(transactions);
       setStatus(Status.STATUS_NO_TRANSACTION);
     } catch (Exception e) {
       if (writer.severeEnabled())
