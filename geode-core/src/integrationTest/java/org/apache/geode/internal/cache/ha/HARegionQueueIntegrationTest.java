@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -50,8 +49,6 @@ import org.mockito.MockitoAnnotations;
 import util.TestException;
 
 import org.apache.geode.CancelCriterion;
-import org.apache.geode.Statistics;
-import org.apache.geode.StatisticsType;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.CacheFactory;
@@ -61,12 +58,7 @@ import org.apache.geode.cache.EvictionAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.distributed.internal.DSClock;
-import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.SystemTimer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
 import org.apache.geode.internal.cache.CachedDeserializable;
@@ -81,6 +73,7 @@ import org.apache.geode.internal.cache.VMCachedDeserializable;
 import org.apache.geode.internal.cache.tier.sockets.CacheClientNotifier;
 import org.apache.geode.internal.cache.tier.sockets.CacheServerStats;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
+import org.apache.geode.internal.cache.tier.sockets.ClientRegistrationEventQueueManager;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessage;
 import org.apache.geode.internal.cache.tier.sockets.ClientUpdateMessageImpl;
 import org.apache.geode.internal.cache.tier.sockets.ConnectionListener;
@@ -108,7 +101,6 @@ public class HARegionQueueIntegrationTest {
     dataRegion = createDataRegion();
     ccn = createCacheClientNotifier();
     member = createMember();
-    HAContainerWrapper haContainerWrapper = (HAContainerWrapper) ccn.getHaContainer();
   }
 
   @After
@@ -125,38 +117,12 @@ public class HARegionQueueIntegrationTest {
     return cache.createRegionFactory(RegionShortcut.REPLICATE).create("data");
   }
 
-  private InternalCache createMockInternalCache() {
-    InternalCache mockInternalCache = mock(InternalCache.class);
-    doReturn(mock(SystemTimer.class)).when(mockInternalCache).getCCPTimer();
-    doReturn(mock(CancelCriterion.class)).when(mockInternalCache).getCancelCriterion();
-
-    InternalDistributedSystem mockInteralDistributedSystem = createMockInternalDistributedSystem();
-    doReturn(mockInteralDistributedSystem).when(mockInternalCache).getInternalDistributedSystem();
-    doReturn(mockInteralDistributedSystem).when(mockInternalCache).getDistributedSystem();
-
-    return mockInternalCache;
-  }
-
-  private InternalDistributedSystem createMockInternalDistributedSystem() {
-    InternalDistributedSystem mockInternalDistributedSystem =
-        mock(InternalDistributedSystem.class);
-    DistributionManager mockDistributionManager = mock(DistributionManager.class);
-
-    doReturn(mock(InternalDistributedMember.class)).when(mockInternalDistributedSystem)
-        .getDistributedMember();
-    doReturn(mock(Statistics.class)).when(mockInternalDistributedSystem)
-        .createAtomicStatistics(any(StatisticsType.class), any(String.class));
-    doReturn(mock(DistributionConfig.class)).when(mockDistributionManager).getConfig();
-    doReturn(mockDistributionManager).when(mockInternalDistributedSystem).getDistributionManager();
-    doReturn(mock(DSClock.class)).when(mockInternalDistributedSystem).getClock();
-
-    return mockInternalDistributedSystem;
-  }
-
   private CacheClientNotifier createCacheClientNotifier() {
     CacheClientNotifier ccn =
-        CacheClientNotifier.getInstance((InternalCache) cache, mock(CacheServerStats.class),
-            100000, 100000, mock(ConnectionListener.class), null, false);
+        CacheClientNotifier.getInstance((InternalCache) cache,
+            mock(ClientRegistrationEventQueueManager.class), mock(CacheServerStats.class),
+            100000, 100000, mock(ConnectionListener.class),
+            null, false);
     return ccn;
   }
 

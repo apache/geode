@@ -400,15 +400,14 @@ public class AcceptorImpl implements Acceptor, Runnable {
    * @param maxConnections the maximum number of connections allowed in the server pool
    * @param maxThreads the maximum number of threads allowed in the server pool
    * @param securityService the SecurityService to use for authentication and authorization
-   * @param gatewayReceiver the GatewayReceiver that will use this AcceptorImpl instance
-   * @param gatewayReceiverMetrics the GatewayReceiverMetrics to use for exposing metrics
    * @param gatewayTransportFilters List of GatewayTransportFilters
    */
   AcceptorImpl(final int port, final String bindHostName, final boolean notifyBySubscription,
       final int socketBufferSize, final int maximumTimeBetweenPings,
       final InternalCache internalCache, final int maxConnections, final int maxThreads,
       final int maximumMessageCount, final int messageTimeToLive,
-      final ConnectionListener connectionListener, final OverflowAttributes overflowAttributes,
+      final ConnectionListener connectionListener,
+      final OverflowAttributes overflowAttributes,
       final boolean tcpNoDelay, final ServerConnectionFactory serverConnectionFactory,
       final long timeLimitMillis, final SecurityService securityService,
       final Supplier<SocketCreator> socketCreatorSupplier,
@@ -609,8 +608,10 @@ public class AcceptorImpl implements Acceptor, Runnable {
     cache = internalCache;
     crHelper = new CachedRegionHelper(cache);
 
-    clientNotifier = cacheClientNotifierProvider.get(internalCache, stats, maximumMessageCount,
-        messageTimeToLive, this.connectionListener, overflowAttributes, isGatewayReceiver());
+    clientNotifier =
+        cacheClientNotifierProvider.get(internalCache, new ClientRegistrationEventQueueManager(),
+            stats, maximumMessageCount, messageTimeToLive, this.connectionListener,
+            overflowAttributes, isGatewayReceiver());
 
     this.socketBufferSize = socketBufferSize;
 
