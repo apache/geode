@@ -57,4 +57,22 @@ public class DeployCommandTest {
   public void missingDirOrJar() {
     gfsh.executeAndAssertThat(command, "deploy").statusIsError().containsOutput("is required");
   }
+
+  @Test
+  public void convertShorthandToPathJar() {
+    gfsh.executeAndAssertThat(command, "deploy --jar=~/abc.jar").statusIsError()
+        .containsOutput(System.getProperty("user.home"));
+  }
+
+  @Test
+  public void doubleShorthandFails() {
+    gfsh.executeAndAssertThat(command, "deploy --jar=~~/abc.jar").statusIsError()
+        .doesNotContainOutput(System.getProperty("user.home"));
+  }
+
+  @Test
+  public void convertOnlyFirstShorthand() {
+    gfsh.executeAndAssertThat(command, "deploy --jar=~/a~bc.jar").statusIsError()
+        .containsOutput(System.getProperty("user.home"));
+  }
 }
