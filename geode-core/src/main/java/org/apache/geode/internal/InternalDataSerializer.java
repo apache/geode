@@ -273,8 +273,10 @@ public abstract class InternalDataSerializer extends DataSerializer {
   @MakeNotStatic
   private static OldClientSupportService oldClientSupportService;
 
+  @MakeNotStatic
   private static final DSFIDSerializer dsfidSerializer;
 
+  @MakeNotStatic
   private static DSFIDFactory dsfidFactory;
 
   /**

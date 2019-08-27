@@ -79,6 +79,23 @@ import org.apache.geode.distributed.internal.locks.GrantorRequestProcessor;
 import org.apache.geode.distributed.internal.locks.NonGrantorDestroyedProcessor;
 import org.apache.geode.distributed.internal.locks.NonGrantorDestroyedProcessor.NonGrantorDestroyedReplyMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMember;
+import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.FindCoordinatorResponse;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewRequest;
+import org.apache.geode.distributed.internal.membership.gms.locator.GetViewResponse;
+import org.apache.geode.distributed.internal.membership.gms.messages.FinalCheckPassedMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.InstallViewMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.JoinResponseMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.LeaveRequestMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.NetworkPartitionMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.RemoveMemberMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
+import org.apache.geode.distributed.internal.membership.gms.messages.ViewAckMessage;
 import org.apache.geode.distributed.internal.streaming.StreamingOperation.StreamingReplyMessage;
 import org.apache.geode.internal.admin.ClientMembershipMessage;
 import org.apache.geode.internal.admin.remote.AddHealthListenerRequest;
@@ -432,6 +449,23 @@ public class DSFIDFactory implements DataSerializableFixedID {
   }
 
   void registerDSFIDTypes() {
+    serializer.registerDSFID(FINAL_CHECK_PASSED_MESSAGE, FinalCheckPassedMessage.class);
+    serializer.registerDSFID(NETWORK_PARTITION_MESSAGE, NetworkPartitionMessage.class);
+    serializer.registerDSFID(REMOVE_MEMBER_REQUEST, RemoveMemberMessage.class);
+    serializer.registerDSFID(HEARTBEAT_REQUEST, HeartbeatRequestMessage.class);
+    serializer.registerDSFID(HEARTBEAT_RESPONSE, HeartbeatMessage.class);
+    serializer.registerDSFID(SUSPECT_MEMBERS_MESSAGE, SuspectMembersMessage.class);
+    serializer.registerDSFID(LEAVE_REQUEST_MESSAGE, LeaveRequestMessage.class);
+    serializer.registerDSFID(VIEW_ACK_MESSAGE, ViewAckMessage.class);
+    serializer.registerDSFID(INSTALL_VIEW_MESSAGE, InstallViewMessage.class);
+    serializer.registerDSFID(GMSMEMBER, GMSMember.class);
+    serializer.registerDSFID(NETVIEW, GMSMembershipView.class);
+    serializer.registerDSFID(GET_VIEW_REQ, GetViewRequest.class);
+    serializer.registerDSFID(GET_VIEW_RESP, GetViewResponse.class);
+    serializer.registerDSFID(FIND_COORDINATOR_REQ, FindCoordinatorRequest.class);
+    serializer.registerDSFID(FIND_COORDINATOR_RESP, FindCoordinatorResponse.class);
+    serializer.registerDSFID(JOIN_RESPONSE, JoinResponseMessage.class);
+    serializer.registerDSFID(JOIN_REQUEST, JoinRequestMessage.class);
     serializer.registerDSFID(CLIENT_TOMBSTONE_MESSAGE, ClientTombstoneMessage.class);
     serializer.registerDSFID(R_CLEAR_MSG, RemoteClearMessage.class);
     serializer.registerDSFID(R_CLEAR_MSG_REPLY, RemoteClearReplyMessage.class);

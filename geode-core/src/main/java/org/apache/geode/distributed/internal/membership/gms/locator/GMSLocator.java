@@ -347,7 +347,6 @@ public class GMSLocator implements Locator {
           e);
       viewFile = null;
     }
-    logger.info("BRUCE: saved view to {} size {}", viewFile.getAbsolutePath(), viewFile.length());
   }
 
   public void endRequest(Object request, long startTime) {
@@ -431,7 +430,7 @@ public class GMSLocator implements Locator {
       DataInputStream input = new DataInputStream(fileInputStream);
       if (version != currentVersion) {
         SerializationVersion geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
-        logger.info("Peer locator found that persistent view was written with version ",
+        logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
         if (version > currentVersion) {
           return false;

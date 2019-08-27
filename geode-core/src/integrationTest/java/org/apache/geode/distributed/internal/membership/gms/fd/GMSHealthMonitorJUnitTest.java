@@ -90,6 +90,7 @@ import org.apache.geode.distributed.internal.membership.gms.messages.HeartbeatRe
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectMembersMessage;
 import org.apache.geode.distributed.internal.membership.gms.messages.SuspectRequest;
 import org.apache.geode.internal.HeapDataOutputStream;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.test.junit.categories.MembershipTest;
@@ -115,6 +116,10 @@ public class GMSHealthMonitorJUnitTest {
 
   @Before
   public void initMocks() throws UnknownHostException {
+    // ensure that Geode's serialization and version are initialized
+    Version currentVersion = Version.CURRENT;
+    InternalDataSerializer.getDSFIDSerializer();
+
     // System.setProperty("gemfire.bind-address", "localhost");
     mockDistConfig = mock(DistributionConfig.class);
     mockConfig = mock(ServiceConfig.class);

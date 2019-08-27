@@ -35,9 +35,9 @@ public class SerializationVersion implements Comparable<SerializationVersion> {
   protected static final byte TOKEN_ORDINAL = -1;
   protected static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
 
-  public static SerializationVersion ILLEGAL_VERSION = new SerializationVersion(-1);
+  private static SerializationVersion ILLEGAL_VERSION = new SerializationVersion(-1);
 
-  public static SerializationVersion currentVersion =
+  private static SerializationVersion currentVersion =
       new SerializationVersion(ILLEGAL_VERSION.ordinal);
 
   /** value used as ordinal to represent this <code>SerializationVersion</code> */

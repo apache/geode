@@ -58,7 +58,7 @@ public class GMSMember implements DataSerializableFixedID {
   private int directPort;
   private String name;
   private String[] groups;
-  private short versionOrdinal = SerializationVersion.currentVersion.ordinal();
+  private short versionOrdinal = SerializationVersion.getCurrentVersion().ordinal();
   private long uuidLSBs;
   private long uuidMSBs;
   private String durableId;
@@ -96,7 +96,7 @@ public class GMSMember implements DataSerializableFixedID {
    */
   @VisibleForTesting
   public GMSMember(String i, int p) {
-    this(i, p, SerializationVersion.currentVersion);
+    this(i, p, SerializationVersion.getCurrentVersion());
   }
 
   /**
