@@ -16,6 +16,7 @@
 package org.apache.geode.pdx.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -32,6 +33,7 @@ import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.statistics.StatisticsManager;
+import org.apache.geode.pdx.PdxInitializationException;
 
 public class PeerTypeRegistrationTest {
 
@@ -59,8 +61,9 @@ public class PeerTypeRegistrationTest {
   }
 
   @Test
-  public void getLocalSizeIs0WhenNotInitialized() {
-    assertThat(peerTypeRegistration.getLocalSize()).isEqualTo(0);
+  public void getLocalSizeThrowsWhenNotInitialized() {
+    assertThatThrownBy(peerTypeRegistration::getLocalSize)
+        .isInstanceOf(PdxInitializationException.class);
   }
 
   @Test
