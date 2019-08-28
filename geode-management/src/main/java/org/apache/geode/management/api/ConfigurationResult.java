@@ -31,7 +31,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  */
 @Experimental
 public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
-  private T config;
+  private T configuration;
   private List<R> runtimeInfo = new ArrayList<>();
 
   /**
@@ -42,22 +42,22 @@ public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R e
   /**
    * for internal use only
    */
-  public ConfigurationResult(T config) {
-    this.config = config;
+  public ConfigurationResult(T configuration) {
+    this.configuration = configuration;
   }
 
   /**
    * Returns the static portion of the configuration
    */
-  public T getConfig() {
-    return config;
+  public T getConfiguration() {
+    return configuration;
   }
 
   /**
    * for internal use only
    */
-  public void setConfig(T config) {
-    this.config = config;
+  public void setConfiguration(T configuration) {
+    this.configuration = configuration;
   }
 
   /**

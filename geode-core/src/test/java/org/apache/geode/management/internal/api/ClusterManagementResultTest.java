@@ -147,7 +147,7 @@ public class ClusterManagementResultTest {
     region.setName("region");
     region.setType(RegionType.REPLICATE);
     region.setGroup("group1");
-    response.setConfig(region);
+    response.setConfiguration(region);
 
     RuntimeRegionInfo info = new RuntimeRegionInfo();
     info.setEntryCount(3);

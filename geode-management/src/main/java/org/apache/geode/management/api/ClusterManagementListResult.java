@@ -64,7 +64,7 @@ public class ClusterManagementListResult<T extends CacheElement & CorrespondWith
    */
   @JsonIgnore
   public List<T> getConfigResult() {
-    return result.stream().map(ConfigurationResult::getConfig).collect(Collectors.toList());
+    return result.stream().map(ConfigurationResult::getConfiguration).collect(Collectors.toList());
   }
 
   /**
