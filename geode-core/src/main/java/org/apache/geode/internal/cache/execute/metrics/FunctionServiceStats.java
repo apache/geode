@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.cache.execute;
+package org.apache.geode.internal.cache.execute.metrics;
 
 import java.util.function.LongSupplier;
 
@@ -382,14 +382,13 @@ public class FunctionServiceStats {
    * Increments the "functionExecutionsCompleted" and "functionExecutionCompleteProcessingTime"
    * stats.
    *
-   * @param start The start of the functionExecution (which is decremented from the current time to
+   * @param elapsed The start of the functionExecution (which is decremented from the current time
+   *        to
    *        determine the function Execution processing time).
    * @param haveResult haveResult=true then update the _functionExecutionHasResultRunningId and
    *        _functionExecutionHasResultCompleteProcessingTimeId
    */
-  public void endFunctionExecution(long start, boolean haveResult) {
-    long ts = getTime();
-
+  public void endFunctionExecution(long elapsed, boolean haveResult) {
     // Increment number of function executions completed
     this._stats.incInt(_functionExecutionsCompletedId, 1);
 
@@ -397,7 +396,6 @@ public class FunctionServiceStats {
     this._stats.incInt(_functionExecutionsRunningId, -1);
 
     // Increment function execution complete processing time
-    long elapsed = ts - start;
     this._stats.incLong(_functionExecutionsCompletedProcessingTimeId, elapsed);
 
     if (haveResult) {
@@ -407,7 +405,6 @@ public class FunctionServiceStats {
       // Increment function execution with haveResult = true complete processing time
       this._stats.incLong(_functionExecutionsHasResultCompletedProcessingTimeId, elapsed);
     }
-
   }
 
   /**

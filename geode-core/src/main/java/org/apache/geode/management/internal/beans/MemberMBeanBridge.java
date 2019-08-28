@@ -66,7 +66,7 @@ import org.apache.geode.internal.cache.InternalRegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.PartitionedRegionStats;
 import org.apache.geode.internal.cache.control.ResourceManagerStats;
-import org.apache.geode.internal.cache.execute.FunctionServiceStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionServiceStats;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
@@ -283,7 +283,7 @@ public class MemberMBeanBridge {
   MemberMBeanBridge init() {
     CachePerfStats cachePerfStats = cache.getCachePerfStats();
     addCacheStats(cachePerfStats);
-    addFunctionStats(system.getFunctionServiceStats());
+    addFunctionStats(system.getFunctionStatsManager().getFunctionServiceStats());
 
     if (system.getDistributionManager().getStats() instanceof DistributionStats) {
       DistributionStats distributionStats =

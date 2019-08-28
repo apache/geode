@@ -27,6 +27,7 @@ import org.apache.geode.cache.execute.ResultSender;
 import org.apache.geode.cache.operations.ExecuteFunctionOperationContext;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -121,7 +122,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
 
-      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
+      FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
@@ -167,7 +168,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.sendChunk(this.sc);
       this.lastResultReceived = true;
       this.sc.setAsTrue(Command.RESPONDED);
-      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
+      FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
@@ -210,7 +211,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.setNumberOfParts(1);
       this.msg.addObjPart(oneResult);
       this.msg.sendChunk(this.sc);
-      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
+      FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(
@@ -252,7 +253,7 @@ public class ServerToClientFunctionResultSender implements ResultSender {
       this.msg.setNumberOfParts(1);
       this.msg.addObjPart(oneResult);
       this.msg.sendChunk(this.sc);
-      FunctionStats.getFunctionStats(fn.getId()).incResultsReturned();
+      FunctionStatsManager.getFunctionStats(fn.getId()).incResultsReturned();
     } catch (IOException ex) {
       if (isOkayToSendResult()) {
         throw new FunctionException(

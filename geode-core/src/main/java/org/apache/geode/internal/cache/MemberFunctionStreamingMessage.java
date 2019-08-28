@@ -46,9 +46,10 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.execute.FunctionContextImpl;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.MemberFunctionResultSender;
 import org.apache.geode.internal.cache.execute.MultiRegionFunctionContextImpl;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStats;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -160,10 +161,11 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
     }
 
     FunctionStats stats =
-        FunctionStats.getFunctionStats(this.functionObject.getId(), dm.getSystem());
+        FunctionStatsManager.getFunctionStats(this.functionObject.getId(), dm.getSystem());
     TXStateProxy tx = null;
     InternalCache cache = dm.getCache();
 
+    long start = stats.getTime();
     try {
       tx = prepForTransaction(dm);
       ResultSender resultSender = new MemberFunctionResultSender(dm, this, this.functionObject);
@@ -188,7 +190,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       FunctionContextImpl context = new MultiRegionFunctionContextImpl(cache,
           this.functionObject.getId(), this.args, resultSender, regions, isReExecute);
 
-      long start = stats.startTime();
+      start = stats.getTime();
       stats.startFunctionExecution(this.functionObject.hasResult());
       if (logger.isDebugEnabled()) {
         logger.debug("Executing Function: {} on remote member with context: {}",
@@ -206,7 +208,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("FunctionException occurred on remote member while executing Function: {}",
             this.functionObject.getId(), functionException);
       }
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
       rex = new ReplyException(functionException);
       replyWithException(dm, rex);
       // thr = functionException.getCause();
@@ -215,7 +217,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
       // throw new CacheClosedException("remote system shutting down");
       // thr = se; cache is closed, no point trying to send a reply
       thr = new FunctionInvocationTargetException(exception);
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
       rex = new ReplyException(thr);
       replyWithException(dm, rex);
     } catch (Exception exception) {
@@ -223,7 +225,7 @@ public class MemberFunctionStreamingMessage extends DistributionMessage
         logger.debug("Exception occurred on remote member while executing Function: {}",
             this.functionObject.getId(), exception);
       }
-      stats.endFunctionExecutionWithException(this.functionObject.hasResult());
+      stats.endFunctionExecutionWithException(start, this.functionObject.hasResult());
       rex = new ReplyException(exception);
       replyWithException(dm, rex);
       // thr = e.getCause();

@@ -40,11 +40,11 @@ import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.execute.AbstractExecution;
 import org.apache.geode.internal.cache.execute.BucketMovedException;
-import org.apache.geode.internal.cache.execute.FunctionStats;
 import org.apache.geode.internal.cache.execute.InternalFunctionException;
 import org.apache.geode.internal.cache.execute.InternalFunctionInvocationTargetException;
 import org.apache.geode.internal.cache.execute.MemberMappedArgument;
 import org.apache.geode.internal.cache.execute.ServerRegionFunctionExecutor;
+import org.apache.geode.internal.cache.execute.metrics.FunctionStatsManager;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.ChunkedMessage;
 import org.apache.geode.internal.cache.tier.sockets.Message;
@@ -287,7 +287,7 @@ public class ExecuteRegionFunctionSingleHopOp {
                   Throwable cause = ex.getCause();
                   DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
                   resultCollector.addResult(memberID, cause);
-                  FunctionStats
+                  FunctionStatsManager
                       .getFunctionStats(functionId, executor.getRegion().getSystem())
                       .incResultsReceived();
                   continue;
@@ -319,7 +319,7 @@ public class ExecuteRegionFunctionSingleHopOp {
               } else {
                 DistributedMember memberID = (DistributedMember) ((List) resultResponse).get(1);
                 resultCollector.addResult(memberID, result);
-                FunctionStats
+                FunctionStatsManager
                     .getFunctionStats(functionId, executor.getRegion().getSystem())
                     .incResultsReceived();
               }
