@@ -35,29 +35,32 @@ public class SerializationVersion implements Comparable<SerializationVersion> {
   protected static final byte TOKEN_ORDINAL = -1;
   protected static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
 
-  private static SerializationVersion ILLEGAL_VERSION = new SerializationVersion(-1);
+  private static final SerializationVersion ILLEGAL_VERSION = new SerializationVersion(-1, false);
 
-  private static SerializationVersion currentVersion =
-      new SerializationVersion(ILLEGAL_VERSION.ordinal);
+  private static final SerializationVersion currentVersionHolder[] =
+      new SerializationVersion[] {new SerializationVersion(ILLEGAL_VERSION.ordinal, false)};
 
   /** value used as ordinal to represent this <code>SerializationVersion</code> */
   protected short ordinal;
 
   /** establish the current version */
   public static void setCurrentVersion(SerializationVersion version) {
-    currentVersion = version;
+    currentVersionHolder[0] = version;
   }
 
   /** retrieve the current version */
   public static SerializationVersion getCurrentVersion() {
-    return currentVersion;
+    return currentVersionHolder[0];
   }
 
   public SerializationVersion(int ordinal) {
+    this(ordinal, true);
+  }
+
+  private SerializationVersion(int ordinal, boolean updateCurrentVersion) {
     this.ordinal = (short) ordinal;
-    if (currentVersion != null &&
-        ordinal > currentVersion.ordinal) {
-      currentVersion.ordinal = this.ordinal;
+    if (updateCurrentVersion) {
+      currentVersionHolder[0].ordinal = this.ordinal;
     }
   }
 

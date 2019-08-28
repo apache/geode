@@ -94,6 +94,7 @@ import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -889,7 +890,7 @@ public class JGroupsMessenger implements Messenger {
       throws Exception {
     long start = services.getStatistics().startUDPMsgEncryption();
     try {
-      services.getSerializer().writeDSFIDHeader(gfmsg.getDSFID(), out);
+      ((DSFIDSerializerImpl) services.getSerializer()).writeDSFIDHeader(gfmsg.getDSFID(), out);
       byte[] pk = null;
       int requestId = 0;
       GMSMember pkMbr = null;
@@ -1061,7 +1062,7 @@ public class JGroupsMessenger implements Messenger {
   @SuppressWarnings("resource")
   GMSMessage readEncryptedMessage(DataInputStream dis, short ordinal,
       GMSEncrypt encryptLocal) throws Exception {
-    int dfsid = services.getSerializer().readDSFIDHeader(dis);
+    int dfsid = ((DSFIDSerializerImpl) services.getSerializer()).readDSFIDHeader(dis);
     int requestId = dis.readInt();
     long start = services.getStatistics().startUDPMsgDecryption();
     try {

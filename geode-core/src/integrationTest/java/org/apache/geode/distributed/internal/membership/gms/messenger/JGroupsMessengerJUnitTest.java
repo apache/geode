@@ -96,6 +96,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.RemoteTransportConfig;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
@@ -164,7 +165,7 @@ public class JGroupsMessengerJUnitTest {
     when(services.getHealthMonitor()).thenReturn(healthMonitor);
     when(services.getManager()).thenReturn(manager);
     when(services.getJoinLeave()).thenReturn(joinLeave);
-    DSFIDSerializer serializer = new DSFIDSerializer();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl();
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     Version current = Version.CURRENT; // force Version static initialization to set

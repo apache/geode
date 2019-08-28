@@ -110,6 +110,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DscodeHelper;
 import org.apache.geode.internal.serialization.SerializationContext;
@@ -287,7 +288,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static volatile Set<RegistrationListener> listeners = new HashSet<>();
 
   static {
-    dsfidSerializer = new DSFIDSerializer(new SerializerPlugin() {
+    dsfidSerializer = new DSFIDSerializerImpl(new SerializerPlugin() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
         InternalDataSerializer.writeObject(obj, output);
@@ -2522,7 +2523,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   public static int readDSFIDHeader(final DataInput in) throws IOException {
-    return dsfidSerializer.readDSFIDHeader(in);
+    return ((DSFIDSerializerImpl) dsfidSerializer).readDSFIDHeader(in);
   }
 
   /**

@@ -34,6 +34,7 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Messenger
 import org.apache.geode.distributed.internal.tcpserver.TcpServer;
 import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 
 public class GMSLocatorIntegrationTest {
 
@@ -52,7 +53,7 @@ public class GMSLocatorIntegrationTest {
     tcpServer = mock(TcpServer.class);
     view = new GMSMembershipView();
     services = mock(Services.class);
-    DSFIDSerializer serializer = new DSFIDSerializer();
+    DSFIDSerializer serializer = new DSFIDSerializerImpl();
     Services.registerSerializables(serializer);
     when(services.getSerializer()).thenReturn(serializer);
     Version current = Version.CURRENT; // force Version static initialization to set

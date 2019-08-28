@@ -35,6 +35,7 @@ import org.junit.experimental.categories.Category;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersion;
@@ -175,7 +176,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     constdsfids.add(new Short(DataSerializableFixedID.TOKEN_TOMBSTONE).intValue());
 
     for (int i = 0; i < 256; i++) {
-      Constructor<?> cons = InternalDataSerializer.getDSFIDSerializer().getDsfidmap()[i];
+      Constructor<?> cons =
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap()[i];
       if (!constdsfids.contains(i - Byte.MAX_VALUE - 1) && cons != null) {
         Object ds = cons.newInstance((Object[]) null);
         checkSupportForRollingUpgrade(ds);
@@ -184,7 +186,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     // some msgs require distributed system
     Cache c = getCache();
-    for (Object o : InternalDataSerializer.getDSFIDSerializer().getDsfidmap2().values()) {
+    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+        .getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {
         DataSerializableFixedID ds = (DataSerializableFixedID) cons.newInstance((Object[]) null);

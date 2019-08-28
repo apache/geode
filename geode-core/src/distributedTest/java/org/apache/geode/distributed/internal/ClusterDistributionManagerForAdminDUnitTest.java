@@ -236,17 +236,16 @@ public class ClusterDistributionManagerForAdminDUnitTest extends CacheTestCase
   }
 
   private void populateCache() {
-    AttributesFactory attributesFactory = new AttributesFactory();
-    attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
-
-    RegionAttributes regionAttributes = attributesFactory.create();
-
     for (int i = 0; i < Host.getHostCount(); i++) {
       Host host = Host.getHost(i);
 
       for (int j = 0; j < host.getVMCount(); j++) {
         VM vm = host.getVM(j);
         vm.invoke(() -> {
+          AttributesFactory attributesFactory = new AttributesFactory();
+          attributesFactory.setScope(Scope.DISTRIBUTED_NO_ACK);
+
+          RegionAttributes regionAttributes = attributesFactory.create();
           createRegion("cdm-testSubRegion1", regionAttributes);
           createRegion("cdm-testSubRegion2", regionAttributes);
           createRegion("cdm-testSubRegion3", regionAttributes);

@@ -63,6 +63,7 @@ import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
 
@@ -117,13 +118,13 @@ public class DataTypeJUnitTest {
   @Test
   public void testDataSerializableFixedIDInt() throws IOException, ClassNotFoundException {
     assertFalse(
-        InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
             .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
     InternalDataSerializer.getDSFIDSerializer().registerDSFID(
         DummyIntDataSerializableFixedID.INT_SIZE_id,
         DummyIntDataSerializableFixedID.class);
     assertTrue(
-        InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+        ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
             .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
 
     try {
@@ -139,10 +140,10 @@ public class DataTypeJUnitTest {
           + DummyIntDataSerializableFixedID.class.getName(),
           type);
     } finally {
-      InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+      ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
           .remove(DummyIntDataSerializableFixedID.INT_SIZE_id);
       assertFalse(
-          InternalDataSerializer.getDSFIDSerializer().getDsfidmap2()
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap2()
               .containsKey(DummyIntDataSerializableFixedID.INT_SIZE_id));
     }
   }
