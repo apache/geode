@@ -63,8 +63,6 @@ import org.apache.geode.test.version.VersionManager;
 @SuppressWarnings("serial")
 public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTest
     implements Serializable {
-
-  private static final int TRANSACTION_TIMEOUT_SECOND = 2;
   private static final int VM_COUNT = 6;
 
   private String hostName;
@@ -116,12 +114,13 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   public void clientTransactionOperationsAreNotLostIfTransactionIsOnRolledServer()
       throws Exception {
     setupPartiallyRolledVersion();
+    int timeoutSeconds = 30;
 
-    server1.invoke(() -> createServerRegion(1, false));
+    server1.invoke(() -> createServerRegion(1, false, timeoutSeconds));
     server1.invoke(() -> cacheRule.getCache().getRegion(regionName).put(1, "originalValue"));
-    server2.invoke(() -> createServerRegion(1, true));
-    server3.invoke(() -> createServerRegion(1, true));
-    server4.invoke(() -> createServerRegion(1, true));
+    server2.invoke(() -> createServerRegion(1, true, timeoutSeconds));
+    server3.invoke(() -> createServerRegion(1, true, timeoutSeconds));
+    server4.invoke(() -> createServerRegion(1, true, timeoutSeconds));
     client.invoke(() -> createClientRegion());
 
     ClientProxyMembershipID clientProxyMembershipID = client.invoke(() -> getClientId());
@@ -218,7 +217,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
     return rollServer;
   }
 
-  private void createServerRegion(int totalNumBuckets, boolean isAccessor) {
+  private void createServerRegion(int totalNumBuckets, boolean isAccessor, int timeoutSeconds) {
     PartitionAttributesFactory factory = new PartitionAttributesFactory();
     factory.setTotalNumBuckets(totalNumBuckets);
     if (isAccessor) {
@@ -229,7 +228,7 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
         .setPartitionAttributes(partitionAttributes).create(regionName);
 
     TXManagerImpl txManager = cacheRule.getCache().getTxManager();
-    txManager.setTransactionTimeToLiveForTest(TRANSACTION_TIMEOUT_SECOND);
+    txManager.setTransactionTimeToLiveForTest(timeoutSeconds);
   }
 
   private void createClientRegion() {
@@ -370,11 +369,12 @@ public class ClientServerTransactionFailoverWithMixedVersionServersDistributedTe
   @Test
   public void clientTransactionExpiredAreRemovedOnRolledServer() throws Exception {
     setupPartiallyRolledVersion();
+    int timeoutSeconds = 2;
 
-    server1.invoke(() -> createServerRegion(1, false));
-    server2.invoke(() -> createServerRegion(1, true));
-    server3.invoke(() -> createServerRegion(1, true));
-    server4.invoke(() -> createServerRegion(1, true));
+    server1.invoke(() -> createServerRegion(1, false, timeoutSeconds));
+    server2.invoke(() -> createServerRegion(1, true, timeoutSeconds));
+    server3.invoke(() -> createServerRegion(1, true, timeoutSeconds));
+    server4.invoke(() -> createServerRegion(1, true, timeoutSeconds));
     client.invoke(() -> createClientRegion());
 
     ClientProxyMembershipID clientProxyMembershipID = client.invoke(() -> getClientId());
