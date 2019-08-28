@@ -15,7 +15,7 @@
 package org.apache.geode.test.compiler;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class ClassBuilderTest {
   public TemporaryFolder tmpFolder = new TemporaryFolder();
 
   @Test
-  public void writeJarFromClass() throws IOException, ClassNotFoundException {
+  public void writeJarFromClasses() throws IOException, ClassNotFoundException {
     File jar = tmpFolder.newFile("test.jar");
     URL[] url = new URL[] {jar.toURI().toURL()};
     ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
@@ -51,12 +51,24 @@ public class ClassBuilderTest {
     };
 
     // write class to jar
-    new ClassBuilder().writeJarFromClass(TestObject.class, jar);
+    ClassBuilder.writeJarFromClasses(jar, TestObject.class, AnotherTestObject.class);
 
     // load class from the jar
-    Class clazz = classLoader.loadClass(TestObject.class.getName());
+    Class testObject = classLoader.loadClass(TestObject.class.getName());
+    Class anotherTestObject = classLoader.loadClass(AnotherTestObject.class.getName());
 
-    assertNotEquals(clazz, null);
-    assertEquals(clazz.getClassLoader(), classLoader);
+    assertNotNull(testObject);
+    assertNotNull(anotherTestObject);
+    assertEquals(testObject.getClassLoader(), classLoader);
+    assertEquals(anotherTestObject.getClassLoader(), classLoader);
+  }
+
+  public static class TestObject {
+    public void forClassBuilderTest() {
+      // this class is just for testing purposes
+    }
+  }
+
+  public static class AnotherTestObject {
   }
 }

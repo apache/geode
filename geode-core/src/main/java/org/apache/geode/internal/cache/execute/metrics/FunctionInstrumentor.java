@@ -12,10 +12,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.test.compiler;
+package org.apache.geode.internal.cache.execute.metrics;
 
-public class TestObject {
-  public void forClassBuilderTest() {
-    // this class is just for testing purposes
-  }
+import org.apache.geode.cache.execute.Function;
+
+public interface FunctionInstrumentor {
+  <T> Function<T> instrument(Function<T> function);
+
+  void close(Function<?> function);
 }

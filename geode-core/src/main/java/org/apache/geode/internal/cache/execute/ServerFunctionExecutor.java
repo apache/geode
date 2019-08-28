@@ -41,7 +41,7 @@ public class ServerFunctionExecutor extends AbstractExecution {
 
   private final boolean allServers;
 
-  private String[] groups;
+  private final String[] groups;
 
 
   ServerFunctionExecutor(Pool pool, boolean allServers, String... groups) {

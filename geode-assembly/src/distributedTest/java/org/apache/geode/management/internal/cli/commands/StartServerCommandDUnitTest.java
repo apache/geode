@@ -33,6 +33,7 @@ import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SER
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__SECURITY_PROPERTIES;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__SERVER_PORT;
 import static org.apache.geode.management.internal.cli.i18n.CliStrings.START_SERVER__USERNAME;
+import static org.apache.geode.test.compiler.ClassBuilder.writeJarFromClasses;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.isA;
 
@@ -66,7 +67,6 @@ import org.apache.geode.internal.process.ProcessType;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.util.CommandStringBuilder;
-import org.apache.geode.test.compiler.ClassBuilder;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.dunit.rules.SharedErrorCollector;
@@ -359,7 +359,7 @@ public class StartServerCommandDUnitTest implements Serializable {
 
     String jarName = "RunOutOfMemory.jar";
     File jar = temporaryFolder.newFile(jarName);
-    new ClassBuilder().writeJarFromClass(RunOutOfMemoryFunction.class, jar);
+    writeJarFromClasses(jar, RunOutOfMemoryFunction.class);
     gfsh.executeAndAssertThat("deploy --groups=" + groupName + " --jar=" + jar).statusIsSuccess();
 
     locator.invoke((() -> {
