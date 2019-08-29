@@ -102,13 +102,6 @@ public class ConfigurationJsonMappingTest {
   }
 
   @Test
-  public void groups() throws Exception {
-    String json = "{'name':'test','groups':['group1','group2']}";
-    Region regionConfig = mapper.readValue(json, Region.class);
-    assertThat(regionConfig.getGroups()).containsExactlyInAnyOrder("group1", "group2");
-  }
-
-  @Test
   public void serializeGroup() throws Exception {
     Region config = new Region();
     config.setName("test");
@@ -117,17 +110,6 @@ public class ConfigurationJsonMappingTest {
     System.out.println(json);
     assertThat(json)
         .contains("\"groups\":[\"group1\"]");
-  }
-
-  @Test
-  public void serializeMultipleGroup() throws Exception {
-    Region config = new Region();
-    config.setName("test");
-    config.getGroups().add("group1");
-    config.getGroups().add("group2");
-    String json = mapper.writeValueAsString(config);
-    System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\",\"group2\"]").doesNotContain("\"group\"");
   }
 
   @Test

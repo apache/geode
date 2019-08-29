@@ -23,7 +23,7 @@ import org.apache.geode.management.internal.CacheElementOperation;
 /**
  * this is used to validate all the common attributes of CacheElement, eg. name and group
  */
-public class CacheElementValidator implements ConfigurationValidator<AbstractConfiguration> {
+public class CommonConfigurationValidator implements ConfigurationValidator<AbstractConfiguration> {
   @Override
   public void validate(CacheElementOperation operation, AbstractConfiguration config)
       throws IllegalArgumentException {
@@ -44,12 +44,8 @@ public class CacheElementValidator implements ConfigurationValidator<AbstractCon
   }
 
   private void validateCreate(AbstractConfiguration config) {
-    if (config.getGroups().size() > 1) {
-      throw new IllegalArgumentException(
-          "Can only create " + config.getClass().getSimpleName() + " in one group at a time.");
-    }
-
     String group = config.getGroup();
+
     if (AbstractConfiguration.CLUSTER.equalsIgnoreCase(group)) {
       throw new IllegalArgumentException("'"
           + AbstractConfiguration.CLUSTER

@@ -23,14 +23,14 @@ import org.junit.Test;
 import org.apache.geode.management.configuration.Region;
 import org.apache.geode.management.internal.CacheElementOperation;
 
-public class CacheElementValidatorTest {
+public class CommonConfigurationValidatorTest {
 
-  private CacheElementValidator validator;
+  private CommonConfigurationValidator validator;
   private Region config;
 
   @Before
   public void before() throws Exception {
-    validator = new CacheElementValidator();
+    validator = new CommonConfigurationValidator();
     config = new Region();
   }
 
@@ -65,16 +65,5 @@ public class CacheElementValidatorTest {
         IllegalArgumentException.class)
         .hasMessageContaining(
             "Group name should not contain comma");
-  }
-
-  @Test
-  public void multipleGroups() throws Exception {
-    config.setName("name");
-    config.addGroup("group1");
-    config.addGroup("group2");
-    assertThatThrownBy(() -> validator.validate(CacheElementOperation.CREATE, config)).isInstanceOf(
-        IllegalArgumentException.class)
-        .hasMessageContaining(
-            "Can only create Region in one group at a time.");
   }
 }

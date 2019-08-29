@@ -16,11 +16,8 @@
 package org.apache.geode.management.configuration;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.annotations.Experimental;
@@ -32,7 +29,7 @@ public abstract class AbstractConfiguration
     implements Identifiable<String>, Serializable, JsonSerializable {
   public static final String CLUSTER = "cluster";
 
-  protected List<String> groups = new ArrayList<>();
+  protected String group;
 
   /**
    * this returns a non-null value
@@ -47,33 +44,11 @@ public abstract class AbstractConfiguration
       return group;
   }
 
-  /**
-   * this returns the first group set by the user
-   * if no group is set, this returns null
-   */
-  @JsonIgnore
   public String getGroup() {
-    if (groups.size() == 0) {
-      return null;
-    }
-    return groups.get(0);
+    return group;
   }
 
-  @JsonSetter
   public void setGroup(String group) {
-    groups.clear();
-
-    if (StringUtils.isBlank(group)) {
-      return;
-    }
-    groups.add(group);
-  }
-
-  public List<String> getGroups() {
-    return groups;
-  }
-
-  public void addGroup(String group) {
-    groups.add(group);
+    this.group = group;
   }
 }

@@ -24,10 +24,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -149,7 +148,7 @@ public class CreateIndexCommandTest {
   @Test
   public void getValidRegionName() {
     // the existing configuration has a region named /regionA.B
-    doReturn(mock(Region.class)).when(command).getRegionConfig(cms,
+    doReturn(Collections.singleton("A")).when(command).getGroupsContainingRegion(cms,
         "/regionA.B");
     when(cms.list(any(Region.class))).thenReturn(new ClusterManagementListResult<>());
 
@@ -165,12 +164,10 @@ public class CreateIndexCommandTest {
   }
 
   @Test
-  public void groupIgnored() throws Exception {
+  public void groupIgnored() {
     doReturn(ccService).when(command).getConfigurationPersistenceService();
-    Region config = mock(Region.class);
-    List<String> realGroups = Arrays.asList("group2", "group1");
-    when(config.getGroups()).thenReturn(realGroups);
-    doReturn(config).when(command).getRegionConfig(any(), any());
+    doReturn(Sets.newHashSet("group1, group2")).when(command).getGroupsContainingRegion(any(),
+        any());
 
     doReturn(Collections.singleton(mock(DistributedMember.class))).when(command).findMembers(any(),
         any());
@@ -188,5 +185,11 @@ public class CreateIndexCommandTest {
         "create index --name=index --expression=abc --region=/regionA --groups=group1,group3")
         .statusIsError()
         .containsOutput("--groups=group1,group3 is ignored");
+  }
+
+  @Test
+  public void memberOnlyWillNotUpdateClusterConfig() throws Exception {
+    // exeucte "create index" on a specific member
+    // verify that cms is not called to udpate the cluster configuration
   }
 }

@@ -29,7 +29,6 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class AbstractConfigurationTest {
 
   private AbstractConfiguration element;
-  private Region runtime;
 
   private static ObjectMapper mapper;
   private String json;
@@ -42,7 +41,6 @@ public class AbstractConfigurationTest {
   @Before
   public void before() throws Exception {
     element = new Region();
-    runtime = new Region();
   }
 
   @Test
@@ -51,17 +49,9 @@ public class AbstractConfigurationTest {
     assertThat(element.getConfigGroup()).isEqualTo("cluster");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
-    assertThat(json).doesNotContain("group").doesNotContain("groups");
+    assertThat(json).doesNotContain("group").doesNotContain("configGroup");
   }
 
-  @Test
-  public void plainRuntimeRegionConfig() throws Exception {
-    assertThat(runtime.getGroup()).isNull();
-    assertThat(runtime.getGroups()).isNotNull().isEmpty();
-    json = mapper.writeValueAsString(runtime);
-    System.out.println(json);
-    assertThat(json).doesNotContain("group").doesNotContain("groups");
-  }
 
 
   @Test
@@ -71,16 +61,7 @@ public class AbstractConfigurationTest {
     assertThat(element.getConfigGroup()).isEqualTo("group1");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("group:");
-  }
-
-  @Test
-  public void setterRuntimeRegionConfig() throws Exception {
-    runtime.getGroups().add("group1");
-    assertThat(runtime.getGroup()).isEqualTo("group1");
-    json = mapper.writeValueAsString(runtime);
-    System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("\"group\"");
+    assertThat(json).contains("\"group\":\"group1\"");
   }
 
   @Test

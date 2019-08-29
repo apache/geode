@@ -66,7 +66,7 @@ import org.apache.geode.management.internal.ClusterManagementOperationStatusResu
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.configuration.mutators.GatewayReceiverConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
-import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
+import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
 import org.apache.geode.management.internal.configuration.validators.RegionConfigValidator;
@@ -85,7 +85,7 @@ public class LocatorClusterManagementServiceTest {
   private Map<Class, ConfigurationManager> managers = new HashMap<>();
   private OperationManager executorManager;
   private ConfigurationValidator<Region> regionValidator;
-  private CacheElementValidator cacheElementValidator;
+  private CommonConfigurationValidator cacheElementValidator;
   private ConfigurationManager<Region> regionManager;
   private MemberValidator memberValidator;
 
@@ -95,7 +95,7 @@ public class LocatorClusterManagementServiceTest {
     regionValidator = mock(RegionConfigValidator.class);
     doCallRealMethod().when(regionValidator).validate(eq(CacheElementOperation.DELETE), any());
     regionManager = spy(RegionConfigManager.class);
-    cacheElementValidator = spy(CacheElementValidator.class);
+    cacheElementValidator = spy(CommonConfigurationValidator.class);
     validators.put(Region.class, regionValidator);
     managers.put(Region.class, regionManager);
     managers.put(GatewayReceiverConfig.class, new GatewayReceiverConfigManager());
@@ -228,10 +228,12 @@ public class LocatorClusterManagementServiceTest {
     // the cluster and the other group name
     List<Region> results =
         service.list(new Region()).getConfigResult();
-    assertThat(results).hasSize(1);
-    Region result = results.get(0);
-    assertThat(result.getName()).isEqualTo("region1");
-    assertThat(result.getGroups()).containsExactlyInAnyOrder("group1", "group2");
+    assertThat(results).hasSize(2);
+    Region result1 = results.get(0);
+    assertThat(result1.getName()).isEqualTo("region1");
+    Region result2 = results.get(1);
+    assertThat(result2.getName()).isEqualTo("region1");
+    assertThat(results).extracting(Region::getGroup).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
