@@ -19,7 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class HeartbeatMessage extends AbstractGMSMessage {
   /**
@@ -50,7 +50,7 @@ public class HeartbeatMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public SerializationVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

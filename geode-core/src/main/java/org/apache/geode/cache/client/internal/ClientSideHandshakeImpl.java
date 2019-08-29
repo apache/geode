@@ -52,7 +52,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.ClientSideHandshake;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.cache.tier.Encryptor;
@@ -62,7 +61,7 @@ import org.apache.geode.internal.cache.tier.sockets.Handshake;
 import org.apache.geode.internal.cache.tier.sockets.ServerQueueStatus;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.security.AuthenticationFailedException;
@@ -212,7 +211,7 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       // Successful handshake for GATEWAY_TO_GATEWAY mode sets the peer version in connection
       if (communicationMode.isWAN() && !(acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_REQUIRED
           || acceptanceCode == REPLY_EXCEPTION_AUTHENTICATION_FAILED)) {
-        short wanSiteVersion = SerializationVersion.readOrdinal(dis);
+        short wanSiteVersion = Version.readOrdinal(dis);
         conn.setWanSiteVersion(wanSiteVersion);
         // establish a versioned stream for the other site, if necessary
         if (wanSiteVersion < Version.CURRENT_ORDINAL) {
@@ -374,9 +373,9 @@ public class ClientSideHandshakeImpl extends Handshake implements ClientSideHand
       hdos.writeByte(communicationMode.getModeNumber());
       if (overrideClientVersion > 0) {
         // for testing
-        SerializationVersion.writeOrdinal(hdos, overrideClientVersion, true);
+        Version.writeOrdinal(hdos, overrideClientVersion, true);
       } else {
-        SerializationVersion.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
+        Version.writeOrdinal(hdos, currentClientVersion.ordinal(), true);
       }
 
       hdos.writeByte(replyCode);

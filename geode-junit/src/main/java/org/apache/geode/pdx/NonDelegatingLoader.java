@@ -19,7 +19,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 class NonDelegatingLoader extends ClassLoader {
 

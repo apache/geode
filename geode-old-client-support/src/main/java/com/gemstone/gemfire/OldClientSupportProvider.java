@@ -22,11 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheService;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.sockets.OldClientSupportService;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.management.internal.beans.CacheServiceMBeanBase;
 
@@ -107,7 +106,7 @@ public class OldClientSupportProvider implements OldClientSupportService {
     // if the client is old then it needs com.gemstone.gemfire package names
     if (out instanceof VersionedDataOutputStream) {
       VersionedDataOutputStream vout = (VersionedDataOutputStream) out;
-      SerializationVersion version = vout.getVersion();
+      Version version = vout.getVersion();
       if (version != null && version.compareTo(Version.GFE_90) < 0) {
         return processClassName(name, GEODE, GEMFIRE, newClassNamesToOld);
       }

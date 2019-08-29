@@ -46,7 +46,6 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NanoTimer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BucketRegion;
 import org.apache.geode.internal.cache.DataLocationException;
 import org.apache.geode.internal.cache.DistributedPutAllOperation;
@@ -72,6 +71,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Partitioned Region update message. Meant to be sent only to a bucket's primary owner. In

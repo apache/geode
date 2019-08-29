@@ -35,9 +35,9 @@ import org.apache.geode.internal.ByteBufferWriter;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.ObjToByteArraySerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * <p>

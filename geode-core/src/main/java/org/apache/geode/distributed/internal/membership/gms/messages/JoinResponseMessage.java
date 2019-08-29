@@ -24,8 +24,8 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 // TODO this class has been made unintelligible with different combinations of response values.
 // It needs to have an enum that indicates what type of response is in the message or it
@@ -102,7 +102,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public SerializationVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

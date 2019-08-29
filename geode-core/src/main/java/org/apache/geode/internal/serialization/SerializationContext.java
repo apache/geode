@@ -17,7 +17,7 @@ package org.apache.geode.internal.serialization;
 public interface SerializationContext {
 
   /** return the version of the source/destination of this serializer */
-  SerializationVersion getSerializationVersion();
+  Version getSerializationVersion();
 
   /** return the DSFID serializer */
   DSFIDSerializer getDSFIDSerializer();

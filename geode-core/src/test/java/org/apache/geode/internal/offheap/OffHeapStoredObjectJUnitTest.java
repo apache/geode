@@ -38,13 +38,13 @@ import org.junit.Test;
 
 import org.apache.geode.compression.Compressor;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.cache.EntryEventImpl;
 import org.apache.geode.internal.cache.RegionEntryContext;
 import org.apache.geode.internal.offheap.MemoryBlock.State;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.Version;
 
 public class OffHeapStoredObjectJUnitTest extends AbstractStoredObjectTestBase {
 

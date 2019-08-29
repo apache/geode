@@ -19,8 +19,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 
 public class VersionJUnitTest {
   @Test
@@ -69,7 +70,8 @@ public class VersionJUnitTest {
   }
 
   @Test
-  public void testFromOrdinalForCurrentVersionSucceeds() throws UnsupportedVersionException {
-    Version.fromOrdinal(Version.CURRENT_ORDINAL, true);
+  public void testFromOrdinalForCurrentVersionSucceeds()
+      throws UnsupportedSerializationVersionException {
+    Version.fromOrdinal(Version.CURRENT_ORDINAL);
   }
 }

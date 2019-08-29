@@ -27,9 +27,9 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneSerializer;
 import org.apache.geode.cache.lucene.internal.repository.serializer.HeterogeneousLuceneSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.VersionedDataSerializable;
 import org.apache.geode.internal.cache.CacheServiceProfile;
+import org.apache.geode.internal.serialization.Version;
 
 public class LuceneIndexCreationProfile implements CacheServiceProfile, VersionedDataSerializable {
 

@@ -28,6 +28,6 @@ public interface SerializerPlugin {
    * return the version associated with the given ordinal or the current version if the given
    * ordinal is > than the current version's ordinal
    */
-  public SerializationVersion getVersionForOrdinalOrCurrent(int ordinal);
+  public Version getVersionForOrdinalOrCurrent(int ordinal);
 
 }

@@ -48,9 +48,8 @@ import org.apache.geode.distributed.internal.membership.gms.interfaces.Locator;
 import org.apache.geode.distributed.internal.membership.gms.membership.HostAddress;
 import org.apache.geode.distributed.internal.tcpserver.TcpClient;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 
 public class GMSLocator implements Locator {
@@ -337,7 +336,7 @@ public class GMSLocator implements Locator {
     try (FileOutputStream fileStream = new FileOutputStream(viewFile);
         ObjectOutputStream oos = new ObjectOutputStream(fileStream)) {
       oos.writeInt(LOCATOR_FILE_STAMP);
-      oos.writeInt(SerializationVersion.getCurrentVersion().ordinal());
+      oos.writeInt(Version.getCurrentVersion().ordinal());
       oos.flush();
       DataOutputStream dataOutputStream = new DataOutputStream(fileStream);
       services.getSerializer().getDataSerializer().writeObject(view, dataOutputStream);
@@ -426,10 +425,10 @@ public class GMSLocator implements Locator {
       }
 
       int version = ois.readInt();
-      int currentVersion = SerializationVersion.getCurrentVersion().ordinal();
+      int currentVersion = Version.getCurrentVersion().ordinal();
       DataInputStream input = new DataInputStream(fileInputStream);
       if (version != currentVersion) {
-        SerializationVersion geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
+        Version geodeVersion = Version.fromOrdinalNoThrow((short) version, false);
         logger.info("Peer locator found that persistent view was written with version {}",
             geodeVersion);
         if (version > currentVersion) {

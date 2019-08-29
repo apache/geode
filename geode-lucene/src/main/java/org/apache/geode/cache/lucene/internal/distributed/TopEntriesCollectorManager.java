@@ -30,10 +30,10 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.lucene.LuceneQueryFactory;
 import org.apache.geode.cache.lucene.internal.distributed.TopEntries.EntryScoreComparator;
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * An implementation of {@link CollectorManager} for managing {@link TopEntriesCollector}. This is

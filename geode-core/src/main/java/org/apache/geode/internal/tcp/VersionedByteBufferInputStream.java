@@ -17,8 +17,7 @@ package org.apache.geode.internal.tcp;
 
 import java.nio.ByteBuffer;
 
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
@@ -58,7 +57,7 @@ public class VersionedByteBufferInputStream extends ByteBufferInputStream
    * {@inheritDoc}
    */
   @Override
-  public SerializationVersion getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 

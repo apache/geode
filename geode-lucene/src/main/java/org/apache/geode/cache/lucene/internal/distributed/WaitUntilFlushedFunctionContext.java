@@ -21,9 +21,9 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.geode.DataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Contains function arguments for WaitUntilFlushed

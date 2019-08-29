@@ -362,6 +362,7 @@ dependencies {
   testRuntime('commons-io:commons-io')
   testRuntime('commons-validator:commons-validator')
   testRuntime('com.pholser:junit-quickcheck-generators')
+  testRuntime(project(':geode-old-versions'))
 
 
   integrationTestCompile(project(':geode-junit')) {

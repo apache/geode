@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.UUID;
 
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A Unique ID for a disk store

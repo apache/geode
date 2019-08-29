@@ -32,6 +32,6 @@ public interface SerializationVersions {
    * The method name is formed with the version's product name and its major, minor, release and
    * patch numbers.
    */
-  SerializationVersion[] getSerializationVersions();
+  Version[] getSerializationVersions();
 
 }

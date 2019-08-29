@@ -23,8 +23,8 @@ import java.util.Date;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This message simply contains a date

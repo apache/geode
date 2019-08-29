@@ -95,8 +95,8 @@ import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.tcp.MemberShunnedException;
 
@@ -545,7 +545,7 @@ public class JGroupsMessenger implements Messenger {
         GMSUtil.parseGroups(config.getRoles(), config.getGroups()), config.getDurableClientId(),
         config.getDurableClientTimeout(),
         config.getEnableNetworkPartitionDetection(), isLocator,
-        SerializationVersion.getCurrentVersion().ordinal(),
+        Version.getCurrentVersion().ordinal(),
         jgAddress.getUUIDMsbs(), jgAddress.getUUIDLsbs());
     gmsMember.setMemberWeight((byte) (services.getConfig().getMemberWeight() & 0xff));
     gmsMember.setNetworkPartitionDetectionEnabled(
@@ -697,7 +697,7 @@ public class JGroupsMessenger implements Messenger {
 
       long startSer = theStats.startMsgSerialization();
       Message jmsg =
-          createJGMessage(msg, local, null, SerializationVersion.getCurrentVersion().ordinal());
+          createJGMessage(msg, local, null, Version.getCurrentVersion().ordinal());
       theStats.endMsgSerialization(startSer);
 
       Exception problem;
@@ -855,8 +855,8 @@ public class JGroupsMessenger implements Messenger {
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(
               services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(version));
-      SerializationVersion.writeOrdinal(out_stream,
-          SerializationVersion.getCurrentVersion().ordinal(), true);
+      Version.writeOrdinal(out_stream,
+          Version.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
         out_stream.writeBoolean(true);
         writeEncryptedMessage(gfmsg, dst, version, out_stream);
@@ -1009,9 +1009,9 @@ public class JGroupsMessenger implements Messenger {
       DataInputStream dis =
           new DataInputStream(new ByteArrayInputStream(buf, jgmsg.getOffset(), jgmsg.getLength()));
 
-      short ordinal = SerializationVersion.readOrdinal(dis);
+      short ordinal = Version.readOrdinal(dis);
 
-      if (ordinal < SerializationVersion.getCurrentVersion().ordinal()) {
+      if (ordinal < Version.getCurrentVersion().ordinal()) {
         dis = new VersionedDataInputStream(dis,
             services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(ordinal));
       }
@@ -1108,7 +1108,7 @@ public class JGroupsMessenger implements Messenger {
       {
         DataInputStream in = new DataInputStream(new ByteArrayInputStream(data));
 
-        if (ordinal < SerializationVersion.getCurrentVersion().ordinal()) {
+        if (ordinal < Version.getCurrentVersion().ordinal()) {
           in = new VersionedDataInputStream(in,
               services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(ordinal));
         }
@@ -1155,7 +1155,7 @@ public class JGroupsMessenger implements Messenger {
           BufferDataOutputStream hdos = new BufferDataOutputStream(500,
               services.getSerializer().getDataSerializer()
                   .getVersionForOrdinalOrCurrent(
-                      SerializationVersion.getCurrentVersion().ordinal()));
+                      Version.getCurrentVersion().ordinal()));
           try {
             digest.writeTo(hdos);
           } catch (Exception e) {

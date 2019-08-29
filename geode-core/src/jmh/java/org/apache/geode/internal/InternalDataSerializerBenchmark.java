@@ -35,6 +35,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.Version;
 
 
 /**

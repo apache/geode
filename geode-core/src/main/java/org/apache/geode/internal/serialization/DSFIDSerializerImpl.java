@@ -52,11 +52,11 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       }
 
       @Override
-      public SerializationVersion getVersionForOrdinalOrCurrent(int ordinal) {
-        if (ordinal > SerializationVersion.getCurrentVersion().ordinal()) {
-          return SerializationVersion.getCurrentVersion();
+      public Version getVersionForOrdinalOrCurrent(int ordinal) {
+        if (ordinal > Version.getCurrentVersion().ordinal()) {
+          return Version.getCurrentVersion();
         }
-        return new SerializationVersion(ordinal);
+        return Version.fromOrdinalNoThrow((short) ordinal, false);
       }
     };
   }
@@ -137,16 +137,16 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     SerializationContext context = new SerializationContextImpl(out, this);
     try {
       boolean invoked = false;
-      SerializationVersion v = context.getSerializationVersion();
+      Version v = context.getSerializationVersion();
 
       if (!v.isCurrentVersion()) {
         // get versions where DataOutput was upgraded
         SerializationVersions sv = (SerializationVersions) ds;
-        SerializationVersion[] versions = sv.getSerializationVersions();
+        Version[] versions = sv.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (SerializationVersion version : versions) {
+          for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("toDataPre_" + version.getMethodSuffix(),
@@ -170,11 +170,11 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   }
 
   /**
-   * Get the SerializationVersion of the peer or disk store that created this {@link DataOutput}.
+   * Get the Version of the peer or disk store that created this {@link DataOutput}.
    * Returns
    * zero if the version is same as this member's.
    */
-  public SerializationVersion getVersionForDataStreamOrNull(DataOutput out) {
+  public Version getVersionForDataStreamOrNull(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
       return ((VersionedDataStream) out).getVersion();
@@ -255,16 +255,16 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     DeserializationContextImpl context = new DeserializationContextImpl(in, this);
     try {
       boolean invoked = false;
-      SerializationVersion v = context.getSerializationVersion();
+      Version v = context.getSerializationVersion();
       if (!v.isCurrentVersion()) {
         // get versions where DataOutput was upgraded
-        SerializationVersion[] versions = null;
+        Version[] versions = null;
         SerializationVersions vds = (SerializationVersions) ds;
         versions = vds.getSerializationVersions();
         // check if the version of the peer or diskstore is different and
         // there has been a change in the message
         if (versions != null) {
-          for (SerializationVersion version : versions) {
+          for (Version version : versions) {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),

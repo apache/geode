@@ -13,18 +13,17 @@
  * the License.
  */
 
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.internal.cache.tier.sockets.CommandInitializer;
-import org.apache.geode.internal.serialization.SerializationVersion;
 
 /**
  * Enumerated type for client / server and p2p version.
@@ -36,7 +35,7 @@ import org.apache.geode.internal.serialization.SerializationVersion;
  * @since GemFire 5.7
  */
 @Immutable
-public class Version extends SerializationVersion {
+public class Version implements Comparable<Version> {
 
   /** The name of this version */
   private final transient String name;
@@ -53,10 +52,19 @@ public class Version extends SerializationVersion {
   private final byte release;
   private final byte patch;
 
+  /** byte used as ordinal to represent this <code>Version</code> */
+  private final short ordinal;
+
   public static final int HIGHEST_VERSION = 107;
 
   @Immutable
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
+
+  /**
+   * Reserved token that cannot be used for product version but as a flag in internal contexts.
+   */
+  private static final byte TOKEN_ORDINAL = -1;
+  private static final int TOKEN_ORDINAL_INT = (TOKEN_ORDINAL & 0xFF);
 
   @Immutable
   public static final Version TOKEN =
@@ -295,21 +303,16 @@ public class Version extends SerializationVersion {
   public static final Version TEST_VERSION = new Version("TEST", "VERSION", (byte) 0, (byte) 0,
       (byte) 0, (byte) 0, validOrdinalForTesting);
 
-  static {
-    /* establish the serialization version for DSFID serialization */
-    SerializationVersion.setCurrentVersion(CURRENT);
-  }
-
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release, byte patch,
       byte ordinal) {
-    super(ordinal);
     this.productName = product;
     this.name = name;
     this.majorVersion = major;
     this.minorVersion = minor;
     this.release = release;
     this.patch = patch;
+    this.ordinal = ordinal;
     this.methodSuffix = this.productName + "_" + this.majorVersion + "_" + this.minorVersion + "_"
         + this.release + "_" + this.patch;
     if (ordinal != TOKEN_ORDINAL) {
@@ -317,17 +320,20 @@ public class Version extends SerializationVersion {
     }
   }
 
+  public static Version getCurrentVersion() {
+    return CURRENT;
+  }
+
   /** Return the <code>Version</code> represented by specified ordinal */
-  public static Version fromOrdinal(short ordinal, boolean forGFEClients)
-      throws UnsupportedVersionException {
+  public static Version fromOrdinal(short ordinal)
+      throws UnsupportedSerializationVersionException {
     if (ordinal == TOKEN_ORDINAL) {
       return TOKEN;
     }
     // for clients also check that there must be a commands object mapping
     // for processing
-    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null
-        || (forGFEClients && CommandInitializer.getCommands(VALUES[ordinal]) == null)) {
-      throw new UnsupportedVersionException(String.format(
+    if ((VALUES.length < ordinal + 1) || VALUES[ordinal] == null) {
+      throw new UnsupportedSerializationVersionException(String.format(
           "Peer or client version with ordinal %s not supported. Highest known version is %s",
           ordinal, CURRENT.name));
     }
@@ -351,23 +357,77 @@ public class Version extends SerializationVersion {
   }
 
   /**
+   * Write the given ordinal (result of {@link #ordinal()}) to given {@link DataOutput}. This keeps
+   * the serialization of ordinal compatible with previous versions writing a single byte to
+   * DataOutput when possible, and a token with 2 bytes if it is large.
+   *
+   * @param out the {@link DataOutput} to write the ordinal write to
+   * @param ordinal the version to be written
+   * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
+   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}; former
+   *        mode is useful for interoperatibility with previous versions while latter to use fixed
+   *        size for writing version; typically former will be used for P2P/client-server
+   *        communications while latter for persisting to disk; we use the token to ensure that
+   *        {@link #readOrdinal(DataInput)} can deal with both compressed/uncompressed cases
+   *        seemlessly
+   */
+  public static void writeOrdinal(DataOutput out, short ordinal, boolean compressed)
+      throws IOException {
+    if (compressed && ordinal <= Byte.MAX_VALUE) {
+      out.writeByte(ordinal);
+    } else {
+      out.writeByte(TOKEN_ORDINAL);
+      out.writeShort(ordinal);
+    }
+  }
+
+  /**
    * Write this {@link Version}'s ordinal (result of {@link #ordinal()}) to given
    * {@link DataOutput}. This keeps the serialization of ordinal compatible with previous versions
    * writing a single byte to DataOutput when possible, and a token with 2 bytes if it is large.
    *
    * @param out the {@link DataOutput} to write the ordinal write to
    * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
-   *        that, else always use three bytes where the first byte is
-   *        {@link SerializationVersion#TOKEN_ORDINAL}; former
+   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}; former
    *        mode is useful for interoperatibility with previous versions while latter to use fixed
    *        size for writing version; typically former will be used for P2P/client-server
    *        communications while latter for persisting to disk; we use the token to ensure that
-   *        {@link SerializationVersion#readOrdinal(DataInput)} can deal with both
-   *        compressed/uncompressed cases
+   *        {@link #readOrdinal(DataInput)} can deal with both compressed/uncompressed cases
    *        seemlessly
    */
   public void writeOrdinal(DataOutput out, boolean compressed) throws IOException {
     writeOrdinal(out, this.ordinal, compressed);
+  }
+
+  /**
+   * Write the given ordinal (result of {@link #ordinal()}) to given {@link ByteBuffer}. This keeps
+   * the serialization of ordinal compatible with previous versions writing a single byte to
+   * DataOutput when possible, and a token with 2 bytes if it is large.
+   *
+   * @param buffer the {@link ByteBuffer} to write the ordinal write to
+   * @param ordinal the version to be written
+   * @param compressed if true, then use single byte for ordinal < 128, and three bytes for beyond
+   *        that, else always use three bytes where the first byte is {@link #TOKEN_ORDINAL}
+   */
+  public static void writeOrdinal(ByteBuffer buffer, short ordinal, boolean compressed) {
+    if (compressed && ordinal <= Byte.MAX_VALUE) {
+      buffer.put((byte) ordinal);
+    } else {
+      buffer.put(TOKEN_ORDINAL);
+      buffer.putShort(ordinal);
+    }
+  }
+
+  /**
+   * Reads ordinal as written by {@link #writeOrdinal} from given {@link DataInput}.
+   */
+  public static short readOrdinal(DataInput in) throws IOException {
+    final byte ordinal = in.readByte();
+    if (ordinal != TOKEN_ORDINAL) {
+      return ordinal;
+    } else {
+      return in.readShort();
+    }
   }
 
   /**
@@ -391,7 +451,6 @@ public class Version extends SerializationVersion {
     return fromOrdinalNoThrow(readOrdinal(in), returnNullForCurrent);
   }
 
-
   /**
    * Return the <code>Version</code> represented by specified ordinal while not throwing exception
    * if given ordinal is higher than any known ones or does not map to an actual Version instance
@@ -405,6 +464,30 @@ public class Version extends SerializationVersion {
       return returnNullForCurrent ? null : CURRENT;
     }
     return VALUES[ordinal];
+  }
+
+  /**
+   * Reads ordinal as written by {@link #writeOrdinal} from given {@link InputStream}. Returns -1 on
+   * end of stream.
+   */
+  public static short readOrdinalFromInputStream(InputStream is) throws IOException {
+    final int ordinal = is.read();
+    if (ordinal != -1) {
+      if (ordinal != TOKEN_ORDINAL_INT) {
+        return (short) ordinal;
+      } else {
+        // two byte ordinal
+        final int ordinalPart1 = is.read();
+        final int ordinalPart2 = is.read();
+        if ((ordinalPart1 | ordinalPart2) >= 0) {
+          return (short) ((ordinalPart1 << 8) | ordinalPart2);
+        } else {
+          return -1;
+        }
+      }
+    } else {
+      return -1;
+    }
   }
 
   public String getMethodSuffix() {
@@ -465,6 +548,21 @@ public class Version extends SerializationVersion {
   }
 
   /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int compareTo(Version other) {
+    if (other != null) {
+      // byte min/max can't overflow int, so use (a-b)
+      final int thisOrdinal = this.ordinal;
+      final int otherOrdinal = other.ordinal;
+      return (thisOrdinal - otherOrdinal);
+    } else {
+      return 1;
+    }
+  }
+
+  /**
    * Returns a string representation for this <code>Version</code>.
    *
    * @return the name of this operation.
@@ -477,8 +575,8 @@ public class Version extends SerializationVersion {
   public static String toString(short ordinal) {
     if (ordinal <= CURRENT.ordinal) {
       try {
-        return fromOrdinal(ordinal, false).toString();
-      } catch (UnsupportedVersionException uve) {
+        return fromOrdinal(ordinal).toString();
+      } catch (UnsupportedSerializationVersionException uve) {
         // ignored in toString()
       }
     }
@@ -524,4 +622,7 @@ public class Version extends SerializationVersion {
         .collect(Collectors.toList());
   }
 
+  public boolean isCurrentVersion() {
+    return this.ordinal == CURRENT.ordinal;
+  }
 }

@@ -20,7 +20,6 @@ import java.io.DataOutput;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that
@@ -42,5 +41,5 @@ public interface VersionedDataStream {
    * {@link Version}, then this member cannot do any adjustment to serialization and its the remote
    * peer's responsibility to adjust the serialization/deserialization according to this peer.
    */
-  SerializationVersion getVersion();
+  Version getVersion();
 }

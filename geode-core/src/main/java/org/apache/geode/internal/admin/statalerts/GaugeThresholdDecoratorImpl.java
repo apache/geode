@@ -20,11 +20,11 @@ import java.io.IOException;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.StatisticsFactory;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Implementation of {@link StatAlertDefinition}, represents threshold as data range

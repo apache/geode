@@ -59,13 +59,13 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.DataSerializableJUnitTest.DataSerializableImpl;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.remote.ShutdownAllResponse;
 import org.apache.geode.internal.cache.execute.data.CustId;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Tests the DataType support for off-heap MemoryInspector.

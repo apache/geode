@@ -25,11 +25,11 @@ import java.util.Properties;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.UnsupportedVersionException;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.tier.CommunicationMode;
 import org.apache.geode.internal.logging.LogService;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 
@@ -114,18 +114,22 @@ class ClientRegistrationMetadata {
   private boolean getAndValidateClientVersion(final Socket socket,
       final DataInputStream dataInputStream, final DataOutputStream dataOutputStream)
       throws IOException {
-    short clientVersionOrdinal = SerializationVersion.readOrdinal(dataInputStream);
+    short clientVersionOrdinal = Version.readOrdinal(dataInputStream);
 
     try {
-      clientVersion = Version.fromOrdinal(clientVersionOrdinal, true);
+      clientVersion = Version.fromOrdinal(clientVersionOrdinal);
+      if (CommandInitializer.getCommands(clientVersion) == null) {
+        throw new UnsupportedSerializationVersionException("Client version {} is not supported");
+      }
       if (isVersionOlderThan57(clientVersion)) {
         throw new IOException(new UnsupportedVersionException(clientVersionOrdinal));
       }
       if (logger.isDebugEnabled()) {
         logger.debug("{}: Registering client with version: {}", this, clientVersion);
       }
-    } catch (UnsupportedVersionException e) {
-      UnsupportedVersionException unsupportedVersionException = e;
+    } catch (UnsupportedSerializationVersionException e) {
+      UnsupportedVersionException unsupportedVersionException =
+          new UnsupportedVersionException(e.getMessage());
       SocketAddress socketAddress = socket.getRemoteSocketAddress();
 
       if (socketAddress != null) {

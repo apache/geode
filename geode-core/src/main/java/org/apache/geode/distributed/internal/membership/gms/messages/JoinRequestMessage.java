@@ -22,7 +22,7 @@ import java.util.Objects;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class JoinRequestMessage extends AbstractGMSMessage {
   private GMSMember memberID;
@@ -82,7 +82,7 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public SerializationVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

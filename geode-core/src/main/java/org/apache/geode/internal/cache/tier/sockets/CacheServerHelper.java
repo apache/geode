@@ -26,8 +26,8 @@ import java.util.zip.GZIPOutputStream;
 
 import org.apache.geode.cache.server.CacheServer;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheServerImpl;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.BlobHelper;
 
 /**

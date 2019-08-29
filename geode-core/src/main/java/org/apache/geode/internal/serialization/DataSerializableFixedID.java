@@ -18,8 +18,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.geode.internal.Version;
-
 /**
  * An interface that implements data serialization for internal GemFire product classes that have a
  * fixed id. The fixed id is used to represent the class, on the wire, at serialization time and

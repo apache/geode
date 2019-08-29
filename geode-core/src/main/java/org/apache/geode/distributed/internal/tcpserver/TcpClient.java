@@ -34,15 +34,15 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.internal.MakeNotStatic;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 
@@ -222,7 +222,7 @@ public class TcpClient {
 
       if (replyExpected) {
         DataInputStream in = new DataInputStream(sock.getInputStream());
-        in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion, false));
+        in = new VersionedDataInputStream(in, Version.fromOrdinal(serverVersion));
         try {
           Object response = DataSerializer.readObject(in);
           logger.debug("received response: {}", response);
@@ -237,7 +237,7 @@ public class TcpClient {
       } else {
         return null;
       }
-    } catch (UnsupportedVersionException ex) {
+    } catch (UnsupportedSerializationVersionException ex) {
       if (logger.isDebugEnabled()) {
         logger
             .debug("Remote TcpServer version: " + serverVersion + " is higher than local version: "

@@ -17,7 +17,6 @@ package org.apache.geode.internal.cache.entries;
 import org.apache.geode.cache.EntryEvent;
 import org.apache.geode.cache.EntryNotFoundException;
 import org.apache.geode.distributed.internal.DistributionManager;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.DiskId;
 import org.apache.geode.internal.cache.DistributedRegion;
 import org.apache.geode.internal.cache.EntryBits;
@@ -30,6 +29,7 @@ import org.apache.geode.internal.cache.Token;
 import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Abstract implementation class of RegionEntry interface. This is adds Disk support behavior

@@ -32,10 +32,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.DiskAccessException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CountingDataInputStream;
 import org.apache.geode.internal.cache.DiskInitFile;
 import org.apache.geode.internal.cache.DiskInitFile.DiskRegionFlag;
@@ -45,7 +43,8 @@ import org.apache.geode.internal.cache.ProxyBucketRegion;
 import org.apache.geode.internal.cache.versions.RegionVersionHolder;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 
 public class DiskInitFileParser {
   private static final Logger logger = LogService.getLogger();
@@ -427,15 +426,15 @@ public class DiskInitFileParser {
         }
           break;
         case DiskInitFile.IFREC_GEMFIRE_VERSION: {
-          short ver = SerializationVersion.readOrdinal(dis);
+          short ver = Version.readOrdinal(dis);
           readEndOfRecord(dis);
           if (logger.isTraceEnabled(LogMarker.PERSIST_RECOVERY_VERBOSE)) {
             logger.trace(LogMarker.PERSIST_RECOVERY_VERBOSE, "IFREC_GEMFIRE_VERSION version={}",
                 ver);
           }
           try {
-            gfversion = Version.fromOrdinal(ver, false);
-          } catch (UnsupportedVersionException e) {
+            gfversion = Version.fromOrdinal(ver);
+          } catch (UnsupportedSerializationVersionException e) {
             throw new DiskAccessException(
                 String.format("Unknown version ordinal %s found when recovering Oplogs", ver), e,
                 this.interpreter.getNameForError());

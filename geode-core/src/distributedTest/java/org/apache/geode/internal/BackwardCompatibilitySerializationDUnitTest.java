@@ -38,8 +38,8 @@ import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsL
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
 import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
@@ -198,7 +198,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   }
 
   private void checkSupportForRollingUpgrade(Object ds) {
-    SerializationVersion[] versions = null;
+    Version[] versions = null;
     if (ds instanceof SerializationVersions) {
       versions = ((SerializationVersions) ds).getSerializationVersions();
     }

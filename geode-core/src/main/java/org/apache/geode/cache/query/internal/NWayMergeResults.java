@@ -36,10 +36,10 @@ import org.apache.geode.cache.query.internal.utils.LimitIterator;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The n - way merge results returns a sorted results on the cumulative sorted results for

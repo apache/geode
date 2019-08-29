@@ -35,7 +35,6 @@ import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MutableForTesting;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.cache.client.ServerConnectivityException;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.DurableClientAttributes;
@@ -46,12 +45,12 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.OSProcess;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This is the fundamental representation of a member of a GemFire distributed system.
@@ -162,8 +161,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = netMbr.getVersionOrdinal();
     try {
-      this.versionObj = Version.fromOrdinal(version, false);
-    } catch (UnsupportedVersionException e) {
+      this.versionObj = Version.fromOrdinal(version);
+    } catch (UnsupportedSerializationVersionException e) {
       this.versionObj = Version.CURRENT;
     }
     // checkHostName();
@@ -185,8 +184,8 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
     short version = m.getVersionOrdinal();
     try {
-      this.versionObj = Version.fromOrdinal(version, false);
-    } catch (UnsupportedVersionException e) {
+      this.versionObj = Version.fromOrdinal(version);
+    } catch (UnsupportedSerializationVersionException e) {
       this.versionObj = Version.CURRENT;
     }
     cachedToString = null;
@@ -746,7 +745,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   private short readVersion(int flags, DataInput in) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
-      short version = SerializationVersion.readOrdinal(in);
+      short version = Version.readOrdinal(in);
       this.versionObj = Version.fromOrdinalNoThrow(version, false);
       return version;
     } else {
@@ -802,7 +801,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     DataSerializer.writeString(attributes == null ? "" : attributes.getId(), out);
     DataSerializer.writeInteger(Integer.valueOf(attributes == null ? 300 : attributes.getTimeout()),
         out);
-    SerializationVersion.writeOrdinal(out, netMbr.getVersionOrdinal(), true);
+    Version.writeOrdinal(out, netMbr.getVersionOrdinal(), true);
     netMbr.writeAdditionalData(out);
   }
 
@@ -913,7 +912,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
         durableClientAttributes == null ? 300 : durableClientAttributes.getTimeout()), out);
 
     short version = netMbr.getVersionOrdinal();
-    SerializationVersion.writeOrdinal(out, version, true);
+    Version.writeOrdinal(out, version, true);
   }
 
   public void toDataPre_GFE_7_1_0_0(DataOutput out, SerializationContext context)

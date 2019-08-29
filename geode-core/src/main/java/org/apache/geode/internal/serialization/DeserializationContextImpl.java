@@ -27,7 +27,7 @@ public class DeserializationContextImpl extends AbstractSerializationContext {
   }
 
   @Override
-  public SerializationVersion getSerializationVersion() {
+  public Version getSerializationVersion() {
     return getVersionForDataStream(dataInput);
   }
 

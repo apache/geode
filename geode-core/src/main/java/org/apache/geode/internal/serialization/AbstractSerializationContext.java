@@ -2,7 +2,7 @@
  * Licensed to the Apache Software Foundation (ASF) under one or more contributor license
  * agreements. See the NOTICE file distributed with this work for additional information regarding
  * copyright ownership. The ASF licenses this file to You under the Apache License,
- * SerializationVersion 2.0 (the
+ * Version 2.0 (the
  * "License"); you may not use this file except in compliance with the License. You may obtain a
  * copy of the License at
  *
@@ -20,29 +20,29 @@ import java.io.DataOutput;
 
 abstract class AbstractSerializationContext implements SerializationContext {
 
-  public SerializationVersion getVersionForDataStream(DataInput in) {
+  public Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input
     if (in instanceof VersionedDataStream) {
-      final SerializationVersion v = ((VersionedDataStream) in).getVersion();
-      return v != null ? v : SerializationVersion.getCurrentVersion();
+      final Version v = ((VersionedDataStream) in).getVersion();
+      return v != null ? v : Version.getCurrentVersion();
     } else {
       // assume latest version
-      return SerializationVersion.getCurrentVersion();
+      return Version.getCurrentVersion();
     }
   }
 
   /**
-   * Get the SerializationVersion of the peer or disk store that created this
+   * Get the Version of the peer or disk store that created this
    * {@link DataOutput}.
    */
-  SerializationVersion getVersionForDataStream(DataOutput out) {
+  Version getVersionForDataStream(DataOutput out) {
     // check if this is a versioned data output
     if (out instanceof VersionedDataStream) {
-      final SerializationVersion v = ((VersionedDataStream) out).getVersion();
-      return v != null ? v : SerializationVersion.getCurrentVersion();
+      final Version v = ((VersionedDataStream) out).getVersion();
+      return v != null ? v : Version.getCurrentVersion();
     } else {
       // assume latest version
-      return SerializationVersion.getCurrentVersion();
+      return Version.getCurrentVersion();
     }
   }
 

@@ -36,8 +36,8 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The GMSMembershipView class represents a membership view. Note that this class is not
@@ -645,7 +645,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
   }
 
   @Override
-  public SerializationVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

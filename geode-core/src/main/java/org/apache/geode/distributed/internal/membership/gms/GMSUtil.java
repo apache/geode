@@ -36,8 +36,8 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 public class GMSUtil {
   private static final Logger logger = LogService.getLogger();
@@ -225,7 +225,7 @@ public class GMSUtil {
       return;
     }
     short ordinal = context.getSerializationVersion().ordinal();
-    if (ordinal <= SerializationVersion.GEODE_1_10_0_ORDINAL) {
+    if (ordinal <= Version.GEODE_1_10_0.ordinal()) {
       writeAsInternalDistributedMember(id, out, context);
     } else {
       context.getDSFIDSerializer().writeDSFID(id, out);

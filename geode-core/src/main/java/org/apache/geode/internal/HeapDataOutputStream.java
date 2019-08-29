@@ -24,6 +24,7 @@ import java.nio.channels.SocketChannel;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.BytesAndBitsForCompactor;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.ByteBufferInputStream;
 
 /**
@@ -61,6 +62,10 @@ public class HeapDataOutputStream extends
 
   public HeapDataOutputStream(int allocSize, Version version) {
     this(allocSize, version, false);
+  }
+
+  public HeapDataOutputStream(int allocSize) {
+    this(allocSize, null, false);
   }
 
   /**

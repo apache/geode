@@ -22,8 +22,8 @@ import java.util.List;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.internal.serialization.SerializationContext;
-import org.apache.geode.internal.serialization.SerializationVersion;
 import org.apache.geode.internal.serialization.StaticSerialization;
+import org.apache.geode.internal.serialization.Version;
 
 public class RemoveMemberMessage extends AbstractGMSMessage implements HasMemberID {
   private GMSMember memberID;
@@ -70,7 +70,7 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
   }
 
   @Override
-  public SerializationVersion[] getSerializationVersions() {
+  public Version[] getSerializationVersions() {
     return null;
   }
 

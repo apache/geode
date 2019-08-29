@@ -18,7 +18,7 @@ import org.jgroups.Address;
 import org.jgroups.JChannel;
 import org.jgroups.Message;
 
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 
 public class GMSPingPonger {
   private byte[] pingInBytes = new byte[] {'p', 'i', 'n', 'g'};
@@ -40,12 +40,12 @@ public class GMSPingPonger {
 
   public Message createPongMessage(Address src, Address dest) {
     return createJGMessage(pongInBytes, src, dest,
-        SerializationVersion.getCurrentVersion().ordinal());
+        Version.getCurrentVersion().ordinal());
   }
 
   public Message createPingMessage(Address src, Address dest) {
     return createJGMessage(pingInBytes, src, dest,
-        SerializationVersion.getCurrentVersion().ordinal());
+        Version.getCurrentVersion().ordinal());
   }
 
   public void sendPingMessage(JChannel channel, Address src, JGAddress dest) throws Exception {

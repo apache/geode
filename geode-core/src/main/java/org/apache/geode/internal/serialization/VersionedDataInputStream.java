@@ -28,7 +28,7 @@ import java.io.InputStream;
  */
 public class VersionedDataInputStream extends DataInputStream implements VersionedDataStream {
 
-  private final SerializationVersion version;
+  private final Version version;
 
   /**
    * Creates a VersionedDataInputStream that uses the specified underlying InputStream.
@@ -36,7 +36,7 @@ public class VersionedDataInputStream extends DataInputStream implements Version
    * @param in the specified input stream
    * @param version the product version that serialized object on the given input stream
    */
-  public VersionedDataInputStream(InputStream in, SerializationVersion version) {
+  public VersionedDataInputStream(InputStream in, Version version) {
     super(in);
     this.version = version;
   }
@@ -45,7 +45,7 @@ public class VersionedDataInputStream extends DataInputStream implements Version
    * {@inheritDoc}
    */
   @Override
-  public SerializationVersion getVersion() {
+  public Version getVersion() {
     return this.version;
   }
 

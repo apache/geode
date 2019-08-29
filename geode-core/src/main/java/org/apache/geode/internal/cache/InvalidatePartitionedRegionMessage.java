@@ -25,9 +25,9 @@ import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class InvalidatePartitionedRegionMessage extends PartitionMessage {
 

@@ -30,7 +30,7 @@ import org.springframework.util.Assert;
 
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * The JSONUtils class is a utility class for getting JSON equivalent from Java types.

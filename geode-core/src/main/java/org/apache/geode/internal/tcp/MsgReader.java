@@ -25,10 +25,10 @@ import org.apache.geode.distributed.internal.DistributionMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.InternalDataSerializer;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.BufferPool;
 import org.apache.geode.internal.net.NioFilter;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * This class is currently used for reading direct ack responses It should probably be used for all

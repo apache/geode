@@ -65,7 +65,6 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.InternalInstantiator;
 import org.apache.geode.internal.InternalInstantiator.InstantiatorAttributesHolder;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.persistence.CanonicalIdHolder;
 import org.apache.geode.internal.cache.persistence.DiskExceptionHandler;
 import org.apache.geode.internal.cache.persistence.DiskInitFileInterpreter;
@@ -81,7 +80,7 @@ import org.apache.geode.internal.cache.versions.RegionVersionVector;
 import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
-import org.apache.geode.internal.serialization.SerializationVersion;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Does all the IF file work for a DiskStoreImpl.
@@ -2795,7 +2794,7 @@ public class DiskInitFile implements DiskInitFileInterpreter {
     try {
       ByteBuffer bb = getIFWriteBuffer(1 + 3 + 1);
       bb.put(IFREC_GEMFIRE_VERSION);
-      SerializationVersion.writeOrdinal(bb, version.ordinal(), false);
+      Version.writeOrdinal(bb, version.ordinal(), false);
       bb.put(END_OF_RECORD_ID);
       writeIFRecord(bb, false); // don't do stats for these small records
     } catch (IOException ex) {

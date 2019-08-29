@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.tier.Command;
 import org.apache.geode.internal.cache.tier.MessageType;
 import org.apache.geode.internal.cache.tier.sockets.command.AddPdxEnum;
@@ -104,6 +103,7 @@ import org.apache.geode.internal.cache.tier.sockets.command.TXSynchronizationCom
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterest;
 import org.apache.geode.internal.cache.tier.sockets.command.UnregisterInterestList;
 import org.apache.geode.internal.cache.tier.sockets.command.UpdateClientNotification;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * A <code>CommandInitializer</code> maintains version specific commands map.

@@ -12,38 +12,16 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package org.apache.geode.internal.serialization;
 
-import java.io.NotSerializableException;
+public class UnsupportedSerializationVersionException extends Exception {
+  public UnsupportedSerializationVersionException() {}
 
-/**
- * Exception to indicate that a specified DSFID type could not be found (e.g. due to class being
- * absent in lower product versions).
- */
-public class DSFIDNotFoundException extends NotSerializableException {
-
-  private static final long serialVersionUID = 130596009484324655L;
-
-  private int dsfid;
-  private short versionOrdinal;
-
-  /**
-   * Constructs a DSFIDNotFoundException object with message string.
-   *
-   * @param msg exception message
-   */
-  public DSFIDNotFoundException(String msg, int dsfid) {
-    super(msg);
-    this.dsfid = dsfid;
-    this.versionOrdinal = Version.getCurrentVersion().ordinal();
+  public UnsupportedSerializationVersionException(String message) {
+    super(message);
   }
 
-  public int getUnknownDSFID() {
-    return this.dsfid;
-  }
-
-  public short getProductVersionOrdinal() {
-    return this.versionOrdinal;
+  public UnsupportedSerializationVersionException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

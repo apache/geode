@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.junit.Test;
 
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 
 public class ByteArrayDataInputTest {
   @Test

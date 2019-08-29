@@ -24,9 +24,9 @@ import java.util.Set;
 import org.junit.Test;
 
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.FilterRoutingInfo.FilterInfo;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Unit test for FilterRoutingInfo.FilterInfo
