@@ -369,6 +369,13 @@ public class PeerTypeRegistration implements TypeRegistration {
       if (typeToId.isEmpty()) {
         buildTypeToIdFromIdToType();
       }
+      else {
+        try {
+          Thread.sleep(2000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
       // double check if my type is in region in case the typeToId map has been updated while
       // waiting to obtain a lock
       existingId = typeToId.get(newType);
@@ -562,10 +569,10 @@ public class PeerTypeRegistration implements TypeRegistration {
           int tmpDsId = PLACE_HOLDER_FOR_DS_ID & id;
           if (tmpDsId == typeIdPrefix) {
             totalPdxTypeIdInDS++;
-            if (totalPdxTypeIdInDS >= this.maxTypeId) {
+            if (totalPdxTypeIdInDS >= MAX_TYPE_ID) {
               throw new InternalGemFireError(
                   "Used up all of the PDX type ids for this distributed system. The maximum number of PDX types is "
-                      + this.maxTypeId);
+                      + MAX_TYPE_ID);
             }
           }
 
@@ -603,6 +610,7 @@ public class PeerTypeRegistration implements TypeRegistration {
       }
 
       if (totalEnumIdInDS == MAX_TYPE_ID) {
+        logger.info("JASON WE HIT THIS?!?!?!?!");
         throw new InternalGemFireError(
             "Used up all of the PDX enum ids for this distributed system. The maximum number of PDX types is "
                 + MAX_TYPE_ID);
