@@ -57,7 +57,7 @@ public class Version implements Comparable<Version> {
   /** byte used as ordinal to represent this <code>Version</code> */
   private final short ordinal;
 
-  public static final int HIGHEST_VERSION = 107;
+  public static final int HIGHEST_VERSION = 110;
 
   @Immutable
   private static final Version[] VALUES = new Version[HIGHEST_VERSION + 1];
@@ -72,91 +72,91 @@ public class Version implements Comparable<Version> {
   public static final Version TOKEN =
       new Version("", "TOKEN", (byte) -1, (byte) 0, (byte) 0, (byte) 0, TOKEN_ORDINAL);
 
-  private static final byte GFE_56_ORDINAL = 0;
+  private static final short GFE_56_ORDINAL = 0;
 
   @Immutable
   public static final Version GFE_56 =
       new Version("GFE", "5.6", (byte) 5, (byte) 6, (byte) 0, (byte) 0, GFE_56_ORDINAL);
 
-  private static final byte GFE_57_ORDINAL = 1;
+  private static final short GFE_57_ORDINAL = 1;
 
   @Immutable
   public static final Version GFE_57 =
       new Version("GFE", "5.7", (byte) 5, (byte) 7, (byte) 0, (byte) 0, GFE_57_ORDINAL);
 
-  private static final byte GFE_58_ORDINAL = 3;
+  private static final short GFE_58_ORDINAL = 3;
 
   @Immutable
   public static final Version GFE_58 =
       new Version("GFE", "5.8", (byte) 5, (byte) 8, (byte) 0, (byte) 0, GFE_58_ORDINAL);
 
-  private static final byte GFE_603_ORDINAL = 4;
+  private static final short GFE_603_ORDINAL = 4;
 
   @Immutable
   public static final Version GFE_603 =
       new Version("GFE", "6.0.3", (byte) 6, (byte) 0, (byte) 3, (byte) 0, GFE_603_ORDINAL);
 
-  private static final byte GFE_61_ORDINAL = 5;
+  private static final short GFE_61_ORDINAL = 5;
 
   @Immutable
   public static final Version GFE_61 =
       new Version("GFE", "6.1", (byte) 6, (byte) 1, (byte) 0, (byte) 0, GFE_61_ORDINAL);
 
-  private static final byte GFE_65_ORDINAL = 6;
+  private static final short GFE_65_ORDINAL = 6;
 
   @Immutable
   public static final Version GFE_65 =
       new Version("GFE", "6.5", (byte) 6, (byte) 5, (byte) 0, (byte) 0, GFE_65_ORDINAL);
 
-  private static final byte GFE_651_ORDINAL = 7;
+  private static final short GFE_651_ORDINAL = 7;
 
   @Immutable
   public static final Version GFE_651 =
       new Version("GFE", "6.5.1", (byte) 6, (byte) 5, (byte) 1, (byte) 0, GFE_651_ORDINAL);
 
-  private static final byte GFE_6516_ORDINAL = 12;
+  private static final short GFE_6516_ORDINAL = 12;
 
   @Immutable
   public static final Version GFE_6516 =
       new Version("GFE", "6.5.1.6", (byte) 6, (byte) 5, (byte) 1, (byte) 6, GFE_6516_ORDINAL);
 
-  private static final byte GFE_66_ORDINAL = 16;
+  private static final short GFE_66_ORDINAL = 16;
 
   @Immutable
   public static final Version GFE_66 =
       new Version("GFE", "6.6", (byte) 6, (byte) 6, (byte) 0, (byte) 0, GFE_66_ORDINAL);
 
-  private static final byte GFE_662_ORDINAL = 17;
+  private static final short GFE_662_ORDINAL = 17;
 
   @Immutable
   public static final Version GFE_662 =
       new Version("GFE", "6.6.2", (byte) 6, (byte) 6, (byte) 2, (byte) 0, GFE_662_ORDINAL);
 
-  private static final byte GFE_6622_ORDINAL = 18;
+  private static final short GFE_6622_ORDINAL = 18;
 
   @Immutable
   public static final Version GFE_6622 =
       new Version("GFE", "6.6.2.2", (byte) 6, (byte) 6, (byte) 2, (byte) 2, GFE_6622_ORDINAL);
 
-  private static final byte GFE_70_ORDINAL = 19;
+  private static final short GFE_70_ORDINAL = 19;
 
   @Immutable
   public static final Version GFE_70 =
       new Version("GFE", "7.0", (byte) 7, (byte) 0, (byte) 0, (byte) 0, GFE_70_ORDINAL);
 
-  private static final byte GFE_701_ORDINAL = 20;
+  private static final short GFE_701_ORDINAL = 20;
 
   @Immutable
   public static final Version GFE_701 =
       new Version("GFE", "7.0.1", (byte) 7, (byte) 0, (byte) 1, (byte) 0, GFE_701_ORDINAL);
 
-  private static final byte GFE_7099_ORDINAL = 21;
+  private static final short GFE_7099_ORDINAL = 21;
 
   @Immutable
   public static final Version GFE_7099 =
       new Version("GFE", "7.0.99", (byte) 7, (byte) 0, (byte) 99, (byte) 0, GFE_7099_ORDINAL);
 
-  private static final byte GFE_71_ORDINAL = 22;
+  private static final short GFE_71_ORDINAL = 22;
 
   @Immutable
   public static final Version GFE_71 =
@@ -164,7 +164,7 @@ public class Version implements Comparable<Version> {
 
   // 23-29 available for 7.x variants
 
-  private static final byte GFE_80_ORDINAL = 30;
+  private static final short GFE_80_ORDINAL = 30;
 
   @Immutable
   public static final Version GFE_80 =
@@ -172,13 +172,13 @@ public class Version implements Comparable<Version> {
 
   // 31-34 available for 8.0.x variants
 
-  private static final byte GFE_8009_ORDINAL = 31;
+  private static final short GFE_8009_ORDINAL = 31;
 
   @Immutable
   public static final Version GFE_8009 =
       new Version("GFE", "8.0.0.9", (byte) 8, (byte) 0, (byte) 0, (byte) 9, GFE_8009_ORDINAL);
 
-  private static final byte GFE_81_ORDINAL = 35;
+  private static final short GFE_81_ORDINAL = 35;
 
   @Immutable
   public static final Version GFE_81 =
@@ -186,7 +186,7 @@ public class Version implements Comparable<Version> {
 
   // 36-39 available for 8.1.x variants
 
-  private static final byte GFE_82_ORDINAL = 40;
+  private static final short GFE_82_ORDINAL = 40;
 
   @Immutable
   public static final Version GFE_82 =
@@ -194,7 +194,7 @@ public class Version implements Comparable<Version> {
 
   // 41-44 available for 8.2.x variants
 
-  private static final byte GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
+  private static final short GFE_90_ORDINAL = 45; // this is also GEODE 1.0.0-incubating
 
   @Immutable
   public static final Version GFE_90 =
@@ -202,66 +202,67 @@ public class Version implements Comparable<Version> {
 
   // prior to v1.2.0 GEODE_1_1_0 was named GFE_91. This was used for both the rel/v1.1.0
   // and rel/v1.1.1 releases
-  private static final byte GEODE_1_1_0_ORDINAL = 50;
+  private static final short GEODE_1_1_0_ORDINAL = 50;
 
   @Immutable
   public static final Version GEODE_1_1_0 =
       new Version("GEODE", "1.1.0", (byte) 1, (byte) 1, (byte) 0, (byte) 0, GEODE_1_1_0_ORDINAL);
 
   // This ordinal was never used
-  private static final byte GEODE_1_1_1_ORDINAL = 55;
+  private static final short GEODE_1_1_1_ORDINAL = 55;
 
   @Immutable
   public static final Version GEODE_1_1_1 =
       new Version("GEODE", "1.1.1", (byte) 1, (byte) 1, (byte) 1, (byte) 0, GEODE_1_1_1_ORDINAL);
 
-  private static final byte GEODE_1_2_0_ORDINAL = 65;
+  private static final short GEODE_1_2_0_ORDINAL = 65;
 
   @Immutable
   public static final Version GEODE_1_2_0 =
       new Version("GEODE", "1.2.0", (byte) 1, (byte) 2, (byte) 0, (byte) 0, GEODE_1_2_0_ORDINAL);
 
-  private static final byte GEODE_1_3_0_ORDINAL = 70;
+  private static final short GEODE_1_3_0_ORDINAL = 70;
 
   @Immutable
   public static final Version GEODE_1_3_0 =
       new Version("GEODE", "1.3.0", (byte) 1, (byte) 3, (byte) 0, (byte) 0, GEODE_1_3_0_ORDINAL);
 
-  private static final byte GEODE_1_4_0_ORDINAL = 75;
+  private static final short GEODE_1_4_0_ORDINAL = 75;
 
   @Immutable
   public static final Version GEODE_1_4_0 =
       new Version("GEODE", "1.4.0", (byte) 1, (byte) 4, (byte) 0, (byte) 0, GEODE_1_4_0_ORDINAL);
 
-  private static final byte GEODE_1_5_0_ORDINAL = 80;
+  private static final short GEODE_1_5_0_ORDINAL = 80;
 
   @Immutable
   public static final Version GEODE_1_5_0 =
       new Version("GEODE", "1.5.0", (byte) 1, (byte) 5, (byte) 0, (byte) 0, GEODE_1_5_0_ORDINAL);
 
-  private static final byte GEODE_1_6_0_ORDINAL = 85;
+  private static final short GEODE_1_6_0_ORDINAL = 85;
 
   @Immutable
   public static final Version GEODE_1_6_0 =
       new Version("GEODE", "1.6.0", (byte) 1, (byte) 6, (byte) 0, (byte) 0, GEODE_1_6_0_ORDINAL);
 
-  private static final byte GEODE_1_7_0_ORDINAL = 90;
+  private static final short GEODE_1_7_0_ORDINAL = 90;
 
   @Immutable
   public static final Version GEODE_1_7_0 =
       new Version("GEODE", "1.7.0", (byte) 1, (byte) 7, (byte) 0, (byte) 0, GEODE_1_7_0_ORDINAL);
 
-  private static final byte GEODE_1_8_0_ORDINAL = 95;
+  private static final short GEODE_1_8_0_ORDINAL = 95;
 
   @Immutable
   public static final Version GEODE_1_8_0 =
       new Version("GEODE", "1.8.0", (byte) 1, (byte) 8, (byte) 0, (byte) 0, GEODE_1_8_0_ORDINAL);
 
-  private static final byte GEODE_1_9_0_ORDINAL = 100;
+  private static final short GEODE_1_9_0_ORDINAL = 100;
 
   @Immutable
   public static final Version GEODE_1_9_0 =
       new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_9_0_ORDINAL);
+
 
   private static final byte GEODE_1_10_0_ORDINAL = 105;
 
@@ -269,7 +270,7 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_1_10_0 =
       new Version("GEODE", "1.10.0", (byte) 1, (byte) 10, (byte) 0, (byte) 0, GEODE_1_10_0_ORDINAL);
 
-  private static final byte GEODE_1_11_0_ORDINAL = 107;
+  private static final short GEODE_1_11_0_ORDINAL = 110;
 
   @Immutable
   public static final Version GEODE_1_11_0 =
@@ -293,7 +294,7 @@ public class Version implements Comparable<Version> {
   /**
    * version ordinal for test Backward compatibility.
    */
-  private static final byte validOrdinalForTesting = 2;
+  private static final short validOrdinalForTesting = 2;
 
   @Immutable
   public static final Version TEST_VERSION = new Version("TEST", "VERSION", (byte) 0, (byte) 0,
@@ -301,7 +302,7 @@ public class Version implements Comparable<Version> {
 
   /** Creates a new instance of <code>Version</code> */
   private Version(String product, String name, byte major, byte minor, byte release, byte patch,
-      byte ordinal) {
+      short ordinal) {
     this.productName = product;
     this.name = name;
     this.majorVersion = major;
