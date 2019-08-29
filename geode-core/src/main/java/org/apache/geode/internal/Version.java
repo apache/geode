@@ -263,12 +263,6 @@ public class Version implements Comparable<Version> {
   public static final Version GEODE_1_9_0 =
       new Version("GEODE", "1.9.0", (byte) 1, (byte) 9, (byte) 0, (byte) 0, GEODE_1_9_0_ORDINAL);
 
-  private static final byte GEODE_1_9_1_ORDINAL = 101;
-
-  @Immutable
-  public static final Version GEODE_1_9_1 =
-      new Version("GEODE", "1.9.1", (byte) 1, (byte) 9, (byte) 1, (byte) 0, GEODE_1_9_1_ORDINAL);
-
   private static final byte GEODE_1_10_0_ORDINAL = 105;
 
   @Immutable
