@@ -332,6 +332,8 @@ dependencies {
   //probably does not belong in this project
   api(project(':geode-common'))
   api(project(':geode-unsafe'))
+
+  api(project(':geode-serialization'))
   
   //geode-management currently has pieces of the public API
   //copied into it, so it is an API dependency

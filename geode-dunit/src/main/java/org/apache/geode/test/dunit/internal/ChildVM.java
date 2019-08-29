@@ -45,7 +45,7 @@ public class ChildVM {
       int pid = OSProcess.getId();
       logger.info("VM" + vmNum + " is launching" + (pid > 0 ? " with PID " + pid : ""));
       if (!VersionManager.isCurrentVersion(geodeVersion)) {
-        logger.info("This VM is using a Geode version with ordinal {}",
+        logger.info("This VM is using a Geode version {}",
             geodeVersion);
       }
       MasterRemote holder = (MasterRemote) Naming

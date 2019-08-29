@@ -18,19 +18,15 @@ package org.apache.geode.internal.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 
-import org.apache.geode.DataSerializable;
-import org.apache.geode.internal.InternalDataSerializer;
 
 /**
  * An extension to {@link DataOutput}, {@link DataInput} used internally in product to indicate that
  * the input/output stream is attached to a GemFire peer having a different version.
  *
- * Internal product classes that implement {@link DataSerializableFixedID} and
- * {@link DataSerializable} and change serialization format must check this on DataInput/DataOutput
- * (see {@link InternalDataSerializer#getVersionForDataStream} methods) and deal with serialization
+ * Internal product classes that implement {@link DataSerializableFixedID}
+ * and change serialization format must check this on DataInput/DataOutput
+ * (see {@link SerializationContext#getSerializationVersion()} methods) and deal with serialization
  * with previous {@link Version}s appropriately.
- *
- * @since GemFire 7.1
  */
 public interface VersionedDataStream {
 

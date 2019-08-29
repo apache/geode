@@ -27,7 +27,6 @@ import java.net.SocketException;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.cache.CacheClosedException;
 
 public class DSFIDSerializerImpl implements DSFIDSerializer {
 
@@ -279,7 +278,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       if (!invoked) {
         ((DataSerializableFixedID) ds).fromData(in, context);
       }
-    } catch (EOFException | ClassNotFoundException | CacheClosedException | SocketException ex) {
+    } catch (EOFException | ClassNotFoundException | SocketException ex) {
       // client went away - ignore
       throw ex;
     } catch (RuntimeException e) {

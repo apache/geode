@@ -57,7 +57,7 @@ public class VersionManager {
     return geodeCurrentVersionOrdinal;
   }
 
-  private short geodeCurrentVersionOrdinal;
+  private short geodeCurrentVersionOrdinal = -1;
 
   protected static void init() {
     instance = new VersionManager();
@@ -217,11 +217,12 @@ public class VersionManager {
     Field currentOrdinalField;
     // GEODE's Version class was repackaged when serialization was modularized
     try {
-      versionClass = Class.forName("org.apache.geode.internal.serialization.Version");
+      versionClass = Class.forName("org.apache.geode.internal.Version");
     } catch (ClassNotFoundException e) {
       try {
-        versionClass = Class.forName("org.apache.geode.internal.Version");
+        versionClass = Class.forName("org.apache.geode.internal.serialization.Version");
       } catch (ClassNotFoundException e2) {
+        System.out.println("classpath is " + System.getProperty("java.class.path"));
         throw new IllegalStateException(
             "Unable to locate Version.java in order to establish the product's serialization version",
             e2);

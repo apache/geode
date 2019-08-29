@@ -14,14 +14,9 @@
  */
 package org.apache.geode.internal.serialization;
 
-import org.apache.geode.DataSerializer;
-
 /**
- * An enumeration that contains a bunch of pre-defined values for use in the implementation of
- * {@link DataSerializer}.
+ * An enumeration that contains a bunch of pre-defined values for use in serialization
  * The allowed range of these values is -128..127 inclusive (i.e., one byte).
- *
- * @since GemFire 5.7
  */
 public enum DSCODE {
   /**

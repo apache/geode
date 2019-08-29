@@ -12,7 +12,7 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
+package org.apache.geode.internal.serialization;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
@@ -22,9 +22,6 @@ import java.io.EOFException;
 import java.io.IOException;
 
 import org.junit.Test;
-
-import org.apache.geode.internal.serialization.ByteArrayDataInput;
-import org.apache.geode.internal.serialization.Version;
 
 public class ByteArrayDataInputTest {
   @Test
@@ -175,7 +172,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesEmptyString() throws IOException {
-    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     output.writeUTF("");
     output.writeByte(1);
     DataInput input = createDataInput(output.toByteArray());
@@ -189,7 +186,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesAsciiString() throws IOException {
-    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     String string = "\u0001test\u007f";
     output.writeUTF(string);
     output.writeByte(1);
@@ -204,7 +201,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFHandlesUTF16String() throws IOException {
-    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     String string = "\u0000test\u0080\uffff";
     output.writeUTF(string);
     output.writeByte(1);
@@ -219,7 +216,7 @@ public class ByteArrayDataInputTest {
 
   @Test
   public void readUTFOnInputWithJustLengthThrowsEOF() {
-    HeapDataOutputStream output = new HeapDataOutputStream(Version.CURRENT);
+    BufferDataOutputStream output = new BufferDataOutputStream(Version.CURRENT);
     output.writeShort(1);
     DataInput input = createDataInput(output.toByteArray());
 
