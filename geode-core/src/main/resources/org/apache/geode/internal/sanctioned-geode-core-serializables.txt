@@ -367,6 +367,7 @@ org/apache/geode/internal/security/SecurableCommunicationChannel,false,constant:
 org/apache/geode/internal/sequencelog/GraphType,false
 org/apache/geode/internal/sequencelog/model/GraphID,false,graphName:java/lang/String,type:org/apache/geode/internal/sequencelog/GraphType
 org/apache/geode/internal/serialization/DSFIDNotFoundException,true,130596009484324655,dsfid:int,versionOrdinal:short
+org/apache/geode/internal/serialization/UnsupportedSerializationVersionException,true,3572445857994216007
 org/apache/geode/internal/size/ReflectionObjectSizer,false
 org/apache/geode/internal/size/SizeClassOnceObjectSizer,false
 org/apache/geode/internal/statistics/CounterMonitor$Type,false

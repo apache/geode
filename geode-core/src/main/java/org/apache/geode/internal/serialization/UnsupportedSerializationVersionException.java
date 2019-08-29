@@ -14,7 +14,13 @@
  */
 package org.apache.geode.internal.serialization;
 
+/**
+ * UnsupportedSerializationVersionException may be thrown if an attempt is made to
+ * look up a Version that isn't known.
+ */
 public class UnsupportedSerializationVersionException extends Exception {
+  private static final long serialVersionUID = 3572445857994216007L;
+
   public UnsupportedSerializationVersionException() {}
 
   public UnsupportedSerializationVersionException(String message) {
