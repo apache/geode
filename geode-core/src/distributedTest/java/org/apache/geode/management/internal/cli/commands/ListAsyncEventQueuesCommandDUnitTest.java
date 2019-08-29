@@ -69,13 +69,13 @@ public class ListAsyncEventQueuesCommandDUnitTest {
         "create async-event-queue --id=queue --listener=" + MyAsyncEventListener.class.getName())
         .statusIsSuccess();
 
-    // add default false expectation for start-paused
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
-        .tableHasRowWithValues("Member", "ID", "server-2", "queue2")
-        .tableHasRowWithValues("Member", "ID", "server-1", "queue")
-        .tableHasRowWithValues("Member", "ID", "server-2", "queue");
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "false")
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-1", "queue", "false")
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue", "false");
 
+    //Test case where start-paused is set
     gfsh.executeAndAssertThat("create async-event-queue --id=queue3 --listener="
         + MyAsyncEventListener.class.getName() + " --start-paused").statusIsSuccess();
 
@@ -83,7 +83,7 @@ public class ListAsyncEventQueuesCommandDUnitTest {
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(6)
         .tableHasRowWithValues("Member", "ID", "Start Paused", "server-1", "queue3", "true")
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "true");
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "false");
 
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue").statusIsSuccess();

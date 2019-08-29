@@ -64,7 +64,7 @@ public class ListAsyncEventQueuesFunction extends CliFunction {
       // BR:ES replace hardcoded "startPaused" value with queue value after rebase
       return new AsyncEventQueueDetails(queue.getId(), queue.getBatchSize(), queue.isPersistent(),
           queue.getDiskStoreName(), queue.getMaximumQueueMemory(), listener.getClass().getName(),
-          listenerProperties, true);
+          listenerProperties, false);
     }).collect(Collectors.toList());
 
     return new CliFunctionResult(memberId, details);

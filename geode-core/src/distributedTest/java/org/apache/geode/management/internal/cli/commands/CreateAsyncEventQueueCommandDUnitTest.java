@@ -110,6 +110,37 @@ public class CreateAsyncEventQueueCommandDUnitTest {
   }
 
   @Test
+  public void create_paused_async_event_queue() throws Exception {
+    locator = lsRule.startLocatorVM(0);
+    lsRule.startServerVM(1, locator.getPort());
+    gfsh.connectAndVerify(locator);
+
+    //create queue without start paused set
+    gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue1 "
+        + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 ")
+        .statusIsSuccess().tableHasRowCount(1);
+
+
+    // list the queue to verify the the queue has start paused set to false
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(1).tableHasRowWithValues("Member", "ID", "Batch Size",
+        "Persistent", "Disk Store", "Max Memory", "Start Paused", "server-1", "queue1", "1024", "false",
+        "null", "512", "false");
+
+    //create queue with start paused set
+    gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue2 "
+        + "--batch-size=1024 --max-queue-memory=512 --listener-param=param1,param2#value2 --start-paused")
+        .statusIsSuccess().tableHasRowCount(1);
+
+
+    // list the queue to verify the the queue has start paused set to true
+    gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
+        .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "Batch Size",
+        "Persistent", "Disk Store", "Max Memory", "Start Paused", "server-1", "queue2", "1024", "false",
+        "null", "512", "true");
+  }
+
+  @Test
   public void create_queue_updates_cc() throws Exception {
     locator = lsRule.startLocatorVM(0);
     server = lsRule.startServerVM(1, locator.getPort());
