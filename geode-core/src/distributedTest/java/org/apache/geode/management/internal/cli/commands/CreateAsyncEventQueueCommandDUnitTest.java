@@ -124,8 +124,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // list the queue to verify the the queue has start paused set to false
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(1).tableHasRowWithValues("Member", "ID", "Batch Size",
-        "Persistent", "Disk Store", "Max Memory", "Start Paused", "server-1", "queue1", "1024", "false",
-        "null", "512", "false");
+        "Persistent", "Disk Store", "Max Memory", "Start Paused", "Paused", "server-1", "queue1", "1024", "false",
+        "null", "512", "false", "false");
 
     //create queue with start paused set
     gfsh.executeAndAssertThat(VALID_COMMAND + " --id=queue2 "
@@ -136,8 +136,8 @@ public class CreateAsyncEventQueueCommandDUnitTest {
     // list the queue to verify the the queue has start paused set to true
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(2).tableHasRowWithValues("Member", "ID", "Batch Size",
-        "Persistent", "Disk Store", "Max Memory", "Start Paused", "server-1", "queue2", "1024", "false",
-        "null", "512", "true");
+        "Persistent", "Disk Store", "Max Memory", "Start Paused", "Paused", "server-1", "queue2", "1024", "false",
+        "null", "512", "true", "true");
   }
 
   @Test

@@ -71,9 +71,9 @@ public class ListAsyncEventQueuesCommandDUnitTest {
 
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(4).tableHasRowWithValues("Member", "ID", "server-1", "queue1")
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "false")
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-1", "queue", "false")
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue", "false");
+        .tableHasRowWithValues("Member", "ID", "server-2", "queue2")
+        .tableHasRowWithValues("Member", "ID", "server-1", "queue")
+        .tableHasRowWithValues("Member", "ID", "server-2", "queue");
 
     //Test case where start-paused is set
     gfsh.executeAndAssertThat("create async-event-queue --id=queue3 --listener="
@@ -82,8 +82,8 @@ public class ListAsyncEventQueuesCommandDUnitTest {
     // locator.waitUntilAsyncEventQueuesAreReadyOnExactlyThisManyServers("queue3", 1);
     gfsh.executeAndAssertThat("list async-event-queue").statusIsSuccess()
         .tableHasRowCount(6)
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-1", "queue3", "true")
-        .tableHasRowWithValues("Member", "ID", "Start Paused", "server-2", "queue2", "false");
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "Paused", "server-1", "queue3", "true", "true")
+        .tableHasRowWithValues("Member", "ID", "Start Paused", "Paused", "server-2", "queue2", "false", "false");
 
 
     gfsh.executeAndAssertThat("destroy async-event-queue --id=queue").statusIsSuccess();
