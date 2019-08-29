@@ -21,8 +21,8 @@ import static org.mockito.Mockito.spy;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 
 public class RegionConfigManagerTest {
 

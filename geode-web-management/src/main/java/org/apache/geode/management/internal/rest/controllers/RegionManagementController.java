@@ -15,7 +15,7 @@
 
 package org.apache.geode.management.internal.rest.controllers;
 
-import static org.apache.geode.cache.configuration.RegionConfig.REGION_CONFIG_ENDPOINT;
+import static org.apache.geode.management.configuration.Region.REGION_CONFIG_ENDPOINT;
 import static org.apache.geode.management.internal.rest.controllers.AbstractManagementController.MANAGEMENT_API_VERSION;
 
 import java.util.List;

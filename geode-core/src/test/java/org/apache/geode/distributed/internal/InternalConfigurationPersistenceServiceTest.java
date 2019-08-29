@@ -43,11 +43,11 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.JndiBindingsType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.internal.config.JAXBServiceTest;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementOne;
 import org.apache.geode.internal.config.JAXBServiceTest.ElementTwo;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
 import org.apache.geode.management.internal.configuration.utils.XmlUtils;
 

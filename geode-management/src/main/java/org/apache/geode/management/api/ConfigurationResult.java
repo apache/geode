@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
@@ -30,7 +30,7 @@ import org.apache.geode.management.runtime.RuntimeInfo;
  * @param <R> the runtimeInfo type
  */
 @Experimental
-public class ConfigurationResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
+public class ConfigurationResult<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> {
   private T configuration;
   private List<R> runtimeInfo = new ArrayList<>();
 

@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.execute.Execution;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
@@ -59,6 +58,7 @@ import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.api.RestfulEndpoint;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.GatewayReceiver;
 import org.apache.geode.management.configuration.Index;
 import org.apache.geode.management.configuration.MemberConfig;
@@ -126,7 +126,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementRealizationResult create(T config) {
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
 
@@ -194,7 +194,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementRealizationResult delete(
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(
       T config) {
     // validate that user used the correct config object type
     ConfigurationManager configurationManager = getConfigurationManager(config);
@@ -267,13 +267,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement> ClusterManagementRealizationResult update(
+  public <T extends AbstractConfiguration> ClusterManagementRealizationResult update(
       T config) {
     throw new NotImplementedException("Not implemented");
   }
 
   @Override
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T filter) {
     ClusterManagementListResult<T, R> result = new ClusterManagementListResult<>();
 
@@ -335,7 +335,8 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
       // if "cluster" is the only group, clear it, so that the returning json does not show
       // "cluster" as a group value
-      if (element.getGroups().size() == 1 && CacheElement.CLUSTER.equals(element.getGroup())) {
+      if (element.getGroups().size() == 1
+          && AbstractConfiguration.CLUSTER.equals(element.getGroup())) {
         element.getGroups().clear();
       }
 
@@ -376,7 +377,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
   }
 
   @Override
-  public <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  public <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config) {
     ClusterManagementListResult<T, R> list = list(config);
     List<ConfigurationResult<T, R>> result = list.getResult();
@@ -516,7 +517,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     operationManager.close();
   }
 
-  private <T extends CacheElement> ConfigurationManager<T> getConfigurationManager(
+  private <T extends AbstractConfiguration> ConfigurationManager<T> getConfigurationManager(
       T config) {
     ConfigurationManager configurationManager = managers.get(config.getClass());
     if (configurationManager == null) {

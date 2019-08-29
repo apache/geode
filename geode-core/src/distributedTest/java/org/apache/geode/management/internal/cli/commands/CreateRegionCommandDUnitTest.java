@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -42,7 +43,6 @@ import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.asyncqueue.AsyncEvent;
 import org.apache.geode.cache.asyncqueue.AsyncEventListener;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.cache.util.CacheListenerAdapter;
 import org.apache.geode.compression.Compressor;
@@ -221,14 +221,14 @@ public class CreateRegionCommandDUnitTest {
     locator.invoke(() -> {
       CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getCacheConfig("cluster");
-      assertThat(CacheElement.findElement(config.getRegions(), regionName)).isNotNull();
+      assertThat(find(config.getRegions(), regionName)).isNotNull();
 
-      RegionConfig parentConfig = CacheElement.findElement(config.getRegions(), regionName);
-      assertThat(CacheElement.findElement(parentConfig.getRegions(), subRegionName)).isNotNull();
+      RegionConfig parentConfig = find(config.getRegions(), regionName);
+      assertThat(find(parentConfig.getRegions(), subRegionName)).isNotNull();
 
-      RegionConfig subRegionConfig = CacheElement.findElement(parentConfig.getRegions(),
+      RegionConfig subRegionConfig = find(parentConfig.getRegions(),
           subRegionName);
-      assertThat(CacheElement.findElement(subRegionConfig.getRegions(), subSubRegionName))
+      assertThat(find(subRegionConfig.getRegions(), subSubRegionName))
           .isNotNull();
     });
   }
@@ -800,9 +800,9 @@ public class CreateRegionCommandDUnitTest {
       CacheConfig actual = persistenceService.getCacheConfig("cluster");
 
       for (RegionShortcut shortcut : shortcuts) {
-        assertThat(CacheElement.findElement(actual.getRegions(), shortcut.name()))
+        assertThat(find(actual.getRegions(), shortcut.name()))
             .isEqualToComparingFieldByFieldRecursively(
-                CacheElement.findElement(expected.getRegions(), shortcut.name()));
+                find(expected.getRegions(), shortcut.name()));
       }
     });
   }

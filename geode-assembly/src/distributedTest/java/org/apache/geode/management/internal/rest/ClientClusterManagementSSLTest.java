@@ -20,6 +20,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_KEYSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
+import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.management.builder.ClusterManagementServiceBuilder.buildWithCache;
 import static org.apache.geode.management.client.ClusterManagementServiceBuilder.buildWithHostAddress;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,8 +39,6 @@ import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
@@ -47,6 +46,7 @@ import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.VM;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -233,7 +233,7 @@ public class ClientClusterManagementSSLTest {
       CacheConfig cacheConfig =
           ClusterStartupRule.getLocator().getConfigurationPersistenceService()
               .getCacheConfig("cluster");
-      assertThat(CacheElement.findElement(cacheConfig.getRegions(), "orders")).isNotNull();
+      assertThat(find(cacheConfig.getRegions(), "orders")).isNotNull();
     });
   }
 }

@@ -18,13 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
 
-/**
- * returned from {@link ClusterManagementService#create(CacheElement)} /
- * {@link ClusterManagementService#update(CacheElement)} /
- * {@link ClusterManagementService#delete(CacheElement)} methods
- */
 @Experimental
 public class ClusterManagementRealizationResult extends ClusterManagementResult {
   private List<RealizationResult> memberStatuses = new ArrayList<>();
@@ -53,7 +47,8 @@ public class ClusterManagementRealizationResult extends ClusterManagementResult 
   }
 
   /**
-   * For a {@link ClusterManagementService#create(CacheElement)} operation, this will return
+   * For a {@link ClusterManagementService#create(AbstractConfiguration)} operation, this will
+   * return
    * per-member status of the create.
    */
   public List<RealizationResult> getMemberStatuses() {

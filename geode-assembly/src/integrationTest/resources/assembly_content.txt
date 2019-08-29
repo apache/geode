@@ -336,7 +336,6 @@ javadoc/org/apache/geode/cache/configuration/RegionAttributesType.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Entry.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.Index.html
 javadoc/org/apache/geode/cache/configuration/RegionConfig.html
-javadoc/org/apache/geode/cache/configuration/RegionType.html
 javadoc/org/apache/geode/cache/configuration/ResourceManagerType.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Instantiator.html
 javadoc/org/apache/geode/cache/configuration/SerializationRegistrationType.Serializer.html
@@ -724,12 +723,14 @@ javadoc/org/apache/geode/management/client/ClusterManagementServiceBuilder.html
 javadoc/org/apache/geode/management/client/package-frame.html
 javadoc/org/apache/geode/management/client/package-summary.html
 javadoc/org/apache/geode/management/client/package-tree.html
+javadoc/org/apache/geode/management/configuration/AbstractConfiguration.html
 javadoc/org/apache/geode/management/configuration/ClassName.html
 javadoc/org/apache/geode/management/configuration/GatewayReceiver.html
 javadoc/org/apache/geode/management/configuration/Index.html
 javadoc/org/apache/geode/management/configuration/MemberConfig.html
 javadoc/org/apache/geode/management/configuration/Pdx.html
 javadoc/org/apache/geode/management/configuration/Region.html
+javadoc/org/apache/geode/management/configuration/RegionType.html
 javadoc/org/apache/geode/management/configuration/package-frame.html
 javadoc/org/apache/geode/management/configuration/package-summary.html
 javadoc/org/apache/geode/management/configuration/package-tree.html
@@ -939,7 +940,6 @@ lib/fastutil-8.2.2.jar
 lib/findbugs-annotations-1.3.9-1.jar
 lib/geo-0.7.1.jar
 lib/geode-common-0.0.0.jar
-lib/geode-unsafe-0.0.0.jar
 lib/geode-connectors-0.0.0.jar
 lib/geode-core-0.0.0.jar
 lib/geode-cq-0.0.0.jar
@@ -953,6 +953,7 @@ lib/geode-protobuf-0.0.0.jar
 lib/geode-protobuf-messages-0.0.0.jar
 lib/geode-rebalancer-0.0.0.jar
 lib/geode-redis-0.0.0.jar
+lib/geode-unsafe-0.0.0.jar
 lib/geode-wan-0.0.0.jar
 lib/gfsh-dependencies.jar
 lib/grumpy-core-0.2.2.jar

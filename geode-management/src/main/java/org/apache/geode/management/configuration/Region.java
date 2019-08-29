@@ -19,8 +19,6 @@ import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
@@ -31,7 +29,7 @@ import org.apache.geode.management.runtime.RuntimeRegionInfo;
  * for regions created using gfsh but listed using management rest api, the attributes not supported
  * by management rest api won't be shown.
  */
-public class Region extends CacheElement implements RestfulEndpoint,
+public class Region extends AbstractConfiguration implements RestfulEndpoint,
     CorrespondWith<RuntimeRegionInfo> {
   public static final String REGION_CONFIG_ENDPOINT = "/regions";
 

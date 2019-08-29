@@ -34,8 +34,8 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.xml.sax.SAXException;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.SingleGfshCommand;
 import org.apache.geode.management.cli.UpdateAllConfigurationGroupsMarker;
@@ -127,7 +127,7 @@ public class AlterAsyncEventQueueCommand extends SingleGfshCommand implements
     Set<String> groups = ccService.getGroups();
     for (String group : groups) {
       queue =
-          CacheElement.findElement(ccService.getCacheConfig(group).getAsyncEventQueues(), aeqId);
+          Identifiable.find(ccService.getCacheConfig(group).getAsyncEventQueues(), aeqId);
       if (queue != null) {
         return queue;
       }

@@ -23,8 +23,8 @@ import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 
 public class RegionConverter extends ConfigurationConverter<Region, RegionConfig> {
   @Override

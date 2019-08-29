@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.test.junit.assertions.ClusterManagementRealizationResultAssert.assertManagementResult;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -27,15 +28,14 @@ import org.junit.Test;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementRealizationResult;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.api.RealizationResult;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.IgnoredException;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -158,7 +158,7 @@ public class RegionManagementDunitTest {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig(group);
-    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 

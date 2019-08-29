@@ -23,17 +23,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
- * returned from {@link ClusterManagementService#list(CacheElement)}
  *
  * @param <T> the type of the static config, e.g. RegionConfig
  * @param <R> the type of the corresponding runtime information, e.g. RuntimeRegionInfo
  */
 @Experimental
-public class ClusterManagementListResult<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo>
+public class ClusterManagementListResult<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo>
     extends ClusterManagementResult {
   /**
    * for internal use only

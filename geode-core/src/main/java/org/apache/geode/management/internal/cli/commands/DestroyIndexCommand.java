@@ -24,11 +24,11 @@ import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.lang.StringUtils;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -111,12 +111,12 @@ public class DestroyIndexCommand extends SingleGfshCommand {
       if (indexName.isEmpty()) {
         regionConfig.getIndexes().clear();
       } else {
-        CacheElement.removeElement(regionConfig.getIndexes(), indexName);
+        Identifiable.remove(regionConfig.getIndexes(), indexName);
       }
     } else {
       // Need to search for the index name as region was not specified
       for (RegionConfig r : config.getRegions()) {
-        CacheElement.removeElement(r.getIndexes(), indexName);
+        Identifiable.remove(r.getIndexes(), indexName);
       }
     }
     return true;

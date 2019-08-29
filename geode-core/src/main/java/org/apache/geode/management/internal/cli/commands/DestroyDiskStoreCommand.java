@@ -22,8 +22,8 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.DistributedMember;
+import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.SingleGfshCommand;
@@ -69,7 +69,7 @@ public class DestroyDiskStoreCommand extends SingleGfshCommand {
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object configObject) {
     String diskStoreName = (String) configObject;
-    CacheElement.removeElement(config.getDiskStores(), diskStoreName);
+    Identifiable.remove(config.getDiskStores(), diskStoreName);
     return true;
   }
 }

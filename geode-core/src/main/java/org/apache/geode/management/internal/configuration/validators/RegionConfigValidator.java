@@ -18,11 +18,11 @@ package org.apache.geode.management.internal.configuration.validators;
 
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.RegionNameValidation;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.internal.CacheElementOperation;
 import org.apache.geode.security.ResourcePermission;
 
@@ -47,7 +47,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     }
   }
 
-  private void validateDelete(CacheElement config) {
+  private void validateDelete(AbstractConfiguration config) {
     if (StringUtils.isNotBlank(config.getGroup())) {
       throw new IllegalArgumentException(
           "Group is an invalid option when deleting region.");
@@ -64,7 +64,7 @@ public class RegionConfigValidator implements ConfigurationValidator<Region> {
     }
 
     Integer redundantCopies = config.getRedundantCopies();
-    if (config.getType().withRedundant() && redundantCopies == 0) {
+    if (config.getType().withRedundant() && redundantCopies != null && redundantCopies == 0) {
       throw new IllegalArgumentException(
           "redundantCopies cannot be 0 when the type has redundancy.");
     }

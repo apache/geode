@@ -14,6 +14,9 @@
  */
 package org.apache.geode.connectors.jdbc.internal.cli;
 
+import static org.apache.geode.lang.Identifiable.find;
+import static org.apache.geode.lang.Identifiable.remove;
+
 import java.util.List;
 import java.util.Set;
 
@@ -65,7 +68,7 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
     if (service != null) {
       List<JndiBindingsType.JndiBinding> bindings =
           service.getCacheConfig("cluster").getJndiBindings();
-      JndiBindingsType.JndiBinding binding = CacheElement.findElement(bindings, dataSourceName);
+      JndiBindingsType.JndiBinding binding = find(bindings, dataSourceName);
       if (binding == null) {
         throw new EntityNotFoundException(
             CliStrings.format("Data source named \"{0}\" does not exist.", dataSourceName),
@@ -151,7 +154,7 @@ public class DestroyDataSourceCommand extends SingleGfshCommand {
 
   @Override
   public boolean updateConfigForGroup(String group, CacheConfig config, Object element) {
-    CacheElement.removeElement(config.getJndiBindings(), (String) element);
+    remove(config.getJndiBindings(), (String) element);
     return true;
   }
 

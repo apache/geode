@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Before;
@@ -24,7 +25,6 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.rules.TestName;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.test.dunit.IgnoredException;
@@ -89,7 +89,7 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds()).isNotEmpty()
@@ -140,13 +140,13 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), region1Name);
+      RegionConfig regionConfig = find(config.getRegions(), region1Name);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds())
           .isEqualTo(asyncEventQueue);
 
-      RegionConfig region2Config = CacheElement.findElement(config.getRegions(), region2Name);
+      RegionConfig region2Config = find(config.getRegions(), region2Name);
       assertThat(region2Config).isNotNull();
       assertThat(region2Config.getRegionAttributes()).isNotNull();
       assertThat(region2Config.getRegionAttributes().getAsyncEventQueueIds()).isBlank();
@@ -196,7 +196,7 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds()).isBlank();
@@ -231,7 +231,7 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getGatewaySenderIds()).isNotEmpty()
@@ -283,13 +283,13 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), region1Name);
+      RegionConfig regionConfig = find(config.getRegions(), region1Name);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getGatewaySenderIds())
           .isEqualTo(gatewaySenderName);
 
-      RegionConfig region2Config = CacheElement.findElement(config.getRegions(), region2Name);
+      RegionConfig region2Config = find(config.getRegions(), region2Name);
       assertThat(region2Config).isNotNull();
       assertThat(region2Config.getRegionAttributes()).isNotNull();
       assertThat(region2Config.getRegionAttributes().getGatewaySenderIds()).isBlank();
@@ -337,7 +337,7 @@ public class AlterRegionCommandDUnitTest {
       CacheConfig config =
           internalLocator.getConfigurationPersistenceService().getCacheConfig("cluster");
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
       assertThat(regionConfig.getRegionAttributes().getGatewaySenderIds()).isBlank();
