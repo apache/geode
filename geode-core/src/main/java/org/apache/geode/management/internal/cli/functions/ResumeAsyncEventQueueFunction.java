@@ -32,7 +32,8 @@ public class ResumeAsyncEventQueueFunction extends CliFunction {
     AsyncEventQueue queue = cache.getAsyncEventQueue(AEQId);
 
     if(queue == null) {
-      return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.ERROR, "Async Event Queue \"" + AEQId + "\"          cannot be found");
+      return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.ERROR, "Async Event Queue \"" + AEQId +
+          " cannot be found");
     }
 
     //BR:ES implement this section after rebase with API update
@@ -40,6 +41,7 @@ public class ResumeAsyncEventQueueFunction extends CliFunction {
 //      queue.resume();
 //    }
 
-    return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK, "Async Event Queue \"" + AEQId + "\" was         resumed successfully" );
+    return new CliFunctionResult(member.getId(), CliFunctionResult.StatusState.OK, "Async Event Queue \"" + AEQId
+        + "\" was resumed successfully" );
   }
 }
