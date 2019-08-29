@@ -66,6 +66,19 @@ checkCommand cmake
 checkCommand svn
 checkCommand doxygen
 
+echo "============================================================"
+echo "Checking gpg... (you will be prompted to enter passphase)"
+echo "============================================================"
+SECRING=~/.gnupg/secring.gpg
+! [ -r $SECRING ] || SECRING=/dev/null
+if gpg --export-secret-keys > ${SECRING} && echo "1234" | gpg -o /dev/null --local-user ${SIGNING_KEY} -as - ; then
+  echo "You entered the correct passphrase; proceeding."
+  echo "Please note, you will still need to enter it a few more times."
+else
+  echo "Hmm, gpg seems unhappy.  Check that you entered correct passphrase or refer to release wiki for troubleshooting."
+  exit 1
+fi
+
 
 GEODE=$PWD/build/geode
 GEODE_EXAMPLES=$PWD/build/geode-examples
