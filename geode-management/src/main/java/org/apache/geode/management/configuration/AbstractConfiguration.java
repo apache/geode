@@ -19,8 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlTransient;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,7 +38,6 @@ public abstract class AbstractConfiguration
    * this returns a non-null value
    * for cluster level element, it will return "cluster" for sure.
    */
-  @XmlTransient
   @JsonIgnore
   public String getConfigGroup() {
     String group = getGroup();
@@ -54,7 +51,6 @@ public abstract class AbstractConfiguration
    * this returns the first group set by the user
    * if no group is set, this returns null
    */
-  @XmlTransient
   @JsonIgnore
   public String getGroup() {
     if (groups.size() == 0) {
@@ -73,7 +69,6 @@ public abstract class AbstractConfiguration
     groups.add(group);
   }
 
-  @XmlTransient
   public List<String> getGroups() {
     return groups;
   }
