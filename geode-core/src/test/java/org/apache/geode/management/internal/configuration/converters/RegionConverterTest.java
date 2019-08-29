@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.configuration.converters;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -27,13 +28,12 @@ import org.junit.Test;
 
 import org.apache.geode.cache.RegionShortcut;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.config.JAXBService;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 
 public class RegionConverterTest {
   private RegionConverter converter;
@@ -128,7 +128,7 @@ public class RegionConverterTest {
       config.setType(shortcut.name());
       config.setName(shortcut.name());
       config.setRegionAttributes(converter.createRegionAttributesByType(shortcut.name()));
-      RegionConfig masterRegion = CacheElement.findElement(master.getRegions(), shortcut.name());
+      RegionConfig masterRegion = find(master.getRegions(), shortcut.name());
       assertThat(config).isEqualToComparingFieldByFieldRecursively(masterRegion);
     }
   }

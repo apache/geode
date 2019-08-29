@@ -40,7 +40,7 @@ import org.apache.geode.StatisticsType;
 public class GatewayReceiverStatsTest {
 
   private static final String EVENTS_RECEIVED_COUNTER_NAME =
-      "cache.gatewayreceiver.events.received";
+      "geode.gateway.receiver.events";
   private static final String EVENTS_RECEIVED_STAT_NAME = "eventsReceived";
 
   private StatisticsType statisticsType;

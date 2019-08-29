@@ -24,8 +24,8 @@ import org.junit.Test;
 import org.apache.geode.cache.DataPolicy;
 import org.apache.geode.cache.RegionExistsException;
 import org.apache.geode.cache.Scope;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.junit.rules.ServerStarterRule;
 
 public class RegionConfigRealizerIntegrationTest {

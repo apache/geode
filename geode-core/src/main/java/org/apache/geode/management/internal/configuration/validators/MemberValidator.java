@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.distributed.ConfigurationPersistenceService;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.internal.configuration.mutators.ConfigurationManager;
 import org.apache.geode.management.internal.exceptions.EntityExistsException;
 
@@ -44,9 +44,9 @@ public class MemberValidator {
     this.persistenceService = persistenceService;
   }
 
-  public void validateCreate(CacheElement config, ConfigurationManager manager) {
+  public void validateCreate(AbstractConfiguration config, ConfigurationManager manager) {
 
-    Map<String, CacheElement> existingElementsAndTheirGroups =
+    Map<String, AbstractConfiguration> existingElementsAndTheirGroups =
         findCacheElement(config.getId(), manager);
     if (existingElementsAndTheirGroups.size() == 0) {
       return;
@@ -67,7 +67,8 @@ public class MemberValidator {
 
     // if there is no common member, we still need to verify if the new config is compatible with
     // the existing ones.
-    for (Map.Entry<String, CacheElement> existing : existingElementsAndTheirGroups.entrySet()) {
+    for (Map.Entry<String, AbstractConfiguration> existing : existingElementsAndTheirGroups
+        .entrySet()) {
       manager.checkCompatibility(config, existing.getKey(), existing.getValue());
     }
   }
@@ -79,14 +80,15 @@ public class MemberValidator {
   /**
    * this returns a map of CacheElement with this id, with the group as the key of the map
    */
-  public Map<String, CacheElement> findCacheElement(String id, ConfigurationManager manager) {
-    Map<String, CacheElement> results = new HashMap<>();
+  public Map<String, AbstractConfiguration> findCacheElement(String id,
+      ConfigurationManager manager) {
+    Map<String, AbstractConfiguration> results = new HashMap<>();
     for (String group : persistenceService.getGroups()) {
       CacheConfig cacheConfig = persistenceService.getCacheConfig(group);
       if (cacheConfig == null) {
         continue;
       }
-      CacheElement existing = manager.get(id, cacheConfig);
+      AbstractConfiguration existing = manager.get(id, cacheConfig);
       if (existing != null) {
         results.put(group, existing);
       }
@@ -112,13 +114,13 @@ public class MemberValidator {
 
   public Set<DistributedMember> findMembers(boolean includeLocators, String... groups) {
     if (groups == null || groups.length == 0) {
-      groups = new String[] {CacheElement.CLUSTER};
+      groups = new String[] {AbstractConfiguration.CLUSTER};
     }
 
     Set<DistributedMember> all = includeLocators ? getAllServersAndLocators() : getAllServers();
 
     // if groups contains "cluster" group, return all members
-    if (Arrays.asList(groups).contains(CacheElement.CLUSTER)) {
+    if (Arrays.asList(groups).contains(AbstractConfiguration.CLUSTER)) {
       return all;
     }
 

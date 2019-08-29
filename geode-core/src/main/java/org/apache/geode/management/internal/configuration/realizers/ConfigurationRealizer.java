@@ -17,19 +17,19 @@
 package org.apache.geode.management.internal.configuration.realizers;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RealizationResult;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
 /**
  * Defines the behavior to realize a configuration change in the cache on a server. Created with an
- * object of type {@link org.apache.geode.cache.configuration.CacheElement}, which represents the
+ * object of type {@link CacheElement}, which represents the
  * configuration change.
  */
 @Experimental
-public interface ConfigurationRealizer<T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> {
+public interface ConfigurationRealizer<T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> {
   RealizationResult create(T config, InternalCache cache);
 
   default boolean exists(T config, InternalCache cache) {

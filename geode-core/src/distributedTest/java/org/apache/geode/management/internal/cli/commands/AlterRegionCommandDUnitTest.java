@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -40,7 +41,6 @@ import org.apache.geode.cache.ExpirationAttributes;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.EnumActionDestroyOverflow;
 import org.apache.geode.cache.configuration.RegionAttributesType;
 import org.apache.geode.cache.configuration.RegionConfig;
@@ -256,7 +256,7 @@ public class AlterRegionCommandDUnitTest {
     locator.invoke(() -> {
       CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getCacheConfig("cluster");
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), "regionA");
+      RegionConfig regionConfig = find(config.getRegions(), "regionA");
       RegionAttributesType.EvictionAttributes evictionAttributes =
           regionConfig.getRegionAttributes().getEvictionAttributes();
       assertThat(evictionAttributes).isNull();
@@ -281,7 +281,7 @@ public class AlterRegionCommandDUnitTest {
     locator.invoke(() -> {
       CacheConfig config = ClusterStartupRule.getLocator().getConfigurationPersistenceService()
           .getCacheConfig("cluster");
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), "regionA");
+      RegionConfig regionConfig = find(config.getRegions(), "regionA");
       RegionAttributesType.EvictionAttributes evictionAttributes =
           regionConfig.getRegionAttributes().getEvictionAttributes();
       assertThat(evictionAttributes.getLruEntryCount().getMaximum()).isEqualTo("30");

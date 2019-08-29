@@ -18,7 +18,7 @@ package org.apache.geode.management.api;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.geode.annotations.Experimental;
-import org.apache.geode.cache.configuration.CacheElement;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.runtime.OperationResult;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
@@ -36,9 +36,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *        cluster, as well as the group this config belongs to
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the creation
    * @throws ClusterManagementRealizationException if unsuccessful
-   * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementRealizationResult create(T config);
+  <T extends AbstractConfiguration> ClusterManagementRealizationResult create(T config);
 
   /**
    * This method will delete the element on all the applicable members in the cluster and update the
@@ -48,9 +47,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *        cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the deletion
    * @throws ClusterManagementRealizationException if unsuccessful
-   * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementRealizationResult delete(T config);
+  <T extends AbstractConfiguration> ClusterManagementRealizationResult delete(T config);
 
   /**
    * This method will update the element on all the applicable members in the cluster and persist
@@ -60,9 +58,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *        cluster
    * @return a {@link ClusterManagementRealizationResult} indicating the success of the update
    * @throws ClusterManagementRealizationException if unsuccessful
-   * @see CacheElement
    */
-  <T extends CacheElement> ClusterManagementRealizationResult update(T config);
+  <T extends AbstractConfiguration> ClusterManagementRealizationResult update(T config);
 
   /**
    * This method will list instances of the element type in the cluster configuration, along with
@@ -73,9 +70,8 @@ public interface ClusterManagementService extends AutoCloseable {
    * @return a {@link ClusterManagementListResult} holding a list of matching instances in
    *         {@link ClusterManagementListResult#getResult()}
    * @throws ClusterManagementException if unsuccessful
-   * @see CacheElement
    */
-  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
+  <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> list(
       T config);
 
   /**
@@ -88,9 +84,8 @@ public interface ClusterManagementService extends AutoCloseable {
    *         {@link ClusterManagementListResult#getResult()}
    * @throws ClusterManagementException if unsuccesful or, no matching element is found, or multiple
    *         matches are found
-   * @see CacheElement
    */
-  <T extends CacheElement & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
+  <T extends AbstractConfiguration & CorrespondWith<R>, R extends RuntimeInfo> ClusterManagementListResult<T, R> get(
       T config);
 
   /**

@@ -15,6 +15,7 @@
 
 package org.apache.geode.management.internal.rest;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,12 +27,12 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementListResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.client.ClusterManagementServiceBuilder;
+import org.apache.geode.management.configuration.AbstractConfiguration;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
@@ -112,17 +113,17 @@ public class ListRegionManagementDunitTest {
     // list all
     List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(5);
-    Region element = CacheElement.findElement(regions, "customers");
+    Region element = find(regions, "customers");
     assertThat(element.getGroup()).isNull();
 
-    element = CacheElement.findElement(regions, "customers1");
+    element = find(regions, "customers1");
     assertThat(element.getGroup()).isEqualTo("group1");
 
-    Region region = CacheElement.findElement(regions, "customers2");
+    Region region = find(regions, "customers2");
     assertThat(region.getGroup()).isIn("group1", "group2");
     assertThat(region.getType()).isIn(RegionType.PARTITION, RegionType.PARTITION_PROXY);
 
-    element = CacheElement.findElement(regions, "customers3");
+    element = find(regions, "customers3");
     assertThat(element.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
@@ -171,13 +172,13 @@ public class ListRegionManagementDunitTest {
     List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(3);
     // when filtering by group, the returned list should not have group info
-    Region region = CacheElement.findElement(regions, "customers1");
+    Region region = find(regions, "customers1");
     assertThat(region.getGroup()).isEqualTo("group1");
 
-    region = CacheElement.findElement(regions, "customers2");
+    region = find(regions, "customers2");
     assertThat(region.getGroup()).isEqualTo("group1");
 
-    region = CacheElement.findElement(regions, "customers3");
+    region = find(regions, "customers3");
     assertThat(region.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
@@ -188,10 +189,10 @@ public class ListRegionManagementDunitTest {
     List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(2);
 
-    Region region = CacheElement.findElement(regions, "customers2");
+    Region region = find(regions, "customers2");
     assertThat(region.getGroup()).isEqualTo("group2");
 
-    region = CacheElement.findElement(regions, "customers3");
+    region = find(regions, "customers3");
     assertThat(region.getGroups()).containsExactlyInAnyOrder("group1", "group2");
   }
 
@@ -227,7 +228,7 @@ public class ListRegionManagementDunitTest {
     List<Region> regions = client.list(filter).getConfigResult();
     assertThat(regions).hasSize(2);
     assertThat(
-        regions.stream().map(CacheElement::getGroup).collect(Collectors.toList()))
+        regions.stream().map(AbstractConfiguration::getGroup).collect(Collectors.toList()))
             .containsExactlyInAnyOrder("group1", "group2");
     assertThat(regions.stream().map(Region.class::cast)
         .map(Region::getType)

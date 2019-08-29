@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.cli.commands;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -35,7 +36,6 @@ import org.apache.geode.cache.LoaderHelper;
 import org.apache.geode.cache.PartitionResolver;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionAttributesDataPolicy;
 import org.apache.geode.cache.configuration.RegionAttributesScope;
 import org.apache.geode.cache.configuration.RegionAttributesType;
@@ -214,7 +214,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<RegionConfig> regions = config.getRegions();
       assertThat(regions).isNotEmpty();
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
 
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
@@ -275,7 +275,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<String> regionNames = Arrays.asList(regionName, regionNameFromTemplate);
       regionNames.forEach(name -> {
-        RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
+        RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
         assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -385,7 +385,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<String> regionNames = Arrays.asList(regionName);
       regionNames.forEach(name -> {
-        RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
+        RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
         assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -421,7 +421,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       List<RegionConfig> regions = config.getRegions();
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
-      RegionConfig regionConfig = CacheElement.findElement(regions, regionName);
+      RegionConfig regionConfig = find(regions, regionName);
       assertThat(regionConfig.getRegionAttributes().getAsyncEventQueueIds())
           .contains(queueId);
     });
@@ -454,12 +454,12 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(3);
 
-      RegionConfig colocatedConfig = CacheElement.findElement(regions, colocatedRegionName);
+      RegionConfig colocatedConfig = find(regions, colocatedRegionName);
       assertThat(
           colocatedConfig.getRegionAttributes().getPartitionAttributes().getColocatedWith())
               .isEqualTo("/" + regionName);
 
-      RegionConfig colocatedConfigFromTemplate = CacheElement.findElement(regions,
+      RegionConfig colocatedConfigFromTemplate = find(regions,
           colocatedRegionFromTemplateName);
       assertThat(
           colocatedConfigFromTemplate.getRegionAttributes().getPartitionAttributes()
@@ -501,7 +501,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<String> regionNames = Arrays.asList(regionName, regionNameFromTemplate);
       regionNames.forEach(name -> {
-        RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
+        RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig.getName()).isEqualTo(name);
 
         RegionAttributesType regionAttributes = regionConfig.getRegionAttributes();
@@ -542,7 +542,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<String> regionNames = Arrays.asList(regionName, regionFromTemplateName);
       regionNames.forEach(name -> {
-        RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
+        RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
 
@@ -590,7 +590,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
 
@@ -626,7 +626,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).hasSize(2);
 
       RegionConfig regionConfig =
-          CacheElement.findElement(config.getRegions(), regionFromTemplateName);
+          find(config.getRegions(), regionFromTemplateName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionFromTemplateName);
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -655,7 +655,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).hasSize(1);
 
       RegionConfig regionConfig =
-          CacheElement.findElement(config.getRegions(), regionName);
+          find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -701,7 +701,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
 
       List<String> regionNames = Arrays.asList(regionName, regionFromTemplateName);
       regionNames.forEach(name -> {
-        RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), name);
+        RegionConfig regionConfig = find(config.getRegions(), name);
         assertThat(regionConfig).isNotNull();
         assertThat(regionConfig.getName()).isEqualTo(name);
         assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -733,7 +733,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -761,7 +761,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(1);
 
-      RegionConfig regionConfig = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig = find(config.getRegions(), regionName);
       assertThat(regionConfig).isNotNull();
       assertThat(regionConfig.getName()).isEqualTo(regionName);
       assertThat(regionConfig.getRegionAttributes()).isNotNull();
@@ -795,7 +795,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
       assertThat(regions).isNotEmpty();
       assertThat(regions).hasSize(2);
 
-      RegionConfig regionConfig1 = CacheElement.findElement(config.getRegions(), regionName);
+      RegionConfig regionConfig1 = find(config.getRegions(), regionName);
       assertThat(regionConfig1).isNotNull();
       assertThat(regionConfig1.getName()).isEqualTo(regionName);
       assertThat(regionConfig1.getRegionAttributes()).isNotNull();
@@ -805,7 +805,7 @@ public class CreateRegionCommandPersistsConfigurationDUnitTest {
           .describedAs("Scope for partitioned region should be null")
           .isNull();
 
-      RegionConfig regionConfig2 = CacheElement.findElement(config.getRegions(), regionName2);
+      RegionConfig regionConfig2 = find(config.getRegions(), regionName2);
       assertThat(regionConfig2).isNotNull();
       assertThat(regionConfig2.getName()).isEqualTo(regionName2);
       assertThat(regionConfig2.getRegionAttributes()).isNotNull();

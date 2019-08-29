@@ -32,9 +32,9 @@ public class CacheMeterRegistryFactory implements CompositeMeterRegistryFactory 
     GeodeCompositeMeterRegistry registry = new GeodeCompositeMeterRegistry(gcMetricsBinder);
 
     MeterRegistry.Config registryConfig = registry.config();
-    registryConfig.commonTags("cluster.id", String.valueOf(systemId));
-    registryConfig.commonTags("member.name", memberName == null ? "" : memberName);
-    registryConfig.commonTags("host.name", hostName == null ? "" : hostName);
+    registryConfig.commonTags("cluster", String.valueOf(systemId));
+    registryConfig.commonTags("member", memberName == null ? "" : memberName);
+    registryConfig.commonTags("host", hostName == null ? "" : hostName);
 
     gcMetricsBinder.bindTo(registry);
     new JvmMemoryMetrics().bindTo(registry);

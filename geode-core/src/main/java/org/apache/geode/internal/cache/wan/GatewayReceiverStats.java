@@ -107,7 +107,7 @@ public class GatewayReceiverStats extends CacheServerStats {
   private int eventsReceivedId;
   private final Counter eventsReceivedCounter;
   private static final String EVENTS_RECEIVED_COUNTER_NAME =
-      "cache.gatewayreceiver.events.received";
+      "geode.gateway.receiver.events";
   private static final String EVENTS_RECEIVED_COUNTER_DESCRIPTION =
       "total number events across the batched received by this GatewayReceiver";
   private static final String EVENTS_RECEIVED_COUNTER_UNITS = "operations";

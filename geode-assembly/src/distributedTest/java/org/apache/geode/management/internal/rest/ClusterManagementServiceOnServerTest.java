@@ -34,11 +34,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.web.client.ResourceAccessException;
 
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.api.ClusterManagementService;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 

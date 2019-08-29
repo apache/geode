@@ -19,13 +19,11 @@ package org.apache.geode.management.configuration;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.commons.lang3.StringUtils;
 
-import org.apache.geode.cache.configuration.CacheElement;
-import org.apache.geode.cache.configuration.RegionConfig;
 import org.apache.geode.management.api.CorrespondWith;
 import org.apache.geode.management.api.RestfulEndpoint;
 import org.apache.geode.management.runtime.RuntimeInfo;
 
-public class Index extends CacheElement
+public class Index extends AbstractConfiguration
     implements RestfulEndpoint, CorrespondWith<RuntimeInfo> {
 
   private String name;
@@ -104,6 +102,6 @@ public class Index extends CacheElement
     if (StringUtils.isBlank(regionName)) {
       return "/indexes";
     }
-    return RegionConfig.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
+    return Region.REGION_CONFIG_ENDPOINT + "/" + regionName + "/indexes";
   }
 }

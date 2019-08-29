@@ -15,7 +15,6 @@
 
 package org.apache.geode.management.api;
 
-import javax.xml.bind.annotation.XmlTransient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,7 +41,6 @@ public interface RestfulEndpoint extends Identifiable<String> {
    * @return e.g. /regions
    */
   @JsonIgnore
-  @XmlTransient
   String getEndpoint();
 
   /**
@@ -53,7 +51,6 @@ public interface RestfulEndpoint extends Identifiable<String> {
    *
    * @return e.g. /regions/regionA
    */
-  @XmlTransient
   @JsonIgnore
   default String getIdentityEndPoint() {
     String id = getId();
@@ -76,7 +73,6 @@ public interface RestfulEndpoint extends Identifiable<String> {
    *
    * @return e.g. /management/experimental/regions/regionA
    */
-  @XmlTransient
   @JsonProperty(access = JsonProperty.Access.READ_ONLY)
   default String getUri() {
     if (getIdentityEndPoint() == null) {

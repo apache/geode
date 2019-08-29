@@ -14,6 +14,7 @@
  */
 package org.apache.geode.management.internal.api;
 
+import static org.apache.geode.lang.Identifiable.find;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.BeforeClass;
@@ -25,11 +26,10 @@ import org.junit.rules.TestName;
 
 import org.apache.geode.cache.Cache;
 import org.apache.geode.cache.configuration.CacheConfig;
-import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.management.api.ClusterManagementResult;
 import org.apache.geode.management.configuration.Region;
+import org.apache.geode.management.configuration.RegionType;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.MemberVM;
 import org.apache.geode.test.junit.categories.RegionsTest;
@@ -122,7 +122,7 @@ public class RegionAPIDUnitTest {
     CacheConfig cacheConfig =
         ClusterStartupRule.getLocator().getConfigurationPersistenceService()
             .getCacheConfig("cluster");
-    RegionConfig regionConfig = CacheElement.findElement(cacheConfig.getRegions(), regionName);
+    RegionConfig regionConfig = find(cacheConfig.getRegions(), regionName);
     assertThat(regionConfig.getType()).isEqualTo(type);
   }
 

@@ -38,8 +38,8 @@ import org.apache.geode.cache.configuration.CacheConfig;
 import org.apache.geode.cache.configuration.CacheElement;
 import org.apache.geode.cache.configuration.GatewayReceiverConfig;
 import org.apache.geode.cache.configuration.RegionConfig;
-import org.apache.geode.cache.configuration.RegionType;
 import org.apache.geode.internal.lang.SystemPropertyHelper;
+import org.apache.geode.management.configuration.RegionType;
 
 public class JAXBServiceTest {
 

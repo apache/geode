@@ -100,18 +100,18 @@ public class RegionPerfStatsTest {
   @Test
   public void constructor_createsEntriesGauge_taggedWithRegionName() {
     Gauge entriesGauge = meterRegistry
-        .find("member.region.entries")
+        .find("geode.cache.entries")
         .gauge();
 
-    assertThat(entriesGauge.getId().getTag("region.name"))
-        .as("region.name tag")
+    assertThat(entriesGauge.getId().getTag("region"))
+        .as("region tag")
         .isEqualTo(REGION_NAME);
   }
 
   @Test
   public void constructor_createsEntriesGauge_taggedWithDataPolicy() {
     Gauge entriesGauge = meterRegistry
-        .find("member.region.entries")
+        .find("geode.cache.entries")
         .gauge();
     assertThat(entriesGauge.getId().getTag("data.policy"))
         .as("data.policy tag")
@@ -143,21 +143,21 @@ public class RegionPerfStatsTest {
     when(region.getLocalSize()).thenReturn(3);
 
     Gauge entriesGauge = meterRegistry
-        .find("member.region.entries")
-        .tag("region.name", REGION_NAME)
+        .find("geode.cache.entries")
+        .tag("region", REGION_NAME)
         .gauge();
     assertThat(entriesGauge.value()).isEqualTo(3);
   }
 
   @Test
   public void close_removesItsOwnMetersFromTheRegistry() {
-    assertThat(meterNamed("member.region.entries"))
+    assertThat(meterNamed("geode.cache.entries"))
         .as("entries gauge before closing the stats")
         .isNotNull();
 
     regionPerfStats.close();
 
-    assertThat(meterNamed("member.region.entries"))
+    assertThat(meterNamed("geode.cache.entries"))
         .as("entries gauge after closing the stats")
         .isNull();
 

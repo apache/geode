@@ -104,7 +104,7 @@ public class GatewayReceiverManagementDUnitTest {
 
     // verify that we have two configurations, but only group1 config has a running gwr
     for (ConfigurationResult<GatewayReceiver, GatewayReceiverInfo> result : listResult) {
-      if (result.getConfig().getGroup().equals("group1")) {
+      if (result.getConfiguration().getGroup().equals("group1")) {
         assertThat(result.getRuntimeInfo()).hasSize(1);
         assertThat(result.getRuntimeInfo().get(0).getPort()).isGreaterThanOrEqualTo(5000);
         assertThat(result.getRuntimeInfo().get(0).getMemberName()).isEqualTo("server-1");
@@ -112,7 +112,7 @@ public class GatewayReceiverManagementDUnitTest {
         assertThat(result.getRuntimeInfo().get(0).getSenderCount()).isEqualTo(0);
         assertThat(result.getRuntimeInfo().get(0).getConnectedSenders()).hasSize(0);
       } else {
-        assertThat(result.getConfig().getGroup()).isEqualTo("group2");
+        assertThat(result.getConfiguration().getGroup()).isEqualTo("group2");
         assertThat(result.getRuntimeInfo()).hasSize(0);
       }
     }

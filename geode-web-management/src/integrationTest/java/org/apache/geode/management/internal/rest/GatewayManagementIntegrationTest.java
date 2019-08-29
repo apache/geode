@@ -94,7 +94,7 @@ public class GatewayManagementIntegrationTest {
     List<ConfigurationResult<GatewayReceiver, GatewayReceiverInfo>> receivers =
         results.getResult();
     assertThat(receivers.size()).isEqualTo(1);
-    GatewayReceiver result = receivers.get(0).getConfig();
+    GatewayReceiver result = receivers.get(0).getConfiguration();
     assertThat(result.isManualStart()).isFalse();
     assertThat(result.getStartPort()).isEqualTo(5000);
 
