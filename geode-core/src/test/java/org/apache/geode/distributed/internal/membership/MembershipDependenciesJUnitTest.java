@@ -112,20 +112,16 @@ public class MembershipDependenciesJUnitTest {
               // TODO: Create a new stats interface for membership
               .or(assignableTo(DMStats.class))
               .or(type(LocatorStats.class))
-              .or(type(OverflowQueueWithDMStats.class))
 
               // TODO: Figure out what to do with exceptions
               .or(assignableTo(GemFireException.class))
               .or(type(InternalGemFireError.class))
-              .or(type(ConnectExceptions.class))
 
               // TODO: Serialization needs to become its own module
               .or(type(InternalDataSerializer.class)) // still used by GMSLocator
-              .or(type(Version.class)) // still used by GMSLocator
 
               // TODO: Membership needs its own config object
               .or(type(DistributionConfig.class))
-              .or(type(DistributionConfigImpl.class))
               .or(type(RemoteTransportConfig.class))
               .or(type(FlowControlParams.class))
 
@@ -170,9 +166,6 @@ public class MembershipDependenciesJUnitTest {
 
               // TODO:
               .or(type(AlertingAction.class))
-
-              // TODO:
-              .or(type(Breadcrumbs.class))
 
   );
 
