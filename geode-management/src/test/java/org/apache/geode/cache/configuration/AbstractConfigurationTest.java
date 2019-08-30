@@ -52,8 +52,6 @@ public class AbstractConfigurationTest {
     assertThat(json).doesNotContain("group").doesNotContain("configGroup");
   }
 
-
-
   @Test
   public void setterRegionConfigGroup() throws Exception {
     element.setGroup("group1");
@@ -72,5 +70,17 @@ public class AbstractConfigurationTest {
     assertThat(element.getGroup()).isNull();
     element.setGroup("");
     assertThat(element.getGroup()).isEqualTo("");
+  }
+
+  @Test
+  public void isCluster() {
+    assertThat(AbstractConfiguration.isCluster("foo")).isFalse();
+    assertThat(AbstractConfiguration.isCluster(null)).isTrue();
+    assertThat(AbstractConfiguration.isCluster("")).isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER)).isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toLowerCase()))
+        .isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toUpperCase()))
+        .isTrue();
   }
 }

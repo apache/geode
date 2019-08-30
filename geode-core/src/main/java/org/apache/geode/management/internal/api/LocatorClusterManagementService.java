@@ -298,7 +298,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       for (String group : groups) {
         CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
         List<T> listInGroup = manager.list(filter, currentPersistedConfig);
-        if (!AbstractConfiguration.CLUSTER.equals(group)) {
+        if (!AbstractConfiguration.isCluster(group)) {
           listInGroup.stream().forEach(t -> t.setGroup(group));
         }
         resultList.addAll(listInGroup);

@@ -125,6 +125,15 @@ public class MemberValidatorTest {
     assertThat(validator.findMembers(null, new String[] {null}))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"Cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"CLUSTER"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
     assertThat(validator.findMembers(null, new String[] {""}))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");

@@ -27,7 +27,23 @@ import org.apache.geode.management.api.JsonSerializable;
 @Experimental
 public abstract class AbstractConfiguration
     implements Identifiable<String>, Serializable, JsonSerializable {
+  /**
+   * The reserved group name that represents the predefined "cluster" group.
+   * Every member of a cluster automatically belongs to this group.
+   * Note that this cluster group name is not allowed in some contexts.
+   * For example when creating a region, instead of setting the group to CLUSTER,
+   * you need to set it to NULL or just let it default.
+   */
   public static final String CLUSTER = "cluster";
+
+  /**
+   * Returns true if the given "name" represents the predefined "cluster" group.
+   * This is true if name is a case-insensitive match for {@link #CLUSTER},
+   * is <code>null</code>, or is an empty string.
+   */
+  public static boolean isCluster(String name) {
+    return name == null || name.length() == 0 || name.equalsIgnoreCase(CLUSTER);
+  }
 
   protected String group;
 

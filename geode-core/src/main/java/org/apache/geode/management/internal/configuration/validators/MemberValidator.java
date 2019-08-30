@@ -127,8 +127,7 @@ public class MemberValidator {
 
     Set<DistributedMember> all = includeLocators ? getAllServersAndLocators() : getAllServers();
 
-    // if groups contains "cluster" group, return all members
-    if (Arrays.asList(groups).contains(AbstractConfiguration.CLUSTER)) {
+    if (Arrays.stream(groups).anyMatch(AbstractConfiguration::isCluster)) {
       return all;
     }
 
