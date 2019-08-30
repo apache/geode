@@ -78,6 +78,7 @@ SECRING=~/.gnupg/secring.gpg
 if gpg --export-secret-keys > ${SECRING} && echo "1234" | gpg -o /dev/null --local-user ${SIGNING_KEY} -as - ; then
   echo "You entered the correct passphrase; proceeding."
   echo "Please note, you will still need to enter it a few more times."
+  echo "PLEASE NOTE, the very last prompt will be for your apache password (not gpg).  Pay attention as the prompts look very similar."
 else
   echo "Hmm, gpg seems unhappy.  Check that you entered correct passphrase or refer to release wiki for troubleshooting."
   exit 1
@@ -116,7 +117,7 @@ echo "Building geode..."
 echo "============================================================"
 
 cd ${GEODE}
-svn rm ${VERSION}.RC* || true
+svn rm ${VERSION}.RC* &>/dev/null || true
 set -x
 git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
 set +x
@@ -138,7 +139,9 @@ echo "============================================================"
 cd ${GEODE_NATIVE}
 mkdir build
 cd build
-cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$(brew --prefix openssl) -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
+which brew >/dev/null && OPENSSL_ROOT_DIR=$(brew --prefix openssl) || OPENSSL_ROOT_DIR=$(which openssl)
+set -x
+cmake .. -DPRODUCT_VERSION=${VERSION} -DOPENSSL_ROOT_DIR=$OPENSSL_ROOT_DIR -DGEODE_ROOT=${GEODE}/geode-assembly/build/install/apache-geode
 cpack -G TGZ --config CPackSourceConfig.cmake
 gpg --armor -u ${SIGNING_KEY} -b apache-geode-native-${VERSION}-src.tar.gz
 set +x
@@ -171,9 +174,12 @@ svn add ${FULL_VERSION}
 
 echo "============================================================"
 echo "Publishing artifacts to nexus staging manager..."
+echo "PLEASE NOTE, the 2nd prompt will be for your apache password (not gpg).  Pay attention as the prompts look very similar."
 echo "============================================================"
 cd ${GEODE}
+set -x
 ./gradlew publish -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+set +x
 
 echo "============================================================"
 echo "Done preparing the release and staging to nexus! Next steps:"
