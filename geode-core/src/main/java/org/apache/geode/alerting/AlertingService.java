@@ -124,6 +124,11 @@ public class AlertingService {
     return !listeners.isEmpty();
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+  }
+
   @VisibleForTesting
   public AlertingProvider getAlertingProvider() {
     return alertingProvider;

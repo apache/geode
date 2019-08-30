@@ -61,6 +61,7 @@ import org.apache.geode.SystemConnectException;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.alerting.AlertingService;
 import org.apache.geode.alerting.internal.ClusterAlertMessaging;
+import org.apache.geode.alerting.internal.NullAlertMessaging;
 import org.apache.geode.alerting.spi.AlertLevel;
 import org.apache.geode.alerting.spi.AlertingSession;
 import org.apache.geode.annotations.Immutable;
@@ -181,6 +182,9 @@ public class InternalDistributedSystem extends DistributedSystem
 
   /** services provided by other modules */
   private Map<Class, DistributedSystemService> services = new HashMap<>();
+
+  private final AtomicReference<ClusterAlertMessaging> clusterAlertMessaging =
+      new AtomicReference<>();
 
   /**
    * If the experimental multiple-system feature is enabled, always create a new system.
@@ -795,7 +799,8 @@ public class InternalDistributedSystem extends DistributedSystem
 
       startSampler();
 
-      alertingService.useAlertMessaging(new ClusterAlertMessaging(this));
+      clusterAlertMessaging.set(new ClusterAlertMessaging(this));
+      alertingService.useAlertMessaging(clusterAlertMessaging.get());
       alertingSession.createSession(alertingService);
       alertingSession.startSession();
 
@@ -1616,6 +1621,8 @@ public class InternalDistributedSystem extends DistributedSystem
           if (!attemptingToReconnect) {
             loggingSession.shutdown();
           }
+          alertingService.useAlertMessaging(new NullAlertMessaging());
+          clusterAlertMessaging.get().close();
           alertingSession.shutdown();
           // Close the config object
           config.close();

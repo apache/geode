@@ -14,6 +14,8 @@
  */
 package org.apache.geode.alerting.spi;
 
+import org.apache.geode.annotations.VisibleForTesting;
+
 /**
  * Executes an action that is protected against generating additional {@code Alert}s. Even if the
  * executed action generates log statements that meet the configured {@code AlertLevel}, no
@@ -24,15 +26,26 @@ public class AlertingAction {
   private static final ThreadLocal<Boolean> ALERTING = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
   public static void execute(final Runnable action) {
+    if (ALERTING.get()) {
+      return;
+    }
     ALERTING.set(true);
     try {
       action.run();
     } finally {
-      ALERTING.set(false);
+      ALERTING.remove();
     }
   }
 
   public static boolean isThreadAlerting() {
     return ALERTING.get();
+  }
+
+  @VisibleForTesting
+  static void setThreadAlerting(final boolean value) {
+    ALERTING.set(value);
+    if (!value) {
+      ALERTING.remove();
+    }
   }
 }

@@ -16,9 +16,13 @@ package org.apache.geode.alerting.spi;
 
 import static org.apache.geode.alerting.spi.AlertingAction.execute;
 import static org.apache.geode.alerting.spi.AlertingAction.isThreadAlerting;
+import static org.apache.geode.alerting.spi.AlertingAction.setThreadAlerting;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -26,12 +30,17 @@ import org.junit.rules.ErrorCollector;
 
 import org.apache.geode.test.junit.categories.AlertingTest;
 
-/** Unit tests for {@link org.apache.geode.alerting.spi.AlertingAction}. */
+/** Unit tests for {@link AlertingAction}. */
 @Category(AlertingTest.class)
 public class AlertingActionTest {
 
   @Rule
   public ErrorCollector errorCollector = new ErrorCollector();
+
+  @After
+  public void tearDown() {
+    setThreadAlerting(false);
+  }
 
   @Test
   public void isThreadAlertingIsFalseByDefault() {
@@ -48,5 +57,15 @@ public class AlertingActionTest {
     execute(() -> System.out.println("hi"));
 
     assertThat(isThreadAlerting()).isFalse();
+  }
+
+  @Test
+  public void executeDoesNothingIfIsThreadAlertingIsTrue() {
+    AtomicBoolean executed = new AtomicBoolean();
+    setThreadAlerting(true);
+
+    execute(() -> executed.set(true));
+
+    assertThat(executed).isFalse();
   }
 }

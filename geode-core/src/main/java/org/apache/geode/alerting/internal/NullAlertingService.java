@@ -49,4 +49,9 @@ public class NullAlertingService extends AlertingService {
   public synchronized boolean hasAlertListener(DistributedMember member, AlertLevel alertLevel) {
     return false;
   }
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+  }
 }

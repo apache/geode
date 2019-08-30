@@ -249,7 +249,7 @@ public class AlertAppender extends AbstractAppender
   @Override
   public String toString() {
     return getClass().getName() + "@" + Integer.toHexString(hashCode()) + ":" + getName()
-    // + " {alertingService=" + getAlertingService()
+        + " {alertingService=" + getAlertingService()
         + ", paused=" + paused
         + ", alertingSessionRegistry=" + alertingSessionRegistry + ", debug=" + debug + "}";
   }

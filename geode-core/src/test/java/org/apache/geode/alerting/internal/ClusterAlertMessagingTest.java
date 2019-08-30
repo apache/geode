@@ -16,6 +16,7 @@ package org.apache.geode.alerting.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.doNothing;
@@ -26,10 +27,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.mockito.stubbing.Answer;
 
 import org.apache.geode.alerting.spi.AlertLevel;
 import org.apache.geode.distributed.DistributedMember;
@@ -53,6 +59,7 @@ public class ClusterAlertMessagingTest {
   private DistributionManager dm;
   private AlertListenerMessageFactory alertListenerMessageFactory;
   private AlertListenerMessage alertListenerMessage;
+  private ExecutorService executor;
 
   private ClusterAlertMessaging clusterAlertMessaging;
 
@@ -64,8 +71,10 @@ public class ClusterAlertMessagingTest {
     dm = mock(ClusterDistributionManager.class);
     alertListenerMessageFactory = mock(AlertListenerMessageFactory.class);
     alertListenerMessage = mock(AlertListenerMessage.class);
+    executor = currentThreadExecutorService();
 
-    clusterAlertMessaging = spy(new ClusterAlertMessaging(system, dm, alertListenerMessageFactory));
+    clusterAlertMessaging =
+        spy(new ClusterAlertMessaging(system, dm, alertListenerMessageFactory, executor));
 
     when(system.getConfig()).thenReturn(config);
     when(system.getDistributedMember()).thenReturn(localMember);
@@ -98,14 +107,40 @@ public class ClusterAlertMessagingTest {
   }
 
   @Test
+  public void sendAlertUsesExecutorService() {
+    DistributedMember remoteMember = mock(DistributedMember.class);
+
+    clusterAlertMessaging.sendAlert(remoteMember, AlertLevel.WARNING, new Date(), "threadName",
+        "formattedMessage", "stackTrace");
+
+    verify(executor).submit(any(Runnable.class));
+  }
+
+  @Test
   public void processAlertListenerMessage_requires_ClusterDistributionManager() {
     dm = mock(DistributionManager.class);
 
-    clusterAlertMessaging = new ClusterAlertMessaging(system, dm, alertListenerMessageFactory);
+    clusterAlertMessaging =
+        new ClusterAlertMessaging(system, dm, alertListenerMessageFactory, executor);
 
     Throwable thrown =
         catchThrowable(
             () -> clusterAlertMessaging.processAlertListenerMessage(alertListenerMessage));
     assertThat(thrown).isInstanceOf(IllegalArgumentException.class);
+  }
+
+  private ExecutorService currentThreadExecutorService() {
+    ExecutorService executor = mock(ExecutorService.class);
+    when(executor.submit(isA(Runnable.class))).thenAnswer((Answer<Future<?>>) invocation -> {
+      Runnable task = invocation.getArgument(0);
+      task.run();
+      return CompletableFuture.completedFuture(null);
+    });
+    when(executor.submit(isA(Callable.class))).thenAnswer((Answer<Future<?>>) invocation -> {
+      Callable task = invocation.getArgument(0);
+      Object result = task.call();
+      return CompletableFuture.completedFuture(result);
+    });
+    return executor;
   }
 }
