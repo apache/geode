@@ -64,6 +64,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -534,7 +535,7 @@ public abstract class PartitionMessage extends DistributionMessage
    */
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.flags = in.readShort();
     setBooleans(this.flags, in);
@@ -566,7 +567,7 @@ public abstract class PartitionMessage extends DistributionMessage
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link DataSerializableFixedID#fromData(DataInput, SerializationContext)}in what it writes
+   * {@link DataSerializableFixedID#fromData(DataInput, DeserializationContext)}in what it writes
    */
   @Override
   public void toData(DataOutput out,

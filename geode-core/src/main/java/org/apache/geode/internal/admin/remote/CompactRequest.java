@@ -37,6 +37,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.internal.cache.DiskStoreImpl;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArrayUtils;
 
@@ -102,7 +103,7 @@ public class CompactRequest extends CliLegacyMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
   }
 

@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -257,7 +258,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveLong(in);
     this.numOfPuts = DataSerializer.readPrimitiveLong(in);
     this.numOfMisses = DataSerializer.readPrimitiveLong(in);
@@ -269,7 +270,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.poolStats = DataSerializer.readHashMap(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.numOfGets = DataSerializer.readPrimitiveInt(in);
     this.numOfPuts = DataSerializer.readPrimitiveInt(in);
@@ -281,7 +282,7 @@ public class ClientHealthStats implements DataSerializableFixedID, Serializable 
     this.updateTime = DataSerializer.readDate(in);
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     fromDataPre_GFE_8_0_0_0(in, context);
     this.poolStats = DataSerializer.readHashMap(in);

@@ -51,6 +51,7 @@ import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -722,14 +723,14 @@ public class GatewaySenderEventImpl
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
     if (version >= Version.GEODE_1_9_0.ordinal()) {
       this.isConcurrencyConflict = DataSerializer.readBoolean(in);
     }
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     version = in.readShort();
     this.isInitialized = true;

@@ -24,6 +24,7 @@ import org.apache.geode.GemFireCacheException;
 import org.apache.geode.cache.CacheException;
 import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class AppCacheSnapshotMessage extends RegionAdminMessage {
@@ -117,7 +118,7 @@ public class AppCacheSnapshotMessage extends RegionAdminMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     // this.numResults = in.readInt();
     this.snapshotId = in.readInt();

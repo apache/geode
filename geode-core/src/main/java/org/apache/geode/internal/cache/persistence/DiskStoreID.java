@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import org.apache.geode.internal.cache.versions.VersionSource;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -72,7 +73,7 @@ public class DiskStoreID implements VersionSource<DiskStoreID>, Serializable {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     mostSig = in.readLong();
     leastSig = in.readLong();
   }

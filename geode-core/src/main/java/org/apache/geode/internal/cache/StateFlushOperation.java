@@ -45,6 +45,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -484,7 +485,7 @@ public class StateFlushOperation {
 
     @Override
     public void fromData(DataInput din,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(din, context);
       relayRecipient = (DistributedMember) DataSerializer.readObject(din);
       processorId = din.readInt();
@@ -643,7 +644,7 @@ public class StateFlushOperation {
 
     @Override
     public void fromData(DataInput din,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(din, context);
       processorId = din.readInt();
       channelState = DataSerializer.readHashMap(din);
@@ -706,7 +707,7 @@ public class StateFlushOperation {
 
     @Override
     public void fromData(DataInput din,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(din, context);
       sendingMember = (DistributedMember) DataSerializer.readObject(din);
     }

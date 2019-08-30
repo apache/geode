@@ -48,6 +48,7 @@ import org.apache.geode.internal.concurrent.ConcurrentHashSet;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DSCODE;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.size.Sizeable;
@@ -1255,7 +1256,7 @@ public class ClientUpdateMessageImpl implements ClientUpdateMessage, Sizeable, N
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this._operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     this._regionName = DataSerializer.readString(in);
     this._keyOfInterest = DataSerializer.readObject(in);

@@ -35,6 +35,7 @@ import org.apache.geode.cache.query.internal.SortedStructSet;
 import org.apache.geode.cache.query.internal.StructSet;
 import org.apache.geode.cache.query.types.CollectionType;
 import org.apache.geode.cache.query.types.ObjectType;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -123,7 +124,7 @@ public class CollectionTypeImpl extends ObjectTypeImpl implements CollectionType
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.elementType = (ObjectType) DataSerializer.readObject(in);
   }

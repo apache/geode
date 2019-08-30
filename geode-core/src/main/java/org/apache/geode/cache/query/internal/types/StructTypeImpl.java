@@ -25,6 +25,7 @@ import org.apache.geode.cache.query.Struct;
 import org.apache.geode.cache.query.internal.StructImpl;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -158,7 +159,7 @@ public class StructTypeImpl extends ObjectTypeImpl implements StructType {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.fieldNames = DataSerializer.readStringArray(in);
     this.fieldTypes = (ObjectType[]) DataSerializer.readObjectArray(in);

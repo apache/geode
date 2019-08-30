@@ -47,7 +47,11 @@ dependencies {
   testCompile('org.mockito:mockito-core')
   testCompile('junit:junit')
   testCompile('org.assertj:assertj-core')
-  testRuntime(project(':geode-old-versions'))
+  runtimeOnly('org.apache.logging.log4j:log4j-slf4j-impl') {
+    exclude module: 'slf4j-api'
+    ext.optional = true
+  }
+   testRuntime(project(':geode-old-versions'))
 
   integrationTestCompile(project(':geode-junit')) {
     exclude module: 'geode-serialization'

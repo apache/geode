@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.CacheSnapshot;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
@@ -78,7 +79,7 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.results = (CacheSnapshot) DataSerializer.readObject(in);
     this.snapshotId = in.readInt();

@@ -18,7 +18,7 @@ package org.apache.geode.internal.serialization;
 import java.io.DataInput;
 import java.io.DataOutput;
 
-abstract class AbstractSerializationContext implements SerializationContext {
+abstract class AbstractSerializationContext {
 
   public Version getVersionForDataStream(DataInput in) {
     // check if this is a versioned data input

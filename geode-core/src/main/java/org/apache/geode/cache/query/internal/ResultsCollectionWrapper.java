@@ -39,6 +39,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.EntriesSet;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -563,7 +564,7 @@ public class ResultsCollectionWrapper implements SelectResults, DataSerializable
    */
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     boolean isBagSetView = in.readBoolean();
     if (isBagSetView) {
       this.base = (Set) InternalDataSerializer.readSet(in);

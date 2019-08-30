@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.tier.InterestType;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
@@ -222,7 +223,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.bucketId = Integer.valueOf(in.readInt());
     this.interestType = in.readInt();
@@ -450,7 +451,7 @@ public class FetchKeysMessage extends PartitionMessage {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();

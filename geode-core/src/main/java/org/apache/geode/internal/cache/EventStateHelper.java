@@ -103,9 +103,9 @@ public class EventStateHelper {
    * creating fromDataPreXX methods. Also make sure that the callers to this method are backwards
    * compatible by creating fromDataPreXX methods for them even if they are not changed. <br>
    * Callers for this method are: <br>
-   * {@link DataSerializableFixedID#fromData(DataInput, org.apache.geode.internal.serialization.SerializationContext)}
+   * {@link DataSerializableFixedID#fromData(DataInput, org.apache.geode.internal.serialization.DeserializationContext)}
    * <br>
-   * {@link DataSerializableFixedID#fromData(DataInput, org.apache.geode.internal.serialization.SerializationContext)}
+   * {@link DataSerializableFixedID#fromData(DataInput, org.apache.geode.internal.serialization.DeserializationContext)}
    * <br>
    */
   public static Map deDataSerialize(DataInput dip, boolean isHARegion)

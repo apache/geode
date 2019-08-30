@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.RemoteCommitResponse;
 import org.apache.geode.internal.cache.TXRemoteCommitMessage.TXRemoteCommitReplyMessage;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class JtaAfterCompletionMessage extends TXMessage {
@@ -112,7 +113,7 @@ public class JtaAfterCompletionMessage extends TXMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.status = in.readInt();
     this.processorType = in.readInt();

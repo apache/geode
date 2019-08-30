@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.membership.gms.membership.HostAddre
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -65,8 +66,8 @@ public class GMSUtil {
   }
 
   public static GMSMember readMemberID(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
-    Object id = context.getDSFIDSerializer().getDataSerializer().readObject(in);
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    Object id = context.getSerializer().readObject(in);
     if (id == null || id instanceof GMSMember) {
       return (GMSMember) id;
     }
@@ -82,7 +83,7 @@ public class GMSUtil {
   }
 
   public static Set<GMSMember> readHashSetOfMemberIDs(DataInput in,
-      SerializationContext context)
+      DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
@@ -198,7 +199,7 @@ public class GMSUtil {
   }
 
   public static List<GMSMember> readArrayOfIDs(DataInput in,
-      SerializationContext context)
+      DeserializationContext context)
       throws IOException, ClassNotFoundException {
     int size = StaticSerialization.readArrayLength(in);
     if (size == -1) {
@@ -212,23 +213,22 @@ public class GMSUtil {
   }
 
   private static void writeAsInternalDistributedMember(GMSMember suspect, DataOutput out,
-      SerializationContext context)
-      throws IOException {
-    context.getDSFIDSerializer().writeDSFID(suspect, DataSerializableFixedID.DISTRIBUTED_MEMBER,
+      SerializationContext context) throws IOException {
+    context.getSerializer().writeDSFID(suspect, DataSerializableFixedID.DISTRIBUTED_MEMBER,
         out);
   }
 
   public static void writeMemberID(GMSMember id, DataOutput out,
       SerializationContext context) throws IOException {
     if (id == null) {
-      context.getDSFIDSerializer().getDataSerializer().writeObject(id, out);
+      context.getSerializer().writeObject(id, out);
       return;
     }
     short ordinal = context.getSerializationVersion().ordinal();
     if (ordinal <= Version.GEODE_1_10_0.ordinal()) {
       writeAsInternalDistributedMember(id, out, context);
     } else {
-      context.getDSFIDSerializer().writeDSFID(id, out);
+      context.getSerializer().writeObject(id, out);
     }
   }
 

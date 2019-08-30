@@ -22,6 +22,7 @@ import java.io.IOException;
 
 import org.apache.geode.cache.InterestResultPolicy;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -53,7 +54,7 @@ public class InterestResultPolicyImpl extends InterestResultPolicy
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // should never be called since DSFIDFactory.readInterestResultPolicy is used
     throw new UnsupportedOperationException();
   }

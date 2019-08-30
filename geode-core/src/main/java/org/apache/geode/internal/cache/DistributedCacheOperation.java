@@ -82,6 +82,7 @@ import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.sequencelog.EntryLogger;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.DelayedAction;
 
@@ -1363,7 +1364,7 @@ public abstract class DistributedCacheOperation {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       short bits = in.readShort();
       short extBits = in.readShort();
       this.flags = bits;

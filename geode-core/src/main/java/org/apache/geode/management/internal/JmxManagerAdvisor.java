@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.HighPriorityDistributionMessage;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -216,7 +217,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.profile = (JmxManagerProfile) DataSerializer.readObject(in);
@@ -335,7 +336,7 @@ public class JmxManagerAdvisor extends DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.jmxManager = DataSerializer.readPrimitiveBoolean(in);
       this.host = DataSerializer.readString(in);

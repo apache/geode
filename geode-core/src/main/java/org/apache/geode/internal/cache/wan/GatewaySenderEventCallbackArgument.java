@@ -26,6 +26,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.wan.GatewaySender;
 import org.apache.geode.internal.cache.WrappedCallbackArgument;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -158,7 +159,7 @@ public class GatewaySenderEventCallbackArgument extends WrappedCallbackArgument
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.originatingDSId = DataSerializer.readInteger(in);
     this.receipientDSIds = new IntOpenHashSet(2);

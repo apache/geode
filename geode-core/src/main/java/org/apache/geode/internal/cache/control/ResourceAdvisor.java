@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.UpdateAttributesProcessor;
 import org.apache.geode.internal.cache.control.InternalResourceManager.ResourceType;
 import org.apache.geode.internal.cache.control.MemoryThresholds.MemoryState;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -135,7 +136,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       final int l = in.readInt();
@@ -364,7 +365,7 @@ public class ResourceAdvisor extends DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
 
       final long heapBytesUsed = in.readLong();

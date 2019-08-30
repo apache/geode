@@ -46,6 +46,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.TXEntryState.DistTxThinEntryState;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistTXCommitMessage extends TXMessage {
@@ -142,7 +143,7 @@ public class DistTXCommitMessage extends TXMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.entryStateList = DataSerializer.readArrayList(in);
   }
@@ -252,7 +253,7 @@ public class DistTXCommitMessage extends TXMessage {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.commitMessage = (TXCommitMessage) DataSerializer.readObject(in);
     }

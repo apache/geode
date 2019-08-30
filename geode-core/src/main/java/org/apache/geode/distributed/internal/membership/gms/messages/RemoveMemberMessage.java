@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -83,7 +84,7 @@ public class RemoveMemberMessage extends AbstractGMSMessage implements HasMember
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     memberID = GMSUtil.readMemberID(in, context);
     reason = StaticSerialization.readString(in);
   }

@@ -68,6 +68,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.StoredObject;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -451,7 +452,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
 
@@ -840,7 +841,7 @@ public class RemotePutMessage extends RemoteOperationMessageWithDirectReply
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       byte flags = (byte) (in.readByte() & 0xff);
       this.result = (flags & FLAG_RESULT) != 0;

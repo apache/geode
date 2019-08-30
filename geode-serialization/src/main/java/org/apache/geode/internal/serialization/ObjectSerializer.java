@@ -18,16 +18,31 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public interface SerializerPlugin {
+public interface ObjectSerializer {
 
-  public void writeObject(Object obj, DataOutput output) throws IOException;
+  void writeObject(Object obj, DataOutput output) throws IOException;
 
-  public Object readObject(DataInput input) throws IOException, ClassNotFoundException;
+  Object readObject(DataInput input) throws IOException, ClassNotFoundException;
 
   /**
-   * return the version associated with the given ordinal or the current version if the given
-   * ordinal is > than the current version's ordinal
+   * When deserializing you may want to invoke a toData method on an object.
+   * Use this method to ensure that the proper toData method is invoked for
+   * backward-compatibility.
    */
-  public Version getVersionForOrdinalOrCurrent(int ordinal);
+  void invokeToData(Object ds, DataOutput out) throws IOException;
+
+  /**
+   * When deserializing you may want to invoke a fromData method on an object.
+   * Use this method to ensure that the proper fromData method is invoked for
+   * backward-compatibility.
+   */
+  void invokeFromData(Object ds, DataInput in)
+      throws IOException, ClassNotFoundException;
+
+  /**
+   * write a DSFID object using a specific fixed ID code
+   */
+  void writeDSFID(DataSerializableFixedID object, int dsfid,
+      DataOutput out) throws IOException;
 
 }

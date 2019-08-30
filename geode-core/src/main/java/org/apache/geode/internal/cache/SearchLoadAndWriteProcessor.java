@@ -74,6 +74,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.Releasable;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -1467,7 +1468,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       short flags = in.readShort();
       if ((flags & HAS_PROCESSOR_ID) != 0) {
@@ -1713,7 +1714,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.key = DataSerializer.readObject(in);
       this.processorId = in.readInt();
@@ -1829,7 +1830,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       short flags = in.readShort();
       if ((flags & HAS_PROCESSOR_ID) != 0) {
@@ -2091,7 +2092,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.value = DataSerializer.readByteArray(in);
@@ -2210,7 +2211,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
@@ -2389,7 +2390,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.result = DataSerializer.readByteArray(in);
@@ -2473,7 +2474,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();
@@ -2688,7 +2689,7 @@ public class SearchLoadAndWriteProcessor implements MembershipListener {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.netWriteSucceeded = in.readBoolean();

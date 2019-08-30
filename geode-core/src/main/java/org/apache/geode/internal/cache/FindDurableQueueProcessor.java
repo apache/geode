@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.distributed.internal.ServerLocator;
 import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -171,7 +172,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.proxyId = ClientProxyMembershipID.readCanonicalized(in);
@@ -208,7 +209,7 @@ public class FindDurableQueueProcessor extends ReplyProcessor21 {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.matches = DataSerializer.readArrayList(in);
     }

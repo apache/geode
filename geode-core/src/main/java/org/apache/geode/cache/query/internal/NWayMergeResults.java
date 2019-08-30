@@ -38,6 +38,7 @@ import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.serialization.BufferDataOutputStream.LongUpdater;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -438,7 +439,7 @@ public class NWayMergeResults<E> implements SelectResults<E>, Ordered, DataSeria
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     ObjectType elementType = (ObjectType) DataSerializer.readObject(in);
     this.collectionType = new CollectionTypeImpl(NWayMergeResults.class, elementType);
     boolean isStruct = elementType.isStructType();

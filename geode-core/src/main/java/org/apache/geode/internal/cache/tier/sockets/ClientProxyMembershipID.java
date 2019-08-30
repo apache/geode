@@ -40,6 +40,7 @@ import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -333,7 +334,7 @@ public class ClientProxyMembershipID
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.identity = DataSerializer.readByteArray(in);
     this.uniqueId = in.readInt();
     // {toString(); this.transientPort = ((InternalDistributedMember)this.memberId).getPort();}

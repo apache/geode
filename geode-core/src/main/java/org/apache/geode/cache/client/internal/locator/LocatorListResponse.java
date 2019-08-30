@@ -21,6 +21,7 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class LocatorListResponse extends ServerLocationResponse {
@@ -42,7 +43,7 @@ public class LocatorListResponse extends ServerLocationResponse {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.controllers = SerializationHelper.readServerLocationList(in);
     this.isBalanced = in.readBoolean();
     if (this.controllers != null && !this.controllers.isEmpty()) {

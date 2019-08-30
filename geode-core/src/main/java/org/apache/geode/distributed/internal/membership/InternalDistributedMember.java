@@ -48,6 +48,7 @@ import org.apache.geode.internal.OSProcess;
 import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
 import org.apache.geode.internal.serialization.Version;
@@ -964,7 +965,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GFE_9_0_0_0(in, context);
     // just in case this is just a non-versioned read
     // from a file we ought to check the version
@@ -977,7 +978,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     }
   }
 
-  public void fromDataPre_GFE_9_0_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GFE_9_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();
@@ -1024,7 +1025,7 @@ public class InternalDistributedMember implements DistributedMember, Externaliza
     // Assert.assertTrue(getPort() > 0);
   }
 
-  public void fromDataPre_GFE_7_1_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GFE_7_1_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     InetAddress inetAddr = DataSerializer.readInetAddress(in);
     int port = in.readInt();

@@ -28,6 +28,7 @@ import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.pdx.PdxInstance;
@@ -81,7 +82,7 @@ public class EnumInfo implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.clazz = DataSerializer.readString(in);
     this.name = DataSerializer.readString(in);
     this.ordinal = DataSerializer.readPrimitiveInt(in);

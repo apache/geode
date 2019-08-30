@@ -76,6 +76,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Unretained;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.concurrent.CopyOnWriteHashMap;
@@ -1486,7 +1487,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     InternalDistributedMember id = new InternalDistributedMember();
     InternalDataSerializer.invokeFromData(id, in);
     this.memberID = id;
@@ -2013,7 +2014,7 @@ public class FilterProfile implements DataSerializableFixedID {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.processorId = in.readInt();
       this.regionName = in.readUTF();

@@ -35,6 +35,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.BucketAdvisor;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -139,7 +140,7 @@ public class AllBucketProfilesUpdateMessage extends DistributionMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.prId = in.readInt();
     this.processorId = in.readInt();

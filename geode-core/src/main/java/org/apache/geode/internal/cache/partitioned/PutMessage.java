@@ -67,6 +67,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -485,7 +486,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
 
     final int extraFlags = in.readUnsignedByte();
@@ -931,7 +932,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.result = in.readBoolean();
       this.op = Operation.fromOrdinal(in.readByte());

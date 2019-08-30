@@ -34,6 +34,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.InternalGemFireError;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.configuration.domain.Configuration;
@@ -63,7 +64,7 @@ public class ConfigurationResponse implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.requestedConfiguration = DataSerializer.readHashMap(in);
     this.jarNames = DataSerializer.readHashMap(in);
     this.failedToGetSharedConfig = DataSerializer.readBoolean(in);

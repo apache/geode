@@ -30,6 +30,7 @@ import org.apache.geode.cache.lucene.LuceneQueryException;
 import org.apache.geode.cache.lucene.LuceneQueryProvider;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -108,7 +109,7 @@ public class StringQueryProvider implements LuceneQueryProvider, DataSerializabl
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     query = DataSerializer.readString(in);
     defaultField = DataSerializer.readString(in);
   }

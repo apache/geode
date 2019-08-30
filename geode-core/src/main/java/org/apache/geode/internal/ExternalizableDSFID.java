@@ -22,6 +22,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -42,7 +43,7 @@ public abstract class ExternalizableDSFID implements DataSerializableFixedID, Ex
 
   @Override
   public abstract void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException;
+      DeserializationContext context) throws IOException, ClassNotFoundException;
 
   @Override
   public void writeExternal(ObjectOutput out) throws IOException {

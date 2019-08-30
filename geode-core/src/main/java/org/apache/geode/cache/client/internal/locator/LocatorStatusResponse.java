@@ -30,6 +30,7 @@ import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
@@ -140,7 +141,7 @@ public class LocatorStatusResponse extends ServerLocationResponse {
 
   @Override
   public void fromData(final DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     readPid(in);
     readUptime(in);
     readWorkingDirectory(in);

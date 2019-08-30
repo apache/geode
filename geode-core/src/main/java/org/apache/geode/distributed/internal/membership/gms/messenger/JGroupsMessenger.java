@@ -94,7 +94,6 @@ import org.apache.geode.internal.alerting.AlertingAction;
 import org.apache.geode.internal.cache.DistributedCacheOperation;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.BufferDataOutputStream;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -854,7 +853,7 @@ public class JGroupsMessenger implements Messenger {
       long start = services.getStatistics().startMsgSerialization();
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(
-              services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(version));
+              Version.fromOrdinalNoThrow((short) version, false));
       Version.writeOrdinal(out_stream,
           Version.getCurrentVersion().ordinal(), true);
       if (encrypt != null) {
@@ -890,7 +889,7 @@ public class JGroupsMessenger implements Messenger {
       throws Exception {
     long start = services.getStatistics().startUDPMsgEncryption();
     try {
-      ((DSFIDSerializerImpl) services.getSerializer()).writeDSFIDHeader(gfmsg.getDSFID(), out);
+      services.getSerializer().writeDSFIDHeader(gfmsg.getDSFID(), out);
       byte[] pk = null;
       int requestId = 0;
       GMSMember pkMbr = null;
@@ -920,7 +919,7 @@ public class JGroupsMessenger implements Messenger {
 
       BufferDataOutputStream out_stream =
           new BufferDataOutputStream(
-              services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(version));
+              Version.fromOrdinalNoThrow((short) version, false));
       byte[] messageBytes = serializeMessage(gfmsg, out_stream);
 
       if (pkMbr != null) {
@@ -960,7 +959,7 @@ public class JGroupsMessenger implements Messenger {
     GMSMember m = this.localAddress;
     m.writeEssentialData(out_stream,
         services.getSerializer().createSerializationContext(out_stream));
-    services.getSerializer().getDataSerializer()
+    services.getSerializer().getObjectSerializer()
         .writeObject(services.getManager().unwrapMessage(gfmsg), out_stream);
 
     return out_stream.toByteArray();
@@ -1013,7 +1012,7 @@ public class JGroupsMessenger implements Messenger {
 
       if (ordinal < Version.getCurrentVersion().ordinal()) {
         dis = new VersionedDataInputStream(dis,
-            services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(ordinal));
+            Version.fromOrdinalNoThrow((short) ordinal, false));
       }
 
       // read
@@ -1062,7 +1061,7 @@ public class JGroupsMessenger implements Messenger {
   @SuppressWarnings("resource")
   GMSMessage readEncryptedMessage(DataInputStream dis, short ordinal,
       GMSEncrypt encryptLocal) throws Exception {
-    int dfsid = ((DSFIDSerializerImpl) services.getSerializer()).readDSFIDHeader(dis);
+    int dfsid = services.getSerializer().readDSFIDHeader(dis);
     int requestId = dis.readInt();
     long start = services.getStatistics().startUDPMsgDecryption();
     try {
@@ -1110,7 +1109,7 @@ public class JGroupsMessenger implements Messenger {
 
         if (ordinal < Version.getCurrentVersion().ordinal()) {
           in = new VersionedDataInputStream(in,
-              services.getSerializer().getDataSerializer().getVersionForOrdinalOrCurrent(ordinal));
+              Version.fromOrdinalNoThrow((short) ordinal, false));
         }
 
         GMSMessage result = deserializeMessage(in, ordinal);
@@ -1133,8 +1132,9 @@ public class JGroupsMessenger implements Messenger {
   GMSMessage deserializeMessage(DataInputStream in, short ordinal)
       throws ClassNotFoundException, IOException {
     GMSMember m = new GMSMember();
-    m.readEssentialData(in, services.getSerializer().createSerializationContext(in));
-    GMSMessage result = services.getManager().wrapMessage(services.getSerializer().readDSFID(in));
+    m.readEssentialData(in, services.getSerializer().createDeserializationContext(in));
+    GMSMessage result = services.getManager()
+        .wrapMessage(services.getSerializer().getObjectSerializer().readObject(in));
 
     setSender(result, m, ordinal);
 
@@ -1152,10 +1152,7 @@ public class JGroupsMessenger implements Messenger {
           // get the multicast message digest and pass it with the join response
           Digest digest = (Digest) this.myChannel.getProtocolStack().getTopProtocol()
               .down(Event.GET_DIGEST_EVT);
-          BufferDataOutputStream hdos = new BufferDataOutputStream(500,
-              services.getSerializer().getDataSerializer()
-                  .getVersionForOrdinalOrCurrent(
-                      Version.getCurrentVersion().ordinal()));
+          BufferDataOutputStream hdos = new BufferDataOutputStream(500, Version.CURRENT);
           try {
             digest.writeTo(hdos);
           } catch (Exception e) {

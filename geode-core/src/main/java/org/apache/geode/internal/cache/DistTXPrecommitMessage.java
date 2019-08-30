@@ -50,6 +50,7 @@ import org.apache.geode.internal.cache.tx.DistTxEntryEvent;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -150,7 +151,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.secondaryTransactionalOperations = DataSerializer.readArrayList(in);
   }
@@ -256,7 +257,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.commitResponse = (DistTxPrecommitResponse) DataSerializer.readObject(in);
     }
@@ -499,7 +500,7 @@ public class DistTXPrecommitMessage extends TXMessage {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       this.commitState = DataSerializer.readBoolean(in);
       this.distTxEventList = DataSerializer.readArrayList(in);
     }

@@ -36,6 +36,7 @@ import org.junit.experimental.categories.Category;
 
 import org.apache.geode.internal.HeapDataOutputStream;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataInputStream;
@@ -191,24 +192,29 @@ public class GMSMemberJUnitTest {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     GMSMember member = new GMSMember();
     DataOutput dataOutput = new DataOutputStream(baos);
-    SerializationContext context = InternalDataSerializer.getDSFIDSerializer()
+    SerializationContext serializationContext = InternalDataSerializer.getDSFIDSerializer()
         .createSerializationContext(dataOutput);
-    member.writeEssentialData(dataOutput, context);
+    member.writeEssentialData(dataOutput, serializationContext);
 
     // vmKind should be transmitted to a member with the current version
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInput dataInput = new DataInputStream(bais);
+    DeserializationContext deserializationContext = InternalDataSerializer.getDSFIDSerializer()
+        .createDeserializationContext(dataInput);
     GMSMember newMember = new GMSMember();
-    newMember.readEssentialData(dataInput, context);
+    newMember.readEssentialData(dataInput, deserializationContext);
     assertEquals(member.getVmKind(), newMember.getVmKind());
 
     // vmKind should not be transmitted to a member with version GFE_90 or earlier
     dataOutput = new HeapDataOutputStream(Version.GFE_90);
-    member.writeEssentialData(dataOutput, context);
+    member.writeEssentialData(dataOutput, serializationContext);
     bais = new ByteArrayInputStream(baos.toByteArray());
-    dataInput = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_90);
+    DataInputStream stream = new DataInputStream(bais);
+    deserializationContext =
+        InternalDataSerializer.getDSFIDSerializer().createDeserializationContext(stream);
+    dataInput = new VersionedDataInputStream(stream, Version.GFE_90);
     newMember = new GMSMember();
-    newMember.readEssentialData(dataInput, context);
+    newMember.readEssentialData(dataInput, deserializationContext);
     assertEquals(0, newMember.getVmKind());
   }
 

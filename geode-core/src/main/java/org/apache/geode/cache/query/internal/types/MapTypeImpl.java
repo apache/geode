@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.query.types.MapType;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.cache.query.types.StructType;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 
@@ -92,7 +93,7 @@ public class MapTypeImpl extends CollectionTypeImpl implements MapType {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.keyType = (ObjectType) DataSerializer.readObject(in);
   }

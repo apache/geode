@@ -19,6 +19,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -42,6 +43,6 @@ public class GetViewRequest implements DataSerializableFixedID, PeerLocatorReque
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {}
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
 }

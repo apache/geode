@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class GetAllServersResponse extends ServerLocationResponse {
@@ -43,7 +44,7 @@ public class GetAllServersResponse extends ServerLocationResponse {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.servers = SerializationHelper.readServerLocationList(in);
     if (this.servers != null && !this.servers.isEmpty()) {
       this.serversFound = true;

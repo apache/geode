@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.locks.DLockGrantor;
 import org.apache.geode.distributed.internal.locks.DLockService;
 import org.apache.geode.distributed.internal.locks.LockGrantorDestroyedException;
 import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -134,7 +135,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.processorId = in.readInt();
     this.txLockId = TXLockIdImpl.createFromData(in);
@@ -160,7 +161,7 @@ public class TXLockUpdateParticipantsMessage extends PooledDistributionMessage
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
     }
 

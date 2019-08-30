@@ -24,6 +24,7 @@ import org.apache.geode.admin.jmx.internal.StatAlertsAggregator;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.StatAlert;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -47,7 +48,7 @@ public class AlertsNotificationMessage extends PooledDistributionMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this._alerts = (StatAlert[]) DataSerializer.readObjectArray(in);
   }

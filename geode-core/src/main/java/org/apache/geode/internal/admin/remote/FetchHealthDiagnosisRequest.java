@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -72,7 +73,7 @@ public class FetchHealthDiagnosisRequest extends AdminRequest {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     int i = in.readInt();
     GemFireHealth.Health oHC = (GemFireHealth.Health) DataSerializer.readObject(in);

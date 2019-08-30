@@ -22,6 +22,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.client.internal.locator.ServerLocationRequest;
 import org.apache.geode.internal.admin.remote.DistributionLocatorId;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class LocatorJoinMessage extends ServerLocationRequest {
@@ -46,7 +47,7 @@ public class LocatorJoinMessage extends ServerLocationRequest {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.locator = DataSerializer.readObject(in);
     this.distributedSystemId = in.readInt();

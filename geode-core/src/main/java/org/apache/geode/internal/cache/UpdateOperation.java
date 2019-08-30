@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -347,7 +348,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       final byte extraFlags = in.readByte();
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
@@ -534,7 +535,7 @@ public class UpdateOperation extends AbstractUpdateOperation {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.clientID = ClientProxyMembershipID.readCanonicalized(in);
     }

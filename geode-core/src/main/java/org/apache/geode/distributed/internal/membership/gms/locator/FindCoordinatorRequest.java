@@ -23,6 +23,7 @@ import java.util.Collection;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -123,7 +124,7 @@ public class FindCoordinatorRequest extends AbstractGMSMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.memberID = GMSUtil.readMemberID(in, context);
     int size = in.readInt();
     this.rejectedCoordinators = new ArrayList<GMSMember>(size);

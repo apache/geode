@@ -59,6 +59,7 @@ import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.cache.persistence.PersistentMemberID;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -747,7 +748,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       this.profile = (CacheProfile) DataSerializer.readObject(in);
@@ -810,7 +811,7 @@ public class CreateRegionProcessor implements ProfileExchangeProcessor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       if (in.readBoolean()) {
         this.profile = (CacheProfile) DataSerializer.readObject(in);

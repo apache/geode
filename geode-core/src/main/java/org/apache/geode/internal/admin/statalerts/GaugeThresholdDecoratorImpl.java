@@ -23,6 +23,7 @@ import org.apache.geode.StatisticsFactory;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -133,7 +134,7 @@ public class GaugeThresholdDecoratorImpl extends BaseDecoratorImpl
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in);
     this.lowerLimit = (Number) DataSerializer.readObject(in);
     this.upperLimit = (Number) DataSerializer.readObject(in);

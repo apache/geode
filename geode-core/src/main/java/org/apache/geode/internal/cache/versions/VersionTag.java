@@ -27,6 +27,7 @@ import org.apache.geode.internal.cache.persistence.DiskStoreID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.size.ReflectionSingleObjectSizer;
 
@@ -383,7 +384,7 @@ public abstract class VersionTag<T extends VersionSource>
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int flags = in.readUnsignedShort();
     if (logger.isTraceEnabled(LogMarker.VERSION_TAG_VERBOSE)) {
       logger.trace(LogMarker.VERSION_TAG_VERBOSE, "deserializing {} with flags 0x{}",

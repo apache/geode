@@ -24,6 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.cache.EnumListenerEvent;
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -168,7 +169,7 @@ public class ClientInstantiatorMessage extends ClientUpdateMessageImpl {
    */
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // Note: does not call super.fromData what a HACK
     _operation = EnumListenerEvent.getEnumListenerEvent(in.readByte());
     int instantiatorCount = in.readInt(); // is byte suficient for this ?

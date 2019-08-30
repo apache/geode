@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -81,7 +82,7 @@ public class SerializedObjectPartList extends ObjectPartList651 {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     boolean keysPresent = in.readBoolean();
     if (keysPresent) {
       this.keys = new ArrayList();

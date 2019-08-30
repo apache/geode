@@ -19,23 +19,25 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 public interface DSFIDSerializer {
-  SerializerPlugin getDataSerializer();
-
-  void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException;
-
-  void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
-      throws IOException;
-
-  void invokeToData(Object ds, DataOutput out) throws IOException;
-
-  Object readDSFID(DataInput in) throws IOException, ClassNotFoundException;
-
-  void invokeFromData(Object ds, DataInput in)
-      throws IOException, ClassNotFoundException;
+  ObjectSerializer getObjectSerializer();
 
   void registerDSFID(int dsfid, Class dsfidClass);
 
   SerializationContext createSerializationContext(DataOutput dataOutput);
 
-  SerializationContext createSerializationContext(DataInput dataInput);
+  DeserializationContext createDeserializationContext(DataInput dataInput);
+
+  void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out) throws IOException;
+
+  void writeDSFID(DataSerializableFixedID dsfid, DataOutput out) throws IOException;
+
+  void invokeToData(Object ds, DataOutput out) throws IOException;
+
+  void invokeFromData(Object ds, DataInput in) throws IOException, ClassNotFoundException;
+
+  Object create(int dsfid, DataInput in) throws IOException, ClassNotFoundException;
+
+  int readDSFIDHeader(DataInput dis) throws IOException;
+
+  void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException;
 }

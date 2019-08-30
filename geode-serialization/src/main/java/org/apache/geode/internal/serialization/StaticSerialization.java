@@ -284,7 +284,7 @@ public class StaticSerialization {
     out.writeInt(value);
   }
 
-  public static <K, V> HashMap<K, V> readHashMap(DataInput in, SerializationContext context)
+  public static <K, V> HashMap<K, V> readHashMap(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
 
     int size = readArrayLength(in);
@@ -293,8 +293,8 @@ public class StaticSerialization {
     } else {
       HashMap<K, V> map = new HashMap<>(size);
       for (int i = 0; i < size; i++) {
-        K key = (K) context.getDataSerializer().readObject(in);
-        V value = (V) context.getDataSerializer().readObject(in);
+        K key = (K) context.getSerializer().readObject(in);
+        V value = (V) context.getSerializer().readObject(in);
         map.put(key, value);
       }
 
@@ -356,8 +356,8 @@ public class StaticSerialization {
     writeArrayLength(size, out);
     if (size > 0) {
       for (Map.Entry<?, ?> entry : map.entrySet()) {
-        context.getDataSerializer().writeObject(entry.getKey(), out);
-        context.getDataSerializer().writeObject(entry.getValue(), out);
+        context.getSerializer().writeObject(entry.getKey(), out);
+        context.getSerializer().writeObject(entry.getValue(), out);
       }
     }
   }

@@ -23,6 +23,7 @@ import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.locks.LockGrantorId;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -133,7 +134,7 @@ public class TXLockIdImpl implements TXLockId, DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.memberId = (InternalDistributedMember) DataSerializer.readObject(in);
     this.id = in.readInt();
   }

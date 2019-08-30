@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.versions.VersionSource;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -1478,7 +1479,7 @@ public class DistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       peerMemberId = new InternalDistributedMember();
       InternalDataSerializer.invokeFromData(peerMemberId, in);
       version = in.readInt();

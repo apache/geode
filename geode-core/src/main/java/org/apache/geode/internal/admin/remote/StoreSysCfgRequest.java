@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.Config;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -70,7 +71,7 @@ public class StoreSysCfgRequest extends AdminRequest {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.sc = (Config) DataSerializer.readObject(in);
   }

@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.configuration.domain.XmlEntity;
@@ -234,12 +235,12 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_6_0_0(in, context);
     this.state = DataSerializer.readEnum(StatusState.class, in);
   }
 
-  public void fromDataPre_GEODE_1_6_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GEODE_1_6_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.state = DataSerializer.readPrimitiveBoolean(in) ? StatusState.OK : StatusState.ERROR;
@@ -249,7 +250,7 @@ public class CliFunctionResult implements Comparable<CliFunctionResult>, DataSer
     this.byteData = DataSerializer.readByteArray(in);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.memberIdOrName = DataSerializer.readString(in);
     this.resultObject = DataSerializer.readObject(in);

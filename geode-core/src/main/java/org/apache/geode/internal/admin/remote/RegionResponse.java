@@ -29,6 +29,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.admin.GemFireVM;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -138,7 +139,7 @@ public class RegionResponse extends AdminResponse {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.name = DataSerializer.readString(in);
     this.userAttribute = DataSerializer.readString(in);

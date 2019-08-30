@@ -68,6 +68,7 @@ import org.apache.geode.internal.cache.partitioned.DeposePrimaryBucketMessage.De
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.StopWatch;
 
@@ -2275,7 +2276,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       isPrimary = in.readBoolean();
       isHosting = in.readBoolean();
@@ -2330,7 +2331,7 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       bucketServerLocations = SerializationHelper.readBucketServerLocationSet(in);
       bucketId = DataSerializer.readPrimitiveInt(in);

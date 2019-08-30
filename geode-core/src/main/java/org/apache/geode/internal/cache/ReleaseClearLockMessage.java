@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ReleaseClearLockMessage extends HighPriorityDistributionMessage
@@ -96,7 +97,7 @@ public class ReleaseClearLockMessage extends HighPriorityDistributionMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     regionPath = DataSerializer.readString(in);
     processorId = in.readInt();

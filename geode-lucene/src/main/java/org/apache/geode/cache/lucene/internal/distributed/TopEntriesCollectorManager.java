@@ -32,6 +32,7 @@ import org.apache.geode.cache.lucene.internal.distributed.TopEntries.EntryScoreC
 import org.apache.geode.cache.lucene.internal.repository.IndexResultCollector;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -160,7 +161,7 @@ public class TopEntriesCollectorManager
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     id = DataSerializer.readString(in);
     limit = in.readInt();
   }

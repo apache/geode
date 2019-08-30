@@ -25,6 +25,7 @@ import org.jgroups.util.UUID;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -552,7 +553,7 @@ public class GMSMember implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     inetAddr = StaticSerialization.readInetAddress(in);
     udpPort = in.readInt();
 
@@ -589,7 +590,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   private short readVersion(int flags, DataInput in,
-      SerializationContext context) throws IOException {
+      DeserializationContext context) throws IOException {
     if ((flags & VERSION_BIT) != 0) {
       return Version.readOrdinal(in);
     } else {
@@ -608,7 +609,7 @@ public class GMSMember implements DataSerializableFixedID {
   }
 
   public void readEssentialData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.versionOrdinal = Version.readOrdinal(in);
 
     int flags = in.readShort();

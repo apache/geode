@@ -37,6 +37,7 @@ import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
 import org.apache.geode.internal.serialization.Version;
@@ -283,16 +284,16 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException {
+        DeserializationContext context) throws IOException {
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GFE_6_6_0_0(DataInput out, SerializationContext context)
+    public void fromDataPre_GFE_6_6_0_0(DataInput out, DeserializationContext context)
         throws IOException {
       fromDataPre66Called = true;
     }
 
-    public void fromDataPre_GFE_7_0_0_0(DataInput out, SerializationContext context)
+    public void fromDataPre_GFE_7_0_0_0(DataInput out, DeserializationContext context)
         throws IOException {
       fromDataPre70Called = true;
     }

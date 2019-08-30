@@ -31,6 +31,7 @@ import org.apache.geode.cache.Region;
 import org.apache.geode.cache.StatisticsDisabledException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -117,7 +118,7 @@ public class ObjectDetailsResponse extends AdminResponse implements Cancellable 
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.objectValue = DataSerializer.readObject(in);
     this.userAttribute = DataSerializer.readObject(in);

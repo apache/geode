@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class MembershipViewRequest extends DistributionMessage implements MessageWithReply {
@@ -158,7 +159,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     processorId = in.readInt();
     regionPath = DataSerializer.readString(in);
@@ -230,7 +231,7 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       boolean hasView = in.readBoolean();
       if (hasView) {

@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
 import org.apache.geode.distributed.internal.membership.gms.messages.AbstractGMSMessage;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -162,13 +163,13 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
     out.writeBoolean(fromView);
     out.writeBoolean(networkPartitionDetectionEnabled);
     out.writeBoolean(usePreferredCoordinators);
-    context.getDSFIDSerializer().writeDSFID(view, out);
+    context.getSerializer().writeObject(view, out);
     GMSUtil.writeSetOfMemberIDs(registrants, out, context);
   }
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     coordinator = GMSUtil.readMemberID(in, context);
     senderId = GMSUtil.readMemberID(in, context);
     coordinatorPublicKey = StaticSerialization.readByteArray(in);
@@ -178,7 +179,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
-      view = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+      view = (GMSMembershipView) context.getSerializer().readObject(in);
       registrants = GMSUtil.readHashSetOfMemberIDs(in, context);
     }
   }

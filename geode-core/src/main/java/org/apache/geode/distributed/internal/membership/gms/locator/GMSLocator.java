@@ -339,7 +339,7 @@ public class GMSLocator implements Locator {
       oos.writeInt(Version.getCurrentVersion().ordinal());
       oos.flush();
       DataOutputStream dataOutputStream = new DataOutputStream(fileStream);
-      services.getSerializer().getDataSerializer().writeObject(view, dataOutputStream);
+      services.getSerializer().getObjectSerializer().writeObject(view, dataOutputStream);
     } catch (Exception e) {
       logger.warn(
           "Peer locator encountered an error writing current membership to disk.  Disabling persistence.  Care should be taken when bouncing this locator as it will not be able to recover knowledge of the running distributed system",

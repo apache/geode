@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.QueryException;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -87,10 +88,10 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
     return INVALIDATE_PARTITIONED_REGION_MESSAGE;
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.callbackArg = context.getDSFIDSerializer().getDataSerializer().readObject(in);
+    this.callbackArg = context.getSerializer().readObject(in);
   }
 
   /*
@@ -100,9 +101,9 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
    */
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
-    this.eventID = (EventID) context.getDSFIDSerializer().getDataSerializer().readObject(in);
+    this.eventID = (EventID) context.getSerializer().readObject(in);
   }
 
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)
@@ -120,7 +121,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
     toDataPre_GEODE_1_9_0_0(out, context);
-    context.getDSFIDSerializer().writeDSFID(this.eventID, out);
+    context.getSerializer().writeObject(this.eventID, out);
   }
 
   @Override

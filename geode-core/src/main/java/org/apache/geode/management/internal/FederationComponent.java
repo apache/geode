@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -251,7 +252,7 @@ public class FederationComponent
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.notificationEmitter = DataSerializer.readPrimitiveBoolean(in);
     this.interfaceClassName = DataSerializer.readString(in);
     this.objectState = DataSerializer.readHashMap(in);

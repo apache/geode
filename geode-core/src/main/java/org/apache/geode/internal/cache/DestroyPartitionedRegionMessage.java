@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.partitioned.RegionAdvisor;
 import org.apache.geode.internal.cache.partitioned.RegionAdvisor.PartitionProfile;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -223,13 +224,13 @@ public class DestroyPartitionedRegionMessage extends PartitionMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
     this.eventID = DataSerializer.readObject(in);
 
   }
 
-  public void fromDataPre_GEODE_1_9_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, null);
     this.cbArg = DataSerializer.readObject(in);

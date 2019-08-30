@@ -41,6 +41,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
@@ -154,7 +155,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
     this.valueCheck = in.readBoolean();
@@ -225,7 +226,7 @@ public class ContainsKeyValueMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.containsKeyValue = in.readBoolean();
     }

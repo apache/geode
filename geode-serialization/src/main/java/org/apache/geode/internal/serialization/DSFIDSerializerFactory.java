@@ -14,12 +14,28 @@
  */
 package org.apache.geode.internal.serialization;
 
-public interface SerializationContext {
+public class DSFIDSerializerFactory {
 
-  /** return the version of the source/destination of this serializer */
-  Version getSerializationVersion();
+  ObjectSerializer serializer;
 
-  /** return the serializer */
-  ObjectSerializer getSerializer();
+  /**
+   * Replaces the default serializer with the given serializer.
+   * Typically the given ObjectSerializer will defer most serialization of
+   * DataSerializableFixedID objects to the DSFIDSerializer but may handle serialization
+   * of other types of objects in its readObject/writeObject methods.
+   */
+  public DSFIDSerializerFactory setObjectSerializer(ObjectSerializer serializer) {
+    this.serializer = serializer;
+    return this;
+  }
+
+  /** Create a DSFIDSerializer */
+  public DSFIDSerializer create() {
+    if (serializer == null) {
+      return new DSFIDSerializerImpl();
+    } else {
+      return new DSFIDSerializerImpl(serializer);
+    }
+  }
 
 }

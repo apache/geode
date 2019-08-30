@@ -95,6 +95,7 @@ import org.apache.geode.internal.cache.extension.SimpleExtensionPoint;
 import org.apache.geode.internal.cache.snapshot.RegionSnapshotServiceImpl;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.statistics.StatisticsClock;
 import org.apache.geode.internal.util.ArrayUtils;
@@ -1813,7 +1814,7 @@ public abstract class AbstractRegion implements InternalRegion, AttributesMutato
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // should never be called since the special DataSerializer.readRegion is used.
     throw new UnsupportedOperationException("fromData is not implemented");
   }

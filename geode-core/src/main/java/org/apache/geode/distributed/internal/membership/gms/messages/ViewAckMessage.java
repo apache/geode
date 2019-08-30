@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -70,15 +71,15 @@ public class ViewAckMessage extends AbstractGMSMessage {
       SerializationContext context) throws IOException {
     out.writeInt(this.viewId);
     out.writeBoolean(this.preparing);
-    context.getDSFIDSerializer().writeDSFID(this.alternateView, out);
+    context.getSerializer().writeObject(this.alternateView, out);
   }
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.viewId = in.readInt();
     this.preparing = in.readBoolean();
-    this.alternateView = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+    this.alternateView = (GMSMembershipView) context.getSerializer().readObject(in);
   }
 
   @Override

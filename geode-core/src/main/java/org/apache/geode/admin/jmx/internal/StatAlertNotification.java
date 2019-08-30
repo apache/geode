@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.internal.admin.StatAlert;
 import org.apache.geode.internal.admin.StatAlertDefinition;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -138,7 +139,7 @@ public class StatAlertNotification extends StatAlert
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     // Do not modify StatAlert to allow 57 cacheservers to function with 57+ agent
     // However, update of a new StatAlertDefn on 57 server from 57+ agent not covered with this
     this.setDefinitionId(DataSerializer.readPrimitiveInt(in));

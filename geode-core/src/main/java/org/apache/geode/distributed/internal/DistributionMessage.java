@@ -37,6 +37,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.MessageLogger;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.tcp.Connection;
@@ -570,7 +571,7 @@ public abstract class DistributionMessage implements DataSerializableFixedID, Cl
    */
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
 
     // this.recipients = (Set)DataSerializer.readObject(in); // no to deserialize; filled in later
     // this.sender = DataSerializer.readIpAddress(in); // no to deserialize; filled in later

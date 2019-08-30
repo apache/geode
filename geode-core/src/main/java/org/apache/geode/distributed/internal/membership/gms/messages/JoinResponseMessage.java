@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.distributed.internal.membership.gms.GMSUtil;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -114,7 +115,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getDSFIDSerializer().writeDSFID(currentView, out);
+    context.getSerializer().writeObject(currentView, out);
     GMSUtil.writeMemberID(memberID, out, context);
     StaticSerialization.writeString(rejectionMessage, out);
     StaticSerialization.writeByteArray(messengerData, out);
@@ -123,8 +124,8 @@ public class JoinResponseMessage extends AbstractGMSMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
-    currentView = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    currentView = (GMSMembershipView) context.getSerializer().readObject(in);
     memberID = GMSUtil.readMemberID(in, context);
     rejectionMessage = StaticSerialization.readString(in);
     messengerData = StaticSerialization.readByteArray(in);

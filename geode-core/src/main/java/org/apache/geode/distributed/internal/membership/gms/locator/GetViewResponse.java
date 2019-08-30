@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMembershipView;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -52,13 +53,13 @@ public class GetViewResponse implements DataSerializableFixedID {
   @Override
   public void toData(DataOutput out,
       SerializationContext context) throws IOException {
-    context.getDSFIDSerializer().writeDSFID(view, out);
+    context.getSerializer().writeObject(view, out);
   }
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
-    view = (GMSMembershipView) context.getDSFIDSerializer().readDSFID(in);
+      DeserializationContext context) throws IOException, ClassNotFoundException {
+    view = (GMSMembershipView) context.getSerializer().readObject(in);
   }
 
 }

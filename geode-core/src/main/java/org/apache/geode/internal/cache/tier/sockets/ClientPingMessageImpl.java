@@ -21,6 +21,7 @@ import java.io.IOException;
 
 import org.apache.geode.internal.cache.EventID;
 import org.apache.geode.internal.cache.tier.MessageType;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -77,7 +78,7 @@ public class ClientPingMessageImpl implements ClientMessage {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {}
+      DeserializationContext context) throws IOException, ClassNotFoundException {}
 
   @Override
   public EventID getEventId() {

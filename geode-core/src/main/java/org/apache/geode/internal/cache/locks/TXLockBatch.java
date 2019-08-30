@@ -30,6 +30,7 @@ import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.IdentityArrayList;
 import org.apache.geode.internal.cache.TXRegionLockRequestImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -117,7 +118,7 @@ public class TXLockBatch implements DLockBatch, DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.txLockId = TXLockIdImpl.createFromData(in);
     this.participants = InternalDataSerializer.readSet(in);
     {

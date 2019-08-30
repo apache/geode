@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -151,7 +152,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     public boolean isSerializedValue(byte[] value) {
       ByteBuffer buf = ByteBuffer.wrap(value);
@@ -210,7 +211,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -243,7 +244,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -276,7 +277,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -309,7 +310,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public Version[] getSerializationVersions() {
@@ -357,7 +358,7 @@ public abstract class Token {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {}
+        DeserializationContext context) throws IOException, ClassNotFoundException {}
 
     @Override
     public void toData(DataOutput out,

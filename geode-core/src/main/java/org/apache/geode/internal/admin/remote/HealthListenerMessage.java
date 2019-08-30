@@ -25,6 +25,7 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -76,7 +77,7 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.listenerId = in.readInt();
     this.status = (GemFireHealth.Health) DataSerializer.readObject(in);

@@ -36,31 +36,40 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   @Immutable("This maybe should be wrapped in an unmodifiableMap?")
   private final Int2ObjectOpenHashMap dsfidMap2 = new Int2ObjectOpenHashMap(800);
 
-  private final SerializerPlugin objectSerializer;
+  private final ObjectSerializer objectSerializer;
 
   public DSFIDSerializerImpl() {
-    objectSerializer = new SerializerPlugin() {
+    objectSerializer = new ObjectSerializer() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
-        writeDSFID((DataSerializableFixedID) obj, output);
+        DSFIDSerializerImpl.this.writeDSFID((DataSerializableFixedID) obj, output);
       }
 
       @Override
       public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
-        return readDSFID(input);
+        return DSFIDSerializerImpl.this.readDSFID(input);
       }
 
       @Override
-      public Version getVersionForOrdinalOrCurrent(int ordinal) {
-        if (ordinal > Version.getCurrentVersion().ordinal()) {
-          return Version.getCurrentVersion();
-        }
-        return Version.fromOrdinalNoThrow((short) ordinal, false);
+      public void invokeToData(Object ds, DataOutput out) throws IOException {
+        DSFIDSerializerImpl.this.invokeToData(ds, out);
+      }
+
+      @Override
+      public void invokeFromData(Object ds, DataInput in)
+          throws IOException, ClassNotFoundException {
+        DSFIDSerializerImpl.this.invokeFromData(ds, in);
+      }
+
+      @Override
+      public void writeDSFID(DataSerializableFixedID object, int dsfid, DataOutput out)
+          throws IOException {
+        DSFIDSerializerImpl.this.writeDSFID(object, dsfid, out);
       }
     };
   }
 
-  public DSFIDSerializerImpl(SerializerPlugin objectSerializer) {
+  public DSFIDSerializerImpl(ObjectSerializer objectSerializer) {
     this.objectSerializer = objectSerializer;
   }
 
@@ -72,11 +81,12 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
    * (PDX, DataSerializable, Java serializable, etc).
    */
   @Override
-  public SerializerPlugin getDataSerializer() {
+  public ObjectSerializer getObjectSerializer() {
     return objectSerializer;
   }
 
   // Writes just the header of a DataSerializableFixedID to out.
+  @Override
   public void writeDSFIDHeader(int dsfid, DataOutput out) throws IOException {
     if (dsfid == DataSerializableFixedID.ILLEGAL) {
       throw new IllegalStateException(
@@ -93,7 +103,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
       out.writeInt(dsfid);
     }
   }
-
 
   @Override
   public void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException {
@@ -200,7 +209,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     }
   }
 
-  @Override
   public Object readDSFID(final DataInput in) throws IOException, ClassNotFoundException {
     checkIn(in);
     DSCODE dsHeaderType = DscodeHelper.toDSCODE(in.readByte());
@@ -223,6 +231,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     }
   }
 
+  @Override
   public int readDSFIDHeader(final DataInput in) throws IOException {
     checkIn(in);
     return readDSFIDHeader(in, DscodeHelper.toDSCODE(in.readByte()));
@@ -366,7 +375,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
   /** create a context for deserializaing an object */
   @Override
-  public SerializationContext createSerializationContext(DataInput dataInput) {
+  public DeserializationContext createDeserializationContext(DataInput dataInput) {
     return new DeserializationContextImpl(dataInput, this);
   }
 }

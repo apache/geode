@@ -24,6 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -139,7 +140,7 @@ public class RegionRequest extends AdminRequest {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.action = in.readInt();
     this.cacheId = in.readInt();

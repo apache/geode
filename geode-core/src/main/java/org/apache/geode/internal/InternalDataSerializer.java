@@ -110,12 +110,13 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DSCODE;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
+import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
-import org.apache.geode.internal.serialization.SerializerPlugin;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.serialization.VersionedDataStream;
@@ -288,7 +289,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   private static volatile Set<RegistrationListener> listeners = new HashSet<>();
 
   static {
-    dsfidSerializer = new DSFIDSerializerImpl(new SerializerPlugin() {
+    dsfidSerializer = new DSFIDSerializerFactory().setObjectSerializer(new ObjectSerializer() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
         InternalDataSerializer.writeObject(obj, output);
@@ -300,10 +301,22 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       @Override
-      public Version getVersionForOrdinalOrCurrent(int ordinal) {
-        return Version.fromOrdinalOrCurrent((short) ordinal);
+      public void invokeToData(Object ds, DataOutput out) throws IOException {
+        InternalDataSerializer.invokeToData(ds, out);
       }
-    });
+
+      @Override
+      public void invokeFromData(Object ds, DataInput in)
+          throws IOException, ClassNotFoundException {
+        InternalDataSerializer.invokeFromData(ds, in);
+      }
+
+      @Override
+      public void writeDSFID(DataSerializableFixedID object, int dsfid, DataOutput out)
+          throws IOException {
+        InternalDataSerializer.writeDSFID(object, dsfid, out);
+      }
+    }).create();
     initializeWellKnownSerializers();
     dsfidFactory = new DSFIDFactory(dsfidSerializer);
     dsfidFactory.registerDSFIDTypes();
@@ -2522,10 +2535,6 @@ public abstract class InternalDataSerializer extends DataSerializer {
     return readDSFID(in, DscodeHelper.toDSCODE(in.readByte()));
   }
 
-  public static int readDSFIDHeader(final DataInput in) throws IOException {
-    return ((DSFIDSerializerImpl) dsfidSerializer).readDSFIDHeader(in);
-  }
-
   /**
    * Reads an instance of {@code String} from a {@code DataInput} given the header byte already
    * being read. The return value may be {@code null}.
@@ -2587,7 +2596,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
   }
 
   public static String readString(DataInput in, byte header) throws IOException {
-    return readString(in, DscodeHelper.toDSCODE(header));
+    return StaticSerialization.readString(in, header);
   }
 
   /**
@@ -3593,7 +3602,7 @@ public abstract class InternalDataSerializer extends DataSerializer {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       InternalDataSerializer.checkIn(in);
       this.className = DataSerializer.readNonPrimitiveClassName(in);

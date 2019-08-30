@@ -25,6 +25,7 @@ import org.apache.geode.StatisticsType;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FetchResourceAttributesResponse extends AdminResponse {
@@ -77,7 +78,7 @@ public class FetchResourceAttributesResponse extends AdminResponse {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     stats = (RemoteStat[]) DataSerializer.readObject(in);
   }

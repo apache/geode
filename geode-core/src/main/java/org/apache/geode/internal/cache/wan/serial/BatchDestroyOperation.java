@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.InternalCacheEvent;
 import org.apache.geode.internal.cache.RegionQueue;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -208,7 +209,7 @@ public class BatchDestroyOperation extends DistributedCacheOperation {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.eventId = (EventID) DataSerializer.readObject(in);
       this.key = DataSerializer.readObject(in);

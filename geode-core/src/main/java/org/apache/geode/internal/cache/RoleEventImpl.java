@@ -29,6 +29,7 @@ import org.apache.geode.cache.RoleEvent;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.Role;
 import org.apache.geode.distributed.internal.membership.InternalRole;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -84,7 +85,7 @@ public class RoleEventImpl extends RegionEventImpl implements RoleEvent {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     String[] requiredRoleNames = DataSerializer.readStringArray(in);
     Set requiredRolesSet = new HashSet(requiredRoleNames.length);

@@ -22,6 +22,7 @@ import java.util.List;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.ServerLocation;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -47,7 +48,7 @@ public class QueueConnectionResponse extends ServerLocationResponse {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     durableQueueFound = DataSerializer.readPrimitiveBoolean(in);
     servers = SerializationHelper.readServerLocationList(in);
     if (this.servers != null && !this.servers.isEmpty()) {

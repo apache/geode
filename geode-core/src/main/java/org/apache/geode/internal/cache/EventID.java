@@ -45,6 +45,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.ByteArrayDataInput;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.Breadcrumbs;
@@ -380,7 +381,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
 
   @Override
   public void fromData(DataInput di,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));
     this.threadID = readEventIdPartsFromOptmizedByteArray(eventIdParts);
@@ -389,7 +390,7 @@ public class EventID implements DataSerializableFixedID, Serializable, Externali
     this.breadcrumbCounter = di.readByte();
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput di, SerializationContext context)
+  public void fromDataPre_GFE_8_0_0_0(DataInput di, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     this.membershipID = DataSerializer.readByteArray(di);
     ByteBuffer eventIdParts = ByteBuffer.wrap(DataSerializer.readByteArray(di));

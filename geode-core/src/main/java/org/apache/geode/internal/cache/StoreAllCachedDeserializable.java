@@ -23,6 +23,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.Region;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -124,7 +125,7 @@ public class StoreAllCachedDeserializable implements CachedDeserializable, DataS
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.value = DataSerializer.readByteArray(in);
     this.objValue = EntryEventImpl.deserialize(this.value);
   }

@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -310,7 +311,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
     toData(out, context);
   }
 
-  public void fromDataPre_GFE_8_0_0_0(DataInput in, SerializationContext context)
+  public void fromDataPre_GFE_8_0_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     fromData(in, context);
   }
@@ -442,7 +443,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     final boolean isDebugEnabled_VOL =
         logger.isTraceEnabled(LogMarker.VERSIONED_OBJECT_LIST_VERBOSE);
     int flags = in.readByte();
@@ -753,7 +754,7 @@ public class VersionedObjectList extends ObjectPartList implements Externalizabl
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       throw new IOException("this fromData method should never be invoked");
     }
 

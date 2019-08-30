@@ -97,6 +97,7 @@ import org.apache.geode.internal.serialization.BufferDataOutputStream;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
 import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -518,7 +519,7 @@ public class JGroupsMessengerJUnitTest {
     }
 
     @Override
-    public void fromData(DataInput in, SerializationContext context)
+    public void fromData(DataInput in, DeserializationContext context)
         throws IOException, ClassNotFoundException {
       payload = StaticSerialization.readByteArray(in);
     }

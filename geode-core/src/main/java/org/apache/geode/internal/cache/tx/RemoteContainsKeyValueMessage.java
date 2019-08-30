@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -139,7 +140,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
     this.valueCheck = (flags & VALUE_CHECK) != 0;
@@ -212,7 +213,7 @@ public class RemoteContainsKeyValueMessage extends RemoteOperationMessageWithDir
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.containsKeyValue = in.readBoolean();
     }

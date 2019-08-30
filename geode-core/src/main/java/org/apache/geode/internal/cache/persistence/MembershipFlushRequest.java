@@ -39,6 +39,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.ProxyBucketRegion;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class MembershipFlushRequest extends PooledDistributionMessage implements MessageWithReply {
@@ -115,7 +116,7 @@ public class MembershipFlushRequest extends PooledDistributionMessage implements
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     processorId = in.readInt();
     regionPath = DataSerializer.readString(in);

@@ -57,6 +57,7 @@ import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -329,7 +330,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     setKey(DataSerializer.readObject(in));
     this.cbArg = DataSerializer.readObject(in);
@@ -537,7 +538,7 @@ public class DestroyMessage extends PartitionMessageWithDirectReply {
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       byte b = in.readByte();
       boolean hasTag = (b & HAS_VERSION_TAG) != 0;

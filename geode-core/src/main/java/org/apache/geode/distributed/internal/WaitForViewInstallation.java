@@ -22,6 +22,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.CancelException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 public class WaitForViewInstallation extends HighPriorityDistributionMessage
@@ -96,7 +97,7 @@ public class WaitForViewInstallation extends HighPriorityDistributionMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws ClassNotFoundException, IOException {
+      DeserializationContext context) throws ClassNotFoundException, IOException {
     super.fromData(in, context);
     this.viewId = in.readLong();
     this.processorId = in.readInt();

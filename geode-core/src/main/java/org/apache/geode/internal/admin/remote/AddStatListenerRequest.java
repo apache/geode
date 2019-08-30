@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.Stat;
 import org.apache.geode.internal.admin.StatResource;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
@@ -72,7 +73,7 @@ public class AddStatListenerRequest extends AdminRequest {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     super.fromData(in, context);
     this.resourceId = in.readLong();
     this.statName = in.readUTF();

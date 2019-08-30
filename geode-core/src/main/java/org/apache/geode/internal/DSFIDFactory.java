@@ -399,8 +399,8 @@ import org.apache.geode.internal.cache.wan.GatewaySenderQueueEntrySynchronizatio
 import org.apache.geode.internal.cache.wan.parallel.ParallelQueueRemovalMessage;
 import org.apache.geode.internal.cache.wan.serial.BatchDestroyOperation;
 import org.apache.geode.internal.serialization.DSFIDSerializer;
-import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.management.internal.JmxManagerAdvisor.JmxManagerProfile;
@@ -441,7 +441,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     throw new UnsupportedOperationException();
   }
 
@@ -1013,7 +1013,7 @@ public class DSFIDFactory implements DataSerializableFixedID {
       case PR_DESTROY_ON_DATA_STORE_MESSAGE:
         return readDestroyOnDataStore(in);
       default:
-        return ((DSFIDSerializerImpl) serializer).create(dsfid, in);
+        return serializer.create(dsfid, in);
     }
   }
 

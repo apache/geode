@@ -74,6 +74,7 @@ import org.apache.geode.internal.cache.versions.VersionTag;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.offheap.annotations.Released;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -801,7 +802,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     int pId = in.readInt();
 
     if (isAckRequired()) {
@@ -1745,7 +1746,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       this.lockId = TXLockIdImpl.createFromData(in);
       Assert.assertTrue(this.lockId != null,
           "CommitProcessForLockIdMessage must have a non-null lockid!");
@@ -1800,7 +1801,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       this.txId = TXId.createFromData(in);
       Assert.assertTrue(this.txId != null,
           "CommitProcessMessageForTXId must have a non-null txid!");
@@ -1886,7 +1887,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       this.trackerKey = DataSerializer.readObject(in);
       this.processorId = in.readInt();
     }
@@ -1925,7 +1926,7 @@ public class TXCommitMessage extends PooledDistributionMessage
 
     @Override
     public void fromData(DataInput in,
-        SerializationContext context) throws IOException, ClassNotFoundException {
+        DeserializationContext context) throws IOException, ClassNotFoundException {
       super.fromData(in, context);
       this.wasReceived = in.readBoolean();
     }

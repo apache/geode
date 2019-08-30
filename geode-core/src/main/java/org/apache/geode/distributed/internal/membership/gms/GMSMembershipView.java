@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.geode.annotations.Immutable;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.StaticSerialization;
 import org.apache.geode.internal.serialization.Version;
@@ -612,7 +613,7 @@ public class GMSMembershipView implements DataSerializableFixedID {
 
 
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     creator = GMSUtil.readMemberID(in, context);
     viewId = in.readInt();
     members = GMSUtil.readArrayOfIDs(in, context);

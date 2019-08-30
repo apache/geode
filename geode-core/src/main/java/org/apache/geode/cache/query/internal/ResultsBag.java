@@ -26,6 +26,7 @@ import org.apache.geode.cache.query.internal.ObjectIntHashMap.Entry;
 import org.apache.geode.cache.query.types.ObjectType;
 import org.apache.geode.internal.cache.CachePerfStats;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.Version;
 
@@ -137,7 +138,7 @@ public class ResultsBag extends Bag implements DataSerializableFixedID {
 
   @Override
   public void fromData(DataInput in,
-      SerializationContext context) throws IOException, ClassNotFoundException {
+      DeserializationContext context) throws IOException, ClassNotFoundException {
     this.elementType = (ObjectType) DataSerializer.readObject(in);
     this.size = in.readInt();
     assert this.size >= 0 : this.size;
