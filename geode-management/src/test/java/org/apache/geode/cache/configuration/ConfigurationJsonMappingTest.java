@@ -109,7 +109,7 @@ public class ConfigurationJsonMappingTest {
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
     assertThat(json)
-        .contains("\"groups\":[\"group1\"]");
+        .contains("\"group\":\"group1\"");
   }
 
   @Test
@@ -119,6 +119,26 @@ public class ConfigurationJsonMappingTest {
     config.setGroup("cluster");
     String json = mapper.writeValueAsString(config);
     System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"cluster\"]");
+    assertThat(json).contains("\"group\":\"cluster\"");
+  }
+
+  @Test
+  public void serializeNullGroup() throws Exception {
+    Region config = new Region();
+    config.setName("test");
+    config.setGroup(null);
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group");
+  }
+
+  @Test
+  public void serializeEmptyGroup() throws Exception {
+    Region config = new Region();
+    config.setName("test");
+    config.setGroup("");
+    String json = mapper.writeValueAsString(config);
+    System.out.println(json);
+    assertThat(json).doesNotContain("group");
   }
 }
