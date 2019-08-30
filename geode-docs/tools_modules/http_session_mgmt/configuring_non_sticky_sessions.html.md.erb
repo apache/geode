@@ -1,0 +1,57 @@
+---
+title:  Configuring Non-Sticky Sessions
+---
+
+<!--
+Licensed to the Apache Software Foundation (ASF) under one or more
+contributor license agreements.  See the NOTICE file distributed with
+this work for additional information regarding copyright ownership.
+The ASF licenses this file to You under the Apache License, Version 2.0
+(the "License"); you may not use this file except in compliance with
+the License.  You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+This section describes the configuration of non-sticky sessions
+
+## <a id="sticky_vs_non-sticky_overview__section_B2396FB0879248DBA85ADFDBBEFA987D" class="no-quick-link"></a>Why use non-sticky sessions?
+
+Some situations require that sessions be 'non-sticky', which means that client requests are directed to any server in a cluster of application servers rather than returning to the same server with each request for a given client. Non-sticky sessions allow for more effective load balancing as a client operating in a model using sticky session replication will return to the same server each time regardless of load. To achieve a non-sticky session model, you must configure your deployment as described for the following modules/topologies.
+
+
+**Note:**
+Non-sticky sessions affect performance because sessions need to be re-created every time a request hits a different server. This may not be noticeable when the session attributes are small, but may become more evident as the session attributes increase in size and/or number.
+
+## <a id="sticky_vs_non-sticky_overview__section_B2396FB0879248DBA85ADFDBBEFA987E" class="no-quick-link"></a>Configuring Non-Sticky Session Replication for Tomcat and TC Server
+
+**Peer-to-Peer**
+
+For peer-to-peer topologies, apply the following settings to enable non-sticky sessions to work correctly:
+
+-   Java system property `gemfire.loadClassOnEveryDeserialization=true`. Set this property by editing the `bin/setenv.sh` file.
+-   `prefer.deserialized.form=false`. Set this property in `conf/catalina.properties`.
+
+**Client-server**
+
+-   The Java system property `gemfire.loadClassOnEveryDeserialization=true` must be set, in the `bin/setenv.sh` file.
+-   The local client cache must be empty. Ensure that the `gemfire.cache.enable_local_cache` property is set to false. This effectively sets the local client cache to be a **PROXY** cache.
+-   If the local client cache is a **PROXY** cache, then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
+
+
+## <a id="sticky_vs_non-sticky_overview__section_E0E0E5A1C9484D4AA13878273F16A920" class="no-quick-link"></a>Configuring Non-Sticky Session Replication for WebLogic
+
+**Peer-to-Peer**
+
+No additional configuration is required.
+
+**Client-Server**
+
+-   The local client cache must be empty. Ensure that the `gemfire.cache.enable_local_cache` property is set to false. This effectively sets the local client cache to be a **PROXY** cache.
+-   If the local client cache is a **PROXY** cache, then expiration must be configured to notify the client via callback, which can be done by setting `gemfire.EXPIRE_SENDS_ENTRY_AS_CALLBACK` to true. This allows the client cache to retrieve and expire the actual session object, resulting in more consistent behavior.
