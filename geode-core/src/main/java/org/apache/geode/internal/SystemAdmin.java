@@ -1279,12 +1279,7 @@ public class SystemAdmin {
     }
   }
 
-  public SystemAdmin() {
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
-  }
+  public SystemAdmin() {}
 
   private static final String[] helpTopics =
       new String[] {"all", "overview", "commands", "options", "usage", "configuration"};

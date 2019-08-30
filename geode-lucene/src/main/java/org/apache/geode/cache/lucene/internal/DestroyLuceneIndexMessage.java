@@ -31,6 +31,7 @@ import org.apache.geode.distributed.internal.ReplyException;
 import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DestroyLuceneIndexMessage extends PooledDistributionMessage
     implements MessageWithReply {
@@ -110,16 +111,18 @@ public class DestroyLuceneIndexMessage extends PooledDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.processorId);
     DataSerializer.writeString(this.regionPath, out);
     DataSerializer.writeString(this.indexName, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.processorId = in.readInt();
     this.regionPath = DataSerializer.readString(in);
     this.indexName = DataSerializer.readString(in);

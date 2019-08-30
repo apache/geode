@@ -40,6 +40,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.partitioned.PartitionMessage;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Message to all the peers to ask which member hosts the transaction for the given transaction id
@@ -161,15 +162,17 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.txId, out);
     out.writeInt(this.processorId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.txId = DataSerializer.readObject(in);
     this.processorId = in.readInt();
   }
@@ -254,8 +257,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.isHostingTx);
       boolean sendTXCommitMessage = this.txCommitMessage != null;
       out.writeBoolean(sendTXCommitMessage);
@@ -268,8 +272,9 @@ public class FindRemoteTXMessage extends HighPriorityDistributionMessage
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.isHostingTx = in.readBoolean();
       if (in.readBoolean()) {
         this.isPartialCommitMessage = in.readBoolean();

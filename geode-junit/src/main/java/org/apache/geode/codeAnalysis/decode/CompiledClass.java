@@ -29,9 +29,9 @@ import org.apache.geode.codeAnalysis.decode.cp.Cp;
 import org.apache.geode.codeAnalysis.decode.cp.CpClass;
 import org.apache.geode.codeAnalysis.decode.cp.CpDouble;
 import org.apache.geode.codeAnalysis.decode.cp.CpLong;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.ExitCode;
 import org.apache.geode.internal.logging.PureLogWriter;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
 
 
 /**

@@ -49,6 +49,8 @@ import org.apache.geode.internal.cache.TXStateProxy;
 import org.apache.geode.internal.cache.TransactionMessage;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * The base message type upon which other messages that need to be sent to a remote member that is
@@ -310,11 +312,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Fill out this instance of the message using the <code>DataInput</code> Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #toData(DataOutput)}in what it reads
+   * {@link DataSerializableFixedID#toData(DataOutput, SerializationContext)}in what it reads
    */
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.flags = in.readShort();
     setFlags(this.flags, in);
     this.regionPath = DataSerializer.readString(in);
@@ -329,11 +332,12 @@ public abstract class RemoteOperationMessage extends DistributionMessage
   /**
    * Send the contents of this instance to the DataOutput Required to be a
    * {@link org.apache.geode.DataSerializable}Note: must be symmetric with
-   * {@link #fromData(DataInput)}in what it writes
+   * {@link DataSerializableFixedID#fromData(DataInput, SerializationContext)}in what it writes
    */
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     short flags = computeCompressedShort();
     out.writeShort(flags);
     if (this.processorId != 0) {

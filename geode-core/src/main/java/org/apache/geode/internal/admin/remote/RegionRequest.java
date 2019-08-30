@@ -24,6 +24,7 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.RegionAttributes;
 import org.apache.geode.distributed.internal.DistributionManager;
 import org.apache.geode.internal.admin.CacheInfo;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular application to get the region for the specified path.
@@ -126,8 +127,9 @@ public class RegionRequest extends AdminRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.action);
     out.writeInt(this.cacheId);
     DataSerializer.writeString(this.path, out);
@@ -136,8 +138,9 @@ public class RegionRequest extends AdminRequest {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.action = in.readInt();
     this.cacheId = in.readInt();
     this.path = DataSerializer.readString(in);

@@ -38,7 +38,6 @@ import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.VisibleForTesting;
 import org.apache.geode.annotations.internal.MakeNotStatic;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.CacheClientStatus;
 import org.apache.geode.internal.cache.IncomingGatewayStatus;
 import org.apache.geode.internal.cache.InternalCache;
@@ -48,6 +47,7 @@ import org.apache.geode.internal.cache.tier.Acceptor;
 import org.apache.geode.internal.cache.tier.ServerSideHandshake;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.LoggingThread;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.JavaWorkarounds;
 
 /**

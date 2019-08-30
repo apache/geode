@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
 public class RemoteFetchKeysMessage extends RemoteOperationMessage {
@@ -99,13 +100,15 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
   }
 
   public static class RemoteFetchKeysReplyMessage extends ReplyMessage {
@@ -281,8 +284,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.seriesNum);
       out.writeInt(this.msgNum);
       out.writeInt(this.numSeries);
@@ -296,8 +300,9 @@ public class RemoteFetchKeysMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.seriesNum = in.readInt();
       this.msgNum = in.readInt();
       this.numSeries = in.readInt();

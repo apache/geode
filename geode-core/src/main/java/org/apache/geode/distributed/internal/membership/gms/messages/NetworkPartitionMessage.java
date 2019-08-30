@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 public class NetworkPartitionMessage extends AbstractGMSMessage {
 
@@ -36,12 +37,14 @@ public class NetworkPartitionMessage extends AbstractGMSMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
 
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
 
   }
 

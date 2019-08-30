@@ -38,7 +38,6 @@ import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
 import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.admin.SSLConfig;
 import org.apache.geode.internal.net.SSLConfigurationFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
@@ -391,11 +390,6 @@ public class ConnectCommand extends OfflineGfshCommand {
 
   public static ConnectToLocatorResult connectToLocator(String host, int port, int timeout,
       Properties props) throws IOException, ClassNotFoundException {
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
-
     JmxManagerLocatorResponse locatorResponse =
         JmxManagerLocatorRequest.send(host, port, timeout, props);
 

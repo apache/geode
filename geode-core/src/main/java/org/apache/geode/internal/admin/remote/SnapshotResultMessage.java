@@ -27,6 +27,7 @@ import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
 import org.apache.geode.internal.admin.CacheSnapshot;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class SnapshotResultMessage extends PooledDistributionMessage implements AdminMessageType {
   private CacheSnapshot results;
@@ -68,15 +69,17 @@ public class SnapshotResultMessage extends PooledDistributionMessage implements 
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.results, out);
     out.writeInt(this.snapshotId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.results = (CacheSnapshot) DataSerializer.readObject(in);
     this.snapshotId = in.readInt();
   }

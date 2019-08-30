@@ -26,6 +26,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message sent to a data store telling that data store to globally destroy the region on behalf
@@ -96,14 +97,16 @@ public class DestroyRegionOnDataStoreMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(final DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     callbackArg = DataSerializer.readObject(in);
   }
 
   @Override
-  public void toData(final DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(final DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(callbackArg, out);
   }
 }

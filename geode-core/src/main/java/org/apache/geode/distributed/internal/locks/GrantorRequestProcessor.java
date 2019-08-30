@@ -38,6 +38,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.concurrent.StoppableCondition;
 import org.apache.geode.internal.util.concurrent.StoppableReentrantLock;
 
@@ -536,8 +537,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.grantorVersion = in.readLong();
       this.dlsSerialNumber = in.readInt();
       this.serviceName = DataSerializer.readString(in);
@@ -549,8 +551,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeLong(this.grantorVersion);
       out.writeInt(this.dlsSerialNumber);
       DataSerializer.writeString(this.serviceName, out);
@@ -627,8 +630,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.grantor = (InternalDistributedMember) DataSerializer.readObject(in);
       this.elderVersionId = in.readLong();
       this.grantorSerialNumber = in.readInt();
@@ -636,8 +640,9 @@ public class GrantorRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.grantor, out);
       out.writeLong(this.elderVersionId);
       out.writeInt(this.grantorSerialNumber);

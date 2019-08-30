@@ -29,6 +29,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.versions.ConcurrentCacheModificationException;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that acknowledges that an operation completed successfully, or threw a CacheException.
@@ -266,8 +267,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
 
     byte status = 0;
     if (this.ignored) {
@@ -297,8 +299,9 @@ public class ReplyMessage extends HighPriorityDistributionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     byte status = in.readByte();
     this.ignored = testFlag(status, IGNORED_FLAG);
     this.closed = testFlag(status, CLOSED_FLAG);

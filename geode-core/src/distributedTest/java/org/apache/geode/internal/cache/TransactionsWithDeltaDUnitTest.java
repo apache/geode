@@ -249,19 +249,6 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
 
   @Test
   public void testTxWithCloning() {
-    AttributesFactory af = new AttributesFactory();
-    af.setDataPolicy(DataPolicy.REPLICATE);
-    af.setScope(Scope.DISTRIBUTED_ACK);
-    af.setCloningEnabled(true);
-    basicTest(af.create());
-  }
-
-  @Test
-  public void testExceptionThrown() {
-    AttributesFactory af = new AttributesFactory();
-    af.setDataPolicy(DataPolicy.REPLICATE);
-    af.setScope(Scope.DISTRIBUTED_ACK);
-    final RegionAttributes attr = af.create();
     Host host = Host.getHost(0);
     VM vm1 = host.getVM(0);
     VM vm2 = host.getVM(1);
@@ -270,45 +257,11 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
     SerializableCallable createRegion = new SerializableCallable() {
       @Override
       public Object call() throws Exception {
-        getCache().createRegion(regionName, attr);
-        return null;
-      }
-    };
-
-    vm1.invoke(createRegion);
-    vm2.invoke(createRegion);
-    final String key = "cust1";
-
-    vm1.invoke(new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        TXManagerImpl mgr = getGemfireCache().getTxManager();
-        Region r = getCache().getRegion(regionName);
-        Customer cust = new Customer(1, "cust1");
-        r.put(key, cust);
-        mgr.begin();
-        cust.setName("");
-        try {
-          r.put(key, cust);
-          fail("exception not thrown");
-        } catch (UnsupportedOperationInTransactionException expected) {
-        }
-        mgr.rollback();
-        return null;
-      }
-    });
-  }
-
-  private void basicTest(final RegionAttributes regionAttr) {
-    Host host = Host.getHost(0);
-    VM vm1 = host.getVM(0);
-    VM vm2 = host.getVM(1);
-    final String regionName = getUniqueName();
-
-    SerializableCallable createRegion = new SerializableCallable() {
-      @Override
-      public Object call() throws Exception {
-        getCache().createRegion(regionName, regionAttr);
+        AttributesFactory af = new AttributesFactory();
+        af.setDataPolicy(DataPolicy.REPLICATE);
+        af.setScope(Scope.DISTRIBUTED_ACK);
+        af.setCloningEnabled(true);
+        getCache().createRegion(regionName, af.create());
         return null;
       }
     };
@@ -354,6 +307,49 @@ public class TransactionsWithDeltaDUnitTest extends JUnit4CacheTestCase {
         } catch (CommitConflictException e) {
           // expected
         }
+        return null;
+      }
+    });
+  }
+
+  @Test
+  public void testExceptionThrown() {
+    Host host = Host.getHost(0);
+    VM vm1 = host.getVM(0);
+    VM vm2 = host.getVM(1);
+    final String regionName = getUniqueName();
+
+    SerializableCallable createRegion = new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        AttributesFactory af = new AttributesFactory();
+        af.setDataPolicy(DataPolicy.REPLICATE);
+        af.setScope(Scope.DISTRIBUTED_ACK);
+        final RegionAttributes attr = af.create();
+        getCache().createRegion(regionName, attr);
+        return null;
+      }
+    };
+
+    vm1.invoke(createRegion);
+    vm2.invoke(createRegion);
+    final String key = "cust1";
+
+    vm1.invoke(new SerializableCallable() {
+      @Override
+      public Object call() throws Exception {
+        TXManagerImpl mgr = getGemfireCache().getTxManager();
+        Region r = getCache().getRegion(regionName);
+        Customer cust = new Customer(1, "cust1");
+        r.put(key, cust);
+        mgr.begin();
+        cust.setName("");
+        try {
+          r.put(key, cust);
+          fail("exception not thrown");
+        } catch (UnsupportedOperationInTransactionException expected) {
+        }
+        mgr.rollback();
         return null;
       }
     });

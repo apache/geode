@@ -29,7 +29,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.SSL_REQUIRE_A
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE;
 import static org.apache.geode.distributed.ConfigurationProperties.SSL_TRUSTSTORE_PASSWORD;
 import static org.apache.geode.distributed.ConfigurationProperties.USE_CLUSTER_CONFIGURATION;
-import static org.apache.geode.internal.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.SERIAL_ACKED_MESSAGE;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.getTimeout;
 import static org.apache.geode.test.dunit.IgnoredException.addIgnoredException;
@@ -77,8 +77,9 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.SerialAckedMessage;
 import org.apache.geode.distributed.internal.membership.gms.membership.GMSJoinLeave;
 import org.apache.geode.internal.AvailablePortHelper;
-import org.apache.geode.internal.DSFIDFactory;
+import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.DirectReplyMessage;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.test.dunit.DistributedTestUtils;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.VM;
@@ -172,8 +173,9 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
 
   @Test
   public void receiveBigResponse() {
-    invokeInEveryVM(() -> DSFIDFactory.registerDSFID(SERIAL_ACKED_MESSAGE,
-        SerialAckedMessageWithBigReply.class));
+    invokeInEveryVM(
+        () -> InternalDataSerializer.getDSFIDSerializer().registerDSFID(SERIAL_ACKED_MESSAGE,
+            SerialAckedMessageWithBigReply.class));
     try {
       int locatorPort = createLocator(getVM(0));
       for (int i = 1; i <= NUM_SERVERS; i++) {
@@ -190,7 +192,8 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
       });
     } finally {
       invokeInEveryVM(
-          () -> DSFIDFactory.registerDSFID(SERIAL_ACKED_MESSAGE, SerialAckedMessage.class));
+          () -> InternalDataSerializer.getDSFIDSerializer().registerDSFID(SERIAL_ACKED_MESSAGE,
+              SerialAckedMessage.class));
     }
   }
 
@@ -393,14 +396,16 @@ public class ClusterCommunicationsDUnitTest implements Serializable {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(processorId);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       processorId = in.readInt();
     }
 

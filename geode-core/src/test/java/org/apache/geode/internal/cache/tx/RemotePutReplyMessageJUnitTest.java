@@ -38,12 +38,12 @@ public class RemotePutReplyMessageJUnitTest extends OldValueImporterTestBase {
 
   @Override
   protected void toData(OldValueImporter ovi, HeapDataOutputStream hdos) throws IOException {
-    ((PutReplyMessage) ovi).toData(hdos);
+    ((PutReplyMessage) ovi).toData(hdos, null);
   }
 
   @Override
   protected void fromData(OldValueImporter ovi, byte[] bytes)
       throws IOException, ClassNotFoundException {
-    ((PutReplyMessage) ovi).fromData(new DataInputStream(new ByteArrayInputStream(bytes)));
+    ((PutReplyMessage) ovi).fromData(new DataInputStream(new ByteArrayInputStream(bytes)), null);
   }
 }

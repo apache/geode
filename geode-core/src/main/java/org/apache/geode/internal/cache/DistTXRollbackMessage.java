@@ -47,6 +47,7 @@ import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.cache.tx.RemoteOperationMessage.RemoteOperationResponse;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class DistTXRollbackMessage extends TXMessage {
 
@@ -105,14 +106,16 @@ public class DistTXRollbackMessage extends TXMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     // more data
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     // more data
   }
 
@@ -138,7 +141,7 @@ public class DistTXRollbackMessage extends TXMessage {
     public DistTXRollbackReplyMessage() {}
 
     public DistTXRollbackReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     private DistTXRollbackReplyMessage(int processorId, Boolean val) {
@@ -199,14 +202,16 @@ public class DistTXRollbackMessage extends TXMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeBoolean(this.rollbackState, out);
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.rollbackState = DataSerializer.readBoolean(in);
     }
 

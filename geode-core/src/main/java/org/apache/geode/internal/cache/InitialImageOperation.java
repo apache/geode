@@ -67,11 +67,8 @@ import org.apache.geode.distributed.internal.ReplyMessage;
 import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.Assert;
-import org.apache.geode.internal.ByteArrayDataInput;
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.NullDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.InitialImageFlowControl.FlowControlPermitMessage;
 import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.entries.DiskEntry;
@@ -96,6 +93,10 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.sequencelog.EntryLogger;
 import org.apache.geode.internal.sequencelog.RegionLogger;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.internal.util.ObjectIntProcedure;
 
 /**
@@ -2122,8 +2123,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       this.processorId = in.readInt();
       this.keysOnly = in.readBoolean();
@@ -2136,8 +2138,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.regionPath, out);
       out.writeInt(this.processorId);
       out.writeBoolean(this.keysOnly);
@@ -2350,15 +2353,17 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       this.processorId = in.readInt();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.regionPath, out);
       out.writeInt(this.processorId);
     }
@@ -2482,12 +2487,13 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput dop) throws IOException {
-      super.toData(dop);
+    public void toData(DataOutput dop,
+        SerializationContext context) throws IOException {
+      super.toData(dop, context);
       if (versionVector != null) {
         dop.writeBoolean(true);
         dop.writeBoolean(versionVector instanceof DiskRegionVersionVector);
-        versionVector.toData(dop);
+        versionVector.toData(dop, null);
       } else {
         dop.writeBoolean(false);
       }
@@ -2504,8 +2510,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput dip) throws IOException, ClassNotFoundException {
-      super.fromData(dip);
+    public void fromData(DataInput dip,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(dip, context);
       boolean has = dip.readBoolean();
       if (has) {
         boolean persistent = dip.readBoolean();
@@ -2516,7 +2523,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -2621,16 +2628,18 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       this.processorId = in.readInt();
       this.targetReinitialized = in.readBoolean();
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.regionPath, out);
       out.writeInt(this.processorId);
       out.writeBoolean(this.targetReinitialized);
@@ -2713,8 +2722,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeString(this.regionPath, out);
       out.writeBoolean(this.lostVersionSources[0] instanceof DiskStoreID);
       out.writeInt(this.lostVersionSources.length);
@@ -2724,8 +2734,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.regionPath = DataSerializer.readString(in);
       boolean persistentIDs = in.readBoolean();
       int len = in.readInt();
@@ -2862,8 +2873,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       ArrayList list = DataSerializer.readArrayList(in);
       Object listData = null;
       if (list != null /* fix bug 46874 */ && list.size() > 0) {
@@ -2898,8 +2910,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.entries instanceof InitialImageVersionedEntryList) {
         ArrayList list = new ArrayList(1);
         list.add(this.entries);
@@ -3064,7 +3077,8 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       out.writeByte(this.entryBits);
       byte flags = (this.versionTag != null) ? HAS_VERSION : 0;
       flags |= (this.versionTag instanceof DiskVersionTag) ? PERSISTENT_VERSION : 0;
@@ -3083,7 +3097,8 @@ public class InitialImageOperation {
     static final byte PERSISTENT_VERSION = 0x02;
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       this.entryBits = in.readByte();
       byte flags = in.readByte();
       this.key = DataSerializer.readObject(in);
@@ -3103,7 +3118,7 @@ public class InitialImageOperation {
     public int calcSerializedSize() {
       NullDataOutputStream dos = new NullDataOutputStream();
       try {
-        toData(dos);
+        toData(dos, null);
         return dos.size();
       } catch (IOException ex) {
         RuntimeException ex2 = new IllegalArgumentException(
@@ -3271,7 +3286,8 @@ public class InitialImageOperation {
     static final byte FLAG_TAG_WITH_NUMBER_ID = 3;
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       int flags = 0;
       boolean hasEntries = false;
       boolean hasTags = false;
@@ -3341,7 +3357,8 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
       final boolean isGiiVersionEntryDebugEnabled =
           logger.isTraceEnabled(LogMarker.INITIAL_IMAGE_VERSIONED_VERBOSE);
 
@@ -3402,12 +3419,12 @@ public class InitialImageOperation {
 
     @Override
     public void writeExternal(ObjectOutput out) throws IOException {
-      toData(out);
+      toData(out, null);
     }
 
     @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     @Override
@@ -3468,8 +3485,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput dop) throws IOException {
-      super.toData(dop);
+    public void toData(DataOutput dop,
+        SerializationContext context) throws IOException {
+      super.toData(dop, context);
       dop.writeBoolean(isHARegion);
       if (eventState != null) {
         dop.writeBoolean(true);
@@ -3501,8 +3519,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput dip) throws IOException, ClassNotFoundException {
-      super.fromData(dip);
+    public void fromData(DataInput dip,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(dip, context);
       isHARegion = dip.readBoolean();
       boolean has = dip.readBoolean();
       if (has) {
@@ -3518,7 +3537,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {
@@ -4015,8 +4034,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void toData(DataOutput dop) throws IOException {
-      super.toData(dop);
+    public void toData(DataOutput dop,
+        SerializationContext context) throws IOException {
+      super.toData(dop, context);
       // DataSerializer.writeString(this.haRegion.getName(), dop);
       DataSerializer.writeHashMap((HashMap) this.emptyRegionMap, dop);
       // Write interest info.
@@ -4045,8 +4065,9 @@ public class InitialImageOperation {
     }
 
     @Override
-    public void fromData(DataInput dip) throws IOException, ClassNotFoundException {
-      super.fromData(dip);
+    public void fromData(DataInput dip,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(dip, context);
       // String regionName = DataSerializer.readString(dip);
       this.emptyRegionMap = DataSerializer.readHashMap(dip);
       // Read interest info.
@@ -4075,7 +4096,7 @@ public class InitialImageOperation {
     /*
      * (non-Javadoc)
      *
-     * @see org.apache.geode.internal.DataSerializableFixedID#getDSFID()
+     * @see org.apache.geode.internal.serialization.DataSerializableFixedID#getDSFID()
      */
     @Override
     public int getDSFID() {

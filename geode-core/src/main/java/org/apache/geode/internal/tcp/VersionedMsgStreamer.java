@@ -19,9 +19,9 @@ import java.util.List;
 
 import org.apache.geode.distributed.internal.DMStats;
 import org.apache.geode.distributed.internal.DistributionMessage;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataStream;
 import org.apache.geode.internal.net.BufferPool;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataStream;
 
 /**
  * An extension of {@link MsgStreamer} that implements {@link VersionedDataStream}.

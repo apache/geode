@@ -24,12 +24,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.geode.internal.DataSerializableFixedID;
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.lang.ObjectUtils;
 import org.apache.geode.internal.lang.StringUtils;
 import org.apache.geode.internal.process.PidUnavailableException;
 import org.apache.geode.internal.process.ProcessUtils;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.util.ArgumentRedactor;
 
 /**
@@ -138,7 +139,8 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void fromData(final DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(final DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     readPid(in);
     readUptime(in);
     readWorkingDirectory(in);
@@ -204,7 +206,8 @@ public class LocatorStatusResponse extends ServerLocationResponse {
   }
 
   @Override
-  public void toData(final DataOutput out) throws IOException {
+  public void toData(final DataOutput out,
+      SerializationContext context) throws IOException {
     writePid(out);
     writeUptime(out);
     writeWorkingDirectory(out);

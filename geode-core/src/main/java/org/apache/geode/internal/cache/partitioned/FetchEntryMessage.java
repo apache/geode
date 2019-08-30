@@ -48,6 +48,7 @@ import org.apache.geode.internal.cache.PartitionedRegionDataStore;
 import org.apache.geode.internal.cache.PrimaryBucketException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is used as the request for a
@@ -104,7 +105,7 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   public FetchEntryMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   @Override
@@ -176,8 +177,9 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.key = DataSerializer.readObject(in);
   }
 
@@ -188,8 +190,9 @@ public class FetchEntryMessage extends PartitionMessage {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeObject(this.key, out);
   }
 
@@ -220,7 +223,7 @@ public class FetchEntryMessage extends PartitionMessage {
     public FetchEntryReplyMessage() {}
 
     public FetchEntryReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     private FetchEntryReplyMessage(int processorId, EntrySnapshot value, ReplyException re) {
@@ -271,8 +274,9 @@ public class FetchEntryMessage extends PartitionMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (this.value == null) {
         out.writeBoolean(true); // null entry
       } else {
@@ -287,8 +291,9 @@ public class FetchEntryMessage extends PartitionMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean nullEntry = in.readBoolean();
       if (!nullEntry) {
         // since the Entry object shares state with the PartitionedRegion,

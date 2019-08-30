@@ -60,6 +60,6 @@ public class RemotePutMessageJUnitTest {
     put.setSendDelta(true);
     put.setInternalDs(mockInternalDistributedSystem);
 
-    put.toData(new DataOutputStream(new ByteArrayOutputStream()));
+    put.toData(new DataOutputStream(new ByteArrayOutputStream()), null);
   }
 }

@@ -17,7 +17,7 @@
 package org.apache.geode.internal.cache.tier.sockets;
 
 
-import org.apache.geode.internal.ByteArrayDataInput;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 public class AuthIds {
   private long connectionId;

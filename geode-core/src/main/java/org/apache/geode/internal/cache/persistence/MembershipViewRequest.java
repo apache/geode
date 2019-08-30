@@ -46,6 +46,7 @@ import org.apache.geode.internal.cache.LocalRegion.InitializationLevel;
 import org.apache.geode.internal.cache.PartitionedRegionHelper;
 import org.apache.geode.internal.cache.partitioned.Bucket;
 import org.apache.geode.internal.logging.LogService;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class MembershipViewRequest extends DistributionMessage implements MessageWithReply {
 
@@ -156,16 +157,18 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     processorId = in.readInt();
     regionPath = DataSerializer.readString(in);
     targetReinitializing = in.readBoolean();
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(processorId);
     DataSerializer.writeString(regionPath, out);
     out.writeBoolean(targetReinitializing);
@@ -226,8 +229,9 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       boolean hasView = in.readBoolean();
       if (hasView) {
         view = new PersistentMembershipView();
@@ -236,8 +240,9 @@ public class MembershipViewRequest extends DistributionMessage implements Messag
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       if (view == null) {
         out.writeBoolean(false);
       } else {

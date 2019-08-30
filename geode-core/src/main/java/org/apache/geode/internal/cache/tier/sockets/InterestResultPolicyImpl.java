@@ -21,8 +21,9 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.cache.InterestResultPolicy;
-import org.apache.geode.internal.DataSerializableFixedID;
-import org.apache.geode.internal.Version;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.Version;
 
 /**
  * Used to make InterestResultPolicy implement DataSerializableFixedID
@@ -45,12 +46,14 @@ public class InterestResultPolicyImpl extends InterestResultPolicy
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     out.writeByte(getOrdinal());
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
     // should never be called since DSFIDFactory.readInterestResultPolicy is used
     throw new UnsupportedOperationException();
   }

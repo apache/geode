@@ -12,16 +12,11 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal;
-
-import org.apache.geode.DataSerializer;
+package org.apache.geode.internal.serialization;
 
 /**
- * An enumeration that contains a bunch of pre-defined values for use in the implementation of
- * {@link DataSerializer}.
+ * An enumeration that contains a bunch of pre-defined values for use in serialization
  * The allowed range of these values is -128..127 inclusive (i.e., one byte).
- *
- * @since GemFire 5.7
  */
 public enum DSCODE {
   /**

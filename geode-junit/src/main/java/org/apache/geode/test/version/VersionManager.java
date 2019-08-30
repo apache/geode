@@ -16,6 +16,7 @@ package org.apache.geode.test.version;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,12 +49,23 @@ public class VersionManager {
 
   protected String loadFailure = "";
 
+  /**
+   * returns the ordinal of the Version of Geode used in this JVM. Use this
+   * instead of Version.CURRENT or Version.CURRENT_ORDINAL in test code
+   */
+  public short getCurrentVersionOrdinal() {
+    return geodeCurrentVersionOrdinal;
+  }
+
+  private short geodeCurrentVersionOrdinal = -1;
+
   protected static void init() {
     instance = new VersionManager();
     final String fileName = "geodeOldVersionClasspaths.txt";
     final String installLocations = "geodeOldVersionInstalls.txt";
     instance.findVersions(fileName);
     instance.findInstalls(installLocations);
+    instance.establishGeodeVersionOrdinal();
     // System.out
     // .println("VersionManager has loaded the following classpaths:\n" + instance.classPaths);
   }
@@ -198,5 +210,38 @@ public class VersionManager {
       return props;
     }
     return props;
+  }
+
+  public void establishGeodeVersionOrdinal() {
+    Class versionClass;
+    Field currentOrdinalField;
+    // GEODE's Version class was repackaged when serialization was modularized
+    try {
+      versionClass = Class.forName("org.apache.geode.internal.Version");
+    } catch (ClassNotFoundException e) {
+      try {
+        versionClass = Class.forName("org.apache.geode.internal.serialization.Version");
+      } catch (ClassNotFoundException e2) {
+        System.out.println("classpath is " + System.getProperty("java.class.path"));
+        throw new IllegalStateException(
+            "Unable to locate Version.java in order to establish the product's serialization version",
+            e2);
+      }
+    }
+    try {
+      currentOrdinalField = versionClass.getDeclaredField("CURRENT_ORDINAL");
+    } catch (NoSuchFieldException e) {
+      throw new IllegalStateException(
+          "Unable to locate Version.java's CURRENT_ORDINAL field in order to establish the product's serialization version",
+          e);
+    }
+    currentOrdinalField.setAccessible(true);
+    try {
+      geodeCurrentVersionOrdinal = currentOrdinalField.getShort(null);
+    } catch (IllegalAccessException e) {
+      throw new IllegalStateException(
+          "Unable to retrieve Version.java's CURRENT_ORDINAL field in order to establlish the product's serialization version",
+          e);
+    }
   }
 }

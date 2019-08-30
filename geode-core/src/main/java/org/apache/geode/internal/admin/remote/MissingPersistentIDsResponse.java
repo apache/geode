@@ -25,6 +25,7 @@ import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.InternalDataSerializer;
 import org.apache.geode.internal.cache.persistence.PersistentMemberPattern;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * The MissingPersistentIdResonse we return 662 peers. This response includes this list of ids that
@@ -56,8 +57,9 @@ public class MissingPersistentIDsResponse extends AdminResponse {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     int size = in.readInt();
     missingIds = new HashSet<PersistentID>(size);
     for (int i = 0; i < size; i++) {
@@ -75,8 +77,9 @@ public class MissingPersistentIDsResponse extends AdminResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(missingIds.size());
     for (PersistentID pattern : missingIds) {
       InternalDataSerializer.invokeToData(pattern, out);

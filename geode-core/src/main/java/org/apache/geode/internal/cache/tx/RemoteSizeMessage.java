@@ -38,6 +38,7 @@ import org.apache.geode.internal.cache.LocalRegion;
 import org.apache.geode.internal.cache.RemoteOperationException;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * This message is used by a transaction to determine the size of a region on a remote member.
@@ -65,7 +66,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   public RemoteSizeMessage(DataInput in) throws IOException, ClassNotFoundException {
-    fromData(in);
+    fromData(in, null);
   }
 
   /**
@@ -107,15 +108,17 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     DataSerializer.readArrayList(in); /* read unused data for backwards compatibility */
     in.readByte(); /* read unused data for backwards compatibility */
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeArrayList(null, out);
     out.writeByte(0);
   }
@@ -134,7 +137,7 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     }
 
     public SizeReplyMessage(DataInput in) throws IOException, ClassNotFoundException {
-      fromData(in);
+      fromData(in, null);
     }
 
     /** Send an ack */
@@ -174,8 +177,9 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(size);
     }
 
@@ -185,8 +189,9 @@ public class RemoteSizeMessage extends RemoteOperationMessage {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.size = in.readInt();
     }
 

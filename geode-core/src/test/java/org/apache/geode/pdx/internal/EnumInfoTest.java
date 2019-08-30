@@ -14,7 +14,7 @@
  */
 package org.apache.geode.pdx.internal;
 
-import static org.apache.geode.internal.DataSerializableFixedID.ENUM_INFO;
+import static org.apache.geode.internal.serialization.DataSerializableFixedID.ENUM_INFO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -157,14 +157,14 @@ public class EnumInfoTest {
     final EnumInfo before = new EnumInfo(TestEnum.ONE);
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(1024);
     DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream);
-    before.toData(dataOutputStream);
+    before.toData(dataOutputStream, null);
     dataOutputStream.close();
 
     final EnumInfo after = new EnumInfo();
     ByteArrayInputStream byteArrayInputStream =
         new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
     DataInputStream dataInputStream = new DataInputStream(byteArrayInputStream);
-    after.fromData(dataInputStream);
+    after.fromData(dataInputStream, null);
 
     assertEquals(before.getClassName(), after.getClassName());
     assertEquals(before.getOrdinal(), after.getOrdinal());

@@ -44,7 +44,6 @@ import org.apache.geode.DataSerializer;
 import org.apache.geode.SystemFailure;
 import org.apache.geode.annotations.internal.MutableForTesting;
 import org.apache.geode.cache.IncompatibleVersionException;
-import org.apache.geode.cache.UnsupportedVersionException;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionConfigImpl;
 import org.apache.geode.distributed.internal.DistributionStats;
@@ -52,11 +51,7 @@ import org.apache.geode.distributed.internal.InternalConfigurationPersistenceSer
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.InternalLocator;
 import org.apache.geode.distributed.internal.PoolStatHelper;
-import org.apache.geode.internal.DSFIDFactory;
 import org.apache.geode.internal.GemFireVersion;
-import org.apache.geode.internal.Version;
-import org.apache.geode.internal.VersionedDataInputStream;
-import org.apache.geode.internal.VersionedDataOutputStream;
 import org.apache.geode.internal.cache.InternalCache;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolProcessor;
 import org.apache.geode.internal.cache.client.protocol.ClientProtocolService;
@@ -71,6 +66,10 @@ import org.apache.geode.internal.logging.LoggingThread;
 import org.apache.geode.internal.net.SocketCreator;
 import org.apache.geode.internal.net.SocketCreatorFactory;
 import org.apache.geode.internal.security.SecurableCommunicationChannel;
+import org.apache.geode.internal.serialization.UnsupportedSerializationVersionException;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 
 /**
  * TCP server which listens on a port and delegates requests to a request handler. The server uses
@@ -168,11 +167,6 @@ public class TcpServer {
     this.poolHelper = poolHelper;
     this.internalLocator = internalLocator;
     this.clientProtocolServiceLoader = clientProtocolServiceLoader;
-    // register DSFID types first; invoked explicitly so that all message type
-    // initializations do not happen in first deserialization on a possibly
-    // "precious" thread
-    DSFIDFactory.registerTypes();
-
     this.executor = createExecutor(poolHelper);
     this.threadName = threadName;
 
@@ -439,7 +433,7 @@ public class TcpServer {
   }
 
   private void processOneConnection(Socket socket, long startTime, DataInputStream input)
-      throws IOException, UnsupportedVersionException, ClassNotFoundException {
+      throws IOException, UnsupportedSerializationVersionException, ClassNotFoundException {
     // At this point we've read the leading byte of the gossip version and found it to be 0,
     // continue reading the next three bytes
     int gossipVersion = 0;
@@ -462,9 +456,9 @@ public class TcpServer {
 
       if (log.isDebugEnabled() && versionOrdinal != Version.CURRENT_ORDINAL) {
         log.debug("Locator reading request from " + socket.getInetAddress() + " with version "
-            + Version.fromOrdinal(versionOrdinal, false));
+            + Version.fromOrdinal(versionOrdinal));
       }
-      input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal, false));
+      input = new VersionedDataInputStream(input, Version.fromOrdinal(versionOrdinal));
       request = DataSerializer.readObject(input);
       if (log.isDebugEnabled()) {
         log.debug("Locator received request " + request + " from " + socket.getInetAddress());
@@ -490,7 +484,7 @@ public class TcpServer {
         DataOutputStream output = new DataOutputStream(socket.getOutputStream());
         if (versionOrdinal != Version.CURRENT_ORDINAL) {
           output =
-              new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal, false));
+              new VersionedDataOutputStream(output, Version.fromOrdinal(versionOrdinal));
         }
         DataSerializer.writeObject(response, output);
         output.flush();

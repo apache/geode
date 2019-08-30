@@ -32,8 +32,16 @@ import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import org.apache.geode.DataSerializable;
 import org.apache.geode.cache.Cache;
 import org.apache.geode.internal.cache.DistributedPutAllOperation.EntryVersionsList;
+import org.apache.geode.internal.serialization.DSFIDSerializerImpl;
+import org.apache.geode.internal.serialization.DataSerializableFixedID;
+import org.apache.geode.internal.serialization.SerializationContext;
+import org.apache.geode.internal.serialization.SerializationVersions;
+import org.apache.geode.internal.serialization.Version;
+import org.apache.geode.internal.serialization.VersionedDataInputStream;
+import org.apache.geode.internal.serialization.VersionedDataOutputStream;
 import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.junit.categories.SerializationTest;
 
@@ -66,14 +74,16 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
   public final void postSetUp() {
     baos = new ByteArrayOutputStream();
     // register TestMessage using an existing dsfid
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
+    InternalDataSerializer.getDSFIDSerializer()
+        .registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST, TestMessage.class);
   }
 
   @Override
   public final void preTearDownCacheTestCase() {
     resetFlags();
     // reset the class mapped to the dsfid
-    DSFIDFactory.registerDSFID(DataSerializableFixedID.PUTALL_VERSIONS_LIST,
+    InternalDataSerializer.getDSFIDSerializer().registerDSFID(
+        DataSerializableFixedID.PUTALL_VERSIONS_LIST,
         EntryVersionsList.class);
     this.baos = null;
     this.bais = null;
@@ -116,7 +126,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
-    DataInputStream dis = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701);
+    DataInputStream dis =
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_701);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataCalled);
@@ -132,7 +143,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     InternalDataSerializer.writeDSFID(msg, new DataOutputStream(baos));
     this.bais = new ByteArrayInputStream(baos.toByteArray());
 
-    DataInputStream dis = new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56);
+    DataInputStream dis =
+        new VersionedDataInputStream(new DataInputStream(bais), Version.GFE_56);
     Object o = InternalDataSerializer.basicReadObject(dis);
     assertTrue(o instanceof TestMessage);
     assertTrue(fromDataPre66Called);
@@ -164,7 +176,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     constdsfids.add(new Short(DataSerializableFixedID.TOKEN_TOMBSTONE).intValue());
 
     for (int i = 0; i < 256; i++) {
-      Constructor<?> cons = DSFIDFactory.getDsfidmap()[i];
+      Constructor<?> cons =
+          ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer()).getDsfidmap()[i];
       if (!constdsfids.contains(i - Byte.MAX_VALUE - 1) && cons != null) {
         Object ds = cons.newInstance((Object[]) null);
         checkSupportForRollingUpgrade(ds);
@@ -173,7 +186,8 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
 
     // some msgs require distributed system
     Cache c = getCache();
-    for (Object o : DSFIDFactory.getDsfidmap2().values()) {
+    for (Object o : ((DSFIDSerializerImpl) InternalDataSerializer.getDSFIDSerializer())
+        .getDsfidmap2().values()) {
       Constructor<?> cons = (Constructor<?>) o;
       if (cons != null) {
         DataSerializableFixedID ds = (DataSerializableFixedID) cons.newInstance((Object[]) null);
@@ -190,14 +204,29 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     }
     if (versions != null && versions.length > 0) {
       for (int i = 0; i < versions.length; i++) {
-        try {
-          ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
-              new Class[] {DataOutput.class});
+        if (ds instanceof DataSerializableFixedID) {
+          try {
+            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataOutput.class, SerializationContext.class});
 
-          ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
-              new Class[] {DataInput.class});
-        } catch (NoSuchMethodException e) {
-          fail("toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataInput.class, SerializationContext.class});
+          } catch (NoSuchMethodException e) {
+            fail(
+                "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+          }
+        }
+        if (ds instanceof DataSerializable) {
+          try {
+            ds.getClass().getMethod("toDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataOutput.class});
+
+            ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
+                new Class[] {DataInput.class});
+          } catch (NoSuchMethodException e) {
+            fail(
+                "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());
+          }
         }
       }
     } else {
@@ -237,28 +266,34 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       toDataCalled = true;
     }
 
-    public void toDataPre_GFE_6_6_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GFE_6_6_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
       toDataPre66Called = true;
     }
 
-    public void toDataPre_GFE_7_0_0_0(DataOutput out) throws IOException {
+    public void toDataPre_GFE_7_0_0_0(DataOutput out, SerializationContext context)
+        throws IOException {
       toDataPre70called = true;
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException {
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException {
       fromDataCalled = true;
     }
 
-    public void fromDataPre_GFE_6_6_0_0(DataInput out) throws IOException {
+    public void fromDataPre_GFE_6_6_0_0(DataInput out, SerializationContext context)
+        throws IOException {
       fromDataPre66Called = true;
     }
 
-    public void fromDataPre_GFE_7_0_0_0(DataInput out) throws IOException {
+    public void fromDataPre_GFE_7_0_0_0(DataInput out, SerializationContext context)
+        throws IOException {
       fromDataPre70Called = true;
     }
 

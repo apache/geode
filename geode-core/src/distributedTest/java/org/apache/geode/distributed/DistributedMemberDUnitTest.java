@@ -53,7 +53,6 @@ import org.apache.geode.distributed.internal.membership.adapter.GMSMembershipMan
 import org.apache.geode.distributed.internal.membership.gms.GMSMember;
 import org.apache.geode.distributed.internal.membership.gms.MembershipManagerHelper;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.test.dunit.Host;
 import org.apache.geode.test.dunit.SerializableCallable;
 import org.apache.geode.test.dunit.SerializableRunnable;
@@ -270,7 +269,7 @@ public class DistributedMemberDUnitTest extends JUnit4DistributedTestCase {
     assertEquals(gmsMember,
         ((GMSMemberAdapter) internalDistributedMember.getNetMember()).getGmsMember());
     gmsMember.setName(null);
-    HeapDataOutputStream outputStream = new HeapDataOutputStream(100, Version.CURRENT);
+    HeapDataOutputStream outputStream = new HeapDataOutputStream(100);
     new InternalDistributedMember(new GMSMemberAdapter(gmsMember)).writeEssentialData(outputStream);
     DataInputStream dataInputStream =
         new DataInputStream(new ByteArrayInputStream(outputStream.toByteArray()));

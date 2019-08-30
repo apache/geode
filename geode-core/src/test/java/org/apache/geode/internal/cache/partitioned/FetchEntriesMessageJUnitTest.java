@@ -27,13 +27,13 @@ import org.junit.Test;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.internal.HeapDataOutputStream;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.InitialImageOperation;
 import org.apache.geode.internal.cache.PartitionedRegion;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesReplyMessage;
 import org.apache.geode.internal.cache.partitioned.FetchEntriesMessage.FetchEntriesResponse;
 import org.apache.geode.internal.cache.versions.VersionTag;
+import org.apache.geode.internal.serialization.Version;
 import org.apache.geode.test.fake.Fakes;
 
 public class FetchEntriesMessageJUnitTest {

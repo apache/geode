@@ -41,6 +41,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.Assert;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Provides handling of remote and local lock requests. <br>
@@ -921,8 +922,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeUTF(this.serviceName);
       DataSerializer.writeObject(this.objectName, out);
       out.writeLong(this.startTime);
@@ -939,8 +941,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.serviceName = in.readUTF();
       this.objectName = DataSerializer.readObject(in);
       this.startTime = in.readLong();
@@ -1166,8 +1169,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeByte(this.responseCode);
       out.writeUTF(this.serviceName);
       DataSerializer.writeObject(this.objectName, out);
@@ -1178,8 +1182,9 @@ public class DLockRequestProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.responseCode = in.readByte();
       this.serviceName = in.readUTF();
       this.objectName = DataSerializer.readObject(in);

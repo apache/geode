@@ -33,6 +33,7 @@ import org.apache.geode.distributed.internal.membership.InternalDistributedMembe
 import org.apache.geode.internal.GemFireVersion;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.net.SocketCreator;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 
 /**
@@ -143,8 +144,9 @@ public class FetchHostResponse extends AdminResponse {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     DataSerializer.writeString(this.name, out);
     DataSerializer.writeObject(this.host, out);
     DataSerializer.writeObject(this.geodeHomeDir, out);
@@ -154,8 +156,9 @@ public class FetchHostResponse extends AdminResponse {
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.name = DataSerializer.readString(in);
     this.host = (InetAddress) DataSerializer.readObject(in);
     this.geodeHomeDir = (File) DataSerializer.readObject(in);

@@ -32,6 +32,7 @@ import org.apache.geode.distributed.internal.ReplyProcessor21;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.logging.log4j.LogMarker;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A processor for telling the old grantor that it is deposed by a new grantor. Processor waits for
@@ -152,8 +153,9 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.processorId = in.readInt();
       this.serviceName = DataSerializer.readString(in);
       this.newGrantor = (InternalDistributedMember) DataSerializer.readObject(in);
@@ -162,8 +164,9 @@ public class DeposeGrantorProcessor extends ReplyProcessor21 {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeInt(this.processorId);
       DataSerializer.writeString(this.serviceName, out);
       DataSerializer.writeObject(this.newGrantor, out);

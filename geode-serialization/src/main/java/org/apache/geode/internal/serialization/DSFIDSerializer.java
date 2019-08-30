@@ -12,33 +12,30 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.apache.geode.internal.util;
+package org.apache.geode.internal.serialization;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.apache.geode.annotations.Immutable;
-import org.apache.geode.internal.DSCODE;
+public interface DSFIDSerializer {
+  SerializerPlugin getDataSerializer();
 
-public class DscodeHelper {
+  void writeDSFID(DataSerializableFixedID o, DataOutput out) throws IOException;
 
-  @Immutable
-  private static final DSCODE[] dscodes = new DSCODE[128];
+  void writeDSFID(DataSerializableFixedID o, int dsfid, DataOutput out)
+      throws IOException;
 
-  static {
-    Arrays.stream(DSCODE.values()).filter(dscode -> dscode.toByte() >= 0)
-        .forEach(dscode -> dscodes[dscode.toByte()] = dscode);
-  }
+  void invokeToData(Object ds, DataOutput out) throws IOException;
 
-  public static DSCODE toDSCODE(final byte value) throws IOException {
-    try {
-      DSCODE result = dscodes[value];
-      if (result == null) {
-        throw new IOException("Unknown header byte " + value);
-      }
-      return result;
-    } catch (ArrayIndexOutOfBoundsException e) {
-      throw new IOException("Unknown header byte: " + value);
-    }
-  }
+  Object readDSFID(DataInput in) throws IOException, ClassNotFoundException;
+
+  void invokeFromData(Object ds, DataInput in)
+      throws IOException, ClassNotFoundException;
+
+  void registerDSFID(int dsfid, Class dsfidClass);
+
+  SerializationContext createSerializationContext(DataOutput dataOutput);
+
+  SerializationContext createSerializationContext(DataInput dataInput);
 }

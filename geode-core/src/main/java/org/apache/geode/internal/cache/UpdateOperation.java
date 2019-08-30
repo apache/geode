@@ -40,6 +40,7 @@ import org.apache.geode.internal.cache.tier.sockets.ClientProxyMembershipID;
 import org.apache.geode.internal.logging.LogService;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * Handles distribution messaging for updating an entry in a region.
@@ -345,8 +346,9 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       final byte extraFlags = in.readByte();
       final boolean hasEventId = (extraFlags & HAS_EVENTID) != 0;
       if (hasEventId) {
@@ -374,10 +376,11 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
       DistributedRegion region = (DistributedRegion) this.event.getRegion();
       setDeltaFlag(region);
-      super.toData(out);
+      super.toData(out, context);
 
       byte extraFlags = this.deserializationPolicy;
       if (this.eventId != null)
@@ -530,14 +533,16 @@ public class UpdateOperation extends AbstractUpdateOperation {
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.clientID = ClientProxyMembershipID.readCanonicalized(in);
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       DataSerializer.writeObject(this.clientID, out);
     }
   }

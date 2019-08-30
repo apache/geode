@@ -25,6 +25,7 @@ import org.apache.geode.admin.GemFireHealth;
 import org.apache.geode.distributed.internal.AdminMessageType;
 import org.apache.geode.distributed.internal.ClusterDistributionManager;
 import org.apache.geode.distributed.internal.PooledDistributionMessage;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A message that is sent to a particular agent who was registered a health listener on a GemFireVM.
@@ -66,15 +67,17 @@ public class HealthListenerMessage extends PooledDistributionMessage implements 
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeInt(this.listenerId);
     DataSerializer.writeObject(this.status, out);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     this.listenerId = in.readInt();
     this.status = (GemFireHealth.Health) DataSerializer.readObject(in);
   }

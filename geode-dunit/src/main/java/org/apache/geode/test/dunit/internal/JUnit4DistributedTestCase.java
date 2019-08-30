@@ -45,7 +45,6 @@ import org.apache.geode.distributed.DistributedSystem;
 import org.apache.geode.distributed.internal.DistributionConfig;
 import org.apache.geode.distributed.internal.DistributionMessageObserver;
 import org.apache.geode.distributed.internal.InternalDistributedSystem;
-import org.apache.geode.internal.Version;
 import org.apache.geode.internal.cache.GemFireCacheImpl;
 import org.apache.geode.internal.cache.HARegion;
 import org.apache.geode.internal.cache.PartitionedRegion;
@@ -57,6 +56,7 @@ import org.apache.geode.test.dunit.cache.internal.JUnit4CacheTestCase;
 import org.apache.geode.test.dunit.rules.ClusterStartupRule;
 import org.apache.geode.test.dunit.rules.DistributedRule;
 import org.apache.geode.test.junit.rules.serializable.SerializableTestName;
+import org.apache.geode.test.version.VersionManager;
 
 /**
  * @deprecated Please use {@link DistributedRule} and Geode User APIs or {@link ClusterStartupRule}
@@ -174,7 +174,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
         String oldStatFile = p.getProperty(STATISTIC_ARCHIVE_FILE);
         p.put(STATISTIC_ARCHIVE_FILE, oldStatFile.replace("statArchive.gfs", testName + ".gfs"));
       }
-      if (Version.CURRENT_ORDINAL < 75) {
+      if (VersionManager.getInstance().getCurrentVersionOrdinal() < 75) {
         p.remove("validate-serializable-objects");
         p.remove("serializable-object-filter");
       }
@@ -224,7 +224,7 @@ public abstract class JUnit4DistributedTestCase implements DistributedTestFixtur
             }
           }
         } catch (NoSuchMethodError e) {
-          if (Version.CURRENT_ORDINAL >= 85) {
+          if (VersionManager.getInstance().getCurrentVersionOrdinal() >= 85) {
             throw new IllegalStateException("missing method", e);
           }
         }

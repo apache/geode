@@ -21,6 +21,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 public class FetchResourceAttributesRequest extends AdminRequest {
 
@@ -48,14 +49,16 @@ public class FetchResourceAttributesRequest extends AdminRequest {
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
-    super.toData(out);
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
+    super.toData(out, context);
     out.writeLong(resourceUniqueId);
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
     resourceUniqueId = in.readLong();
   }
 

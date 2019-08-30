@@ -67,6 +67,7 @@ import org.apache.geode.internal.logging.log4j.LogMarker;
 import org.apache.geode.internal.offheap.annotations.Released;
 import org.apache.geode.internal.offheap.annotations.Retained;
 import org.apache.geode.internal.offheap.annotations.Unretained;
+import org.apache.geode.internal.serialization.SerializationContext;
 
 /**
  * A Partitioned Region update message. Meant to be sent only to a bucket's primary owner. In
@@ -483,8 +484,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-    super.fromData(in);
+  public void fromData(DataInput in,
+      SerializationContext context) throws IOException, ClassNotFoundException {
+    super.fromData(in, context);
 
     final int extraFlags = in.readUnsignedByte();
     setKey(DataSerializer.readObject(in));
@@ -529,7 +531,8 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
   }
 
   @Override
-  public void toData(DataOutput out) throws IOException {
+  public void toData(DataOutput out,
+      SerializationContext context) throws IOException {
     PartitionedRegion region = null;
     try {
       boolean flag = internalDs.getConfig().getDeltaPropagation();
@@ -542,7 +545,7 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     } catch (RuntimeException re) {
       throw new InvalidDeltaException(re);
     }
-    super.toData(out);
+    super.toData(out, context);
 
     int extraFlags = this.deserializationPolicy;
     if (this.bridgeContext != null)
@@ -927,8 +930,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
 
     @Override
-    public void fromData(DataInput in) throws IOException, ClassNotFoundException {
-      super.fromData(in);
+    public void fromData(DataInput in,
+        SerializationContext context) throws IOException, ClassNotFoundException {
+      super.fromData(in, context);
       this.result = in.readBoolean();
       this.op = Operation.fromOrdinal(in.readByte());
       this.oldValue = DataSerializer.readObject(in);
@@ -936,8 +940,9 @@ public class PutMessage extends PartitionMessageWithDirectReply implements NewVa
     }
 
     @Override
-    public void toData(DataOutput out) throws IOException {
-      super.toData(out);
+    public void toData(DataOutput out,
+        SerializationContext context) throws IOException {
+      super.toData(out, context);
       out.writeBoolean(this.result);
       out.writeByte(this.op.ordinal);
       Object ov = getOldValue();

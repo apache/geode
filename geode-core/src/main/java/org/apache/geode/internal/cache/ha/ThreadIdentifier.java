@@ -22,8 +22,8 @@ import java.util.Arrays;
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
-import org.apache.geode.internal.ByteArrayDataInput;
 import org.apache.geode.internal.cache.EventID;
+import org.apache.geode.internal.serialization.ByteArrayDataInput;
 
 /**
  * Class identifying a Thread uniquely across the distributed system. It is composed of two fields
