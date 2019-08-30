@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -31,6 +33,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
@@ -44,15 +47,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.apache.geode.CancelCriterion;
 import org.apache.geode.Statistics;
 import org.apache.geode.cache.AttributesFactory;
 import org.apache.geode.cache.CacheLoader;
 import org.apache.geode.cache.CacheWriter;
 import org.apache.geode.cache.Operation;
 import org.apache.geode.cache.PartitionAttributesFactory;
+import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.wan.GatewaySender;
+import org.apache.geode.distributed.DistributedLockService;
 import org.apache.geode.distributed.DistributedSystem;
+import org.apache.geode.distributed.internal.DistributionManager;
+import org.apache.geode.distributed.internal.InternalDistributedSystem;
 import org.apache.geode.distributed.internal.membership.InternalDistributedMember;
 import org.apache.geode.internal.cache.control.InternalResourceManager;
 import org.apache.geode.internal.util.VersionedArrayList;
@@ -66,6 +74,7 @@ public class PartitionedRegionTest {
   private AttributesFactory attributesFactory;
 
   @Before
+  @SuppressWarnings("deprecation")
   public void setup() {
     internalCache = Fakes.cache();
 
@@ -100,7 +109,8 @@ public class PartitionedRegionTest {
   @Parameters(method = "parametersToTestUpdatePRNodeInformation")
   public void verifyPRConfigUpdatedAfterLoaderUpdate(CacheLoader mockLoader, CacheWriter mockWriter,
       @SuppressWarnings("unused") byte configByte) {
-    LocalRegion prRoot = mock(LocalRegion.class);
+    @SuppressWarnings("unchecked")
+    Region<String, PartitionRegionConfig> prRoot = mock(LocalRegion.class);
     PartitionRegionConfig mockConfig = mock(PartitionRegionConfig.class);
     PartitionedRegion prSpy = spy(partitionedRegion);
 
@@ -314,5 +324,25 @@ public class PartitionedRegionTest {
         internalCache, mock(InternalRegionArguments.class), disabledClock());
 
     assertThatCode(partitionedRegion::getLocalSize).doesNotThrowAnyException();
+  }
+
+  @Test
+  // See GEODE-7106
+  public void generatePRIdShouldNotThrowNumberFormatExceptionIfAnErrorOccursWhileReleasingTheLock() {
+    PartitionedRegion prSpy = spy(partitionedRegion);
+    DistributedLockService mockLockService = mock(DistributedLockService.class);
+    doReturn(true).when(mockLockService).lock(any(), anyLong(), anyLong());
+    doThrow(new RuntimeException("Mock Exception")).when(mockLockService).unlock(any());
+
+    InternalDistributedSystem mockSystem = mock(InternalDistributedSystem.class);
+    when(mockSystem.getDistributionManager()).thenReturn(mock(DistributionManager.class));
+    when(mockSystem.getDistributionManager().getCancelCriterion())
+        .thenReturn(mock(CancelCriterion.class));
+    when(mockSystem.getDistributionManager().getOtherDistributionManagerIds())
+        .thenReturn(Collections.emptySet());
+
+    doReturn(mockLockService).when(prSpy).getPartitionedRegionLockService();
+
+    assertThatCode(() -> prSpy.generatePRId(mockSystem)).doesNotThrowAnyException();
   }
 }
