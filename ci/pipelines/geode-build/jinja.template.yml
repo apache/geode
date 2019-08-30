@@ -204,7 +204,6 @@ resources:
     regexp: ((pipeline-prefix))((geode-build-branch))/passing-build-tokens-(.*).json
 - name: daily
   type: time
-  source:
     interval: 24h
 
 resource_types:
