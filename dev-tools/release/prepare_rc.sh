@@ -18,9 +18,10 @@
 set -e
 
 usage() {
-      echo "Usage: prepare_rc -v version_number -k signing_key"
+      echo "Usage: prepare_rc -v version_number -k signing_key -a apache_ldap_username"
       echo "  -v   The #.#.#.RC# version number"
       echo "  -k   Your 8 digit PGP key id. Must be 8 digits. Also the last 8 digits of your gpg fingerprint"
+      echo "  -a   Your apache LDAP username (that you use to log in to https://id.apache.org)"
       exit 1
 }
 
@@ -35,7 +36,7 @@ checkCommand() {
 FULL_VERSION=""
 SIGNING_KEY=""
 
-while getopts ":v:k:" opt; do
+while getopts ":v:k:a:" opt; do
   case ${opt} in
     v )
       FULL_VERSION=$OPTARG
@@ -43,13 +44,16 @@ while getopts ":v:k:" opt; do
     k )
       SIGNING_KEY=$OPTARG
       ;;
+    a )
+      APACHE_USERNAME=$OPTARG
+      ;;
     \? )
       usage
       ;;
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]]; then
+if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]] || [[ ${APACHE_USERNAME} == "" ]]; then
   usage
 fi
 
@@ -108,16 +112,13 @@ svn update --set-depth infinity --parents dist/dev/geode
 
 set +x
 echo "============================================================"
-echo "Building projects..."
-echo "============================================================"
-
-echo "============================================================"
 echo "Building geode..."
 echo "============================================================"
 
 cd ${GEODE}
+svn rm ${VERSION}.RC* || true
 set -x
-git clean -fdx && ./gradlew build publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
+git clean -fdx && ./gradlew build -x test publishToMavenLocal -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg
 set +x
 
 
@@ -169,5 +170,19 @@ cp ${GEODE_NATIVE}/build/apache-geode-native-${VERSION}* ${FULL_VERSION}
 svn add ${FULL_VERSION}
 
 echo "============================================================"
-echo "Done preparing the release! Please review the artifacts and publish them."
+echo "Publishing artifacts to nexus staging manager..."
 echo "============================================================"
+cd ${GEODE}
+./gradlew publish -Paskpass -Psigning.keyId=${SIGNING_KEY} -Psigning.secretKeyRingFile=${HOME}/.gnupg/secring.gpg -PmavenUsername=${APACHE_USERNAME}
+
+echo "============================================================"
+echo "Done preparing the release and staging to nexus! Next steps:"
+echo "============================================================"
+echo "1. Go to https://repository.apache.org, login as ${APACHE_USERNAME}, and click on Staging Repositories"
+echo "2. If there is a prior ${VERSION} RC, select it and click Drop."
+echo '3. Make a note of the 4-digit ID of the current ("implicitly created") staging repo.'
+echo '4. Select the current staging repo and click Close.'
+echo '5. Wait ~15 minutes for status to become "Closed"'
+echo "6. Run ${0%/*}/commit_rc.sh -v ${FULL_VERSION} -m <4-DIGIT-ID-NOTED-ABOVE>"
+
+cd ${GEODE}/../..
