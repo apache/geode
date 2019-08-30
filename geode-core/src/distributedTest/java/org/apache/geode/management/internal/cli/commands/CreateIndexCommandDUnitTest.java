@@ -157,16 +157,9 @@ public class CreateIndexCommandDUnitTest {
     CommandResultAssert commandAssert =
         gfsh.executeAndAssertThat(
             "create index --name=index2 --expression=key --region=regionB --group=group1")
-            .statusIsSuccess();
+            .statusIsError();
 
-    commandAssert.hasInfoSection().hasOutput().contains("--groups=group1 is ignored.");
-
-    // index is still created and cluster config updated in group2
-    TabularResultModelAssert createIndexTableAssert =
-        commandAssert.hasTableSection("createIndex");
-    createIndexTableAssert.hasRowSize(1).hasRow(0).contains("OK", "Index successfully created");
-    createIndexTableAssert.hasColumn("Member").asList().first().toString().contains("server-2");
-    commandAssert.containsOutput("Cluster configuration for group 'group2' is updated.");
-
+    commandAssert.hasInfoSection().hasOutput()
+        .contains("Region /regionB does not exist in some of the groups.");
   }
 }

@@ -112,19 +112,22 @@ public class ListRegionManagementDunitTest {
   public void listAll() {
     // list all
     List<Region> regions = client.list(filter).getConfigResult();
-    assertThat(regions).hasSize(5);
+    assertThat(regions).hasSize(6);
     Region element = find(regions, "customers");
     assertThat(element.getGroup()).isNull();
 
     element = find(regions, "customers1");
     assertThat(element.getGroup()).isEqualTo("group1");
 
-    Region region = find(regions, "customers2");
-    assertThat(region.getGroup()).isIn("group1", "group2");
-    assertThat(region.getType()).isIn(RegionType.PARTITION, RegionType.PARTITION_PROXY);
+    assertThat(regions.stream().filter(x -> x.getId().equals("customers2")).map(Region::getGroup)
+        .collect(Collectors.toList())).containsExactlyInAnyOrder("group1", "group2");
 
-    assertThat(regions.stream().filter(x -> x.getId().equals("customer3")).map(Region::getGroup)
-        .collect(Collectors.toList())).containsExactly("group1", "group2");
+    assertThat(regions.stream().filter(x -> x.getId().equals("customers2")).map(Region::getType)
+        .collect(Collectors.toList())).containsExactlyInAnyOrder(RegionType.PARTITION,
+            RegionType.PARTITION_PROXY);
+
+    assertThat(regions.stream().filter(x -> x.getId().equals("customers3")).map(Region::getGroup)
+        .collect(Collectors.toList())).containsExactlyInAnyOrder("group1", "group2");
   }
 
   @Test
@@ -178,8 +181,8 @@ public class ListRegionManagementDunitTest {
     region = find(regions, "customers2");
     assertThat(region.getGroup()).isEqualTo("group1");
 
-    assertThat(regions.stream().filter(x -> x.getId().equals("customer3")).map(Region::getGroup)
-        .collect(Collectors.toList())).containsExactly("group1", "group2");
+    region = find(regions, "customers3");
+    assertThat(region.getGroup()).isEqualTo("group1");
   }
 
   @Test
@@ -192,8 +195,8 @@ public class ListRegionManagementDunitTest {
     Region region = find(regions, "customers2");
     assertThat(region.getGroup()).isEqualTo("group2");
 
-    assertThat(regions.stream().filter(x -> x.getId().equals("customer3")).map(Region::getGroup)
-        .collect(Collectors.toList())).containsExactly("group1", "group2");
+    region = find(regions, "customers3");
+    assertThat(region.getGroup()).isEqualTo("group2");
   }
 
   @Test

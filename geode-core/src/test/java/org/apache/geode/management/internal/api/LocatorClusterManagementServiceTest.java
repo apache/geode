@@ -26,7 +26,6 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -204,10 +203,8 @@ public class LocatorClusterManagementServiceTest {
     doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
 
     service.list(regionConfig);
-    // even we are listing regions in one group, we still need to go through all the groups
     verify(persistenceService).getCacheConfig("cluster", true);
-    verify(persistenceService).getCacheConfig("group1", true);
-    verify(regionManager, times(2)).list(any(), any());
+    verify(regionManager).list(any(), any());
   }
 
   @Test
