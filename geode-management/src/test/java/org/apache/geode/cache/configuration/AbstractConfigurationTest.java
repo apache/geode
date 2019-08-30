@@ -46,7 +46,6 @@ public class AbstractConfigurationTest {
   @Test
   public void plainRegionConfig() throws Exception {
     assertThat(element.getGroup()).isNull();
-    assertThat(element.getConfigGroup()).isEqualTo("cluster");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
     assertThat(json).doesNotContain("group").doesNotContain("configGroup");
@@ -56,7 +55,6 @@ public class AbstractConfigurationTest {
   public void setterRegionConfigGroup() throws Exception {
     element.setGroup("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
-    assertThat(element.getConfigGroup()).isEqualTo("group1");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
     assertThat(json).contains("\"group\":\"group1\"");

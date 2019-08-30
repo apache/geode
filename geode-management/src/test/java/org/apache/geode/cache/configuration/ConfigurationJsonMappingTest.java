@@ -88,7 +88,6 @@ public class ConfigurationJsonMappingTest {
   @Test
   public void getGroup() throws Exception {
     assertThat(region.getGroup()).isNull();
-    assertThat(region.getConfigGroup()).isEqualTo("cluster");
 
     String json = mapper.writeValueAsString(region);
     assertThat(json).doesNotContain("\"group\"");

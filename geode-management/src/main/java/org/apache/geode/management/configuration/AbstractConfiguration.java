@@ -17,9 +17,6 @@ package org.apache.geode.management.configuration;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.apache.commons.lang3.StringUtils;
-
 import org.apache.geode.annotations.Experimental;
 import org.apache.geode.lang.Identifiable;
 import org.apache.geode.management.api.JsonSerializable;
@@ -37,28 +34,15 @@ public abstract class AbstractConfiguration
   public static final String CLUSTER = "cluster";
 
   /**
-   * Returns true if the given "name" represents the predefined "cluster" group.
-   * This is true if name is a case-insensitive match for {@link #CLUSTER},
+   * Returns true if the given "groupName" represents the predefined "cluster" group.
+   * This is true if "groupName" is a case-insensitive match for {@link #CLUSTER},
    * is <code>null</code>, or is an empty string.
    */
-  public static boolean isCluster(String name) {
-    return name == null || name.length() == 0 || name.equalsIgnoreCase(CLUSTER);
+  public static boolean isCluster(String groupName) {
+    return groupName == null || groupName.length() == 0 || groupName.equalsIgnoreCase(CLUSTER);
   }
 
   private String group;
-
-  /**
-   * this returns a non-null value
-   * for cluster level element, it will return "cluster" for sure.
-   */
-  @JsonIgnore
-  public String getConfigGroup() {
-    String group = getGroup();
-    if (StringUtils.isBlank(group))
-      return CLUSTER;
-    else
-      return group;
-  }
 
   public String getGroup() {
     return group;

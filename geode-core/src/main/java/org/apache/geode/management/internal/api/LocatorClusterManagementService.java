@@ -135,7 +135,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled."));
     }
 
-    String group = config.getConfigGroup();
+    String group = config.getGroup();
+    final String groupName =
+        AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group;
     try {
       // first validate common attributes of all configuration object
       commonValidator.validate(CacheElementOperation.CREATE, config);
@@ -171,14 +173,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    final String finalGroup = group; // the below lambda requires a reference that is final
-    persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
+    persistenceService.updateCacheConfig(groupName, cacheConfigForGroup -> {
       try {
         configurationManager.add(config, cacheConfigForGroup);
         result.setStatus(StatusCode.OK,
-            "Successfully updated configuration for " + finalGroup + ".");
+            "Successfully updated configuration for " + groupName + ".");
       } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + finalGroup + ".";
+        String message = "Failed to update cluster configuration for " + groupName + ".";
         logger.error(message, e);
         result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
         return null;

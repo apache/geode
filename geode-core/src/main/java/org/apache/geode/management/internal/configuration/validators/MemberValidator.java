@@ -55,7 +55,7 @@ public class MemberValidator {
 
     Set<DistributedMember> membersOfExistingGroups =
         findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
-    Set<DistributedMember> membersOfNewGroup = findServers(config.getConfigGroup());
+    Set<DistributedMember> membersOfNewGroup = findServers(config.getGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
