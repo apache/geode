@@ -36,7 +36,7 @@ if [ -z "${WITH_SSL}" ]; then
   SSL_TEST_OPTION=""
 else
   SSL_TAG_POSTFIX="-wSSL"
-  SSL_TEST_OPTION="--tests=*tBenchmark"
+  SSL_TEST_OPTION="--tests=*GetBenchmark --tests=*PutBenchmark"
 fi
 
 CLUSTER_TAG="${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}-${BUILD_ID}${SSL_TAG_POSTFIX}"
