@@ -18,7 +18,7 @@
 benchmarks:
   baseline_branch: develop/highwater
   baseline_version: ''
-  branch: develop
+  benchmark_branch: develop
 
 build_test:
   ARTIFACT_SLUG: build

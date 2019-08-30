@@ -169,7 +169,7 @@ resources:
 - name: geode-benchmarks
   type: git
   source:
-    branch: {{benchmarks.branch}}
+    branch: {{benchmarks.benchmark_branch}}
     depth: 1
     uri: https://github.com/apache/geode-benchmarks.git
 - name: geode-build-version
@@ -421,7 +421,7 @@ jobs:
         AWS_DEFAULT_REGION: us-west-2
         AWS_REGION: us-west-2
         ARTIFACT_BUCKET: ((artifact-bucket))
-        BENCHMARKS_BRANCH: {{benchmarks.branch}}
+        BENCHMARKS_BRANCH: {{benchmarks.benchmark_branch}}
         BASELINE_BRANCH: {{benchmarks.baseline_branch}}
         BASELINE_VERSION: {{benchmarks.baseline_version}}
         WITH_SSL: {{ ssl_var }}
