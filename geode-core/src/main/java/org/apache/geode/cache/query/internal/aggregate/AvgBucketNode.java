@@ -22,9 +22,9 @@ import org.apache.geode.cache.query.QueryService;
  * queries.
  */
 public class AvgBucketNode extends Sum {
-  private int count = 0;
+  private long count = 0;
 
-  int getCount() {
+  long getCount() {
     return count;
   }
 

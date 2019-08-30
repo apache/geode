@@ -29,8 +29,8 @@ public class AvgPRQueryNodeTest {
 
   @Test
   public void accumulateShouldIncreaseAccumulatedCount() {
-    avgPRQueryNode.accumulate(new Integer[] {2, 10});
-    avgPRQueryNode.accumulate(new Integer[] {3, 30});
+    avgPRQueryNode.accumulate(new Long[] {2L, 10L});
+    avgPRQueryNode.accumulate(new Long[] {3L, 30L});
 
     assertThat(avgPRQueryNode.getCount()).isEqualTo(5);
     assertThat(avgPRQueryNode.getResult()).isEqualTo(40);
@@ -38,8 +38,8 @@ public class AvgPRQueryNodeTest {
 
   @Test
   public void terminateShouldCorrectlyComputeAverageUponAccumulatedValues() {
-    avgPRQueryNode.accumulate(new Object[] {7, 43d});
-    avgPRQueryNode.accumulate(new Object[] {5, 273.86d});
+    avgPRQueryNode.accumulate(new Object[] {7L, 43d});
+    avgPRQueryNode.accumulate(new Object[] {5L, 273.86d});
 
     Object result = avgPRQueryNode.terminate();
     assertThat(avgPRQueryNode.getCount()).isEqualTo(12);

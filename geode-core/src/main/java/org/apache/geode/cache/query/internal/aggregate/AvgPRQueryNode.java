@@ -19,9 +19,9 @@ package org.apache.geode.cache.query.internal.aggregate;
  * instantiated on the PR query node.
  */
 public class AvgPRQueryNode extends Sum {
-  private int count = 0;
+  private long count = 0;
 
-  int getCount() {
+  long getCount() {
     return count;
   }
 
@@ -33,7 +33,7 @@ public class AvgPRQueryNode extends Sum {
   @Override
   public void accumulate(Object value) {
     Object[] array = (Object[]) value;
-    this.count += ((Integer) array[0]);
+    this.count += ((Long) array[0]);
     super.accumulate(array[1]);
   }
 

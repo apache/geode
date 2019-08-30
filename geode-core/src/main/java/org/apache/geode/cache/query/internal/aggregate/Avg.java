@@ -20,9 +20,9 @@ import org.apache.geode.cache.query.QueryService;
  * Computes the non distinct average for replicated region based queries
  */
 public class Avg extends Sum {
-  private int num = 0;
+  private long num = 0;
 
-  int getNum() {
+  long getNum() {
     return num;
   }
 

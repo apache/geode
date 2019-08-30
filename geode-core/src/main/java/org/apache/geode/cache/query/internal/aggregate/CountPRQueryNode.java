@@ -14,15 +14,17 @@
  */
 package org.apache.geode.cache.query.internal.aggregate;
 
+import static org.apache.geode.cache.query.internal.aggregate.AbstractAggregator.downCast;
+
 import org.apache.geode.cache.query.Aggregator;
 
 /**
  * Computes the count of the rows on the PR query node
  */
 public class CountPRQueryNode implements Aggregator {
-  private int count = 0;
+  private long count = 0;
 
-  int getCount() {
+  long getCount() {
     return count;
   }
 
@@ -34,11 +36,11 @@ public class CountPRQueryNode implements Aggregator {
    */
   @Override
   public void accumulate(Object value) {
-    this.count += ((Integer) value);
+    this.count += ((Number) value).longValue();
   }
 
   @Override
   public Object terminate() {
-    return count;
+    return downCast(count);
   }
 }
