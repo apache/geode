@@ -45,7 +45,7 @@ public abstract class AbstractConfiguration
     return name == null || name.length() == 0 || name.equalsIgnoreCase(CLUSTER);
   }
 
-  protected String group;
+  private String group;
 
   /**
    * this returns a non-null value
