@@ -68,7 +68,9 @@ public class AbstractConfigurationTest {
   public void setGroup() throws Exception {
     element.setGroup("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
-    element.setGroup("");
+    element.setGroup(null);
     assertThat(element.getGroup()).isNull();
+    element.setGroup("");
+    assertThat(element.getGroup()).isEqualTo("");
   }
 }
