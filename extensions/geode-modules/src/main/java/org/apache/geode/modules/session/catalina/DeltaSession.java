@@ -115,10 +115,9 @@ public class DeltaSession extends StandardSession
   @SuppressWarnings("unchecked")
   public HttpSession getSession() {
     if (facade == null) {
-      if (SecurityUtil.isPackageProtectionEnabled()) {
+      if (isPackageProtectionEnabled()) {
         final DeltaSession fsession = this;
-        facade = (DeltaSessionFacade) AccessController.doPrivileged(
-            (PrivilegedAction) () -> new DeltaSessionFacade(fsession));
+        facade = getNewFacade(fsession);
       } else {
         facade = new DeltaSessionFacade(this);
       }
@@ -191,7 +190,7 @@ public class DeltaSession extends StandardSession
     return this.operatingRegion;
   }
 
-  private boolean isCommitEnabled() {
+  boolean isCommitEnabled() {
     DeltaSessionManager mgr = (DeltaSessionManager) getManager();
     return mgr.isCommitValveEnabled();
   }
@@ -240,7 +239,9 @@ public class DeltaSession extends StandardSession
 
   @Override
   public void setAttribute(String name, Object value, boolean notify) {
+
     checkBackingCacheAvailable();
+
     synchronized (this.changeLock) {
       // Serialize the value
       byte[] serializedValue = serialize(value);
@@ -260,6 +261,7 @@ public class DeltaSession extends StandardSession
       DeltaSessionAttributeEvent event =
           new DeltaSessionUpdateAttributeEvent(name, serializedValue);
       queueAttributeEvent(event, true);
+
 
       // Distribute the update
       if (!isCommitEnabled()) {
@@ -634,7 +636,7 @@ public class DeltaSession extends StandardSession
     throw new IllegalStateException("Unable to access attributes field");
   }
 
-  private byte[] serialize(Object obj) {
+  byte[] serialize(Object obj) {
     byte[] serializedValue = null;
     try {
       serializedValue = BlobHelper.serializeToBlob(obj);
@@ -654,5 +656,15 @@ public class DeltaSession extends StandardSession
         + this.sessionRegionName + "; operatingRegionName="
         + (getOperatingRegion() == null ? "unset" : getOperatingRegion().getFullPath())
         + "]";
+  }
+
+  //Helper methods to enable better unit testing
+  DeltaSessionFacade getNewFacade(DeltaSessionInterface fSession) {
+    return (DeltaSessionFacade) AccessController.doPrivileged(
+        (PrivilegedAction) () -> new DeltaSessionFacade(fSession));
+  }
+
+  boolean isPackageProtectionEnabled() {
+    return SecurityUtil.isPackageProtectionEnabled();
   }
 }
