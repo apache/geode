@@ -15,7 +15,6 @@
 
 package org.apache.geode.internal.cache.execute;
 
-import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 
@@ -69,7 +68,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
 
   private boolean enableOrderedResultStreming;
 
-  private Set<Integer> bucketSet;
+  private int[] bucketArray;
 
   private BucketMovedException bme;
 
@@ -87,13 +86,13 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
    */
   public PartitionedRegionFunctionResultSender(DistributionManager dm, PartitionedRegion pr,
       long time, PartitionedRegionFunctionStreamingMessage msg, Function function,
-      Set<Integer> bucketSet) {
+      int[] bucketArray) {
     this.msg = msg;
     this.dm = dm;
     this.pr = pr;
     this.time = time;
     this.function = function;
-    this.bucketSet = bucketSet;
+    this.bucketArray = bucketArray;
 
     forwardExceptions = false;
   }
@@ -105,7 +104,7 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
   public PartitionedRegionFunctionResultSender(DistributionManager dm,
       PartitionedRegion partitionedRegion, long time, ResultCollector rc,
       ServerToClientFunctionResultSender sender, boolean onlyLocal, boolean onlyRemote,
-      boolean forwardExceptions, Function function, Set<Integer> bucketSet) {
+      boolean forwardExceptions, Function function, int[] bucketArray) {
     this.dm = dm;
     this.pr = partitionedRegion;
     this.time = time;
@@ -115,12 +114,12 @@ public class PartitionedRegionFunctionResultSender implements InternalResultSend
     this.onlyRemote = onlyRemote;
     this.forwardExceptions = forwardExceptions;
     this.function = function;
-    this.bucketSet = bucketSet;
+    this.bucketArray = bucketArray;
   }
 
   private void checkForBucketMovement(Object oneResult) {
     if (!(forwardExceptions && oneResult instanceof Throwable)
-        && !pr.getDataStore().areAllBucketsHosted(bucketSet)) {
+        && !pr.getDataStore().areAllBucketsHosted(bucketArray)) {
       // making sure that we send all the local results first
       // before sending this exception to client
       bme = new BucketMovedException(

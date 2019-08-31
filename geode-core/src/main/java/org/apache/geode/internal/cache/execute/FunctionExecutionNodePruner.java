@@ -15,6 +15,7 @@
 package org.apache.geode.internal.cache.execute;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.Operation;
@@ -34,7 +36,7 @@ import org.apache.geode.internal.logging.LogService;
 public class FunctionExecutionNodePruner {
   public static final Logger logger = LogService.getLogger();
 
-  public static HashMap<InternalDistributedMember, HashSet<Integer>> pruneNodes(
+  public static HashMap<InternalDistributedMember, int[]> pruneNodes(
       PartitionedRegion pr, Set<Integer> buckets) {
 
     final boolean isDebugEnabled = logger.isDebugEnabled();
@@ -42,10 +44,11 @@ public class FunctionExecutionNodePruner {
     if (isDebugEnabled) {
       logger.debug("FunctionExecutionNodePruner: The buckets to be pruned are: {}", buckets);
     }
-    HashMap<InternalDistributedMember, HashSet<Integer>> nodeToBucketsMap =
-        new HashMap<InternalDistributedMember, HashSet<Integer>>();
-    HashMap<InternalDistributedMember, HashSet<Integer>> prunedNodeToBucketsMap =
-        new HashMap<InternalDistributedMember, HashSet<Integer>>();
+    HashMap<InternalDistributedMember, int[]> nodeToBucketsMap =
+        new HashMap();
+    HashMap<InternalDistributedMember, int[]> prunedNodeToBucketsMap =
+        new HashMap();
+
     try {
       for (Integer bucketId : buckets) {
         Set<InternalDistributedMember> nodes = pr.getRegionAdvisor().getBucketOwners(bucketId);
@@ -64,13 +67,15 @@ public class FunctionExecutionNodePruner {
         }
         for (InternalDistributedMember node : nodes) {
           if (nodeToBucketsMap.get(node) == null) {
-            HashSet<Integer> bucketSet = new HashSet<Integer>();
-            bucketSet.add(bucketId);
-            nodeToBucketsMap.put(node, bucketSet);
+            int[] bucketArray = new int[buckets.size() + 1];
+            bucketArray[0] = 1;
+            bucketArray[1] = bucketId;
+            nodeToBucketsMap.put(node, bucketArray);
           } else {
-            HashSet<Integer> bucketSet = nodeToBucketsMap.get(node);
-            bucketSet.add(bucketId);
-            nodeToBucketsMap.put(node, bucketSet);
+            int[] bucketArray = nodeToBucketsMap.get(node);
+            bucketArray[0] = bucketArray[0] + 1;
+            bucketArray[bucketArray[0]] = bucketId;
+            // nodeToBucketsMap.put(node, bucketSet);
           }
         }
       }
@@ -79,7 +84,8 @@ public class FunctionExecutionNodePruner {
     if (isDebugEnabled) {
       logger.debug("FunctionExecutionNodePruner: The node to buckets map is: {}", nodeToBucketsMap);
     }
-    HashSet<Integer> currentBucketSet = new HashSet<Integer>();
+    int[] currentBucketArray = new int[buckets.size() + 1];
+    currentBucketArray[0] = 0;
 
     /**
      * First Logic: Just implement the Greedy algorithm where you keep adding nodes which has the
@@ -98,21 +104,23 @@ public class FunctionExecutionNodePruner {
 
     InternalDistributedMember localNode = pr.getRegionAdvisor().getDistributionManager().getId();
     if (nodeToBucketsMap.get(localNode) != null) {
-      HashSet<Integer> bucketSet = nodeToBucketsMap.get(localNode);
+      int[] bucketArray = nodeToBucketsMap.get(localNode);
       if (isDebugEnabled) {
         logger.debug(
-            "FunctionExecutionNodePruner: Adding the node: {} which is lcoal and buckets {} to prunedMap",
-            localNode, bucketSet);
+            "FunctionExecutionNodePruner: Adding the node: {} which is local and buckets {} to prunedMap",
+            localNode, bucketArray);
       }
-      currentBucketSet.addAll(bucketSet);
-      prunedNodeToBucketsMap.put(localNode, bucketSet);
+      System.arraycopy(bucketArray, 0, currentBucketArray, 0, bucketArray[0] + 1);
+      prunedNodeToBucketsMap.put(localNode, bucketArray);
       nodeToBucketsMap.remove(localNode);
     }
-    while (!currentBucketSet.equals(buckets)) {
+    while (!arrayAndSetAreEqual(buckets, currentBucketArray)) {
       if (nodeToBucketsMap.size() == 0) {
         break;
       }
-      InternalDistributedMember node = findNextNode(nodeToBucketsMap.entrySet(), currentBucketSet);
+      // continue
+      InternalDistributedMember node =
+          findNextNode(nodeToBucketsMap.entrySet(), currentBucketArray);
       if (node == null) {
         if (isDebugEnabled) {
           logger.debug(
@@ -120,15 +128,15 @@ public class FunctionExecutionNodePruner {
         }
         break;
       }
-      HashSet<Integer> bucketSet = nodeToBucketsMap.get(node);
-      bucketSet.removeAll(currentBucketSet);
-      if (!bucketSet.isEmpty()) {
-        currentBucketSet.addAll(bucketSet);
-        prunedNodeToBucketsMap.put(node, bucketSet);
+      int[] bucketArray = nodeToBucketsMap.get(node);
+      bucketArray = removeAllElements(bucketArray, currentBucketArray);
+      if (bucketArray[0] != 0) {
+        currentBucketArray = addAllElements(currentBucketArray, bucketArray);
+        prunedNodeToBucketsMap.put(node, bucketArray);
         if (isDebugEnabled) {
           logger.debug(
               "FunctionExecutionNodePruner: Adding the node: {} and buckets {} to prunedMap", node,
-              bucketSet);
+              bucketArray);
         }
       }
       nodeToBucketsMap.remove(node);
@@ -142,23 +150,26 @@ public class FunctionExecutionNodePruner {
 
 
   private static InternalDistributedMember findNextNode(
-      Set<Map.Entry<InternalDistributedMember, HashSet<Integer>>> entrySet,
-      HashSet<Integer> currentBucketSet) {
+      Set<Map.Entry<InternalDistributedMember, int[]>> entrySet,
+      int[] currentBucketArray) {
 
     InternalDistributedMember node = null;
     int max = -1;
     ArrayList<InternalDistributedMember> nodesOfEqualSize =
         new ArrayList<InternalDistributedMember>();
-    for (Map.Entry<InternalDistributedMember, HashSet<Integer>> entry : entrySet) {
-      HashSet<Integer> buckets = new HashSet<Integer>(entry.getValue());
-      buckets.removeAll(currentBucketSet);
 
-      if (max < buckets.size()) {
-        max = buckets.size();
+    for (Map.Entry<InternalDistributedMember, int[]> entry : entrySet) {
+      int[] buckets = entry.getValue();
+      int[] tempbuckets = new int[buckets.length];
+      System.arraycopy(buckets, 0, tempbuckets, 0, buckets[0] + 1);
+      tempbuckets = removeAllElements(tempbuckets, currentBucketArray);
+
+      if (max < tempbuckets[0]) {
+        max = tempbuckets[0];
         node = entry.getKey();
         nodesOfEqualSize.clear();
         nodesOfEqualSize.add(node);
-      } else if (max == buckets.size()) {
+      } else if (max == tempbuckets[0]) {
         nodesOfEqualSize.add(node);
       }
     }
@@ -208,9 +219,10 @@ public class FunctionExecutionNodePruner {
     return bucketToKeysMap;
   }
 
-  public static HashSet<Integer> getBucketSet(PartitionedRegion pr, Set routingKeys,
+
+  public static int[] getBucketSet(PartitionedRegion pr, Set routingKeys,
       final boolean hasRoutingObjects, boolean isBucketSetAsFilter) {
-    HashSet<Integer> bucketSet = null;
+    int[] bucketArray = null;
     for (Object key : routingKeys) {
       final Integer bucketId;
       if (isBucketSetAsFilter) {
@@ -223,27 +235,31 @@ public class FunctionExecutionNodePruner {
               Operation.FUNCTION_EXECUTION, key, null, null));
         }
       }
-      if (bucketSet == null) {
-        bucketSet = new HashSet<Integer>();
+      if (bucketArray == null) {
+        bucketArray = new int[routingKeys.size() + 1];
+        bucketArray[0] = 0;
       }
-      bucketSet.add(bucketId);
+      bucketArray[0] = bucketArray[0] + 1;
+      bucketArray[bucketArray[0]] = bucketId;
     }
-    return bucketSet;
+    return bucketArray;
   }
 
-  public static HashMap<InternalDistributedMember, HashSet<Integer>> groupByMemberToBuckets(
+  public static HashMap<InternalDistributedMember, int[]> groupByMemberToBuckets(
       PartitionedRegion pr, Set<Integer> bucketSet, boolean primaryOnly) {
     if (primaryOnly) {
-      HashMap<InternalDistributedMember, HashSet<Integer>> memberToBucketsMap = new HashMap();
+      HashMap<InternalDistributedMember, int[]> memberToBucketsMap = new HashMap();
       try {
         for (Integer bucketId : bucketSet) {
           InternalDistributedMember mem = pr.getOrCreateNodeForBucketWrite(bucketId, null);
-          HashSet buckets = memberToBucketsMap.get(mem);
+          int[] buckets = memberToBucketsMap.get(mem);
           if (buckets == null) {
-            buckets = new HashSet(); // faster if this was an ArrayList
+            buckets = new int[bucketSet.size() + 1]; // faster if this was an ArrayList
             memberToBucketsMap.put(mem, buckets);
+            buckets[0] = 0;
           }
-          buckets.add(bucketId);
+          buckets[0] = buckets[0] + 1;
+          buckets[buckets[0]] = bucketId;
         }
       } catch (NoSuchElementException done) {
       }
@@ -252,4 +268,99 @@ public class FunctionExecutionNodePruner {
       return pruneNodes(pr, bucketSet);
     }
   }
+
+  private static boolean arrayAndSetAreEqual(Set<Integer> setA, int[] arrayB) {
+    Set<Integer> setB;
+    if (arrayB != null && arrayB[0] != 0) {
+      setB =
+          new HashSet(
+              Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
+    } else {
+      setB = new HashSet();
+    }
+
+    return setA.equals(setB);
+  }
+
+  private static int[] removeAllElements(int[] arrayA, int[] arrayB) {
+    if (arrayA == null || arrayB == null || arrayA[0] == 0 || arrayB[0] == 0) {
+      return arrayA;
+    }
+
+    Set<Integer> inSet =
+        new HashSet(
+            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayA, 1, arrayA[0] + 1))));
+
+    Set<Integer> subSet =
+        new HashSet(
+            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
+
+    inSet.removeAll(subSet);
+
+    int[] outArray = new int[inSet.size() + 1];
+    outArray[0] = inSet.size();
+
+    if (!inSet.isEmpty()) {
+      System.arraycopy(ArrayUtils.toPrimitive(inSet.toArray(new Integer[inSet.size()])), 0,
+          outArray, 1, inSet.size());
+    }
+    return outArray;
+
+    /*
+     * int elementA;
+     * int arraylength = arrayA[0];
+     * int index = 0;
+     * boolean found;
+     * for (int i=1; i<=arraylength; i++) {
+     * elementA = arrayA[i];
+     * found = false;
+     * for (int j=1; j<=arraylength; j++) {
+     * if (arrayB[j] == elementA) {
+     * found = true;
+     * break;
+     * }
+     * }
+     * if (!found) {
+     * index++;
+     * arrayA[index] = elementA;
+     * }
+     * }
+     * arrayA[0] = index;
+     *
+     */
+  }
+
+  private static int[] addAllElements(int[] arrayA, int[] arrayB) {
+    if (arrayB == null || arrayB[0] == 0) {
+      return arrayA;
+    }
+
+    /*
+     * Or we can implement double for loop
+     */
+
+    Set<Integer> inSet;
+    if (arrayA != null && arrayA[0] != 0) {
+      inSet =
+          new HashSet(
+              Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayA, 1, arrayA[0] + 1))));
+    } else {
+      inSet = new HashSet();
+    }
+
+    Set<Integer> addSet =
+        new HashSet(
+            Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(arrayB, 1, arrayB[0] + 1))));
+
+    inSet.addAll(addSet);
+
+    int[] outArray = new int[inSet.size() + 1];
+    outArray[0] = inSet.size();
+
+    System.arraycopy(ArrayUtils.toPrimitive(inSet.toArray(new Integer[inSet.size()])), 0, outArray,
+        1, inSet.size());
+    return outArray;
+
+  }
+
 }

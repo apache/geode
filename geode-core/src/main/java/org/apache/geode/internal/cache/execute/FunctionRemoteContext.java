@@ -17,13 +17,18 @@ package org.apache.geode.internal.cache.execute;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import org.apache.geode.DataSerializable;
 import org.apache.geode.DataSerializer;
 import org.apache.geode.cache.execute.Function;
 import org.apache.geode.cache.execute.FunctionService;
+import org.apache.geode.internal.InternalDataSerializer;
+import org.apache.geode.internal.Version;
 
 /**
  * FunctionContext for remote/target nodes
@@ -36,7 +41,7 @@ public class FunctionRemoteContext implements DataSerializable {
 
   private Object args;
 
-  private Set<Integer> bucketSet;
+  private int[] bucketArray;
 
   private boolean isReExecute;
 
@@ -49,11 +54,11 @@ public class FunctionRemoteContext implements DataSerializable {
   public FunctionRemoteContext() {}
 
   public FunctionRemoteContext(final Function function, Object object, Set filter,
-      Set<Integer> bucketSet, boolean isReExecute, boolean isFnSerializationReqd) {
+      int[] bucketArray, boolean isReExecute, boolean isFnSerializationReqd) {
     this.function = function;
     this.args = object;
     this.filter = filter;
-    this.bucketSet = bucketSet;
+    this.bucketArray = bucketArray;
     this.isReExecute = isReExecute;
     this.isFnSerializationReqd = isFnSerializationReqd;
   }
@@ -73,7 +78,16 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     this.args = DataSerializer.readObject(in);
     this.filter = (HashSet) DataSerializer.readHashSet(in);
-    this.bucketSet = (HashSet) DataSerializer.readHashSet(in);
+    if (InternalDataSerializer.getVersionForDataStream(in).compareTo(Version.GEODE_1_11_0) >= 0) {
+      this.bucketArray = DataSerializer.readIntArray(in);
+    } else {
+      HashSet<Integer> bucketSet = DataSerializer.readHashSet(in);
+      this.bucketArray = new int[bucketSet.size() + 1];
+      this.bucketArray[0] = bucketSet.size();
+      System.arraycopy(ArrayUtils.toPrimitive(bucketSet.toArray(new Integer[bucketSet.size()])), 0,
+          this.bucketArray,
+          1, bucketSet.size());
+    }
     this.isReExecute = DataSerializer.readBoolean(in);
   }
 
@@ -86,7 +100,15 @@ public class FunctionRemoteContext implements DataSerializable {
     }
     DataSerializer.writeObject(this.args, out);
     DataSerializer.writeHashSet((HashSet) this.filter, out);
-    DataSerializer.writeHashSet((HashSet) this.bucketSet, out);
+    if (InternalDataSerializer.getVersionForDataStream(out).compareTo(Version.GEODE_1_11_0) >= 0) {
+      DataSerializer.writeIntArray(this.bucketArray, out);
+    } else {
+      HashSet<Integer> bucketSet =
+          new HashSet(
+              Arrays.asList(ArrayUtils
+                  .toObject(Arrays.copyOfRange(this.bucketArray, 1, this.bucketArray[0] + 1))));
+      DataSerializer.writeHashSet(bucketSet, out);
+    }
     DataSerializer.writeBoolean(this.isReExecute, out);
   }
 
@@ -98,8 +120,8 @@ public class FunctionRemoteContext implements DataSerializable {
     return args;
   }
 
-  public Set<Integer> getBucketSet() {
-    return bucketSet;
+  public int[] getBucketArray() {
+    return bucketArray;
   }
 
   public boolean isReExecute() {
@@ -123,7 +145,7 @@ public class FunctionRemoteContext implements DataSerializable {
     buff.append(" args=" + args);
     buff.append(" isReExecute=" + isReExecute);
     buff.append(" filter=" + filter);
-    buff.append(" bucketSet=" + bucketSet + "}");
+    buff.append(" bucketArray=" + Arrays.toString(bucketArray) + "}");
     return buff.toString();
   }
 }

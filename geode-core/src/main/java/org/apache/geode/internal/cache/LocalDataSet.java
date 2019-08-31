@@ -18,8 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.apache.geode.cache.AttributesMutator;
@@ -71,6 +74,16 @@ public class LocalDataSet implements Region, QueryExecutor {
   private final PartitionedRegion proxy;
   private final Set<Integer> buckets;
   private InternalRegionFunctionContext rfContext;
+
+  public LocalDataSet(PartitionedRegion pr, int[] buckets) {
+    this.proxy = pr;
+    if (buckets == null || buckets[0] == 0) {
+      this.buckets = new HashSet();
+    } else {
+      this.buckets = new HashSet(
+          Arrays.asList(ArrayUtils.toObject(Arrays.copyOfRange(buckets, 1, buckets[0] + 1))));
+    }
+  }
 
   public LocalDataSet(PartitionedRegion pr, Set<Integer> buckets) {
     this.proxy = pr;
