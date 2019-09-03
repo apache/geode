@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,7 +55,7 @@ public class MemberValidator {
 
     Set<DistributedMember> membersOfExistingGroups =
         findServers(existingElementsAndTheirGroups.keySet().toArray(new String[0]));
-    Set<DistributedMember> membersOfNewGroup = findServers(config.getConfigGroup());
+    Set<DistributedMember> membersOfNewGroup = findServers(config.getGroup());
     Set<DistributedMember> intersection = new HashSet<>(membersOfExistingGroups);
     intersection.retainAll(membersOfNewGroup);
     if (intersection.size() > 0) {
@@ -113,14 +114,20 @@ public class MemberValidator {
   }
 
   public Set<DistributedMember> findMembers(boolean includeLocators, String... groups) {
-    if (groups == null || groups.length == 0) {
+    if (groups == null) {
+      groups = new String[] {AbstractConfiguration.CLUSTER};
+    }
+
+    groups = Arrays.stream(groups).filter(Objects::nonNull).filter(s -> s.length() > 0)
+        .toArray(String[]::new);
+
+    if (groups.length == 0) {
       groups = new String[] {AbstractConfiguration.CLUSTER};
     }
 
     Set<DistributedMember> all = includeLocators ? getAllServersAndLocators() : getAllServers();
 
-    // if groups contains "cluster" group, return all members
-    if (Arrays.asList(groups).contains(AbstractConfiguration.CLUSTER)) {
+    if (Arrays.stream(groups).anyMatch(AbstractConfiguration::isCluster)) {
       return all;
     }
 

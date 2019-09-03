@@ -29,7 +29,6 @@ import org.apache.geode.util.internal.GeodeJsonMapper;
 public class AbstractConfigurationTest {
 
   private AbstractConfiguration element;
-  private Region runtime;
 
   private static ObjectMapper mapper;
   private String json;
@@ -42,52 +41,50 @@ public class AbstractConfigurationTest {
   @Before
   public void before() throws Exception {
     element = new Region();
-    runtime = new Region();
   }
 
   @Test
   public void plainRegionConfig() throws Exception {
     assertThat(element.getGroup()).isNull();
-    assertThat(element.getConfigGroup()).isEqualTo("cluster");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
-    assertThat(json).doesNotContain("group").doesNotContain("groups");
+    assertThat(json).doesNotContain("group").doesNotContain("configGroup");
   }
-
-  @Test
-  public void plainRuntimeRegionConfig() throws Exception {
-    assertThat(runtime.getGroup()).isNull();
-    assertThat(runtime.getGroups()).isNotNull().isEmpty();
-    json = mapper.writeValueAsString(runtime);
-    System.out.println(json);
-    assertThat(json).doesNotContain("group").doesNotContain("groups");
-  }
-
 
   @Test
   public void setterRegionConfigGroup() throws Exception {
     element.setGroup("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
-    assertThat(element.getConfigGroup()).isEqualTo("group1");
     json = mapper.writeValueAsString(element);
     System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("group:");
-  }
-
-  @Test
-  public void setterRuntimeRegionConfig() throws Exception {
-    runtime.getGroups().add("group1");
-    assertThat(runtime.getGroup()).isEqualTo("group1");
-    json = mapper.writeValueAsString(runtime);
-    System.out.println(json);
-    assertThat(json).contains("\"groups\":[\"group1\"]").doesNotContain("\"group\"");
+    assertThat(json).contains("\"group\":\"group1\"");
   }
 
   @Test
   public void setGroup() throws Exception {
     element.setGroup("group1");
     assertThat(element.getGroup()).isEqualTo("group1");
-    element.setGroup("");
+    element.setGroup(null);
     assertThat(element.getGroup()).isNull();
+    element.setGroup("");
+    assertThat(element.getGroup()).isEqualTo("");
+    element.setGroup("CLUSTER");
+    assertThat(element.getGroup()).isEqualTo("CLUSTER");
+    element.setGroup("cluster");
+    assertThat(element.getGroup()).isEqualTo("cluster");
+    element.setGroup("ClUsTeR");
+    assertThat(element.getGroup()).isEqualTo("ClUsTeR");
+  }
+
+  @Test
+  public void isCluster() {
+    assertThat(AbstractConfiguration.isCluster("foo")).isFalse();
+    assertThat(AbstractConfiguration.isCluster(null)).isTrue();
+    assertThat(AbstractConfiguration.isCluster("")).isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER)).isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toLowerCase()))
+        .isTrue();
+    assertThat(AbstractConfiguration.isCluster(AbstractConfiguration.CLUSTER.toUpperCase()))
+        .isTrue();
   }
 }

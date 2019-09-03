@@ -78,6 +78,9 @@ public class MemberValidatorTest {
     doReturn(new HashSet<>(Arrays.asList(member1, member2, member3, member4, member5)))
         .when(validator).getAllServers();
 
+    doReturn(new HashSet<>(Arrays.asList(member1, member2, member3, member4, member5)))
+        .when(validator).getAllServersAndLocators();
+
     when(service.getGroups())
         .thenReturn(new HashSet<>(Arrays.asList("cluster", "group1", "group2", "group3")));
 
@@ -92,7 +95,7 @@ public class MemberValidatorTest {
   }
 
   @Test
-  public void findMembers() throws Exception {
+  public void findServers() throws Exception {
     assertThat(validator.findServers())
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
@@ -109,6 +112,49 @@ public class MemberValidatorTest {
     assertThat(validator.findServers("cluster", "group3"))
         .flatExtracting(DistributedMember::getName)
         .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+  }
+
+  @Test
+  public void findMembers() throws Exception {
+    assertThat(validator.findMembers(null, null)).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers(null, new String[] {}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {null}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"Cluster"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {"CLUSTER"}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+    assertThat(validator.findMembers(null, new String[] {""}))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers("member1", null)).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1");
+
+    assertThat(validator.findMembers("member1", "group1"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1");
+
+    assertThat(validator.findMembers(null, "group1")).flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member2", "member4");
+
+    assertThat(validator.findMembers(null, "group1", "cluster"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member1", "member2", "member3", "member4", "member5");
+
+    assertThat(validator.findMembers(null, "group1", "group2"))
+        .flatExtracting(DistributedMember::getName)
+        .containsExactlyInAnyOrder("member2", "member3", "member4");
   }
 
   @Test

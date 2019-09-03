@@ -18,6 +18,9 @@
 package org.apache.geode.management.internal.api;
 
 
+import static org.apache.geode.management.configuration.AbstractConfiguration.CLUSTER;
+import static org.apache.geode.management.configuration.AbstractConfiguration.isCluster;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -72,7 +75,7 @@ import org.apache.geode.management.internal.configuration.mutators.GatewayReceiv
 import org.apache.geode.management.internal.configuration.mutators.IndexConfigManager;
 import org.apache.geode.management.internal.configuration.mutators.PdxManager;
 import org.apache.geode.management.internal.configuration.mutators.RegionConfigManager;
-import org.apache.geode.management.internal.configuration.validators.CacheElementValidator;
+import org.apache.geode.management.internal.configuration.validators.CommonConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.ConfigurationValidator;
 import org.apache.geode.management.internal.configuration.validators.GatewayReceiverConfigValidator;
 import org.apache.geode.management.internal.configuration.validators.MemberValidator;
@@ -92,12 +95,12 @@ public class LocatorClusterManagementService implements ClusterManagementService
   private final Map<Class, ConfigurationValidator> validators;
   private final OperationManager operationManager;
   private final MemberValidator memberValidator;
-  private final CacheElementValidator commonValidator;
+  private final CommonConfigurationValidator commonValidator;
 
   public LocatorClusterManagementService(InternalCache cache,
       ConfigurationPersistenceService persistenceService) {
     this(persistenceService, new ConcurrentHashMap<>(), new ConcurrentHashMap<>(),
-        new MemberValidator(cache, persistenceService), new CacheElementValidator(),
+        new MemberValidator(cache, persistenceService), new CommonConfigurationValidator(),
         new OperationManager(cache, new OperationHistoryManager()));
     // initialize the list of managers
     managers.put(Region.class, new RegionConfigManager());
@@ -115,7 +118,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       Map<Class, ConfigurationManager> managers,
       Map<Class, ConfigurationValidator> validators,
       MemberValidator memberValidator,
-      CacheElementValidator commonValidator,
+      CommonConfigurationValidator commonValidator,
       OperationManager operationManager) {
     this.persistenceService = persistenceService;
     this.managers = managers;
@@ -135,7 +138,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
           "Cluster configuration service needs to be enabled."));
     }
 
-    String group = config.getConfigGroup();
+    String group = config.getGroup();
+    final String groupName =
+        isCluster(group) ? CLUSTER : group;
     try {
       // first validate common attributes of all configuration object
       commonValidator.validate(CacheElementOperation.CREATE, config);
@@ -171,14 +176,13 @@ public class LocatorClusterManagementService implements ClusterManagementService
     }
 
     // persist configuration in cache config
-    final String finalGroup = group; // the below lambda requires a reference that is final
-    persistenceService.updateCacheConfig(finalGroup, cacheConfigForGroup -> {
+    persistenceService.updateCacheConfig(groupName, cacheConfigForGroup -> {
       try {
         configurationManager.add(config, cacheConfigForGroup);
         result.setStatus(StatusCode.OK,
-            "Successfully updated configuration for " + finalGroup + ".");
+            "Successfully updated configuration for " + groupName + ".");
       } catch (Exception e) {
-        String message = "Failed to update cluster configuration for " + finalGroup + ".";
+        String message = "Failed to update cluster configuration for " + groupName + ".";
         logger.error(message, e);
         result.setStatus(StatusCode.FAIL_TO_PERSIST, message);
         return null;
@@ -186,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       return cacheConfigForGroup;
     });
 
-    // add the config object which includes the HATOS information of the element created
+    // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful() && config instanceof RestfulEndpoint) {
       result.setUri(((RestfulEndpoint) config).getUri());
     }
@@ -288,41 +292,22 @@ public class LocatorClusterManagementService implements ClusterManagementService
       resultList.add(filter);
     } else {
       ConfigurationManager<T> manager = getConfigurationManager(filter);
-      // gather elements on all the groups, consolidate the group information and then do the filter
-      // so that when we filter by a specific group, we still show that a particular element might
-      // also belong to another group.
-      for (String group : persistenceService.getGroups()) {
-        CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
-        List<T> listInGroup = manager.list(filter, currentPersistedConfig);
-        for (T element : listInGroup) {
-          element.setGroup(group);
-          resultList.add(element);
-        }
-      }
-
-      // if empty result, return immediately
-      if (resultList.size() == 0) {
-        return result;
-      }
-
-      // right now the list contains [{regionA, group1}, {regionA, group2}...], we need to
-      // consolidate the list into [{regionA, [group1, group2]}
-      List<T> consolidatedResultList = new ArrayList<>();
-      for (T element : resultList) {
-        int index = consolidatedResultList.indexOf(element);
-        if (index >= 0) {
-          T exist = consolidatedResultList.get(index);
-          exist.addGroup(element.getGroup());
-        } else {
-          consolidatedResultList.add(element);
-        }
-      }
+      Set<String> groups;
       if (StringUtils.isNotBlank(filter.getGroup())) {
-        consolidatedResultList = consolidatedResultList.stream()
-            .filter(e -> (e.getGroups().contains(filter.getConfigGroup())))
-            .collect(Collectors.toList());
+        groups = Collections.singleton(filter.getGroup());
+      } else {
+        groups = persistenceService.getGroups();
       }
-      resultList = consolidatedResultList;
+
+      for (String group : groups) {
+        CacheConfig currentPersistedConfig =
+            persistenceService.getCacheConfig(isCluster(group) ? CLUSTER : group, true);
+        List<T> listInGroup = manager.list(filter, currentPersistedConfig);
+        if (!isCluster(group)) {
+          listInGroup.forEach(t -> t.setGroup(group));
+        }
+        resultList.addAll(listInGroup);
+      }
     }
 
     // gather the runtime info for each configuration objects
@@ -330,15 +315,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
     boolean hasRuntimeInfo = filter.hasRuntimeInfo();
 
     for (T element : resultList) {
-      List<String> groups = element.getGroups();
       ConfigurationResult<T, R> response = new ConfigurationResult<>(element);
-
-      // if "cluster" is the only group, clear it, so that the returning json does not show
-      // "cluster" as a group value
-      if (element.getGroups().size() == 1
-          && AbstractConfiguration.CLUSTER.equals(element.getGroup())) {
-        element.getGroups().clear();
-      }
 
       responses.add(response);
       // do not gather runtime if this type of CacheElement is RespondWith<RuntimeInfo>
@@ -350,9 +327,9 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
       if (filter instanceof MemberConfig) {
         members =
-            memberValidator.findMembers(filter.getId(), filter.getGroups().toArray(new String[0]));
+            memberValidator.findMembers(filter.getId(), filter.getGroup());
       } else {
-        members = memberValidator.findServers(groups.toArray(new String[0]));
+        members = memberValidator.findServers(element.getGroup());
       }
 
       // no member belongs to these groups

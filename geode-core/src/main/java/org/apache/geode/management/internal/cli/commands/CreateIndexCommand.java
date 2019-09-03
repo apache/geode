@@ -19,11 +19,11 @@ import static org.apache.geode.management.internal.cli.remote.CommandExecutor.RU
 import static org.apache.geode.management.internal.cli.remote.CommandExecutor.SERVICE_NOT_RUNNING_CHANGE_NOT_PERSISTED;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import joptsimple.internal.Strings;
 import org.springframework.shell.core.annotation.CliCommand;
 import org.springframework.shell.core.annotation.CliOption;
 
@@ -33,7 +33,6 @@ import org.apache.geode.cache.query.IndexType;
 import org.apache.geode.distributed.DistributedMember;
 import org.apache.geode.distributed.internal.InternalConfigurationPersistenceService;
 import org.apache.geode.management.api.ClusterManagementService;
-import org.apache.geode.management.api.ConfigurationResult;
 import org.apache.geode.management.cli.CliMetaData;
 import org.apache.geode.management.cli.ConverterHint;
 import org.apache.geode.management.cli.GfshCommand;
@@ -44,7 +43,6 @@ import org.apache.geode.management.internal.cli.i18n.CliStrings;
 import org.apache.geode.management.internal.cli.result.model.InfoResultModel;
 import org.apache.geode.management.internal.cli.result.model.ResultModel;
 import org.apache.geode.management.internal.security.ResourceOperation;
-import org.apache.geode.management.runtime.RuntimeRegionInfo;
 import org.apache.geode.security.ResourcePermission;
 
 public class CreateIndexCommand extends GfshCommand {
@@ -88,15 +86,19 @@ public class CreateIndexCommand extends GfshCommand {
     // we will find the applicable members based on the what group this region is on
     if (ccService != null && memberNameOrID == null) {
       regionName = getValidRegionName(regionPath, cms);
-      Region config = getRegionConfig(cms, regionName);
-      if (config == null) {
+      Set<String> calculatedGroups = getGroupsContainingRegion(cms, regionName);
+      if (calculatedGroups.isEmpty()) {
         return ResultModel.createError("Region " + regionName + " does not exist.");
       }
-      String[] calculatedGroups = config.getGroups().toArray(new String[0]);
-      if (groups != null && !containsExactlyInAnyOrder(groups, calculatedGroups)) {
-        info.addLine("--groups=" + Strings.join(groups, ",") + " is ignored.");
+      if (groups != null && !calculatedGroups.containsAll(Arrays.asList(groups))) {
+        return ResultModel
+            .createError("Region " + regionName + " does not exist in some of the groups.");
       }
-      groups = calculatedGroups;
+      if (groups == null) {
+        // the calculatedGroups will have null value to indicate the "cluster" level, in thise case
+        // we want the groups to an empty array
+        groups = calculatedGroups.stream().filter(Objects::nonNull).toArray(String[]::new);
+      }
       targetMembers = findMembers(groups, null);
     }
     // otherwise use the group/members specified in the option to find the applicable members.
@@ -159,10 +161,6 @@ public class CreateIndexCommand extends GfshCommand {
     return resultModel;
   }
 
-  private static boolean containsExactlyInAnyOrder(String[] a, String[] b) {
-    return new HashSet(Arrays.asList(a)).equals(new HashSet(Arrays.asList(b)));
-  }
-
   // find a valid regionName when regionPath passed in is in the form of
   // "/region1.fieldName.fieldName x"
   // this also handles the possibility when regionName has "." in it, like "/A.B". It's stripping
@@ -175,8 +173,8 @@ public class CreateIndexCommand extends GfshCommand {
     String regionName = regionPath.trim().split(" ")[0];
     // check to see if the region path is in the form of "--region=region.entrySet() z"
     while (regionName.contains(".")) {
-      Region region = getRegionConfig(cms, regionName);
-      if (region != null) {
+      Set<String> groupsContainingRegion = getGroupsContainingRegion(cms, regionName);
+      if (!groupsContainingRegion.isEmpty()) {
         break;
       }
       // otherwise, strip one more . part off the regionName
@@ -187,17 +185,14 @@ public class CreateIndexCommand extends GfshCommand {
     return regionName;
   }
 
-  Region getRegionConfig(ClusterManagementService cms,
+  // if region belongs to "cluster" level, it will return a set of one null value
+  Set<String> getGroupsContainingRegion(ClusterManagementService cms,
       String regionName) {
     Region regionConfig = new Region();
     regionConfig.setName(regionName);
-    List<ConfigurationResult<Region, RuntimeRegionInfo>> list =
-        cms.list(regionConfig).getResult();
-    if (list.isEmpty()) {
-      return null;
-    } else {
-      return list.get(0).getConfiguration();
-    }
+    List<Region> regions = cms.list(regionConfig).getConfigResult();
+    return regions.stream().map(Region::getGroup)
+        .collect(Collectors.toSet());
   }
 
 
