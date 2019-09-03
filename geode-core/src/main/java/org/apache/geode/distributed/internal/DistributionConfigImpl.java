@@ -605,6 +605,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
 
   private SecurableCommunicationChannel[] securableCommunicationChannels =
       DEFAULT_SSL_ENABLED_COMPONENTS;
+  private String[] securityAuthTokenEnabledComponents =
+      DEFAULT_SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 
   private boolean sslUseDefaultSSLContext = DEFAULT_SSL_USE_DEFAULT_CONTEXT;
   private String sslProtocols = DEFAULT_SSL_PROTOCOLS;
@@ -866,8 +868,8 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
     validateSerializableObjects = other.getValidateSerializableObjects();
     serializableObjectFilter = other.getSerializableObjectFilter();
 
-    // following added for 9.9
     enableManagementRestService = other.getEnableManagementRestService();
+    securityAuthTokenEnabledComponents = other.getSecurityAuthTokenEnabledComponents();
   }
 
   /**
@@ -2538,6 +2540,16 @@ public class DistributionConfigImpl extends AbstractDistributionConfig implement
   @Override
   public void setSecurity(String attName, String attValue) {
     security.setProperty(attName, attValue);
+  }
+
+  @Override
+  public void setSecurityAuthTokenEnabledComponents(String[] newValue) {
+    securityAuthTokenEnabledComponents = newValue;
+  }
+
+  @Override
+  public String[] getSecurityAuthTokenEnabledComponents() {
+    return securityAuthTokenEnabledComponents;
   }
 
   @Override

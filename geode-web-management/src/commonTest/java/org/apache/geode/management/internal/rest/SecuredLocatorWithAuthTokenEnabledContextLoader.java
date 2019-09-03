@@ -15,22 +15,37 @@
 
 package org.apache.geode.management.internal.rest;
 
+import org.apache.geode.examples.SimpleSecurityManager;
 import org.apache.geode.internal.security.SecurityService;
 import org.apache.geode.management.api.ClusterManagementService;
+import org.apache.geode.test.junit.rules.LocatorStarterRule;
 
-public interface GeodeComponent {
+public class SecuredLocatorWithAuthTokenEnabledContextLoader extends BaseLocatorContextLoader {
 
-  void start();
+  private final LocatorStarterRule locator =
+      new LocatorStarterRule().withSecurityManager(SimpleSecurityManager.class).withAutoStart();
 
-  void stop();
+  public void start() {
+    locator.before();
+  }
 
-  int getPort();
+  public void stop() {
+    locator.after();
+  }
 
-  SecurityService getSecurityService();
+  public int getPort() {
+    return locator.getPort();
+  }
 
-  ClusterManagementService getClusterManagementService();
+  public SecurityService getSecurityService() {
+    return locator.getCache().getSecurityService();
+  }
 
-  default boolean isAuthTokenEnabled() {
-    return false;
+  public ClusterManagementService getClusterManagementService() {
+    return locator.getLocator().getClusterManagementService();
+  }
+
+  public boolean isAuthTokenEnabled() {
+    return true;
   }
 }

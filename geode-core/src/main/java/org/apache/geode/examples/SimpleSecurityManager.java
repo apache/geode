@@ -33,6 +33,10 @@ public class SimpleSecurityManager implements SecurityManager {
 
   @Override
   public Object authenticate(final Properties credentials) throws AuthenticationFailedException {
+    String token = credentials.getProperty("security-token");
+    if (token != null) {
+      return "Bearer " + token;
+    }
     String username = credentials.getProperty("security-username");
     String password = credentials.getProperty("security-password");
     if (username != null && username.equals(password)) {
@@ -43,6 +47,9 @@ public class SimpleSecurityManager implements SecurityManager {
 
   @Override
   public boolean authorize(final Object principal, final ResourcePermission permission) {
+    if (principal.toString().startsWith("Bearer ")) {
+      return true;
+    }
     String[] principals = principal.toString().toLowerCase().split(",");
     for (String role : principals) {
       String permissionString = permission.toString().replace(":", "").toLowerCase();

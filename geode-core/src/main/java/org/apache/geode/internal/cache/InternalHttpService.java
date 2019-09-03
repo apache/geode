@@ -43,6 +43,7 @@ import org.apache.geode.management.internal.SSLUtil;
 
 public class InternalHttpService implements HttpService {
 
+  public static final String AUTH_TOKEN_ENABLED_PARAM = "org.apache.geode.auth.token.enabled";
   private static final Logger logger = LogService.getLogger();
   private Server httpServer;
   private String bindAddress = "0.0.0.0";

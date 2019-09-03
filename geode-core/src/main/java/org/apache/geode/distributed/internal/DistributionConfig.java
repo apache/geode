@@ -118,6 +118,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.REDUNDANCY_ZO
 import static org.apache.geode.distributed.ConfigurationProperties.REMOTE_LOCATORS;
 import static org.apache.geode.distributed.ConfigurationProperties.REMOVE_UNRESPONSIVE_CLIENT;
 import static org.apache.geode.distributed.ConfigurationProperties.ROLES;
+import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_ACCESSOR_PP;
 import static org.apache.geode.distributed.ConfigurationProperties.SECURITY_CLIENT_AUTHENTICATOR;
@@ -2623,6 +2624,27 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
 
   String SECURITY_PREFIX_NAME = SECURITY_PREFIX;
 
+  /**
+   * Sets the value for
+   * {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION}
+   */
+  @ConfigAttributeSetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
+  void setSecurityAuthTokenEnabledComponents(String[] newValue);
+
+  /**
+   * Returns the value of
+   * {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION} property
+   */
+  @ConfigAttributeGetter(name = SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS)
+  String[] getSecurityAuthTokenEnabledComponents();
+
+  /**
+   * the name of the {@link ConfigurationProperties#SECURITY_MANAGEMENT_REST_TOKEN_AUTHENTICATION}
+   * property
+   */
+  @ConfigAttribute(type = String[].class)
+  String SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS_NAME =
+      SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS;
 
   /**
    * The static String definition of the cluster ssl prefix <i>"cluster-ssl"</i> used in conjunction
@@ -4995,6 +5017,9 @@ public interface DistributionConfig extends Config, LogConfig, StatisticsConfig 
   @Immutable
   SecurableCommunicationChannel[] DEFAULT_SSL_ENABLED_COMPONENTS =
       new SecurableCommunicationChannel[] {};
+
+  @Immutable
+  String[] DEFAULT_SECURITY_AUTH_TOKEN_ENABLED_COMPONENTS = new String[0];
 
   boolean DEFAULT_SSL_USE_DEFAULT_CONTEXT = false;
 
