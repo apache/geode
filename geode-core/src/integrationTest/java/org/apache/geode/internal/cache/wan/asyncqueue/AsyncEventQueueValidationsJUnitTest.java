@@ -19,6 +19,7 @@ import static org.apache.geode.distributed.ConfigurationProperties.CACHE_XML_FIL
 import static org.apache.geode.distributed.ConfigurationProperties.MCAST_PORT;
 import static org.apache.geode.test.awaitility.GeodeAwaitility.await;
 import static org.apache.geode.test.util.ResourceUtils.createTempFileFromResource;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -83,6 +84,26 @@ public class AsyncEventQueueValidationsJUnitTest {
     AsyncEventQueue aeq =
         fact.create("aeqID", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
     assertTrue(((AsyncEventQueueImpl) aeq).getSender().isPaused());
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void whenAEQCreatedInPausedStateIsUnPausedThenSenderIsResumed(boolean isParallel) {
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory()
+        .setParallel(isParallel)
+        .pauseEventDispatchingToListener()
+        .setDispatcherThreads(5);
+    AsyncEventQueue aeq =
+        fact.create("aeqID", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
+    assertTrue(aeq.isDispatchingPaused());
+    assertTrue(((AsyncEventQueueImpl) aeq).getSender().isPaused());
+
+    aeq.resumeEventDispatching();
+
+    assertFalse(aeq.isDispatchingPaused());
+    assertFalse(((AsyncEventQueueImpl) aeq).getSender().isPaused());
+
   }
 
   @Test
