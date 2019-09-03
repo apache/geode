@@ -94,10 +94,12 @@ public class TomcatInstall extends ContainerInstall {
    * the Tomcat module documentation!
    * The documentation can be found here:
    * geode-docs/tools_modules/http_session_mgmt/tomcat_installing_the_module.html.md.erb
+   * <br>
+   * Also update the modify_war script to reflect your changes for Jetty tests.
    */
   private static final String[] tomcatRequiredJars =
       {"antlr", "commons-io", "commons-lang", "commons-validator", "fastutil", "geode-common",
-          "geode-serialization", "geode-core", "geode-management", "javax.transaction-api",
+          "geode-core", "geode-management", "geode-serialization", "javax.transaction-api",
           "jgroups", "log4j-api",
           "log4j-core", "log4j-jul", "micrometer", "shiro-core", "jetty-server", "jetty-util",
           "jetty-http", "jetty-io"};
