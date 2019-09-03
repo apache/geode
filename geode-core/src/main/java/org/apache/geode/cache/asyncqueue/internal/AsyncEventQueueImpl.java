@@ -36,6 +36,15 @@ public class AsyncEventQueueImpl implements InternalAsyncEventQueue {
     this.asyncEventListener = asyncEventListener;
   }
 
+  public void resumeEventDispatching() {
+    this.sender.resume();
+  }
+
+  @Override
+  public boolean isDispatchingPaused() {
+    return sender.isPaused();
+  }
+
   @Override
   public String getId() {
     return getAsyncEventQueueIdFromSenderId(sender.getId());
