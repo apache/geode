@@ -72,6 +72,9 @@ public class ParallelGatewaySenderImpl extends AbstractRemoteGatewaySender {
        */
       eventProcessor =
           new RemoteConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+      if (isStartEventProcessorInPausedState()) {
+        this.pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
 

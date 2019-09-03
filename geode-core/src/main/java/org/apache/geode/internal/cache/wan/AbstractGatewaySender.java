@@ -207,6 +207,8 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
    */
   protected static final String META_DATA_REGION_NAME = "gatewayEventIdIndexMetaData";
 
+  protected boolean startEventProcessorInPausedState = false;
+
   protected int myDSId = DEFAULT_DISTRIBUTED_SYSTEM_ID;
 
   protected int connectionIdleTimeOut = GATEWAY_CONNECTION_IDLE_TIMEOUT;
@@ -786,6 +788,35 @@ public abstract class AbstractGatewaySender implements InternalGatewaySender, Di
             String.format("Could not start a gateway sender %s because of exception %s",
                 new Object[] {this.getId(), ex.getMessage()}),
             ex.getCause());
+      }
+    }
+  }
+
+  public boolean isStartEventProcessorInPausedState() {
+    return startEventProcessorInPausedState;
+  }
+
+  public void setStartEventProcessorInPausedState() {
+    startEventProcessorInPausedState = true;
+  }
+
+  /**
+   * This pause will set the pause flag even if the
+   * processor has not yet started.
+   */
+  public void pauseEvenIfProcessorStopped() {
+    if (this.eventProcessor != null) {
+      this.getLifeCycleLock().writeLock().lock();
+      try {
+        this.eventProcessor.pauseDispatching();
+        InternalDistributedSystem system =
+            (InternalDistributedSystem) this.cache.getDistributedSystem();
+        system.handleResourceEvent(ResourceEvent.GATEWAYSENDER_PAUSE, this);
+        logger.info("Paused {}", this);
+
+        enqueueTempEvents();
+      } finally {
+        this.getLifeCycleLock().writeLock().unlock();
       }
     }
   }
