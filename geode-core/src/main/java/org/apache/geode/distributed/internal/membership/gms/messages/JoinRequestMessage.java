@@ -103,7 +103,7 @@ public class JoinRequestMessage extends AbstractGMSMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     memberID = GMSUtil.readMemberID(in, context);
-    credentials = context.getSerializer().readObject(in);
+    credentials = context.getDeserializer().readObject(in);
     failureDetectionPort = in.readInt();
     // setMulticast(in.readBoolean());
     in.readBoolean();

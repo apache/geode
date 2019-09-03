@@ -319,12 +319,12 @@ fromData,20
 toData,20
 
 org/apache/geode/distributed/internal/membership/gms/messages/InstallViewMessage,2
-fromData,65
-toData,61
+fromData,60
+toData,56
 
 org/apache/geode/distributed/internal/membership/gms/messages/JoinRequestMessage,2
-fromData,58
-toData,58
+fromData,53
+toData,53
 
 org/apache/geode/distributed/internal/membership/gms/messages/JoinResponseMessage,2
 fromData,53
@@ -1124,8 +1124,8 @@ fromData,15
 toData,15
 
 org/apache/geode/internal/cache/InvalidatePartitionedRegionMessage,4
-fromData,31
-fromDataPre_GEODE_1_9_0_0,28
+fromData,26
+fromDataPre_GEODE_1_9_0_0,23
 toData,23
 toDataPre_GEODE_1_9_0_0,15
 

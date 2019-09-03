@@ -79,7 +79,7 @@ public class ViewAckMessage extends AbstractGMSMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.viewId = in.readInt();
     this.preparing = in.readBoolean();
-    this.alternateView = (GMSMembershipView) context.getSerializer().readObject(in);
+    this.alternateView = (GMSMembershipView) context.getDeserializer().readObject(in);
   }
 
   @Override

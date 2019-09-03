@@ -179,7 +179,7 @@ public class FindCoordinatorResponse extends AbstractGMSMessage
       fromView = in.readBoolean();
       networkPartitionDetectionEnabled = in.readBoolean();
       usePreferredCoordinators = in.readBoolean();
-      view = (GMSMembershipView) context.getSerializer().readObject(in);
+      view = (GMSMembershipView) context.getDeserializer().readObject(in);
       registrants = GMSUtil.readHashSetOfMemberIDs(in, context);
     }
   }

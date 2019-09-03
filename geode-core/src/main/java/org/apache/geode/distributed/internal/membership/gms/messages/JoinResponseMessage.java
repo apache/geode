@@ -125,7 +125,7 @@ public class JoinResponseMessage extends AbstractGMSMessage {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    currentView = (GMSMembershipView) context.getSerializer().readObject(in);
+    currentView = (GMSMembershipView) context.getDeserializer().readObject(in);
     memberID = GMSUtil.readMemberID(in, context);
     rejectionMessage = StaticSerialization.readString(in);
     messengerData = StaticSerialization.readByteArray(in);

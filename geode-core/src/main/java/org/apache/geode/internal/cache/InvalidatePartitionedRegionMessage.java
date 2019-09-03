@@ -91,7 +91,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void fromDataPre_GEODE_1_9_0_0(DataInput in, DeserializationContext context)
       throws IOException, ClassNotFoundException {
     super.fromData(in, context);
-    this.callbackArg = context.getSerializer().readObject(in);
+    this.callbackArg = context.getDeserializer().readObject(in);
   }
 
   /*
@@ -103,7 +103,7 @@ public class InvalidatePartitionedRegionMessage extends PartitionMessage {
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
     fromDataPre_GEODE_1_9_0_0(in, context);
-    this.eventID = (EventID) context.getSerializer().readObject(in);
+    this.eventID = (EventID) context.getDeserializer().readObject(in);
   }
 
   public void toDataPre_GEODE_1_9_0_0(DataOutput out, SerializationContext context)

@@ -14,12 +14,22 @@
  */
 package org.apache.geode.internal.serialization;
 
-public interface DeserializationContext {
+import java.io.DataInput;
+import java.io.IOException;
 
-  /** return the version of the source/destination of this serializer */
-  Version getSerializationVersion();
+public interface ObjectDeserializer {
 
-  /** return the serializer */
-  ObjectDeserializer getDeserializer();
+  /**
+   * Read an object from the given data input
+   */
+  Object readObject(DataInput input) throws IOException, ClassNotFoundException;
+
+  /**
+   * When deserializing you may want to invoke a fromData method on an object.
+   * Use this method to ensure that the proper fromData method is invoked for
+   * backward-compatibility.
+   */
+  void invokeFromData(Object ds, DataInput in)
+      throws IOException, ClassNotFoundException;
 
 }

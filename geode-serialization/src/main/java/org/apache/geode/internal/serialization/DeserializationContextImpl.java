@@ -33,7 +33,7 @@ public class DeserializationContextImpl extends AbstractSerializationContext
   }
 
   @Override
-  public ObjectSerializer getSerializer() {
-    return serializer.getObjectSerializer();
+  public ObjectDeserializer getDeserializer() {
+    return serializer.getObjectDeserializer();
   }
 }

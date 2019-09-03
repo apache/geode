@@ -93,8 +93,8 @@ public class InstallViewMessage extends AbstractGMSMessage {
       DeserializationContext context) throws IOException, ClassNotFoundException {
     this.previousViewId = in.readInt();
     this.kind = messageType.values()[in.readInt()];
-    this.view = (GMSMembershipView) context.getSerializer().readObject(in);
-    this.credentials = context.getSerializer().readObject(in);
+    this.view = (GMSMembershipView) context.getDeserializer().readObject(in);
+    this.credentials = context.getDeserializer().readObject(in);
   }
 
   @Override

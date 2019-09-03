@@ -1134,7 +1134,7 @@ public class JGroupsMessenger implements Messenger {
     GMSMember m = new GMSMember();
     m.readEssentialData(in, services.getSerializer().createDeserializationContext(in));
     GMSMessage result = services.getManager()
-        .wrapMessage(services.getSerializer().getObjectSerializer().readObject(in));
+        .wrapMessage(services.getSerializer().getObjectDeserializer().readObject(in));
 
     setSender(result, m, ordinal);
 

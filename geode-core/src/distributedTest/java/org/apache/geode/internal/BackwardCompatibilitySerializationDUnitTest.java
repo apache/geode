@@ -211,7 +211,7 @@ public class BackwardCompatibilitySerializationDUnitTest extends JUnit4CacheTest
                 new Class[] {DataOutput.class, SerializationContext.class});
 
             ds.getClass().getMethod("fromDataPre_" + versions[i].getMethodSuffix(),
-                new Class[] {DataInput.class, SerializationContext.class});
+                new Class[] {DataInput.class, DeserializationContext.class});
           } catch (NoSuchMethodException e) {
             fail(
                 "toDataPreXXX or fromDataPreXXX for previous versions not found " + e.getMessage());

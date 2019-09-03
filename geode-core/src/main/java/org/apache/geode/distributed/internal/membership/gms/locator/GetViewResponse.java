@@ -59,7 +59,7 @@ public class GetViewResponse implements DataSerializableFixedID {
   @Override
   public void fromData(DataInput in,
       DeserializationContext context) throws IOException, ClassNotFoundException {
-    view = (GMSMembershipView) context.getSerializer().readObject(in);
+    view = (GMSMembershipView) context.getDeserializer().readObject(in);
   }
 
 }

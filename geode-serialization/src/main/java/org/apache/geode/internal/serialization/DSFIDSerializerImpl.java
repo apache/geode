@@ -37,28 +37,31 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   private final Int2ObjectOpenHashMap dsfidMap2 = new Int2ObjectOpenHashMap(800);
 
   private final ObjectSerializer objectSerializer;
+  private final ObjectDeserializer objectDeserializer;
 
   public DSFIDSerializerImpl() {
-    objectSerializer = new ObjectSerializer() {
+    objectSerializer = createDefaultObjectSerializer();
+    objectDeserializer = createDefaultObjectDeserializer();
+  }
+
+  public DSFIDSerializerImpl(ObjectSerializer objectSerializer,
+      ObjectDeserializer objectDeserializer) {
+    this.objectSerializer =
+        objectSerializer == null ? createDefaultObjectSerializer() : objectSerializer;
+    this.objectDeserializer =
+        objectDeserializer == null ? createDefaultObjectDeserializer() : objectDeserializer;
+  }
+
+  private ObjectSerializer createDefaultObjectSerializer() {
+    return new ObjectSerializer() {
       @Override
       public void writeObject(Object obj, DataOutput output) throws IOException {
         DSFIDSerializerImpl.this.writeDSFID((DataSerializableFixedID) obj, output);
       }
 
       @Override
-      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
-        return DSFIDSerializerImpl.this.readDSFID(input);
-      }
-
-      @Override
       public void invokeToData(Object ds, DataOutput out) throws IOException {
         DSFIDSerializerImpl.this.invokeToData(ds, out);
-      }
-
-      @Override
-      public void invokeFromData(Object ds, DataInput in)
-          throws IOException, ClassNotFoundException {
-        DSFIDSerializerImpl.this.invokeFromData(ds, in);
       }
 
       @Override
@@ -69,20 +72,29 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     };
   }
 
-  public DSFIDSerializerImpl(ObjectSerializer objectSerializer) {
-    this.objectSerializer = objectSerializer;
+  private ObjectDeserializer createDefaultObjectDeserializer() {
+    return new ObjectDeserializer() {
+      @Override
+      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
+        return DSFIDSerializerImpl.this.readDSFIDHeader(input);
+      }
+
+      @Override
+      public void invokeFromData(Object ds, DataInput in)
+          throws IOException, ClassNotFoundException {
+        DSFIDSerializerImpl.this.invokeFromData(ds, in);
+      }
+    };
   }
 
-  /**
-   * Returns a plug-in object that can serialize Objects that are not handled by
-   * DSFIDSerializer. The default implementation handles only DataSerializableFixedID.
-   * In the context of Geode this will return a serializer that uses
-   * InternalDataSerializer to read/write any object supported by Geode serialization
-   * (PDX, DataSerializable, Java serializable, etc).
-   */
   @Override
   public ObjectSerializer getObjectSerializer() {
     return objectSerializer;
+  }
+
+  @Override
+  public ObjectDeserializer getObjectDeserializer() {
+    return objectDeserializer;
   }
 
   // Writes just the header of a DataSerializableFixedID to out.
@@ -276,7 +288,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
             // if peer version is less than the greatest upgraded version
             if (v.compareTo(version) < 0) {
               ds.getClass().getMethod("fromDataPre" + '_' + version.getMethodSuffix(),
-                  new Class[] {DataInput.class, SerializationContext.class})
+                  new Class[] {DataInput.class, DeserializationContext.class})
                   .invoke(ds, in, context);
               invoked = true;
               break;
@@ -302,7 +314,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
 
 
 
-  /** Register the constructor for a fixed ID class. */
   @Override
   public void registerDSFID(int dsfid, Class dsfidClass) {
     try {
@@ -323,10 +334,6 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     }
   }
 
-  /**
-   * Creates a DataSerializableFixedID or StreamableFixedID instance by deserializing it from the
-   * data input.
-   */
   public Object create(int dsfid, DataInput in) throws IOException, ClassNotFoundException {
     final Constructor<?> cons;
     if (dsfid >= Byte.MIN_VALUE && dsfid <= Byte.MAX_VALUE) {
@@ -367,13 +374,11 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
   }
 
 
-  /** create a context for serializaing an object */
   @Override
   public SerializationContext createSerializationContext(DataOutput dataOutput) {
     return new SerializationContextImpl(dataOutput, this);
   }
 
-  /** create a context for deserializaing an object */
   @Override
   public DeserializationContext createDeserializationContext(DataInput dataInput) {
     return new DeserializationContextImpl(dataInput, this);

@@ -114,6 +114,7 @@ import org.apache.geode.internal.serialization.DSFIDSerializerFactory;
 import org.apache.geode.internal.serialization.DataSerializableFixedID;
 import org.apache.geode.internal.serialization.DeserializationContext;
 import org.apache.geode.internal.serialization.DscodeHelper;
+import org.apache.geode.internal.serialization.ObjectDeserializer;
 import org.apache.geode.internal.serialization.ObjectSerializer;
 import org.apache.geode.internal.serialization.SerializationContext;
 import org.apache.geode.internal.serialization.SerializationVersions;
@@ -296,25 +297,25 @@ public abstract class InternalDataSerializer extends DataSerializer {
       }
 
       @Override
-      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
-        return InternalDataSerializer.readObject(input);
-      }
-
-      @Override
       public void invokeToData(Object ds, DataOutput out) throws IOException {
         InternalDataSerializer.invokeToData(ds, out);
-      }
-
-      @Override
-      public void invokeFromData(Object ds, DataInput in)
-          throws IOException, ClassNotFoundException {
-        InternalDataSerializer.invokeFromData(ds, in);
       }
 
       @Override
       public void writeDSFID(DataSerializableFixedID object, int dsfid, DataOutput out)
           throws IOException {
         InternalDataSerializer.writeDSFID(object, dsfid, out);
+      }
+    }).setObjectDeserializer(new ObjectDeserializer() {
+      @Override
+      public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
+        return InternalDataSerializer.readObject(input);
+      }
+
+      @Override
+      public void invokeFromData(Object ds, DataInput in)
+          throws IOException, ClassNotFoundException {
+        InternalDataSerializer.invokeFromData(ds, in);
       }
     }).create();
     initializeWellKnownSerializers();
