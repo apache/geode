@@ -36,6 +36,7 @@ import org.apache.geode.cache.CacheFactory;
 import org.apache.geode.cache.Region;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueue;
 import org.apache.geode.cache.asyncqueue.AsyncEventQueueFactory;
+import org.apache.geode.cache.asyncqueue.internal.AsyncEventQueueImpl;
 import org.apache.geode.cache.wan.GatewayEventFilter;
 import org.apache.geode.cache.wan.GatewaySender.OrderPolicy;
 import org.apache.geode.internal.cache.wan.AsyncEventQueueConfigurationException;
@@ -69,6 +70,19 @@ public class AsyncEventQueueValidationsJUnitTest {
       assertTrue(
           e.getMessage().contains(" can not be created with dispatcher threads less than 1"));
     }
+  }
+
+  @Test
+  @Parameters({"true", "false"})
+  public void whenAEQCreatedInPausedStateThenSenderIsStartedInPausedState(boolean isParallel) {
+    cache = new CacheFactory().set(MCAST_PORT, "0").create();
+    AsyncEventQueueFactory fact = cache.createAsyncEventQueueFactory()
+        .setParallel(isParallel)
+        .pauseEventDispatchingToListener()
+        .setDispatcherThreads(5);
+    AsyncEventQueue aeq =
+        fact.create("aeqID", new org.apache.geode.internal.cache.wan.MyAsyncEventListener());
+    assertTrue(((AsyncEventQueueImpl) aeq).getSender().isPaused());
   }
 
   @Test
