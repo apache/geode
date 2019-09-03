@@ -18,22 +18,22 @@
 set -e
 
 usage() {
-    echo "Usage: print_rc_email.sh -v version_number -m maven_repo_id"
-    echo "  -v   The #.#.#.RC# version number"
-    echo "  -m   The 4 digit id of the nexus maven repo"
+    echo "Usage: promote_rc.sh -v version_number"
+    echo "  -v   The #.#.#.RC# version number to ship"
+    echo "  -k   Your 8 digit GPG key id (the last 8 digits of your gpg fingerprint)"
     exit 1
 }
 
 FULL_VERSION=""
-MAVEN=""
+SIGNING_KEY=""
 
-while getopts ":v:m:" opt; do
+while getopts ":v:k:" opt; do
   case ${opt} in
     v )
       FULL_VERSION=$OPTARG
       ;;
-    m )
-      MAVEN=$OPTARG
+    k )
+      SIGNING_KEY=$OPTARG
       ;;
     \? )
       usage
@@ -41,7 +41,7 @@ while getopts ":v:m:" opt; do
   esac
 done
 
-if [[ ${FULL_VERSION} == "" ]] || [[ ${MAVEN} == "" ]]; then
+if [[ ${FULL_VERSION} == "" ]] || [[ ${SIGNING_KEY} == "" ]]; then
     usage
 fi
 
@@ -67,41 +67,45 @@ fi
 
 
 echo "============================================================"
-echo "Publishing artifacts to apache release location..."
+echo "Releasing artifacts to mirror sites..."
+echo "(note: must be logged in to svn as a PMC member or this will fail)"
 echo "============================================================"
-cd ${SVN_DIR}
-svn commit -m "Releasing Apache Geode ${FULL_VERSION} distribution"
+cd ${SVN_DIR}/../..
+svn mv dev/geode/${FULL_VERSION} release/geode/${VERSION}
+cp dev/geode/KEYS release/geode/KEYS
+svn commit -m "Releasing Apache Geode ${VERSION} distribution"
 
 
 echo "============================================================"
-echo "Adding temporary commit for geode-examples to build against staged ${FULL_VERSION}..."
+echo "Tagging ${FULL_VERSION} as ${VERSION} and pushing tags..."
 echo "============================================================"
-cd ${GEODE_EXAMPLES}
-sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl = https://repository.apache.org/content/repositories/orgapachegeode-'"${MAVEN}#" \
-    -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl = https://dist.apache.org/repos/dist/dev/geode/'"${FULL_VERSION}#" -i.bak gradle.properties
-rm gradle.properties.bak
-git add gradle.properties
-git diff --staged
-git commit -m "temporarily point to staging repo for CI purposes"
-git push
-
-
-echo "============================================================"
-echo "Pushing tags..."
-echo "============================================================"
-
 for DIR in ${GEODE} ${GEODE_EXAMPLES} ${GEODE_NATIVE} ; do
     cd ${DIR}
-    git push origin rel/v${FULL_VERSION}
+    git tag -s -u ${SIGNING_KEY} rel/v${VERSION} -m "Apache Geode v${VERSION} release" rel/v${FULL_VERSION}
+    git push origin rel/v${VERSION}
 done
 
 
 echo "============================================================"
-echo "Done publishing the release candidate!  Send the email below to announce it:"
+echo "Removing temporary commit from geode-examples..."
+echo "============================================================"
+cd ${GEODE_EXAMPLES}
+git pull
+sed -e 's#^geodeRepositoryUrl *=.*#geodeRepositoryUrl =#' \
+    -e 's#^geodeReleaseUrl *=.*#geodeReleaseUrl =#' -i.bak gradle.properties
+rm gradle.properties.bak
+git add gradle.properties
+git diff --staged
+git commit -m 'Revert "temporarily point to staging repo for CI purposes"'
+git push
+
+
+echo "============================================================"
+echo "Done promoting release artifacts!"
 echo "============================================================"
 cd ${GEODE}/../..
-echo "To: dev@geode.apache.org"
-echo "Subject: [VOTE] Apache Geode ${FULL_VERSION}"
-${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN}
-echo ""
-which pbcopy >/dev/null && ${0%/*}/print_rc_email.sh -v ${FULL_VERSION} -m ${MAVEN} | pbcopy && echo "(copied to clipboard)"
+echo "Next steps:"
+echo "1. Click 'Release' in http://repository.apache.org/"
+echo "2. Transition JIRA issues fixed in this release to Closed"
+echo "3. Wait 8-24 hours for apache mirror sites to sync"
+echo "4. Run ${0%/*}/finalize-release.sh -v ${VERSION}"
