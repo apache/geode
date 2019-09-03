@@ -76,7 +76,7 @@ public class DSFIDSerializerImpl implements DSFIDSerializer {
     return new ObjectDeserializer() {
       @Override
       public Object readObject(DataInput input) throws IOException, ClassNotFoundException {
-        return DSFIDSerializerImpl.this.readDSFIDHeader(input);
+        return DSFIDSerializerImpl.this.readDSFID(input);
       }
 
       @Override
