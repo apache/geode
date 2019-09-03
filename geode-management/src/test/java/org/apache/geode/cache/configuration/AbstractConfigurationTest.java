@@ -68,6 +68,12 @@ public class AbstractConfigurationTest {
     assertThat(element.getGroup()).isNull();
     element.setGroup("");
     assertThat(element.getGroup()).isEqualTo("");
+    element.setGroup("CLUSTER");
+    assertThat(element.getGroup()).isEqualTo("CLUSTER");
+    element.setGroup("cluster");
+    assertThat(element.getGroup()).isEqualTo("cluster");
+    element.setGroup("ClUsTeR");
+    assertThat(element.getGroup()).isEqualTo("ClUsTeR");
   }
 
   @Test

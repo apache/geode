@@ -15,6 +15,8 @@
 
 package org.apache.geode.management.configuration;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.io.Serializable;
 
 import org.apache.geode.annotations.Experimental;
@@ -39,7 +41,7 @@ public abstract class AbstractConfiguration
    * is <code>null</code>, or is an empty string.
    */
   public static boolean isCluster(String groupName) {
-    return groupName == null || groupName.length() == 0 || groupName.equalsIgnoreCase(CLUSTER);
+    return isBlank(groupName) || groupName.equalsIgnoreCase(CLUSTER);
   }
 
   private String group;

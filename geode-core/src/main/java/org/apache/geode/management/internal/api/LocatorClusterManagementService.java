@@ -18,6 +18,9 @@
 package org.apache.geode.management.internal.api;
 
 
+import static org.apache.geode.management.configuration.AbstractConfiguration.CLUSTER;
+import static org.apache.geode.management.configuration.AbstractConfiguration.isCluster;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -137,7 +140,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
 
     String group = config.getGroup();
     final String groupName =
-        AbstractConfiguration.isCluster(group) ? AbstractConfiguration.CLUSTER : group;
+        isCluster(group) ? CLUSTER : group;
     try {
       // first validate common attributes of all configuration object
       commonValidator.validate(CacheElementOperation.CREATE, config);
@@ -187,7 +190,7 @@ public class LocatorClusterManagementService implements ClusterManagementService
       return cacheConfigForGroup;
     });
 
-    // add the config object which includes the HATOS information of the element created
+    // add the config object which includes the HATEOAS information of the element created
     if (result.isSuccessful() && config instanceof RestfulEndpoint) {
       result.setUri(((RestfulEndpoint) config).getUri());
     }
@@ -297,10 +300,11 @@ public class LocatorClusterManagementService implements ClusterManagementService
       }
 
       for (String group : groups) {
-        CacheConfig currentPersistedConfig = persistenceService.getCacheConfig(group, true);
+        CacheConfig currentPersistedConfig =
+            persistenceService.getCacheConfig(isCluster(group) ? CLUSTER : group, true);
         List<T> listInGroup = manager.list(filter, currentPersistedConfig);
-        if (!AbstractConfiguration.isCluster(group)) {
-          listInGroup.stream().forEach(t -> t.setGroup(group));
+        if (!isCluster(group)) {
+          listInGroup.forEach(t -> t.setGroup(group));
         }
         resultList.addAll(listInGroup);
       }
