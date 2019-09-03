@@ -78,6 +78,9 @@ public class ParallelAsyncEventQueueImpl extends AbstractGatewaySender {
        */
       eventProcessor =
           new ConcurrentParallelGatewaySenderEventProcessor(this, getThreadMonitorObj());
+      if (startEventProcessorInPausedState) {
+        pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
 
