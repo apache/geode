@@ -363,15 +363,37 @@ public class BucketAdvisor extends CacheDistributionAdvisor {
     if (locProfiles.length == 0) {
       return null;
     }
-    getPartitionedRegionStats().incPreferredReadRemote();
 
-    if (locProfiles.length == 1) { // only one choice!
-      return locProfiles[0].peerMemberId;
+    Profile selectedProfile = selectNotInitializingProfile(locProfiles);
+
+    if (selectedProfile == null) {
+      return null;
     }
 
-    // Pick one at random.
-    int i = myRand.nextInt(locProfiles.length);
-    return locProfiles[i].peerMemberId;
+    getPartitionedRegionStats().incPreferredReadRemote();
+    return selectedProfile.peerMemberId;
+  }
+
+  /**
+   * Get the random Profile that is not initializing BucketProfile.
+   *
+   */
+  private Profile selectNotInitializingProfile(Profile[] inProfiles) {
+    int index = 0;
+    int offset = 0;
+    if (inProfiles.length > 1) {
+      // Pick random offset.
+      offset = myRand.nextInt(inProfiles.length);
+    }
+
+    for (int i = 0; i < inProfiles.length; i++) {
+      index = (offset + i) % inProfiles.length;
+      BucketProfile bp = (BucketProfile) inProfiles[index];
+      if (!bp.isInitializing) {
+        return inProfiles[index];
+      }
+    }
+    return null;
   }
 
   /**
