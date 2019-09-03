@@ -147,4 +147,14 @@ public interface AsyncEventQueue {
    */
   boolean isForwardExpirationDestroy();
 
+  /**
+   * Resumes the dispatching of then events queued to the listener.
+   */
+  void resumeEventDispatching();
+
+  /**
+   * Returns whether the queue is processing queued events or is paused
+   */
+  boolean isDispatchingPaused();
+
 }
