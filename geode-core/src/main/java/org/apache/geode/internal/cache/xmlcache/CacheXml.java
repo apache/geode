@@ -750,6 +750,7 @@ public abstract class CacheXml implements EntityResolver2, ErrorHandler {
 
   protected static final String ASYNC_EVENT_LISTENER = "async-event-listener";
   public static final String ASYNC_EVENT_QUEUE = "async-event-queue";
+  public static final String PAUSE_EVENT_PROCESSING = "pause-event-processing";
   protected static final String ASYNC_EVENT_QUEUE_IDS = "async-event-queue-ids";
   protected static final String FORWARD_EXPIRATION_DESTROY = "forward-expiration-destroy";
 
