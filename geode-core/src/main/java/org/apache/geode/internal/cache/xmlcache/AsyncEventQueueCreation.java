@@ -42,6 +42,7 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   private int dispatcherThreads = 1;
   private OrderPolicy orderPolicy = OrderPolicy.KEY;
   private boolean forwardExpirationDestroy = false;
+  private boolean pauseEventDispatching = false;
 
   public AsyncEventQueueCreation() {}
 
@@ -72,6 +73,15 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
 
   public void setAsyncEventListener(AsyncEventListener eventListener) {
     this.asyncEventListener = eventListener;
+  }
+
+  @Override
+  public boolean isDispatchingPaused() {
+    return pauseEventDispatching;
+  }
+
+  public void setPauseEventDispatching(boolean pauseEventDispatching) {
+    this.pauseEventDispatching = pauseEventDispatching;
   }
 
   public void addGatewayEventFilter(GatewayEventFilter filter) {
@@ -226,5 +236,10 @@ public class AsyncEventQueueCreation implements AsyncEventQueue {
   @Override
   public boolean isForwardExpirationDestroy() {
     return this.forwardExpirationDestroy;
+  }
+
+  @Override
+  public void resumeEventDispatching() {
+    this.pauseEventDispatching = false;
   }
 }
