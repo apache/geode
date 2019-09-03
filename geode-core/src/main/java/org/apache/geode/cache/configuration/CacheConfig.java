@@ -1140,6 +1140,34 @@ public class CacheConfig {
     protected String orderPolicy;
     @XmlAttribute(name = "forward-expiration-destroy")
     protected Boolean forwardExpirationDestroy;
+    @XmlAttribute(name = "pause-event-processing")
+    protected Boolean pauseEventProcessing;
+
+    /**
+     * Gets the value of whether the processing of the events queued is paused or not
+     *
+     *
+     * @return {@link Boolean} - true if queue will be created with paused processing of the events
+     *         queued
+     *         - false if queue will be created without pausing the processing of the events queued
+     *
+     */
+    public Boolean isPauseEventProcessing() {
+      return pauseEventProcessing;
+    }
+
+    /**
+     * Sets the value of whether the processing of the events queued is paused or not
+     *
+     * @param pauseEventProcessing {@link Boolean} - true if queue will be created with paused
+     *        processing of the events queued
+     *        - false if queue will be created without pausing the processing of the events
+     *        queued
+     */
+
+    public void setPauseEventProcessing(Boolean pauseEventProcessing) {
+      this.pauseEventProcessing = pauseEventProcessing;
+    }
 
     /**
      * Gets the value of the gatewayEventFilters property.
