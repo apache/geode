@@ -83,6 +83,9 @@ public class SerialGatewaySenderImpl extends AbstractRemoteGatewaySender {
         eventProcessor = new RemoteSerialGatewaySenderEventProcessor(SerialGatewaySenderImpl.this,
             getId(), getThreadMonitorObj());
       }
+      if (isStartEventProcessorInPausedState()) {
+        this.pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
       this.startTime = System.currentTimeMillis();

@@ -17,6 +17,7 @@
 package org.apache.geode.cache.asyncqueue.internal;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 
@@ -41,6 +42,14 @@ public class AsyncEventQueueFactoryImplTest {
   public void setUp() {
     cache = mock(InternalCache.class, RETURNS_DEEP_STUBS);
 
+  }
+
+  @Test
+  public void whenAsyncEventQueueIsStartedInPausedStateThenSenderMustBePaused() {
+    asyncEventQueueFactory = new AsyncEventQueueFactoryImpl(cache);
+    asyncEventQueueFactory.pauseEventDispatchingToListener();
+    assertTrue(
+        ((AsyncEventQueueFactoryImpl) asyncEventQueueFactory).isPauseEventsDispatchingToListener());
   }
 
   /**
