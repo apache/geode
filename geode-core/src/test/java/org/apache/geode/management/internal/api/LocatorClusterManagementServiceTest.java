@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
@@ -208,23 +209,37 @@ public class LocatorClusterManagementServiceTest {
   }
 
   @Test
+  public void list_oneGroupCaseInsensitive() {
+    regionConfig.setGroup("CLUSTER");
+    doReturn(Sets.newHashSet("cluster", "group1")).when(persistenceService).getGroups();
+
+    service.list(regionConfig);
+    verify(persistenceService).getCacheConfig("cluster", true);
+    verify(regionManager).list(any(), any());
+  }
+
+  @Test
   public void list_aRegionInMultipleGroups() {
     doReturn(Sets.newHashSet("group1", "group2")).when(persistenceService).getGroups();
-    Region region1 = new Region();
-    region1.setName("region1");
-    region1.setType(RegionType.REPLICATE);
-    Region region2 = new Region();
-    region2.setName("region1");
-    region2.setType(RegionType.REPLICATE);
+    Region region1group2 = new Region();
+    region1group2.setName("region1");
+    region1group2.setType(RegionType.REPLICATE);
+    Region region1group1 = new Region();
+    region1group1.setName("region1");
+    region1group1.setType(RegionType.REPLICATE);
 
-    List clusterRegions = Arrays.asList(region1);
-    List group1Regions = Arrays.asList(region2);
-    doReturn(clusterRegions, group1Regions).when(regionManager).list(any(), any());
+    List group2Regions = Arrays.asList(region1group2);
+    List group1Regions = Arrays.asList(region1group1);
+    CacheConfig mockCacheConfigGroup2 = mock(CacheConfig.class);
+    CacheConfig mockCacheConfigGroup1 = mock(CacheConfig.class);
+    doReturn(mockCacheConfigGroup2).when(persistenceService).getCacheConfig(eq("group2"),
+        anyBoolean());
+    doReturn(mockCacheConfigGroup1).when(persistenceService).getCacheConfig(eq("group1"),
+        anyBoolean());
+    doReturn(group2Regions).when(regionManager).list(any(), same(mockCacheConfigGroup2));
+    doReturn(group1Regions).when(regionManager).list(any(), same(mockCacheConfigGroup1));
 
-    // this is to make sure when 'cluster" is in one of the group, it will show
-    // the cluster and the other group name
-    List<Region> results =
-        service.list(new Region()).getConfigResult();
+    List<Region> results = service.list(new Region()).getConfigResult();
     assertThat(results).hasSize(2);
     Region result1 = results.get(0);
     assertThat(result1.getName()).isEqualTo("region1");
