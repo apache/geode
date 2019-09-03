@@ -45,4 +45,6 @@ public interface InternalGatewaySender extends GatewaySender {
   InternalCache getCache();
 
   void destroy(boolean initiator);
+
+  void setStartEventProcessorInPausedState();
 }

@@ -92,6 +92,9 @@ public class SerialAsyncEventQueueImpl extends AbstractGatewaySender {
         eventProcessor = new SerialGatewaySenderEventProcessor(SerialAsyncEventQueueImpl.this,
             getId(), getThreadMonitorObj());
       }
+      if (startEventProcessorInPausedState) {
+        pauseEvenIfProcessorStopped();
+      }
       eventProcessor.start();
       waitForRunningStatus();
       this.startTime = System.currentTimeMillis();
