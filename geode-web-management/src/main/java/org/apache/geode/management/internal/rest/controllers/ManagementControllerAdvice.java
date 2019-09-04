@@ -31,6 +31,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.security.access.AccessDeniedException;
@@ -55,8 +56,7 @@ public class ManagementControllerAdvice implements ResponseBodyAdvice<Object> {
 
   @Override
   public boolean supports(MethodParameter returnType, Class converterType) {
-    System.out.println("CALLED: supports(" + returnType + ", " + converterType + ")");
-    return true;
+    return AbstractJackson2HttpMessageConverter.class.isAssignableFrom(converterType);
   }
 
   @Override
